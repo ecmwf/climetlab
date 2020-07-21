@@ -14,15 +14,33 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import datetime
+import os
+import sys
+
+top = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.insert(0, top)
+
+
+import climetlab
 
 # -- Project information -----------------------------------------------------
 
 project = 'CliMetLab'
-copyright = '2020, ECMWF'
+
 author = 'ECMWF'
 
+year = datetime.datetime.now().year
+if year == 2020:
+    years = "2020"
+else:
+    years = "2020-%s" % (year,)
+
+copyright = '%s, ECMWF' % (years,)
+
+
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = climetlab.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +49,8 @@ release = '0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'nbsphinx',
+    'sphinx.ext.mathjax',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

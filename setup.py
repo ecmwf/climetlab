@@ -15,18 +15,20 @@ import os.path
 
 import setuptools
 
+top = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, top)
+
+import climetlab
+
+
 
 def read(fname):
     file_path = os.path.join(os.path.dirname(__file__), fname)
     return io.open(file_path, encoding='utf-8').read()
 
-
-version = '0.0.1'
-
-
 setuptools.setup(
     name='climetlab',
-    version=version,
+    version=climetlab.__version__,
     author='ECMWF',
     author_email='software.support@ecmwf.int',
     license='Apache 2.0',

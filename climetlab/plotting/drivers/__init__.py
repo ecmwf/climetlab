@@ -6,19 +6,3 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 #
-
-from .sources import load as load_source
-from .datasets import load as load_dataset
-from .plotting import plot_map
-
-__version__ = '0.0.1'
-
-import climetlab.source
-import climetlab.dataset
-
-
-__all__ = [load_source,
-           load_dataset,
-           plot_map,
-           climetlab.dataset,
-           climetlab.source]
