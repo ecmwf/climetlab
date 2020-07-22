@@ -29,7 +29,8 @@ source_suffix = ".rst"
 master_doc = "index"
 pygments_style = "sphinx"
 html_theme_options = {"logo_only": True}
-html_logo = "logo.png"
+html_logo = "_static/logo.png"
+
 
 # -- Project information -----------------------------------------------------
 
