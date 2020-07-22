@@ -12,6 +12,7 @@
 
 import io
 import os.path
+import sys
 
 import setuptools
 
