@@ -47,7 +47,10 @@ setuptools.setup(
         'netcdf4',
         'cfgrib',
         'cdsapi',
-        'ecmwf-api-client'
+        'ecmwf-api-client',
+        'pandas',
+        'tqdm',
+        'requests',
     ],
     zip_safe=True,
     classifiers=[

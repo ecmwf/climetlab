@@ -7,7 +7,13 @@
 # does it submit to any jurisdiction.
 #
 
-from .drivers.magics import Driver as MagicsDriver
+# This is needed when running Sphinx on ReadTheDoc
+try:
+    from .drivers.magics import Driver
+
+except Exception:
+    from .drivers.missing import Driver
+
 from importlib import import_module
 
 try:
@@ -16,7 +22,7 @@ except Exception:
     def display(x):
         return x
 
-CURRENT_DRIVER = MagicsDriver()
+CURRENT_DRIVER = Driver()
 
 HELPERS = {
     'xarray.core.dataset.Dataset': 'xarray',
@@ -27,7 +33,7 @@ HELPERS = {
 
 def plot_map(data, *args, **kwargs):
     # This is a standalone plot, so we reset the driver
-    CURRENT_DRIVER = MagicsDriver(*args, **kwargs)
+    CURRENT_DRIVER = Driver(*args, **kwargs)
     if getattr(data, 'plot_map', None) is None:
 
         fullname = '.'.join([data.__class__.__module__, data.__class__.__qualname__])

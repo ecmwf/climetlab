@@ -13,10 +13,10 @@ from .datasets import load as load_dataset
 # This is needed when running Sphinx on ReadTheDoc
 try:
     from .plotting import plot_map
-except ModuleNotFoundError:
+except Exception:
     plot_map = None
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 import climetlab.source
 import climetlab.dataset
