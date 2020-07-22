@@ -43,34 +43,50 @@ Documentation
 
 **User Guide**
 
-* :doc:`howtos`
+* :doc:`guide/howtos`
+* :doc:`guide/datasets`
+* :doc:`guide/sources`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: User Guide
 
-   howtos
+   guide/howtos
+   guide/datasets
+   guide/sources
 
 **Reference**
 
-* :doc:`datasets`
-* :doc:`sources`
-* :doc:`contributing`
+* :doc:`reference/datasets`
+* :doc:`reference/sources`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Reference
 
-   datasets
-   sources
-   contributing
+   reference/datasets
+   reference/sources
+
+
+**Contributing**
+
+* :doc:`contributing/datasets`
+* :doc:`contributing/sources`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Reference
+
+   contributing/datasets
+   contributing/sources
 
 
 License
 -------
 
-xarray is available under the open source `Apache License`__.
+CliMetLab is available under the open source `Apache License`__.
 
 __ http://www.apache.org/licenses/LICENSE-2.0.html
