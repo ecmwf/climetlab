@@ -45,7 +45,9 @@ setuptools.setup(
         'numpy',
         'xarray',
         'netcdf4',
-        'cfgrib'
+        'cfgrib',
+        'cdsapi',
+        'ecmwf-api-client'
     ],
     zip_safe=True,
     classifiers=[
