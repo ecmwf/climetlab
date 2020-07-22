@@ -9,7 +9,12 @@
 
 from .sources import load as load_source
 from .datasets import load as load_dataset
-from .plotting import plot_map
+
+# This is needed when running Sphinx on ReadTheDoc
+try:
+    from .plotting import plot_map
+except ModuleNotFoundError:
+    plot_map = None
 
 __version__ = '0.0.1'
 
