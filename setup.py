@@ -26,7 +26,7 @@ def read(fname):
 version = None
 for line in read('climetlab/__init__.py').split('\n'):
     if line.startswith("__version__"):
-       version = line.split('=')[-1].strip()
+       version = line.split('=')[-1].strip()[1:-1]
 
 
 assert version
