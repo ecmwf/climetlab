@@ -16,17 +16,15 @@ import os.path
 import setuptools
 
 
-
-
-
 def read(fname):
     file_path = os.path.join(os.path.dirname(__file__), fname)
     return io.open(file_path, encoding='utf-8').read()
 
+
 version = None
 for line in read('climetlab/__init__.py').split('\n'):
     if line.startswith("__version__"):
-       version = line.split('=')[-1].strip()[1:-1]
+        version = line.split('=')[-1].strip()[1:-1]
 
 
 assert version
@@ -45,6 +43,9 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         'numpy',
+        'xarray',
+        'netcdf4',
+        'cfgrib'
     ],
     zip_safe=True,
     classifiers=[
