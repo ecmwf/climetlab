@@ -16,7 +16,7 @@ try:
 except ModuleNotFoundError:
     plot_map = None
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 import climetlab.source
 import climetlab.dataset
