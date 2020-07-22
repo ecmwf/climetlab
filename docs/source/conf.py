@@ -29,7 +29,7 @@ source_suffix = ".rst"
 master_doc = "index"
 pygments_style = "sphinx"
 html_theme_options = {"logo_only": True}
-html_logo = "_static/climetnet.png"
+html_logo = "logo.png"
 
 # -- Project information -----------------------------------------------------
 
