@@ -78,7 +78,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Reference
+   :caption: Contributing
 
    contributing/datasets
    contributing/sources

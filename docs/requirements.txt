@@ -1,2 +1,3 @@
 ipykernel
 nbsphinx
+sphinx-prompt

@@ -67,6 +67,7 @@ extensions = [
     'nbsphinx',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx-prompt',
     # 'climetlab.sphinxext.sources',
     # 'climetlab.sphinxext.datasets',
 ]
