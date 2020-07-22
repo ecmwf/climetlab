@@ -34,11 +34,52 @@ data analystic packages, such as Numpy_, Pandas_, Xarray_, SciPy_, Matplotlib_, 
 .. _PyTorch: https://pytorch.org
 
 
+Documentation
+-------------
+
+**Getting Started**
+
+* :doc:`overview`
+* :doc:`examples`
+
 .. toctree::
-    :maxdepth: 2
+   :maxdepth: 1
+   :hidden:
+   :caption: Getting Started
 
-    examples/index
+   overview
+   examples
+
+**User Guide**
+
+* :doc:`howtos`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: User Guide
+
+   howtos
+
+**Reference**
+
+* :doc:`datasets`
+* :doc:`sources`
+* :doc:`contributing`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Reference
+
+   datasets
+   sources
+   contributing
 
 
-.. :maxdepth: 2
-..    :caption: Contents:
+License
+-------
+
+xarray is available under the open source `Apache License`__.
+
+__ http://www.apache.org/licenses/LICENSE-2.0.html

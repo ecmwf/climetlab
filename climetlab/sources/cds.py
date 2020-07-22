@@ -16,6 +16,10 @@ from climetlab.core.caching import temp_file
 
 class CDSRetriever(FileSource):
 
+    sphinxdoc = '''
+    CDSRetriever
+    '''
+
     def __init__(self, dataset, **req):
         self.path = temp_file('CDSRetriever', req)
         if not os.path.exists(self.path):

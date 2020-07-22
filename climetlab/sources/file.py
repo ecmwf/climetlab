@@ -8,7 +8,6 @@
 #
 
 from .base import FileSource
-# from .readers import reader
 
 
 class File(FileSource):

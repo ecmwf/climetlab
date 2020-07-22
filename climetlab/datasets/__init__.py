@@ -11,9 +11,14 @@ import numpy as np
 from importlib import import_module
 
 
-def load(name, *args, **kwargs):
+def find(name, *args, **kwargs):
     dataset = import_module('.%s' % (name.replace('-', '_'),), package=__name__)
-    return dataset.dataset(*args, **kwargs)
+    return dataset.dataset
+
+
+def load(name, *args, **kwargs):
+    return find(name, *args, **kwargs)
+
 
 class Dataset:
 

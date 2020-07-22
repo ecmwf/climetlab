@@ -22,7 +22,7 @@ top = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)
 sys.path.insert(0, top)
 
 
-import climetlab
+#import climetlab
 
 # -- Project information -----------------------------------------------------
 
@@ -40,7 +40,8 @@ copyright = '%s, ECMWF' % (years,)
 
 
 # The full version, including alpha/beta/rc tags
-release = climetlab.__version__
+#release = climetlab.__version__
+release = '0.0.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -51,6 +52,10 @@ release = climetlab.__version__
 extensions = [
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'IPython.sphinxext.ipython_directive',
+    'IPython.sphinxext.ipython_console_highlighting',
+    # 'climetlab.sphinxext.sources',
+    # 'climetlab.sphinxext.datasets',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
