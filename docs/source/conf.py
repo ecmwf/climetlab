@@ -22,7 +22,7 @@ top = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)
 sys.path.insert(0, top)
 
 
-#import climetlab
+import climetlab
 
 # -- Project information -----------------------------------------------------
 
@@ -40,8 +40,7 @@ copyright = '%s, ECMWF' % (years,)
 
 
 # The full version, including alpha/beta/rc tags
-#release = climetlab.__version__
-release = '0.0.1'
+release = climetlab.__version__
 
 
 # -- General configuration ---------------------------------------------------
