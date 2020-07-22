@@ -24,6 +24,13 @@ sys.path.insert(0, top)
 
 import climetlab
 
+
+source_suffix = ".rst"
+master_doc = "index"
+pygments_style = "sphinx"
+html_theme_options = {"logo_only": True}
+html_logo = "_static/climetnet.png"
+
 # -- Project information -----------------------------------------------------
 
 project = 'CliMetLab'
@@ -49,8 +56,14 @@ release = climetlab.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    # "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
+    # "sphinx.ext.mathjax",
+    # "sphinx.ext.napoleon",
+
     'nbsphinx',
-    'sphinx.ext.mathjax',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
     # 'climetlab.sphinxext.sources',
@@ -64,6 +77,10 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
+
+
 
 
 # -- Options for HTML output -------------------------------------------------
