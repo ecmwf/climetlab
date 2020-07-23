@@ -17,7 +17,7 @@ class SourcesDirective(Directive):
     def run(self):
 
         from climetlab.sources import list_entries
-        return [nodes.paragraph(text=x.sphinxdoc) for x in list_entries()]
+        return [nodes.paragraph(text=x) for x in list_entries()]
 
 def setup(app):
 

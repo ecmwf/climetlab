@@ -34,10 +34,7 @@ def list_entries():
         if not n.endswith('.py'):
             continue
 
-        try:
-            result.append(lookup(n[:-3]))
-        except Exception:
-            pass
+        result.append(n[:-3])
 
     return result
 
