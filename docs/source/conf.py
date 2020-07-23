@@ -57,18 +57,18 @@ release = climetlab.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "sphinx.ext.autodoc",
+    "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     # "sphinx.ext.mathjax",
-    # "sphinx.ext.napoleon",
+    "sphinx.ext.napoleon",
 
     'nbsphinx',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx-prompt',
-    # 'climetlab.sphinxext.sources',
+    'climetlab.sphinxext.sources',
     # 'climetlab.sphinxext.datasets',
 ]
 

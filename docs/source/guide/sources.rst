@@ -17,8 +17,9 @@ ZipUrl
 
 x
 
-.. prompt:: python
-   ddd
-   ddd
+.. prompt:: python \
+
+   import climetlab as cml
+
 
 

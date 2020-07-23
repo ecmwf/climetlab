@@ -11,13 +11,13 @@ from importlib import import_module
 import os
 
 
-def find(name):
+def lookup(name):
     source = import_module('.%s' % (name.replace('-', '_'),), package=__name__)
     return source.source
 
 
 def load(name, *args, **kwargs):
-    return find(name)(*args, **kwargs)
+    return lookup(name)(*args, **kwargs)
 
 
 def list_entries():
@@ -35,7 +35,7 @@ def list_entries():
             continue
 
         try:
-            result.append(find(n[:-3]))
+            result.append(lookup(n[:-3]))
         except Exception:
             pass
 

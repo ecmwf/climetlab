@@ -11,13 +11,13 @@ import numpy as np
 from importlib import import_module
 
 
-def find(name):
+def lookup(name):
     dataset = import_module('.%s' % (name.replace('-', '_'),), package=__name__)
     return dataset.dataset
 
 
 def load(name, *args, **kwargs):
-    return find(name)(*args, **kwargs)
+    return lookup(name)(*args, **kwargs)
 
 
 class Dataset:

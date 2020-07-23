@@ -4,7 +4,7 @@ Data Sources
 Before
 
 
-.. sources:
+.. sources::
 
 
 After
