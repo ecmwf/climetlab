@@ -83,7 +83,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
-You can run this notebook in |Binder|_.
+You can run this notebook in |Binder|.
 .. |Binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/{{ docname }}
 """
