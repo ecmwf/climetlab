@@ -15,7 +15,13 @@ import os
 import numpy as np
 from functools import partial
 
-lib = ctypes.util.find_library("eccodes")
+lib = None
+
+try:
+    import ecmwflibs
+    lib = ecmwflibs.find("eccodes")
+except Exception:
+    lib = ctypes.util.find_library("eccodes")
 
 
 if lib is None:
