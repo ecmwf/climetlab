@@ -52,7 +52,7 @@ setuptools.setup(
         'tqdm',
         'requests',
         'eccodes-python',
-        'magics-python',
+        'magics',
         'ecmwflibs',
     ],
     zip_safe=True,
