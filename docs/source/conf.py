@@ -91,7 +91,7 @@ You can run this notebook in |Binder| or in |Colab|.
 
 
 .. |Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
-   :target: https://colab.research.google.com/github/googlecolab/ecmwf/climetlab/master/docs/source/{{ docname }}
+   :target: https://colab.research.google.com/github/googlecolab/ecmwf/climetlab/blob/master/docs/source/{{ docname }}
 
 """
 
