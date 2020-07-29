@@ -51,6 +51,9 @@ setuptools.setup(
         'pandas',
         'tqdm',
         'requests',
+        'eccodes-python',
+        'magics-python',
+        'ecmwflibs',
     ],
     zip_safe=True,
     classifiers=[
