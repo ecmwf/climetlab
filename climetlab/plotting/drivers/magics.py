@@ -52,6 +52,8 @@ class Driver:
         self._legend = None
         self._title = None
 
+        self.kwargs = dict(**kwargs)
+
         self.bounding_box(90, -180, -90, 180)
 
     def bounding_box(self, north, west, south, east):
@@ -92,6 +94,13 @@ class Driver:
 
         if format:
             self._format = format
+
+        if "projection" in self.kwargs:
+            projection = self.kwargs["projection"]
+            if isinstance(projection, str):
+                self._projection = macro.mmap(subpage_map_projection=projection)
+            else:
+                self._projection = macro.mmap(**projection)
 
         tmp = False
         if path is None:
