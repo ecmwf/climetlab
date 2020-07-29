@@ -1,2 +1,4 @@
 # These are the requirements for Binder
 matplotlib
+tensorflow
+tlz
