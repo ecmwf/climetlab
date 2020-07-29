@@ -87,7 +87,7 @@ nbsphinx_prolog = """
 You can run this notebook in |Binder|.
 
 .. |Binder| image:: https://mybinder.org/badge.svg
-   :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/{{ docname }}
+   :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/source/{{ docname }}
 
 """
 
