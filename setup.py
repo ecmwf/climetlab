@@ -56,6 +56,7 @@ setuptools.setup(
         'ecmwflibs',
         'pybufr',
         'pyodc',
+        'dask',
     ],
     zip_safe=True,
     classifiers=[
