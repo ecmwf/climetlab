@@ -1,0 +1,2 @@
+# These are the requirements for Binder
+matplotlib
