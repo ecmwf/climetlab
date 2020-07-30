@@ -84,7 +84,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
 
-You can run this notebook in |Binder| or in |Colab|.
+You can run this notebook in |Binder|, in |Colab| or in |Kaggle|.
 
 .. |Binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/source/{{ docname }}
@@ -94,6 +94,10 @@ You can run this notebook in |Binder| or in |Colab|.
 .. |Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
    :target: https://colab.research.google.com/github/ecmwf/climetlab/blob/master/docs/source/{{ docname }}
    :alt: Colab
+
+.. |Kaggle| image:: https://kaggle.com/static/images/open-in-kaggle.svg
+   :target: https://kaggle.com/kernels/welcome?src=https://github.com/ecmwf/climetlab/blob/master/docs/source/{{ docname }}
+   :alt: Kaggle
 
 """
 
