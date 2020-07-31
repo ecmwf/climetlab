@@ -7,11 +7,13 @@
 # does it submit to any jurisdiction.
 #
 
+import sys
+
 try:
     import codc as odc
-except Exception as e:
+except Exception:
     import pyodc as odc
-    print("Using pure Python odc decoder which is slow:", e)
+    print("Using pure Python odc decoder.", file=sys.stderr)
 
 
 class ODBReader:
@@ -20,4 +22,4 @@ class ODBReader:
         self.path = path
 
     def to_pandas(self):
-        return odc.read_odb_oneshot(self.path)
+        return odc.read_odb(self.path, single=True)
