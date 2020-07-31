@@ -9,9 +9,46 @@
 
 import ecmwfapi
 import os
+import sys
+import json
+import getpass
 
 from climetlab.core.caching import temp_file
 from .base import FileSource
+
+MESSAGE = """
+
+An API key is needed to access this dataset. Please visit
+https://apps.ecmwf.int/registration/ to register or sign-in
+at https://www.ecmwf.int/user/login/sso
+then visit https://api.ecmwf.int/v1/key/ to
+retrieve you API key.
+
+Once this is done, please copy the text that look like:
+
+{
+    "url"   : "https://api.ecmwf.int/v1",
+    "key"   : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "email" : "john.doe@example.com"
+}
+
+paste it the input field below and press <return>.
+
+"""
+
+
+def service(name):
+    try:
+        return ecmwfapi.ECMWFService(name)
+    except Exception as e:
+        if ".ecmwfapirc" in str(e):
+            print(str(e) + "\n" + MESSAGE, file=sys.stderr)
+            cfg = json.loads(getpass.getpass("ECMWF api configuration: "))
+            with open(os.path.expanduser("~/.ecmwfapirc"), "w") as f:
+                print(json.dumps(cfg, indent=4), file=f)
+            return ecmwfapi.ECMWFService(name)
+        else:
+            raise
 
 
 class MARSRetriever(FileSource):
@@ -19,7 +56,7 @@ class MARSRetriever(FileSource):
     def __init__(self, **req):
         self.path = temp_file('MARSRetriever', req)
         if not os.path.exists(self.path):
-            ecmwfapi.ECMWFService('mars').execute(req, self.path + '.tmp')
+            service('mars').execute(req, self.path + '.tmp')
             os.rename(self.path + '.tmp', self.path)
 
 
