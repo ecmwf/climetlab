@@ -9,6 +9,17 @@
 
 from . import DataSource
 from .readers import reader
+import getpass
+import sys
+import os
+
+ipython = False
+try:
+    from IPython.display import display
+    from IPython.display import Markdown
+    ipython = True
+except Exception:
+    pass
 
 
 class FileSource(DataSource):
@@ -41,3 +52,38 @@ class FileSource(DataSource):
 
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
+
+
+MD = """<div class='alert alert-block alert-warning'>
+{message}
+</div>
+"""
+class APIKeyPrompt:
+
+    def ask_user_and_save(self):
+        if ipython:
+            text = self.ask_user_markdown()
+        else:
+            text = self.ask_user_text()
+
+        try:
+            text = self.validate(text)
+        except Exception as e:
+            print("Invalid API key: %s" % (e,), file=sys.stderr)
+            return False
+
+        rcfile = os.path.expanduser(self.rcfile)
+        with open(rcfile, "w") as f:
+            print(text, file=f)
+
+        print("API key saved to '%s'" % (rcfile,), file=sys.stderr)
+
+        return True
+
+    def ask_user_text(self):
+        print(self.text_message, file=sys.stderr)
+        return getpass.getpass(self.prompt + ": ")
+
+    def ask_user_markdown(self):
+        display(Markdown(MD.format(message=self.markdown_message)))
+        return getpass.getpass(self.prompt + ": ")

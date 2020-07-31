@@ -9,15 +9,14 @@
 
 import ecmwfapi
 import os
-import sys
 import json
-import getpass
 
 from climetlab.core.caching import temp_file
-from .base import FileSource
+from .base import FileSource, APIKeyPrompt
 
-MESSAGE = """
+class MARSAPI(APIKeyPrompt):
 
+    text_message = """
 An API key is needed to access this dataset. Please visit
 https://apps.ecmwf.int/registration/ to register or sign-in
 at https://www.ecmwf.int/user/login/sso
@@ -32,9 +31,34 @@ Once this is done, please copy the text that look like:
     "email" : "john.doe@example.com"
 }
 
-paste it the input field below and press <return>.
-
+paste it the input field below and press ENTER.
 """
+
+    markdown_message = """
+An API key is needed to access this dataset. Please visit
+https://apps.ecmwf.int/registration/ to register or sign-in
+at https://www.ecmwf.int/user/login/sso
+then visit https://api.ecmwf.int/v1/key/ to
+retrieve you API key.
+
+Once this is done, please copy the text that look like:
+
+```javascript
+{
+    "url"   : "https://api.ecmwf.int/v1",
+    "key"   : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "email" : "john.doe@example.com"
+}
+```
+
+paste it the input field below and press *ENTER*.
+"""
+
+    rcfile = "~/.ecmwfapirc"
+    prompt = "ECMWF api configuration"
+
+    def validate(self, text):
+        return json.dumps(json.loads(text), indent=4)
 
 
 def service(name):
@@ -42,10 +66,7 @@ def service(name):
         return ecmwfapi.ECMWFService(name)
     except Exception as e:
         if ".ecmwfapirc" in str(e):
-            print(str(e) + "\n" + MESSAGE, file=sys.stderr)
-            cfg = json.loads(getpass.getpass("ECMWF api configuration: "))
-            with open(os.path.expanduser("~/.ecmwfapirc"), "w") as f:
-                print(json.dumps(cfg, indent=4), file=f)
+            MARSAPI().ask_user_and_save()
             return ecmwfapi.ECMWFService(name)
         else:
             raise
