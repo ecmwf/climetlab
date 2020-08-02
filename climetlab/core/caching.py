@@ -28,9 +28,9 @@ def update(m, x):
     m.update(str(x).encode('utf-8'))
 
 
-def temp_file(*args):
+def temp_file(*args, extension='.cache'):
     m = hashlib.sha256()
     update(m, args)
     # fd, path = tempfile.mkstemp()
     # os.close(fd)
-    return "%s/climetlab.%s" % (SETTINGS['cache_directory'], m.hexdigest(),)
+    return "%s/climetlab-%s%s" % (SETTINGS['cache_directory'], m.hexdigest(), extension)

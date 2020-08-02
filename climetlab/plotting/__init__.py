@@ -27,7 +27,8 @@ CURRENT_DRIVER = Driver()
 HELPERS = {
     'xarray.core.dataset.Dataset': 'xarray',
     'xarray.core.dataarray.DataArray': 'xarray',
-    'numpy.ndarray': 'ndarray'
+    'numpy.ndarray': 'ndarray',
+    'pandas.core.frame.DataFrame': 'pandas',
 }
 
 

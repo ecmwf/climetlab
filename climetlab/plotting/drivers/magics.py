@@ -85,6 +85,9 @@ class Driver:
                                    xarray_variable_name=variable,
                                    xarray_dimension_settings=dimension_settings)
 
+    def plot_geopoints(self, path):
+        self._data = macro.mgeo(geo_input_file_name=path)
+
     def show(self,
              path=None,
              width=None,

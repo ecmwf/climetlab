@@ -17,13 +17,17 @@ from tqdm import tqdm
 class Url(FileSource):
 
     def __init__(self, url):
-        self.path = temp_file("Url", url)
+        _, extension = os.path.splitext(url)
+        self.path = temp_file("Url", url, extension=extension)
 
         if not os.path.exists(self.path):
             print("Downloading", url)
             r = requests.head(url)
             r.raise_for_status()
-            size = int(r.headers['content-length'])
+            try:
+                size = int(r.headers['content-length'])
+            except Exception:
+                size = None
             r = requests.get(url, stream=True)
             r.raise_for_status()
             total = 0
