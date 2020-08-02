@@ -54,6 +54,7 @@ class FileSource(DataSource):
         return self._reader.to_metview(*args, **kwargs)
 
 
+# See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
 MD = """<div class='alert alert-block alert-warning'>
 {message}
 </div>
