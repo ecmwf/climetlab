@@ -227,6 +227,9 @@ class NetCDFReader:
                     coordinates.append(LevelCoordinate(c, coord in info))
                     use = True
 
+                if axis in ('X', 'Y'):
+                    use = True
+
                 if not use:
                     coordinates.append(OtherCoordinate(c, coord in info))
 

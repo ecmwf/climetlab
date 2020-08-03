@@ -88,6 +88,9 @@ class Driver:
     def plot_geopoints(self, path):
         self._data = macro.mgeo(geo_input_file_name=path)
 
+    def contouring(self, contouring):
+        self._contour = macro.mcont(contouring)
+
     def show(self,
              path=None,
              width=None,
