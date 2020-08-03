@@ -20,7 +20,7 @@ lib = None
 try:
     import ecmwflibs
     lib = ecmwflibs.find("eccodes")
-except Exception:
+except ModuleNotFoundError:
     lib = ctypes.util.find_library("eccodes")
 
 

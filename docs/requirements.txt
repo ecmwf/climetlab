@@ -2,3 +2,4 @@
 ipykernel
 nbsphinx
 sphinx-prompt
+sphinx_rtd_theme
