@@ -89,9 +89,10 @@ class Driver:
         self._data = macro.mgeo(geo_input_file_name=path)
         self._contour = macro.msymb(legend="off",
                                     symbol_type="marker",
-                                    symbol_colour="evergreen",
-                                    symbol_height=1.,
-                                    symbol_marker_index=20)
+                                    symbol_colour="red",
+                                    symbol_height=0.08,
+                                    # symbol_marker_index=20
+                                    )
 
     def contouring(self, contouring):
         self._contour = macro.mcont(contouring)

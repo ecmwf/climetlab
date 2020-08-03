@@ -8,6 +8,7 @@
 #
 
 import pandas as pd
+import os
 
 from . import Dataset
 from climetlab import load_source
@@ -22,7 +23,8 @@ class MeteonetGroundStations(Dataset):
 
         URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples/ground_stations"
         url = "{url}/{domain}_{date}.csv".format(url=URL, domain=domain, date=date)
-        self._pandas = pd.read_csv(load_source("url", url).path, parse_dates=[4], infer_datetime_format=True)
+        self.path = load_source("url", url).path
+        self._pandas = pd.read_csv(self.path, parse_dates=[4], infer_datetime_format=True)
 
     def to_pandas(self):
         return self._pandas
@@ -39,7 +41,12 @@ class MeteonetGroundStations(Dataset):
         driver.bounding_box(north, west,
                             south, east)
 
-        with open('x.geo', 'w') as f:
+        try:
+            os.unlink(self.path + '.geo')
+        except Exception:
+            pass
+
+        with open(self.path + '.geo', 'w') as f:
             print("#GEO", file=f)
             print("#FORMAT XYV", file=f)
             print("min: {}".format(min(vals)), file=f)
@@ -49,7 +56,7 @@ class MeteonetGroundStations(Dataset):
             for lat, lon, v in zip(lats, lons, vals):
                 print(lon, lat, v, file=f)
 
-        driver.plot_geopoints('x.geo')
+        driver.plot_geopoints(self.path + '.geo')
         # driver.plot_values(latitudes=lats,
         #                    longitudes=lons,
         #                    values=vals)

@@ -9,6 +9,7 @@
 
 import numpy as np
 import xarray as xr
+import os
 
 from . import Dataset
 from climetlab import load_source
@@ -89,6 +90,11 @@ class MeteonetRadar(Dataset):
         self._xarray = ds
 
         self.path = path + ".nc"
+
+        try:
+            os.unlink(self.path)
+        except Exception:
+            pass
 
         ds.to_netcdf(self.path)
         self.source = load_source("file", path + ".nc")
