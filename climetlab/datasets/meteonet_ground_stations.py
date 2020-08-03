@@ -27,5 +27,35 @@ class MeteonetGroundStations(Dataset):
     def to_pandas(self):
         return self._pandas
 
+    def plot_map(self, driver):
+
+        north, east = self._pandas[['lat', 'lon']].max()
+        south, west = self._pandas[['lat', 'lon']].min()
+
+        lats = self._pandas['lat'].to_numpy()
+        lons = self._pandas['lon'].to_numpy()
+        vals = self._pandas['t'].to_numpy()
+
+        driver.bounding_box(north, west,
+                            south, east)
+
+        with open('x.geo', 'w') as f:
+            print("#GEO", file=f)
+            print("#FORMAT", file=f)
+            print("x/long  y/lat  value", file=f)
+            print("#DATA", file=f)
+            for lat, lon, v in zip(lats, lons, vals):
+                print(lon, lat, v, file=f)
+
+        driver.plot_geopoints('x.geo')
+        # driver.plot_values(latitudes=lats,
+        #                    longitudes=lons,
+        #                    values=vals)
+
+        # driver.contouring({})
+        # driver.contouring(dict(contour_grid_value_plot=True,
+        #                        contour=False,
+        #                        contour_grid_value_plot_type='marker'))
+
 
 dataset = MeteonetGroundStations

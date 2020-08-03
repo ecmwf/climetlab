@@ -87,9 +87,22 @@ class Driver:
 
     def plot_geopoints(self, path):
         self._data = macro.mgeo(geo_input_file_name=path)
+        self._contour = macro.msymb(legend="off",
+                                    symbol_type="marker",
+                                    symbol_colour="evergreen",
+                                    symbol_height=1.,
+                                    symbol_marker_index=20)
 
     def contouring(self, contouring):
         self._contour = macro.mcont(contouring)
+
+    def plot_values(self, latitudes, longitudes, values, metadata={}):
+        self._data = macro.minput(input_type='geographical',
+                                  input_values=list(values),
+                                  input_latitudes_list=list(latitudes),
+                                  input_longitudes_list=list(longitudes),
+                                  input_metadata=metadata,
+                                  )
 
     def show(self,
              path=None,
