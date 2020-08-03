@@ -1,3 +1,9 @@
 .wy-side-nav-search {
   background-color: #5d89bb;
 }
+
+/*There is a clash between xarray notebook styles and readthedoc*/
+
+.xr-attrs dt {
+    all: revert;
+}
