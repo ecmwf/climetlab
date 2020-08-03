@@ -27,11 +27,15 @@ class MeteonetRadar(Dataset):
     See https://github.com/meteofrance/meteonet
     """
 
-    def __init__(self, domain='NW', parameter='rainfall', year=2016, month=8, part=3):
+    def __init__(self, domain='NW', variable='rainfall', year=2016, month=8, part=3):
 
         URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples/radar"
 
-        url = "{url}/radar_coords_{domain}.npz".format(url=URL, domain=domain)
+        url = "{url}/radar_coords_{domain}.npz".format(
+            url=URL,
+            domain=domain
+        )
+
         coords = np.load(load_source("url", url).path, allow_pickle=True)
 
         resolution = 0.01
@@ -39,10 +43,10 @@ class MeteonetRadar(Dataset):
         lats = coords['lats'] - resolution / 2
         lons = coords['lons'] + resolution / 2
 
-        url = "{url}/{parameter}_{domain}_{year}_{month:02d}.{part}.npz".format(
+        url = "{url}/{variable}_{domain}_{year}_{month:02d}.{part}.npz".format(
             url=URL,
             domain=domain,
-            parameter=parameter,
+            variable=variable,
             year=year,
             month=month,
             part=part,
@@ -56,11 +60,11 @@ class MeteonetRadar(Dataset):
         # print(len(dates))
         # print(data.shape)
 
-        self.variable = parameter
+        self.variable = variable
 
         ds = xr.Dataset(
             {
-                parameter: (["time", "y", "x", ], data),
+                variable: (["time", "y", "x", ], data),
                 "x": (["x"], range(0, data.shape[2])),
                 "y": (["y"], range(0, data.shape[1])),
             },
