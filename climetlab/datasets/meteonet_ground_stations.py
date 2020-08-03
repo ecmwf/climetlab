@@ -41,7 +41,9 @@ class MeteonetGroundStations(Dataset):
 
         with open('x.geo', 'w') as f:
             print("#GEO", file=f)
-            print("#FORMAT", file=f)
+            print("#FORMAT XYV", file=f)
+            print("min: {}".format(min(vals)), file=f)
+            print("max: {}".format(max(vals)), file=f)
             print("x/long  y/lat  value", file=f)
             print("#DATA", file=f)
             for lat, lon, v in zip(lats, lons, vals):
