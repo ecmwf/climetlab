@@ -91,7 +91,7 @@ class Driver:
                                     symbol_type="marker",
                                     symbol_colour="red",
                                     symbol_height=0.08,
-                                    # symbol_marker_index=20
+                                    symbol_marker_index=15,  # Circle
                                     )
 
     def contouring(self, contouring):
