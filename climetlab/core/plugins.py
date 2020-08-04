@@ -14,12 +14,14 @@ CACHE = {}
 
 
 def _find_plugin(directory, name):
+    n = len(directory)
     for path, dirs, files in os.walk(directory):
-        path = path[len(directory) :]
+        path = path[n:]
         for f in files:
             if f.endswith(".py"):
                 p = os.path.join(path, f[:-3])
-                # print(name, p[1:].replace('/', '_'))
+                if p[0] != "/":
+                    p = "/" + p
                 if p[1:].replace("/", "-").replace("_", "-") == name:
                     return p.replace("/", ".")
     raise Exception("Cannot find plugin '%s' in %s" % (name, directory))

@@ -13,3 +13,7 @@ from climetlab import Dataset
 class Meteonet(Dataset):
 
     URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples"
+
+    home_page = "https://meteofrance.github.io/meteonet/"
+
+    licence = "https://meteonet.umr-cnrm.fr/dataset/LICENCE.md"
