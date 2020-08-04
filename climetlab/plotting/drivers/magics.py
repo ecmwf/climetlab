@@ -10,6 +10,8 @@
 import os
 import tempfile
 
+from climetlab.data import load as load_data
+
 # Examples
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
 
@@ -131,6 +133,22 @@ class Driver:
                 self._projection = macro.mmap(subpage_map_projection=projection)
             else:
                 self._projection = macro.mmap(**projection)
+
+        # if "contouring" in self.kwargs:
+        #     contouring = self.kwargs["contouring"]
+        #     if isinstance(contouring, str):
+        #         assert False, contouring
+        #         self._contour = macro.mmap(subpage_map_contour=contouring)
+        #     else:
+        #         self._contour = macro.mcont(**contouring)
+
+        if "style" in self.kwargs:
+            style = self.kwargs["style"]
+            if isinstance(style, str):
+                data = load_data("styles", style)
+                self._contour = getattr(macro, data["magics"])(**data["style"])
+            else:
+                assert False
 
         tmp = False
         if path is None:

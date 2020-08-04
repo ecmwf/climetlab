@@ -15,7 +15,10 @@ from tqdm import tqdm
 
 
 class Url(FileSource):
-    def __init__(self, url):
+    def __init__(self, url, **kwargs):
+
+        super().__init__(**kwargs)
+
         _, extension = os.path.splitext(url)
         self.path = temp_file("Url", url, extension=extension)
 

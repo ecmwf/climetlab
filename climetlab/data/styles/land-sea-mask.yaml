@@ -1,0 +1,15 @@
+---
+magics: mcont
+match: {}
+style:
+  contour: 'off'
+  contour_grid_value_marker_colour: brown
+  contour_grid_value_marker_height: 0.1
+  contour_grid_value_marker_index: 5
+  contour_grid_value_max: 1.2
+  contour_grid_value_min: 0.5
+  contour_grid_value_plot: 'on'
+  contour_grid_value_plot_type: marker
+  contour_hilo: 'off'
+  contour_label: 'off'
+  contour_legend_text: Land grid points (lsm > 0.5)

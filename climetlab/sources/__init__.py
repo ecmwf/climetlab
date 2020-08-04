@@ -40,6 +40,8 @@ def list_entries():
 
 
 class DataSource:
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
 
     sphinxdoc = """
         No help
