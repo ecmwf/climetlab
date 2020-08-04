@@ -26,6 +26,7 @@ Once this is done, please paste your key in the input field below
 and press *ENTER*.
 """
 
+
 class CDSAPI(APIKeyPrompt):
 
     text_message = MESSAGE
@@ -36,7 +37,7 @@ class CDSAPI(APIKeyPrompt):
     prompt = "CDS api key"
 
     def validate(self, text):
-        uid, key = text.strip().split(':')
+        uid, key = text.strip().split(":")
         return APIRC.format(key="%s:%s" % (uid, key))
 
 
@@ -53,15 +54,15 @@ def client():
 
 class CDSRetriever(FileSource):
 
-    sphinxdoc = '''
+    sphinxdoc = """
     CDSRetriever
-    '''
+    """
 
     def __init__(self, dataset, **req):
-        self.path = temp_file('CDSRetriever', req)
+        self.path = temp_file("CDSRetriever", req)
         if not os.path.exists(self.path):
-            client().retrieve(dataset, req, self.path + '.tmp')
-            os.rename(self.path + '.tmp', self.path)
+            client().retrieve(dataset, req, self.path + ".tmp")
+            os.rename(self.path + ".tmp", self.path)
 
 
 source = CDSRetriever

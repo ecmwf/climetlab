@@ -11,7 +11,8 @@ import numpy as np
 import xarray as xr
 import os
 
-from . import Dataset
+from . import Meteonet
+from climetlab.utils import download_and_cache
 from climetlab import load_source
 
 
@@ -23,29 +24,26 @@ reflectivity_old
 """
 
 
-class MeteonetRadar(Dataset):
+class MeteonetRadar(Meteonet):
     """
     See https://github.com/meteofrance/meteonet
     """
 
-    def __init__(self, domain='NW', variable='rainfall', year=2016, month=8, part=3):
+    def __init__(self, domain="NW", variable="rainfall", year=2016, month=8, part=3):
 
-        URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples/radar"
-
-        url = "{url}/radar_coords_{domain}.npz".format(
-            url=URL,
-            domain=domain
+        url = "{url}/radar/radar_coords_{domain}.npz".format(
+            url=self.URL, domain=domain
         )
 
-        coords = np.load(load_source("url", url).path, allow_pickle=True)
+        coords = np.load(download_and_cache(url), allow_pickle=True)
 
         resolution = 0.01
 
-        lats = coords['lats'] - resolution / 2
-        lons = coords['lons'] + resolution / 2
+        lats = coords["lats"] - resolution / 2
+        lons = coords["lons"] + resolution / 2
 
-        url = "{url}/{variable}_{domain}_{year}_{month:02d}.{part}.npz".format(
-            url=URL,
+        url = "{url}/radar/{variable}_{domain}_{year}_{month:02d}.{part}.npz".format(
+            url=self.URL,
             domain=domain,
             variable=variable,
             year=year,
@@ -53,19 +51,17 @@ class MeteonetRadar(Dataset):
             part=part,
         )
 
-        path = load_source("url", url).path
+        path = download_and_cache(url)
         content = np.load(path, allow_pickle=True)
-        data = content['data']
-        times = content['dates']
+        data = content["data"]
+        times = content["dates"]
         # missing = content['miss_dates']
-        # print(len(dates))
-        # print(data.shape)
 
         self.variable = variable
 
         ds = xr.Dataset(
             {
-                variable: (["time", "y", "x", ], data),
+                variable: (["time", "y", "x"], data),
                 "x": (["x"], range(0, data.shape[2])),
                 "y": (["y"], range(0, data.shape[1])),
             },
@@ -103,15 +99,18 @@ class MeteonetRadar(Dataset):
         return self._xarray
 
     def plot_map(self, driver):
-        driver.bounding_box(self.north, self.west,
-                            self.south, self.east)
+        driver.bounding_box(self.north, self.west, self.south, self.east)
 
         dimensions = ["time:0"]
 
-        driver.plot_netcdf(dict(netcdf_filename=self.path,
-                                netcdf_value_variable=self.variable,
-                                netcdf_dimension_setting=dimensions,
-                                netcdf_dimension_setting_method='index'))
+        driver.plot_netcdf(
+            dict(
+                netcdf_filename=self.path,
+                netcdf_value_variable=self.variable,
+                netcdf_dimension_setting=dimensions,
+                netcdf_dimension_setting_method="index",
+            )
+        )
 
         driver.contouring(self.contouring)
 
@@ -120,17 +119,56 @@ class MeteonetRadar(Dataset):
         return dict(
             contour_shade_colour_method="list",
             # contour_shade_method = "area_fill",
-            contour_shade_technique='grid_shading',
+            contour_shade_technique="grid_shading",
             contour_shade="on",
             contour_hilo="off",
             contour="off",
             contour_highlight="off",
             contour_label="off",
-            contour_shade_colour_list=['#C0C0C0',
-                                       'rgba(0,0,0,0)', '#483D8B', '#0000cd', '#1E90FF',
-                                       '#87ceeb', 'olive', '#3cb371', 'cyan', '#00FF00', 'yellow',
-                                       'khaki', 'burlywood', 'orange', 'brown', 'pink', 'red', 'plum'],
-            contour_level_list=[float(x) for x in [-1, 0, 2, 4, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 75]],
+            contour_shade_colour_list=[
+                "#C0C0C0",
+                "rgba(0,0,0,0)",
+                "#483D8B",
+                "#0000cd",
+                "#1E90FF",
+                "#87ceeb",
+                "olive",
+                "#3cb371",
+                "cyan",
+                "#00FF00",
+                "yellow",
+                "khaki",
+                "burlywood",
+                "orange",
+                "brown",
+                "pink",
+                "red",
+                "plum",
+            ],
+            contour_level_list=[
+                float(x)
+                for x in [
+                    -1,
+                    0,
+                    2,
+                    4,
+                    6,
+                    8,
+                    10,
+                    15,
+                    20,
+                    25,
+                    30,
+                    35,
+                    40,
+                    45,
+                    50,
+                    55,
+                    60,
+                    65,
+                    75,
+                ]
+            ],
             #                contour_shade_min_level=0.5
         )
 

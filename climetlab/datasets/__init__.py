@@ -9,10 +9,13 @@
 
 import numpy as np
 from importlib import import_module
+from climetlab.core.plugins import find_plugin
+import os
 
 
 def lookup(name):
-    dataset = import_module('.%s' % (name.replace('-', '_'),), package=__name__)
+    plugin = find_plugin(os.path.dirname(__file__), name)
+    dataset = import_module(plugin, package=__name__)
     return dataset.dataset
 
 

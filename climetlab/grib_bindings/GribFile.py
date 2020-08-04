@@ -7,10 +7,16 @@
 # does it submit to any jurisdiction.
 #
 
-from .bindings import grib_file_open, grib_handle_delete, grib_get, grib_values, GribError
+from .bindings import (
+    grib_file_open,
+    grib_handle_delete,
+    grib_get,
+    grib_values,
+    GribError,
+)
+
 
 class GribField:
-
     def __init__(self, handle, path, offset):
         self._delete = grib_handle_delete
         self.handle = handle
@@ -22,7 +28,7 @@ class GribField:
 
     def get(self, name):
         try:
-            if name == 'values':
+            if name == "values":
                 return grib_values(self.handle)
             return grib_get(self.handle, name)
         except GribError as e:
@@ -32,7 +38,6 @@ class GribField:
 
 
 class GribFile:
-
     def __init__(self, path):
         self.path = path
         self.file = grib_file_open(path)

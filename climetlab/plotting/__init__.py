@@ -19,30 +19,32 @@ from importlib import import_module
 try:
     from IPython.display import display
 except Exception:
+
     def display(x):
         return x
+
 
 CURRENT_DRIVER = Driver()
 
 HELPERS = {
-    'xarray.core.dataset.Dataset': 'xarray',
-    'xarray.core.dataarray.DataArray': 'xarray',
-    'numpy.ndarray': 'ndarray',
-    'pandas.core.frame.DataFrame': 'pandas',
+    "xarray.core.dataset.Dataset": "xarray",
+    "xarray.core.dataarray.DataArray": "xarray",
+    "numpy.ndarray": "ndarray",
+    "pandas.core.frame.DataFrame": "pandas",
 }
 
 
 def plot_map(data, *args, **kwargs):
     # This is a standalone plot, so we reset the driver
     CURRENT_DRIVER = Driver(*args, **kwargs)
-    if getattr(data, 'plot_map', None) is None:
+    if getattr(data, "plot_map", None) is None:
 
-        fullname = '.'.join([data.__class__.__module__, data.__class__.__qualname__])
+        fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 
         name = HELPERS.get(fullname)
 
         if name is not None:
-            helper = import_module('.helpers.%s' % (name,), package=__name__)
+            helper = import_module(".helpers.%s" % (name,), package=__name__)
             data = helper.helper(data, *args, **kwargs)
         else:
             raise ValueError("Cannot plot %s" % (fullname,))

@@ -7,14 +7,9 @@
 # does it submit to any jurisdiction.
 #
 
-"""
-ipython is not None when running a notebook
-"""
+from climetlab import Dataset
 
-ipython = None
-try:
-    from IPython import get_ipython
 
-    ipython = get_ipython()
-except Exception:
-    pass
+class Meteonet(Dataset):
+
+    URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples"

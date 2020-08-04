@@ -13,11 +13,11 @@ try:
     import codc as odc
 except Exception:
     import pyodc as odc
+
     print("Using pure Python odc decoder.", file=sys.stderr)
 
 
 class ODBReader:
-
     def __init__(self, path):
         self.path = path
 

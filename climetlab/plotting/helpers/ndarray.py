@@ -7,8 +7,8 @@
 # does it submit to any jurisdiction.
 #
 
-class NumpyArrayPlotter:
 
+class NumpyArrayPlotter:
     def __init__(self, data, field, **kwargs):
         self.data = data
         self.field = field
@@ -16,18 +16,21 @@ class NumpyArrayPlotter:
     def plot_map(self, driver):
         grid = self.field.grid_definition()
 
-        driver.bounding_box(north=grid['north'],
-                            south=grid['south'],
-                            west=grid['west'],
-                            east=grid['east'])
+        driver.bounding_box(
+            north=grid["north"],
+            south=grid["south"],
+            west=grid["west"],
+            east=grid["east"],
+        )
 
-        driver.plot_numpy(self.data,
-                          north=grid['north'],
-                          west=grid['west'],
-                          south_north_increment=grid['south_north_increment'],
-                          west_east_increment=grid['west_east_increment'],
-                          metadata=self.field.metadata(),
-                          )
+        driver.plot_numpy(
+            self.data,
+            north=grid["north"],
+            west=grid["west"],
+            south_north_increment=grid["south_north_increment"],
+            west_east_increment=grid["west_east_increment"],
+            metadata=self.field.metadata(),
+        )
 
 
 helper = NumpyArrayPlotter

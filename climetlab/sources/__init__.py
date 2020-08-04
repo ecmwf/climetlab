@@ -12,7 +12,7 @@ import os
 
 
 def lookup(name):
-    source = import_module('.%s' % (name.replace('-', '_'),), package=__name__)
+    source = import_module(".%s" % (name.replace("-", "_"),), package=__name__)
     return source.source
 
 
@@ -25,13 +25,13 @@ def list_entries():
     result = []
 
     for n in os.listdir(here):
-        if n.startswith('.'):
+        if n.startswith("."):
             continue
 
-        if n.startswith('_'):
+        if n.startswith("_"):
             continue
 
-        if not n.endswith('.py'):
+        if not n.endswith(".py"):
             continue
 
         result.append(n[:-3])
@@ -41,9 +41,9 @@ def list_entries():
 
 class DataSource:
 
-    sphinxdoc = '''
+    sphinxdoc = """
         No help
-    '''
+    """
 
     # def __iter__(self):
     #     raise NotImplementedError("%r: method __iter__() not implemented" % (self.__class__.__name__,))

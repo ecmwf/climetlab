@@ -8,20 +8,21 @@
 #
 
 
-from . import Dataset
+from . import Meteonet
 from climetlab import load_source
 
 
-class MeteonetWeatherModels(Dataset):
+class MeteonetWeatherModels(Meteonet):
     """
     See https://github.com/meteofrance/meteonet
     """
 
-    def __init__(self, model='arome', variable='2m', domain='NW', date='20180501', time='0000'):
+    def __init__(
+        self, model="arome", variable="2m", domain="NW", date="20180501", time="0000"
+    ):
 
-        URL = "https://github.com/meteofrance/meteonet/raw/master/data_samples/weather_models"
-        url = "{url}/{model}_{variable}_{domain}_{date}{time}00.grib".format(
-            url=URL,
+        url = "{url}/weather_models/{model}_{variable}_{domain}_{date}{time}00.grib".format(
+            url=self.URL,
             variable=variable,
             model=model,
             domain=domain,

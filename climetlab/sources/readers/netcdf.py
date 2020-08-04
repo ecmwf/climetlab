@@ -27,13 +27,13 @@ def as_level(self, level):
         return int(n)
     return n
 
-class Slice:
 
+class Slice:
     def __init__(self, name, value, index, is_dimension, is_info):
         self.name = name
         self.index = index
         self.value = value
-        self.is_dimension = not is_info,
+        self.is_dimension = (not is_info,)
         self.is_info = is_info
 
     def __repr__(self):
@@ -45,7 +45,6 @@ class TimeSlice(Slice):
 
 
 class Coordinate:
-
     def __init__(self, variable, info):
         self.variable = variable
         # We only support 1D coordinate for now
@@ -59,10 +58,20 @@ class Coordinate:
             self.values = [self.convert(t) for t in variable.values][:10]
 
     def make_slice(self, value):
-        return self.slice_class(self.variable.name, value, self.values.index(value), self.is_dimension, self.is_info)
+        return self.slice_class(
+            self.variable.name,
+            value,
+            self.values.index(value),
+            self.is_dimension,
+            self.is_info,
+        )
 
     def __repr__(self):
-        return "%s[name=%s,values=%s]" % (self.__class__.__name__, self.variable.name, len(self.values))
+        return "%s[name=%s,values=%s]" % (
+            self.__class__.__name__,
+            self.variable.name,
+            len(self.values),
+        )
 
 
 class TimeCoordinate(Coordinate):
@@ -86,7 +95,6 @@ class OtherCoordinate(Coordinate):
 
 
 class NetCDFField:
-
     def __init__(self, path, ds, variable, slices):
 
         dims = ds[variable].dims
@@ -105,9 +113,11 @@ class NetCDFField:
 
         self.name = self.variable
 
-        self.title = getattr(ds[self.variable], 'long_name',
-                             getattr(ds[self.variable], 'standard_name',
-                                     self.variable))
+        self.title = getattr(
+            ds[self.variable],
+            "long_name",
+            getattr(ds[self.variable], "standard_name", self.variable),
+        )
 
         self.time = None
 
@@ -117,35 +127,37 @@ class NetCDFField:
                 self.time = s.value
 
             if s.is_info:
-                self.title += ' (' + s.name + '=' + str(s.value) + ')'
+                self.title += " (" + s.name + "=" + str(s.value) + ")"
 
     def plot_map(self, driver):
 
         dimensions = ["%s:%s" % (s.name, s.index) for s in self.slices]
 
         if dimensions:
-            params = dict(netcdf_filename=self.path,
-                          netcdf_value_variable=self.variable,
-                          netcdf_dimension_setting=dimensions,
-                          netcdf_dimension_setting_method='index')
+            params = dict(
+                netcdf_filename=self.path,
+                netcdf_value_variable=self.variable,
+                netcdf_dimension_setting=dimensions,
+                netcdf_dimension_setting_method="index",
+            )
         else:
-            params = dict(netcdf_filename=self.path,
-                          netcdf_value_variable=self.variable)
+            params = dict(
+                netcdf_filename=self.path, netcdf_value_variable=self.variable
+            )
 
         # params['netcdf_field_automatic_scaling'] = 'off'
 
-        driver.bounding_box(north=self.north,
-                            south=self.south,
-                            west=self.west,
-                            east=self.east)
+        driver.bounding_box(
+            north=self.north, south=self.south, west=self.west, east=self.east
+        )
 
         driver.plot_netcdf(params)
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
 
-class NetCDFReader:
 
+class NetCDFReader:
     def __init__(self, path):
         self.path = path
         self.fields = None
@@ -170,7 +182,9 @@ class NetCDFReader:
         return self.fields[n]
 
     def get_fields(self):
-        with closing(xr.open_mfdataset(self.path, combine='by_coords')) as ds:  # or nested
+        with closing(
+            xr.open_mfdataset(self.path, combine="by_coords")
+        ) as ds:  # or nested
             return self._get_fields(ds)
 
     def _get_fields(self, ds):
@@ -182,8 +196,8 @@ class NetCDFReader:
 
         for name in ds.data_vars:
             v = ds[name]
-            skip.update([c for c in getattr(v, 'coordinates', '').split(' ')])
-            skip.update([c for c in getattr(v, 'bounds', '').split(' ')])
+            skip.update([c for c in getattr(v, "coordinates", "").split(" ")])
+            skip.update([c for c in getattr(v, "bounds", "").split(" ")])
 
         for name in ds.data_vars:
 
@@ -203,31 +217,39 @@ class NetCDFReader:
 
                 # self.log.info("COORD %s %s %s %s", coord, type(coord), hasattr(c, 'calendar'), c)
 
-                standard_name = getattr(c, 'standard_name', None)
-                axis = getattr(c, 'axis', None)
-                long_name = getattr(c, 'long_name', None)
+                standard_name = getattr(c, "standard_name", None)
+                axis = getattr(c, "axis", None)
+                long_name = getattr(c, "long_name", None)
 
                 use = False
 
-                if standard_name in ('longitude', 'projection_x_coordinate') or (long_name == 'longitude'):
+                if standard_name in ("longitude", "projection_x_coordinate") or (
+                    long_name == "longitude"
+                ):
                     has_lon = True
                     use = True
 
-                if standard_name in ('latitude', 'projection_y_coordinate') or (long_name == 'latitude'):
+                if standard_name in ("latitude", "projection_y_coordinate") or (
+                    long_name == "latitude"
+                ):
                     has_lat = True
                     use = True
 
                 # Of course, not every one sets the standard_name
-                if standard_name in ('time', 'forecast_reference_time') or axis == 'T':
+                if standard_name in ("time", "forecast_reference_time") or axis == "T":
                     coordinates.append(TimeCoordinate(c, coord in info))
                     use = True
 
                 # TODO: Support other level types
-                if standard_name in ('air_pressure', 'model_level_number', 'altitude'):  # or axis == 'Z':
+                if standard_name in (
+                    "air_pressure",
+                    "model_level_number",
+                    "altitude",
+                ):  # or axis == 'Z':
                     coordinates.append(LevelCoordinate(c, coord in info))
                     use = True
 
-                if axis in ('X', 'Y'):
+                if axis in ("X", "Y"):
                     use = True
 
                 if not use:
@@ -252,4 +274,5 @@ class NetCDFReader:
 
     def to_xarray(self):
         import xarray as xr
+
         return xr.open_dataset(self.path)

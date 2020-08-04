@@ -17,6 +17,7 @@ ipython = False
 try:
     from IPython.display import display
     from IPython.display import Markdown
+
     ipython = True
 except Exception:
     pass
@@ -59,8 +60,9 @@ MD = """<div class='alert alert-block alert-warning'>
 {message}
 </div>
 """
-class APIKeyPrompt:
 
+
+class APIKeyPrompt:
     def ask_user_and_save(self):
         if ipython:
             text = self.ask_user_markdown()

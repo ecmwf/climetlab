@@ -11,7 +11,6 @@ import climetlab
 
 
 def __getattr__(name):
-
     def wrapped(*args, **kwargs):
         return climetlab.load_dataset(name, *args, **kwargs)
 

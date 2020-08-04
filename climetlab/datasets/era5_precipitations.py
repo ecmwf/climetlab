@@ -9,10 +9,10 @@
 
 from .era5_single_levels import Era5SingleLevels
 
-class Era5Precipitations(Era5SingleLevels):
 
+class Era5Precipitations(Era5SingleLevels):
     def __init__(self, *args, **kargs):
-        super().__init__('tp', *args, **kargs)
+        super().__init__("tp", *args, **kargs)
 
 
 dataset = Era5Precipitations

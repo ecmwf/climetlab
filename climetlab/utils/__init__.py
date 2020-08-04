@@ -6,3 +6,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 #
+
+from climetlab import load_source
+
+
+def download_and_cache(url):
+    return load_source("url", url).path

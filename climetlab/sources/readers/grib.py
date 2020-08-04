@@ -31,49 +31,53 @@ except AttributeError:  # eccodes not installed
 
 
 class GribField:
-
     def __init__(self, handle, path):
         self.handle = handle
         self.path = path
 
     @property
     def values(self):
-        return self.handle.get('values')
+        return self.handle.get("values")
 
     def plot_map(self, driver):
-        driver.bounding_box(north=self.handle.get('latitudeOfFirstGridPointInDegrees'),
-                            south=self.handle.get('latitudeOfLastGridPointInDegrees'),
-                            west=self.handle.get('longitudeOfFirstGridPointInDegrees'),
-                            east=self.handle.get('longitudeOfLastGridPointInDegrees'))
-        driver.plot_grib(self.path, self.handle.get('offset'))
+        driver.bounding_box(
+            north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
+            south=self.handle.get("latitudeOfLastGridPointInDegrees"),
+            west=self.handle.get("longitudeOfFirstGridPointInDegrees"),
+            east=self.handle.get("longitudeOfLastGridPointInDegrees"),
+        )
+        driver.plot_grib(self.path, self.handle.get("offset"))
 
     def to_numpy(self):
-        return self.values.reshape((self.handle.get("Nj"),
-                                    self.handle.get("Ni")))
+        return self.values.reshape((self.handle.get("Nj"), self.handle.get("Ni")))
 
     @property
     def offset(self):
         return int(self.handle.get("offset"))
 
     def __repr__(self):
-        return "GribField(%s,%s,%s,%s,%s,%s)" % (self.handle.get("shortName"),
-                                                 self.handle.get("levelist"),
-                                                 self.handle.get("date"),
-                                                 self.handle.get("time"),
-                                                 self.handle.get("step"),
-                                                 self.handle.get("number"))
+        return "GribField(%s,%s,%s,%s,%s,%s)" % (
+            self.handle.get("shortName"),
+            self.handle.get("levelist"),
+            self.handle.get("date"),
+            self.handle.get("time"),
+            self.handle.get("step"),
+            self.handle.get("number"),
+        )
 
     def grid_definition(self):
-        return dict(north=self.handle.get('latitudeOfFirstGridPointInDegrees'),
-                    south=self.handle.get('latitudeOfLastGridPointInDegrees'),
-                    west=self.handle.get('longitudeOfFirstGridPointInDegrees'),
-                    east=self.handle.get('longitudeOfLastGridPointInDegrees'),
-                    south_north_increment=self.handle.get('jDirectionIncrementInDegrees'),
-                    west_east_increment=self.handle.get('iDirectionIncrementInDegrees'))
+        return dict(
+            north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
+            south=self.handle.get("latitudeOfLastGridPointInDegrees"),
+            west=self.handle.get("longitudeOfFirstGridPointInDegrees"),
+            east=self.handle.get("longitudeOfLastGridPointInDegrees"),
+            south_north_increment=self.handle.get("jDirectionIncrementInDegrees"),
+            west_east_increment=self.handle.get("iDirectionIncrementInDegrees"),
+        )
 
     def metadata(self):
         m = dict()
-        for n in ('shortName', 'units'):
+        for n in ("shortName", "units"):
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
@@ -82,7 +86,6 @@ class GribField:
 
 
 class GRIBIterator:
-
     def __init__(self, path):
         self.path = path
         self.reader = Reader(path)
@@ -95,7 +98,6 @@ class GRIBIterator:
 
 
 class GRIBReader:
-
     def __init__(self, path):
         self.path = path
         self._fields = None
@@ -125,4 +127,5 @@ class GRIBReader:
 
     def to_xarray(self):
         import xarray as xr
-        return xr.open_dataset(self.path, engine='cfgrib')
+
+        return xr.open_dataset(self.path, engine="cfgrib")

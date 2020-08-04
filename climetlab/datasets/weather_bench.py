@@ -18,8 +18,10 @@ class WeatherBench(Dataset):
     There is a notebook available at: https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb
     """
 
-    def __init__(self, parameter='geopotential_500', resolution=5.625):
-        URL = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(resolution=resolution, parameter=parameter)
+    def __init__(self, parameter="geopotential_500", resolution=5.625):
+        URL = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(
+            resolution=resolution, parameter=parameter
+        )
         self.source = load_source("zipurl", URL)
 
 

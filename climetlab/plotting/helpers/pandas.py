@@ -7,8 +7,8 @@
 # does it submit to any jurisdiction.
 #
 
-class PandasPlotter:
 
+class PandasPlotter:
     def __init__(self, frame):
         self.frame = frame
         self.lat = "lat"
@@ -17,10 +17,7 @@ class PandasPlotter:
     def plot_map(self, driver):
         north, east = self.frame[[self.lat, self.lon]].max()
         south, west = self.frame[[self.lat, self.lon]].min()
-        driver.bounding_box(north=north,
-                            south=south,
-                            west=west,
-                            east=east)
+        driver.bounding_box(north=north, south=south, west=west, east=east)
 
         path = "tmp.geo"
         # driver.plot_grib(self.path, self.handle.get('offset'))

@@ -15,7 +15,6 @@ from tqdm import tqdm
 
 
 class Url(FileSource):
-
     def __init__(self, url):
         _, extension = os.path.splitext(url)
         self.path = temp_file("Url", url, extension=extension)
@@ -25,29 +24,30 @@ class Url(FileSource):
             r = requests.head(url)
             r.raise_for_status()
             try:
-                size = int(r.headers['content-length'])
+                size = int(r.headers["content-length"])
             except Exception:
                 size = None
             r = requests.get(url, stream=True)
             r.raise_for_status()
             total = 0
-            mode = 'wb'
-            with tqdm(total=size,
-                      unit_scale=True,
-                      unit_divisor=1024,
-                      unit='B',
-                      disable=False,
-                      leave=False,
-                      ) as pbar:
+            mode = "wb"
+            with tqdm(
+                total=size,
+                unit_scale=True,
+                unit_divisor=1024,
+                unit="B",
+                disable=False,
+                leave=False,
+            ) as pbar:
                 pbar.update(total)
-                with open(self.path + '.tmp', mode) as f:
+                with open(self.path + ".tmp", mode) as f:
                     for chunk in r.iter_content(chunk_size=1024):
                         if chunk:
                             f.write(chunk)
                             total += len(chunk)
                             pbar.update(len(chunk))
 
-            os.rename(self.path + '.tmp', self.path)
+            os.rename(self.path + ".tmp", self.path)
 
 
 source = Url

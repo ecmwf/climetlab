@@ -12,7 +12,6 @@ from . import DataSource
 
 
 class MultiSource(DataSource):
-
     def __init__(self, *sources):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
@@ -44,6 +43,7 @@ class MultiSource(DataSource):
 
     def to_xarray(self):
         import xarray as xr
+
         # return xr.concat(s.to_xarray() for s in self.sources)
         return xr.merge(s.to_xarray() for s in self.sources)
 

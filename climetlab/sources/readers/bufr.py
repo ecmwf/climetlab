@@ -10,15 +10,14 @@
 # See:
 # https://github.com/ecmwf/pdbufr
 
-COLUMNS = ('latitude',
-           'longitude',
-           'data_datetime')
+COLUMNS = ("latitude", "longitude", "data_datetime")
+
 
 class BUFRReader:
-
     def __init__(self, path):
         self.path = path
 
     def to_pandas(self, columns=COLUMNS, filters=None, **kwargs):
         import pdbufr
+
         return pdbufr.read_bufr(self.path, columns=columns, filters=filters)

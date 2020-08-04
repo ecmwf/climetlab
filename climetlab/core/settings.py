@@ -7,4 +7,4 @@
 # does it submit to any jurisdiction.
 #
 
-SETTINGS = dict(cache_directory='/var/tmp')
+SETTINGS = dict(cache_directory="/var/tmp")

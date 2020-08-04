@@ -9,7 +9,6 @@
 
 
 class Driver:
-
     def __init__(self, *args, **kwargs):
         pass
 
@@ -22,7 +21,9 @@ class Driver:
     def plot_netcdf(self, params):
         pass
 
-    def plot_numpy(self, data, north, west, south_north_increment, west_east_increment, metadata):
+    def plot_numpy(
+        self, data, north, west, south_north_increment, west_east_increment, metadata
+    ):
         pass
 
     def plot_xarray(self, ds, variable, dimension_settings={}):

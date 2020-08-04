@@ -10,8 +10,8 @@
 import numpy as np
 import xarray as xr
 
-class XArrayPlotter:
 
+class XArrayPlotter:
     def __init__(self, data, *args, **kwargs):
 
         self.data = data
@@ -23,8 +23,8 @@ class XArrayPlotter:
 
         lat, lon = self.var.dims[-2], self.var.dims[-1]
 
-        data[lat].attrs['standard_name'] = 'latitude'
-        data[lon].attrs['standard_name'] = 'longitude'
+        data[lat].attrs["standard_name"] = "latitude"
+        data[lon].attrs["standard_name"] = "longitude"
 
         self.north = np.amax(data[lat].data)
         self.south = np.amin(data[lat].data)
@@ -32,10 +32,9 @@ class XArrayPlotter:
         self.west = np.amin(data[lon].data)
 
     def plot_map(self, driver):
-        driver.bounding_box(north=self.north,
-                            south=self.south,
-                            west=self.west,
-                            east=self.east)
+        driver.bounding_box(
+            north=self.north, south=self.south, west=self.west, east=self.east
+        )
 
         dimension_settings = dict()
 

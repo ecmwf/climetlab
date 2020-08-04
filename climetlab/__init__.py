@@ -12,14 +12,21 @@ from .datasets import load as load_dataset
 from .plotting import plot_map
 
 
-__version__ = '0.0.26'
+__version__ = "0.0.26"
 
 import climetlab.source
 import climetlab.dataset
 
 
-__all__ = [load_source,
-           load_dataset,
-           plot_map,
-           climetlab.dataset,
-           climetlab.source]
+from climetlab.sources import DataSource
+from climetlab.datasets import Dataset
+
+__all__ = [
+    load_source,
+    load_dataset,
+    plot_map,
+    climetlab.dataset,
+    climetlab.source,
+    Dataset,
+    DataSource,
+]

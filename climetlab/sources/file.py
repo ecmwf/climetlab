@@ -11,7 +11,6 @@ from .base import FileSource
 
 
 class File(FileSource):
-
     def __init__(self, path):
         self.path = path
 

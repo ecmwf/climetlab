@@ -11,31 +11,30 @@ from . import Dataset
 from climetlab.utils.domains import domain_to_area
 from climetlab import load_source
 
-class Era5SingleLevels(Dataset):
 
+class Era5SingleLevels(Dataset):
     def __init__(self, variable, period, domain=None, time=None, grid=None):
 
-        request = dict(variable=variable,
-                       product_type="reanalysis",)
+        request = dict(variable=variable, product_type="reanalysis",)
 
         if domain is not None:
-            request['area'] = domain_to_area(domain)
+            request["area"] = domain_to_area(domain)
 
         if time is not None:
-            request['time'] = time
+            request["time"] = time
 
         if grid is not None:
             if isinstance(grid, (int, float)):
-                request['grid'] = [grid, grid]
+                request["grid"] = [grid, grid]
             else:
-                request['grid'] = grid
+                request["grid"] = grid
 
         sources = []
         for year in range(period[0], period[1] + 1):
-            request['year'] = year
-            sources.append(load_source("cds",
-                                       "reanalysis-era5-single-levels",
-                                       **request))
+            request["year"] = year
+            sources.append(
+                load_source("cds", "reanalysis-era5-single-levels", **request)
+            )
 
         self.source = load_source("multi", sources)
 

@@ -7,13 +7,14 @@
 # does it submit to any jurisdiction.
 #
 
-from .import Dataset
+from . import Dataset
 from climetlab import load_source
 
 
 class SampleBUFRData(Dataset):
-
-    def __init__(self, url='http://download.ecmwf.int/test-data/metview/gallery/temp.bufr'):
+    def __init__(
+        self, url="http://download.ecmwf.int/test-data/metview/gallery/temp.bufr"
+    ):
         self.source = load_source("url", url)
 
 
