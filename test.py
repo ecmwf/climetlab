@@ -1,6 +1,7 @@
 import climetlab as clm
+import yaml
 
-ds = clm.load_dataset("meteonet-masks")
+ds = clm.load_dataset("meteonet-radar")
 
 
-print(ds.to_xarray())
+print(yaml.dump(dict(style=ds.contouring, default_flow_style=False)))

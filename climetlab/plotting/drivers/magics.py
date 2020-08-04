@@ -108,8 +108,16 @@ class Driver:
             symbol_marker_index=15,  # Circle
         )
 
-    def contouring(self, contouring):
-        self._contour = macro.mcont(contouring)
+    def projection(self, projection):
+        if isinstance(projection, str):
+            self._projection = macro.mmap(subpage_map_projection=projection)
+        else:
+            self._projection = macro.mmap(**projection)
+
+    def style(self, style):
+        data = load_data("styles", style)
+        action = getattr(macro, data.get("magics", "mcont"))
+        self._contour = action(**data["style"])
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
         self._data = macro.minput(
@@ -128,27 +136,10 @@ class Driver:
             self._format = format
 
         if "projection" in self.kwargs:
-            projection = self.kwargs["projection"]
-            if isinstance(projection, str):
-                self._projection = macro.mmap(subpage_map_projection=projection)
-            else:
-                self._projection = macro.mmap(**projection)
-
-        # if "contouring" in self.kwargs:
-        #     contouring = self.kwargs["contouring"]
-        #     if isinstance(contouring, str):
-        #         assert False, contouring
-        #         self._contour = macro.mmap(subpage_map_contour=contouring)
-        #     else:
-        #         self._contour = macro.mcont(**contouring)
+            self.projection(self.kwargs["projection"])
 
         if "style" in self.kwargs:
-            style = self.kwargs["style"]
-            if isinstance(style, str):
-                data = load_data("styles", style)
-                self._contour = getattr(macro, data["magics"])(**data["style"])
-            else:
-                assert False
+            self.style(self.kwargs["style"])
 
         tmp = False
         if path is None:

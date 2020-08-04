@@ -112,65 +112,7 @@ class MeteonetRadar(Meteonet):
             )
         )
 
-        driver.contouring(self.contouring)
-
-    @property
-    def contouring(self):
-        return dict(
-            contour_shade_colour_method="list",
-            # contour_shade_method = "area_fill",
-            contour_shade_technique="grid_shading",
-            contour_shade="on",
-            contour_hilo="off",
-            contour="off",
-            contour_highlight="off",
-            contour_label="off",
-            contour_shade_colour_list=[
-                "#C0C0C0",
-                "rgba(0,0,0,0)",
-                "#483D8B",
-                "#0000cd",
-                "#1E90FF",
-                "#87ceeb",
-                "olive",
-                "#3cb371",
-                "cyan",
-                "#00FF00",
-                "yellow",
-                "khaki",
-                "burlywood",
-                "orange",
-                "brown",
-                "pink",
-                "red",
-                "plum",
-            ],
-            contour_level_list=[
-                float(x)
-                for x in [
-                    -1,
-                    0,
-                    2,
-                    4,
-                    6,
-                    8,
-                    10,
-                    15,
-                    20,
-                    25,
-                    30,
-                    35,
-                    40,
-                    45,
-                    50,
-                    55,
-                    60,
-                    65,
-                    75,
-                ]
-            ],
-            #                contour_shade_min_level=0.5
-        )
+        driver.style("meteonet-radar-{}".format(self.variable))
 
 
 dataset = MeteonetRadar

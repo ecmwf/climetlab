@@ -1,1 +1,4 @@
-include climetlab/data/styles/*.yaml
+include climetlab/*/styles/*.yaml
+include climetlab/*/*/styles/*.yaml
+include climetlab/*/*/*/styles/*.yaml
+include climetlab/*/*/*/*/styles/*.yaml

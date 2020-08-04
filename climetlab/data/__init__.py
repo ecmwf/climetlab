@@ -10,9 +10,19 @@
 
 import os
 import yaml
+import climetlab
+
+
+def _find(collection, yaml_file):
+    top = os.path.dirname(climetlab.__file__)
+    for path, dirs, files in os.walk(top):
+        if os.path.basename(path) == collection:
+            if yaml_file in files:
+                return os.path.join(path, yaml_file)
+
+    raise Exception("Cannot find '%s' in '%s'" % (yaml_file, collection))
 
 
 def load(collection, name):
-    path = os.path.join(os.path.dirname(__file__), collection, name)
-    with open(path + ".yaml") as f:
+    with open(_find(collection, name + ".yaml")) as f:
         return yaml.load(f.read(), Loader=yaml.SafeLoader)
