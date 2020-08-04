@@ -1,9 +1,9 @@
 ---
 style:
-  contour: 'off'
-  contour_highlight: 'off'
-  contour_hilo: 'off'
-  contour_label: 'off'
+  contour: false
+  contour_highlight: false
+  contour_hilo: false
+  contour_label: false
   contour_level_list:
   - -1.0
   - 0.0
@@ -24,7 +24,7 @@ style:
   - 60.0
   - 65.0
   - 75.0
-  contour_shade: 'on'
+  contour_shade: true
   contour_shade_colour_list:
   - '#c0c0c0'
   - rgba(0,0,0,0)
