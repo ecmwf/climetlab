@@ -1,0 +1,48 @@
+---
+style:
+  contour: 'off'
+  contour_highlight: 'off'
+  contour_hilo: 'off'
+  contour_label: 'off'
+  contour_level_list:
+  - -1.0
+  - 0.0
+  - 2.0
+  - 4.0
+  - 6.0
+  - 8.0
+  - 10.0
+  - 15.0
+  - 20.0
+  - 25.0
+  - 30.0
+  - 35.0
+  - 40.0
+  - 45.0
+  - 50.0
+  - 55.0
+  - 60.0
+  - 65.0
+  - 75.0
+  contour_shade: 'on'
+  contour_shade_colour_list:
+  - '#c0c0c0'
+  - rgba(0,0,0,0)
+  - '#483d8b'
+  - '#0000cd'
+  - '#1e90ff'
+  - '#87ceeb'
+  - '#808000'
+  - '#3cb371'
+  - '#00ffff'
+  - '#00ff00'
+  - '#ffff00'
+  - '#c3b091'
+  - '#deb887'
+  - '#ffa500'
+  - '#a52a2a'
+  - '#ffc0cb'
+  - '#ff0000'
+  - '#dda0dd'
+  contour_shade_colour_method: list
+  contour_shade_technique: grid_shading
