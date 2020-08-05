@@ -48,12 +48,16 @@ class Driver:
             map_coastline_land_shade="on",
             map_coastline_land_shade_colour="cream",
             map_coastline_colour="tan",
-            map_grid_frame=True, map_grid_frame_thickness=5
+            map_grid_frame=True,
+            map_grid_frame_thickness=5,
         )
 
-        self._foreground = macro.mcoast(map_grid=self._grid, map_label="off",
-                                        map_grid_frame=True,
-                                        map_grid_frame_thickness=5)
+        self._foreground = macro.mcoast(
+            map_grid=self._grid,
+            map_label="off",
+            map_grid_frame=True,
+            map_grid_frame_thickness=5,
+        )
 
         self._legend = None
         self._title = None
@@ -103,33 +107,38 @@ class Driver:
 
     def plot_geopoints(self, path):
         self._data = macro.mgeo(geo_input_file_name=path)
-        self._contour = macro.msymb(
-            legend="off",
-            symbol_type="marker",
-            symbol_colour="red",
-            symbol_height=0.08,
-            symbol_marker_index=15,  # Circle
-        )
+        self.style("red-markers")
+
+    def _apply(self, collection, value, action, default_attribute=None):
+
+        if value is None:
+            return None
+
+        if isinstance(value, dict):
+            return action(value)
+
+        if isinstance(value, str):
+
+            data = load_data(collection, value, fail=default_attribute is None)
+            if data is None:
+                return action({default_attribute: value})
+
+            magics = data["magics"]
+            actions = list(magics.keys())
+            assert len(actions) == 1, actions
+
+            action = getattr(macro, actions[0])
+            return action(magics[actions[0]])
+
+        assert False, (collection, value)
 
     def projection(self, projection):
-        if isinstance(projection, str):
-            data = load_data("projections", projection, fail=False)
-            print("projection", projection, data)
-            if data is not None:
-                action = data["magics"]["mmap"]
-                self._projection = macro.mmap(action)
-            else:
-                self._projection = macro.mmap(subpage_map_projection=projection)
-        else:
-            self._projection = macro.mmap(**projection)
+        self._projection = self._apply(
+            "projections", projection, macro.mmap, "subpage_map_projection"
+        )
 
     def style(self, style):
-        if style is None:
-            self._contour = None
-        else:
-            data = load_data("styles", style)
-            action = data["magics"]["mcont"]
-            self._contour = macro.mcont(**action)
+        self._contour = self._apply("styles", style, macro.mcont)
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
         self._data = macro.minput(
