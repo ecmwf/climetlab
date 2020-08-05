@@ -1,0 +1,12 @@
+---
+magics:
+  mcont:
+    contour_line_thickness: 4
+    contour_line_colour: rgb(0.70.410.54)
+    contour_reference_level: 1010
+    contour_highlight_colour: rgb(0.730.20.4)
+    contour_highlight_thickness: 8
+    contour_level_selection_type: interval
+    contour_interval: 5
+    contour_label: off
+

@@ -1,10 +1,10 @@
 ---
 magics:
   mcont:
-    contour: false
-    contour_hilo: false
-    contour_label: false
-    contour_label_blanking: false
+    contour: off
+    contour_hilo: off
+    contour_label: off
+    contour_label_blanking: off
     contour_label_colour: brown
     contour_label_frequency: 1
     contour_label_height: 0.6
@@ -43,7 +43,7 @@ magics:
     contour_level_selection_type: level_list
     contour_line_thickness: 3
     contour_method: linear
-    contour_shade: true
+    contour_shade: on
     contour_shade_colour_list:
     - rgb(0.15,0.5,0.4)
     - none
