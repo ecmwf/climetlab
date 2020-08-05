@@ -31,6 +31,7 @@ HELPERS = {
     "xarray.core.dataarray.DataArray": "xarray",
     "numpy.ndarray": "ndarray",
     "pandas.core.frame.DataFrame": "pandas",
+    "builtins.NoneType": "none",
 }
 
 

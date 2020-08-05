@@ -1,0 +1,9 @@
+---
+magics:
+  mmap:
+    subpage_map_area_definition_polar: corners
+    subpage_map_projection: polar_stereographic
+    subpage_lower_left_latitude: 15.
+    subpage_lower_left_longitude: -45.
+    subpage_upper_right_latitude: 40.
+    subpage_upper_right_longitude: 130.

@@ -48,9 +48,12 @@ class Driver:
             map_coastline_land_shade="on",
             map_coastline_land_shade_colour="cream",
             map_coastline_colour="tan",
+            map_grid_frame=True, map_grid_frame_thickness=5
         )
 
-        self._foreground = macro.mcoast(map_grid=self._grid, map_label="off")
+        self._foreground = macro.mcoast(map_grid=self._grid, map_label="off",
+                                        map_grid_frame=True,
+                                        map_grid_frame_thickness=5)
 
         self._legend = None
         self._title = None
@@ -110,14 +113,23 @@ class Driver:
 
     def projection(self, projection):
         if isinstance(projection, str):
-            self._projection = macro.mmap(subpage_map_projection=projection)
+            data = load_data("projections", projection, fail=False)
+            print("projection", projection, data)
+            if data is not None:
+                action = data["magics"]["mmap"]
+                self._projection = macro.mmap(action)
+            else:
+                self._projection = macro.mmap(subpage_map_projection=projection)
         else:
             self._projection = macro.mmap(**projection)
 
     def style(self, style):
-        data = load_data("styles", style)
-        action = getattr(macro, data.get("magics", "mcont"))
-        self._contour = action(**data["style"])
+        if style is None:
+            self._contour = None
+        else:
+            data = load_data("styles", style)
+            action = data["magics"]["mcont"]
+            self._contour = macro.mcont(**action)
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
         self._data = macro.minput(
