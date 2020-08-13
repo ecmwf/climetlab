@@ -8,19 +8,11 @@
 #
 
 import numpy as np
+import climetlab
 from importlib import import_module
 from climetlab.core.plugins import find_plugin
 import os
-
-
-def lookup(name):
-    plugin = find_plugin(os.path.dirname(__file__), name)
-    dataset = import_module(plugin, package=__name__)
-    return dataset.dataset
-
-
-def load(name, *args, **kwargs):
-    return lookup(name)(*args, **kwargs)
+import yaml
 
 
 class Dataset:
@@ -44,3 +36,33 @@ class Dataset:
 
     def to_metview(self, *args, **kwargs):
         return self.source.to_metview(*args, **kwargs)
+
+
+def _module_callback(plugin):
+    return import_module(plugin, package=__name__).dataset
+
+
+def _yaml_callcack(plugin):
+    with open(plugin) as f:
+        dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
+
+    class Wrapped(Dataset):
+        def __init__(self, *args, **kwargs):
+            self.source = climetlab.load_source(
+                dataset["source"], **dataset.get("args", {})
+            )
+
+    return Wrapped
+
+
+def _lookup(name):
+    return find_plugin(
+        os.path.dirname(__file__),
+        name,
+        module_callback=_module_callback,
+        yaml_callcack=_yaml_callcack,
+    )
+
+
+def load(name, *args, **kwargs):
+    return _lookup(name)(*args, **kwargs)

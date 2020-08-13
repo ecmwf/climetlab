@@ -40,6 +40,12 @@ def csv_reader(path):
     return CSVReader(path)
 
 
+def zip_reader(path):
+    from .zip import ZIPReader
+
+    return ZIPReader(path)
+
+
 READERS = {
     b"GRIB": grib_reader,
     b"BUFR": bufr_reader,
@@ -47,6 +53,7 @@ READERS = {
     b"CDF\x01": netcdf_reader,
     b"CDF\x02": netcdf_reader,
     b"\xff\xffOD": odb_reader,
+    b"PK\x03\x04": zip_reader,
     ".csv": csv_reader,
 }
 

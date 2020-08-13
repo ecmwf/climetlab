@@ -11,12 +11,20 @@
 class PandasPlotter:
     def __init__(self, frame):
         self.frame = frame
-        self.lat = "lat"
-        self.lon = "lon"
+
+        if "lat" in self.frame:
+            self.lat = "lat"
+            self.lon = "lon"
+        else:
+            self.lat = "latitude"
+            self.lon = "longitude"
 
     def plot_map(self, driver):
         north, east = self.frame[[self.lat, self.lon]].max()
+        print("----", north, east)
         south, west = self.frame[[self.lat, self.lon]].min()
+        print("----", south, west)
+
         driver.bounding_box(north=north, south=south, west=west, east=east)
 
         path = "tmp.geo"
@@ -26,8 +34,14 @@ class PandasPlotter:
             print("#lat long value", file=f)
             print("#DATA", file=f)
 
+            seen = set()
+
             for index, row in self.frame[[self.lat, self.lon]].iterrows():
-                print(row[0], row[1], 42.0, file=f)
+                if (row[0], row[1]) not in seen:
+                    print(row[0], row[1], 42.0, file=f)
+                    seen.add((row[0], row[1]))
+
+            print("----", len(seen))
 
         driver.plot_geopoints(path)
 
