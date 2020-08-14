@@ -31,6 +31,8 @@ class XArrayPlotter:
         self.east = np.amax(data[lon].data)
         self.west = np.amin(data[lon].data)
 
+        self.kwargs = kwargs
+
     def plot_map(self, driver):
         driver.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
@@ -42,6 +44,7 @@ class XArrayPlotter:
             dimension_settings[d] = self.data[d].data[0]
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
+        driver.apply_kwargs(self.kwargs)
 
 
 def helper(data, *args, **kwargs):

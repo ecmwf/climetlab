@@ -10,10 +10,11 @@
 
 class NonePlotter:
     def __init__(self, *args, **kwargs):
-        pass
+        self.kwargs = kwargs
 
     def plot_map(self, driver):
         driver.style(None)
+        driver.apply_kwargs(self.kwargs)
 
 
 helper = NonePlotter

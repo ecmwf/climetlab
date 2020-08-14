@@ -9,6 +9,7 @@
 
 import os
 import tempfile
+import sys
 
 from climetlab.data import load as load_data
 
@@ -108,6 +109,12 @@ class Driver:
     def plot_geopoints(self, path):
         self._data = macro.mgeo(geo_input_file_name=path)
         self.style("red-markers")
+
+    def apply_kwargs(self, kwargs):
+        if "style" in kwargs:
+            self.style(kwargs.pop("style"))
+        if kwargs:
+            print("magics.apply_kwargs ignoring", kwargs, file=sys.stderr)
 
     def _apply(self, collection, value, action, default_attribute=None):
 

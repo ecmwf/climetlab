@@ -9,8 +9,10 @@
 
 
 class PandasPlotter:
-    def __init__(self, frame):
+    def __init__(self, frame, margins=0, **kwargs):
         self.frame = frame
+        self.kwargs = kwargs
+        self.margins = margins
 
         if "lat" in self.frame:
             self.lat = "lat"
@@ -21,11 +23,16 @@ class PandasPlotter:
 
     def plot_map(self, driver):
         north, east = self.frame[[self.lat, self.lon]].max()
-        print("----", north, east)
+        # print("----", north, east)
         south, west = self.frame[[self.lat, self.lon]].min()
-        print("----", south, west)
+        # print("----", south, west)
 
-        driver.bounding_box(north=north, south=south, west=west, east=east)
+        driver.bounding_box(
+            north=north + self.margins,
+            south=south - self.margins,
+            west=west - self.margins,
+            east=east + self.margins,
+        )
 
         path = "tmp.geo"
         # driver.plot_grib(self.path, self.handle.get('offset'))
@@ -41,9 +48,10 @@ class PandasPlotter:
                     print(row[0], row[1], 42.0, file=f)
                     seen.add((row[0], row[1]))
 
-            print("----", len(seen))
+            # print("----", len(seen))
 
         driver.plot_geopoints(path)
+        driver.apply_kwargs(self.kwargs)
 
 
 helper = PandasPlotter

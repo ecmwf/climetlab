@@ -1,9 +1,10 @@
 # See https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html
 
-
+import pandas as pd
+import numpy as np
 from . import Dataset
 from climetlab.utils import download_and_cache
-
+from datetime import datetime
 
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
 
@@ -32,6 +33,7 @@ STATUS = {
 }
 
 
+# https://en.wikipedia.org/wiki/Saffir–Simpson_scale
 def category(knots):
 
     if knots < 83:
@@ -49,65 +51,56 @@ def category(knots):
     return 5
 
 
-# def lookup(filter={'time': '0000', 'category': 5}):
-#     cyclones = _load()
-#     keys = filter.keys()
-#     for n in cyclones:
-#         for p in n['positions']:
-#             ok = True
-#             for k in keys:
-#                 if p[k] != filter[k]:
-#                     ok = False
-#             if ok:
-#                 d = dict()
-#                 d.update(n)
-#                 del d['positions']
-#                 d.update(p)
-#                 yield d
-
-
 class HurricaneDatabase(Dataset):
 
     home_page = "https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html"
 
     def __init__(self, url="https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt"):
         path = download_and_cache(url)
-        _cyclones = []
+        p = []
         with open(path) as f:
             lines = f
             for line in lines:
-                cyclone = {
-                    "bassin": line[0:2],
-                    "number": line[3:4],
-                    "year": line[4:8],
-                    "name": line[18:28].strip().lower(),
-                    "positions": [],
-                }
+                bassin = line[0:2]
+                number = int(line[3:4])
+                year = int(line[4:8])
+                name = line[18:28].strip().lower()
 
-                p = cyclone["positions"]
                 # http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-format-may2015.pdf
 
                 for i in range(0, int(line[33:36])):
                     line = next(lines)
                     # print line
                     knots = float(line[38:41])
-                    position = {
-                        "date": line[0:8],
-                        "time": line[10:14],
-                        "type": line[16],
-                        "status": line[19:21],
-                        "lat": float(line[23:27]) * SIGN[line[27]],
-                        "lon": float(line[30:35]) * SIGN[line[35]],
-                        "knots": knots,
-                        "category": category(knots),
-                        "pressure": float(line[43:47]),
-                        "m/s": knots * 0.514444,
-                    }
-                    p.append(position)
+                    pressure = np.NaN if line[43] == "-" else float(line[43:47])
+                    time = "%s-%s-%sZ%s:%s" % (
+                        line[0:4],
+                        line[4:6],
+                        line[6:8],
+                        line[10:12],
+                        line[12:14],
+                    )
+                    p.append(
+                        dict(
+                            bassin=bassin,
+                            number=number,
+                            year=year,
+                            name=name,
+                            time=datetime.fromisoformat(time),
+                            type=line[16],
+                            status=line[19:21],
+                            lat=float(line[23:27]) * SIGN[line[27]],
+                            lon=float(line[30:35]) * SIGN[line[35]],
+                            knots=knots,
+                            category=category(knots),
+                            pressure=pressure,
+                        )
+                    )
 
-                _cyclones.append(cyclone)
+        self.cyclones = pd.DataFrame(p)
 
-        self.cyclones = _cyclones
+    def to_pandas(self):
+        return self.cyclones
 
 
 dataset = HurricaneDatabase

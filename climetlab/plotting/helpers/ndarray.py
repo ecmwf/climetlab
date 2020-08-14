@@ -12,6 +12,7 @@ class NumpyArrayPlotter:
     def __init__(self, data, field, **kwargs):
         self.data = data
         self.field = field
+        self.kwargs = kwargs
 
     def plot_map(self, driver):
         grid = self.field.grid_definition()
@@ -31,6 +32,8 @@ class NumpyArrayPlotter:
             west_east_increment=grid["west_east_increment"],
             metadata=self.field.metadata(),
         )
+
+        driver.apply_kwargs(self.kwargs)
 
 
 helper = NumpyArrayPlotter
