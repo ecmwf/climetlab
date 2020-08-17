@@ -59,27 +59,22 @@ class CDSRetriever(FileSource):
     CDSRetriever
     """
 
-    def __init__(self, dataset, *args, **kwargs):
-        request = self.request(*args, **kwargs)
+    def __init__(self, dataset, **kwargs):
+        request = self.request(**kwargs)
         self.path = temp_file("CDSRetriever", request)
         if not os.path.exists(self.path):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    def request(self, *args, **kwargs):
-        result = kwargs
-        if len(args):
-            assert len(args) == 1
-            # extent =
-            result.pop("extent", "track")
+    def request(self, **kwargs):
+        based_on = kwargs.pop("based_on", None)
+        if based_on is not None:
+            data = based_on.pop("data")
+            data = helper(data, **based_on)
+            kwargs["area"] = data.bounding_box()
+            kwargs["date"] = data.dates()
 
-            data = helper(args[0], **kwargs)
-            result["area"] = data.bounding_box()
-            result["date"] = data.dates()
-
-            result.pop("margins", "track")
-
-        return result
+        return kwargs
 
 
 source = CDSRetriever
