@@ -6,12 +6,16 @@
 
 .rst-content dl.xr-attrs dt {
     all: revert;
-    font-size: 80%;
+    /*font-size: 80%;*/
     white-space: nowrap;
 }
 
 .rst-content dl.xr-attrs dd {
     /*all: revert;*/
-    font-size: 80%;
+    /*font-size: 80%;*/
     /*white-space: nowrap;*/
+}
+
+.xr-wrap {
+    font-size: 85%;
 }
