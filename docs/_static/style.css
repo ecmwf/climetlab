@@ -4,6 +4,6 @@
 
 /*There is a clash between xarray notebook styles and readthedoc*/
 
-.xr-attrs dt {
+.rst-content dl.xr-attrs dt {
     all: revert;
 }

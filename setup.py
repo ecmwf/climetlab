@@ -58,6 +58,7 @@ setuptools.setup(
         "pyodc",
         "dask",
         "toolz",
+        "pyyaml",
     ],
     zip_safe=True,
     classifiers=[
