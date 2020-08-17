@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 
 
-class XArrayPlotter:
+class XArrayHelper:
     def __init__(self, data, *args, **kwargs):
 
         self.data = data
@@ -49,6 +49,6 @@ class XArrayPlotter:
 
 def helper(data, *args, **kwargs):
     if isinstance(data, xr.Dataset):
-        return XArrayPlotter(data, *args, **kwargs)
+        return XArrayHelper(data, *args, **kwargs)
     else:
-        return XArrayPlotter(data.to_dataset(), *args, **kwargs)
+        return XArrayHelper(data.to_dataset(), *args, **kwargs)

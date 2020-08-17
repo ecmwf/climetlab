@@ -12,6 +12,7 @@ import os
 
 from .base import FileSource, APIKeyPrompt
 from climetlab.core.caching import temp_file
+from climetlab.helpers import helper
 
 
 APIRC = "key: {key}\nurl: https://cds.climate.copernicus.eu/api/v2"
@@ -58,11 +59,27 @@ class CDSRetriever(FileSource):
     CDSRetriever
     """
 
-    def __init__(self, dataset, **req):
-        self.path = temp_file("CDSRetriever", req)
+    def __init__(self, dataset, *args, **kwargs):
+        request = self.request(*args, **kwargs)
+        self.path = temp_file("CDSRetriever", request)
         if not os.path.exists(self.path):
-            client().retrieve(dataset, req, self.path + ".tmp")
+            client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
+
+    def request(self, *args, **kwargs):
+        result = kwargs
+        if len(args):
+            assert len(args) == 1
+            # extent =
+            result.pop("extent", "track")
+
+            data = helper(args[0], **kwargs)
+            result["area"] = data.bounding_box()
+            result["date"] = data.dates()
+
+            result.pop("margins", "track")
+
+        return result
 
 
 source = CDSRetriever

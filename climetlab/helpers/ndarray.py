@@ -8,7 +8,7 @@
 #
 
 
-class NumpyArrayPlotter:
+class NumpyArrayHelper:
     def __init__(self, data, field, **kwargs):
         self.data = data
         self.field = field
@@ -36,4 +36,4 @@ class NumpyArrayPlotter:
         driver.apply_kwargs(self.kwargs)
 
 
-helper = NumpyArrayPlotter
+helper = NumpyArrayHelper

@@ -8,8 +8,9 @@
 #
 
 
-class PandasPlotter:
+class PandasHelper:
     def __init__(self, frame, margins=0, **kwargs):
+
         self.frame = frame
         self.kwargs = kwargs
         self.margins = margins
@@ -22,10 +23,9 @@ class PandasPlotter:
             self.lon = "longitude"
 
     def plot_map(self, driver):
+
         north, east = self.frame[[self.lat, self.lon]].max()
-        # print("----", north, east)
         south, west = self.frame[[self.lat, self.lon]].min()
-        # print("----", south, west)
 
         driver.bounding_box(
             north=north + self.margins,
@@ -53,5 +53,20 @@ class PandasPlotter:
         driver.plot_geopoints(path)
         driver.apply_kwargs(self.kwargs)
 
+    def bounding_box(self):
 
-helper = PandasPlotter
+        north, east = self.frame[[self.lat, self.lon]].max()
+        south, west = self.frame[[self.lat, self.lon]].min()
+
+        return [
+            north + self.margins,
+            west - self.margins,
+            south - self.margins,
+            east + self.margins,
+        ]
+
+    def dates(self):
+        return sorted(set([str(x).split("T")[0] for x in self.frame["time"].values]))
+
+
+helper = PandasHelper

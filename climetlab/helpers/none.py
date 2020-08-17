@@ -8,7 +8,7 @@
 #
 
 
-class NonePlotter:
+class NoneHelper:
     def __init__(self, *args, **kwargs):
         self.kwargs = kwargs
 
@@ -17,4 +17,4 @@ class NonePlotter:
         driver.apply_kwargs(self.kwargs)
 
 
-helper = NonePlotter
+helper = NoneHelper
