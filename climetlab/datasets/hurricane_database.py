@@ -65,7 +65,7 @@ class HurricaneDatabase(Dataset):
                 number = int(line[2:4])
                 year = int(line[4:8])
                 name = line[18:28].strip().lower()
-                id = line[0:8]
+                # id = line[0:8]
 
                 # http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-format-may2015.pdf
 
@@ -83,7 +83,7 @@ class HurricaneDatabase(Dataset):
                     )
                     p.append(
                         dict(
-                            id=id,
+                            # id=id,
                             bassin=bassin,
                             number=number,
                             year=year,
