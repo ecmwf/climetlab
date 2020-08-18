@@ -56,11 +56,8 @@ class FileSource(DataSource):
 
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
-HTML_MESSAGE = """<div style='border: 1px solid orange;
-color: black;
-background-color: rgb(255, 214, 0);
-padding: 1em;
-font-weight: bold;'>
+HTML_MESSAGE = """
+<div style='border: 1px solid orange; color: black; background-color: rgb(255, 214, 0); margin: 0.5em; padding: 0.5em; font-weight: bold;'>
 {message}
 </div>
 """
@@ -92,6 +89,6 @@ class APIKeyPrompt:
         return getpass.getpass(self.prompt + ": ")
 
     def ask_user_markdown(self):
-        message = Markdown(self.markdown_message)._repr_markdown_()
-        display(HTML(HTML_MESSAGE.format(message=message)))
+        message = self.markdown_message
+        display(Markdown(HTML_MESSAGE.format(message=message)))
         return getpass.getpass(self.prompt + ": ")
