@@ -16,7 +16,7 @@ import os
 ipython = False
 try:
     from IPython.display import display
-    from IPython.display import HTML
+    from IPython.display import HTML, Markdown
 
     ipython = True
 except Exception:
@@ -56,7 +56,7 @@ class FileSource(DataSource):
 
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
-MD = """<div style='border: 1px solid orange;
+HTML_MESSAGE = """<div style='border: 1px solid orange;
 color: black;
 background-color: rgb(255, 214, 0);
 padding: 1em;
@@ -92,5 +92,6 @@ class APIKeyPrompt:
         return getpass.getpass(self.prompt + ": ")
 
     def ask_user_markdown(self):
-        display(HTML(MD.format(message=self.markdown_message)))
+        message = Markdown(self.markdown_message)._repr_markdown_()
+        display(HTML(HTML_MESSAGE.format(message=message)))
         return getpass.getpass(self.prompt + ": ")
