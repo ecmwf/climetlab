@@ -12,11 +12,12 @@ from .readers import reader
 import getpass
 import sys
 import os
+import markdown
 
 ipython = False
 try:
     from IPython.display import display
-    from IPython.display import HTML, Markdown
+    from IPython.display import HTML
 
     ipython = True
 except Exception:
@@ -89,6 +90,8 @@ class APIKeyPrompt:
         return getpass.getpass(self.prompt + ": ")
 
     def ask_user_markdown(self):
-        message = self.markdown_message
-        display(Markdown(HTML_MESSAGE.format(message=message)))
+        message = markdown.Markdown().convert(self.markdown_message)
+        # We use Python's markdown instead of IPython's Markdown because
+        # jupyter lab/colab/deepnotes all behave differently
+        display(HTML(HTML_MESSAGE.format(message=message)))
         return getpass.getpass(self.prompt + ": ")

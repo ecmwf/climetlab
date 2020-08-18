@@ -59,6 +59,7 @@ setuptools.setup(
         "dask",
         "toolz",
         "pyyaml",
+        "markdown",
     ],
     zip_safe=True,
     classifiers=[
