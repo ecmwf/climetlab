@@ -17,6 +17,11 @@ import yaml
 
 class Dataset:
 
+    name = None
+    home_page = "-"
+    licence = "-"
+    documentation = "-"
+
     source = None
 
     def __len__(self):
@@ -36,6 +41,20 @@ class Dataset:
 
     def to_metview(self, *args, **kwargs):
         return self.source.to_metview(*args, **kwargs)
+
+    def _repr_markdown_(self):
+        return """
+| {name} |  |
+| --- | --- |
+| Home page | {home_page} |
+| Documentation | {documentation} |
+| Licence | {licence} |
+        """.format(
+            name=self.name,
+            home_page=self.home_page,
+            licence=self.licence,
+            documentation=self.documentation,
+        )
 
 
 def _module_callback(plugin):
@@ -65,4 +84,6 @@ def _lookup(name):
 
 
 def load(name, *args, **kwargs):
-    return _lookup(name)(*args, **kwargs)
+    dataset = _lookup(name)(*args, **kwargs)
+    dataset.name = name
+    return dataset
