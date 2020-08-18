@@ -56,7 +56,11 @@ class FileSource(DataSource):
 
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
-MD = """<div style='border: 1px solid orange;'>
+MD = """<div style='border: 1px solid orange;
+color: black;
+background-color: rgb(255, 214, 0);
+padding: 1em;
+font-weight: bold;'>
 {message}
 </div>
 """
