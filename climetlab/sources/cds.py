@@ -19,8 +19,8 @@ APIRC = "key: {key}\nurl: https://cds.climate.copernicus.eu/api/v2"
 
 MESSAGE = """
 An API key is needed to access this dataset. Please visit
-https://cds.climate.copernicus.eu/ to register or sign-in,
-and visit https://cds.climate.copernicus.eu/api-how-to to
+<https://cds.climate.copernicus.eu/> to register or sign-in,
+and visit <https://cds.climate.copernicus.eu/api-how-to> to
 retrieve you API key.
 
 Once this is done, please paste your key in the input field below

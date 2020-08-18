@@ -13,6 +13,7 @@ import getpass
 import sys
 import os
 import markdown
+import re
 
 ipython = False
 try:
@@ -90,7 +91,7 @@ class APIKeyPrompt:
         return getpass.getpass(self.prompt + ": ")
 
     def ask_user_markdown(self):
-        message = markdown.Markdown().convert(self.markdown_message)
+        message = markdown.markdown(self.markdown_message)
         # We use Python's markdown instead of IPython's Markdown because
         # jupyter lab/colab/deepnotes all behave differently
         display(HTML(HTML_MESSAGE.format(message=message)))

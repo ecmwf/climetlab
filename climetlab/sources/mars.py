@@ -37,20 +37,20 @@ paste it the input field below and press ENTER.
 
     markdown_message = """
 An API key is needed to access this dataset. Please visit
-https://apps.ecmwf.int/registration/ to register or sign-in
-at https://www.ecmwf.int/user/login/sso
-then visit https://api.ecmwf.int/v1/key/ to
+<https://apps.ecmwf.int/registration/> to register or sign-in
+at <https://www.ecmwf.int/user/login/sso>
+then visit <https://api.ecmwf.int/v1/key/> to
 retrieve you API key.
 
 Once this is done, please copy the text that look like:
 
-```javascript
+<pre>
 {
     "url"   : "https://api.ecmwf.int/v1",
     "key"   : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "email" : "john.doe@example.com"
 }
-```
+</pre>
 
 paste it the input field below and press *ENTER*.
 """
