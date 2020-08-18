@@ -17,7 +17,10 @@ def lookup(name):
 
 
 def load(name, *args, **kwargs):
-    return lookup(name)(*args, **kwargs)
+    source = lookup(name)(*args, **kwargs)
+    if source.name is None:
+        source.name = name
+    return source
 
 
 def list_entries():
@@ -40,12 +43,29 @@ def list_entries():
 
 
 class DataSource:
+
+    name = None
+    home_page = "-"
+    licence = "-"
+    documentation = "-"
+
     def __init__(self, **kwargs):
         self._kwargs = kwargs
 
-    sphinxdoc = """
-        No help
-    """
+    def _repr_markdown_(self):
+        return """
+
+| {name} |  |
+| --- | --- |
+| Home page | {home_page} |
+| Documentation | {documentation} |
+| Licence | {licence} |
+        """.format(
+            name=self.name,
+            home_page=self.home_page,
+            licence=self.licence,
+            documentation=self.documentation,
+        )
 
     # def __iter__(self):
     #     raise NotImplementedError("%r: method __iter__() not implemented" % (self.__class__.__name__,))

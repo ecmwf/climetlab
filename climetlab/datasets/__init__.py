@@ -21,6 +21,7 @@ class Dataset:
     home_page = "-"
     licence = "-"
     documentation = "-"
+    citation = "-"
 
     source = None
 
@@ -44,15 +45,18 @@ class Dataset:
 
     def _repr_markdown_(self):
         return """
+
 | {name} |  |
 | --- | --- |
 | Home page | {home_page} |
 | Documentation | {documentation} |
+| Citation | {citation} |
 | Licence | {licence} |
         """.format(
             name=self.name,
             home_page=self.home_page,
             licence=self.licence,
+            citation=self.citation,
             documentation=self.documentation,
         )
 
@@ -85,5 +89,6 @@ def _lookup(name):
 
 def load(name, *args, **kwargs):
     dataset = _lookup(name)(*args, **kwargs)
-    dataset.name = name
+    if dataset.name is None:
+        dataset.name = name
     return dataset
