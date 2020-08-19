@@ -9,6 +9,7 @@
 
 from importlib import import_module
 import os
+import weakref
 
 
 def lookup(name):
@@ -49,8 +50,20 @@ class DataSource:
     licence = "-"
     documentation = "-"
 
+    _dataset = None
+
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+
+    @property
+    def dataset(self):
+        if self._dataset is None:
+            return None
+        return self._dataset()
+
+    @dataset.setter
+    def dataset(self, dataset):
+        self._dataset = weakref.ref(dataset)
 
     def _repr_markdown_(self):
         return """

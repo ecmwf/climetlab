@@ -98,7 +98,7 @@ class GRIBIterator:
 
 
 class GRIBReader:
-    def __init__(self, path):
+    def __init__(self, source, path):
         self.path = path
         self._fields = None
         self._reader = None

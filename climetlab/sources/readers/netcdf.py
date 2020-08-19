@@ -158,7 +158,7 @@ class NetCDFField:
 
 
 class NetCDFReader:
-    def __init__(self, path):
+    def __init__(self, source, path):
         self.path = path
         self.fields = None
 

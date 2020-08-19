@@ -118,6 +118,9 @@ class Driver:
         if "projection" in kwargs:
             self.projection(kwargs.pop("projection"))
 
+        for n in ('width', 'grid'):
+            kwargs.pop(n, None)
+
         if kwargs:
             print("magics.apply_kwargs ignoring", kwargs, file=sys.stderr)
 

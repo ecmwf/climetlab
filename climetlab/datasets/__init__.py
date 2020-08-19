@@ -23,7 +23,16 @@ class Dataset:
     documentation = "-"
     citation = "-"
 
-    source = None
+    _source = None
+
+    @property
+    def source(self):
+        return self._source
+
+    @source.setter
+    def source(self, source):
+        self._source = source
+        source.dataset = self
 
     def __len__(self):
         return len(self.source)

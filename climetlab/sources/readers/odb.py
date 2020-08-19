@@ -18,7 +18,7 @@ except Exception:
 
 
 class ODBReader:
-    def __init__(self, path):
+    def __init__(self, source, path):
         self.path = path
 
     def to_pandas(self):

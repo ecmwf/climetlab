@@ -14,7 +14,7 @@ COLUMNS = ("latitude", "longitude", "data_datetime")
 
 
 class BUFRReader:
-    def __init__(self, path):
+    def __init__(self, source, path):
         self.path = path
 
     def to_pandas(self, columns=COLUMNS, filters=None, **kwargs):

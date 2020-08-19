@@ -10,40 +10,40 @@
 import os
 
 
-def grib_reader(path):
+def grib_reader(source, path):
     from .grib import GRIBReader
 
-    return GRIBReader(path)
+    return GRIBReader(source, path)
 
 
-def bufr_reader(path):
+def bufr_reader(source, path):
     from .bufr import BUFRReader
 
-    return BUFRReader(path)
+    return BUFRReader(source, path)
 
 
-def netcdf_reader(path):
+def netcdf_reader(source, path):
     from .netcdf import NetCDFReader
 
-    return NetCDFReader(path)
+    return NetCDFReader(source, path)
 
 
-def odb_reader(path):
+def odb_reader(source, path):
     from .odb import ODBReader
 
-    return ODBReader(path)
+    return ODBReader(source, path)
 
 
-def csv_reader(path):
+def csv_reader(source, path):
     from .csv import CSVReader
 
-    return CSVReader(path)
+    return CSVReader(source, path)
 
 
-def zip_reader(path):
+def zip_reader(source, path):
     from .zip import ZIPReader
 
-    return ZIPReader(path)
+    return ZIPReader(source, path)
 
 
 READERS = {
@@ -58,17 +58,17 @@ READERS = {
 }
 
 
-def reader(path):
+def reader(source, path):
 
     _, extension = os.path.splitext(path)
     if extension in READERS:
-        return READERS[extension](path)
+        return READERS[extension](source, path)
 
     with open(path, "rb") as f:
         header = f.read(4)
 
     if header in READERS:
-        return READERS[header](path)
+        return READERS[header](source, path)
 
     raise ValueError(
         "Unsupported file {} (header={}, extension={})".format(path, header, extension)

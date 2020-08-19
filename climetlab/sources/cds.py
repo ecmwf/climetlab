@@ -76,5 +76,10 @@ class CDSRetriever(FileSource):
 
         return kwargs
 
+    @property
+    def read_csv_options(self):
+        return dict(comment='#', parse_dates=['report_timestamp'], skip_blank_lines=True, compression='zip')
+
+
 
 source = CDSRetriever
