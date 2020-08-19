@@ -83,7 +83,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
 
-You can run this notebook in |Binder|, in |Colab| or in |Kaggle|.
+You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
 
 .. |Binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/{{ docname }}
@@ -93,6 +93,10 @@ You can run this notebook in |Binder|, in |Colab| or in |Kaggle|.
 .. |Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
    :target: https://colab.research.google.com/github/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Colab
+
+.. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
+   :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
+   :alt: Deepnote
 
 .. |Kaggle| image:: https://kaggle.com/static/images/open-in-kaggle.svg
    :target: https://kaggle.com/kernels/welcome?src=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
