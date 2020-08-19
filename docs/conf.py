@@ -97,9 +97,9 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
    :alt: Colab
 
 .. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
-   :height 20
    :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Deepnote
+   :height 20
 
 .. |Kaggle| image:: https://kaggle.com/static/images/open-in-kaggle.svg
    :target: https://kaggle.com/kernels/welcome?src=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
