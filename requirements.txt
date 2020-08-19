@@ -1,3 +1,2 @@
-# These are the requirements for Binder
-git+https://github.com/b8raoult/eccodes-python.git
-git+https://github.com/b8raoult/cfgrib.git
+# These are the requirements for Binder and Deepnote (?)
+climetlab
