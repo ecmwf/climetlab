@@ -56,7 +56,7 @@ class Dataset:
             name=self.name,
             home_page=self.home_page,
             licence=self.licence,
-            citation=self.citation,
+            citation="<pre>%s</pre>" % (self.citation.replace("\n", "<br>"),),
             documentation=self.documentation,
         )
 
