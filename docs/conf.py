@@ -90,20 +90,24 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
 .. |Binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/ecmwf/climetlab/master?urlpath=lab/tree/docs/{{ docname }}
    :alt: Binder
+   :class: badge
 
 
 .. |Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
    :target: https://colab.research.google.com/github/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Colab
+   :class: badge
 
 .. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
    :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Deepnote
    :height: 20px
+   :class: badge
 
 .. |Kaggle| image:: https://kaggle.com/static/images/open-in-kaggle.svg
    :target: https://kaggle.com/kernels/welcome?src=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Kaggle
+   :class: badge
 
 """
 
