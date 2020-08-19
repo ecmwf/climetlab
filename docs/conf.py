@@ -80,6 +80,8 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
+# https://www.notion.so/Deepnote-Launch-Buttons-63c642a5e875463495ed2341e83a4b2a
+
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
 
@@ -95,6 +97,7 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
    :alt: Colab
 
 .. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
+   :height 20
    :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Deepnote
 
