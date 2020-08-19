@@ -111,8 +111,13 @@ class Driver:
         self.style("red-markers")
 
     def apply_kwargs(self, kwargs):
+
         if "style" in kwargs:
             self.style(kwargs.pop("style"))
+
+        if "projection" in kwargs:
+            self.projection(kwargs.pop("projection"))
+
         if kwargs:
             print("magics.apply_kwargs ignoring", kwargs, file=sys.stderr)
 
