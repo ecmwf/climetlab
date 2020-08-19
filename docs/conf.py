@@ -101,7 +101,6 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
 .. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
    :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Deepnote
-   :height: 20px
    :class: badge
 
 .. |Kaggle| image:: https://kaggle.com/static/images/open-in-kaggle.svg
