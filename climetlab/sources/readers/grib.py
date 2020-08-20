@@ -8,13 +8,14 @@
 #
 
 import logging
+from . import Reader
 
 LOG = logging.getLogger(__name__)
 
 try:
     from climetlab.grib_bindings import GribFile
 
-    class Reader(GribFile):
+    class GReader(GribFile):
         pass
 
     LOG.info("Using eccodes C bindings to decode GRIB data")
@@ -22,7 +23,7 @@ try:
 except AttributeError:  # eccodes not installed
     import pyeccodes
 
-    class Reader(pyeccodes.Reader):
+    class GReader(pyeccodes.Reader):
         def at_offset(self, offset):
             self.seek(offset)
             return next(self)
@@ -88,7 +89,7 @@ class GribField:
 class GRIBIterator:
     def __init__(self, path):
         self.path = path
-        self.reader = Reader(path)
+        self.reader = GReader(path)
 
     def __repr__(self):
         return "GRIBIterator(%s)" % (self.path,)
@@ -97,9 +98,9 @@ class GRIBIterator:
         return GribField(next(self.reader), self.path)
 
 
-class GRIBReader:
+class GRIBReader(Reader):
     def __init__(self, source, path):
-        self.path = path
+        super().__init__(source, path)
         self._fields = None
         self._reader = None
 
@@ -119,7 +120,7 @@ class GRIBReader:
 
     def __getitem__(self, n):
         if self._reader is None:
-            self._reader = Reader(self.path)
+            self._reader = GReader(self.path)
         return GribField(self._reader.at_offset(self._items()[n]), self.path)
 
     def __len__(self):

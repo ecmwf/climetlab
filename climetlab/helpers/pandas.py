@@ -15,7 +15,10 @@ class PandasHelper:
         self.kwargs = kwargs
         self.margins = margins
 
-        if "lat" in self.frame:
+        if "lat@hdr" in self.frame:
+            self.lat = "lat@hdr"
+            self.lon = "lon@hdr"
+        elif "lat" in self.frame:
             self.lat = "lat"
             self.lon = "lon"
         else:

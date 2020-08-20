@@ -80,5 +80,16 @@ class MARSRetriever(FileSource):
             service("mars").execute(req, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
+    @property
+    def read_csv_options(self):
+        return dict(
+            sep="\t",
+            comment="#",
+            # parse_dates=["report_timestamp"],
+            skip_blank_lines=True,
+            skipinitialspace=True,
+            compression="zip",
+        )
+
 
 source = MARSRetriever

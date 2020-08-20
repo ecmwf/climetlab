@@ -15,6 +15,7 @@ from itertools import product
 import xarray as xr
 import datetime
 import numpy as np
+from . import Reader
 
 
 def as_datetime(self, time):
@@ -157,9 +158,9 @@ class NetCDFField:
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
 
 
-class NetCDFReader:
+class NetCDFReader(Reader):
     def __init__(self, source, path):
-        self.path = path
+        super().__init__(source, path)
         self.fields = None
 
     def _scan(self):

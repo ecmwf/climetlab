@@ -8,6 +8,7 @@
 #
 
 import sys
+from . import Reader
 
 try:
     import codc as odc
@@ -17,9 +18,6 @@ except Exception:
     print("Using pure Python odc decoder.", file=sys.stderr)
 
 
-class ODBReader:
-    def __init__(self, source, path):
-        self.path = path
-
+class ODBReader(Reader):
     def to_pandas(self):
         return odc.read_odb(self.path, single=True)

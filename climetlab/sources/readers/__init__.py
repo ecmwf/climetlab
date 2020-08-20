@@ -8,6 +8,17 @@
 #
 
 import os
+import weakref
+
+
+class Reader:
+    def __init__(self, source, path):
+        self._source = weakref.ref(source)
+        self.path = path
+
+    @property
+    def source(self):
+        return self._source()
 
 
 def grib_reader(source, path):

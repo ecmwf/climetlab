@@ -118,7 +118,7 @@ class Driver:
         if "projection" in kwargs:
             self.projection(kwargs.pop("projection"))
 
-        for n in ('width', 'grid'):
+        for n in ("width", "grid", "title"):
             kwargs.pop(n, None)
 
         if kwargs:
