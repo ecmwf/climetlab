@@ -37,6 +37,19 @@ s = cml.load_source("cds", "era5-single-level",
     )
 ```
 
+Option4, using help function
+
+```python
+frame = foo.to_pandas()
+
+s = cml.load_source("cds", "era5-single-level",
+    param='msl',
+    area=cml.get_bounding_box(frame),
+    date=cml.get_dates(frame)
+    )
+```
+
+
 ## Datasets
 
 ## Data sources
