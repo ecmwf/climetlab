@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from . import Dataset
 from climetlab.utils import download_and_cache
-from dateutil.parser import parse
+from datetime import datetime
 
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
 
@@ -88,7 +88,7 @@ class HurricaneDatabase(Dataset):
                             number=number,
                             year=year,
                             name=name,
-                            time=parse(time),
+                            time=datetime.fromisoformat(time),
                             type=line[16],
                             status=line[19:21],
                             lat=float(line[23:27]) * SIGN[line[27]],
