@@ -8,9 +8,27 @@
 #
 
 from collections import defaultdict
+import datetime
+from dateutil.parser import parse
+
+
+def to_datetime(dt):
+    if isinstance(dt, datetime.datetime):
+        return dt
+
+    if isinstance(dt, str):
+        return parse(dt)
+
+    raise Exception("Unsupported date/time object %s (%s)" % (dt, type(dt)))
 
 
 def to_datetimes_list(datetimes):
+    if isinstance(datetimes, (datetime.datetime, str)):
+        return to_datetimes_list([datetimes])
+
+    if isinstance(datetimes, (list, tuple)):
+        return [to_datetime(x) for x in datetimes]
+
     return datetimes
 
 
@@ -26,6 +44,7 @@ def _time_as_request(time):
 def _indentity(x):
     return x
 
+
 def datetimes_to_dates_and_times(datetimes_list, as_request=False):
 
     result = []
@@ -38,6 +57,7 @@ def datetimes_to_dates_and_times(datetimes_list, as_request=False):
         _d = _indentity
         _t = _indentity
 
+    print(to_datetimes_list(datetimes_list))
     for dt in to_datetimes_list(datetimes_list):
         datetimes[_d(dt.date())].add(_t(dt.time()))
 
