@@ -6,6 +6,12 @@ from . import Dataset
 from climetlab.utils import download_and_cache
 from datetime import datetime
 
+
+# datetime.fromisoformat() only available from Python3.7
+from backports.datetime_fromisoformat import MonkeyPatch
+MonkeyPatch.patch_fromisoformat()
+
+
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
 
 TYPE = {
