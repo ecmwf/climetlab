@@ -11,7 +11,7 @@ import re
 
 
 def urlify(text):
-    return re.sub(r"(https?://.*\S)", r'<a href="\1" target="_blank" rel="nofollow noopener noreferer">\1</a>', text)
+    return re.sub(r"(https?://.*\S)", r'<a href="\1" target="_blank">\1</a>', text)
 
 
 def table(obj):

@@ -14,5 +14,9 @@ class File(FileSource):
     def __init__(self, path):
         self.path = path
 
+    @property
+    def read_csv_options(self):
+        return {}
+
 
 source = File
