@@ -12,7 +12,7 @@ from .datasets import load as load_dataset
 from .plotting import plot_map
 
 
-__version__ = "0.0.51"
+__version__ = "0.0.52"
 
 import climetlab.source
 import climetlab.dataset
