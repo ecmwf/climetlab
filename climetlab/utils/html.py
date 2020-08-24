@@ -26,7 +26,7 @@ table.climetlab td {
     """
 
     table = """
-
+<h4>{name}</h4>
 <table class="climetlab">
 <tr><td><b>Home page</b></td><td>{home_page}</td></tr>
 <tr><td><b>Documentation</b></td><td>{documentation}</td></tr>
