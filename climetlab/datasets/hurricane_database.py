@@ -9,6 +9,7 @@ from datetime import datetime
 
 # datetime.fromisoformat() only available from Python3.7
 from backports.datetime_fromisoformat import MonkeyPatch
+
 MonkeyPatch.patch_fromisoformat()
 
 

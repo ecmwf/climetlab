@@ -65,14 +65,13 @@ class DataSource:
     def dataset(self, dataset):
         self._dataset = weakref.ref(dataset)
 
-    def _repr_markdown_(self):
+    def _repr_html_(self):
         return """
-
-| {name} |  |
-| --- | --- |
-| Home page | {home_page} |
-| Documentation | {documentation} |
-| Licence | {licence} |
+<table>
+<tr><td>Home page</td><td>{home_page}</td></tr>
+<tr><td>Documentation</td><td>{documentation}</td></tr>
+<tr><td>Licence</td><td>{licence}</td></tr>
+</table>
         """.format(
             name=self.name,
             home_page=self.home_page,

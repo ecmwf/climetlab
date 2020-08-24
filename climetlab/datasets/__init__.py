@@ -13,6 +13,7 @@ from importlib import import_module
 from climetlab.core.plugins import find_plugin
 import os
 import yaml
+from climetlab.utils.html import table
 
 
 class Dataset:
@@ -52,22 +53,8 @@ class Dataset:
     def to_metview(self, *args, **kwargs):
         return self.source.to_metview(*args, **kwargs)
 
-    def _repr_markdown_(self):
-        return """
-
-| {name} |  |
-| --- | --- |
-| Home page | {home_page} |
-| Documentation | {documentation} |
-| Citation | {citation} |
-| Licence | {licence} |
-        """.format(
-            name=self.name,
-            home_page=self.home_page,
-            licence=self.licence,
-            citation="<pre>%s</pre>" % (self.citation.replace("\n", "<br>"),),
-            documentation=self.documentation,
-        )
+    def _repr_html_(self):
+        return table(self)
 
 
 def _module_callback(plugin):

@@ -75,6 +75,6 @@ setuptools.setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Operating System :: OS Independent",
     ],
-    tests_require=["pytest", ],
+    tests_require=["pytest",],
     test_suite="tests",
 )
