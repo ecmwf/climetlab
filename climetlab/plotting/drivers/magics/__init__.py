@@ -191,7 +191,7 @@ class Driver:
                 self._title = macro.mtext()
             else:
                 self._title = macro.mtext(
-                    text_lines=[title],
+                    text_lines=[str(title)],
                     # text_justification='center',
                     # text_font_size=0.6,
                     # text_mode="positional",

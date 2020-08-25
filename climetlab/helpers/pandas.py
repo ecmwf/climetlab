@@ -27,8 +27,21 @@ class PandasHelper:
 
     def plot_map(self, driver):
 
-        north, east = self.frame[[self.lat, self.lon]].max()
-        south, west = self.frame[[self.lat, self.lon]].min()
+        north = self.frame[self.lat].max()
+        south = self.frame[self.lat].min()
+
+        # best = []
+        # for offset in range(0, 360, 5):
+        #     lons = (self.frame[self.lon] + offset) % 360
+        #     east = lons.max()
+        #     west = lons.min()
+        #     best.append(((east - west), offset))
+
+        # _, offset = sorted(best)[1]
+        # offset = 0
+        lons = self.frame[self.lon] % 360
+        east = lons.max()
+        west = lons.min()
 
         driver.bounding_box(
             north=north + self.margins,

@@ -52,13 +52,20 @@ def category(knots):
     return 5
 
 
+URLS = {
+    'atlantic': "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt",
+    'pacific': "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html",
+}
+
 class HurricaneDatabase(Dataset):
 
     home_page = "https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html"
 
-    # Other ULR: https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html
+    def __init__(self, bassin="atlantic", url=None):
 
-    def __init__(self, url="https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt"):
+        if url is None:
+            url = URLS[bassin.lower()]
+
         path = download_and_cache(url)
         p = []
         with open(path) as f:
