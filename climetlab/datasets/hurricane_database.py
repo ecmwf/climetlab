@@ -4,13 +4,7 @@ import pandas as pd
 import numpy as np
 from . import Dataset
 from climetlab.utils import download_and_cache
-from datetime import datetime
-
-
-# datetime.fromisoformat() only available from Python3.7
-from backports.datetime_fromisoformat import MonkeyPatch
-
-MonkeyPatch.patch_fromisoformat()
+from climetlab.utils.datetime import parse_date
 
 
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
@@ -62,12 +56,17 @@ class HurricaneDatabase(Dataset):
 
     home_page = "https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html"
 
+    # Other ULR: https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html
+
     def __init__(self, url="https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt"):
         path = download_and_cache(url)
         p = []
         with open(path) as f:
             lines = f
             for line in lines:
+                if line[0] in (' ', '<', '\n'):
+                    continue
+
                 bassin = line[0:2]
                 number = int(line[2:4])
                 year = int(line[4:8])
@@ -95,7 +94,7 @@ class HurricaneDatabase(Dataset):
                             number=number,
                             year=year,
                             name=name,
-                            time=datetime.fromisoformat(time),
+                            time=parse_date(time),
                             type=line[16],
                             status=line[19:21],
                             lat=float(line[23:27]) * SIGN[line[27]],

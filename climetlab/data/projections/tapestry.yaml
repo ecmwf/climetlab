@@ -3,7 +3,7 @@ magics:
   mmap:
     subpage_map_area_definition_polar: corners
     subpage_map_projection: polar_stereographic
-    subpage_lower_left_latitude: 15.
-    subpage_lower_left_longitude: -45.
-    subpage_upper_right_latitude: 40.
-    subpage_upper_right_longitude: 130.
+    subpage_lower_left_latitude: 13.646
+    subpage_lower_left_longitude: -44.725
+    subpage_upper_right_latitude: 38.2711
+    subpage_upper_right_longitude: 123.288

@@ -7,8 +7,7 @@
 # does it submit to any jurisdiction.
 #
 
-from climetlab import load_source
-
 
 def download_and_cache(url):
+    from climetlab import load_source
     return load_source("url", url).path

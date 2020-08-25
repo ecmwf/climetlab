@@ -1,5 +1,9 @@
 # Features
 
+## Cache management
+
+- Allow user to force download of cached datasets
+
 ## Sources requests
 
 Option1, will get area/date/time based on what is in `frame`. Controlled by the
@@ -62,4 +66,8 @@ s = cml.load_source("cds", "era5-single-level",
 ## BUFR
 
 - Return NaN instead of -1e+100
+
+## Magics
+
+- Get stuck if geopoints is empty
 

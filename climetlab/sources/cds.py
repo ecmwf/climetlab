@@ -76,7 +76,6 @@ class CDSRetriever(FileSource):
 
         return kwargs
 
-    @property
     def read_csv_options(self):
         return dict(
             comment="#",

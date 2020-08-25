@@ -10,6 +10,7 @@
 from importlib import import_module
 import os
 import weakref
+from climetlab.utils.html import table
 
 
 def lookup(name):
@@ -66,36 +67,9 @@ class DataSource:
         self._dataset = weakref.ref(dataset)
 
     def _repr_html_(self):
-        return """
-<table>
-<tr><td>Home page</td><td>{home_page}</td></tr>
-<tr><td>Documentation</td><td>{documentation}</td></tr>
-<tr><td>Licence</td><td>{licence}</td></tr>
-</table>
-        """.format(
-            name=self.name,
-            home_page=self.home_page,
-            licence=self.licence,
-            documentation=self.documentation,
-        )
+        return table(self)
 
-    # def __iter__(self):
-    #     raise NotImplementedError("%r: method __iter__() not implemented" % (self.__class__.__name__,))
-
-    # def __len__(self):
-    #     raise NotImplementedError("%r: method __len__() not implemented" % (self.__class__.__name__,))
-
-    # def __getitem__(self, n):
-    #     raise NotImplementedError("%r: method __getitem__() not implemented" % (self.__class__.__name__,))
-
-    # def to_xarray(self, *args, **kwargs):
-    #     raise NotImplementedError("%r: method to_xarray() not implemented" % (self.__class__.__name__,))
-
-    # def to_pandas(self, *args, **kwargs):
-    #     raise NotImplementedError("%r: method to_pandas() not implemented" % (self.__class__.__name__,))
-
-    # def to_numpy(self, *args, **kwargs):
-    #     raise NotImplementedError("%r: method to_numpy() not implemented" % (self.__class__.__name__,))
-
-    # def to_metview(self, *args, **kwargs):
-    #     raise NotImplementedError("%r: method to_metview() not implemented" % (self.__class__.__name__,))
+    def read_csv_options(self):
+        if self.dataset is None:
+            return {}
+        return self.dataset.read_csv_options()

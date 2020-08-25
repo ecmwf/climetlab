@@ -67,6 +67,10 @@ def _yaml_callcack(plugin):
 
     class Wrapped(Dataset):
         def __init__(self, *args, **kwargs):
+
+            for k, v in dataset.get("metadata", {}).items():
+                setattr(self, k, v)
+
             self.source = climetlab.load_source(
                 dataset["source"], **dataset.get("args", {})
             )

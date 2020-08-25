@@ -2,3 +2,14 @@ Datasets
 ========
 
 to do
+
+.. prompt:: yaml \
+
+    ---
+    dataset:
+      source: url
+      args:
+        url: http://download.ecmwf.int/test-data/metview/gallery/temp.bufr
+
+      metadata:
+        documentation: Sample BUFR file containing TEMP messages
