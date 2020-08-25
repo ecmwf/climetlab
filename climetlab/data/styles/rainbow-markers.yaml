@@ -1,0 +1,15 @@
+---
+magics:
+  msymb:
+    contour_interval: 1.0
+    contour_reference_level: 0.0
+    symbol_advanced_table_colour_direction: clockwise
+    symbol_advanced_table_interval: 1.0
+    symbol_advanced_table_max_level_colour: red
+    symbol_advanced_table_min_level_colour: blue
+    symbol_advanced_table_reference_level: 0.0
+    symbol_advanced_table_selection_type: interval
+    symbol_marker_index: 15
+    symbol_table_mode: advanced
+    symbol_type: marker
+    symbol_advanced_table_height_list: [0.08]

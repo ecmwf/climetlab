@@ -53,9 +53,10 @@ def category(knots):
 
 
 URLS = {
-    'atlantic': "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt",
-    'pacific': "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html",
+    "atlantic": "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.txt",
+    "pacific": "https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html",
 }
+
 
 class HurricaneDatabase(Dataset):
 
@@ -71,7 +72,7 @@ class HurricaneDatabase(Dataset):
         with open(path) as f:
             lines = f
             for line in lines:
-                if line[0] in (' ', '<', '\n'):
+                if line[0] in (" ", "<", "\n"):
                     continue
 
                 bassin = line[0:2]

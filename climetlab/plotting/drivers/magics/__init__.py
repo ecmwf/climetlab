@@ -68,6 +68,9 @@ class Driver:
         self.bounding_box(90, -180, -90, 180)
 
     def bounding_box(self, north, west, south, east):
+        assert north > south
+        assert west != east
+
         self._projection = macro.mmap(
             subpage_upper_right_longitude=float(east),
             subpage_upper_right_latitude=float(north),
@@ -106,8 +109,15 @@ class Driver:
             xarray_dimension_settings=dimension_settings,
         )
 
-    def plot_geopoints(self, path):
-        self._data = macro.mgeo(geo_input_file_name=path)
+    def plot_csv(self, path, variable):
+        self._data = macro.mtable(
+            table_filename=path,
+            table_latitude_variable="1",
+            table_longitude_variable="2",
+            table_value_variable="3",
+            table_header_row=0,
+            table_variable_identifier_type='index',
+        )
         self.style("red-markers")
 
     def apply_kwargs(self, kwargs):

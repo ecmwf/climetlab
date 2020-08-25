@@ -58,7 +58,9 @@ s = cml.load_source("cds", "era5-single-level",
 
 ## Data sources
 
-##
+## Magics
+
+- Plot CSV files (as geopoints)
 
 
 # Bug fixes

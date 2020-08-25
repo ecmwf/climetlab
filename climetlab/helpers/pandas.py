@@ -9,11 +9,12 @@
 
 
 class PandasHelper:
-    def __init__(self, frame, margins=0, **kwargs):
+    def __init__(self, frame, margins=0, column=None, **kwargs):
 
         self.frame = frame
         self.kwargs = kwargs
         self.margins = margins
+        self.column = column
 
         if "lat@hdr" in self.frame:
             self.lat = "lat@hdr"
@@ -30,15 +31,6 @@ class PandasHelper:
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
 
-        # best = []
-        # for offset in range(0, 360, 5):
-        #     lons = (self.frame[self.lon] + offset) % 360
-        #     east = lons.max()
-        #     west = lons.min()
-        #     best.append(((east - west), offset))
-
-        # _, offset = sorted(best)[1]
-        # offset = 0
         lons = self.frame[self.lon] % 360
         east = lons.max()
         west = lons.min()
@@ -50,23 +42,21 @@ class PandasHelper:
             east=east + self.margins,
         )
 
-        path = "tmp.geo"
-        # driver.plot_grib(self.path, self.handle.get('offset'))
-        with open(path, "w") as f:
-            print("#GEO", file=f)
-            print("#lat long value", file=f)
-            print("#DATA", file=f)
+        if self.column is None:
+            column = self.lat
+        else:
+            column = self.column
 
+        path = "tmp.csv"
+        with open(path, "w") as f:
             seen = set()
 
-            for index, row in self.frame[[self.lat, self.lon]].iterrows():
+            for index, row in self.frame[[self.lat, self.lon, column]].iterrows():
                 if (row[0], row[1]) not in seen:
-                    print(row[0], row[1], 42.0, file=f)
+                    print(",".join(str(x) for x in row), file=f)
                     seen.add((row[0], row[1]))
 
-            # print("----", len(seen))
-
-        driver.plot_geopoints(path)
+        driver.plot_csv(path, column)
         driver.apply_kwargs(self.kwargs)
 
     def bounding_box(self):
