@@ -8,10 +8,10 @@
 #
 
 import os
-import tempfile
 import sys
 
 from climetlab.data import load as load_data
+from climetlab.core.caching import temp_file
 
 # Examples
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
@@ -66,9 +66,17 @@ class Driver:
         self.kwargs = dict(**kwargs)
 
         self.bounding_box(90, -180, -90, 180)
+        self._tmp = []
+
+    def temp_file(self, extension=".tmp"):
+        self._tmp.append(temp_file(extension))
+        return self._tmp[-1].path
 
     def bounding_box(self, north, west, south, east):
-        assert north > south
+        assert north > south, "North (%s) must be greater than south (%s)" % (
+            north,
+            south,
+        )
         assert west != east
 
         self._projection = macro.mmap(
@@ -103,11 +111,26 @@ class Driver:
         )
 
     def plot_xarray(self, ds, variable, dimension_settings={}):
-        self._data = macro.mxarray(
-            xarray_dataset=ds,
-            xarray_variable_name=variable,
-            xarray_dimension_settings=dimension_settings,
+        tmp = self.temp_file(".nc")
+        ds.to_netcdf(tmp)
+
+        dimensions = []
+        for k, v in dimension_settings.items():
+            dimensions.append("%s:%s" % (k, v))
+
+        self.plot_netcdf(
+            dict(
+                netcdf_filename=tmp,
+                netcdf_value_variable=variable,
+                netcdf_dimension_setting=dimensions,
+                netcdf_dimension_setting_method="index",
+            )
         )
+        # self._data = macro.mxarray(
+        #     xarray_dataset=ds,
+        #     xarray_variable_name=variable,
+        #     xarray_dimension_settings=dimension_settings,
+        # )
 
     def plot_csv(self, path, variable):
         self._data = macro.mtable(
@@ -116,7 +139,7 @@ class Driver:
             table_longitude_variable="2",
             table_value_variable="3",
             table_header_row=0,
-            table_variable_identifier_type='index',
+            table_variable_identifier_type="index",
         )
         self.style("red-markers")
 
@@ -187,11 +210,8 @@ class Driver:
         if "style" in self.kwargs:
             self.style(self.kwargs["style"])
 
-        tmp = False
         if path is None:
-            tmp = True
-            fd, path = tempfile.mkstemp("." + self._format)
-            os.close(fd)
+            path = self.temp_file("." + self._format)
 
         _title_height_cm = 0
         if title:
@@ -251,9 +271,4 @@ class Driver:
         else:
             Display = Image
 
-        if tmp:
-            img = Display(path, metadata=dict(width=width))
-            os.unlink(path)
-            return img
-
-        return Display(path)
+        return Display(path, metadata=dict(width=width))

@@ -9,7 +9,7 @@
 
 import os
 from . import DataSource
-from climetlab.core.caching import temp_file
+from climetlab.core.caching import cache_file
 import requests
 from tqdm import tqdm
 import zipfile
@@ -18,7 +18,7 @@ import xarray as xr
 
 class ZipUrl(DataSource):
     def __init__(self, url):
-        self.path = temp_file("ZipUrl", url)
+        self.path = cache_file("ZipUrl", url)
 
         if not os.path.exists(self.path + ".d"):
             if not os.path.exists(self.path + ".zip"):

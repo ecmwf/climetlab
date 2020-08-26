@@ -41,7 +41,7 @@ class XArrayHelper:
         dimension_settings = dict()
 
         for d in self.extra_dims:
-            dimension_settings[d] = self.data[d].data[0]
+            dimension_settings[d] = 0  # self.data[d].data[0]
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
         driver.apply_kwargs(self.kwargs)

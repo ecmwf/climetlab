@@ -31,9 +31,18 @@ class PandasHelper:
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
 
-        lons = self.frame[self.lon] % 360
-        east = lons.max()
-        west = lons.min()
+        lons1 = self.frame[self.lon]
+        east1 = lons1.max()
+        west1 = lons1.min()
+
+        lons2 = self.frame[self.lon] % 360
+        east2 = lons2.max()
+        west2 = lons2.min()
+
+        if abs(east1 - west1) <= abs(east2 - west2):
+            east, west = east1, west1
+        else:
+            east, west = east2, west2
 
         driver.bounding_box(
             north=north + self.margins,
@@ -47,14 +56,15 @@ class PandasHelper:
         else:
             column = self.column
 
-        path = "tmp.csv"
+        path = driver.temp_file(".csv")
         with open(path, "w") as f:
             seen = set()
 
             for index, row in self.frame[[self.lat, self.lon, column]].iterrows():
                 if (row[0], row[1]) not in seen:
                     print(",".join(str(x) for x in row), file=f)
-                    seen.add((row[0], row[1]))
+                    if not self.column:
+                        seen.add((row[0], row[1]))
 
         driver.plot_csv(path, column)
         driver.apply_kwargs(self.kwargs)

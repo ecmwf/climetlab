@@ -7,8 +7,8 @@
 # does it submit to any jurisdiction.
 #
 
-# import os
-# import tempfile
+import os
+import tempfile
 import hashlib
 from .settings import SETTINGS
 
@@ -28,9 +28,21 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
-def temp_file(*args, extension=".cache"):
+def cache_file(*args, extension=".cache"):
     m = hashlib.sha256()
     update(m, args)
-    # fd, path = tempfile.mkstemp()
-    # os.close(fd)
     return "%s/climetlab-%s%s" % (SETTINGS["cache_directory"], m.hexdigest(), extension)
+
+
+class TmpFile:
+    def __init__(self, path):
+        self.path = path
+
+    def __del__(self):
+        os.unlink(self.path)
+
+
+def temp_file(extension=".tmp"):
+    fd, path = tempfile.mkstemp(suffix=extension)
+    os.close(fd)
+    return TmpFile(path)
