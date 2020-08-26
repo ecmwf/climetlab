@@ -61,6 +61,7 @@ s = cml.load_source("cds", "era5-single-level",
 ## Magics
 
 - Plot CSV files (as geopoints)
+- If netcdf_dimension_setting is empty, error
 
 
 # Bug fixes

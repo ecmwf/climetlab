@@ -8,20 +8,25 @@
 #
 
 import os
-from . import DataSource
+from .base import FileSource
 from climetlab.core.caching import cache_file
 import requests
 from tqdm import tqdm
-import zipfile
+import shutil
 import xarray as xr
 
 
-class ZipUrl(DataSource):
+class ZipUrl(FileSource):
     def __init__(self, url):
         self.path = cache_file("ZipUrl", url)
 
+        base, ext = os.path.splitext(url)
+        _, tar = os.path.splitext(base)
+        if tar == '.tar':
+            ext = '.tar' + ext
+
         if not os.path.exists(self.path + ".d"):
-            if not os.path.exists(self.path + ".zip"):
+            if not os.path.exists(self.path + ext):
                 print("Downloading", url)
                 r = requests.head(url)
                 r.raise_for_status()
@@ -46,26 +51,26 @@ class ZipUrl(DataSource):
                                 f.write(chunk)
                                 total += len(chunk)
                                 pbar.update(len(chunk))
-                os.rename(self.path, self.path + ".zip")
-            print("Unzipping...")
+                os.rename(self.path, self.path + ext)
+            print("Unpacking...")
             if not os.path.exists(self.path + ".tmp"):
                 os.mkdir(self.path + ".tmp")
 
-            with zipfile.ZipFile(self.path + ".zip", "r") as zip_file:
-                for file in tqdm(
-                    iterable=zip_file.namelist(),
-                    leave=False,
-                    total=len(zip_file.namelist()),
-                ):
-                    zip_file.extract(member=file, path=self.path + ".tmp")
+            shutil.unpack_archive(self.path + ext, self.path + ".tmp")
 
             print("Done...")
             os.rename(self.path + ".tmp", self.path + ".d")
-            os.unlink(self.path + ".zip")
+            os.unlink(self.path + ext)
 
-        self._xarray = xr.open_mfdataset(
-            self.path + ".d/*.nc", combine="by_coords"
-        )  # nested
+        paths = []
+        for root, _, files in os.walk(self.path + ".d"):
+            for f in files:
+                paths.append(os.path.join(root, f))
+
+        if len(paths) == 1:
+            self.path = paths[0]
+        else:
+            self._xarray = xr.open_mfdataset(paths, combine="by_coords")  # nested
 
     def to_xarray(self):
         return self._xarray

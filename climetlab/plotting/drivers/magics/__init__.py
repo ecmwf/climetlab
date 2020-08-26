@@ -118,14 +118,24 @@ class Driver:
         for k, v in dimension_settings.items():
             dimensions.append("%s:%s" % (k, v))
 
-        self.plot_netcdf(
-            dict(
-                netcdf_filename=tmp,
-                netcdf_value_variable=variable,
-                netcdf_dimension_setting=dimensions,
-                netcdf_dimension_setting_method="index",
+        if dimensions:
+            self.plot_netcdf(
+                dict(
+                    netcdf_filename=tmp,
+                    netcdf_value_variable=variable,
+                    netcdf_dimension_setting=dimensions,
+                    netcdf_dimension_setting_method="index",
+                )
             )
-        )
+        else:
+            self.plot_netcdf(
+                dict(
+                    netcdf_filename=tmp,
+                    netcdf_value_variable=variable,
+                    # netcdf_dimension_setting=dimensions,
+                    # netcdf_dimension_setting_method="index",
+                )
+            )
         # self._data = macro.mxarray(
         #     xarray_dataset=ds,
         #     xarray_variable_name=variable,
@@ -264,7 +274,11 @@ class Driver:
             if x is not None
         ]
 
-        macro.plot(*args)
+        try:
+            macro.plot(*args)
+        except Exception:
+            print(args)
+            raise
 
         if self._format == "svg":
             Display = SVG
