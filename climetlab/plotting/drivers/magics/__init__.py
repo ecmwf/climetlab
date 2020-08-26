@@ -153,6 +153,11 @@ class Driver:
         )
         self.style("red-markers")
 
+    def plot_pandas(self, frame, lat, lon, variable):
+        tmp = self.temp_file(".csv")
+        frame[[lat, lon, variable]].to_csv(tmp, header=False, index=False)
+        self.plot_csv(tmp, variable)
+
     def apply_kwargs(self, kwargs):
 
         if "style" in kwargs:

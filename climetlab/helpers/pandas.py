@@ -56,17 +56,7 @@ class PandasHelper:
         else:
             column = self.column
 
-        path = driver.temp_file(".csv")
-        with open(path, "w") as f:
-            seen = set()
-
-            for index, row in self.frame[[self.lat, self.lon, column]].iterrows():
-                if (row[0], row[1]) not in seen:
-                    print(",".join(str(x) for x in row), file=f)
-                    if not self.column:
-                        seen.add((row[0], row[1]))
-
-        driver.plot_csv(path, column)
+        driver.plot_pandas(self.frame, self.lat, self.lon, column)
         driver.apply_kwargs(self.kwargs)
 
     def bounding_box(self):
