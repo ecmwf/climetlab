@@ -12,21 +12,12 @@ import sys
 
 from climetlab.data import load as load_data
 from climetlab.core.caching import temp_file
-
-# Examples
-# https://github.com/ecmwf/notebook-examples/tree/master/visualisation
+from climetlab.core.ipython import Image, SVG
 
 from Magics import macro
 
-try:
-    from IPython.display import Image, SVG
-except Exception:
-
-    def Image(x):
-        return x
-
-    def SVG(x):
-        return x
+# Examples of Magics macros:
+# https://github.com/ecmwf/notebook-examples/tree/master/visualisation
 
 
 class Driver:
@@ -38,15 +29,15 @@ class Driver:
         self._height_cm = 10
         self._width = width
         self._page_ratio = 1.0
-        self._contour = macro.mcont(contour_automatic_setting="ecmwf", legend="off",)
+        self._contour = macro.mcont(contour_automatic_setting="ecmwf", legend=False,)
 
         self._grid = grid
         self._background = macro.mcoast(
             map_grid=self._grid,
             map_grid_colour="tan",
-            map_label="off",
-            map_boundaries="on",
-            map_coastline_land_shade="on",
+            map_label=False,
+            map_boundaries=True,
+            map_coastline_land_shade=True,
             map_coastline_land_shade_colour="cream",
             map_coastline_colour="tan",
             map_grid_frame=True,
@@ -55,7 +46,7 @@ class Driver:
 
         self._foreground = macro.mcoast(
             map_grid=self._grid,
-            map_label="off",
+            map_label=False,
             map_grid_frame=True,
             map_grid_frame_thickness=5,
         )
@@ -248,19 +239,18 @@ class Driver:
         base, fmt = os.path.splitext(path)
         output = macro.output(
             output_formats=[fmt[1:]],
-            output_name_first_page_number="off",
+            output_name_first_page_number=False,
             page_x_length=float(self._width_cm),
             page_y_length=float(self._height_cm) * self._page_ratio,
             super_page_x_length=float(self._width_cm),
-            super_page_y_length=float(self._height_cm) * self._page_ratio
-            + _title_height_cm,
+            super_page_y_length=float(self._height_cm) * self._page_ratio + _title_height_cm,
             subpage_x_length=float(self._width_cm),
             subpage_y_length=float(self._height_cm) * self._page_ratio,
             subpage_x_position=0.0,
             subpage_y_position=0.0,
             output_width=self._width if width is None else width,
             page_frame=frame,
-            page_id_line="off",
+            page_id_line=False,
             output_name=base,
         )
 
@@ -282,7 +272,7 @@ class Driver:
         try:
             macro.plot(*args)
         except Exception:
-            print(args)
+            print(args, file=sys.stderr)
             raise
 
         if self._format == "svg":

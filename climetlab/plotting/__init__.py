@@ -8,7 +8,7 @@
 #
 
 from climetlab.helpers import helper
-
+from climetlab.core.ipython import display
 
 # This is needed when running Sphinx on ReadTheDoc
 try:
@@ -16,14 +16,6 @@ try:
 
 except Exception:
     from .drivers.missing import Driver
-
-
-try:
-    from IPython.display import display
-except Exception:
-
-    def display(x):
-        return x
 
 
 CURRENT_DRIVER = Driver()

@@ -6,15 +6,3 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-
-"""
-ipython is not None when running a notebook
-"""
-
-ipython = None
-try:
-    from IPython import get_ipython
-
-    ipython = get_ipython()
-except Exception:
-    pass

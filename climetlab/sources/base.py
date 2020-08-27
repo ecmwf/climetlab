@@ -15,14 +15,7 @@ import os
 import markdown
 from abc import ABC, abstractmethod
 
-ipython = False
-try:
-    from IPython.display import display
-    from IPython.display import HTML
-
-    ipython = True
-except Exception:
-    pass
+from climetlab.core.ipython import active as ipython_active, display, HTML
 
 
 class FileSource(DataSource):
@@ -70,7 +63,7 @@ HTML_MESSAGE = """
 
 class APIKeyPrompt(ABC):
     def ask_user_and_save(self):
-        if ipython:
+        if ipython_active:
             text = self.ask_user_markdown()
         else:
             text = self.ask_user_text()
