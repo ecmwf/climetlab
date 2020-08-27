@@ -3,8 +3,8 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
-# granted to it by virtue of its status as an intergovernmental organisation nor
-# does it submit to any jurisdiction.
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
 #
 
 from . import DataSource
@@ -13,7 +13,7 @@ import getpass
 import sys
 import os
 import markdown
-import re
+from abc import ABC, abstractmethod
 
 ipython = False
 try:
@@ -28,6 +28,7 @@ except Exception:
 class FileSource(DataSource):
 
     _reader_ = None
+    path = None
 
     @property
     def _reader(self):
@@ -59,13 +60,15 @@ class FileSource(DataSource):
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
 HTML_MESSAGE = """
-<div style='border: 1px solid orange; color: black; background-color: rgb(255, 214, 0); margin: 0.5em; padding: 0.5em; font-weight: bold;'>
+<div style='border: 1px solid orange; color: black;
+     background-color: rgb(255, 214, 0);
+     margin: 0.5em; padding: 0.5em; font-weight: bold;'>
 {message}
 </div>
 """
 
 
-class APIKeyPrompt:
+class APIKeyPrompt(ABC):
     def ask_user_and_save(self):
         if ipython:
             text = self.ask_user_markdown()
@@ -96,3 +99,23 @@ class APIKeyPrompt:
         # jupyter lab/colab/deepnotes all behave differently
         display(HTML(HTML_MESSAGE.format(message=message)))
         return getpass.getpass(self.prompt + ": ")
+
+    @abstractmethod
+    def prompt(self):
+        pass
+
+    @abstractmethod
+    def validate(self, text):
+        pass
+
+    @abstractmethod
+    def rcfile(self, text):
+        pass
+
+    @abstractmethod
+    def text_message(self):
+        pass
+
+    @abstractmethod
+    def markdown_message(self):
+        pass

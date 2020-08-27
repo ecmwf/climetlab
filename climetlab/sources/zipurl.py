@@ -3,8 +3,8 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
-# granted to it by virtue of its status as an intergovernmental organisation nor
-# does it submit to any jurisdiction.
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
 #
 
 import os
@@ -22,8 +22,8 @@ class ZipUrl(FileSource):
 
         base, ext = os.path.splitext(url)
         _, tar = os.path.splitext(base)
-        if tar == '.tar':
-            ext = '.tar' + ext
+        if tar == ".tar":
+            ext = ".tar" + ext
 
         if not os.path.exists(self.path + ".d"):
             if not os.path.exists(self.path + ext):
