@@ -132,3 +132,7 @@ dmypy.json
 *.npy
 
 junk/
+[A-Za-z]*.ipynb
+tmp.*
+?
+*-Copy*.ipynb
