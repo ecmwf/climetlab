@@ -10,7 +10,7 @@ Welcome to CliMetLab's documentation!
    This documentation is work in progress. It is not yet ready.
 
 **CliMetLab** is a Python package aiming at simplifying access to climate and meteorological datasets, allowing users to focus on science instead of
-technical issues such as data access and data formats. It is mostly intended to be used in Jupyter notebooks, and be interoperable with all popular
+technical issues such as data access and data formats. It is mostly intended to be used in Jupyter_ notebooks, and be interoperable with all popular
 data analytic packages, such as Numpy_, Pandas_, Xarray_, SciPy_, Matplotlib_, etc. and well as machine learning frameworks, such as Tensorflow_, Keras_ or PyTorch_.
 
 
