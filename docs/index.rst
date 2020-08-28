@@ -60,6 +60,7 @@ Documentation
 
 * :doc:`reference/datasets`
 * :doc:`reference/sources`
+* :doc:`reference/api`
 
 .. toctree::
    :maxdepth: 1
@@ -68,6 +69,7 @@ Documentation
 
    reference/datasets
    reference/sources
+   reference/api
 
 
 **Contributing**
