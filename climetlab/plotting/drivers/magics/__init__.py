@@ -169,7 +169,7 @@ class Driver:
     def plot_xarray(self, ds, variable, dimensions={}):
         tmp = self.temp_file(".nc")
         ds.to_netcdf(tmp)
-        self.plot_netcdf(tmp, variable, dimension_settings)
+        self.plot_netcdf(tmp, variable, dimensions)
 
     def plot_csv(self, path, variable):
         self._data = MTable(
