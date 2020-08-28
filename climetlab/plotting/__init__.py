@@ -19,7 +19,15 @@ except Exception:
 
 
 def plot_map(data, **kwargs):
-    # This is a standalone plot, so we reset the driver
+    """Foo bar
+
+    Args:
+        data (str): Kdd
+
+    Returns:
+        str: path
+    """
+
     driver = Driver(kwargs)
 
     if getattr(data, "plot_map", None) is None:

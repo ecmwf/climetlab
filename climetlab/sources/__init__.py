@@ -45,6 +45,9 @@ def list_entries():
 
 
 class DataSource:
+    """
+    Doc
+    """
 
     name = None
     home_page = "-"

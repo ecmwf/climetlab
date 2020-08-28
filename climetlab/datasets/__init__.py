@@ -17,8 +17,6 @@ from climetlab.utils.html import table
 
 
 class Dataset:
-
-
     """
     Doc string for Dataset
     """
