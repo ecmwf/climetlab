@@ -18,6 +18,11 @@ from climetlab.utils.html import table
 
 class Dataset:
 
+
+    """
+    Doc string for Dataset
+    """
+
     name = None
     home_page = "-"
     licence = "-"
