@@ -21,6 +21,7 @@ from Magics import macro
 
 NONE = object()
 
+
 class Action:
     action = None
 
@@ -77,15 +78,13 @@ class Driver:
 
         grid = self.option("grid", False)
 
-
         self._projection = None
         self._data = None
-        self._format = "png"
-        self._width_cm = 10
-        self._height_cm = 10
-        # self._width = width
+        self._width_cm = 10.0
+        self._height_cm = 10.0
+
         self._page_ratio = 1.0
-        self._contour = MCont(contour_automatic_setting="ecmwf", legend=False,)
+        self._contour = MCont(contour_automatic_setting="ecmwf", legend=False)
 
         self._grid = grid
         self._background = MCoast(
@@ -140,7 +139,19 @@ class Driver:
             grib_field_position=int(offset),
         )
 
-    def plot_netcdf(self, params):
+    def plot_netcdf(self, path, variable, dimensions={}):
+        dimension_setting = ["%s:%s" % (k, v) for k, v in dimensions.items()]
+
+        if dimension_setting:
+            params = dict(
+                netcdf_filename=path,
+                netcdf_value_variable=variable,
+                netcdf_dimension_setting=dimension_setting,
+                netcdf_dimension_setting_method="index",
+            )
+        else:
+            params = dict(netcdf_filename=path, netcdf_value_variable=variable)
+
         self._data = MNetcdf(**params)
 
     def plot_numpy(
@@ -155,25 +166,10 @@ class Driver:
             input_metadata=metadata,
         )
 
-    def plot_xarray(self, ds, variable, dimension_settings={}):
+    def plot_xarray(self, ds, variable, dimensions={}):
         tmp = self.temp_file(".nc")
         ds.to_netcdf(tmp)
-
-        dimensions = []
-        for k, v in dimension_settings.items():
-            dimensions.append("%s:%s" % (k, v))
-
-        if dimensions:
-            self.plot_netcdf(
-                dict(
-                    netcdf_filename=tmp,
-                    netcdf_value_variable=variable,
-                    netcdf_dimension_setting=dimensions,
-                    netcdf_dimension_setting_method="index",
-                )
-            )
-        else:
-            self.plot_netcdf(dict(netcdf_filename=tmp, netcdf_value_variable=variable,))
+        self.plot_netcdf(tmp, variable, dimension_settings)
 
     def plot_csv(self, path, variable):
         self._data = MTable(
@@ -190,20 +186,6 @@ class Driver:
         tmp = self.temp_file(".csv")
         frame[[lat, lon, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
-
-    def Xapply_kwargs(self, kwargs):
-
-        if "style" in kwargs:
-            self.style(kwargs.pop("style"))
-
-        if "projection" in kwargs:
-            self.projection(kwargs.pop("projection"))
-
-        for n in ("width", "grid", "title"):
-            kwargs.pop(n, None)
-
-        if kwargs:
-            print("magics.apply_kwargs ignoring", kwargs, file=sys.stderr)
 
     def _apply(self, collection, value, action, default_attribute=None):
 
@@ -229,12 +211,14 @@ class Driver:
         assert False, (collection, value)
 
     def projection(self, projection):
-        self._projection = self._apply(
-            "projections", projection, macro.mmap, "subpage_map_projection"
-        )
+        if projection:
+            self._projection = self._apply(
+                "projections", projection, macro.mmap, "subpage_map_projection"
+            )
 
     def style(self, style):
-        self._contour = self._apply("styles", style, macro.mcont)
+        if style:
+            self._contour = self._apply("styles", style, macro.mcont)
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
         self._data = MInput(
@@ -254,23 +238,14 @@ class Driver:
 
     def show(self):
 
+        self.style(self.option("style", None))
+        self.projection(self.option("projection", None))
+
         title = self.option("title", None)
-        width = self.option("width", 400)
+        width = self.option("width", 680)
         frame = self.option("frame", False)
 
-        self.Xapply_kwargs(self._options)
-
-        # if format:
-        #     self._format = format
-
-        # if "projection" in self.kwargs:
-        #     self.projection(self.kwargs["projection"])
-
-        # if "style" in self.kwargs:
-        #     self.style(self.kwargs["style"])
-
-        # if path is None:
-        path = self.temp_file("." + self._format)
+        path = self.option("path", self.temp_file("." + self.option("format", "png")))
 
         _title_height_cm = 0
         if title:
@@ -293,20 +268,27 @@ class Driver:
         output = Output(
             output_formats=[fmt[1:]],
             output_name_first_page_number=False,
-            page_x_length=float(self._width_cm),
-            page_y_length=float(self._height_cm) * self._page_ratio,
-            super_page_x_length=float(self._width_cm),
-            super_page_y_length=float(self._height_cm) * self._page_ratio
-            + _title_height_cm,
-            subpage_x_length=float(self._width_cm),
-            subpage_y_length=float(self._height_cm) * self._page_ratio,
+            page_x_length=self._width_cm,
+            page_y_length=self._height_cm * self._page_ratio,
+            super_page_x_length=self._width_cm,
+            super_page_y_length=self._height_cm * self._page_ratio + _title_height_cm,
+            subpage_x_length=self._width_cm,
+            subpage_y_length=self._height_cm * self._page_ratio,
             subpage_x_position=0.0,
             subpage_y_position=0.0,
-            output_width=self._width if width is None else width,
+            output_width=width,
             page_frame=frame,
             page_id_line=False,
             output_name=base,
         )
+
+        unused = set(self._options.keys()) - self._used_options
+        if unused:
+            print(
+                "WARNING: unused argument%s:" % ("s" if len(unused) > 1 else "",),
+                ", ".join("%s=%s" % (x, self._options[x]) for x in unused),
+                file=sys.stderr,
+            )
 
         args = [
             x
@@ -329,7 +311,7 @@ class Driver:
             print(args, file=sys.stderr)
             raise
 
-        if self._format == "svg":
+        if fmt == ".svg":
             Display = SVG
         else:
             Display = Image

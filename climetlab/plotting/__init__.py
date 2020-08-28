@@ -18,7 +18,6 @@ except Exception:
     from .drivers.missing import Driver
 
 
-
 def plot_map(data, **kwargs):
     # This is a standalone plot, so we reset the driver
     driver = Driver(kwargs)

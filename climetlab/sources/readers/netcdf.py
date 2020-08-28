@@ -132,27 +132,13 @@ class NetCDFField:
 
     def plot_map(self, driver):
 
-        dimensions = ["%s:%s" % (s.name, s.index) for s in self.slices]
-
-        if dimensions:
-            params = dict(
-                netcdf_filename=self.path,
-                netcdf_value_variable=self.variable,
-                netcdf_dimension_setting=dimensions,
-                netcdf_dimension_setting_method="index",
-            )
-        else:
-            params = dict(
-                netcdf_filename=self.path, netcdf_value_variable=self.variable
-            )
-
-        # params['netcdf_field_automatic_scaling'] = 'off'
+        dimensions = dict((s.name, s.index) for s in self.slices)
 
         driver.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
-        driver.plot_netcdf(params)
+        driver.plot_netcdf(self.path, self.variable, dimensions)
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)

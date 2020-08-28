@@ -9,7 +9,7 @@
 
 
 class PandasHelper:
-    def __init__(self, frame, margins=0,**kwargs):
+    def __init__(self, frame, margins=0, **kwargs):
 
         self.frame = frame
         self.margins = margins
@@ -27,7 +27,7 @@ class PandasHelper:
     def plot_map(self, driver):
 
         margins = driver.option("margins", self.margins)
-        column = driver.option("colums", self.lat)
+        column = driver.option("column", self.lat)
 
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
