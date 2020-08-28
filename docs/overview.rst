@@ -14,3 +14,5 @@ by hidding the access methods and data formats.
 
 The snippet of code above would download the dataset *dataset-name*, cache it locally
 and decodes its content in a NumPy array.
+
+.. image:: _static/climetlab.svg
