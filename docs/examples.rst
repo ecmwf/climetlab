@@ -5,4 +5,4 @@ Examples
     :maxdepth: 2
     :glob:
 
-    examples/*.ipynb
+    examples/[0-9][0-9]-*.ipynb
