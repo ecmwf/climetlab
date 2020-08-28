@@ -1,3 +1,4 @@
+
 # Features
 
 ## Cache management
@@ -74,3 +75,10 @@ s = cml.load_source("cds", "era5-single-level",
 
 - Get stuck if geopoints is empty
 
+# Stuff
+
+## Settings for vscode
+
+```
+"python.dataScience.runStartupCommands": ["%load_ext autoreload", "%autoreload 2"]
+```

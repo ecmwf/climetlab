@@ -18,16 +18,14 @@ except Exception:
     from .drivers.missing import Driver
 
 
-CURRENT_DRIVER = Driver()
 
-
-def plot_map(data, *args, **kwargs):
+def plot_map(data, **kwargs):
     # This is a standalone plot, so we reset the driver
-    CURRENT_DRIVER = Driver(*args, **kwargs)
+    driver = Driver(kwargs)
 
     if getattr(data, "plot_map", None) is None:
-        data = helper(data, *args, **kwargs)
+        data = helper(data)
 
-    data.plot_map(CURRENT_DRIVER)
+    data.plot_map(driver)
 
-    return display(CURRENT_DRIVER.show(**kwargs))
+    return display(driver.show())

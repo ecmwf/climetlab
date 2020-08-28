@@ -9,13 +9,12 @@
 
 
 class NumpyArrayHelper:
-    def __init__(self, data, field, **kwargs):
+    def __init__(self, data):
         self.data = data
-        self.field = field
-        self.kwargs = kwargs
 
     def plot_map(self, driver):
-        grid = self.field.grid_definition()
+        field = driver.option("field")
+        grid = field.grid_definition()
 
         driver.bounding_box(
             north=grid["north"],
@@ -30,10 +29,8 @@ class NumpyArrayHelper:
             west=grid["west"],
             south_north_increment=grid["south_north_increment"],
             west_east_increment=grid["west_east_increment"],
-            metadata=self.field.metadata(),
+            metadata=field.metadata(),
         )
-
-        driver.apply_kwargs(self.kwargs)
 
 
 helper = NumpyArrayHelper

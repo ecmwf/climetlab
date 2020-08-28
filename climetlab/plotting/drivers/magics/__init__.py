@@ -19,6 +19,8 @@ from Magics import macro
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
 
+NONE = object()
+
 class Action:
     action = None
 
@@ -60,18 +62,28 @@ class MTable(Action):
     action = "mtable"
 
 
+class MText(Action):
+    action = "mtext"
+
+
 class Output(Action):
     action = "output"
 
 
 class Driver:
-    def __init__(self, width=680, grid=False, **kwargs):
+    def __init__(self, options=None):
+        self._options = options if options else {}
+        self._used_options = set()
+
+        grid = self.option("grid", False)
+
+
         self._projection = None
         self._data = None
         self._format = "png"
         self._width_cm = 10
         self._height_cm = 10
-        self._width = width
+        # self._width = width
         self._page_ratio = 1.0
         self._contour = MCont(contour_automatic_setting="ecmwf", legend=False,)
 
@@ -97,8 +109,6 @@ class Driver:
 
         self._legend = None
         self._title = None
-
-        self.kwargs = dict(**kwargs)
 
         self.bounding_box(90, -180, -90, 180)
         self._tmp = []
@@ -163,19 +173,7 @@ class Driver:
                 )
             )
         else:
-            self.plot_netcdf(
-                dict(
-                    netcdf_filename=tmp,
-                    netcdf_value_variable=variable,
-                    # netcdf_dimension_setting=dimensions,
-                    # netcdf_dimension_setting_method="index",
-                )
-            )
-        # self._data = macro.mxarray(
-        #     xarray_dataset=ds,
-        #     xarray_variable_name=variable,
-        #     xarray_dimension_settings=dimension_settings,
-        # )
+            self.plot_netcdf(dict(netcdf_filename=tmp, netcdf_value_variable=variable,))
 
     def plot_csv(self, path, variable):
         self._data = MTable(
@@ -193,7 +191,7 @@ class Driver:
         frame[[lat, lon, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
 
-    def apply_kwargs(self, kwargs):
+    def Xapply_kwargs(self, kwargs):
 
         if "style" in kwargs:
             self.style(kwargs.pop("style"))
@@ -247,21 +245,32 @@ class Driver:
             input_metadata=metadata,
         )
 
-    def show(
-        self, path=None, width=None, title=None, format=None, frame=False, **kwargs
-    ):
+    def option(self, name, default=NONE):
+        self._used_options.add(name)
+        if default is NONE:
+            return self._options[name]
+        else:
+            return self._options.get(name, default)
 
-        if format:
-            self._format = format
+    def show(self):
 
-        if "projection" in self.kwargs:
-            self.projection(self.kwargs["projection"])
+        title = self.option("title", None)
+        width = self.option("width", 400)
+        frame = self.option("frame", False)
 
-        if "style" in self.kwargs:
-            self.style(self.kwargs["style"])
+        self.Xapply_kwargs(self._options)
 
-        if path is None:
-            path = self.temp_file("." + self._format)
+        # if format:
+        #     self._format = format
+
+        # if "projection" in self.kwargs:
+        #     self.projection(self.kwargs["projection"])
+
+        # if "style" in self.kwargs:
+        #     self.style(self.kwargs["style"])
+
+        # if path is None:
+        path = self.temp_file("." + self._format)
 
         _title_height_cm = 0
         if title:
@@ -287,7 +296,8 @@ class Driver:
             page_x_length=float(self._width_cm),
             page_y_length=float(self._height_cm) * self._page_ratio,
             super_page_x_length=float(self._width_cm),
-            super_page_y_length=float(self._height_cm) * self._page_ratio + _title_height_cm,
+            super_page_y_length=float(self._height_cm) * self._page_ratio
+            + _title_height_cm,
             subpage_x_length=float(self._width_cm),
             subpage_y_length=float(self._height_cm) * self._page_ratio,
             subpage_x_position=0.0,

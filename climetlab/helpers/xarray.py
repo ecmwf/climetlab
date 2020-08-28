@@ -12,7 +12,7 @@ import xarray as xr
 
 
 class XArrayHelper:
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, data):
 
         self.data = data
         for name, var in data.data_vars.items():
@@ -31,8 +31,6 @@ class XArrayHelper:
         self.east = np.amax(data[lon].data)
         self.west = np.amin(data[lon].data)
 
-        self.kwargs = kwargs
-
     def plot_map(self, driver):
         driver.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
@@ -44,7 +42,6 @@ class XArrayHelper:
             dimension_settings[d] = 0  # self.data[d].data[0]
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
-        driver.apply_kwargs(self.kwargs)
 
 
 def helper(data, *args, **kwargs):

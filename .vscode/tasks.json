@@ -12,6 +12,17 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+
+        {
+            "label": "black",
+            "type": "shell",
+            "command": "black .",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

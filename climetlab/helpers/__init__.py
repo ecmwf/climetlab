@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import sys
 from importlib import import_module
 
 HELPERS = {
@@ -30,6 +31,10 @@ def helper(data, *args, **kwargs):
 
     if name is not None:
         helper = import_module(".%s" % (name,), package=__name__)
-        return helper.helper(data, *args, **kwargs)
+        try:
+            return helper.helper(data, *args, **kwargs)
+        except Exception:
+            print(helper, file=sys.stderr)
+            raise
 
     raise ValueError("Cannot find a helper for class %s" % (fullname,))

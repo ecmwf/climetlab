@@ -9,12 +9,10 @@
 
 
 class PandasHelper:
-    def __init__(self, frame, margins=0, column=None, **kwargs):
+    def __init__(self, frame, margins=0,**kwargs):
 
         self.frame = frame
-        self.kwargs = kwargs
         self.margins = margins
-        self.column = column
 
         if "lat@hdr" in self.frame:
             self.lat = "lat@hdr"
@@ -27,6 +25,9 @@ class PandasHelper:
             self.lon = "longitude"
 
     def plot_map(self, driver):
+
+        margins = driver.option("margins", self.margins)
+        column = driver.option("colums", self.lat)
 
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
@@ -45,19 +46,13 @@ class PandasHelper:
             east, west = east2, west2
 
         driver.bounding_box(
-            north=north + self.margins,
-            south=south - self.margins,
-            west=west - self.margins,
-            east=east + self.margins,
+            north=north + margins,
+            south=south - margins,
+            west=west - margins,
+            east=east + margins,
         )
 
-        if self.column is None:
-            column = self.lat
-        else:
-            column = self.column
-
         driver.plot_pandas(self.frame, self.lat, self.lon, column)
-        driver.apply_kwargs(self.kwargs)
 
     def bounding_box(self):
 
