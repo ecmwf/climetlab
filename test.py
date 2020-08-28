@@ -1,11 +1,11 @@
-import climetlab as cml
-import ecmwflibs
+# import entrypoints
 
-print(ecmwflibs.__file__)
 
-source = cml.load_source(
-    "file", "/Users/baudouin/git/climetlab/docs/examples/test.grib"
-)
-for s in source:
-    print(cml.plot_map(s))
-#
+# for e in entrypoints.get_group_all('climetlab.datasets'):
+#     print(e)
+#     print(e.load())
+
+from climetlab import load_dataset
+
+ds = load_dataset("demo-dataset")
+print(ds)

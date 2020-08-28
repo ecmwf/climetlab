@@ -85,33 +85,15 @@ class MeteonetRadar(Meteonet):
 
         self._xarray = ds
 
-        self.path = path + ".nc"
-
-        try:
-            os.unlink(self.path)
-        except Exception:
-            pass
-
-        ds.to_netcdf(self.path)
-        self.source = load_source("file", path + ".nc")
-
-    def to_array(self):
+    def to_xarray(self):
         return self._xarray
 
     def plot_map(self, driver):
         driver.bounding_box(self.north, self.west, self.south, self.east)
 
-        dimensions = ["time:0"]
+        dimensions = {"time": 0}
 
-        driver.plot_netcdf(
-            dict(
-                netcdf_filename=self.path,
-                netcdf_value_variable=self.variable,
-                netcdf_dimension_setting=dimensions,
-                netcdf_dimension_setting_method="index",
-            )
-        )
-
+        driver.plot_xarray(self._xarray, self.variable, dimensions)
         driver.style("meteonet-radar-{}".format(self.variable))
 
 

@@ -61,34 +61,37 @@ def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset
 
 
-def _yaml_callcack(plugin):
-    with open(plugin) as f:
-        dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
+class DatasetLoader:
 
-    class Wrapped(Dataset):
-        def __init__(self, *args, **kwargs):
+    kind = "dataset"
 
-            for k, v in dataset.get("metadata", {}).items():
-                setattr(self, k, v)
+    def load_yaml(self, path):
+        with open(path) as f:
+            dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
 
-            self.source = climetlab.load_source(
-                dataset["source"], **dataset.get("args", {})
-            )
+        class Wrapped(Dataset):
+            def __init__(self, *args, **kwargs):
 
-    return Wrapped
+                for k, v in dataset.get("metadata", {}).items():
+                    setattr(self, k, v)
 
+                self.source = climetlab.load_source(
+                    dataset["source"], **dataset.get("args", {})
+                )
 
-def _lookup(name):
-    return find_plugin(
-        os.path.dirname(__file__),
-        name,
-        module_callback=_module_callback,
-        yaml_callcack=_yaml_callcack,
-    )
+        return Wrapped
+
+    def load_module(self, module):
+        return import_module(module, package=__name__).dataset
+
+    def load_entry(self, entry):
+        return entry.load().dataset
 
 
 def load(name, *args, **kwargs):
-    dataset = _lookup(name)(*args, **kwargs)
-    if dataset.name is None:
+    loader = DatasetLoader()
+    dataset = find_plugin(os.path.dirname(__file__), name, loader)
+    dataset = dataset(*args, **kwargs)
+    if getattr(dataset, "name", None) is None:
         dataset.name = name
     return dataset

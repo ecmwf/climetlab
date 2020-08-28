@@ -15,7 +15,7 @@ from .plotting import plot_map
 from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
 
-__version__ = "0.0.58"
+__version__ = "0.0.59"
 
 
 __all__ = [

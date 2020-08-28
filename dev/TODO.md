@@ -82,3 +82,6 @@ s = cml.load_source("cds", "era5-single-level",
 ```
 "python.dataScience.runStartupCommands": ["%load_ext autoreload", "%autoreload 2"]
 ```
+
+## IPython
+See https://ipython.readthedocs.io/en/stable/config/integrating.html
