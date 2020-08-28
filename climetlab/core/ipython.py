@@ -20,7 +20,7 @@ except Exception:
     pass
 
 
-def _identity(x):
+def _identity(x, **kwargs):
     return x
 
 

@@ -19,6 +19,50 @@ from Magics import macro
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
 
+class Action:
+    action = None
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        return "macro.%s(%s)" % (self.action, self.kwargs)
+
+    def execute(self):
+        return getattr(macro, self.action)(**self.kwargs).execute()
+
+
+class MCont(Action):
+    action = "mcont"
+
+
+class MCoast(Action):
+    action = "mcoast"
+
+
+class MMap(Action):
+    action = "mmap"
+
+
+class MGrib(Action):
+    action = "mgrib"
+
+
+class MNetcdf(Action):
+    action = "mnetcdf"
+
+
+class MInput(Action):
+    action = "minput"
+
+
+class MTable(Action):
+    action = "mtable"
+
+
+class Output(Action):
+    action = "output"
+
 
 class Driver:
     def __init__(self, width=680, grid=False, **kwargs):
@@ -29,10 +73,10 @@ class Driver:
         self._height_cm = 10
         self._width = width
         self._page_ratio = 1.0
-        self._contour = macro.mcont(contour_automatic_setting="ecmwf", legend=False,)
+        self._contour = MCont(contour_automatic_setting="ecmwf", legend=False,)
 
         self._grid = grid
-        self._background = macro.mcoast(
+        self._background = MCoast(
             map_grid=self._grid,
             map_grid_colour="tan",
             map_label=False,
@@ -44,7 +88,7 @@ class Driver:
             map_grid_frame_thickness=5,
         )
 
-        self._foreground = macro.mcoast(
+        self._foreground = MCoast(
             map_grid=self._grid,
             map_label=False,
             map_grid_frame=True,
@@ -70,7 +114,7 @@ class Driver:
         )
         assert west != east
 
-        self._projection = macro.mmap(
+        self._projection = MMap(
             subpage_upper_right_longitude=float(east),
             subpage_upper_right_latitude=float(north),
             subpage_lower_left_latitude=float(south),
@@ -80,19 +124,19 @@ class Driver:
         self._page_ratio = (north - south) / (east - west)
 
     def plot_grib(self, path, offset):
-        self._data = macro.mgrib(
+        self._data = MGrib(
             grib_input_file_name=path,
             grib_file_address_mode="byte_offset",
             grib_field_position=int(offset),
         )
 
     def plot_netcdf(self, params):
-        self._data = macro.mnetcdf(**params)
+        self._data = MNetcdf(**params)
 
     def plot_numpy(
         self, data, north, west, south_north_increment, west_east_increment, metadata
     ):
-        self._data = macro.minput(
+        self._data = MInput(
             input_field=data,
             input_field_initial_latitude=float(north),
             input_field_latitude_step=-float(south_north_increment),
@@ -134,7 +178,7 @@ class Driver:
         # )
 
     def plot_csv(self, path, variable):
-        self._data = macro.mtable(
+        self._data = MTable(
             table_filename=path,
             table_latitude_variable="1",
             table_longitude_variable="2",
@@ -195,7 +239,7 @@ class Driver:
         self._contour = self._apply("styles", style, macro.mcont)
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
-        self._data = macro.minput(
+        self._data = MInput(
             input_type="geographical",
             input_values=list(values),
             input_latitudes_list=list(latitudes),
@@ -237,7 +281,7 @@ class Driver:
                 )
 
         base, fmt = os.path.splitext(path)
-        output = macro.output(
+        output = Output(
             output_formats=[fmt[1:]],
             output_name_first_page_number=False,
             page_x_length=float(self._width_cm),
