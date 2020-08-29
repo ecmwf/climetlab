@@ -8,7 +8,14 @@
 #
 
 
-def download_and_cache(url):
+def download_and_cache(url: str) -> str:
+    """[summary]
+
+    :param url: [description]
+    :type url: str
+    :return: [description]
+    :rtype: str
+    """
     from climetlab import load_source
 
     return load_source("url", url).path

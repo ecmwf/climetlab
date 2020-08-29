@@ -54,7 +54,6 @@ s = cml.load_source("cds", "era5-single-level",
     )
 ```
 
-
 ## Datasets
 
 ## Data sources
@@ -63,7 +62,6 @@ s = cml.load_source("cds", "era5-single-level",
 
 - Plot CSV files (as geopoints)
 - If netcdf_dimension_setting is empty, error
-
 
 # Bug fixes
 
@@ -79,9 +77,14 @@ s = cml.load_source("cds", "era5-single-level",
 
 ## Settings for vscode
 
-```
+```bash
 "python.dataScience.runStartupCommands": ["%load_ext autoreload", "%autoreload 2"]
 ```
 
 ## IPython
+
 See https://ipython.readthedocs.io/en/stable/config/integrating.html
+
+## RST
+
+Use `doc8` instead of `rstcheck`

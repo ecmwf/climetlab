@@ -11,13 +11,15 @@ Public
    climetlab.plot_map
    climetlab.new_plot
 
-sssss
+Module
+------
 
 .. automodule:: climetlab
     :members:
 
 
-sssss
+Function
+--------
 
 .. autofunction:: climetlab.plot_map
 
@@ -30,7 +32,7 @@ Plotting
 
 
 Other
-----
+-----
 
 .. autosummary::
 

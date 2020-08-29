@@ -37,11 +37,11 @@ class Plot:
         return self.driver.macro()
 
 
-def new_plot(**kwargs):
+def new_plot(**kwargs) -> Plot:
     """[summary]
 
     :return: [description]
-    :rtype: [type]
+    :rtype: Plot
     """
     return Plot(kwargs)
 

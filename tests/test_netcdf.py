@@ -9,8 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_source
+from climetlab import load_source, plot_map
 
 
 def test_netcdf():
-    s = load_source("file", "docs/examples/test.nc")
+    for s in load_source("file", "docs/examples/test.nc"):
+        plot_map(s)
