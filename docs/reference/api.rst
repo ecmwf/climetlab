@@ -1,9 +1,15 @@
-API Reference
+API reference
 =============
 
 Public
 ------
 
+.. autosummary::
+
+   climetlab.load_dataset
+   climetlab.load_source
+   climetlab.plot_map
+   climetlab.new_plot
 
 sssss
 
@@ -16,15 +22,12 @@ sssss
 .. autofunction:: climetlab.plot_map
 
 
-ssss
+Plotting
+--------
 
-.. autosummary::
-   :toctree: generated/
+.. autoclass:: climetlab.plotting.Driver
+   :members:
 
-   climetlab.load_dataset
-   climetlab.load_source
-   climetlab.plot_map
-   climetlab.plotting.plot_map
 
 
 XXXX

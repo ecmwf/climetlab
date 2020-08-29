@@ -9,7 +9,7 @@
 
 from .sources import load as load_source
 from .datasets import load as load_dataset
-from .plotting import plot_map
+from .plotting import plot_map, new_plot
 
 
 from climetlab.sources import DataSource
@@ -22,6 +22,7 @@ __all__ = [
     "load_source",
     "load_dataset",
     "plot_map",
+    "new_plot",
     "Dataset",
     "DataSource",
 ]

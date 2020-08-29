@@ -5,7 +5,9 @@
 #     print(e)
 #     print(e.load())
 
-from climetlab import load_dataset
+from climetlab import load_dataset, plot_map
 
-ds = load_dataset("demo-dataset")
-print(ds)
+ds1 = load_dataset("sample-bufr-data")
+ds2 = load_dataset("sample-bufr-data")
+
+plot_map((ds1, ds2))

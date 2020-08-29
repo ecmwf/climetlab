@@ -23,71 +23,82 @@ NONE = object()
 
 
 class Action:
-    action = None
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
     def __repr__(self):
-        return "macro.%s(%s)" % (self.action, self.kwargs)
+        x = ["macro.%s(" % (self.action,)]
+        for k, v in sorted(self.kwargs.items()):
+            x.append("\n   %s=%r," % (k, v))
+        x.append("\n    )")
+        return "".join(x)
+
+    @property
+    def action(self):
+        return self.__class__.__name__
 
     def execute(self):
         return getattr(macro, self.action)(**self.kwargs).execute()
 
 
-class MCont(Action):
-    action = "mcont"
+class mcont(Action):
+    pass
 
 
-class MCoast(Action):
-    action = "mcoast"
+class mcoast(Action):
+    pass
 
 
-class MMap(Action):
-    action = "mmap"
+class mmap(Action):
+    pass
 
 
-class MGrib(Action):
-    action = "mgrib"
+class mgrib(Action):
+    pass
 
 
-class MNetcdf(Action):
-    action = "mnetcdf"
+class mnetcdf(Action):
+    pass
 
 
-class MInput(Action):
-    action = "minput"
+class minput(Action):
+    pass
 
 
-class MTable(Action):
-    action = "mtable"
+class mtable(Action):
+    pass
 
 
-class MText(Action):
-    action = "mtext"
+class mtext(Action):
+    pass
 
 
-class Output(Action):
-    action = "output"
+class output(Action):
+    pass
 
 
 class Driver:
+    """TODO: Docscting
+    """
     def __init__(self, options=None):
+
         self._options = options if options else {}
         self._used_options = set()
 
         grid = self.option("grid", False)
 
         self._projection = None
-        self._data = None
+        self._layers = []
         self._width_cm = 10.0
         self._height_cm = 10.0
 
         self._page_ratio = 1.0
-        self._contour = MCont(contour_automatic_setting="ecmwf", legend=False)
+        self._data = None
+        self._contour = mcont(contour_automatic_setting="ecmwf", legend=False)
 
         self._grid = grid
-        self._background = MCoast(
+        self._background = mcoast(
             map_grid=self._grid,
             map_grid_colour="tan",
             map_label=False,
@@ -99,7 +110,7 @@ class Driver:
             map_grid_frame_thickness=5,
         )
 
-        self._foreground = MCoast(
+        self._foreground = mcoast(
             map_grid=self._grid,
             map_label=False,
             map_grid_frame=True,
@@ -123,7 +134,7 @@ class Driver:
         )
         assert west != east
 
-        self._projection = MMap(
+        self._projection = mmap(
             subpage_upper_right_longitude=float(east),
             subpage_upper_right_latitude=float(north),
             subpage_lower_left_latitude=float(south),
@@ -132,14 +143,39 @@ class Driver:
         )
         self._page_ratio = (north - south) / (east - west)
 
+    def data(self, data):
+        if self._data is not None:
+            self._layers.append(self._data)
+            self._layers.append(self._contour)
+        self._data = data
+        self._contour = mcont(contour_automatic_setting="ecmwf", legend=False)
+
     def plot_grib(self, path, offset):
-        self._data = MGrib(
-            grib_input_file_name=path,
-            grib_file_address_mode="byte_offset",
-            grib_field_position=int(offset),
+        """[summary]
+
+        :param path: [description]
+        :type path: [type]
+        :param offset: [description]
+        :type offset: [type]
+        """
+        self.data(
+            mgrib(
+                grib_input_file_name=path,
+                grib_file_address_mode="byte_offset",
+                grib_field_position=int(offset),
+            )
         )
 
     def plot_netcdf(self, path, variable, dimensions={}):
+        """[summary]
+
+        :param path: [description]
+        :type path: [type]
+        :param variable: [description]
+        :type variable: [type]
+        :param dimensions: [description], defaults to {}
+        :type dimensions: dict, optional
+        """
         dimension_setting = ["%s:%s" % (k, v) for k, v in dimensions.items()]
 
         if dimension_setting:
@@ -152,37 +188,83 @@ class Driver:
         else:
             params = dict(netcdf_filename=path, netcdf_value_variable=variable)
 
-        self._data = MNetcdf(**params)
+        self.data(mnetcdf(**params))
 
     def plot_numpy(
         self, data, north, west, south_north_increment, west_east_increment, metadata
     ):
-        self._data = MInput(
-            input_field=data,
-            input_field_initial_latitude=float(north),
-            input_field_latitude_step=-float(south_north_increment),
-            input_field_initial_longitude=float(west),
-            input_field_longitude_step=float(west_east_increment),
-            input_metadata=metadata,
+        """[summary]
+
+        :param data: [description]
+        :type data: [type]
+        :param north: [description]
+        :type north: [type]
+        :param west: [description]
+        :type west: [type]
+        :param south_north_increment: [description]
+        :type south_north_increment: [type]
+        :param west_east_increment: [description]
+        :type west_east_increment: [type]
+        :param metadata: [description]
+        :type metadata: [type]
+        """
+        self.data(
+            minput(
+                input_field=data,
+                input_field_initial_latitude=float(north),
+                input_field_latitude_step=-float(south_north_increment),
+                input_field_initial_longitude=float(west),
+                input_field_longitude_step=float(west_east_increment),
+                input_metadata=metadata,
+            )
         )
 
     def plot_xarray(self, ds, variable, dimensions={}):
+        """[summary]
+
+        :param ds: [description]
+        :type ds: [type]
+        :param variable: [description]
+        :type variable: [type]
+        :param dimensions: [description], defaults to {}
+        :type dimensions: dict, optional
+        """
         tmp = self.temp_file(".nc")
         ds.to_netcdf(tmp)
         self.plot_netcdf(tmp, variable, dimensions)
 
     def plot_csv(self, path, variable):
-        self._data = MTable(
-            table_filename=path,
-            table_latitude_variable="1",
-            table_longitude_variable="2",
-            table_value_variable="3",
-            table_header_row=0,
-            table_variable_identifier_type="index",
+        """[summary]
+
+        :param path: [description]
+        :type path: [type]
+        :param variable: [description]
+        :type variable: [type]
+        """
+        self.data(
+            mtable(
+                table_filename=path,
+                table_latitude_variable="1",
+                table_longitude_variable="2",
+                table_value_variable="3",
+                table_header_row=0,
+                table_variable_identifier_type="index",
+            )
         )
         self.style("red-markers")
 
     def plot_pandas(self, frame, lat, lon, variable):
+        """[summary]
+
+        :param frame: [description]
+        :type frame: [type]
+        :param lat: [description]
+        :type lat: [type]
+        :param lon: [description]
+        :type lon: [type]
+        :param variable: [description]
+        :type variable: [type]
+        """
         tmp = self.temp_file(".csv")
         frame[[lat, lon, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
@@ -205,28 +287,28 @@ class Driver:
             actions = list(magics.keys())
             assert len(actions) == 1, actions
 
-            action = getattr(macro, actions[0])
+            action = globals()[actions[0]]
             return action(magics[actions[0]])
 
         assert False, (collection, value)
 
     def projection(self, projection):
-        if projection:
-            self._projection = self._apply(
-                "projections", projection, macro.mmap, "subpage_map_projection"
-            )
+        self._projection = self._apply(
+            "projections", projection, macro.mmap, "subpage_map_projection"
+        )
 
     def style(self, style):
-        if style:
-            self._contour = self._apply("styles", style, macro.mcont)
+        self._contour = self._apply("styles", style, macro.mcont)
 
     def plot_values(self, latitudes, longitudes, values, metadata={}):
-        self._data = MInput(
-            input_type="geographical",
-            input_values=list(values),
-            input_latitudes_list=list(latitudes),
-            input_longitudes_list=list(longitudes),
-            input_metadata=metadata,
+        self.data(
+            minput(
+                input_type="geographical",
+                input_values=list(values),
+                input_latitudes_list=list(latitudes),
+                input_longitudes_list=list(longitudes),
+                input_metadata=metadata,
+            )
         )
 
     def option(self, name, default=NONE):
@@ -236,10 +318,18 @@ class Driver:
         else:
             return self._options.get(name, default)
 
+    def apply_options(self, options):
+        pass
+
     def show(self):
 
-        self.style(self.option("style", None))
-        self.projection(self.option("projection", None))
+        if self.option("style", None):
+            self.style(self.option("style"))
+
+        if self.option("projection", None):
+            self.projection(self.option("projection"))
+
+        self.data(None)
 
         title = self.option("title", None)
         width = self.option("width", 680)
@@ -265,7 +355,7 @@ class Driver:
                 )
 
         base, fmt = os.path.splitext(path)
-        output = Output(
+        page = output(
             output_formats=[fmt[1:]],
             output_name_first_page_number=False,
             page_x_length=self._width_cm,
@@ -290,20 +380,7 @@ class Driver:
                 file=sys.stderr,
             )
 
-        args = [
-            x
-            for x in (
-                output,
-                self._projection,
-                self._background,
-                self._data,
-                self._contour,
-                self._foreground,
-                self._legend,
-                self._title,
-            )
-            if x is not None
-        ]
+        args = [page] + self.macro()
 
         try:
             macro.plot(*args)
@@ -317,3 +394,14 @@ class Driver:
             Display = Image
 
         return Display(path, metadata=dict(width=width))
+
+    def macro(self):
+        """[summary]
+
+        :return: A list of plotting directives
+        :rtype: list
+        """
+        m = [self._projection, self._background]
+        m += self._layers
+        m += [self._foreground, self._legend, self._title]
+        return [x for x in m if x is not None]

@@ -30,9 +30,46 @@ def plot_map(data, **kwargs):
 
     driver = Driver(kwargs)
 
-    if getattr(data, "plot_map", None) is None:
-        data = helper(data)
+    if not isinstance(data, (list, tuple)):
+        data = [data]
 
-    data.plot_map(driver)
+    for d in data:
+        if getattr(d, "plot_map", None) is None:
+            d = helper(d)
+
+        d.plot_map(driver)
 
     return display(driver.show())
+
+
+class Plot:
+    """[summary]
+    """
+    def __init__(self, kwargs):
+        self.driver = Driver(kwargs)
+
+    def plot_map(self, data, **kwargs):
+        if not isinstance(data, (list, tuple)):
+            data = [data]
+
+        for d in data:
+            if getattr(d, "plot_map", None) is None:
+                d = helper(d)
+
+        d.plot_map(self.driver)
+        self.driver.apply_options(kwargs)
+
+    def show(self):
+        return display(self.driver.show())
+
+    def macro(self):
+        return self.driver.macro()
+
+
+def new_plot(**kwargs):
+    """[summary]
+
+    :return: [description]
+    :rtype: [type]
+    """
+    return Plot(kwargs)

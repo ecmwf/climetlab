@@ -9,12 +9,11 @@
 
 
 class NoneHelper:
-    def __init__(self, *args, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, data):
+        pass
 
     def plot_map(self, driver):
         driver.style(None)
-        driver.apply_kwargs(self.kwargs)
 
 
 helper = NoneHelper
