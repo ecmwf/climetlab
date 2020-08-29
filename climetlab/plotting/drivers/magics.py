@@ -167,6 +167,13 @@ class Driver:
         return self._tmp[-1].path
 
     def bounding_box(self, north: float, west: float, south: float, east: float):
+
+        # Convert to float as these values may come from Numpy
+        north = float(north)
+        west = float(west)
+        south = float(south)
+        east = float(east)
+
         assert north > south, "North (%s) must be greater than south (%s)" % (
             north,
             south,
@@ -174,10 +181,10 @@ class Driver:
         assert west != east
 
         self._projection = mmap(
-            subpage_upper_right_longitude=float(east),
-            subpage_upper_right_latitude=float(north),
-            subpage_lower_left_latitude=float(south),
-            subpage_lower_left_longitude=float(west),
+            subpage_upper_right_longitude=east,
+            subpage_upper_right_latitude=north,
+            subpage_lower_left_latitude=south,
+            subpage_lower_left_longitude=west,
             subpage_map_projection="cylindrical",
         )
         self._page_ratio = (north - south) / (east - west)

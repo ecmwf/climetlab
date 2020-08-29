@@ -76,6 +76,8 @@ Implement settings
 ## Magics
 
 - Get stuck if geopoints is empty
+- Netcdf don't plot if lat/long intergers
+- Netcdf don't plot if dimensions=[]
 
 # Stuff
 

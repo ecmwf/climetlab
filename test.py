@@ -1,13 +1,24 @@
-# import entrypoints
+import xarray as xr
+import numpy as np
+from climetlab import plot_map
 
+lon = np.arange(-180, 180, 1.0)
+lat = np.arange(90, -91, -1.0)
+t2m = np.zeros(shape=(len(lat), len(lon))
 
-# for e in entrypoints.get_group_all('climetlab.datasets'):
-#     print(e)
-#     print(e.load())
+for i in range(0, 181):
+    for j in range(0, 360):
+               t2m[i, j] = 273.15 + math.sin(i) + math.cos(j)
 
-from climetlab import load_dataset, plot_map
+ds = xr.Dataset(
+    {"t2m": (["latitude", "longitude"], t2m),},
+    coords={"longitude": lon, "latitude": lat,},
+)
 
-ds1 = load_dataset("sample-bufr-data")
-ds2 = load_dataset("sample-bufr-data")
+ds["latitude"].attrs = dict(units="degrees_north", standard_name="latitude")
+ds["longitude"].attrs = dict(units="degrees_north", standard_name="longitude")
+ds["t2m"].attrs = dict(units="K",
+                       long_name = "2 metre temperature")
 
-plot_map((ds1, ds2))
+print(ds)
+plot_map(ds)
