@@ -1,0 +1,8 @@
+---
+dataset:
+  source: url
+  args:
+    url: https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.nc
+
+  metadata:
+    documentation: Sample NetCDF file

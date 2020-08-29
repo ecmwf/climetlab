@@ -27,7 +27,8 @@ class Plot:
             if getattr(d, "plot_map", None) is None:
                 d = helper(d)
 
-        d.plot_map(self.driver)
+            d.plot_map(self.driver)
+
         self.driver.apply_options(kwargs)
 
     def show(self):
