@@ -4,7 +4,7 @@ Overview
 The goal of *CliMetLab* is to simplify access to climate and
 meteorological datasets, by hidding the access methods and data formats.
 
-.. prompt:: python \
+.. code-block:: python
 
     import climetlab as clm
 

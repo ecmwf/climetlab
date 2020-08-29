@@ -17,9 +17,8 @@ ZipUrl
 
 x
 
-.. prompt:: python \
+.. code-block:: python
 
    import climetlab as cml
 
-
-
+:ref:`foo`

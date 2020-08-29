@@ -3,6 +3,6 @@ Howtos
 
 TODO
 
-.. prompt:: bash
+.. code-block:: bash
 
    pip install climetlab

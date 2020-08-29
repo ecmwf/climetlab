@@ -59,15 +59,15 @@ release = climetlab.__version__
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.extlinks",
+    # "sphinx.ext.intersphinx",
+    # "sphinx.ext.extlinks",
     # "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "nbsphinx",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "sphinx-prompt",
-    "climetlab.sphinxext.sources",
+    # "sphinx-prompt",
+    # "climetlab.sphinxext.sources",
     # 'climetlab.sphinxext.datasets',
 ]
 
@@ -77,7 +77,8 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db",
+                    ".DS_Store", "'**.ipynb_checkpoints'"]
 
 
 # https://www.notion.so/Deepnote-Launch-Buttons-63c642a5e875463495ed2341e83a4b2a

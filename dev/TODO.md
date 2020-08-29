@@ -89,7 +89,7 @@ Implement settings
 
 ## IPython
 
-See https://ipython.readthedocs.io/en/stable/config/integrating.html
+See <https://ipython.readthedocs.io/en/stable/config/integrating.html>
 
 ## RST
 
