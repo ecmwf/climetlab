@@ -9,12 +9,13 @@
 
 import os
 import sys
-
-from climetlab.data import load as load_data
-from climetlab.core.caching import temp_file
-from climetlab.core.ipython import Image, SVG
+from os.path import abspath
 
 from Magics import macro
+
+from climetlab.core.caching import temp_file
+from climetlab.core.ipython import SVG, Image
+from climetlab.data import load as load_data
 
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
@@ -85,9 +86,9 @@ class Driver:
     """TODO: Docscting
     """
 
-    def __init__(self, options=None):
+    def __init__(self, options: dict = {}):
 
-        self._options = options if options else {}
+        self._options = options
         self._used_options = set()
 
         grid = self.option("grid", False)
@@ -127,11 +128,18 @@ class Driver:
         self.bounding_box(90, -180, -90, 180)
         self._tmp = []
 
-    def temp_file(self, extension=".tmp"):
+    def temp_file(self, extension: str = ".tmp") -> str:
+        """Return a temporary file name that will be deleted once the plot is produced.abspath
+
+        :param extension: File name extension, defaults to ".tmp"
+        :type extension: str, optional
+        :return: Temporary file name.
+        :rtype: str
+        """
         self._tmp.append(temp_file(extension))
         return self._tmp[-1].path
 
-    def bounding_box(self, north, west, south, east):
+    def bounding_box(self, north: float, west: float, south: float, east: float):
         assert north > south, "North (%s) must be greater than south (%s)" % (
             north,
             south,
@@ -154,7 +162,7 @@ class Driver:
         self._data = data
         self._contour = mcont(contour_automatic_setting="ecmwf", legend=False)
 
-    def plot_grib(self, path, offset):
+    def plot_grib(self, path: str, offset: int):
         """[summary]
 
         :param path: [description]
@@ -170,7 +178,7 @@ class Driver:
             )
         )
 
-    def plot_netcdf(self, path, variable, dimensions={}):
+    def plot_netcdf(self, path: str, variable: str, dimensions: dict = {}):
         """[summary]
 
         :param path: [description]
@@ -195,7 +203,13 @@ class Driver:
         self.data(mnetcdf(**params))
 
     def plot_numpy(
-        self, data, north, west, south_north_increment, west_east_increment, metadata
+        self,
+        data,
+        north: float,
+        west: float,
+        south_north_increment: float,
+        west_east_increment: float,
+        metadata: dict = {},
     ):
         """[summary]
 
@@ -223,7 +237,7 @@ class Driver:
             )
         )
 
-    def plot_xarray(self, ds, variable, dimensions={}):
+    def plot_xarray(self, ds, variable: str, dimensions: dict = {}):
         """[summary]
 
         :param ds: [description]
@@ -237,7 +251,7 @@ class Driver:
         ds.to_netcdf(tmp)
         self.plot_netcdf(tmp, variable, dimensions)
 
-    def plot_csv(self, path, variable):
+    def plot_csv(self, path: str, variable: str):
         """[summary]
 
         :param path: [description]
@@ -257,7 +271,7 @@ class Driver:
         )
         self.style("red-markers")
 
-    def plot_pandas(self, frame, lat, lon, variable):
+    def plot_pandas(self, frame, lat: str, lon: str, variable: str):
         """[summary]
 
         :param frame: [description]
@@ -303,17 +317,6 @@ class Driver:
 
     def style(self, style):
         self._contour = self._apply("styles", style, macro.mcont)
-
-    def plot_values(self, latitudes, longitudes, values, metadata={}):
-        self.data(
-            minput(
-                input_type="geographical",
-                input_values=list(values),
-                input_latitudes_list=list(latitudes),
-                input_longitudes_list=list(longitudes),
-                input_metadata=metadata,
-            )
-        )
 
     def option(self, name, default=NONE):
         self._used_options.add(name)

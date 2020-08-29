@@ -29,7 +29,6 @@ Plotting
    :members:
 
 
-
 XXXX
 ----
 

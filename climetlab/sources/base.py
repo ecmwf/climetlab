@@ -82,11 +82,11 @@ class APIKeyPrompt(ABC):
 
         return True
 
-    def ask_user_text(self):
+    def ask_user_text(self) -> str:
         print(self.text_message, file=sys.stderr)
         return getpass.getpass(self.prompt + ": ")
 
-    def ask_user_markdown(self):
+    def ask_user_markdown(self) -> str:
         message = markdown.markdown(self.markdown_message)
         # We use Python's markdown instead of IPython's Markdown because
         # jupyter lab/colab/deepnotes all behave differently

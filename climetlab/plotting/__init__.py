@@ -9,13 +9,7 @@
 
 from climetlab.helpers import helper
 from climetlab.core.ipython import display
-
-# This is needed when running Sphinx on ReadTheDoc
-try:
-    from .drivers.magics import Driver
-
-except Exception:
-    from .drivers.missing import Driver
+from .drivers.magics import Driver
 
 
 class Plot:
@@ -39,7 +33,7 @@ class Plot:
     def show(self):
         return display(self.driver.show())
 
-    def macro(self):
+    def macro(self) -> list:
         return self.driver.macro()
 
 
