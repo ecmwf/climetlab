@@ -63,6 +63,10 @@ s = cml.load_source("cds", "era5-single-level",
 - Plot CSV files (as geopoints)
 - If netcdf_dimension_setting is empty, error
 
+## Settings
+
+Implement settings
+
 # Bug fixes
 
 ## BUFR

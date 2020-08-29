@@ -13,7 +13,7 @@ class NoneHelper:
         pass
 
     def plot_map(self, driver):
-        driver.style(None)
+        pass
 
 
 helper = NoneHelper

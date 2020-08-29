@@ -29,6 +29,9 @@ NONE = object()
 
 
 class Action:
+
+    default_style = None
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
@@ -59,15 +62,19 @@ class mmap(Action):
     pass
 
 
-class mgrib(Action):
+class FieldAction(Action):
+    default_style = mcont(contour_automatic_setting="ecmwf", legend=False)
+
+
+class mgrib(FieldAction):
     pass
 
 
-class mnetcdf(Action):
+class mnetcdf(FieldAction):
     pass
 
 
-class minput(Action):
+class minput(FieldAction):
     pass
 
 
@@ -87,6 +94,21 @@ class output(Action):
     pass
 
 
+class Layer:
+    def __init__(self, data):
+        self._data = data
+        self._style = data.default_style
+
+    def add_action(self, actions):
+        if self._data:
+            actions.append(self._data)
+        if self._style:
+            actions.append(self._style)
+
+    def style(self, style):
+        self._style = style
+
+
 class Driver:
     """TODO: Docscting
     """
@@ -96,20 +118,15 @@ class Driver:
         self._options = options
         self._used_options = set()
 
-        grid = self.option("grid", False)
-
         self._projection = None
         self._layers = []
         self._width_cm = 10.0
         self._height_cm = 10.0
 
         self._page_ratio = 1.0
-        self._data = None
-        self._contour = mcont(contour_automatic_setting="ecmwf", legend=False)
 
-        self._grid = grid
         self._background = mcoast(
-            map_grid=self._grid,
+            map_grid=False,
             map_grid_colour="tan",
             map_label=False,
             map_boundaries=True,
@@ -121,11 +138,16 @@ class Driver:
         )
 
         self._foreground = mcoast(
-            map_grid=self._grid,
+            map_grid=False,
             map_label=False,
             map_grid_frame=True,
             map_grid_frame_thickness=5,
         )
+
+        self._grid = None
+        self._rivers = None
+        self._cities = None
+        self._borders = None
 
         self._legend = None
         self._title = None
@@ -161,11 +183,7 @@ class Driver:
         self._page_ratio = (north - south) / (east - west)
 
     def _push_layer(self, data):
-        if self._data is not None:
-            self._layers.append(self._data)
-            self._layers.append(self._contour)
-        self._data = data
-        self._contour = mcont(contour_automatic_setting="ecmwf", legend=False)
+        self._layers.append(Layer(data))
 
     def plot_grib(self, path: str, offset: int):
         """[summary]
@@ -298,13 +316,13 @@ class Driver:
             return None
 
         if isinstance(value, dict):
-            return action(value)
+            return action(**value)
 
         if isinstance(value, str):
 
             data = load_data(collection, value, fail=default_attribute is None)
             if data is None:
-                return action({default_attribute: value})
+                return action(**{default_attribute: value})
 
             magics = data["magics"]
             actions = list(magics.keys())
@@ -317,11 +335,17 @@ class Driver:
 
     def projection(self, projection):
         self._projection = self._apply(
-            "projections", projection, macro.mmap, "subpage_map_projection"
+            "projections", projection, mmap, "subpage_map_projection"
         )
 
     def style(self, style):
-        self._contour = self._apply("styles", style, macro.mcont)
+        if len(self._layers):
+            self._layers[-1].style(self._apply("styles", style, mcont))
+        else:
+            print(
+                "WARNING: ignoring style [%r], not current data layer." % (style,),
+                file=sys.stderr,
+            )
 
     def option(self, name: str, default=NONE):
         self._used_options.add(name)
@@ -337,19 +361,31 @@ class Driver:
 
         if not self.option("background", True):
             self._background = None
+
         if not self.option("foreground", True):
             self._foreground = None
+
         if self.option("style", None):
             self.style(self.option("style"))
 
         if self.option("projection", None):
             self.projection(self.option("projection"))
 
-        self._push_layer(None)
-
         title = self.option("title", None)
         width = self.option("width", 680)
         frame = self.option("frame", False)
+
+        if self.option("grid", False):
+            self._grid = mmap(map_grid=True, map_coastline=False)
+
+        if self.option("borders", False):
+            self._borders = mmap(map_boundaries=True, map_grid=False, map_coastline=False)
+
+        if self.option("rivers", False):
+            self._rivers = mmap(map_rivers=True, map_grid=False, map_coastline=False)
+
+        if self.option("cities", False):
+            self._cities = mmap(map_cities=True, map_grid=False, map_coastline=False)
 
         path = self.option(
             "path", self.temporary_file("." + self.option("format", "png"))
@@ -400,6 +436,9 @@ class Driver:
 
         args = [page] + self.macro()
 
+        # for a in args:
+        #     print(a)
+
         try:
             macro.plot(*args)
         except Exception:
@@ -420,6 +459,15 @@ class Driver:
         :rtype: list
         """
         m = [self._projection, self._background]
-        m += self._layers
-        m += [self._foreground, self._legend, self._title]
+        for r in self._layers:
+            r.add_action(m)
+        m += [
+            self._rivers,
+            self._borders,
+            self._cities,
+            self._foreground,
+            self._grid,
+            self._legend,
+            self._title,
+        ]
         return [x for x in m if x is not None]
