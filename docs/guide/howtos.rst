@@ -1,7 +1,7 @@
 Howtos
 ======
 
-to do
+TODO
 
 .. prompt:: bash
 

@@ -98,7 +98,7 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
    :alt: Colab
    :class: badge
 
-.. |Deepnote| image:: https://beta.deepnote.com/buttons/launch-in-deepnote.svg
+.. |Deepnote| image:: https://img.shields.io/badge/launch%20in-deepnote-blue.svg?style=flat-square
    :target: https://beta.deepnote.org/launch?template=deepnote&url=https://github.com/ecmwf/climetlab/blob/master/docs/{{ docname }}
    :alt: Deepnote
    :class: badge

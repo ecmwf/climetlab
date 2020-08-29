@@ -133,7 +133,7 @@ class Driver:
         self.bounding_box(90, -180, -90, 180)
         self._tmp = []
 
-    def temp_file(self, extension: str = ".tmp") -> str:
+    def temporary_file(self, extension: str = ".tmp") -> str:
         """Return a temporary file name that will be deleted once the plot is produced.abspath
 
         :param extension: File name extension, defaults to ".tmp"
@@ -160,7 +160,7 @@ class Driver:
         )
         self._page_ratio = (north - south) / (east - west)
 
-    def data(self, data):
+    def _push_layer(self, data):
         if self._data is not None:
             self._layers.append(self._data)
             self._layers.append(self._contour)
@@ -175,7 +175,7 @@ class Driver:
         :param offset: [description]
         :type offset: [type]
         """
-        self.data(
+        self._push_layer(
             mgrib(
                 grib_input_file_name=path,
                 grib_file_address_mode="byte_offset",
@@ -205,7 +205,7 @@ class Driver:
         else:
             params = dict(netcdf_filename=path, netcdf_value_variable=variable)
 
-        self.data(mnetcdf(**params))
+        self._push_layer(mnetcdf(**params))
 
     def plot_numpy(
         self,
@@ -231,7 +231,7 @@ class Driver:
         :param metadata: [description]
         :type metadata: [type]
         """
-        self.data(
+        self._push_layer(
             minput(
                 input_field=data,
                 input_field_initial_latitude=float(north),
@@ -252,7 +252,7 @@ class Driver:
         :param dimensions: [description], defaults to {}
         :type dimensions: dict, optional
         """
-        tmp = self.temp_file(".nc")
+        tmp = self.temporary_file(".nc")
         ds.to_netcdf(tmp)
         self.plot_netcdf(tmp, variable, dimensions)
 
@@ -264,7 +264,7 @@ class Driver:
         :param variable: [description]
         :type variable: [type]
         """
-        self.data(
+        self._push_layer(
             mtable(
                 table_filename=path,
                 table_latitude_variable="1",
@@ -276,20 +276,20 @@ class Driver:
         )
         self.style("red-markers")
 
-    def plot_pandas(self, frame, lat: str, lon: str, variable: str):
+    def plot_pandas(self, frame, latitude: str, longitude: str, variable: str):
         """[summary]
 
         :param frame: [description]
         :type frame: [type]
-        :param lat: [description]
-        :type lat: [type]
-        :param lon: [description]
-        :type lon: [type]
+        :param latitude: [description]
+        :type latitude: [type]
+        :param longitude: [description]
+        :type longitude: [type]
         :param variable: [description]
         :type variable: [type]
         """
-        tmp = self.temp_file(".csv")
-        frame[[lat, lon, variable]].to_csv(tmp, header=False, index=False)
+        tmp = self.temporary_file(".csv")
+        frame[[latitude, longitude, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
 
     def _apply(self, collection, value, action, default_attribute=None):
@@ -323,7 +323,7 @@ class Driver:
     def style(self, style):
         self._contour = self._apply("styles", style, macro.mcont)
 
-    def option(self, name, default=NONE):
+    def option(self, name: str, default=NONE):
         self._used_options.add(name)
         if default is NONE:
             return self._options[name]
@@ -341,13 +341,13 @@ class Driver:
         if self.option("projection", None):
             self.projection(self.option("projection"))
 
-        self.data(None)
+        self._push_layer(None)
 
         title = self.option("title", None)
         width = self.option("width", 680)
         frame = self.option("frame", False)
 
-        path = self.option("path", self.temp_file("." + self.option("format", "png")))
+        path = self.option("path", self.temporary_file("." + self.option("format", "png")))
 
         _title_height_cm = 0
         if title:
