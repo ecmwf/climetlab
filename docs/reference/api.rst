@@ -29,7 +29,7 @@ Plotting
    :members:
 
 
-XXXX
+Other
 ----
 
 .. autosummary::
