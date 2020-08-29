@@ -9,9 +9,14 @@
 
 import os
 import sys
-from os.path import abspath
 
-from Magics import macro
+# This is needed when running Sphinx on ReadTheDoc
+
+try:
+    from Magics import macro
+except Exception:
+    macro = None
+
 
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
