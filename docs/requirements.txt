@@ -4,5 +4,3 @@ nbsphinx
 sphinx-prompt
 sphinx_rtd_theme
 pyyaml
-#
-magics
