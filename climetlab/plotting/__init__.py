@@ -18,33 +18,10 @@ except Exception:
     from .drivers.missing import Driver
 
 
-def plot_map(data, **kwargs):
-    """Foo bar
-
-    Args:
-        data (str): Kdd
-
-    Returns:
-        str: path
-    """
-
-    driver = Driver(kwargs)
-
-    if not isinstance(data, (list, tuple)):
-        data = [data]
-
-    for d in data:
-        if getattr(d, "plot_map", None) is None:
-            d = helper(d)
-
-        d.plot_map(driver)
-
-    return display(driver.show())
-
-
 class Plot:
     """[summary]
     """
+
     def __init__(self, kwargs):
         self.driver = Driver(kwargs)
 
@@ -73,3 +50,18 @@ def new_plot(**kwargs):
     :rtype: [type]
     """
     return Plot(kwargs)
+
+
+def plot_map(data, **kwargs):
+    """Foo bar
+
+    Args:
+        data (str): Kdd
+
+    Returns:
+        str: path
+    """
+
+    p = new_plot(**kwargs)
+    p.plot_map(data)
+    p.show()

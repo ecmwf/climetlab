@@ -23,7 +23,6 @@ NONE = object()
 
 
 class Action:
-
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
@@ -74,6 +73,10 @@ class mtext(Action):
     pass
 
 
+class msymb(Action):
+    pass
+
+
 class output(Action):
     pass
 
@@ -81,6 +84,7 @@ class output(Action):
 class Driver:
     """TODO: Docscting
     """
+
     def __init__(self, options=None):
 
         self._options = options if options else {}
@@ -288,7 +292,7 @@ class Driver:
             assert len(actions) == 1, actions
 
             action = globals()[actions[0]]
-            return action(magics[actions[0]])
+            return action(**magics[actions[0]])
 
         assert False, (collection, value)
 

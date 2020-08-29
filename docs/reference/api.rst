@@ -34,7 +34,6 @@ XXXX
 ----
 
 .. autosummary::
-   :toctree: generated/
 
    climetlab.Dataset
    climetlab.DataSource
