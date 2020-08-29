@@ -335,6 +335,10 @@ class Driver:
 
     def show(self):
 
+        if not self.option("background", True):
+            self._background = None
+        if not self.option("foreground", True):
+            self._foreground = None
         if self.option("style", None):
             self.style(self.option("style"))
 
@@ -347,7 +351,9 @@ class Driver:
         width = self.option("width", 680)
         frame = self.option("frame", False)
 
-        path = self.option("path", self.temporary_file("." + self.option("format", "png")))
+        path = self.option(
+            "path", self.temporary_file("." + self.option("format", "png"))
+        )
 
         _title_height_cm = 0
         if title:

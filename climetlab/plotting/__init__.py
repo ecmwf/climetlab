@@ -20,6 +20,7 @@ class Plot:
         self.driver = Driver(kwargs)
 
     def plot_map(self, data, **kwargs):
+
         if not isinstance(data, (list, tuple)):
             data = [data]
 
@@ -48,15 +49,15 @@ def new_plot(**kwargs) -> Plot:
 
 
 def plot_map(data, **kwargs):
-    """Foo bar
+    """Plot any data on a map.
 
-    Args:
-        data (str): Kdd
-
-    Returns:
-        str: path
+        Args:
+            data ([any]): [description]
     """
 
     p = new_plot(**kwargs)
     p.plot_map(data)
     p.show()
+
+
+Plot.plot_map.__doc__ = plot_map.__doc__
