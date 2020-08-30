@@ -15,11 +15,8 @@ styles and projections for any given data.
 The goal of *CliMetLab* is to simplify access to climate and
 meteorological datasets, by hiding the access methods and data formats.
 
-*CliMetLab* introduces two concepts, the **Data source** and the **Dataset**.
-
-.. image:: _static/climetlab.svg
-
-
+The snippet of code below would download the dataset *dataset-name*,
+cache it locally and decodes its content in a NumPy array:
 
 .. code-block:: python
 
@@ -28,9 +25,11 @@ meteorological datasets, by hiding the access methods and data formats.
     data = clm.load_dataset("dataset-name")
     a = data.to_numpy()
 
+*CliMetLab* introduces two concepts, the **Data source** and the **Dataset**.
 
-The snippet of code above would download the dataset *dataset-name*,
-cache it locally and decodes its content in a NumPy array.
+.. image:: _static/climetlab.svg
+
+
 
 .. _Jupyter: https://jupyter.org
 .. _NumPy: https://numpy.org
