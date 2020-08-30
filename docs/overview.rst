@@ -1,4 +1,5 @@
-Overview ========
+Overview
+========
 
 *CliMetLab* is a Python package which is intended to be used in
 Jupyter_ notebooks.  Its main goal is to greatly reduce boilerplate
