@@ -83,7 +83,7 @@ class HurricaneDatabase(Dataset):
 
                 # http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-format-may2015.pdf
 
-                for i in range(0, int(line[33:36])):
+                for _ in range(0, int(line[33:36])):
                     line = next(lines)
                     # print line
                     knots = float(line[38:41])

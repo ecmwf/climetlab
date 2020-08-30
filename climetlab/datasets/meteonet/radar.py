@@ -9,11 +9,9 @@
 
 import numpy as np
 import xarray as xr
-import os
 
 from . import Meteonet
 from climetlab.utils import download_and_cache
-from climetlab import load_source
 
 
 """

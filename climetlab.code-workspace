@@ -16,15 +16,26 @@
 		},
 		"cSpell.words": [
 			"ECMWF",
+			"GRIB",
 			"Jupyter",
 			"Matplotlib",
+			"Netcdf",
 			"climetlab",
+			"geopoints",
+			"netcdf",
 			"numpy",
 			"xarray"
 		],
 		"cSpell.language": "en-GB",
 		"cSpell.languageSettings": [
 		
+		],
+		"cSpell.enabledLanguageIds": [
+			"html",
+			"markdown",
+			"plaintext",
+			"restructuredtext",
+			"text"
 		]
 	}
 }

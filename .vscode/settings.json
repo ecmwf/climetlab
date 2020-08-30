@@ -14,9 +14,19 @@
         "Keras",
         "Magics",
         "Matplotlib",
+        "autoclass",
+        "autofunction",
+        "automodule",
+        "autosummary",
         "climetlab",
         "maxdepth",
         "numpy",
-        "xarray"
+        "toctree",
+        "xarray",
+        "geopoints",
+        "netcdf",
+        "autoreload",
+        "rstcheck",
+        "startup"
     ]
 }

@@ -7,12 +7,11 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .era5_single_levels import Era5SingleLevels
 
+class docstring:
+    def __init__(self):
+        pass
 
-class Era5Precipitations(Era5SingleLevels):
-    def __init__(self, *args, **kwargs):
-        super().__init__("tp", *args, **kwargs)
-
-
-dataset = Era5Precipitations
+    def __call__(self, func):
+        # func.__doc__ += "Decorated...."
+        return func

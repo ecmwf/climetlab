@@ -10,6 +10,7 @@
 from climetlab.helpers import helper
 from climetlab.core.ipython import display
 from .drivers.magics import Driver
+from climetlab.core import docstring
 
 
 class Plot:
@@ -48,6 +49,7 @@ def new_plot(**kwargs) -> Plot:
     return Plot(kwargs)
 
 
+@docstring()
 def plot_map(data, **kwargs):
     """Plot any data on a map.
 

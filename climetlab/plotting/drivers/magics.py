@@ -386,7 +386,9 @@ class Driver:
             self._grid = mmap(map_grid=True, map_coastline=False)
 
         if self.option("borders", False):
-            self._borders = mmap(map_boundaries=True, map_grid=False, map_coastline=False)
+            self._borders = mmap(
+                map_boundaries=True, map_grid=False, map_coastline=False
+            )
 
         if self.option("rivers", False):
             self._rivers = mmap(map_rivers=True, map_grid=False, map_coastline=False)

@@ -1,0 +1,5 @@
+---
+magics:
+  mmap:
+    subpage_map_projection: robinson
+    foo: bar

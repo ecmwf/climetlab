@@ -76,7 +76,7 @@ Implement settings
 ## Magics
 
 - Get stuck if geopoints is empty
-- Netcdf don't plot if lat/long intergers
+- Netcdf don't plot if lat/long integers
 - Netcdf don't plot if dimensions=[]
 
 # Stuff
@@ -94,3 +94,7 @@ See <https://ipython.readthedocs.io/en/stable/config/integrating.html>
 ## RST
 
 Use `doc8` instead of `rstcheck`
+
+## Packages of interest
+
+- <https://pypi.org/project/docstring-expander/>
