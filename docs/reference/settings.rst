@@ -1,4 +1,4 @@
 Settings
 =============
 
-TODO
+TODO: List all settings and their default values.

@@ -144,7 +144,6 @@ c_char_p = ctypes.c_char_p
 
 c_void_p = ctypes.c_void_p
 
-# TODO: check
 c_size_t = c_uint
 c_size_t_p = c_uint_p
 

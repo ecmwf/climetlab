@@ -1,24 +1,11 @@
+.. _data-sources:
+
 Data Sources
 ============
 
-File
-----
+TODO: Explain what are data sources. List the built-in ones.
 
-x
-
-Url
----
-
-x
-
-
-ZipUrl
-------
-
-x
 
 .. code-block:: python
 
    import climetlab as cml
-
-:ref:`foo`

@@ -24,6 +24,8 @@
 			"geopoints",
 			"netcdf",
 			"numpy",
+			"plugins",
+			"setuptools",
 			"xarray"
 		],
 		"cSpell.language": "en-GB",
@@ -36,6 +38,9 @@
 			"plaintext",
 			"restructuredtext",
 			"text"
+		],
+		"todo-tree.filtering.excludeGlobs": [
+			"**/*.ipynb"
 		]
 	}
 }

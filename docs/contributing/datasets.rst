@@ -1,7 +1,12 @@
 Datasets
 ========
 
-to do
+Simple datasets
+---------------
+
+Simple datasets are datasets that rely on existing built-in :ref:`data
+source <data-sources>`, and cannot be parametrised by users. This
+can be for example a single file downloadable from a URL.
 
 .. code-block:: yaml
 
@@ -14,10 +19,13 @@ to do
     metadata:
       documentation: Sample BUFR file containing TEMP messages
 
+Complex datasets
+----------------
 
 See https://github.com/ecmwf/climetlab-demo-dataset
 
 .. code-block:: python
+  :emphasize-lines: 6-8
 
     setuptools.setup(
         name="climetlab-demo-dataset",
