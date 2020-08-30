@@ -22,6 +22,12 @@ class Plot:
 
     def plot_map(self, data, **kwargs):
 
+        # try:
+        #     iter(data)
+        #     data = list(data)
+        # except Exception:
+        #     pass
+
         if not isinstance(data, (list, tuple)):
             data = [data]
 

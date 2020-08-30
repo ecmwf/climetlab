@@ -17,16 +17,20 @@
         "autoclass",
         "autofunction",
         "automodule",
+        "autoreload",
         "autosummary",
         "climetlab",
-        "maxdepth",
-        "numpy",
-        "toctree",
-        "xarray",
         "geopoints",
+        "ipynb",
+        "maxdepth",
         "netcdf",
-        "autoreload",
+        "numpy",
+        "plugins",
         "rstcheck",
-        "startup"
+        "setup",
+        "setuptools",
+        "startup",
+        "toctree",
+        "xarray"
     ]
 }

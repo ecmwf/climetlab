@@ -1,6 +1,8 @@
 Datasets
 ========
 
+A :ref:`Dataset <datasets>` is a Python class that ... TODO
+
 Simple datasets
 ---------------
 

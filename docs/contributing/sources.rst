@@ -1,11 +1,6 @@
 Data Sources
 ============
 
-A *data source* is a Python class that ... TO DO
+A :ref:`data source <data-sources>` is a Python class that ... TODO
 
 
-
-Caching
--------
-
-To do
