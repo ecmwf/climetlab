@@ -12,8 +12,8 @@ for i in range(0, 181):
         t2m[i, j] = 273.15 + math.sin(i) + math.cos(j)
 
 ds = xr.Dataset(
-    {"t2m": (["latitude", "longitude"], t2m),},
-    coords={"longitude": lon, "latitude": lat,},
+    {"t2m": (["latitude", "longitude"], t2m)},
+    coords={"longitude": lon, "latitude": lat},
 )
 
 ds["latitude"].attrs = dict(units="degrees_north", standard_name="latitude")

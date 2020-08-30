@@ -13,18 +13,18 @@ Welcome to CliMetLab's documentation!
 meteorological datasets, allowing users to focus on science instead of
 technical issues such as data access and data formats. It is mostly intended
 to be used in Jupyter_ notebooks, and be interoperable with all popular data
-analytic packages, such as Numpy_, Pandas_, Xarray_, SciPy_, Matplotlib_, etc.
-and well as machine learning frameworks, such as Tensorflow_, Keras_
+analytic packages, such as NumPy_, Pandas_, Xarray_, SciPy_, Matplotlib_, etc.
+and well as machine learning frameworks, such as TensorFlow_, Keras_
 or PyTorch_.
 
 
 .. _Jupyter: https://jupyter.org
-.. _Numpy: https://numpy.org
+.. _NumPy: https://numpy.org
 .. _Matplotlib: https://matplotlib.org
 .. _Pandas: https://pandas.pydata.org
 .. _Xarray: http://xarray.pydata.org
 .. _SciPy: https://www.scipy.org
-.. _Tensorflow: https://www.tensorflow.org
+.. _TensorFlow: https://www.tensorflow.org
 .. _Keras: https://keras.io
 .. _PyTorch: https://pytorch.org
 
@@ -65,6 +65,8 @@ Documentation
 * :doc:`reference/datasets`
 * :doc:`reference/sources`
 * :doc:`reference/api`
+* :doc:`reference/settings`
+* :doc:`reference/caching`
 
 .. toctree::
    :maxdepth: 1
@@ -74,6 +76,8 @@ Documentation
    reference/datasets
    reference/sources
    reference/api
+   reference/settings
+   reference/caching
 
 
 **Contributing**

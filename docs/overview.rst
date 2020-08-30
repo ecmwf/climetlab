@@ -1,8 +1,25 @@
 Overview
 ========
 
+*CliMetLab* is a Python package which is intended to be used in
+Jupyter_ notebooks.  Its main goal is to greatly reduce boilerplate
+code by providing high-level unified access to meteorological and
+climate datasets, allowing scientists to focus on their research
+instead of solving technical issues. Datasets are automatically
+downloaded, cached and transform into standard  Python data structures
+such as NumPy_, Pandas_ or Xarray_, that can then be fed into scientific
+packages like SciPy_ and TensorFlow_. *CliMetLab* also aims at simplifying
+plotting of 2D maps, by automatically selecting the most appropriate
+styles and projections for any given data.
+
 The goal of *CliMetLab* is to simplify access to climate and
-meteorological datasets, by hidding the access methods and data formats.
+meteorological datasets, by hiding the access methods and data formats.
+
+*CliMetLab* introduces two concepts, the **Data source** and the **Dataset**.
+
+.. image:: _static/climetlab.svg
+
+
 
 .. code-block:: python
 
@@ -15,4 +32,12 @@ meteorological datasets, by hidding the access methods and data formats.
 The snippet of code above would download the dataset *dataset-name*,
 cache it locally and decodes its content in a NumPy array.
 
-.. image:: _static/climetlab.svg
+.. _Jupyter: https://jupyter.org
+.. _NumPy: https://numpy.org
+.. _Matplotlib: https://matplotlib.org
+.. _Pandas: https://pandas.pydata.org
+.. _Xarray: http://xarray.pydata.org
+.. _SciPy: https://www.scipy.org
+.. _TensorFlow: https://www.tensorflow.org
+.. _Keras: https://keras.io
+.. _PyTorch: https://pytorch.org

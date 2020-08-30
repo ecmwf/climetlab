@@ -8,5 +8,23 @@
 		}
 	],
 	"settings": {
+		"markdownlint.config": {
+			"MD013": false,
+			"MD024": {
+			"siblings_only": true,
+			}
+		},
+		"cSpell.words": [
+			"ECMWF",
+			"Jupyter",
+			"Matplotlib",
+			"climetlab",
+			"numpy",
+			"xarray"
+		],
+		"cSpell.language": "en-GB",
+		"cSpell.languageSettings": [
+		
+		]
 	}
 }

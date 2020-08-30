@@ -1,6 +1,5 @@
 # These are the requirements for readthedoc
 ipykernel
 nbsphinx
-sphinx-prompt
 sphinx_rtd_theme
 pyyaml

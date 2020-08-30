@@ -6,5 +6,15 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.pythonPath": "/usr/local/bin/python3",
-    "restructuredtext.confPath": "${workspaceFolder}/docs"
+    "restructuredtext.confPath": "${workspaceFolder}/docs",
+    "cSpell.words": [
+        "BUFR",
+        "ECMWF",
+        "Jupyter",
+        "Magics",
+        "climetlab",
+        "maxdepth",
+        "numpy",
+        "xarray"
+    ]
 }
