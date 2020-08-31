@@ -366,13 +366,13 @@
         <path d="M-2.76164e+06,2.76164e+06L2.76165e+06,2.76164e+06" style="fill:none;fill-rule:nonzero;stroke:black;stroke-width:38100px;"/>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
-        <text x="543.911px" y="169px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;fill:white;">X<tspan x="553.542px 564.324px 570.053px 575.782px 584.087px " y="169px 169px 169px 169px 169px ">Array</tspan></text>
+        <text x="543.911px" y="169px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;fill:white;">X<tspan x="553.542px 564.324px 570.053px 575.782px 584.087px " y="169px 169px 169px 169px 169px ">array</tspan></text>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
         <text x="542px" y="281px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;fill:white;">P<tspan x="550.507px 559.005px 568.733px 578.62px 587.117px " y="281px 281px 281px 281px 281px ">andas</tspan></text>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
-        <text x="690.411px" y="225px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;fill:white;">N<tspan x="701.786px 711.035px 725.918px 735.324px " y="225px 225px 225px 225px ">umpy</tspan></text>
+        <text x="690.411px" y="225px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;fill:white;">N<tspan x="701.786px 711.035px 725.918px 735.324px " y="225px 225px 225px 225px ">umPy</tspan></text>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
         <text x="281.856px" y="116px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;">N<tspan x="293.408px 301.691px 306.678px 317.387px 329.124px " y="116px 116px 116px 116px 116px ">etCDF</tspan></text>
@@ -423,7 +423,7 @@
         <text x="848.461px" y="235px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;">F<tspan x="856.746px 860.584px 870.275px " y="235px 235px 235px ">low</tspan></text>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
-        <text x="847.031px" y="332px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;">S<tspan x="855.213px 862.921px 866.612px 876.429px " y="332px 332px 332px 332px ">cipy</tspan></text>
+        <text x="847.031px" y="332px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;">S<tspan x="855.213px 862.921px 866.612px 876.429px " y="332px 332px 332px 332px ">ciPy</tspan></text>
     </g>
     <g transform="matrix(1,0,0,1,0,10.5934)">
         <text x="62.256px" y="398px" style="font-family:'LucidaGrande', 'Lucida Grande', sans-serif;font-weight:500;font-size:18px;">D<tspan x="74.22px 82.641px 87.854px " y="398px 398px 398px ">ata</tspan></text>

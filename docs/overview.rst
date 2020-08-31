@@ -14,9 +14,7 @@ the most appropriate styles and projections for any given data.
 
 The goal of *CliMetLab* is to simplify access to climate and
 meteorological datasets, by hiding the access methods and data
-formats.
-
-The snippet of code below would download the dataset *dataset-name*,
+formats. The snippet of code below would download the dataset *dataset-name*,
 cache it locally and decodes its content as a NumPy array:
 
 .. code-block:: python
@@ -26,11 +24,28 @@ cache it locally and decodes its content as a NumPy array:
     data = clm.load_dataset("dataset-name")
     a = data.to_numpy()
 
-*CliMetLab* introduces two concepts: :ref:`Data source
-<data-sources>` and :ref:`Dataset <datasets>`.
+To achieve this, *CliMetLab* introduces two concepts: :ref:`Data
+source <data-sources>` and :ref:`Dataset <datasets>`. Data sources
+represent various access methods, such as reading files, downloading
+from a web site or using APIs.
+
+*CliMetLab* provides the interface between the left side and the
+right side of the figure below:
 
 .. image:: _static/climetlab.svg
 
+*CliMetLab* also provides very high-level map plotting facilities.
+By default *CliMetLab* will automatically select the most appropriate
+way to plot a dataset, choosing the best projection, colours and
+other graphical attributes. Users can then control how maps are
+drawn by overriding the automatic choices with their own.
+
+.. code-block:: python
+
+    import climetlab as clm
+
+    data = clm.load_dataset("some-dataset")
+    cml.plot_map(data)
 
 
 .. _Jupyter: https://jupyter.org

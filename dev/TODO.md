@@ -78,6 +78,8 @@ Implement settings
 - Get stuck if geopoints is empty
 - Netcdf don't plot if lat/long integers
 - Netcdf don't plot if dimensions=[]
+- Magics-ERROR: NetcdfDecoder : No accessor available for 10
+libc++abi.dylib: terminating with uncaught exception of type magics::MagicsException*
 
 # Stuff
 

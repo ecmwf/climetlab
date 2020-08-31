@@ -3,8 +3,8 @@ import numpy as np
 from climetlab import plot_map
 import math
 
-lon = np.arange(-180, 180, 1.0)
-lat = np.arange(90, -91, -1.0)
+lon = np.arange(-180, 180, 1)
+lat = np.arange(90, -91, -1)
 t2m = np.zeros(shape=(len(lat), len(lon)))
 
 for i in range(0, 181):
