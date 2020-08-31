@@ -73,27 +73,51 @@ SETTINGS.on_change(settings_changed)
 
 
 def register_cache_file(path, owner, args):
-    return
 
     db = connection()
 
     now = datetime.datetime.utcnow()
-    db.execute(
-        """
-        INSERT INTO cache(
-                        path,
-                        owner,
-                        args,
-                        creation_date,
-                        last_access,
-                        accesses)
-        VALUES(?,?,?,?,?,?)
-        ON CONFLICT(path)
-        DO UPDATE SET
-            accesses=accesses+1,
-            last_access=?;""",
-        (path, owner, json.dumps(args), now, now, 1, now),
-    )
+
+    try:
+        db.execute(
+            """
+            INSERT INTO cache(
+                            path,
+                            owner,
+                            args,
+                            creation_date,
+                            last_access,
+                            accesses)
+            VALUES(?,?,?,?,?,?)
+            ON CONFLICT(path)
+            DO UPDATE SET
+                accesses=accesses+1,
+                last_access=?""",
+            (path, owner, json.dumps(args), now, now, 1, now),
+        )
+    except sqlite3.OperationalError:
+        # Older version of sqlite?
+        try:
+            db.execute(
+                """
+                INSERT INTO cache(
+                                path,
+                                owner,
+                                args,
+                                creation_date,
+                                last_access,
+                                accesses)
+                VALUES(?,?,?,?,?,?)
+                (path, owner, json.dumps(args), now, now, 1)"""
+            )
+        except sqlite3.OperationalError:
+            db.execute(
+                """
+                UPDATE cache SET
+                    accesses=accesses+1,
+                    last_access=?""",
+                (now,),
+            )
 
     # print(list(c))
 

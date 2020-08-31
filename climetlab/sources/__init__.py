@@ -60,7 +60,7 @@ class DataSource:
     def __init__(self, **kwargs):
         self._kwargs = kwargs
 
-    def cache_file(self, *args, extension='.cache'):
+    def cache_file(self, *args, extension=".cache"):
         return cache_file(self.__class__, *args, extension)
 
     @property
