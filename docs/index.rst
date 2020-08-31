@@ -15,7 +15,7 @@ technical issues such as data access and data formats. It is mostly intended
 to be used in Jupyter_ notebooks, and be interoperable with all popular data
 analytic packages, such as NumPy_, Pandas_, Xarray_, SciPy_, Matplotlib_, etc.
 and well as machine learning frameworks, such as TensorFlow_, Keras_
-or PyTorch_.
+or PyTorch_. See :ref:`overview` for more information.
 
 
 .. _Jupyter: https://jupyter.org
@@ -97,6 +97,6 @@ Documentation
 License
 -------
 
-CliMetLab is available under the open source `Apache License`__.
+*CliMetLab* is available under the open source `Apache License`__.
 
 __ http://www.apache.org/licenses/LICENSE-2.0.html
