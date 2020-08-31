@@ -73,6 +73,8 @@ SETTINGS.on_change(settings_changed)
 
 
 def register_cache_file(path, owner, args):
+    return
+
     db = connection()
 
     now = datetime.datetime.utcnow()
