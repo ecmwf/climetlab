@@ -16,7 +16,7 @@ class Settings:
     def __init__(self, defaults):
         self._settings = dict(**defaults)
 
-    def __getattr__(self, name):
+    def get(self, name):
         return self._settings[name]
 
 
