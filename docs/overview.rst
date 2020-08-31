@@ -52,7 +52,7 @@ drawn by overriding the automatic choices with their own.
 
 
 .. image:: _static/map.svg
-    :width: 70%
+    :width: 50%
 
 .. _Jupyter: https://jupyter.org
 .. _NumPy: https://numpy.org
