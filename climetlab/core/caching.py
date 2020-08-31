@@ -115,8 +115,9 @@ def register_cache_file(path, owner, args):
                 """
                 UPDATE cache SET
                     accesses=accesses+1,
-                    last_access=?""",
-                (now,),
+                    last_access=?
+                WHERE path=?""",
+                (now, path),
             )
 
     # print(list(c))
