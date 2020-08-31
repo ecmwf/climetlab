@@ -110,7 +110,7 @@ def register_cache_file(path, owner, args):
                 VALUES(?,?,?,?,?,?)""",
                 (path, owner, json.dumps(args), now, now, 1)
             )
-        except sqlite3.OperationalError:
+        except sqlite3.IntegrityError:
             db.execute(
                 """
                 UPDATE cache SET

@@ -104,6 +104,7 @@ Use `doc8` instead of `rstcheck`
 
 # Tasks
 
+- Collect use cases
 - Work on caching
   - Use sqlite
   - Expiry
