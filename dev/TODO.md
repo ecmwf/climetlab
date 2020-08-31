@@ -105,8 +105,13 @@ Use `doc8` instead of `rstcheck`
 # Tasks
 
 - Work on caching
+  - Use sqlite
+  - Expiry
+  - Size limit
+  - Location
 - Work on settings
 - Work on the definition of datasets in YAML
+- Use logging
 - Documentation
 - Decisions regarding plotting
 - YAML files for:
@@ -123,3 +128,5 @@ Use `doc8` instead of `rstcheck`
   - intake
   - zarr
   - dask
+- Introduce catalogues
+  - cml.add_catalog (catalogue)

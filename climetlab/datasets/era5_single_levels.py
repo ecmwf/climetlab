@@ -29,6 +29,9 @@ class Era5SingleLevels(Dataset):
             else:
                 request["grid"] = grid
 
+        if isinstance(period, int):
+            period = (period, period)
+
         sources = []
         for year in range(period[0], period[1] + 1):
             request["year"] = year
