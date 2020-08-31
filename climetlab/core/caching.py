@@ -107,8 +107,8 @@ def register_cache_file(path, owner, args):
                                 creation_date,
                                 last_access,
                                 accesses)
-                VALUES(?,?,?,?,?,?)
-                (path, owner, json.dumps(args), now, now, 1)"""
+                VALUES(?,?,?,?,?,?)""",
+                (path, owner, json.dumps(args), now, now, 1)
             )
         except sqlite3.OperationalError:
             db.execute(
