@@ -31,7 +31,11 @@ def update(m, x):
 def cache_file(*args, extension=".cache"):
     m = hashlib.sha256()
     update(m, args)
-    return "%s/climetlab-%s%s" % (SETTINGS.get("cache_directory"), m.hexdigest(), extension)
+    return "%s/climetlab-%s%s" % (
+        SETTINGS.get("cache_directory"),
+        m.hexdigest(),
+        extension,
+    )
 
 
 class TmpFile:
