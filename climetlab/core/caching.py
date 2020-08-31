@@ -76,7 +76,7 @@ def register_cache_file(path, owner, args):
     db = connection()
 
     now = datetime.datetime.utcnow()
-    c = db.execute(
+    db.execute(
         """
         INSERT INTO cache(
                         path,
@@ -93,7 +93,7 @@ def register_cache_file(path, owner, args):
         (path, owner, json.dumps(args), now, now, 1, now),
     )
 
-    print(list(c))
+    # print(list(c))
 
     db.commit()
 
