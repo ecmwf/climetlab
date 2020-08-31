@@ -61,7 +61,7 @@ class DataSource:
         self._kwargs = kwargs
 
     def cache_file(self, *args, extension=".cache"):
-        return cache_file(self.__class__, *args, extension)
+        return cache_file(self.__class__, *args, extension=extension)
 
     @property
     def dataset(self):

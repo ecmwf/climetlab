@@ -78,6 +78,8 @@ def register_cache_file(path, owner, args):
 
     now = datetime.datetime.utcnow()
 
+    args = json.dumps(args, indent=4)
+
     try:
         db.execute(
             """
@@ -93,7 +95,7 @@ def register_cache_file(path, owner, args):
             DO UPDATE SET
                 accesses=accesses+1,
                 last_access=?""",
-            (path, owner, json.dumps(args), now, now, 1, now),
+            (path, owner, args, now, now, 1, now),
         )
     except sqlite3.OperationalError:
         # Older version of sqlite?
@@ -108,7 +110,7 @@ def register_cache_file(path, owner, args):
                                 last_access,
                                 accesses)
                 VALUES(?,?,?,?,?,?)""",
-                (path, owner, json.dumps(args), now, now, 1)
+                (path, owner, args, now, now, 1),
             )
         except sqlite3.IntegrityError:
             db.execute(
@@ -181,9 +183,12 @@ class Cache:
         with connection() as db:
             for n in db.execute("select * from cache"):
                 html.append("<table>")
-                for k in n.keys():
+                html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
+
+                for k in [x for x in n.keys() if x != "path"]:
                     html.append("<td><td>%s</td><td>%s</td></tr>" % (k, n[k]))
                 html.append("</table>")
+                html.append("<br>")
         return "".join(html)
 
 
