@@ -24,7 +24,7 @@ _connection = None
 def connection():
     global _connection
     if _connection is None:
-        cache_dir = SETTINGS.get("cache_directory")
+        cache_dir = SETTINGS.cache_directory
         if not os.path.exists(cache_dir):
             os.mkdir(cache_dir)
         cache_db = os.path.join(cache_dir, "cache.db")
@@ -47,8 +47,6 @@ def connection():
                     size int);"""
         )
 
-
-
     return _connection
 
 
@@ -66,15 +64,16 @@ def update_cache():
 
     with connection() as db:
         update = []
-        for n in db.execute("select path from cache where size is null"):
+        for n in db.execute("SELECT path FROM cache WHERE size IS NULL"):
             try:
                 update.append((os.path.getsize(n[0]), n[0]))
             except Exception:
                 pass
 
         if update:
-            db.executemany("update cache set size=? where path=?", update)
+            db.executemany("UPDATE cache SET size=? WHERE path=?", update)
             db.commit()
+
 
 def register_cache_file(path, owner, args):
 
@@ -85,13 +84,13 @@ def register_cache_file(path, owner, args):
     args = json.dumps(args, indent=4)
 
     db.execute(
-                """
-                UPDATE cache SET
-                    accesses=accesses+1,
-                    last_access=?
-                WHERE path=?
-                """,
-                (now, path))
+        """
+        UPDATE cache SET
+            accesses=accesses+1,
+            last_access=?
+        WHERE path=?""",
+        (now, path),
+    )
 
     changes = db.execute("SELECT changes()").fetchone()[0]
 
@@ -112,11 +111,6 @@ def register_cache_file(path, owner, args):
 
     db.commit()
     return not changes
-
-
-    # print(list(c))
-
-    db.commit()
 
 
 def update(m, x):
@@ -147,7 +141,7 @@ def cache_file(owner: type, *args, extension: str = ".cache"):
     update(m, klass)
     update(m, args)
     path = "%s/%s-%s%s" % (
-        SETTINGS.get("cache_directory"),
+        SETTINGS.cache_directory,
         owner.__name__.lower(),
         m.hexdigest(),
         extension,
