@@ -100,3 +100,26 @@ Use `doc8` instead of `rstcheck`
 ## Packages of interest
 
 - <https://pypi.org/project/docstring-expander/>
+
+
+# Tasks
+
+- Work on caching
+- Work on settings
+- Work on the definition of datasets in YAML
+- Documentation
+- Decisions regarding plotting
+- YAML files for:
+  - Styles
+  - Projections
+- Windows version
+- New magics
+- Code of conduct
+- Identify data sources
+- Identify datasets
+- Deploy on Jupyter Hub
+- Add unit tests
+- Investigate
+  - intake
+  - zarr
+  - dask

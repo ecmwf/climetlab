@@ -1,15 +1,10 @@
-.. CliMetLab documentation master file, created by
-   sphinx-quickstart on Tue Jul 21 11:34:48 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to CliMetLab's documentation!
 =====================================
 
 .. warning::
    This documentation is work in progress. It is not yet ready.
 
-**CliMetLab** is a Python package aiming at simplifying access to climate and
+*CliMetLab* is a Python package aiming at simplifying access to climate and
 meteorological datasets, allowing users to focus on science instead of
 technical issues such as data access and data formats. It is mostly intended
 to be used in Jupyter_ notebooks, and be interoperable with all popular data
