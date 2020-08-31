@@ -36,6 +36,7 @@ right side of the figure below:
 
 .. image:: _static/climetlab.svg
 
+
 *CliMetLab* also provides very high-level map plotting facilities.
 By default *CliMetLab* will automatically select the most appropriate
 way to plot a dataset, choosing the best projection, colours and
@@ -49,6 +50,9 @@ drawn by overriding the automatic choices with their own.
     data = clm.load_dataset("some-dataset")
     cml.plot_map(data)
 
+
+.. image:: _static/map.svg
+    :width: 70%
 
 .. _Jupyter: https://jupyter.org
 .. _NumPy: https://numpy.org
