@@ -26,7 +26,7 @@ cache it locally and decodes its content as a NumPy array:
     data = clm.load_dataset("dataset-name")
     a = data.to_numpy()
 
-*CliMetLab* introduces two concepts: :ref:`Data Source
+*CliMetLab* introduces two concepts: :ref:`Data source
 <data-sources>` and :ref:`Dataset <datasets>`.
 
 .. image:: _static/climetlab.svg

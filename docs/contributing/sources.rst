@@ -1,6 +1,4 @@
-Data Sources
+Data sources
 ============
 
-A :ref:`data source <data-sources>` is a Python class that ... TODO
-
-
+A :ref:`Data source <data-sources>` is a Python class that ... TODO

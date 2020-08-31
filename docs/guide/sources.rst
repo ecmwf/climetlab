@@ -1,9 +1,9 @@
 .. _data-sources:
 
-Data Sources
+Data sources
 ============
 
-TODO: Explain what are data sources. List the built-in ones.
+TODO: Explain what are Data sources. List the built-in ones.
 
 
 .. code-block:: python

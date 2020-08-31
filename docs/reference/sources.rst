@@ -1,4 +1,4 @@
-Data Sources
+Data sources
 ============
 
 Before
