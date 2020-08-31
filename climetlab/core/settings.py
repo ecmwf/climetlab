@@ -19,6 +19,14 @@ class Settings:
     def get(self, name):
         return self._settings[name]
 
+    def _repr_html_(self):
+        html = []
+        html.append("<table>")
+        for k, v in sorted(self._settings.items()):
+            html.append("<tr><td>%s</td><td>%r</td></td>" % (k, v))
+        html.append("</table>")
+        return "".join(html)
+
 
 default_settings = dict(cache_directory="/var/tmp")
 

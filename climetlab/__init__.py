@@ -10,12 +10,12 @@
 from .sources import load as load_source
 from .datasets import load as load_dataset
 from .plotting import plot_map, new_plot
-
+from .core.settings import SETTINGS as settings
 
 from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
 
-__version__ = "0.0.63"
+__version__ = "0.0.64"
 
 
 __all__ = [
@@ -23,6 +23,7 @@ __all__ = [
     "load_dataset",
     "plot_map",
     "new_plot",
+    "settings",
     "Dataset",
     "DataSource",
 ]
