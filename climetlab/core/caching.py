@@ -14,7 +14,6 @@ import datetime
 import sqlite3
 import json
 
-# import threading
 
 from .settings import SETTINGS
 
@@ -48,16 +47,7 @@ def connection():
                     size int);"""
         )
 
-        update = []
-        for n in _connection.execute("select path from cache where size is null"):
-            try:
-                update.append((os.path.getsize(n[0]), n[0]))
-            except Exception:
-                pass
 
-        if update:
-            _connection.executemany("update cache set size=? where path=?", update)
-            _connection.commit()
 
     return _connection
 
@@ -72,6 +62,20 @@ def settings_changed():
 SETTINGS.on_change(settings_changed)
 
 
+def update_cache():
+
+    with connection() as db:
+        update = []
+        for n in db.execute("select path from cache where size is null"):
+            try:
+                update.append((os.path.getsize(n[0]), n[0]))
+            except Exception:
+                pass
+
+        if update:
+            db.executemany("update cache set size=? where path=?", update)
+            db.commit()
+
 def register_cache_file(path, owner, args):
 
     db = connection()
@@ -80,7 +84,19 @@ def register_cache_file(path, owner, args):
 
     args = json.dumps(args, indent=4)
 
-    try:
+    db.execute(
+                """
+                UPDATE cache SET
+                    accesses=accesses+1,
+                    last_access=?
+                WHERE path=?
+                """,
+                (now, path))
+
+    changes = db.execute("SELECT changes()").fetchone()[0]
+
+    if not changes:
+
         db.execute(
             """
             INSERT INTO cache(
@@ -90,37 +106,13 @@ def register_cache_file(path, owner, args):
                             creation_date,
                             last_access,
                             accesses)
-            VALUES(?,?,?,?,?,?)
-            ON CONFLICT(path)
-            DO UPDATE SET
-                accesses=accesses+1,
-                last_access=?""",
-            (path, owner, args, now, now, 1, now),
+            VALUES(?,?,?,?,?,?)""",
+            (path, owner, args, now, now, 1),
         )
-    except sqlite3.OperationalError:
-        # Older version of sqlite?
-        try:
-            db.execute(
-                """
-                INSERT INTO cache(
-                                path,
-                                owner,
-                                args,
-                                creation_date,
-                                last_access,
-                                accesses)
-                VALUES(?,?,?,?,?,?)""",
-                (path, owner, args, now, now, 1),
-            )
-        except sqlite3.IntegrityError:
-            db.execute(
-                """
-                UPDATE cache SET
-                    accesses=accesses+1,
-                    last_access=?
-                WHERE path=?""",
-                (now, path),
-            )
+
+    db.commit()
+    return not changes
+
 
     # print(list(c))
 
@@ -149,6 +141,7 @@ def class_full_name(o):
 
 
 def cache_file(owner: type, *args, extension: str = ".cache"):
+
     m = hashlib.sha256()
     klass = class_full_name(owner)
     update(m, klass)
@@ -159,7 +152,10 @@ def cache_file(owner: type, *args, extension: str = ".cache"):
         m.hexdigest(),
         extension,
     )
-    register_cache_file(path, klass, args)
+
+    if register_cache_file(path, klass, args):
+        update_cache()
+
     return path
 
 
@@ -179,6 +175,9 @@ def temp_file(extension=".tmp"):
 
 class Cache:
     def _repr_html_(self):
+
+        update_cache()
+
         html = []
         with connection() as db:
             for n in db.execute("select * from cache"):

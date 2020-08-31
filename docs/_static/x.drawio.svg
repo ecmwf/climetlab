@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="439px" height="271px" viewBox="-0.5 -0.5 439 271" content="&lt;mxfile host=&quot;19fb1081-3452-4489-9f53-f6ca87ee2c18&quot; modified=&quot;2020-08-30T15:53:11.342Z&quot; agent=&quot;5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.48.2 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36&quot; version=&quot;13.1.3&quot; etag=&quot;wh_XRlaM-Fu19jXeAJTe&quot;&gt;&lt;diagram id=&quot;RfqHK-2gx6x8JhXB63er&quot;&gt;7VlLc5swEP41PtbDw9jOMXHSx0w6zUwObY+yUECNYBkhYuivr4TEQ8axndpxLviQkT52l939Pq0xmfirpPzCURZ/h5CwieeE5cS/nXhesPDkXwVUGvC9Kw1EnIYacjvgkf4lBnQMWtCQ5JahAGCCZjaIIU0JFhaGOIeNbfYEzL5rhiIyAB4xYkP0Jw1FrNGlt+jwr4RGcXNnd27qS1BjbCrJYxTCpgf5dxN/xQGEXiXlijDVu6Yv2u/zK1fbxDhJxTEOhogXxApTm8lLVE2xHIo0JMremfg3m5gK8pghrK5uJLsSi0XC5M6VSxOOcEHKV1Ny20KlQAgkRPBKmhiHuWmN0cbMbDddo92me3GvyY0bMtxGbeCufLkwHdjdjWBQPAkl8WYLXMQQQYrYXYfe2O3pbO4BMtOUP0SIyqgYFQLslpGSil+99W8Varowu9vSRK43ldnoPFVy+5ssa4GCY2Pl7+47JwwJ+mKH2tVG4/oAVN6k5Wu2tAnz3LkdQiAeEWG8tsho0ziKH/+wWuWBytQSV4xKXvhhya41gffrFkD4Oapp/VEIGYWcT9v+wu6VOx+qe75D3MsziHt2uHm44C+1lGstpuG1mpWqmQzlOcXH6DbYq1vZJl4pp0/O1FkEDaJdZ47XAJ13vbPcHwinsnhF7QlnwRSvtbn3ePSoCXZQ02AnniJvWxn+FuU6+cEpGgTyPTvQtnReOY2SalT1zDJlkO/Jd3Dqnb1pbde3tMzlQifwv5Nhfljc6uBS+R1+j9aEPUBOBYVUXlqDEJBIIbXfxUpVIcrjdqojRiNliqWi6pHSOwZN2GtjI9TYv8kFh+f24cDV0evBlJSReiaaJoCfi2xabyjOpzlNMka+YZWTcV8BA14n71/VH3nliTLWw5/qz3mGU7ClQHc4m/YdgFNm02Kk72T63Obx5QP4W478ncyf53zc+bsa+Tv7+FwGF6OvUcrI3znn5yUJdEcCzz9AL0ngES9SRgLfNkG9HT+O342/I14tjPy9cYJelMAjXm+MBL5xgr4jgXLbveXWP/i7fxX4d/8A&lt;/diagram&gt;&lt;/mxfile&gt;">
+    <defs/>
+    <g>
+        <rect x="10" y="0" width="120" height="60" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+        <path d="M 380 176 L 423.63 176" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 428.88 176 L 421.88 179.5 L 423.63 176 L 421.88 172.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 320 136 C 320 114.67 380 114.67 380 136 L 380 184 C 380 205.33 320 205.33 320 184 Z" fill="#ffffff" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 320 136 C 320 152 380 152 380 136" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 130 30 Q 230 170 225 105 Q 220 40 311.37 147.31" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 314.78 151.31 L 307.57 148.25 L 311.37 147.31 L 312.9 143.71 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="0" y="70" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 0 70 L 50 120 M 0 120 L 50 70" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="75" y="70" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 75 70 L 125 120 M 75 120 L 125 70" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="150" y="70" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 150 70 L 200 120 M 150 120 L 200 70" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="0" y="145" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 0 145 L 50 195 M 0 195 L 50 145" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="75" y="145" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 75 145 L 125 195 M 75 195 L 125 145" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="150" y="145" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 150 145 L 200 195 M 150 195 L 200 145" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="0" y="220" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 0 220 L 50 270 M 0 270 L 50 220" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="75" y="220" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 75 220 L 125 270 M 75 270 L 125 220" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="150" y="220" width="50" height="50" fill="#ffffff" stroke="#999999" pointer-events="all"/>
+        <path d="M 150 220 L 200 270 M 150 270 L 200 220" fill="none" stroke="#999999" stroke-miterlimit="10" pointer-events="all"/>
+    </g>
+</svg>
