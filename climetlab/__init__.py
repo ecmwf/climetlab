@@ -11,11 +11,12 @@ from .sources import load as load_source
 from .datasets import load as load_dataset
 from .plotting import plot_map, new_plot
 from .core.settings import SETTINGS as settings
+from .core.caching import CACHE as cache
 
 from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
 
-__version__ = "0.0.64"
+__version__ = "0.0.65"
 
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     "plot_map",
     "new_plot",
     "settings",
+    "cache",
     "Dataset",
     "DataSource",
 ]

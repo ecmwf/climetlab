@@ -10,11 +10,13 @@
 import os
 import yaml
 import sys
+import getpass
 
 
 class Settings:
     def __init__(self, defaults):
         self._settings = dict(**defaults)
+        self._callbacks = []
 
     def get(self, name):
         return self._settings[name]
@@ -27,8 +29,11 @@ class Settings:
         html.append("</table>")
         return "".join(html)
 
+    def on_change(self, callback):
+        self._callbacks.append(callback)
 
-default_settings = dict(cache_directory="/var/tmp")
+
+default_settings = dict(cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),))
 
 try:
     user_climetlab = os.path.expanduser("~/.climetlab")

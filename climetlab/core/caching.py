@@ -10,7 +10,92 @@
 import os
 import tempfile
 import hashlib
+import datetime
+import sqlite3
+import json
+import threading
+
 from .settings import SETTINGS
+
+
+_connection = None
+
+
+def connection():
+    global _connection
+    if _connection is None:
+        cache_dir = SETTINGS.get("cache_directory")
+        if not os.path.exists(cache_dir):
+            os.mkdir(cache_dir)
+        cache_db = os.path.join(cache_dir, "cache.db")
+        _connection = sqlite3.connect(cache_db)
+        # So we can use rows as dictionaries
+        _connection.row_factory = sqlite3.Row
+
+        _connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cache (
+                    path text PRIMARY KEY,
+                    owner text NOT NULL,
+                    args text NOT NULL,
+                    creation_date text NOT NULL,
+                    remote_date text, -- TODO expire URLs
+                    remote_tag text,  -- TODO expire URLs
+                    last_access text,
+                    expires int,
+                    accesses int,
+                    size int);"""
+        )
+
+        update = []
+        for n in _connection.execute("select path from cache where size is null"):
+            try:
+                update.append((os.path.getsize(n[0]), n[0]))
+            except Exception:
+                pass
+
+        if update:
+            print(update)
+            _connection.executemany("update cache set size=? where path=?", update)
+            _connection.commit()
+
+    return _connection
+
+
+def settings_changed():
+    global _connection
+    if _connection is not None:
+        _connection.close()
+    _connection = None
+
+
+SETTINGS.on_change(settings_changed)
+
+
+def register_cache_file(path, owner, args):
+    db = connection()
+
+    now = datetime.datetime.utcnow()
+    c = db.execute(
+        """
+        INSERT INTO cache(
+                        path,
+                        owner,
+                        args,
+                        creation_date,
+                        last_access,
+                        accesses)
+        VALUES(?,?,?,?,?,?)
+        ON CONFLICT(path)
+        DO UPDATE SET
+            accesses=accesses+1,
+            last_access=?;""",
+        (path, owner, json.dumps(args), now, now, 1, now),
+    )
+
+    print(list(c))
+
+    db.commit()
 
 
 def update(m, x):
@@ -28,14 +113,18 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
-def cache_file(*args, extension=".cache"):
+def cache_file(owner, *args, extension=".cache"):
     m = hashlib.sha256()
+    update(m, owner)
     update(m, args)
-    return "%s/climetlab-%s%s" % (
+    path = "%s/%s-%s%s" % (
         SETTINGS.get("cache_directory"),
+        owner,
         m.hexdigest(),
         extension,
     )
+    register_cache_file(path, owner, args)
+    return path
 
 
 class TmpFile:
@@ -50,3 +139,19 @@ def temp_file(extension=".tmp"):
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)
     return TmpFile(path)
+
+
+class Cache:
+    def _repr_html_(self):
+        html = []
+        # html.append("<table>")
+
+        with connection() as db:
+            for n in db.execute("select * from cache"):
+                print(n.keys())
+                html.append("<br>".join(str(x) for x in n))
+        # html.append("</table>")
+        return "".join(html)
+
+
+CACHE = Cache()
