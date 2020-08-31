@@ -11,7 +11,6 @@ import cdsapi
 import os
 
 from .base import FileSource, APIKeyPrompt
-from climetlab.core.caching import cache_file
 from climetlab.helpers import helper
 
 
@@ -61,7 +60,7 @@ class CDSRetriever(FileSource):
 
     def __init__(self, dataset, **kwargs):
         request = self.request(**kwargs)
-        self.path = cache_file("CDSRetriever", request)
+        self.path = self.cache_file(request)
         if not os.path.exists(self.path):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)

@@ -13,7 +13,8 @@ import hashlib
 import datetime
 import sqlite3
 import json
-import threading
+
+# import threading
 
 from .settings import SETTINGS
 
@@ -55,7 +56,6 @@ def connection():
                 pass
 
         if update:
-            print(update)
             _connection.executemany("update cache set size=? where path=?", update)
             _connection.commit()
 
@@ -113,17 +113,24 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
-def cache_file(owner, *args, extension=".cache"):
+def class_full_name(o):
+    if o.__module__ is None:
+        return o.__name__
+    return o.__module__ + "." + o.__name__
+
+
+def cache_file(owner: type, *args, extension: str = ".cache"):
     m = hashlib.sha256()
-    update(m, owner)
+    klass = class_full_name(owner)
+    update(m, klass)
     update(m, args)
     path = "%s/%s-%s%s" % (
         SETTINGS.get("cache_directory"),
-        owner,
+        owner.__name__.lower(),
         m.hexdigest(),
         extension,
     )
-    register_cache_file(path, owner, args)
+    register_cache_file(path, klass, args)
     return path
 
 
@@ -144,13 +151,12 @@ def temp_file(extension=".tmp"):
 class Cache:
     def _repr_html_(self):
         html = []
-        # html.append("<table>")
-
         with connection() as db:
             for n in db.execute("select * from cache"):
-                print(n.keys())
-                html.append("<br>".join(str(x) for x in n))
-        # html.append("</table>")
+                html.append("<table>")
+                for k in n.keys():
+                    html.append("<td><td>%s</td><td>%s</td></tr>" % (k, n[k]))
+                html.append("</table>")
         return "".join(html)
 
 

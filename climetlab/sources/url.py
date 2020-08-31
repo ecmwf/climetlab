@@ -9,7 +9,6 @@
 
 import os
 from .base import FileSource
-from climetlab.core.caching import cache_file
 import requests
 from tqdm import tqdm
 
@@ -20,7 +19,7 @@ class Url(FileSource):
         super().__init__(**kwargs)
 
         _, extension = os.path.splitext(url)
-        self.path = cache_file("Url", url, extension=extension)
+        self.path = self.cache_file(url, extension=extension)
 
         if not os.path.exists(self.path):
             print("Downloading", url)

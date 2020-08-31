@@ -11,6 +11,7 @@ from importlib import import_module
 import os
 import weakref
 from climetlab.utils.html import table
+from climetlab.core.caching import cache_file
 
 
 def lookup(name):
@@ -58,6 +59,9 @@ class DataSource:
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+
+    def cache_file(self, *args, extension='.cache'):
+        return cache_file(self.__class__, *args, extension)
 
     @property
     def dataset(self):

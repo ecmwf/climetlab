@@ -11,7 +11,6 @@ import ecmwfapi
 import os
 import json
 
-from climetlab.core.caching import cache_file
 from .base import FileSource, APIKeyPrompt
 
 
@@ -75,7 +74,7 @@ def service(name):
 
 class MARSRetriever(FileSource):
     def __init__(self, **req):
-        self.path = cache_file("MARSRetriever", req)
+        self.path = self.cache_file(req)
         if not os.path.exists(self.path):
             service("mars").execute(req, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)

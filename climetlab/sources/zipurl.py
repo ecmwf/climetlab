@@ -9,7 +9,6 @@
 
 import os
 from .base import FileSource
-from climetlab.core.caching import cache_file
 import requests
 from tqdm import tqdm
 import shutil
@@ -18,7 +17,7 @@ import xarray as xr
 
 class ZipUrl(FileSource):
     def __init__(self, url):
-        self.path = cache_file("ZipUrl", url)
+        self.path = self.cache_file(url)
 
         base, ext = os.path.splitext(url)
         _, tar = os.path.splitext(base)
