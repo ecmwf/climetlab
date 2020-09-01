@@ -8,22 +8,22 @@
 #
 
 import re
+import os
 
 
 def urlify(text):
     return re.sub(r"(https?://.*\S)", r'<a href="\1" target="_blank">\1</a>', text)
 
 
+def css(name):
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "css", name)
+    with open(path + ".css") as f:
+        return "<style>%s</style>" % (f.read(),)
+
+
 def table(obj):
 
-    style = """
-<style>
-table.climetlab td {
-    vertical-align: top;
-    text-align: left !important;
-}
-</style>
-    """
+    style = css("table")
 
     table = """
 <h4>{name}</h4>

@@ -13,7 +13,7 @@ import hashlib
 import datetime
 import sqlite3
 import json
-
+from climetlab.utils.html import css
 
 from .settings import SETTINGS
 from climetlab.utils import bytes_to_string
@@ -45,6 +45,7 @@ def connection():
                     last_access   TEXT,
                     type          TEXT,
                     parent        TEXT,
+                    extra         TEXT,
                     expires       INTEGER,
                     accesses      INTEGER,
                     size          INTEGER);"""
@@ -184,10 +185,10 @@ class Cache:
 
         update_cache()
 
-        html = []
+        html = [css("table")]
         with connection() as db:
             for n in db.execute("SELECT * FROM cache"):
-                html.append("<table>")
+                html.append("<table class='climetlab'>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
                 for k in [x for x in n.keys() if x != "path"]:

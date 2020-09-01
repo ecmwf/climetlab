@@ -131,3 +131,6 @@ Use `doc8` instead of `rstcheck`
   - dask
 - Introduce catalogues
   - cml.add_catalog (catalogue)
+- Iterators?
+  - plot_map(d) vs plot_map(d[0])
+- CI/CD

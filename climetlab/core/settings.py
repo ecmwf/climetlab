@@ -11,6 +11,7 @@ import os
 import yaml
 import sys
 import getpass
+from climetlab.utils.html import css
 
 DEFAULTS = dict(cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),))
 
@@ -38,11 +39,22 @@ class Settings:
         else:
             return self._settings.get(name, default)
 
-    def set(self, name, value):
+    def set(self, name : str, value):
+        """[summary]
+
+        Args:
+            name (set): [description]
+            value ([type]): [description]
+        """
         self._settings[name] = value
         self.changed()
 
     def reset(self, name: str = None):
+        """Reset setting(s) to default values.
+
+        Args:
+            name (str, optional): The name of the setting to reset to default. If the setting does not have a default, it is removed. If `None` is passed, all settings are reset to their default values. Defaults to None.
+        """
         if name is None:
             self._settings = dict(**DEFAULTS)
         else:
@@ -52,8 +64,8 @@ class Settings:
         self.changed()
 
     def _repr_html_(self):
-        html = []
-        html.append("<table>")
+        html = [css("table")]
+        html.append("<table class='climetlab'>")
         for k, v in sorted(self._settings.items()):
             html.append("<tr><td>%s</td><td>%r</td></td>" % (k, v))
         html.append("</table>")
