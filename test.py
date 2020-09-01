@@ -25,3 +25,5 @@
 
 import climetlab as cml
 cml.settings.set()
+
+cml.plot_map()

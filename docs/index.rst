@@ -30,6 +30,7 @@ Documentation
 **Getting Started**
 
 * :doc:`overview`
+* :doc:`firststeps`
 * :doc:`examples`
 
 .. toctree::
@@ -38,9 +39,10 @@ Documentation
    :caption: Getting Started
 
    overview
+   firststeps
    examples
 
-**User Guide**
+**User Guide (TODO)**
 
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
@@ -55,7 +57,7 @@ Documentation
    guide/datasets
    guide/sources
 
-**Reference**
+**Reference (TODO)**
 
 * :doc:`reference/datasets`
 * :doc:`reference/sources`
@@ -75,7 +77,7 @@ Documentation
    reference/caching
 
 
-**Contributing**
+**Contributing (TODO)**
 
 * :doc:`contributing/datasets`
 * :doc:`contributing/sources`
