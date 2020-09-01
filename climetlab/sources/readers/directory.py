@@ -12,7 +12,6 @@ from . import Reader, reader
 
 
 class DirectoryReader(Reader):
-
     def __init__(self, source, path):
         super().__init__(source, path)
 
@@ -29,3 +28,8 @@ class DirectoryReader(Reader):
             return reader(self.source, self._content[0])
 
         return self
+
+    def to_xarray(self):
+        import xarray as xr
+
+        return xr.open_mfdataset(self._content, combine="by_coords")

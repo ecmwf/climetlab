@@ -8,14 +8,23 @@
 #
 
 from . import Reader
+from zipfile import ZipFile
 
 
 class ZIPReader(Reader):
-    def to_pandas(self, **kwargs):
-        import pandas
+    def __init__(self, source, path):
+        super().__init__(source, path)
 
-        options = dict()
-        options.update(self.source.read_csv_options())
-        options.update(kwargs)
+        with ZipFile(path, "r") as zip:
+            self._content = zip.namelist()
 
-        return pandas.read_csv(self.path, **options)
+        assert False, self._content
+
+    # def to_pandas(self, **kwargs):
+    #     import pandas
+
+    #     options = dict()
+    #     options.update(self.source.read_csv_options())
+    #     options.update(kwargs)
+
+    #     return pandas.read_csv(self.path, **options)
