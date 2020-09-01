@@ -74,20 +74,6 @@ class Settings:
         except Exception as e:
             print("Cannot save CliMetLab settings (%s)" % (e,), file=sys.stderr)
 
-    def __getattr__(self, name):
-        return self.get(name)
-
-    def __setattr__(self, name, value):
-        if name.startswith("_"):
-            return super().__setattr__(name, value)
-        self.set(name, value)
-        return value
-
-    def __delattr__(self, name):
-        if name.startswith("_"):
-            return super().__delattr__(name)
-        self.reset(name)
-
 
 try:
     user_climetlab = os.path.expanduser("~/.climetlab")

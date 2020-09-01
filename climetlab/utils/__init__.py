@@ -19,3 +19,12 @@ def download_and_cache(url: str) -> str:
     from climetlab import load_source
 
     return load_source("url", url).path
+
+
+def bytes_to_string(n):
+    u = ["", " KiB", " MiB", " GiB", " TiB", " PiB"]
+    i = 0
+    while n >= 1024:
+        n /= 1024.0
+        i += 1
+    return "%g%s" % (int(n * 10 + 0.5) / 10.0, u[i])

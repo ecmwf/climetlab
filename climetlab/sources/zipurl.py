@@ -24,8 +24,10 @@ class ZipUrl(FileSource):
         if tar == ".tar":
             ext = ".tar" + ext
 
-        if not os.path.exists(self.path + ".d"):
-            if not os.path.exists(self.path + ext):
+        directory = self.path
+        download = self.path + ".download" + ext
+        if not os.path.exists(directory):
+            if not os.path.exists(download):
                 print("Downloading", url)
                 r = requests.head(url)
                 r.raise_for_status()
@@ -44,25 +46,27 @@ class ZipUrl(FileSource):
                     leave=False,
                 ) as pbar:
                     pbar.update(total)
-                    with open(self.path, mode) as f:
+                    with open(download + ".tmp", mode) as f:
                         for chunk in r.iter_content(chunk_size=1024):
                             if chunk:
                                 f.write(chunk)
                                 total += len(chunk)
                                 pbar.update(len(chunk))
-                os.rename(self.path, self.path + ext)
+                os.rename(download + ".tmp", download)
+            print()
             print("Unpacking...")
-            if not os.path.exists(self.path + ".tmp"):
-                os.mkdir(self.path + ".tmp")
+            if not os.path.exists(directory + ".tmp"):
+                os.mkdir(directory + ".tmp")
 
-            shutil.unpack_archive(self.path + ext, self.path + ".tmp")
+            # See https://docs.python.org/3/library/shutil.html#shutil.get_archive_formats
+            shutil.unpack_archive(download, directory + ".tmp")
 
             print("Done...")
-            os.rename(self.path + ".tmp", self.path + ".d")
-            os.unlink(self.path + ext)
+            os.rename(directory + ".tmp", directory)
+            os.unlink(download)
 
         paths = []
-        for root, _, files in os.walk(self.path + ".d"):
+        for root, _, files in os.walk(directory):
             for f in files:
                 paths.append(os.path.join(root, f))
 

@@ -11,45 +11,82 @@ import os
 from .base import FileSource
 import requests
 from tqdm import tqdm
+import shutil
 
 
 class Url(FileSource):
-    def __init__(self, url, **kwargs):
+    def __init__(self, url, unpack=None, **kwargs):
 
         super().__init__(**kwargs)
 
-        _, extension = os.path.splitext(url)
-        self.path = self.cache_file(url, extension=extension)
+        base, ext = os.path.splitext(url)
+        _, tar = os.path.splitext(base)
+        if tar == ".tar":
+            ext = ".tar" + ext
 
-        if not os.path.exists(self.path):
-            print("Downloading", url)
-            r = requests.head(url)
-            r.raise_for_status()
-            try:
-                size = int(r.headers["content-length"])
-            except Exception:
-                size = None
-            r = requests.get(url, stream=True)
-            r.raise_for_status()
-            total = 0
-            mode = "wb"
-            with tqdm(
-                total=size,
-                unit_scale=True,
-                unit_divisor=1024,
-                unit="B",
-                disable=False,
-                leave=False,
-            ) as pbar:
-                pbar.update(total)
-                with open(self.path + ".tmp", mode) as f:
-                    for chunk in r.iter_content(chunk_size=1024):
-                        if chunk:
-                            f.write(chunk)
-                            total += len(chunk)
-                            pbar.update(len(chunk))
+        if unpack is None:
+            unpack = ext in (".tar", ".tar.gz")
 
-            os.rename(self.path + ".tmp", self.path)
+        if unpack:
+            self.path = self.cache_file(url, extension=".d")
+            if not os.path.exists(self.path):
+                archive = self.path + ext
+                self.download(url, archive)
+                self.unpack(archive, self.path)
+                os.unlink(archive)
+        else:
+            _, ext = os.path.splitext(url)
+            self.path = self.cache_file(url, extension=ext)
+            if not os.path.exists(self.path):
+                self.download(url, self.path)
+
+    def download(self, url, target):
+
+        if os.path.exists(target):
+            return
+
+        print("Downloading", url)
+        download = target + ".download"
+        r = requests.head(url)
+        r.raise_for_status()
+        try:
+            size = int(r.headers["content-length"])
+        except Exception:
+            size = None
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        total = 0
+        mode = "wb"
+        with tqdm(
+            total=size,
+            unit_scale=True,
+            unit_divisor=1024,
+            unit="B",
+            disable=False,
+            leave=False,
+        ) as pbar:
+            pbar.update(total)
+            with open(download, mode) as f:
+                for chunk in r.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+                        total += len(chunk)
+                        pbar.update(len(chunk))
+
+        os.rename(download, target)
+
+    def unpack(self, archive, directory):
+        if os.path.exists(directory):
+            return
+        print()
+        print("Unpacking...")
+        target = directory + ".tmp"
+        if not os.path.exists(target):
+            os.mkdir(target)
+
+        shutil.unpack_archive(archive, target)
+        os.rename(target, directory)
+        print("Done.")
 
 
 source = Url

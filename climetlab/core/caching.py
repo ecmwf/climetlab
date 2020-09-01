@@ -16,7 +16,7 @@ import json
 
 
 from .settings import SETTINGS
-
+from climetlab.utils import bytes_to_string
 
 _connection = None
 
@@ -24,7 +24,7 @@ _connection = None
 def connection():
     global _connection
     if _connection is None:
-        cache_dir = SETTINGS.cache_directory
+        cache_dir = SETTINGS.get("cache_directory")
         if not os.path.exists(cache_dir):
             os.mkdir(cache_dir)
         cache_db = os.path.join(cache_dir, "cache.db")
@@ -35,16 +35,19 @@ def connection():
         _connection.execute(
             """
             CREATE TABLE IF NOT EXISTS cache (
-                    path text PRIMARY KEY,
-                    owner text NOT NULL,
-                    args text NOT NULL,
-                    creation_date text NOT NULL,
-                    remote_date text, -- TODO expire URLs
-                    remote_tag text,  -- TODO expire URLs
-                    last_access text,
-                    expires int,
-                    accesses int,
-                    size int);"""
+                    path          TEXT PRIMARY KEY,
+                    owner         TEXT NOT NULL,
+                    args          TEXT NOT NULL,
+                    creation_date TEXT NOT NULL,
+                    flags         INTEGER DEFAULT 0,
+                    remote_date   TEXT, -- TODO expire URLs
+                    remote_tag    TEXT, -- TODO expire URLs
+                    last_access   TEXT,
+                    type          TEXT,
+                    parent        TEXT,
+                    expires       INTEGER,
+                    accesses      INTEGER,
+                    size          INTEGER);"""
         )
 
     return _connection
@@ -66,12 +69,22 @@ def update_cache():
         update = []
         for n in db.execute("SELECT path FROM cache WHERE size IS NULL"):
             try:
-                update.append((os.path.getsize(n[0]), n[0]))
+                path = n[0]
+                if os.path.isdir(path):
+                    kind = "directory"
+                    size = 0
+                    for root, _, files in os.walk(path):
+                        for f in files:
+                            size += os.path.getsize(os.path.join(root, f))
+                else:
+                    kind = "file"
+                    size = os.path.getsize(path)
+                update.append((size, kind, path))
             except Exception:
                 pass
 
         if update:
-            db.executemany("UPDATE cache SET size=? WHERE path=?", update)
+            db.executemany("UPDATE cache SET size=?, type=? WHERE path=?", update)
             db.commit()
 
 
@@ -85,9 +98,9 @@ def register_cache_file(path, owner, args):
 
     db.execute(
         """
-        UPDATE cache SET
-            accesses=accesses+1,
-            last_access=?
+        UPDATE cache
+        SET accesses    = accesses + 1,
+            last_access = ?
         WHERE path=?""",
         (now, path),
     )
@@ -134,20 +147,19 @@ def class_full_name(o):
     return o.__module__ + "." + o.__name__
 
 
-def cache_file(owner: type, *args, extension: str = ".cache"):
+def cache_file(owner: str, *args, extension: str = ".cache"):
 
     m = hashlib.sha256()
-    klass = class_full_name(owner)
-    update(m, klass)
+    update(m, owner)
     update(m, args)
     path = "%s/%s-%s%s" % (
-        SETTINGS.cache_directory,
-        owner.__name__.lower(),
+        SETTINGS.get("cache_directory"),
+        owner.lower(),
         m.hexdigest(),
         extension,
     )
 
-    if register_cache_file(path, klass, args):
+    if register_cache_file(path, owner, args):
         update_cache()
 
     return path
@@ -174,12 +186,16 @@ class Cache:
 
         html = []
         with connection() as db:
-            for n in db.execute("select * from cache"):
+            for n in db.execute("SELECT * FROM cache"):
                 html.append("<table>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
                 for k in [x for x in n.keys() if x != "path"]:
-                    html.append("<td><td>%s</td><td>%s</td></tr>" % (k, n[k]))
+                    if k == "size":
+                        v = bytes_to_string(n[k])
+                    else:
+                        v = n[k]
+                    html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
                 html.append("</table>")
                 html.append("<br>")
         return "".join(html)

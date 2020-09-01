@@ -20,6 +20,10 @@ class Reader:
     def source(self):
         return self._source()
 
+    def mutate(self):
+        # Give a chance to `directory` or `zip` to change the reader
+        return self
+
 
 def grib_reader(source, path):
     from .grib import GRIBReader
@@ -57,6 +61,12 @@ def zip_reader(source, path):
     return ZIPReader(source, path)
 
 
+def directory_reader(source, path):
+    from .directory import DirectoryReader
+
+    return DirectoryReader(source, path)
+
+
 READERS = {
     b"GRIB": grib_reader,
     b"BUFR": bufr_reader,
@@ -66,6 +76,7 @@ READERS = {
     b"\xff\xffOD": odb_reader,
     b"PK\x03\x04": zip_reader,
     ".csv": csv_reader,
+    ".d": directory_reader,
 }
 
 
@@ -73,13 +84,16 @@ def reader(source, path):
 
     _, extension = os.path.splitext(path)
     if extension in READERS:
-        return READERS[extension](source, path)
+        return READERS[extension](source, path).mutate()
 
-    with open(path, "rb") as f:
-        header = f.read(4)
+    if os.path.isdir(path):
+        return directory_reader(source, path).mutate()
+    else:
+        with open(path, "rb") as f:
+            header = f.read(4)
 
-    if header in READERS:
-        return READERS[header](source, path)
+        if header in READERS:
+            return READERS[header](source, path).mutate()
 
     raise ValueError(
         "Unsupported file {} (header={}, extension={})".format(path, header, extension)

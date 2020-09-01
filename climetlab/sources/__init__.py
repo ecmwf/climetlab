@@ -61,7 +61,12 @@ class DataSource:
         self._kwargs = kwargs
 
     def cache_file(self, *args, extension=".cache"):
-        return cache_file(self.__class__, *args, extension=extension)
+        owner = self.name
+        if self.dataset:
+            owner = self.dataset.name
+        if owner is None:
+            owner = self.__class__.__name__.lower()
+        return cache_file(owner, *args, extension=extension)
 
     @property
     def dataset(self):
