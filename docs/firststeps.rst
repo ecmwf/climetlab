@@ -30,25 +30,54 @@ Below are the parameters you can pass to the plot function:
      - Default
      - Description
    * - title
-     - str or True
+     - str or ``True``
      - ``None``
      - The title of the plot. Use ``True`` for automatic.
    * - projection
      - str
      - ``None``
-     - The name of a map projection. Use ``None`` for automatic.
+     - The name of a map projection. Use ``None`` for automatic. To find out about
+       the list of available projections:
+          .. code-block:: python
+
+             from climetlab.plotting import projections
+
+             for p in projections():
+                 print(p)
+
    * - style
      - str
      - ``None``
-     - The name of a plotting to apply. Use ``None`` for default.
+     - The name of a plotting to apply. Use ``None`` for default. To find out about
+       the list of available projections
+          .. code-block:: python
+
+             from climetlab.plotting import styles
+
+             for p in styles():
+                 print(p)
    * - foreground
      - str
      - ``None``
-     - TODO
+     - TODO. To find out about
+       the list of available foregrounds
+          .. code-block:: python
+
+             from climetlab.plotting import layers
+
+             for p in layers():
+                 print(p)
    * - background
      - str
      - ``None``
-     - TODO
+     - TODO. To find out about
+       the list of available backgrounds
+          .. code-block:: python
+
+             from climetlab.plotting import layers
+
+             for p in layers():
+                 print(p)
    * - path
      - str
      - ``None``
