@@ -22,6 +22,14 @@ img.badge {
     height: 20px;
 }
 
-.wy-table-responsive table td, .wy-table-responsive table th {
-    white-space: normal;
+
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+    white-space: normal !important;
+}
+
+.wy-table-responsive {
+    margin-bottom: 24px;
+    max-width: 100%;
+    overflow: visible;
 }
