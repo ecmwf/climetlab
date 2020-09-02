@@ -26,3 +26,7 @@ table.climetlab td {
     white-space: normal !important;
     vertical-align: top !important;
 }
+
+table.climetlab tr {
+    vertical-align: top !important;
+}
