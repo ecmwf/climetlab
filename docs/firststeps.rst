@@ -36,50 +36,41 @@ Below are the parameters you can pass to the plot function:
    * - projection
      - str
      - ``None``
-     - The name of a map projection. Use ``None`` for automatic. To find out about
-       the list of available projections:
-          .. code-block:: python
-
-             from climetlab.plotting import projections
-
-             for p in projections():
-                 print(p)
+     - The name of a map projection. Use ``None`` for automatic. See below for possible values.
 
    * - style
      - str
      - ``None``
-     - The name of a plotting to apply. Use ``None`` for default. To find out about
-       the list of available projections
-          .. code-block:: python
-
-             from climetlab.plotting import styles
-
-             for p in styles():
-                 print(p)
+     - The name of a plotting to apply. Use ``None`` for default. See below for possible values.
    * - foreground
      - str
      - ``None``
-     - TODO. To find out about
-       the list of available foregrounds
-          .. code-block:: python
-
-             from climetlab.plotting import layers
-
-             for p in layers():
-                 print(p)
+     - TODO. See below for possible values.
    * - background
      - str
      - ``None``
-     - TODO. To find out about
-       the list of available backgrounds
-          .. code-block:: python
-
-             from climetlab.plotting import layers
-
-             for p in layers():
-                 print(p)
+     - TODO. See below for possible values.
    * - path
      - str
      - ``None``
      - Save the plot in a file instead of displaying it.
        The file type is inferred from the path extension (``.png``, ``.pdf``, ``.svg``, ...)
+
+You can find out what are the possible values for *projection*,
+*style*, *foreground* and *background* parameters using the code below:
+
+.. code-block:: python
+
+  import climetlab.plotting
+
+  # List of possible projections
+  for p in climetlab.plotting.projections():
+      print(p)
+
+  # List of possible styles
+  for p in climetlab.plotting.styles():
+      print(p)
+
+  # List of possible backgrounds/foregrounds
+  for p in climetlab.plotting.layers():
+      print(p)
