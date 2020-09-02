@@ -17,13 +17,10 @@ Simple plotting
 
 Below are the parameters you can pass to the plot function:
 
-.. role:: raw-html(raw)
-   :format: html
 
 .. list-table::
    :header-rows: 1
    :widths: 10 20 10 60
-   :class: climetlab
 
    * - Name
      - Value
@@ -79,6 +76,38 @@ You can find out what are the possible values for *projection*,
   # List of possible backgrounds/foregrounds
   for p in climetlab.plotting.layers():
       print(p)
+
+
+To get more information about a given projection, in a Jupyter Notebook:
+
+.. code-block:: python
+
+  from climetlab.plotting import projection
+
+  projection("global")
+
+will output:
+
+.. list-table::
+  :header-rows: 0
+  :widths: 10 90
+
+  * - Name:
+    - global
+  * - Collection:
+    - projections
+  * - Path:
+    - /opt/venv/lib/python3.7/site-packages/climetlab/data/projections/global.yaml
+  * - Definition:
+    - .. code-block:: yaml
+
+        magics:
+          mmap:
+            subpage_lower_left_latitude: -90.0
+            subpage_lower_left_longitude: -180.0
+            subpage_map_projection: cylindrical
+            subpage_upper_right_latitude: 90.0
+            subpage_upper_right_longitude: 180.0
 
 Advanced plotting
 -----------------
