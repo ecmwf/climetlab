@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import sys
 from . import Reader
 
 try:
@@ -15,7 +14,7 @@ try:
 except Exception:
     import pyodc as odc
 
-    print("Using pure Python odc decoder.", file=sys.stderr)
+    # print("Using pure Python odc decoder.", file=sys.stderr)
 
 
 class ODBReader(Reader):

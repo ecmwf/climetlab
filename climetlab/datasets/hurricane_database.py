@@ -85,7 +85,6 @@ class HurricaneDatabase(Dataset):
 
                 for _ in range(0, int(line[33:36])):
                     line = next(lines)
-                    # print line
                     knots = float(line[38:41])
                     pressure = np.NaN if line[43] == "-" else float(line[43:47])
                     time = "%s-%s-%sZ%s:%s" % (

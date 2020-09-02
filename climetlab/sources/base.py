@@ -10,12 +10,13 @@
 from . import DataSource
 from .readers import reader
 import getpass
-import sys
 import os
 import markdown
 from abc import ABC, abstractmethod
-
+import logging
 from climetlab.core.ipython import active as ipython_active, display, HTML
+
+LOG = logging.getLogger(__name__)
 
 
 class FileSource(DataSource):
@@ -70,21 +71,20 @@ class APIKeyPrompt(ABC):
 
         try:
             text = self.validate(text)
-        except Exception as e:
-            print("Invalid API key: %s" % (e,), file=sys.stderr)
+        except Exception:
+            LOG.error("Invalid API key", exc_info=True)
             return False
 
         rcfile = os.path.expanduser(self.rcfile)
         with open(rcfile, "w") as f:
             print(text, file=f)
 
-        print("API key saved to '%s'" % (rcfile,), file=sys.stderr)
+        LOG.info("API key saved to '%s'", rcfile)
 
         return True
 
     def ask_user_text(self) -> str:
-        print(self.text_message, file=sys.stderr)
-        return getpass.getpass(self.prompt + ": ")
+        return getpass.getpass("\n".join([self.text_message, self.prompt + ": "]))
 
     def ask_user_markdown(self) -> str:
         message = markdown.markdown(self.markdown_message)

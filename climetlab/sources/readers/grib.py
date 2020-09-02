@@ -113,7 +113,6 @@ class GRIBReader(Reader):
     def _items(self):
         if self._fields is None:
             self._fields = []
-            # print("Scan", self.path)
             for f in self:
                 self._fields.append(f.offset)
         return self._fields

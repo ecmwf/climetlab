@@ -8,7 +8,8 @@
 #
 
 import os
-import sys
+import logging
+
 
 # This is needed when running Sphinx on ReadTheDoc
 
@@ -21,6 +22,9 @@ except Exception:
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.data import get_data_entry
+
+LOG = logging.getLogger(__name__)
+
 
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
@@ -345,10 +349,7 @@ class Driver:
         if len(self._layers):
             self._layers[-1].style(self._apply("styles", style, mcont))
         else:
-            print(
-                "WARNING: ignoring style [%r], not current data layer." % (style,),
-                file=sys.stderr,
-            )
+            LOG.warning("No current data layer: ignoring style '%r'", style)
 
     def option(self, name: str, default=NONE):
         self._used_options.add(name)
@@ -433,10 +434,13 @@ class Driver:
 
         unused = set(self._options.keys()) - self._used_options
         if unused:
-            print(
-                "WARNING: unused argument%s:" % ("s" if len(unused) > 1 else "",),
-                ", ".join("%s=%s" % (x, self._options[x]) for x in unused),
-                file=sys.stderr,
+            LOG.warning(
+                "".join(
+                    [
+                        "Unused argument%s:" % ("s" if len(unused) > 1 else "",),
+                        ", ".join("%s=%s" % (x, self._options[x]) for x in unused),
+                    ]
+                )
             )
 
         args = [page] + self.macro()
@@ -447,7 +451,7 @@ class Driver:
         try:
             macro.plot(*args)
         except Exception:
-            print(args, file=sys.stderr)
+            LOG.error("Error executing: %r", args, exc_info=True)
             raise
 
         if fmt == ".svg":

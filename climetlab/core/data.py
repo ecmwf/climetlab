@@ -9,9 +9,12 @@
 
 from climetlab.core.plugins import directories
 import os
-import sys
 import yaml
 from collections import defaultdict
+import logging
+
+LOG = logging.getLogger(__name__)
+
 
 YAML_FILES = None
 
@@ -62,11 +65,18 @@ def _load_yaml_files():
                     kind = _guess(data)
                     collection = YAML_FILES[kind]
                     if name in collection:
-                        print("Duplicate entry for", kind, name, file=sys.stderr)
-                    collection[name] = Entry(name, kind, path, data)
+                        LOG.warning(
+                            "Duplicate entry for %s %s (using %s, ignoring %s)",
+                            kind,
+                            name,
+                            collection[name].path,
+                            path,
+                        )
+                    else:
+                        collection[name] = Entry(name, kind, path, data)
 
-            except Exception as e:
-                print("Cannot read YAML file", path, e, file=sys.stderr)
+            except Exception:
+                LOG.error("Cannot process YAML file %s", path, exc_info=True)
 
     return YAML_FILES
 

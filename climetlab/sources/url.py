@@ -12,6 +12,9 @@ from .base import FileSource
 import requests
 from tqdm import tqdm
 import shutil
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 class Url(FileSource):
@@ -45,7 +48,7 @@ class Url(FileSource):
         if os.path.exists(target):
             return
 
-        print("Downloading", url)
+        LOG.info("Downloading %s", url)
         download = target + ".download"
         r = requests.head(url)
         r.raise_for_status()
@@ -78,15 +81,14 @@ class Url(FileSource):
     def unpack(self, archive, directory):
         if os.path.exists(directory):
             return
-        print()
-        print("Unpacking...")
+        LOG.info("Unpacking...")
         target = directory + ".tmp"
         if not os.path.exists(target):
             os.mkdir(target)
 
         shutil.unpack_archive(archive, target)
         os.rename(target, directory)
-        print("Done.")
+        LOG.info("Done.")
 
 
 source = Url

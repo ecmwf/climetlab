@@ -9,9 +9,11 @@
 
 import os
 import yaml
-import sys
 import getpass
 from climetlab.utils.html import css
+import logging
+
+LOG = logging.getLogger(__name__)
 
 DEFAULTS = dict(cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),))
 
@@ -83,8 +85,12 @@ class Settings:
         try:
             with open(self._settings_yaml, "w") as f:
                 yaml.dump(self._settings, f, default_flow_style=False)
-        except Exception as e:
-            print("Cannot save CliMetLab settings (%s)" % (e,), file=sys.stderr)
+        except Exception:
+            LOG.error(
+                "Cannot save CliMetLab settings (%s)",
+                self._settings_yaml,
+                exc_info=True,
+            )
 
 
 try:
@@ -97,10 +103,11 @@ try:
         with open(settings_yaml, "w") as f:
             yaml.dump(DEFAULTS, f, default_flow_style=False)
 
-except Exception as e:
-    print(
-        "Cannot create CliMetLab settings directory, using defaults (%s)" % (e,),
-        file=sys.stderr,
+except Exception:
+    LOG.error(
+        "Cannot create CliMetLab settings directory, using defaults (%s)",
+        settings_yaml,
+        exc_info=True,
     )
 
 
@@ -110,7 +117,11 @@ try:
         s = yaml.load(f, Loader=yaml.SafeLoader)
         settings.update(s)
 
-except Exception as e:
-    print("Cannot load CliMetLab settings, using defaults (%s)" % (e,), file=sys.stderr)
+except Exception:
+    LOG.error(
+        "Cannot load CliMetLab settings (%s), reverting to defaults",
+        settings_yaml,
+        exc_info=True,
+    )
 
 SETTINGS = Settings(settings_yaml, settings)

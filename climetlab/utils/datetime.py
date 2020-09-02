@@ -66,7 +66,6 @@ def datetimes_to_dates_and_times(datetimes_list, as_request=False):
         _d = _indentity
         _t = _indentity
 
-    print(to_datetimes_list(datetimes_list))
     for dt in to_datetimes_list(datetimes_list):
         datetimes[_d(dt.date())].add(_t(dt.time()))
 

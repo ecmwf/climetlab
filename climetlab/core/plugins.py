@@ -11,7 +11,9 @@ import os
 import entrypoints
 import climetlab
 from importlib import import_module
-import sys
+import logging
+
+LOG = logging.getLogger(__name__)
 
 CACHE = {}
 
@@ -55,7 +57,7 @@ def find_plugin(directory, name, loader):
                 if p[1:].replace("/", "-").replace("_", "-") == name:
                     return loader.load_module(p.replace("/", "."))
 
-    raise Exception("Cannot find %s '%s'" % (kind, name))
+    raise Exception("Cannot find %s '%s'" % (loader.kind, name))
 
 
 def directories():
@@ -65,6 +67,6 @@ def directories():
             try:
                 module = import_module(v.module_name)
                 result.append(os.path.dirname(module.__file__))
-            except Exception as e:
-                print("Cannot load module", v.module_name, e, file=sys.stderr)
+            except Exception:
+                LOG.error("Cannot load module %s", v.module_name, exc_info=True)
     return result

@@ -6,8 +6,8 @@ Getting data
 
 TODO
 
-Plotting
---------
+Simple plotting
+---------------
 *CliMetLab* will try to select the best way to plot data.
 
 .. code-block:: python
@@ -29,10 +29,12 @@ Below are the parameters you can pass to the plot function:
      - Value
      - Default
      - Description
+
    * - title
-     - str or ``True``
-     - ``None``
+     - str or bool
+     - ``False``
      - The title of the plot. Use ``True`` for automatic.
+
    * - projection
      - str
      - ``None``
@@ -42,14 +44,17 @@ Below are the parameters you can pass to the plot function:
      - str
      - ``None``
      - The name of a plotting to apply. Use ``None`` for default. See below for possible values.
+
    * - foreground
      - str
      - ``None``
      - TODO. See below for possible values.
+
    * - background
      - str
      - ``None``
      - TODO. See below for possible values.
+
    * - path
      - str
      - ``None``
@@ -74,3 +79,8 @@ You can find out what are the possible values for *projection*,
   # List of possible backgrounds/foregrounds
   for p in climetlab.plotting.layers():
       print(p)
+
+Advanced plotting
+-----------------
+
+TODO
