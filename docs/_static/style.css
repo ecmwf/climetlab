@@ -22,11 +22,11 @@ img.badge {
     height: 20px;
 }
 
-.wy-table-responsive table.climetlab td {
+.wy-table-responsive table.climetla.docutils td {
     white-space: normal !important;
     vertical-align: top !important;
 }
 
-.wy-table-responsive table.climetlab tr {
+.wy-table-responsive table.climetlab.docutils tr {
     vertical-align: top !important;
 }
