@@ -18,19 +18,21 @@ YAML_FILES = None
 
 def _guess(data):
     if "dataset" in data:
-        return "dataset"
+        return "datasets"
 
     if "magics" in data:
+
         if "msymb" in data["magics"]:
-            return "style"
+            return "styles"
+
         if "mcount" in data["magics"]:
-            return "style"
+            return "styles"
 
         if "mcoast" in data["magics"]:
-            return "layer"
+            return "layers"
 
         if "mmap" in data["magics"]:
-            return "projection"
+            return "projections"
 
     return "unknown"
 
@@ -69,7 +71,7 @@ def _load_yaml_files():
     return YAML_FILES
 
 
-def load_data(kind, name):
+def get_data_entry(kind, name):
     return _load_yaml_files()[kind][name]
 
 

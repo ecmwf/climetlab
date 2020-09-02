@@ -20,7 +20,7 @@ except Exception:
 
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
-from climetlab.data import load as load_data
+from climetlab.core.data import get_data_entry
 
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
@@ -317,7 +317,7 @@ class Driver:
         frame[[latitude, longitude, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
 
-    def _apply(self, collection, value, action, default_attribute=None):
+    def _apply(self, collection, value, action):
 
         if value is None:
             return None
@@ -327,9 +327,7 @@ class Driver:
 
         if isinstance(value, str):
 
-            data = load_data(collection, value, fail=default_attribute is None)
-            if data is None:
-                return action(**{default_attribute: value})
+            data = get_data_entry(collection, value).data
 
             magics = data["magics"]
             actions = list(magics.keys())
@@ -341,9 +339,7 @@ class Driver:
         assert False, (collection, value)
 
     def projection(self, projection):
-        self._projection = self._apply(
-            "projections", projection, mmap, "subpage_map_projection"
-        )
+        self._projection = self._apply("projections", projection, mmap)
 
     def style(self, style):
         if len(self._layers):

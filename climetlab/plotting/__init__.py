@@ -15,15 +15,15 @@ from climetlab.core.data import data_entries
 
 
 def projections():
-    return sorted(e.name for e in data_entries("projection"))
+    return sorted(e.name for e in data_entries("projections"))
 
 
 def layers():
-    return sorted(e.name for e in data_entries("layer"))
+    return sorted(e.name for e in data_entries("layers"))
 
 
 def styles():
-    return sorted(e.name for e in data_entries("style"))
+    return sorted(e.name for e in data_entries("styles"))
 
 
 class Plot:
