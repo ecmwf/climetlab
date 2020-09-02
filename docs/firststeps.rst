@@ -54,19 +54,19 @@ The
 
    * - ``"file"``
      - A path to a local file name.
-     - TODO
+     - TODO. :ref:`Read more <data-sources-file>`.
 
    * - ``"url"``
      - A URL to a remote file.
-     - TODO
+     - TODO. :ref:`Read more <data-sources-url>`.
 
    * - ``"cds"``
      - A request to the CDS API.
-     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account.
+     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account. :ref:`Read more <data-sources-cds>`.
 
    * - ``"mars"``
      - TODO
-     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account.
+     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account. :ref:`Read more <data-sources-mars>`.
 
 
 Datasets

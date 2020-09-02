@@ -6,6 +6,28 @@ Data sources
 TODO: Explain what are Data sources. List the built-in ones.
 
 
-.. code-block:: python
+.. _data-sources-file:
 
-   import climetlab as cml
+file
+----
+
+
+
+.. _data-sources-url:
+
+url
+---
+
+
+
+.. _data-sources-cds:
+
+cds
+---
+
+
+
+.. _data-sources-mars:
+
+mars
+----
