@@ -7,10 +7,23 @@ Getting data
 There are two ways of loading data in *CliMetLab*, using :ref:`data
 sources <data-sources>` or :ref:`datasets <datasets>`.
 
+Data sources
+^^^^^^^^^^^^
 
 Data sources implement various methods to access and decode data.
+When data are downloaded from a remote site, they are :ref:`cached
+<caching>` on the local computer.
+
+*CliMetLab* will infer the format and
+
+either as a Panda's frame, accessible using the ``to_pandas()``
+method, or as a Xarray dataset, using the ``to_xarray()`` method.
+
+
 The following example downloads a ``.csv`` file from NOAA's
 *International Best Track Archive for Climate Stewardship* (IBTrACS_).
+The
+
 
 
 .. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
@@ -30,6 +43,35 @@ The following example downloads a ``.csv`` file from NOAA's
 
 .. image:: _static/uma.svg
   :width: 100%
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 20 80
+
+   * - Name
+     - Parameter
+     - Description
+
+   * - ``"file"``
+     -
+     - TODO
+
+   * - ``"url"``
+     -
+     - TODO
+
+   * - ``"cds"``
+     -
+     - TODO. Requires an account.
+
+    * - ``"mars"``
+     -
+     - TODO. Requires an account.
+
+
+Datasets
+^^^^^^^^
 
 
 .. code-block:: python
