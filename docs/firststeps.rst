@@ -112,4 +112,20 @@ will output:
 Advanced plotting
 -----------------
 
-TODO
+There are two options to plot several datasets on the same map. If
+you do not need to specify data specific parameters (e.g. *style*),
+you can call ``cml.plot_map()`` with a list of data objects.
+
+.. code-block:: python
+
+  cml.plot_map((data1, data2), foreground=False)
+
+or, if you want to specify a per-data custom *style*, you can use
+``cml.new_map()``:
+
+.. code-block:: python
+
+  p = cml.new_plot(projection="global")
+  p.plot_map(data1, style="style1")
+  p.plot_map(data2, style="style2")
+  p.show()
