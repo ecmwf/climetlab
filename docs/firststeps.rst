@@ -20,6 +20,7 @@ Below are the parameters you can pass to the plot function:
 
 .. list-table::
    :header-rows: 1
+   :class: climetlab
 
    * - Name
      - Value
