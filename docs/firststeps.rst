@@ -26,7 +26,6 @@ The
 
 
 
-.. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 
 .. code-block:: python
 
@@ -54,20 +53,20 @@ The
      - Description
 
    * - ``"file"``
-     -
+     - A path to a local file name.
      - TODO
 
    * - ``"url"``
-     -
+     - A URL to a remote file.
      - TODO
 
    * - ``"cds"``
-     -
-     - TODO. Requires an account.
+     - A request to the CDS API.
+     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account.
 
-    * - ``"mars"``
-     -
-     - TODO. Requires an account.
+   * - ``"mars"``
+     - TODO
+     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account.
 
 
 Datasets
@@ -203,3 +202,8 @@ or, if you want to specify a per-data custom *style*, you can use
   p.plot_map(data1, style="style1")
   p.plot_map(data2, style="style2")
   p.show()
+
+
+.. _Copernicus Climate Data Store: https://cds.climate.copernicus.eu/#!/home
+.. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
+.. _ECMWF web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
