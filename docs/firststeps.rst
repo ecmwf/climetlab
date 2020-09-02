@@ -28,6 +28,10 @@ Below are the parameters you can pass to the plot function:
      - Default
      - Description
    * - projection
+     - str or True
+     - ``None``
+     - The title of the plot. Use ``True`` for automatic.
+   * - projection
      - str
      - ``None``
      - The name of a map projection. Use ``None`` for automatic.
