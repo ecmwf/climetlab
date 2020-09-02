@@ -20,6 +20,12 @@ class PandasHelper:
         elif "lat" in self.frame:
             self.lat = "lat"
             self.lon = "lon"
+        elif "LAT" in self.frame:
+            self.lat = "LAT"
+            self.lon = "LON"
+        elif "LATITUDE" in self.frame:
+            self.lat = "LATITUDE"
+            self.lon = "LONGITUDE"
         else:
             self.lat = "latitude"
             self.lon = "longitude"
