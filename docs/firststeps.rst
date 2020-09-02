@@ -52,7 +52,5 @@ Below are the parameters you can pass to the plot function:
    * - path
      - str
      - ``None``
-     - :raw-html:`<span style='white-space: normal;'>`
-       Save the plot in a file instead of displaying it.
+     - Save the plot in a file instead of displaying it.
        The file type is inferred from the path extension (``.png``, ``.pdf``, ``.svg``, ...)
-       :raw-html:`</span>`
