@@ -142,7 +142,7 @@ class Driver:
         )
 
         self._foreground = mcoast(
-            map_grid=True,
+            map_grid=False,
             map_label=False,
             map_grid_frame=True,
             map_grid_frame_thickness=5,
@@ -380,18 +380,23 @@ class Driver:
         frame = self.option("frame", False)
 
         if self.option("grid", False):
-            self._grid = mmap(map_grid=True, map_coastline=False)
+            self._grid = mcoast(map_grid=True, map_coastline=False)
 
         if self.option("borders", False):
-            self._borders = mmap(
+            self._borders = mcoast(
                 map_boundaries=True, map_grid=False, map_coastline=False
             )
 
         if self.option("rivers", False):
-            self._rivers = mmap(map_rivers=True, map_grid=False, map_coastline=False)
+            self._rivers = mcoast(
+                map_rivers=True,
+                map_grid=False,
+                map_coastline=False,
+                map_coastline_resolution="high",
+            )
 
         if self.option("cities", False):
-            self._cities = mmap(map_cities=True, map_grid=False, map_coastline=False)
+            self._cities = mcoast(map_cities=True, map_grid=False, map_coastline=False)
 
         path = self.option(
             "path", self.temporary_file("." + self.option("format", "png"))
@@ -444,9 +449,6 @@ class Driver:
             )
 
         args = [page] + self.macro()
-
-        # for a in args:
-        #     print(a)
 
         try:
             macro.plot(*args)

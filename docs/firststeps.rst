@@ -4,7 +4,16 @@ First steps
 Getting data
 ------------
 
-TODO
+There are two ways of loading data in *CliMetLab*, using :ref:`datasets <datasets>` or
+:ref:`data sources <data-sources>`.
+
+.. .. ipython:: python
+..   :suppress:
+
+..   import climetlab as cml
+
+..   data = cml.load_dataset("sample-grib-dataset")
+
 
 Simple plotting
 ---------------
