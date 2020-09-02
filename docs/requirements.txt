@@ -3,4 +3,3 @@ ipykernel
 nbsphinx
 sphinx_rtd_theme
 pyyaml
-climetlab

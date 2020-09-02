@@ -7,7 +7,13 @@ Getting data
 There are two ways of loading data in *CliMetLab*, using :ref:`datasets <datasets>` or
 :ref:`data sources <data-sources>`.
 
-.. ipython:: python
+.. code-block:: python
+
+  import climetlab as cml
+
+.. https://www.ncdc.noaa.gov/ibtracs/
+
+.. code-block:: python
 
     import climetlab as cml
 
@@ -16,8 +22,10 @@ There are two ways of loading data in *CliMetLab*, using :ref:`datasets <dataset
 
     pd = data.to_pandas()
     uma = pd[pd.NAME == "UMA:VELI"]
-    cml.plot_map(uma)
+    cml.plot_map(uma, style="cyclone-track")
 
+.. image:: _static/uma.svg
+  :width: 75%
 
 Simple plotting
 ---------------

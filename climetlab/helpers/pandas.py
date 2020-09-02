@@ -7,6 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
+LATLON = (
+    ("lat@hdr", "lon@hdr"),
+    ("lat", "lon"),
+    ("latitude", "longitude"),
+    ("LAT", "LON"),
+    ("LATITUDE", "LONGITUDE"),
+)
+
 
 class PandasHelper:
     def __init__(self, frame, margins=0, **kwargs):
@@ -14,21 +22,13 @@ class PandasHelper:
         self.frame = frame
         self.margins = margins
 
-        if "lat@hdr" in self.frame:
-            self.lat = "lat@hdr"
-            self.lon = "lon@hdr"
-        elif "lat" in self.frame:
-            self.lat = "lat"
-            self.lon = "lon"
-        elif "LAT" in self.frame:
-            self.lat = "LAT"
-            self.lon = "LON"
-        elif "LATITUDE" in self.frame:
-            self.lat = "LATITUDE"
-            self.lon = "LONGITUDE"
-        else:
-            self.lat = "latitude"
-            self.lon = "longitude"
+        self.lat = "cannot-find-latitude-column"
+        self.lon = "cannot-find-longitude-column"
+
+        for lat, lon in LATLON:
+            if lat in self.frame:
+                self.lat, self.lon = lat, lon
+                break
 
     def plot_map(self, driver):
 
