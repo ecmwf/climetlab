@@ -52,10 +52,10 @@ class Entry:
     def _repr_html_(self):
         html = [css("table")]
         html.append("<table>")
-        html.append("<tr><td>%s</td></tr>" % self.name)
-        html.append("<tr><td>%s</td></tr>" % self.kind)
-        html.append("<tr><td>%s</td></tr>" % self.path)
-        html.append("<tr><td><pre>%s</pre></td></tr>" % (yaml.dump(self.data, default_flow_style=False),))
+        html.append("<tr><td>Name:</td><td>%s</td></tr>" % self.name)
+        html.append("<tr><td>Collection:</td><td>%s</td></tr>" % self.kind)
+        html.append("<tr><td>Path:</td><td>%s</td></tr>" % self.path)
+        html.append("<tr><td>Definition:</td><td><pre>%s</pre></td></tr>" % (yaml.dump(self.data, default_flow_style=False),))
         html.append("</table>")
         return "".join(html)
 

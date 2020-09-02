@@ -16,7 +16,7 @@ from .core.caching import CACHE as cache
 from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
 
-__version__ = "0.0.77"
+__version__ = "0.0.79"
 
 
 __all__ = [
