@@ -17,6 +17,8 @@ Plotting
 
 Below are the parameters you can pass to the plot function:
 
+.. role:: raw-html(raw)
+   :format: html
 
 .. list-table::
    :header-rows: 1
@@ -27,7 +29,7 @@ Below are the parameters you can pass to the plot function:
      - Value
      - Default
      - Description
-   * - projection
+   * - title
      - str or True
      - ``None``
      - The title of the plot. Use ``True`` for automatic.
@@ -50,5 +52,7 @@ Below are the parameters you can pass to the plot function:
    * - path
      - str
      - ``None``
-     - Save the plot in a file instead of displaying it.
+     - :raw-html:`<span style='white-space: normal;'>`
+       Save the plot in a file instead of displaying it.
        The file type is inferred from the path extension (``.png``, ``.pdf``, ``.svg``, ...)
+       :raw-html:`</span>`
