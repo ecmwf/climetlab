@@ -111,6 +111,7 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
 
 """
 
+ipython_warning_is_error=False
 
 # -- Options for HTML output -------------------------------------------------
 

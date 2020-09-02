@@ -7,12 +7,16 @@ Getting data
 There are two ways of loading data in *CliMetLab*, using :ref:`datasets <datasets>` or
 :ref:`data sources <data-sources>`.
 
-.. .. ipython:: python
-..   :suppress:
+.. ipython:: python
 
-..   import climetlab as cml
+    import climetlab as cml
 
-..   data = cml.load_dataset("sample-grib-dataset")
+    data = cml.load_source("url",
+                          "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/csv/ibtracs.SP.list.v04r00.csv")
+
+    pd = data.to_pandas()
+    uma = pd[pd.NAME == "UMA:VELI"]
+    cml.plot_map(uma)
 
 
 Simple plotting
