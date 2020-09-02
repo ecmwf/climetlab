@@ -16,10 +16,11 @@ Plotting
 
 
 Below are the parameters you can pass to the plot function:
-..    :widths: 25 25 25 50
+
 
 .. list-table::
    :header-rows: 1
+   :widths: 25 25 25 50
    :class: climetlab
 
    * - Name
@@ -34,6 +35,14 @@ Below are the parameters you can pass to the plot function:
      - str
      - ``None``
      - The name of a plotting to apply. Use ``None`` for default.
+   * - foreground
+     - str
+     - ``None``
+     - TODO
+   * - background
+     - str
+     - ``None``
+     - TODO
    * - path
      - str
      - ``None``

@@ -21,3 +21,8 @@
 img.badge {
     height: 20px;
 }
+
+table.climetlab td {
+    white-space: normal !important;
+    vertical-align: top !important;
+}
