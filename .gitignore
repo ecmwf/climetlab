@@ -136,3 +136,5 @@ junk/
 tmp.*
 ?
 *-Copy*.ipynb
+foo.*
+bar.*

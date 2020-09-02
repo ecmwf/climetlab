@@ -1,0 +1,5 @@
+---
+magics:
+  mcont:
+    contour_automatic_setting: ecmwf
+    legend: off

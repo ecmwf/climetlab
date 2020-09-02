@@ -138,7 +138,7 @@ class Driver:
         )
 
         self._foreground = mcoast(
-            map_grid=False,
+            map_grid=True,
             map_label=False,
             map_grid_frame=True,
             map_grid_frame_thickness=5,
@@ -299,7 +299,7 @@ class Driver:
                 table_variable_identifier_type="index",
             )
         )
-        self.style("red-markers")
+        self.style("default-style-observations")
 
     def plot_pandas(self, frame, latitude: str, longitude: str, variable: str):
         """[summary]
