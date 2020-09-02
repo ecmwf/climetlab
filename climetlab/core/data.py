@@ -51,7 +51,7 @@ class Entry:
 
     def _repr_html_(self):
         html = [css("table")]
-        html.append("<table>")
+        html.append("<table class='climetlab'>")
         html.append("<tr><td>Name:</td><td>%s</td></tr>" % self.name)
         html.append("<tr><td>Collection:</td><td>%s</td></tr>" % self.kind)
         html.append("<tr><td>Path:</td><td>%s</td></tr>" % self.path)
