@@ -22,7 +22,7 @@ Below are the parameters you can pass to the plot function:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 25 25 50
+   :widths: 10 20 10 60
    :class: climetlab
 
    * - Name
