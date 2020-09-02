@@ -1,0 +1,4 @@
+---
+magics:
+  mmap:
+    subpage_map_projection: mercator

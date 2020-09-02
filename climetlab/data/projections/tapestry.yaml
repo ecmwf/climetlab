@@ -1,4 +1,5 @@
 ---
+hidden: true
 magics:
   mmap:
     subpage_map_area_definition_polar: corners

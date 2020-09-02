@@ -39,7 +39,7 @@ class Settings:
         else:
             return self._settings.get(name, default)
 
-    def set(self, name : str, value):
+    def set(self, name: str, value):
         """[summary]
 
         Args:

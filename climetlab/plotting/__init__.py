@@ -11,6 +11,19 @@ from climetlab.helpers import helper
 from climetlab.core.ipython import display
 from .drivers.magics import Driver
 from climetlab.core import docstring
+from climetlab.core.data import data_entries
+
+
+def projections():
+    return sorted(e.name for e in data_entries("projection"))
+
+
+def layers():
+    return sorted(e.name for e in data_entries("layer"))
+
+
+def styles():
+    return sorted(e.name for e in data_entries("style"))
 
 
 class Plot:
@@ -20,7 +33,7 @@ class Plot:
     def __init__(self, kwargs):
         self.driver = Driver(kwargs)
 
-    def plot_map(self, data, **kwargs):
+    def plot_map(self, data=None, **kwargs):
 
         # try:
         #     iter(data)
@@ -56,7 +69,7 @@ def new_plot(**kwargs) -> Plot:
 
 
 @docstring()
-def plot_map(data, **kwargs):
+def plot_map(data=None, **kwargs):
     """Plot any data on a map.
 
         Args:

@@ -9,6 +9,9 @@
 
 import os
 import entrypoints
+import climetlab
+from importlib import import_module
+import sys
 
 CACHE = {}
 
@@ -22,15 +25,18 @@ def _load_plugins(kind):
     return plugins
 
 
-def find_plugin(directory, name, loader):
-
-    kind = loader.kind
-
+def load_plugins(kind):
     if PLUGINS.get(kind) is None:
         PLUGINS[kind] = _load_plugins(kind)
+    return PLUGINS[kind]
 
-    if name in PLUGINS[kind]:
-        plugin = PLUGINS[kind][name]
+
+def find_plugin(directory, name, loader):
+
+    plugins = load_plugins(loader.kind)
+
+    if name in plugins:
+        plugin = plugins[name]
         return loader.load_entry(plugin)
 
     n = len(directory)
@@ -50,3 +56,15 @@ def find_plugin(directory, name, loader):
                     return loader.load_module(p.replace("/", "."))
 
     raise Exception("Cannot find %s '%s'" % (kind, name))
+
+
+def directories():
+    result = [os.path.dirname(climetlab.__file__)]
+    for kind in ("dataset", "source"):
+        for _, v in load_plugins(kind).items():
+            try:
+                module = import_module(v.module_name)
+                result.append(os.path.dirname(module.__file__))
+            except Exception as e:
+                print("Cannot load module", v.module_name, e, file=sys.stderr)
+    return result

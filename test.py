@@ -23,7 +23,7 @@
 # print(ds)
 # plot_map(ds)
 
-import climetlab as cml
-cml.settings.set()
+from climetlab.plotting import projections
+import json
 
-cml.plot_map()
+print(projections())

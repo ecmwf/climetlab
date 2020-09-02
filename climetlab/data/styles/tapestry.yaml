@@ -1,4 +1,5 @@
 ---
+hidden: true
 magics:
   mcont:
     contour_line_thickness: 4
@@ -9,4 +10,3 @@ magics:
     contour_level_selection_type: interval
     contour_interval: 5
     contour_label: off
-
