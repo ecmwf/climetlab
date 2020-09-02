@@ -23,7 +23,6 @@
 # print(ds)
 # plot_map(ds)
 
-from climetlab.plotting import projections
-import json
+from climetlab.plotting import projection
 
-print(projections())
+projection("global")

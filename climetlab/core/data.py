@@ -12,6 +12,7 @@ import os
 import yaml
 from collections import defaultdict
 import logging
+from climetlab.utils.html import css
 
 LOG = logging.getLogger(__name__)
 
@@ -47,6 +48,17 @@ class Entry:
         self.path = path
         self.data = data
         self.hidden = data.get("hidden", False)
+
+    def _repr_html_(self):
+        html = [css("table")]
+        html.append("<table>")
+        html.append("<tr><td>%s</td></tr>" % self.name)
+        html.append("<tr><td>%s</td></tr>" % self.kind)
+        html.append("<tr><td>%s</td></tr>" % self.path)
+        html.append("<tr><td><pre>%s</pre></td></tr>" % (yaml.dump(self.data, default_flow_style=False),))
+        html.append("</table>")
+        return "".join(html)
+
 
 
 def _load_yaml_files():

@@ -11,7 +11,19 @@ from climetlab.helpers import helper
 from climetlab.core.ipython import display
 from .drivers.magics import Driver
 from climetlab.core import docstring
-from climetlab.core.data import data_entries
+from climetlab.core.data import data_entries, get_data_entry
+
+
+def projection(name):
+    return get_data_entry("projections", name)
+
+
+def layer(name):
+    return get_data_entry("layers", name)
+
+
+def style(name):
+    return get_data_entry("styles", name)
 
 
 def projections():
