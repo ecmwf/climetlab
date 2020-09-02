@@ -4,16 +4,20 @@ First steps
 Getting data
 ------------
 
-There are two ways of loading data in *CliMetLab*, using :ref:`datasets <datasets>` or
-:ref:`data sources <data-sources>`.
+There are two ways of loading data in *CliMetLab*, using :ref:`data
+sources <data-sources>` or :ref:`datasets <datasets>`.
+
+
+Data sources implement various methods to access and decode data.
+The following example downloads a ``.csv`` file from NOAA's
+*International Best Track Archive for Climate Stewardship* (IBTrACS_).
+
+
+.. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 
 .. code-block:: python
 
-  import climetlab as cml
 
-.. https://www.ncdc.noaa.gov/ibtracs/
-
-.. code-block:: python
 
     import climetlab as cml
 
@@ -25,7 +29,14 @@ There are two ways of loading data in *CliMetLab*, using :ref:`datasets <dataset
     cml.plot_map(uma, style="cyclone-track")
 
 .. image:: _static/uma.svg
-  :width: 75%
+  :width: 100%
+
+
+.. code-block:: python
+
+  import climetlab as cml
+
+
 
 Simple plotting
 ---------------
