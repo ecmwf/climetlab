@@ -14,7 +14,7 @@ import os
 import markdown
 from abc import ABC, abstractmethod
 import logging
-from climetlab.core.ipython import active as ipython_active, display, HTML
+from climetlab.core.ipython import ipython_active, display, HTML
 
 LOG = logging.getLogger(__name__)
 

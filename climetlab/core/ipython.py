@@ -11,21 +11,44 @@
 ipython is not None when running a notebook
 """
 
-active = None
+import logging
+import sys
+
+ipython_active = None
 try:
     from IPython import get_ipython
 
-    active = get_ipython()
+    ipython_active = get_ipython()
 except Exception:
     pass
+
+
+def enable_ipython_login(level=logging.INFO):
+    class Filter(logging.Filter):
+        def filter(self, message):
+            return message.levelno < logging.WARNING
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.NOTSET)
+
+    stdout = logging.StreamHandler(sys.stdout)
+    stdout.setLevel(level)
+    stdout.addFilter(Filter())
+    logger.addHandler(stdout)
+
+    stderr = logging.StreamHandler(sys.stderr)
+    stderr.setLevel(logging.WARNING)
+    logger.addHandler(stderr)
 
 
 def _identity(x, **kwargs):
     return x
 
 
-if active:
+if ipython_active:
     from IPython.display import display, Image, SVG, HTML, Markdown
+
+    enable_ipython_login()
 else:
     Image = _identity
     SVG = _identity

@@ -12,11 +12,16 @@ from .datasets import load as load_dataset
 from .plotting import plot_map, new_plot
 from .core.settings import SETTINGS as settings
 from .core.caching import CACHE as cache
+# from climetlab.core.ipython import ipython_active
 
 from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
+# import logging
 
 __version__ = "0.0.84"
+
+# if ipython_active:
+#     logging.
 
 
 __all__ = [
