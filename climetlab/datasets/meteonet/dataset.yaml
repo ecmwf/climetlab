@@ -1,3 +1,4 @@
 ---
-home_page: https://meteofrance.github.io/meteonet/
-licence: https://meteonet.umr-cnrm.fr/dataset/LICENCE.md
+dataset:
+  home_page: https://meteofrance.github.io/meteonet/
+  licence: https://meteonet.umr-cnrm.fr/dataset/LICENCE.md

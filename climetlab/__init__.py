@@ -18,7 +18,7 @@ from climetlab.sources import DataSource
 from climetlab.datasets import Dataset
 # import logging
 
-__version__ = "0.0.84"
+__version__ = "0.0.85"
 
 # if ipython_active:
 #     logging.

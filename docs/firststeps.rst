@@ -78,6 +78,8 @@ on plotting below).
 Datasets
 ^^^^^^^^
 
+Datasets are a higher-level concept compared to data sources.
+
 The following Python code:
 
 

@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 YAML_FILES = None
 
 
-def _guess(data):
+def _guess(data, path):
     if "dataset" in data:
         return "datasets"
 
@@ -29,7 +29,7 @@ def _guess(data):
         if "msymb" in data["magics"]:
             return "styles"
 
-        if "mcount" in data["magics"]:
+        if "mcont" in data["magics"]:
             return "styles"
 
         if "mcoast" in data["magics"]:
@@ -38,6 +38,7 @@ def _guess(data):
         if "mmap" in data["magics"]:
             return "projections"
 
+    LOG.warning("Cannot guess collection for %s", path)
     return "unknown"
 
 
@@ -76,7 +77,7 @@ def _load_yaml_files():
                 with open(path) as f:
                     data = yaml.load(f.read(), Loader=yaml.SafeLoader)
                     name, _ = os.path.splitext(os.path.basename(path))
-                    kind = _guess(data)
+                    kind = _guess(data, path)
                     collection = YAML_FILES[kind]
                     if name in collection:
                         LOG.warning(
@@ -96,7 +97,13 @@ def _load_yaml_files():
 
 
 def get_data_entry(kind, name):
-    return _load_yaml_files()[kind][name]
+    files = _load_yaml_files()
+    if kind not in files:
+        raise Exception("No collection named '%s'" % (kind,))
+    if name not in files[kind]:
+        raise Exception("No object '%s' in collection named '%s'" % (name, kind,))
+
+    return files[kind][name]
 
 
 def data_entries(kind=None):

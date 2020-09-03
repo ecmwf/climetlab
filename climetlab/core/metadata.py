@@ -10,6 +10,18 @@
 import json
 
 
+# import xarray as xr
+
+
+# @xr.register_dataset_accessor("climetlab")
+# class CliMetLabAccessor:
+#     def __init__(self, xarray_obj):
+#         self._obj = xarray_obj
+#         print("CliMetLabAccessor")
+#     def foo(self, v):
+#         print("foo", v)
+
+
 class Annotation:
     def __init__(self, **kwargs):
         self._kwargs = kwargs
