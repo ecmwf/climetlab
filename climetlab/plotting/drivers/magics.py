@@ -322,8 +322,6 @@ class Driver:
         frame[[latitude, longitude, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
 
-        print(frame._metadata)
-
         style = annotation(frame).get("style")
         if style is not None:
             self.style(style)

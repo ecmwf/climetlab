@@ -7,6 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+LOG = logging.getLogger(__name__)
+
 from . import Reader
 
 try:
@@ -14,7 +17,7 @@ try:
 except Exception:
     import pyodc as odc
 
-    # print("Using pure Python odc decoder.", file=sys.stderr)
+    LOG.debug("Using pure Python odc decoder.")
 
 
 class ODBReader(Reader):
