@@ -14,16 +14,21 @@ Data sources implement various methods to access and decode data.
 When data are downloaded from a remote site, they are :ref:`cached
 <caching>` on the local computer.
 
-*CliMetLab* will infer the format and
-
-either as a Panda's frame, accessible using the ``to_pandas()``
-method, or as a Xarray dataset, using the ``to_xarray()`` method.
+*CliMetLab* will infer the type of data by probing the downloaded
+file. If the file contains gridded data, such as meteorological
+fields, they will be accessible as an Xarray dataset, using the
+``to_xarray()`` method.  If the file contains point data, such as
+observation, they will be accessible as an as Pandas frame, using
+the ``to_pandas()`` method. Other data may only be available as
+NumPy arrays using the ``to_numpy()`` method.
 
 
 The following example downloads a ``.csv`` file from NOAA's
-*International Best Track Archive for Climate Stewardship* (IBTrACS_).
-The
-
+*International Best Track Archive for Climate Stewardship* (IBTrACS_)
+using the ``url`` data source. The file is downloaded into the local
+cache. It is then converted as a Pandas frame. The rows corresponding
+to the severe tropical cyclone Uma_ are extracted and plotted (more
+on plotting below).
 
 
 
@@ -204,6 +209,14 @@ or, if you want to specify a per-data custom *style*, you can use
   p.show()
 
 
+.. External URLs
+
 .. _Copernicus Climate Data Store: https://cds.climate.copernicus.eu/#!/home
 .. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 .. _ECMWF web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
+.. _Uma: https://en.wikipedia.org/wiki/1986–87_South_Pacific_cyclone_season#Severe_Tropical_Cyclone_Uma
+
+.. Notebooks
+
+.. _link: examples/01-file-plotting.ipynb
+.. _link: examples/01-file-plotting.ipynb
