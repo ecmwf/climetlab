@@ -3,7 +3,9 @@
 Data sources
 ============
 
-TODO: Explain what are Data sources. List the built-in ones.
+.. todo::
+
+    Explain what are Data sources. List the built-in ones.
 
 
 .. _data-sources-file:

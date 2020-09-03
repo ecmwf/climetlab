@@ -79,6 +79,7 @@ Datasets
 ^^^^^^^^
 
 Datasets are a higher-level concept compared to data sources.
+TODO metadata, hidden access to sources, control plotting, control converstion to pandas
 
 The following Python code:
 

@@ -1,4 +1,6 @@
 Settings
 ========
 
-TODO: List all settings and their default values.
+.. todo::
+
+    List all settings and their default values.

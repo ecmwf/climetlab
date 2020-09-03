@@ -1,10 +1,6 @@
 Data sources
 ============
 
-Before
+.. todo::
 
-
-.. sources::
-
-
-After
+    Describe what is a data source.
