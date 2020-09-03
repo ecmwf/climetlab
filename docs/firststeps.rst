@@ -59,19 +59,19 @@ on plotting below).
 
    * - ``"file"``
      - A path to a local file name.
-     - TODO. :ref:`Read more <data-sources-file>`.
+     - TODO. :ref:`Read more <data-sources-file>`. (`Notebook <nb-file>`_).
 
    * - ``"url"``
      - A URL to a remote file.
-     - TODO. :ref:`Read more <data-sources-url>`.
+     - TODO. :ref:`Read more <data-sources-url>`. (`Notebook <nb-url>`_).
 
    * - ``"cds"``
      - A request to the CDS API.
-     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account. :ref:`Read more <data-sources-cds>`.
+     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account. :ref:`Read more <data-sources-cds>`. (`Notebook <nb-cds>`_).
 
    * - ``"mars"``
      - TODO
-     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account. :ref:`Read more <data-sources-mars>`.
+     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account. :ref:`Read more <data-sources-mars>`. (`Notebook <nb-mars>`_).
 
 
 Datasets
@@ -218,5 +218,7 @@ or, if you want to specify a per-data custom *style*, you can use
 
 .. Notebooks
 
-.. _link: examples/01-file-plotting.ipynb
-.. _link: examples/01-file-plotting.ipynb
+.. _nb-file: examples/01-source-file.ipynb
+.. _nb-url: examples/02-source-url.ipynb
+.. _nb-cds: examples/03-source-cds.ipynb
+.. _nb-mars: examples/04-source-mars.ipynb
