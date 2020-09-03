@@ -22,6 +22,7 @@ except Exception:
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.data import get_data_entry
+from climetlab.core.metadata import annotation
 
 LOG = logging.getLogger(__name__)
 
@@ -320,6 +321,12 @@ class Driver:
         tmp = self.temporary_file(".csv")
         frame[[latitude, longitude, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
+
+        print(frame._metadata)
+
+        style = annotation(frame).get("style")
+        if style is not None:
+            self.style(style)
 
     def _apply(self, collection, value, action):
 

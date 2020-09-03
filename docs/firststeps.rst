@@ -31,6 +31,7 @@ to the severe tropical cyclone Uma_ are extracted and plotted (more
 on plotting below).
 
 
+.. _data source example:
 
 .. code-block:: python
 
@@ -77,12 +78,36 @@ on plotting below).
 Datasets
 ^^^^^^^^
 
+The following Python code:
+
 
 .. code-block:: python
 
   import climetlab as cml
 
+  data = cml.load_dataset("hurricane-database", "atlantic")
+  print(data.home_page)
 
+will print:
+
+.. code-block:: bash
+
+  https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html
+
+then,
+
+.. code-block:: python
+
+  df = data.to_pandas()
+  irma = df[(df.name=='irma') & (df.year==2017)]
+  cml.plot_map(irma)
+
+will plot:
+
+.. image:: _static/irma.svg
+  :width: 100%
+
+Compare that with the `data source example`_.
 
 Simple plotting
 ---------------

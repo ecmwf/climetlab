@@ -1,3 +1,12 @@
+# (C) Copyright 2020 ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+#
+
 # See https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html
 
 import pandas as pd
@@ -5,7 +14,7 @@ import numpy as np
 from . import Dataset
 from climetlab.utils import download_and_cache
 from climetlab.utils.datetime import parse_date
-
+from climetlab.core.metadata import annotate
 
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
 
@@ -112,7 +121,7 @@ class HurricaneDatabase(Dataset):
                         )
                     )
 
-        self.cyclones = pd.DataFrame(p)
+        self.cyclones = annotate(pd.DataFrame(p), style="cyclone-track")
 
     def to_pandas(self):
         return self.cyclones
