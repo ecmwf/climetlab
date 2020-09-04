@@ -12,9 +12,6 @@ T = {
     "on": True,
     "off": False,
     "no": False,
-    "stringarray()": [],
-    "intarray()": [],
-    "floatarray()": [],
 }
 
 
@@ -48,8 +45,8 @@ def tidy(x):
 
     # if isinstance(x, str):
 
+    return T.get(x, x)
 
-    return x
 
 def cleanup(p):
     p = str(p)
@@ -61,6 +58,7 @@ def cleanup(p):
             break
         n = len(p)
     return p
+
 
 class Param:
     def __init__(self, defs):
@@ -76,13 +74,41 @@ class Param:
 
     @property
     def default(self):
-        return self._defs.get("default")
+
+        default = self._defs.get("default")
+        if default in (None, False, True):
+            return default
+
+        try:
+            return float(default)
+        except Exception:
+            pass
+
+        try:
+            return float(default)
+        except Exception:
+            pass
+
+        return repr(default)
 
     @property
     def values(self):
+
+        f = self._defs.get("from")
+        t = self._defs.get("to")
+
+        if t == "bool":
+            return t
+
         if "values" in self._defs:
-            return self._defs.get("values").split("/")
-        return self._defs.get("from")
+            return ", ".join(
+                [repr(tidy(x)) for x in self._defs.get("values").split("/")]
+            )
+
+        if f == t:
+            return t
+
+        return "%s(%s)" % (t, f)
 
 
 class Klass:
@@ -103,7 +129,7 @@ class Klass:
 
     @property
     def action(self):
-        action = self._defs.get("action")
+        action = self._defs.get("python")
         if action is None:
             for parent in self.inherits:
                 if parent.action:
@@ -130,7 +156,8 @@ class Klass:
                 parms = [parms]
 
             for p in parms:
-                self._parameters.append(Param(p))
+                if p.get("python", True):
+                    self._parameters.append(Param(p))
         return self._parameters
 
     @property
@@ -182,9 +209,14 @@ for action, klasses in sorted(ACTIONS.items()):
     print(action)
     print("-" * len(action))
     print()
+    documentation = []
+    print(".. %s" % [k.name for k in klasses])
+    print()
     for k in klasses:
-        print("..", k.name, k.documentation)
-        print()
+        documentation.append(k.documentation)
+    print(cleanup(" ".join(documentation)))
+    print()
+
     print(".. list-table::")
     print("   :header-rows: 1")
     print("   :widths: 70 20 10")
