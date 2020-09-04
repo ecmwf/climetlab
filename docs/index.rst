@@ -64,6 +64,7 @@ Documentation
 * :doc:`reference/api`
 * :doc:`reference/settings`
 * :doc:`reference/caching`
+* :doc:`reference/plotting`
 
 .. toctree::
    :maxdepth: 1
@@ -75,7 +76,7 @@ Documentation
    reference/api
    reference/settings
    reference/caching
-
+   reference/plotting
 
 **Contributing (TODO)**
 

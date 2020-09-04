@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../climetlab-demo-dataset"
+		},
+		{
+			"path": "../magics"
 		}
 	],
 	"settings": {
@@ -30,7 +33,7 @@
 		],
 		"cSpell.language": "en-GB",
 		"cSpell.languageSettings": [
-		
+
 		],
 		"cSpell.enabledLanguageIds": [
 			"html",

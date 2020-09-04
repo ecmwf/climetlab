@@ -5,40 +5,40 @@ API reference
 
    Explain how extend the code (write data sources and datasets).
 
-Public
-------
+.. Public
+.. ------
 
-.. autosummary::
+.. .. autosummary::
 
-   climetlab.load_dataset
-   climetlab.load_source
-   climetlab.plot_map
-   climetlab.new_plot
+..    climetlab.load_dataset
+..    climetlab.load_source
+..    climetlab.plot_map
+..    climetlab.new_plot
 
-Module
-------
+.. Module
+.. ------
 
-.. automodule:: climetlab
-    :members:
-
-
-Function
---------
-
-.. autofunction:: climetlab.plot_map
+.. .. automodule:: climetlab
+..     :members:
 
 
-Plotting
---------
+.. Function
+.. --------
 
-.. autoclass:: climetlab.plotting.Driver
-   :members:
+.. .. autofunction:: climetlab.plot_map
 
 
-Other
------
+.. Plotting
+.. --------
 
-.. autosummary::
+.. .. autoclass:: climetlab.plotting.Driver
+..    :members:
 
-   climetlab.Dataset
-   climetlab.DataSource
+
+.. Other
+.. -----
+
+.. .. autosummary::
+
+..    climetlab.Dataset
+..    climetlab.DataSource

@@ -1,28 +1,38 @@
-# import xarray as xr
-# import numpy as np
-# from climetlab import plot_map
-# import math
+import types
 
-# lon = np.arange(-180, 180, 1)
-# lat = np.arange(90, -91, -1)
-# t2m = np.zeros(shape=(len(lat), len(lon)))
 
-# for i in range(0, 181):
-#     for j in range(0, 360):
-#         t2m[i, j] = 273.15 + math.sin(i) + math.cos(j)
+def create_function(name, args):
+    def y(a, b, c):
+        pass
 
-# ds = xr.Dataset(
-#     {"t2m": (["latitude", "longitude"], t2m)},
-#     coords={"longitude": lon, "latitude": lat},
-# )
+    co = y.__code__
+    y_code = types.CodeType(
+        args,
+        co.co_posonlyargcount,
+        co.co_kwonlyargcount,
+        co.co_nlocals,
+        co.co_stacksize,
+        co.co_flags,
+        co.co_code,
+        co.co_consts,
+        co.co_names,
+        co.co_varnames,
+        co.co_filename,
+        co.co_name,
+        co.co_firstlineno,
+        co.co_lnotab,
+        co.co_freevars,
+        co.co_cellvars,
+    )
 
-# ds["latitude"].attrs = dict(units="degrees_north", standard_name="latitude")
-# ds["longitude"].attrs = dict(units="degrees_north", standard_name="longitude")
-# ds["t2m"].attrs = dict(units="K", long_name="2 metre temperature")
+    print(co.co_varnames)
+    d = types.FunctionType(y_code, y.__globals__, "sss")
 
-# print(ds)
-# plot_map(ds)
+    return d
 
-from climetlab.plotting import projection
 
-projection("global")
+myfunc = create_function("myfunc", 3)
+
+print(repr(myfunc))
+
+myfunc()
