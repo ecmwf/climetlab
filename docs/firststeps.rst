@@ -79,7 +79,12 @@ Datasets
 ^^^^^^^^
 
 Datasets are a higher-level concept compared to data sources.
-TODO metadata, hidden access to sources, control plotting, control converstion to pandas
+
+..todo:
+
+  metadata, hidden access to sources, control plotting, control
+  conversion to pandas
+
 
 The following Python code:
 
@@ -111,6 +116,10 @@ will plot:
   :width: 100%
 
 Compare that with the `data source example`_.
+
+.. todo::
+
+  metadata, style
 
 Simple plotting
 ---------------
