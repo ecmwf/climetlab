@@ -14,7 +14,7 @@ import xarray as xr
 class XArrayHelper:
     def __init__(self, data):
 
-        data.climetlab.foo(42)
+        # data.climetlab.foo(42)
 
         self.data = data
         for name, var in data.data_vars.items():
