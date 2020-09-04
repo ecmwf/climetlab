@@ -251,7 +251,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_level_list**
        | List of shading band levels to be plotted
      - | floatarray
-     - | 'floatarray()'
+     - | []
    * - | **symbol_advanced_table_colour_method**
        | Method of generating the colours of the bands in polygon shading
      - | ColourTechnique(string)
@@ -271,7 +271,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_colour_list**
        | List of colours to be used in symbol plotting
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_advanced_table_colour_list_policy**
        | What to do if the list of colours is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
@@ -279,11 +279,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_marker_list**
        | List of markers to be used in symbol plotting
      - | intarray
-     - | 'intarray()'
+     - | []
    * - | **symbol_advanced_table_marker_name_list**
        | List of markers to be used in symbol plotting symbol
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_advanced_table_marker_list_policy**
        | What to do if the list of markers is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
@@ -303,7 +303,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_height_list**
        | List of heights to be used
      - | floatarray
-     - | 'floatarray()'
+     - | []
    * - | **symbol_advanced_table_height_list_policy**
        | What to do if the list of heights is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
@@ -311,7 +311,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_text_list**
        | Text to display
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_advanced_table_text_list_policy**
        | What to do if the list of text is smaller that the list of intervals lastone: reuse the last one, cycle: return to the fisrt one
      - | ListPolicy(string)
@@ -391,7 +391,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_text_list**
        | list of texts to plot
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_text_position**
        | Position of the text
      - | 'right', 'left', 'bottom', 'top'
@@ -495,25 +495,25 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_min_table**
        | Table of minimum values. The table is used in conjunction with SYMBOL_MAX_TABLE
      - | floatarray
-     - | 'floatarray()'
+     - | []
    * - | **symbol_max_table**
        | Table of maximum values. The table is used in conjunction with SYMBOL_MIN_TABLE
      - | floatarray
-     - | 'floatarray()'
+     - | []
    * - | **symbol_marker_table**
        | Table of MARKER indices. The table is to be used in conjunction with SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
      - | intarray
-     - | 'intarray()'
+     - | []
    * - | **symbol_name_table**
        | Table of Symbol names. The table is to be used in conjunction with SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_colour_table**
        | Table of SYMBOL colours. T The table is to be used in conjunction with SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
      - | stringarray
-     - | 'stringarray()'
+     - | []
    * - | **symbol_height_table**
        | Table of SYMBOL heights. The table is to be used in conjunction with SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
      - | floatarray
-     - | 'floatarray()'
+     - | []
 

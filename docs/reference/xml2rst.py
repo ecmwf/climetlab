@@ -3,6 +3,7 @@ import sys
 import xmltodict
 import yaml
 from collections import defaultdict, OrderedDict
+import argparse
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -12,6 +13,32 @@ T = {
     "on": True,
     "off": False,
     "no": False,
+    "stringarray()": [],
+    "intarray()": [],
+    "floatarray()": [],
+}
+
+TYPES = {
+    "string": "str",
+    "bool": "bool",
+    "Colour": "str",
+    "NoBoundaries": "bool",
+    "NoCities": "bool",
+    "LineStyle": "str",
+    "int": "int",
+    "NoCoastPlotting": "bool",
+    "NoGridPlotting": "bool",
+    "NoLabelPlotting": "bool",
+    "float": "float",
+    "LevelSelection": "str",
+    "floatarray": "List[float]",
+    "ColourTechnique": "str",
+    "stringarray": "List[str]",
+    "ListPolicy": "str",
+    "intarray": "List[int]",
+    "HeightTechnique": "str",
+    "NoOutLayerTechnique": "bool",
+    "SymbolMode": "str",
 }
 
 
@@ -110,6 +137,11 @@ class Param:
 
         return "%s(%s)" % (t, f)
 
+    @property
+    def python_type(self):
+        t = self._defs.get("to")
+        return TYPES[t]
+
 
 class Klass:
     def __init__(self, defs):
@@ -188,7 +220,119 @@ def load(n):
     DEFS[klass["name"]] = Klass(klass)
 
 
-for n in sys.argv[1:]:
+# TODO: Use Jinga templates
+
+
+def produce_rst():
+    print("Plotting")
+    print("========")
+    print()
+
+    for action, klasses in sorted(ACTIONS.items()):
+        print()
+        print(action)
+        print("-" * len(action))
+        print()
+        documentation = []
+        print(".. %s" % [k.name for k in klasses])
+        print()
+        for k in klasses:
+            documentation.append(k.documentation)
+        print(cleanup(" ".join(documentation)))
+        print()
+
+        print(".. list-table::")
+        print("   :header-rows: 1")
+        print("   :widths: 70 20 10")
+        print()
+        print("   * - | Name")
+        print("     - | Type")
+        print("     - | Default")
+
+        for k in klasses:
+
+            for p in k.parameters:
+                print("   * - |", "**%s**" % p.name)
+                print("       |", p.documentation)
+                print("     - |", p.values)
+                print("     - |", p.default)
+                # print("     -", p.documentation)
+        print()
+
+
+def produce_python():
+
+    print(
+        "\n".join(
+            [
+                "import inspect",
+                "from typing import List",
+                "from Magics import macro",
+                "",
+                "",
+                """def _given_args(frame):
+    func = frame.f_globals[frame.f_code.co_name]
+    user_args = inspect.getargvalues(frame)
+    code_args = inspect.getfullargspec(func)
+    given = {}
+
+    if code_args.kwonlydefaults:
+        pairs = list(code_args.kwonlydefaults.items())
+    else:
+        pairs = list(zip(code_args.args, code_args.defaults))
+
+    for name, value in pairs:
+        if user_args.locals[name] is not value:
+            given[name] = user_args.locals[name]
+    return given""",
+            ]
+        )
+    )
+
+    for action, klasses in sorted(ACTIONS.items()):
+        print()
+        print()
+        print("def %s(" % action)
+        print("    *,")
+
+        # documentation = []
+        # print(".. %s" % [k.name for k in klasses])
+        # print()
+        # for k in klasses:
+        #     documentation.append(k.documentation)
+        # print(cleanup(" ".join(documentation)))
+        # print()
+
+        seen = set()
+
+        for k in klasses:
+            print("    # [%s]" %(k.name,) , k.documentation)
+            for p in k.parameters:
+
+                c = "#" if p.name in seen else ""
+
+                print("   ", "%s%s: %s = %s," % (c, p.name, p.python_type, p.default))
+                seen.add(p.name)
+                # print("       |", p.documentation)
+                # print("     - |", p.values)
+                # print("     - |", p.default)
+                # print("     -", p.documentation)
+        print("):")
+        print(
+            "    return macro.%s(**_given_args(inspect.currentframe()))" % (action,)
+        )
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--rst", action="store_true")
+parser.add_argument("--python", action="store_true")
+parser.add_argument(
+    "xml", metavar="N", nargs="+",
+)
+args = parser.parse_args()
+
+
+for n in args.xml:
     load(n)
 
 for v in DEFS.values():
@@ -200,77 +344,9 @@ for k, v in DEFS.items():
         if v.action is not None:
             ACTIONS[v.action].append(v)
 
-print("Plotting")
-print("========")
-print()
 
-for action, klasses in sorted(ACTIONS.items()):
-    print()
-    print(action)
-    print("-" * len(action))
-    print()
-    documentation = []
-    print(".. %s" % [k.name for k in klasses])
-    print()
-    for k in klasses:
-        documentation.append(k.documentation)
-    print(cleanup(" ".join(documentation)))
-    print()
+if args.rst:
+    produce_rst()
 
-    print(".. list-table::")
-    print("   :header-rows: 1")
-    print("   :widths: 70 20 10")
-    print()
-    print("   * - | Name")
-    print("     - | Type")
-    print("     - | Default")
-    # print("     - Description")
-
-    for k in klasses:
-
-        for p in k.parameters:
-            print("   * - |", "**%s**" % p.name)
-            print("       |", p.documentation)
-            print("     - |", p.values)
-            print("     - |", p.default)
-            # print("     -", p.documentation)
-    print()
-
-
-# for p, v in sorted(ACTIONS.items()):
-#     if p[0] == p[0].upper():
-#         continue
-#     print()
-#     print(p)
-#     print("-" * len(p))
-#     print()
-#     print(DOCS.get(p, ""))
-#     print()
-#     print(".. list-table::")
-#     print("   :header-rows: 1")
-#     print("   :widths: 10 20 20 60")
-#     print()
-
-#     print("   * - Name")
-#     print("     - Type")
-#     print("     - Default")
-#     print("     - Description")
-
-#     for x in sorted(v, key=lambda p: p["name"]):
-#         print("   * - %s" % (x["name"],))
-
-#         if "values" in x:
-#             print("     - %s" % (", ".join([repr(y) for y in x["values"].split("/")])))
-#         else:
-#             if x["to"] == x["from"]:
-#                 print("     - %s" % (x["to"],))
-#             else:
-#                 print("     - %s(%s)" % (x["to"], x["from"]))
-
-#         if x["from"] == "float":
-#             try:
-#                 x["default"] = float(x["default"])
-#             except:
-#                 pass
-#         print("     - %r" % (x.get("default", "?")))
-#         print("     - %s" % (x.get("documentation", "")))
+if args.python:
+    produce_python()
