@@ -20,5 +20,4 @@ def f(a=1, b=2, c=3):
     print(args(inspect.currentframe()))
 
 
-
 f(b=42)
