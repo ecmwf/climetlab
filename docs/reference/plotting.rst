@@ -19,7 +19,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_coastline_resolution**
        | Select one of the pre-defined resolutions: automatic, low, medium, and high. When set to AUTOMATIC, a resolution appropriate to the scale of the map is chosen in order to balance quality with speed.
      - | 'automatic', 'low', 'medium', 'high'
-     - | 'automatic'
+     - | "automatic"
    * - | **map_coastline_land_shade**
        | Sets if land areas are shaded
      - | bool
@@ -27,7 +27,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_coastline_land_shade_colour**
        | Colour of Shading of land areas
      - | Colour(string)
-     - | 'green'
+     - | "green"
    * - | **map_coastline_sea_shade**
        | Shade the sea areas
      - | bool
@@ -35,7 +35,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_coastline_sea_shade_colour**
        | Colour of Shading of sea areas
      - | Colour(string)
-     - | 'blue'
+     - | "blue"
    * - | **map_boundaries**
        | Add the political boundaries
      - | NoBoundaries(string)
@@ -55,11 +55,11 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_rivers_style**
        | Line style for rivers
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **map_rivers_colour**
        | Colour of the rivers
      - | Colour(string)
-     - | 'blue'
+     - | "blue"
    * - | **map_rivers_thickness**
        | Line thickness of rivers
      - | int
@@ -71,19 +71,19 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_user_layer_name**
        | Path + name of the shape file to use
      - | string
-     - | ''
+     - | ""
    * - | **map_user_layer_projection**
        | Projection used in the shape file
      - | string
-     - | ''
+     - | ""
    * - | **map_user_layer_style**
        | Line style for User Layer
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **map_user_layer_colour**
        | Colour of the User Layer
      - | Colour(string)
-     - | 'blue'
+     - | "blue"
    * - | **map_user_layer_thickness**
        | Line thickness of User Layer
      - | int
@@ -91,11 +91,11 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_coastline_colour**
        | Colour of coastlines
      - | Colour(string)
-     - | 'black'
+     - | "black"
    * - | **map_coastline_style**
        | Line style of coastlines
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **map_coastline_thickness**
        | Line thickness of coastlines
      - | int
@@ -103,7 +103,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_coastline_general_style**
        | Use a predefined style depending on the general theme
      - | string
-     - | ''
+     - | ""
    * - | **map_coastline**
        | Plot coastlines on map (ON/OFF)
      - | NoCoastPlotting(string)
@@ -135,7 +135,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_line_style**
        | Line style of map grid lines
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **map_grid_thickness**
        | Thickness of map grid lines
      - | int
@@ -143,7 +143,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_colour**
        | Colour of map grid lines
      - | Colour(string)
-     - | 'BLACK'
+     - | "BLACK"
    * - | **map_grid_frame**
        | Add a frame around the projection
      - | bool
@@ -151,7 +151,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_frame_line_style**
        | Line style of map grid lines
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **map_grid_frame_thickness**
        | Thickness of map grid lines
      - | int
@@ -159,19 +159,19 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_frame_colour**
        | Colour of map grid lines
      - | Colour(string)
-     - | 'black'
+     - | "black"
    * - | **map_label_font**
        | Font of grid labels
      - | string
-     - | 'sansserif'
+     - | "sansserif"
    * - | **map_label_font_style**
        | Font of grid labels
      - | string
-     - | 'normal'
+     - | "normal"
    * - | **map_label_colour**
        | Colour of map labels
      - | Colour(string)
-     - | 'black'
+     - | "black"
    * - | **map_label_height**
        | Height og grid labels
      - | float
@@ -223,7 +223,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_selection_type**
        | Technique to use to calculate the shading band levels.
      - | 'count', 'interval', 'list'
-     - | 'count'
+     - | "count"
    * - | **symbol_advanced_table_min_value**
        | Min value to plot
      - | float
@@ -255,19 +255,19 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_colour_method**
        | Method of generating the colours of the bands in polygon shading
      - | ColourTechnique(string)
-     - | 'calculate'
+     - | "calculate"
    * - | **symbol_advanced_table_max_level_colour**
        | Highest shading band colour
      - | Colour(string)
-     - | 'blue'
+     - | "blue"
    * - | **symbol_advanced_table_min_level_colour**
        | Lowest shading band colour
      - | Colour(string)
-     - | 'red'
+     - | "red"
    * - | **symbol_advanced_table_colour_direction**
        | Direction of colour sequencing for plotting (CLOCKWISE/ ANTI_CLOCKWISE)
      - | 'clockwise', 'anti-clockwise'
-     - | 'anti_clockwise'
+     - | "anti_clockwise"
    * - | **symbol_advanced_table_colour_list**
        | List of colours to be used in symbol plotting
      - | stringarray
@@ -275,7 +275,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_colour_list_policy**
        | What to do if the list of colours is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
-     - | 'lastone'
+     - | "lastone"
    * - | **symbol_advanced_table_marker_list**
        | List of markers to be used in symbol plotting
      - | intarray
@@ -287,11 +287,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_marker_list_policy**
        | What to do if the list of markers is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
-     - | 'lastone'
+     - | "lastone"
    * - | **symbol_advanced_table_height_method**
        | Method of generating the height
      - | HeightTechnique(string)
-     - | 'list'
+     - | "list"
    * - | **symbol_advanced_table_height_max_value**
        | Maximum height to use
      - | float
@@ -307,7 +307,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_height_list_policy**
        | What to do if the list of heights is smaller than the list of intervals: lastone/cycle
      - | ListPolicy(string)
-     - | 'lastone'
+     - | "lastone"
    * - | **symbol_advanced_table_text_list**
        | Text to display
      - | stringarray
@@ -315,11 +315,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_text_list_policy**
        | What to do if the list of text is smaller that the list of intervals lastone: reuse the last one, cycle: return to the fisrt one
      - | ListPolicy(string)
-     - | 'cycle'
+     - | "cycle"
    * - | **symbol_advanced_table_text_font**
        | Font to use for text plotting.
      - | string
-     - | 'sansserif'
+     - | "sansserif"
    * - | **symbol_advanced_table_text_font_size**
        | Font size
      - | float
@@ -327,19 +327,19 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_text_font_style**
        | Font Style
      - | string
-     - | 'normal'
+     - | "normal"
    * - | **symbol_advanced_table_text_font_colour**
        | Symbol Colour
      - | Colour(string)
-     - | 'automatic'
+     - | "automatic"
    * - | **symbol_advanced_table_text_display_type**
        | How to display text none:do not display it centre : display it instead of the symbol, right : attached it to the right of the symbol, top : attached it to the top of the symbol, bottom: attached it to the bottom of the symbol,
      - | 'centre', 'none', 'right', 'left', 'top', 'bottom'
-     - | 'none'
+     - | "none"
    * - | **symbol_advanced_table_outlayer_method**
        | outlayer method
      - | NoOutLayerTechnique(string)
-     - | 'none'
+     - | "none"
    * - | **symbol_advanced_table_outlayer_min_value**
        | outlayer min value
      - | float
@@ -351,11 +351,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **legend_user_text**
        | if set, the text to be shown for the symbol group in the legend
      - | string
-     - | ''
+     - | ""
    * - | **symbol_colour**
        | Colour of symbols.
      - | Colour(string)
-     - | 'BLUE'
+     - | "BLUE"
    * - | **symbol_height**
        | Height of symbols.
      - | float
@@ -363,7 +363,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_marker_mode**
        | Method to select a marker : by name, by index, by image : in that case, Magics will use an external image as marker.
      - | string
-     - | 'index'
+     - | "index"
    * - | **symbol_marker_index**
        | Marker indice: An integer between 1 and 28
      - | int
@@ -371,15 +371,15 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_marker_name**
        | Symbol name. Choose in a list of available markers dot/circle/ww_00 ...
      - | string
-     - | 'dot'
+     - | "dot"
    * - | **symbol_image_path**
        | Path to the image
      - | string
-     - | ''
+     - | ""
    * - | **symbol_image_format**
        | Format of the image file. If set to AUTOMATIC, the file extension will be used to determine the file type.
      - | 'automatic', 'png', 'svg'
-     - | 'automatic'
+     - | "automatic"
    * - | **symbol_image_width**
        | width of the image
      - | float
@@ -395,11 +395,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_text_position**
        | Position of the text
      - | 'right', 'left', 'bottom', 'top'
-     - | 'right'
+     - | "right"
    * - | **symbol_text_font**
        | Font to use
      - | string
-     - | 'sansserif'
+     - | "sansserif"
    * - | **symbol_text_font_size**
        | Font size
      - | float
@@ -407,11 +407,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_text_font_style**
        | Font style
      - | string
-     - | 'normal'
+     - | "normal"
    * - | **symbol_text_font_colour**
        | Font colour.
      - | Colour(string)
-     - | 'automatic'
+     - | "automatic"
    * - | **symbol_legend_height**
        | If set, the height will be used to plot the symbols in the legend
      - | float
@@ -435,19 +435,19 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_type**
        | Defines the type of symbol plotting required
      - | 'number', 'text', 'marker', 'wind'
-     - | 'number'
+     - | "number"
    * - | **symbol_table_mode**
        | Specifies if plotting is to be in advanced, table (on) or individual mode (off). Note: The simple table mode is not recommended anymore, try to use the advanced mode instead, this should give you easier control of the plot.
      - | SymbolMode(string)
-     - | 'OFF'
+     - | "OFF"
    * - | **symbol_marker_mode**
        | Method to select a marker : by name, by index, by image : in that case, Magics will use an external image as marker.
      - | 'index', 'name', 'image'
-     - | 'index'
+     - | "index"
    * - | **symbol_format**
        | Format used to plot values (MAGICS Format/(AUTOMATIC))
      - | string
-     - | '(automatic)'
+     - | "(automatic)"
    * - | **symbol_text_blanking**
        | blanking of the text
      - | bool
@@ -459,7 +459,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_outline_colour**
        | Colour of the outline
      - | Colour(string)
-     - | 'black'
+     - | "black"
    * - | **symbol_outline_thickness**
        | thickness of the outline
      - | int
@@ -467,7 +467,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_outline_style**
        | Line Style of outline
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **symbol_connect_line**
        | Connect all the symbols with a line
      - | bool
@@ -479,7 +479,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_connect_line_colour**
        | Colour of the connecting line
      - | Colour(string)
-     - | 'black'
+     - | "black"
    * - | **symbol_connect_line_thickness**
        | thickness of the connecting line
      - | int
@@ -487,7 +487,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_connect_line_style**
        | Line Style of connecting line
      - | LineStyle(string)
-     - | 'solid'
+     - | "solid"
    * - | **symbol_legend_only**
        | Inform the contour object do generate only the legend and not the plot .. [Web sdpecific]
      - | bool

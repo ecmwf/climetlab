@@ -116,7 +116,7 @@ class Param:
         except Exception:
             pass
 
-        return repr(default)
+        return repr(default).replace("'", '"')
 
     @property
     def values(self):
@@ -306,7 +306,7 @@ def produce_python():
         seen = set()
 
         for k in klasses:
-            print("    # [%s]" %(k.name,) , k.documentation)
+            print("    # [%s]" % (k.name,), k.documentation)
             for p in k.parameters:
 
                 c = "#" if p.name in seen else ""
@@ -318,9 +318,7 @@ def produce_python():
                 # print("     - |", p.default)
                 # print("     -", p.documentation)
         print("):")
-        print(
-            "    return macro.%s(**_given_args(inspect.currentframe()))" % (action,)
-        )
+        print("    return macro.%s(**_given_args(inspect.currentframe()))" % (action,))
 
 
 parser = argparse.ArgumentParser()
