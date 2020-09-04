@@ -21,7 +21,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - margin in % of the legend box [top/bottom] for vertical layout and [left/right] for horizontal layout
    * - legend_automatic_position
      - string
-     - top
+     - 'top'
      - Whether legend box is positioned on the top or on the right of the drawing area
    * - legend_border
      - bool(string)
@@ -29,11 +29,11 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Plot border around legend box
    * - legend_border_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of border around text box (Full choice of colours)
    * - legend_border_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of border around legend box
    * - legend_border_thickness
      - int
@@ -45,7 +45,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - blanking of legend box
    * - legend_box_mode
      - string
-     - automatic
+     - 'automatic'
      - Whether legend box is positioned automatically or by the user
    * - legend_box_x_length
      - float
@@ -69,7 +69,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Number of columns in the legend
    * - legend_display_type
      - LegendMethod(string)
-     - disjoint
+     - 'disjoint'
      - type of shaded legend required
    * - legend_entry_border
      - bool(string)
@@ -77,15 +77,15 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - add a border to the graphical part of each legend entry
    * - legend_entry_border_colour
      - Colour(string)
-     - black
+     - 'black'
      - border colour
    * - legend_entry_plot_direction
      - string
-     - automatic
+     - 'automatic'
      - Method of filling in legend entries
    * - legend_entry_plot_orientation
      - string
-     - bottom_top
+     - 'bottom_top'
      - going from bootom to top ot top to bottom in column mode!
    * - legend_entry_text_width
      - float
@@ -97,15 +97,15 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - add a border to the the bars
    * - legend_histogram_border_colour
      - Colour(string)
-     - black
+     - 'black'
      - border colour of the bars
    * - legend_histogram_grid_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of the grids
    * - legend_histogram_grid_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the grids
    * - legend_histogram_grid_thickness
      - int
@@ -125,7 +125,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - show the mean value
    * - legend_histogram_mean_value_marker_colour
      - Colour(string)
-     - black
+     - 'black'
      - show the mean value
    * - legend_histogram_mean_value_marker_size
      - float
@@ -149,15 +149,15 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Factor to apply to the symbol_height in the legend
    * - legend_text_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Legend text colour
    * - legend_text_composition
      - string
-     - automatic_text_only
+     - 'automatic_text_only'
      - Determines whether to use automatically-generated or user-generated text (or both) in the legend
    * - legend_text_font
      - string
-     - sansserif
+     - 'sansserif'
      - Font name - please make sure this font is installed!
    * - legend_text_font_size
      - string
@@ -165,11 +165,11 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Font size, specified in cm or in % ex: 0.5cm or 10%
    * - legend_text_font_style
      - string
-     - normal
+     - 'normal'
      - Font style. Set this to an empty string in order to remove all styling.
    * - legend_text_format
      - string
-     - (automatic)
+     - '(automatic)'
      - Format of automatic text (MAGICS Format/(AUTOMATIC))
    * - legend_text_orientation
      - float
@@ -177,7 +177,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Orientation of the text : horizontal by default
    * - legend_text_quality
      - string
-     - medium
+     - 'medium'
      - Quality of text in legend :  deprecated use legend_text_font and legend_text_font_style
    * - legend_title
      - bool(string)
@@ -185,7 +185,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - plot legend title text
    * - legend_title_font_colour
      - Colour(string)
-     - automatic
+     - 'automatic'
      - Font Colour used for the title: The defaut is the same as the text_entry
    * - legend_title_font_size
      - float
@@ -193,11 +193,11 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Font size used for the title: The default is the same as text_entry
    * - legend_title_orientation
      - string
-     - automatic
+     - 'automatic'
      - Orientation of legend title, if automatic the title will be    horizontal for horizontal legend and vertical for vertical
    * - legend_title_position
      - Position(string)
-     - automatic
+     - 'automatic'
      - relative title position
    * - legend_title_position_ratio
      - float
@@ -205,11 +205,11 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - percentage of the legend box used for the title
    * - legend_title_text
      - string
-     - legend
+     - 'legend'
      - Text to plot as legend title
    * - legend_units_text
      - string
-     - 
+     - ''
      - Text to plot as units
    * - legend_user_lines
      - stringarray
@@ -221,7 +221,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Use of user tailored text for maximum
    * - legend_user_maximum_text
      - string
-     - 
+     - ''
      - User tailored text for maximum
    * - legend_user_minimum
      - bool(string)
@@ -229,51 +229,51 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Use of user tailored text for minimum
    * - legend_user_minimum_text
      - string
-     - 
+     - ''
      - User tailored text for minimum
    * - legend_user_text
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_1
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_10
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_2
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_3
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_4
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_5
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_6
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_7
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_8
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_user_text_9
      - string
-     - 
+     - ''
      - User text to be associated with a legend sub-entry from a multiple entry
    * - legend_values_list
      - floatarray
@@ -315,7 +315,7 @@ pbinning
      - Max value used to compute the binns
    * - binning_x_method
      - string
-     - count
+     - 'count'
      - Method to compute binns : count/list/interval
    * - binning_x_min_value
      - float
@@ -343,7 +343,7 @@ pbinning
      - Max value used to compute the binns
    * - binning_y_method
      - string
-     - count
+     - 'count'
      - Method to compute binns : count/list/interval
    * - binning_y_min_value
      - float
@@ -369,11 +369,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Description
    * - cdf_clim_line_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of the clim curve
    * - cdf_clim_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of the clim curve
    * - cdf_clim_line_thickness
      - int
@@ -381,7 +381,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Thickness of the clim curve
    * - cdf_graph_type
      - string
-     - medium
+     - 'medium'
      - Colour of the curve
    * - cdf_lines_colour_array
      - stringarray
@@ -397,11 +397,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Thickness of the curve
    * - efi_box_border_colour
      - Colour(string)
-     - black
+     - 'black'
      - Style of the curve
    * - efi_box_border_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of the curve
    * - efi_box_border_thickness
      - int
@@ -413,11 +413,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Colour of the curve
    * - efi_font
      - string
-     - sansserif
+     - 'sansserif'
      - 
    * - efi_font_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - efi_font_size
      - float
@@ -425,15 +425,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - efi_font_style
      - string
-     - 
+     - ''
      - 
    * - efi_normal_colour
      - Colour(string)
-     - black
+     - 'black'
      - Style of the curve
    * - efi_normal_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of the curve
    * - efi_normal_thickness
      - int
@@ -463,7 +463,7 @@ This object suppresses the plotting of the map grid labels
      - Display administrative boundaries (on/off)
    * - map_administrative_boundaries_colour
      - Colour(string)
-     - automatic
+     - 'automatic'
      - Colour of administrative boundaries
    * - map_administrative_boundaries_countries_list
      - stringarray
@@ -471,7 +471,7 @@ This object suppresses the plotting of the map grid labels
      - List of countries for which to show administrative borders. Convention used is the 3 Letters ISO Codes, e.g FRA for France, DEU for Germany and GBR for the UK
    * - map_administrative_boundaries_style
      - LineStyle(string)
-     - dash
+     - 'dash'
      - Line style of administrative boundaries
    * - map_administrative_boundaries_thickness
      - int
@@ -483,11 +483,11 @@ This object suppresses the plotting of the map grid labels
      - Add the political boundaries
    * - map_boundaries_colour
      - Colour(string)
-     - grey
+     - 'grey'
      - Colour of boundaries
    * - map_boundaries_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of boundaries
    * - map_boundaries_thickness
      - int
@@ -499,11 +499,11 @@ This object suppresses the plotting of the map grid labels
      - Add the cities (capitals)
    * - map_cities_font
      - string
-     - sansserif
+     - 'sansserif'
      - Font used to display the city names.
    * - map_cities_font_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour used for city names.
    * - map_cities_font_size
      - float
@@ -511,15 +511,15 @@ This object suppresses the plotting of the map grid labels
      - Font size of city names.
    * - map_cities_font_style
      - string
-     - normal
+     - 'normal'
      - Font style used for city names.
    * - map_cities_marker
      - string
-     - plus
+     - 'plus'
      - Marker for cities.
    * - map_cities_marker_colour
      - Colour(string)
-     - evergreen
+     - 'evergreen'
      - Colour for city markers.
    * - map_cities_marker_height
      - float
@@ -527,7 +527,7 @@ This object suppresses the plotting of the map grid labels
      - Height of city markers.
    * - map_cities_name_position
      - string
-     - above
+     - 'above'
      - Position where to display the city names.
    * - map_cities_text_blanking
      - bool(string)
@@ -535,7 +535,7 @@ This object suppresses the plotting of the map grid labels
      - Use Blanking when plotting the cityes names .
    * - map_cities_unit_system
      - string
-     - percent
+     - 'percent'
      - Unit for city name sizes.
    * - map_coastline
      - NoCoastPlotting(string)
@@ -543,11 +543,11 @@ This object suppresses the plotting of the map grid labels
      - Plot coastlines on map (ON/OFF)
    * - map_coastline_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of coastlines
    * - map_coastline_general_style
      - string
-     - 
+     - ''
      - Use a predefined style depending on the general theme
    * - map_coastline_land_shade
      - bool(string)
@@ -555,11 +555,11 @@ This object suppresses the plotting of the map grid labels
      - Sets if land areas are shaded
    * - map_coastline_land_shade_colour
      - Colour(string)
-     - green
+     - 'green'
      - Colour of Shading of land areas
    * - map_coastline_resolution
      - string
-     - automatic
+     - 'automatic'
      - Select one of the pre-defined resolutions: automatic, low, medium, and high.  When set to AUTOMATIC, a resolution appropriate to the scale of the map is chosen in order to balance quality with speed.
    * - map_coastline_sea_shade
      - bool(string)
@@ -567,11 +567,11 @@ This object suppresses the plotting of the map grid labels
      - Shade the sea areas
    * - map_coastline_sea_shade_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of Shading of sea areas
    * - map_coastline_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of coastlines
    * - map_coastline_thickness
      - int
@@ -583,11 +583,11 @@ This object suppresses the plotting of the map grid labels
      - Display the disputed boundaries (on/off)
    * - map_disputed_boundaries_colour
      - Colour(string)
-     - automatic
+     - 'automatic'
      - Colour of disputed boundaries
    * - map_disputed_boundaries_style
      - LineStyle(string)
-     - dash
+     - 'dash'
      - Line style of disputed boundaries
    * - map_disputed_boundaries_thickness
      - int
@@ -599,15 +599,15 @@ This object suppresses the plotting of the map grid labels
      - Display rivers (on/off)
    * - map_efas_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the EFAS
    * - map_efas_domain
      - string
-     - current
+     - 'current'
      - Display EFAS Domain (on/off)
    * - map_efas_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style for EFAS
    * - map_efas_thickness
      - int
@@ -619,7 +619,7 @@ This object suppresses the plotting of the map grid labels
      - Plot grid lines on map (On/OFF)
    * - map_grid_colour
      - Colour(string)
-     - BLACK
+     - 'BLACK'
      - Colour of map grid lines
    * - map_grid_frame
      - bool(string)
@@ -627,11 +627,11 @@ This object suppresses the plotting of the map grid labels
      - Add a frame around the projection
    * - map_grid_frame_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of map grid lines
    * - map_grid_frame_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of map grid lines
    * - map_grid_frame_thickness
      - int
@@ -647,7 +647,7 @@ This object suppresses the plotting of the map grid labels
      - Reference Latitude from which all latitude lines are drawn
    * - map_grid_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of map grid lines
    * - map_grid_longitude_increment
      - float
@@ -675,15 +675,15 @@ This object suppresses the plotting of the map grid labels
      - Enable the labels on the bottom of the map
    * - map_label_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of map labels
    * - map_label_font
      - string
-     - sansserif
+     - 'sansserif'
      - Font of grid labels
    * - map_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font of grid labels
    * - map_label_height
      - float
@@ -719,11 +719,11 @@ This object suppresses the plotting of the map grid labels
      - Display rivers (on/off)
    * - map_rivers_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the rivers
    * - map_rivers_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style for rivers
    * - map_rivers_thickness
      - int
@@ -735,19 +735,19 @@ This object suppresses the plotting of the map grid labels
      - Display user shape file layer
    * - map_user_layer_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the User Layer
    * - map_user_layer_name
      - string
-     - 
+     - ''
      - Path + name of the shape file to use
    * - map_user_layer_projection
      - string
-     - 
+     - ''
      - Projection used in the shape file
    * - map_user_layer_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style for User Layer
    * - map_user_layer_thickness
      - int
@@ -797,11 +797,11 @@ pcont
      - Y Resolution of the Akima output matrix
    * - contour_automatic_library_path
      - string
-     - 
+     - ''
      - Users can give their own directory to setup the automatic library of contours
    * - contour_automatic_library_path
      - string
-     - 
+     - ''
      - Users can give their own directory to setup the automatic library of contours
    * - contour_automatic_setting
      - string
@@ -825,11 +825,11 @@ pcont
      - Number of steps to compute for each interval
    * - contour_gradients_technique
      - string
-     - rgb
+     - 'rgb'
      - Technique to apply to compute the gradients rgb/hcl/hsl
    * - contour_gradients_technique_direction
      - string
-     - clockwise
+     - 'clockwise'
      - Technique to apply to compute the gradients clockwise/anticlockwise
    * - contour_gradients_technique_list
      - stringarray
@@ -841,19 +841,19 @@ pcont
      - List of stops.
    * - contour_gradients_waypoint_method
      - string
-     - both
+     - 'both'
      - waypoints at the left, right, middle of the interval.
    * - contour_grid_shading_position
      - string
-     - middle
+     - 'middle'
      - Middle : the point is in the midlle of the cell, bottom_left : the point is in the bottom left corner
    * - contour_grid_value_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of grid point values (Full choice of colours)
    * - contour_grid_value_format
      - string
-     - (automatic)
+     - '(automatic)'
      - Format of grid point values (MAGICS Format/(AUTOMATIC))
    * - contour_grid_value_height
      - float
@@ -861,7 +861,7 @@ pcont
      - Height of grid point values
    * - contour_grid_value_justification
      - Justification(string)
-     - centre
+     - 'centre'
      - (LEFT/CENTRE/RIGHT)
    * - contour_grid_value_lat_frequency
      - int
@@ -873,11 +873,11 @@ pcont
      - The grid point values in every Nth longitude column are plotted
    * - contour_grid_value_marker_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of grid point markers (Full choice of colours)
    * - contour_grid_value_marker_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of grid point markers (Full choice of colours)
    * - contour_grid_value_marker_height
      - float
@@ -897,11 +897,11 @@ pcont
      - Table number of marker index. See Appendix for Plotting Attributes
    * - contour_grid_value_marker_qual
      - string
-     - low
+     - 'low'
      - (LOW/MEDIUM/HIGH)
    * - contour_grid_value_marker_qual
      - string
-     - low
+     - 'low'
      - (LOW/MEDIUM/HIGH)
    * - contour_grid_value_max
      - float
@@ -917,27 +917,27 @@ pcont
      - Plot Grid point values
    * - contour_grid_value_plot_type
      - ValuePlotMethod(string)
-     - value
+     - 'value'
      - (VALUE/MARKER/BOTH)
    * - contour_grid_value_position
      - string
-     - top
+     - 'top'
      - Position of the value
    * - contour_grid_value_quality
      - string
-     - low
+     - 'low'
      - (LOW/MEDIUM/HIGH)
    * - contour_grid_value_type
      - string
-     - normal
+     - 'normal'
      - For Gaussian fields, plot normal (regular) values or reduced grid values. (NORMAL/REDUCED/akima). If akima, the akima grid values will be plotted
    * - contour_grid_value_vertical_align
      - string
-     - base
+     - 'base'
      - (NORMAL/TOP/CAP/HALF/BASE/BOTTOM)
    * - contour_hi_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of local maxima text or number
    * - contour_hi_max_value
      - float
@@ -949,7 +949,7 @@ pcont
      - Local HI below specified value are not drawn
    * - contour_hi_text
      - string
-     - H
+     - 'H'
      - Text to represent local maxima
    * - contour_highlight
      - NoIsoHighlight(string)
@@ -957,7 +957,7 @@ pcont
      - Plot contour highlights (ON/OFF)
    * - contour_highlight_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of highlight line
    * - contour_highlight_frequency
      - int
@@ -965,7 +965,7 @@ pcont
      - Frequency of highlight line
    * - contour_highlight_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of highlighting (SOLID/ DASH/ DOT/ CHAIN_DASH/ CHAIN_DOT)
    * - contour_highlight_thickness
      - int
@@ -981,7 +981,7 @@ pcont
      - Blank around highs and lows (ON/OFF)
    * - contour_hilo_format
      - string
-     - (automatic)
+     - '(automatic)'
      - Format of HILO numbers (MAGICS Format/(AUTOMATIC))
    * - contour_hilo_height
      - float
@@ -993,7 +993,7 @@ pcont
      - Plot hilo marker (ON/OFF)
    * - contour_hilo_marker_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of grid point markers(Full choice of colours)
    * - contour_hilo_marker_height
      - float
@@ -1013,7 +1013,7 @@ pcont
      - Local HiLo below specified value are not drawn
    * - contour_hilo_quality
      - string
-     - low
+     - 'low'
      - (LOW/MEDIUM/HIGH)
    * - contour_hilo_reduction_radius
      - float
@@ -1025,7 +1025,7 @@ pcont
      - Radius of HiLo search in grid points (default value is for global cylindrical map)
    * - contour_hilo_type
      - HiLoTechnique(string)
-     - text
+     - 'text'
      - Type of high/low (TEXT/NUMBER/BOTH)
    * - contour_hilo_window_size
      - int
@@ -1037,15 +1037,15 @@ pcont
      - Internal factor for contouring
    * - contour_internal_technique
      - string
-     - interpolate
+     - 'interpolate'
      - Internal technique for contouring : interpolate/nearest
    * - contour_interpolation_ceiling
      - float
-     - INT_MAX
+     - 'INT_MAX'
      - any value above this ceiling will be forced to the ceiling value.  avoid the bubbles artificially created by the interpolation method
    * - contour_interpolation_floor
      - float
-     - -INT_MAX
+     - '-INT_MAX'
      - Any value below this floor will be forced to the floor value.  avoid the bubbles artificially created by the interpolation method
    * - contour_interval
      - float
@@ -1061,19 +1061,19 @@ pcont
      - Label Blanking
    * - contour_label_colour
      - string
-     - contour_line_colour
+     - 'contour_line_colour'
      - Colour of contour labels
    * - contour_label_font
      - string
-     - sansserif
+     - 'sansserif'
      - Name of the font
    * - contour_label_font_style
      - string
-     - normal
+     - 'normal'
      - Style of the font bold/italic
    * - contour_label_format
      - string
-     - (automatic)
+     - '(automatic)'
      - Format of contour labels (MAGICS Format/(AUTOMATIC))
    * - contour_label_frequency
      - int
@@ -1085,15 +1085,15 @@ pcont
      - Height of contour labels
    * - contour_label_quality
      - string
-     - low
+     - 'low'
      - (LOW/MEDIUM/HIGH)
    * - contour_label_text
      - string
-     - 
+     - ''
      - Text for labels
    * - contour_label_type
      - string
-     - number
+     - 'number'
      - Type of label (TEXT/NUMBER/BOTH)
    * - contour_legend_only
      - bool(string)
@@ -1101,7 +1101,7 @@ pcont
      - Inform the contour object do generate only the legend and not the plot!
    * - contour_legend_text
      - string
-     - 
+     - ''
      - Text to be used in legend
    * - contour_level_count
      - int
@@ -1113,7 +1113,7 @@ pcont
      - List of contour levels to be plotted
    * - contour_level_selection_type
      - LevelSelection(string)
-     - count
+     - 'count'
      - count: calculate a reasonable contour interval taking into account the min/max and the requested number of isolines.     interval: regularly spaced intervals using the reference_level as base.     level_list: uses the given list of levels.
    * - contour_level_tolerance
      - int
@@ -1121,7 +1121,7 @@ pcont
      - Tolerance: Do not use nice levels if the number of levels is really to different [count +/- tolerance]
    * - contour_line_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of contour line
    * - contour_line_colour_rainbow
      - bool(string)
@@ -1133,27 +1133,27 @@ pcont
      - List of colours to be used in rainbow isolines
    * - contour_line_colour_rainbow_colour_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of colours is smaller that the list of contour: lastone/cycle
    * - contour_line_colour_rainbow_direction
      - string
-     - anti_clockwise
+     - 'anti_clockwise'
      - Direction of colour sequencing for colouring
    * - contour_line_colour_rainbow_max_level_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour to be used for the max level
    * - contour_line_colour_rainbow_method
      - ColourTechnique(string)
-     - calculate
+     - 'calculate'
      - Method of generating the colours for isoline
    * - contour_line_colour_rainbow_min_level_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour to be used for the mainlevel
    * - contour_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of contour line
    * - contour_line_style_rainbow_list
      - stringarray
@@ -1161,7 +1161,7 @@ pcont
      - List of line style to used when rainbow method is on
    * - contour_line_style_rainbow_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of line styles is smaller that the list of contour: lastone/cycle
    * - contour_line_thickness
      - int
@@ -1173,11 +1173,11 @@ pcont
      - List of thickness to used when rainbow method is on
    * - contour_line_thickness_rainbow_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of thickness is smaller that the list of contour: lastone/cycle
    * - contour_lo_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of local minima text or number
    * - contour_lo_max_value
      - float
@@ -1189,7 +1189,7 @@ pcont
      - Local Lo below specified value are not drawn
    * - contour_lo_text
      - string
-     - L
+     - 'L'
      - Text to represent local minima
    * - contour_max_level
      - float
@@ -1201,7 +1201,7 @@ pcont
      - Only get the metadata
    * - contour_method
      - ContourMethod(string)
-     - automatic
+     - 'automatic'
      - Contouring method
    * - contour_min_level
      - float
@@ -1209,7 +1209,7 @@ pcont
      - Lowest level for contours to be drawn
    * - contour_predefined_setting
      - string
-     - 
+     - ''
      - Use of a predeined setting
    * - contour_reference_level
      - float
@@ -1229,11 +1229,11 @@ pcont
      - Turn shading on
    * - contour_shade_cell_method
      - string
-     - nearest
+     - 'nearest'
      - NMethod of determining the colour of a cell (INTERPOLATE/ NEAREST)
    * - contour_shade_cell_method
      - string
-     - nearest
+     - 'nearest'
      - NMethod of determining the colour of a cell (INTERPOLATE/ NEAREST)
    * - contour_shade_cell_resolution
      - float
@@ -1245,11 +1245,11 @@ pcont
      - Number of cells per cm for CELL shading
    * - contour_shade_cell_resolution_method
      - string
-     - classic
+     - 'classic'
      - if adaptive, magics will switch to grid_shading when the data resolution is greater that the requested resolution
    * - contour_shade_colour_direction
      - string
-     - anti_clockwise
+     - 'anti_clockwise'
      - Direction of colour sequencing for shading (CLOCKWISE/ ANTI_CLOCKWISE)
    * - contour_shade_colour_list
      - stringarray
@@ -1257,7 +1257,7 @@ pcont
      - List of colours to be used in contour shading.
    * - contour_shade_colour_method
      - ColourTechnique(string)
-     - calculate
+     - 'calculate'
      - Method of generating the colours of the bands in contour shading (list/calculate/advanced)
    * - contour_shade_colour_table
      - stringarray
@@ -1293,7 +1293,7 @@ pcont
      - Marker table to be used with MARKER shading technique
    * - contour_shade_marker_table_type
      - string
-     - index
+     - 'index'
      - index: using contour_shade_marker_table and definiing the markers by index, name: using contour_shade_marker_name_table and defining the symbols by their names
    * - contour_shade_max_level
      - float
@@ -1305,7 +1305,7 @@ pcont
      - Highest level for contours to be shaded
    * - contour_shade_max_level_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Highest shading band colour
    * - contour_shade_max_level_density
      - float
@@ -1313,7 +1313,7 @@ pcont
      - Dots/square centimetre in highest shading band
    * - contour_shade_method
      - PolyShadingMethod(string)
-     - dot
+     - 'dot'
      - Method used for shading (DOT/ AREA_FILL/ HATCH)
    * - contour_shade_min_level
      - float
@@ -1325,7 +1325,7 @@ pcont
      - Lowest level for contours to be shaded
    * - contour_shade_min_level_colour
      - Colour(string)
-     - red
+     - 'red'
      - Lowest shading band colour
    * - contour_shade_min_level_density
      - float
@@ -1333,23 +1333,23 @@ pcont
      - Dots/square centimetre in lowest shading band
    * - contour_shade_palette_name
      - string
-     - 
+     - ''
      - Colour used at the stops : the gradeint will be calculated between 2 consecutive ones.
    * - contour_shade_palette_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of colours is smaller that the list of levels: lastone/cycle
    * - contour_shade_technique
      - ShadingTechnique(string)
-     - polygon_shading
+     - 'polygon_shading'
      - Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
    * - contour_special_legend
      - string
-     - 
+     - ''
      - Used in wrep to produce special legend such as spaghetti!
    * - contour_style_name
      - string
-     - 
+     - ''
      - Use of a predeined setting
    * - contour_threads
      - int
@@ -1379,15 +1379,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Description
    * - efi_clim_date
      - string
-     - 
+     - ''
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - efi_clim_parameter
      - string
-     - 
+     - ''
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - efi_clim_root_database
      - string
-     - 
+     - ''
      - climatalogy database
    * - efi_clim_step
      - int
@@ -1407,7 +1407,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend
    * - efi_legend_box_type
      - string
-     - both
+     - 'both'
      - both/negative/positive
    * - efi_legend_colour_list
      - stringarray
@@ -1415,7 +1415,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend box colour list
    * - efi_legend_normal_colour
      - Colour(string)
-     - black
+     - 'black'
      - legend colour box
    * - efi_legend_normal_thickness
      - int
@@ -1423,7 +1423,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend colour box
    * - efi_legend_root_database
      - string
-     - 
+     - ''
      - legend
    * - efi_long_title
      - bool(string)
@@ -1435,11 +1435,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram longitude column name
    * - efi_parameter
      - string
-     - 
+     - ''
      - epsgram latitude column name
    * - efi_root_database
      - string
-     - 
+     - ''
      - database to access
    * - efi_steps
      - intarray
@@ -1507,7 +1507,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Description
    * - cape_box_border_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - cape_box_border_thickness
      - float
@@ -1515,11 +1515,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - cape_box_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - cape_box_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - 
    * - cape_box_thickness
      - float
@@ -1531,15 +1531,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - cape_control_colour
      - Colour(string)
-     - red
+     - 'red'
      - 
    * - cape_hres_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - 
    * - cape_marker_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - cape_marker_height
      - float
@@ -1551,7 +1551,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - cape_text_font_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - cape_text_font_size
      - float
@@ -1559,7 +1559,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_box_border_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - eps_box_border_thickness
      - int
@@ -1567,11 +1567,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_box_colour
      - Colour(string)
-     - cyan
+     - 'cyan'
      - 
    * - eps_box_median_colour
      - Colour(string)
-     - black
+     - 'black'
      - 
    * - eps_box_median_thickness
      - int
@@ -1595,15 +1595,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - plot the deterministic Forecast
    * - eps_control_legend_text
      - string
-     - ENS Control
+     - 'ENS Control'
      - Text to be used in the legend
    * - eps_control_line_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of deterministic Forecast
    * - eps_control_line_style
      - LineStyle(string)
-     - dash
+     - 'dash'
      - Control of deterministic Forecast
    * - eps_control_line_thickness
      - int
@@ -1611,7 +1611,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - line style of deterministic Forecast
    * - eps_database
      - string
-     - /vol/epsgram/data/spotbase/epsdb
+     - '/vol/epsgram/data/spotbase/epsdb'
      - Epsgram Database Path
    * - eps_date
      - string
@@ -1623,15 +1623,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - plot the deterministic Forecast
    * - eps_deterministic_legend_text
      - string
-     - High Resolution
+     - 'High Resolution'
      - Text to be used in the legend
    * - eps_deterministic_line_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of deterministic Forecast
    * - eps_deterministic_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - line style of deterministic Forecast
    * - eps_deterministic_line_thickness
      - int
@@ -1639,11 +1639,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - line style of deterministic Forecast
    * - eps_font
      - string
-     - sansserif
+     - 'sansserif'
      - 
    * - eps_font_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - 
    * - eps_font_size
      - float
@@ -1651,7 +1651,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_font_style
      - string
-     - 
+     - ''
      - 
    * - eps_grey_legend
      - bool(string)
@@ -1663,11 +1663,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram latitude column name
    * - eps_left_box_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - 
    * - eps_legend_control_text
      - string
-     - 
+     - ''
      - 
    * - eps_legend_font_size
      - float
@@ -1675,11 +1675,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_legend_forecast_text
      - string
-     - 
+     - ''
      - 
    * - eps_legend_resolution
      - string
-     - truncature
+     - 'truncature'
      - 
    * - eps_long_title
      - bool(string)
@@ -1703,15 +1703,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram longitude column name
    * - eps_maximum
      - float
-     - INT_MAX
+     - 'INT_MAX'
      - 
    * - eps_maximum_font
      - string
-     - sansserif
+     - 'sansserif'
      - 
    * - eps_maximum_font_colour
      - Colour(string)
-     - red
+     - 'red'
      - 
    * - eps_maximum_font_size
      - float
@@ -1719,11 +1719,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_maximum_font_style
      - string
-     - normal
+     - 'normal'
      - 
    * - eps_parameter
      - string
-     - 
+     - ''
      - Epsgram Parameter
    * - eps_parameter_hour_shift
      - float
@@ -1739,19 +1739,19 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Scaling factor to apply to the values
    * - eps_parameter_title
      - string
-     - 
+     - ''
      - epsgram parameter title : used only in case of an unknow parameter
    * - eps_right_box_colour
      - Colour(string)
-     - red
+     - 'red'
      - 
    * - eps_rose_cloud_border_colour
      - Colour(string)
-     - none
+     - 'none'
      - Rose wind border colour
    * - eps_rose_cloud_colour
      - Colour(string)
-     - black
+     - 'black'
      - Rose wind darker colour
    * - eps_rose_wave_colour
      - stringarray
@@ -1759,27 +1759,27 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Rose wind darker colour
    * - eps_rose_wind_border_colour
      - Colour(string)
-     - grey
+     - 'grey'
      - Rose wind border colour
    * - eps_rose_wind_colour
      - Colour(string)
-     - grey
+     - 'grey'
      - Rose wind darker colour
    * - eps_rose_wind_convention
      - string
-     - meteorological
+     - 'meteorological'
      - Define the convention to use to plot the wind direction    [ meteorological : Direction the parameter is coming from,     oceanographic : Direction the parameter is goint to]
    * - eps_station_height
      - float
-     - INT_MAX
+     - 'INT_MAX'
      - epsgram long title
    * - eps_station_name
      - string
-     - 
+     - ''
      - epsgram long title
    * - eps_temperature_correction
      - bool(string)
-     - yes
+     - 'yes'
      - Temperature correction
    * - eps_time
      - string
@@ -1791,11 +1791,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - text block to be plotted
    * - eps_title_text
      - string
-     - EPS Meteogram
+     - 'EPS Meteogram'
      - Epsgram Parameter
    * - eps_type
      - string
-     - eps10
+     - 'eps10'
      - Eps Metgram type : eps10 or eps15
    * - eps_whisker
      - bool(string)
@@ -1833,7 +1833,7 @@ pgeo
      - Description
    * - geo_input_file_name
      - string
-     - 
+     - ''
      - The name of the input file containing the GeoPoints code field(s)
    * - geo_missing_value
      - float
@@ -1859,15 +1859,15 @@ pgeojson
      - String containing the GeoJson data
    * - geojson_input
      - string
-     - {}
+     - '{}'
      - String containing the GeoJson data
    * - geojson_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the GeoJson data
    * - geojson_input_type
      - string
-     - file
+     - 'file'
      - data are in a file ( file ) or passed as a string (string)
 
 pgrib
@@ -1913,35 +1913,35 @@ pgrib
      - The position in the input file of a field other than a wind component
    * - grib_file_address_mode
      - GribAddressMode(string)
-     - record
+     - 'record'
      - Normally GRIB fields are stored as records on a file. If the BYTE offset method is being used, the parameter GRIB_FILE_ADDRESS_MODE should be set to 'BYTE_OFFSET'.(RECORD_NUMBER/BYTE_OFFSET)
    * - grib_file_address_mode
      - GribAddressMode(string)
-     - record
+     - 'record'
      - Normally GRIB fields are stored as records on a file. If the BYTE offset method is being used, the parameter GRIB_FILE_ADDRESS_MODE should be set to 'BYTE_OFFSET'.(RECORD_NUMBER/BYTE_OFFSET)
    * - grib_file_address_mode
      - GribAddressMode(string)
-     - record
+     - 'record'
      - Normally GRIB fields are stored as records on a file. If the BYTE offset method is being used, the parameter GRIB_FILE_ADDRESS_MODE should be set to 'BYTE_OFFSET'.(RECORD_NUMBER/BYTE_OFFSET)
    * - grib_id
      - string
-     - 
+     - ''
      - Id used to identify a grib file in the title production
    * - grib_input_file_name
      - string
-     - 
+     - ''
      - The name of the input file containing the GRIB code field(s)
    * - grib_input_file_name
      - string
-     - 
+     - ''
      - The name of the input file containing the GRIB code field(s)
    * - grib_interpolation_method
      - string
-     - interpolate
+     - 'interpolate'
      - Used for reduced gaussian grid: use an linear interpolation to convert from reduced to regular
    * - grib_interpolation_method
      - string
-     - interpolate
+     - 'interpolate'
      - Used for reduced gaussian grid: use an linear interpolation to convert from reduced to regular
    * - grib_interpolation_method_missing_fill_count
      - int
@@ -1969,11 +1969,11 @@ pgrib
      - 
    * - grib_loop_path
      - string
-     - 
+     - ''
      - Path of the grib to animate
    * - grib_loop_step
      - GribLoopStep(string)
-     - loopondate
+     - 'loopondate'
      - Method to create the steps names for each plot of the animation
    * - grib_loop_step_span
      - float
@@ -1985,19 +1985,19 @@ pgrib
      - When MAGICS is decoding GRIB code, this is the value to be assigned to field values where data is missing, as indicated by the bit map in the GRIB file.
    * - grib_position
      - longintarray
-     - longintarray()
+     - 'longintarray()'
      - Metview:position of the fields to plot in the fieldset
    * - grib_position_1
      - longintarray
-     - longintarray()
+     - 'longintarray()'
      - Metview:position of the fields for x component in the fieldset
    * - grib_position_2
      - longintarray
-     - longintarray()
+     - 'longintarray()'
      - Metview:position of the fields for y component in the fieldset
    * - grib_position_colour
      - longintarray
-     - longintarray()
+     - 'longintarray()'
      - Metview:position of the fields for colour component in the fieldset
    * - grib_scaling_factor
      - float
@@ -2033,7 +2033,7 @@ pgrib
      - Include the units of the input field in the automatic text
    * - grib_tile_projection
      - string
-     - cylindrical
+     - 'cylindrical'
      - 
    * - grib_tile_x
      - int
@@ -2049,11 +2049,11 @@ pgrib
      - 
    * - grib_wind_mode
      - WindMode(string)
-     - uv
+     - 'uv'
      - The incoming wind field may contain data other than wind components, e.g. wave height and direction.          grib_wind_mode should be set to indicate how to interpret the incoming wind field,          as u/v components, or speed/direction (uv/vd).
    * - grib_wind_mode
      - WindMode(string)
-     - uv
+     - 'uv'
      - The incoming wind field may contain data other than wind components, e.g. wave height and direction.          grib_wind_mode should be set to indicate how to interpret the incoming wind field,          as u/v components, or speed/direction (uv/vd).
    * - grib_wind_position_1
      - int
@@ -2083,15 +2083,15 @@ Here comes the documentation of the ImagePlotting object
      - Description
    * - image_colour_direction
      - string
-     - anti_clockwise
+     - 'anti_clockwise'
      - Direction of colour sequencing for image (CLOCKWISE / ANTI_CLOCKWISE)
    * - image_colour_table_creation_mode
      - LookupTableMode(string)
-     - equidistant
+     - 'equidistant'
      - Method for computing the output image according to the Colour table.
    * - image_colour_table_type
      - ColourTableDefinition(string)
-     - computed
+     - 'computed'
      - Method for setting Colour table for imaging.
    * - image_level_count
      - int
@@ -2099,11 +2099,11 @@ Here comes the documentation of the ImagePlotting object
      - Number of levels
    * - image_max_level_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Highest image band colour
    * - image_min_level_colour
      - Colour(string)
-     - red
+     - 'red'
      - Lowest image band colour
    * - image_pixel_selection_frequency
      - int
@@ -2125,15 +2125,15 @@ pimport
      - Description
    * - import_file_name
      - string
-     - 
+     - ''
      - File to import
    * - import_file_name
      - string
-     - 
+     - ''
      - File to import
    * - import_format
      - string
-     - png
+     - 'png'
      - Specify the format of the imported file
    * - import_height
      - float
@@ -2145,7 +2145,7 @@ pimport
      - if on, the import object will always be displayed last
    * - import_valid_time
      - string
-     - 
+     - ''
      - Valid Time
    * - import_width
      - float
@@ -2161,15 +2161,15 @@ pimport
      - Y position of the imported image
    * - layers
      - string
-     - 
+     - ''
      - Metview info :Short name to be put in the layers!
    * - service
      - string
-     - 
+     - ''
      - Metview info : which service created this image
    * - url
      - string
-     - 
+     - ''
      - Metview info : which url created this image : add it in the titles
 
 pline
@@ -2199,15 +2199,15 @@ pline
      - list of colours to use
    * - polyline_colour_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of colours is smaller that the list of levels: lastone/cycle
    * - polyline_colour_variable_name
      - string
-     - 
+     - ''
      - Data Variable used for setting the colour of the segments
    * - polyline_effect_method
      - string
-     - classic
+     - 'classic'
      - Method applied to draw the line
    * - polyline_input_break_indicator
      - float
@@ -2223,7 +2223,7 @@ pline
      - Array containing the longitudes of the polylines. Each polyline is separated by the break value
    * - polyline_input_positions_filename
      - string
-     - 
+     - ''
      - Path to a file containing the coordinates for all polylines' points.
    * - polyline_input_values
      - floatarray
@@ -2231,7 +2231,7 @@ pline
      - Array containing the values for each polyline
    * - polyline_input_values_filename
      - string
-     - 
+     - ''
      - Path to a file containing the values for each polyline.
    * - polyline_interval
      - float
@@ -2255,11 +2255,11 @@ pline
      - Tolerance: Do not use "nice levels" if the number of levels is really to different [count +/- tolerance]
    * - polyline_line_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the polylines
    * - polyline_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of the polylines (SOLID/ DASH/ DOT/ CHAIN_DASH/ CHAIN_DOT)
    * - polyline_line_style_level_list
      - floatarray
@@ -2271,11 +2271,11 @@ pline
      - list of line styles to use
    * - polyline_line_style_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of line styles is smaller that the list of levels: lastone/cycle
    * - polyline_line_style_variable_name
      - string
-     - 
+     - ''
      - Data Variable used for setting the line style of the segments
    * - polyline_line_thickness
      - int
@@ -2283,11 +2283,11 @@ pline
      - Thickness of the polylines
    * - polyline_pivot_marker
      - string
-     - none
+     - 'none'
      - Add a marker to the the last trajectory plotted to materialse the pivot
    * - polyline_pivot_marker_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of the marker to use
    * - polyline_pivot_marker_height
      - float
@@ -2295,11 +2295,11 @@ pline
      - height of the marker to use
    * - polyline_pivot_marker_name
      - string
-     - cyclone
+     - 'cyclone'
      - name of the marker to use
    * - polyline_priority_variable_name
      - string
-     - 
+     - ''
      - Variable used for setting the priority of the segments
    * - polyline_reference_level
      - float
@@ -2307,11 +2307,11 @@ pline
      - Level from which the level interval is calculated
    * - polyline_shade
      - bool(string)
-     - none
+     - 'none'
      - Whether to shade polygons or not (ON/OFF)
    * - polyline_shade_colour_direction
      - string
-     - anti_clockwise
+     - 'anti_clockwise'
      - Direction of colour sequencing for shading (CLOCKWISE/ ANTI_CLOCKWISE)
    * - polyline_shade_colour_list
      - stringarray
@@ -2319,11 +2319,11 @@ pline
      - List of colours to be used in polygon shading.
    * - polyline_shade_colour_method
      - ColourTechnique(string)
-     - calculate
+     - 'calculate'
      - Method of generating the colours of the bands in polygon shading (LIST/CALCULATE)
    * - polyline_shade_level_selection_type
      - LevelSelection(string)
-     - count
+     - 'count'
      - Can be set to one of: (COUNT/ INTERVAL/ LEVEL_LIST)
    * - polyline_shade_max_level
      - float
@@ -2331,7 +2331,7 @@ pline
      - Maximum level for which shading is required
    * - polyline_shade_max_level_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Highest shading band colour
    * - polyline_shade_min_level
      - float
@@ -2339,7 +2339,7 @@ pline
      - Minimum level for which shading is required
    * - polyline_shade_min_level_colour
      - Colour(string)
-     - red
+     - 'red'
      - Lowest shading band colour
    * - polyline_thickness_level_list
      - floatarray
@@ -2351,11 +2351,11 @@ pline
      - list of thicknesses to use
    * - polyline_thickness_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if the list of line styles is smaller that the list of levels: lastone/cycle
    * - polyline_thickness_variable_name
      - string
-     - 
+     - ''
      - Data Variable used for setting the thickness of the segments
    * - polyline_trajectory_factor
      - int
@@ -2371,11 +2371,11 @@ pline
      - level list to use for setting the Transparency
    * - polyline_transparency_pivot_variable_name
      - string
-     - 
+     - ''
      - Data Variable used for setting the pivot used to compute the transparency of the segments
    * - polyline_transparency_variable_name
      - string
-     - 
+     - ''
      - Data Variable used for setting the transparency of the segments
 
 pmapgen
@@ -2393,7 +2393,7 @@ pmapgen
      - Description
    * - mapgen_input_file_name
      - string
-     - 
+     - ''
      - The name of the input file containing the MapGen data
    * - mapgen_record
      - int
@@ -2419,7 +2419,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend
    * - efi_legend_box_type
      - string
-     - both
+     - 'both'
      - both/negative/positive
    * - efi_legend_colour_list
      - stringarray
@@ -2427,7 +2427,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend box colour list
    * - efi_legend_normal_colour
      - Colour(string)
-     - black
+     - 'black'
      - legend colour box
    * - efi_legend_normal_thickness
      - int
@@ -2443,19 +2443,19 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram title ( parameter name)
    * - efijson_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the Efi data (JSon format)
    * - eps_direction_keyword
      - string
-     - forecast
+     - 'forecast'
      - keyword to plot : forecast/control!
    * - eps_direction_line_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of lines ...
    * - eps_direction_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style
    * - eps_direction_line_thickness
      - int
@@ -2467,11 +2467,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - show the forecast
    * - eps_plume_control_line_colour
      - Colour(string)
-     - cyan
+     - 'cyan'
      - Line colour of the control forecast
    * - eps_plume_control_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the control forecast
    * - eps_plume_control_line_thickness
      - int
@@ -2483,11 +2483,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - show the forecast
    * - eps_plume_forecast_line_colour
      - Colour(string)
-     - cyan
+     - 'cyan'
      - Line colour of the deterministic forecast
    * - eps_plume_forecast_line_style
      - LineStyle(string)
-     - dash
+     - 'dash'
      - Line Style of the deterministic forecast
    * - eps_plume_forecast_line_thickness
      - int
@@ -2499,11 +2499,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - ignore legend
    * - eps_plume_line_colour
      - Colour(string)
-     - magenta
+     - 'magenta'
      - Line colour of the eps members
    * - eps_plume_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of the eps members
    * - eps_plume_line_thickness
      - int
@@ -2515,11 +2515,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - show the forecast
    * - eps_plume_median_line_colour
      - Colour(string)
-     - cyan
+     - 'cyan'
      - Line colour of the control forecast
    * - eps_plume_median_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the control forecast
    * - eps_plume_median_line_thickness
      - int
@@ -2531,7 +2531,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - show the eps members
    * - eps_plume_method
      - string
-     - time_serie
+     - 'time_serie'
      - Type of visualisation required : time_serie or vertical_profile
    * - eps_plume_shading
      - bool(string)
@@ -2547,15 +2547,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - levels used for plumes shading
    * - eps_shade_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of the darkest shade area ...
    * - eps_shade_line_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of the darkest shade area ...
    * - eps_shade_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Colour of the darkest shade area ...
    * - eps_shade_line_thickness
      - int
@@ -2571,7 +2571,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Plot or not information about station/forecast in a long title
    * - epsbufr_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the Bufr data
    * - epsbufr_parameter_2_descriptor
      - int
@@ -2591,7 +2591,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Scaling factor to apply to the values
    * - epsbufr_parameter_title
      - string
-     - 
+     - ''
      - Title to use to describe the parameter
    * - epsbufr_short_title
      - bool(string)
@@ -2607,11 +2607,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Longitude of the point to extract
    * - epsbufr_station_name
      - string
-     - 
+     - ''
      - Name of the station to use in the title
    * - epsbufr_title
      - string
-     - 
+     - ''
      - text block to be plotted
    * - epsbufr_y_axis_percentile
      - float
@@ -2623,7 +2623,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Temperature correction
    * - epsxml_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the Xml Description
    * - epsxml_long_title
      - bool(string)
@@ -2631,7 +2631,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram long title
    * - epsxml_parameter
      - string
-     - 
+     - ''
      - Parameter to extract
    * - epsxml_title
      - bool(string)
@@ -2639,19 +2639,19 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram long title
    * - metgram_bar_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the curve
    * - metgram_bar_keyword
      - string
-     - curve1
+     - 'curve1'
      - keyword used for define the bars
    * - metgram_curve2_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of the second curve
    * - metgram_curve2_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - LineStyle of the second curve
    * - metgram_curve2_thickness
      - int
@@ -2659,19 +2659,19 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Thickness of the second curve
    * - metgram_curve_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of the curve
    * - metgram_curve_keyword
      - string
-     - curve1
+     - 'curve1'
      - keyword used for fefine the first curve
    * - metgram_curve_keyword2
      - string
-     - curve2
+     - 'curve2'
      - keyword used for fefine the second curve
    * - metgram_curve_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - LineStyle of the curve
    * - metgram_curve_thickness
      - int
@@ -2679,7 +2679,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Thickness of the curve
    * - metgram_database
      - string
-     - /vol/epsgram/data/spotbase/epsdb
+     - '/vol/epsgram/data/spotbase/epsdb'
      - Classic Metgram Database Path
    * - metgram_date
      - string
@@ -2687,15 +2687,15 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Classic Metgram date
    * - metgram_flag_colour
      - Colour(string)
-     - red
+     - 'red'
      - Colour of Flag
    * - metgram_flag_component1
      - string
-     - curve1
+     - 'curve1'
      - Keyword used for the First component
    * - metgram_flag_component2
      - string
-     - curve2
+     - 'curve2'
      - Keyword used for the second component
    * - metgram_flag_frequency
      - int
@@ -2707,7 +2707,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - length of the flag
    * - metgram_flag_method
      - string
-     - SD
+     - 'SD'
      - SD : speed/direction is given UV : U/V components
    * - metgram_latitude
      - float
@@ -2723,7 +2723,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Classic Metgram longitude
    * - metgram_parameter
      - string
-     - 
+     - ''
      - Classic Metgram Parameter
    * - metgram_parameter_offset
      - float
@@ -2735,11 +2735,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - metgram scaling factor : used only in case of an unknow parameter
    * - metgram_parameter_title
      - string
-     - 
+     - ''
      - metgram parameter title : used only in case of an unknow parameter
    * - metgram_plot_style
      - MetgramStyle(string)
-     - curve
+     - 'curve'
      - Type of plot
    * - metgram_station_height
      - float
@@ -2747,11 +2747,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - epsgram long title
    * - metgram_station_name
      - string
-     - 
+     - ''
      - epsgram long title
    * - metgram_temperature_correction
      - bool(string)
-     - yes
+     - 'yes'
      - Temperature correction
    * - metgram_time
      - string
@@ -2773,7 +2773,7 @@ pnetcdf
      - Description
    * - netcdf_colour_component_variable
      - string
-     - 
+     - ''
      - Variable name representing the colour component of the vector ( in case of coloured wind)
    * - netcdf_dimension_setting
      - stringarray
@@ -2781,11 +2781,11 @@ pnetcdf
      - Extract only of a subset of variables [ex: level:100:500]
    * - netcdf_dimension_setting_method
      - string
-     - value
+     - 'value'
      - Method used to specify how to interpret the extraction of a subset, the range can by specified by value or by index
    * - netcdf_direction_component_variable
      - string
-     - 
+     - ''
      - Variable name representing the direction component of the vector
    * - netcdf_field_add_offset
      - float
@@ -2809,43 +2809,43 @@ pnetcdf
      - Values in the input field(s) below this value are to be suppressed, i.e. not to be taken into consideration for plotting purposes
    * - netcdf_filename
      - string
-     - 
+     - ''
      - Path of the file to be read
    * - netcdf_latitude_variable
      - string
-     - latitude
+     - 'latitude'
      - Variable name representing the latitude dimension
    * - netcdf_level_dimension_setting
      - string
-     - 
+     - ''
      - Extract only the specified level
    * - netcdf_level_variable
      - string
-     - level
+     - 'level'
      - Name of the level variable
    * - netcdf_longitude_variable
      - string
-     - longitude
+     - 'longitude'
      - Variable name representing the longitude dimension
    * - netcdf_matrix_primary_index
      - string
-     - longitude
+     - 'longitude'
      - Primary index latitude/longitude
    * - netcdf_metadata
      - string
-     - {}
+     - '{}'
      - Json string containing metadata information: useful to choose a style
    * - netcdf_missing_attribute
      - string
-     - _FillValue
+     - '_FillValue'
      - Attribute indicating the value used to indicate a missing value in the data
    * - netcdf_number_dimension_setting
      - string
-     - 
+     - ''
      - Extract only the specified number
    * - netcdf_number_variable
      - string
-     - number
+     - 'number'
      - Name of the number variable
    * - netcdf_reference_date
      - string
@@ -2853,63 +2853,63 @@ pnetcdf
      - attribute indicating the reference date
    * - netcdf_speed_component_variable
      - string
-     - 
+     - ''
      - Variable name representing the speed component of the vector
    * - netcdf_time_dimension_setting
      - string
-     - 
+     - ''
      - Extract only the specified times : date specified in Human readable format YYYY-MM-DD HH:MM:00
    * - netcdf_time_variable
      - string
-     - time
+     - 'time'
      - Name of the time variable
    * - netcdf_type
      - NetcdfInterpretor(string)
-     - guess
+     - 'guess'
      - Type of data arrangement in the file (possible values: matrix)
    * - netcdf_value_variable
      - string
-     - 
+     - ''
      - Variable to plot
    * - netcdf_x2_variable
      - string
-     - x2
+     - 'x2'
      - Variable name for the auxiliary x values (used in CurveArea)
    * - netcdf_x_auxiliary_variable
      - string
-     - 
+     - ''
      - variable can used to define geoline definition.
    * - netcdf_x_component_variable
      - string
-     - 
+     - ''
      - x_component for vector plotting
    * - netcdf_x_geoline_convention
      - string
-     - lonlat
+     - 'lonlat'
      - Geoline Convention used lonlat or latlon
    * - netcdf_x_variable
      - string
-     - x
+     - 'x'
      - Variable name for the x values
    * - netcdf_y2_variable
      - string
-     - y2
+     - 'y2'
      - Variable name for the auxiliary y values (used in CurveArea)
    * - netcdf_y_auxiliary_variable
      - string
-     - 
+     - ''
      - variable can used to define geoline definition.
    * - netcdf_y_component_variable
      - string
-     - 
+     - ''
      - y_component for vector plotting
    * - netcdf_y_geoline_convention
      - string
-     - lonlat
+     - 'lonlat'
      - Geoline Convention used lonlat or latlon
    * - netcdf_y_variable
      - string
-     - y
+     - 'y'
      - Variable name for the y values
 
 pnew
@@ -2931,15 +2931,15 @@ pnew
      - Plot the title (ON/OFF)
    * - layout
      - string
-     - automatic
+     - 'automatic'
      - Type of page layout (POSITIONAL/AUTOMATIC)
    * - layout
      - string
-     - automatic
+     - 'automatic'
      - Type of page layout (POSITIONAL/AUTOMATIC)
    * - layout
      - string
-     - automatic
+     - 'automatic'
      - Type of page layout (POSITIONAL/AUTOMATIC)
    * - legend
      - bool(string)
@@ -2951,7 +2951,7 @@ pnew
      - Turn on/off legend
    * - magics_backward_compatibility
      - bool(string)
-     - true
+     - 'true'
      - Turn on/off
    * - magics_silent
      - bool(string)
@@ -2967,11 +2967,11 @@ pnew
      - Plot frame around page (ON/OFF)
    * - page_frame_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Colour of page frame (Full choice of colours)
    * - page_frame_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of page frame(SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - page_frame_thickness
      - int
@@ -2983,7 +2983,7 @@ pnew
      - Plot identification line and ECMWF logo (ON/OFF)
    * - page_theme
      - string
-     - super_page_theme
+     - 'super_page_theme'
      - Theme to apply to the content of the page : the default is the super_page_theme
    * - page_x_gap
      - float
@@ -3011,27 +3011,27 @@ pnew
      - Y-Coordinate of lower left hand corner of page.Default
    * - plot_direction
      - string
-     - vertical
+     - 'vertical'
      - Direction of plotting (HORIZONTAL/VERTICAL)
    * - plot_direction
      - string
-     - vertical
+     - 'vertical'
      - Direction of plotting (HORIZONTAL/VERTICAL)
    * - plot_direction
      - string
-     - vertical
+     - 'vertical'
      - Direction of plotting (HORIZONTAL/VERTICAL)
    * - plot_start
      - string
-     - bottom
+     - 'bottom'
      - Position of first page plotted (BOTTOM/TOP)
    * - plot_start
      - string
-     - bottom
+     - 'bottom'
      - Position of first page plotted (BOTTOM/TOP)
    * - plot_start
      - string
-     - bottom
+     - 'bottom'
      - Position of first page plotted (BOTTOM/TOP)
    * - skinny_mode
      - bool(string)
@@ -3039,15 +3039,15 @@ pnew
      - Turn special features skinny
    * - subpage_align_horizontal
      - string
-     - left
+     - 'left'
      - Used in automatic layout to setup the horizontal alignment of the drawing area in the subpage
    * - subpage_align_vertical
      - string
-     - bottom
+     - 'bottom'
      - Used in automatic layout to setup the vertical alignment of the drawing area in the subpage
    * - subpage_background_colour
      - Colour(string)
-     - none
+     - 'none'
      - Colour of the subpage background
    * - subpage_clipping
      - bool(string)
@@ -3059,11 +3059,11 @@ pnew
      - Plot frame around subpage (ON/OFF)
    * - subpage_frame_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Colour of subpage frame (Full choice of colours)
    * - subpage_frame_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of subpage frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - subpage_frame_thickness
      - int
@@ -3079,7 +3079,7 @@ pnew
      - Name of the predefined area
    * - subpage_map_json_definition
      - string
-     - 
+     - ''
      - Metview only : store internal information about zooned area
    * - subpage_map_library_area
      - bool(string)
@@ -3091,7 +3091,7 @@ pnew
      - {'for_docs': False, '#text': 'Mv4: turn on/off the generation of the infomation for the magnifier tool'}
    * - subpage_map_overlay_control
      - string
-     - basic
+     - 'basic'
      - {'for_docs': False, '#text': 'Metview Only: overlay method. always: plot the fields as they come; never: never overlay; by_date/by_level: only overlay data with the same valid date/level'}
    * - subpage_map_preview
      - NoPreviewVisitor(string)
@@ -3099,7 +3099,7 @@ pnew
      - {'for_docs': False, '#text': 'Mv4: turn on/off the generation of the infomation for the preview box'}
    * - subpage_map_projection
      - Transformation(string)
-     - cylindrical
+     - 'cylindrical'
      - Projection to set in the drawing area
    * - subpage_right_position
      - float
@@ -3147,15 +3147,15 @@ pnew
      - 
    * - subpage_x_axis_type
      - XCoordinate(string)
-     - regular
+     - 'regular'
      - 
    * - subpage_x_date_max
      - string
-     - 
+     - ''
      - 
    * - subpage_x_date_min
      - string
-     - 
+     - ''
      - 
    * - subpage_x_length
      - float
@@ -3239,15 +3239,15 @@ pnew
      - 
    * - subpage_y_axis_type
      - YCoordinate(string)
-     - regular
+     - 'regular'
      - 
    * - subpage_y_date_max
      - string
-     - 
+     - ''
      - 
    * - subpage_y_date_min
      - string
-     - 
+     - ''
      - 
    * - subpage_y_length
      - float
@@ -3307,19 +3307,19 @@ pnew
      - Plot frame around super page (ON/OFF)
    * - super_page_frame_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of super page frame
    * - super_page_frame_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of super page frame
    * - super_page_frame_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of super page frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - super_page_frame_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Style of super page frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - super_page_frame_thickness
      - int
@@ -3331,7 +3331,7 @@ pnew
      - Thickness of super page frame
    * - super_page_theme
      - string
-     - cream
+     - 'cream'
      - Theme to apply to the content of the document : the default magics will ensure that no theme is applied and ensure fully backwards compatibility
    * - super_page_x_length
      - float
@@ -3369,7 +3369,7 @@ pobsjson
      - list of values described using json format
    * - obsjson_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the Observation data
 
 pobsstat
@@ -3387,7 +3387,7 @@ The Obstat decoder is responsible for decoding Obstat Ascii file.
      - Description
    * - obsstat_filename
      - string
-     - 
+     - ''
      - Epsgram Database Path
 
 podb
@@ -3413,47 +3413,47 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - Information for the binning (degrees/radians)
    * - odb_coordinates_unit
      - string
-     - degrees
+     - 'degrees'
      - Coordinates unit used to define the location of the points (degrees/radians)
    * - odb_database
      - string
-     - 
+     - ''
      - Odb Database Path
    * - odb_database_option
      - string
-     - 
+     - ''
      - Odb Database option : clean
    * - odb_date
      - string
-     - 
+     - ''
      - Odb date column name name used to save in to geopoint format
    * - odb_filename
      - string
-     - 
+     - ''
      - odb Database Path
    * - odb_filename
      - string
-     - 
+     - ''
      - odb Database Path
    * - odb_latitude
      - string
-     - latitude
+     - 'latitude'
      - Odb latitude column name
    * - odb_latitude_variable
      - string
-     - lat
+     - 'lat'
      - odb Column name for the latitudes
    * - odb_level
      - string
-     - press
+     - 'press'
      - Odb level column name
    * - odb_longitude
      - string
-     - longitude
+     - 'longitude'
      - Odb longitude column name
    * - odb_longitude_variable
      - string
-     - lon
+     - 'lon'
      - odb Column name for the longitudes
    * - odb_nb_rows
      - int
@@ -3469,11 +3469,11 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - info sent to the odb server to set the number of rows to be retrieved from the starting row
    * - odb_observation
      - string
-     - obsvalue
+     - 'obsvalue'
      - Odb observation column name
    * - odb_observation_2
      - string
-     - obsvalue
+     - 'obsvalue'
      - Odb observation#2 column name (for vectors)
    * - odb_parameters
      - floatarray
@@ -3481,7 +3481,7 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - enable to bind a float value to a odb parameter ($?)
    * - odb_query
      - string
-     - 
+     - ''
      - Odb Query
    * - odb_starting_row
      - int
@@ -3489,55 +3489,55 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - info sent to the odb server to set the starting row
    * - odb_time
      - string
-     - 
+     - ''
      - Odb time column name used to save in to geopoint format
    * - odb_user_title
      - string
-     - 
+     - ''
      - User defined title for automatic title
    * - odb_user_title
      - string
-     - 
+     - ''
      - User defined title for automatic title
    * - odb_value_variable
      - string
-     - 
+     - ''
      - odb Column name for the values
    * - odb_value_variable
      - string
-     - 
+     - ''
      - odb Column name for the values
    * - odb_x
      - string
-     - press
+     - 'press'
      - Odb column name used as X input for curve plotting
    * - odb_x_component_variable
      - string
-     - 
+     - ''
      - odb Column name for the x component of a vector
    * - odb_x_component_variable
      - string
-     - 
+     - ''
      - odb Column name for the x component of a vector
    * - odb_x_variable
      - string
-     - lat
+     - 'lat'
      - odb Column name for the x coordinates
    * - odb_y
      - string
-     - press
+     - 'press'
      - Odb column name used as Y input for curve plotting
    * - odb_y_component_variable
      - string
-     - 
+     - ''
      - odb Column name for the y component of a vector
    * - odb_y_component_variable
      - string
-     - 
+     - ''
      - odb Column name for the y component of a vector
    * - odb_y_variable
      - string
-     - lon
+     - 'lon'
      - odb Column name for the y coordinates
 
 popen
@@ -3555,7 +3555,7 @@ popen
      - Description
    * - output_format
      - string
-     - ps
+     - 'ps'
      - Defines the device to be used (ps/png/pdf/svg/kml).
    * - output_formats
      - stringarray
@@ -3577,19 +3577,19 @@ Object used to handle the call to the Pseudo action routine PNEW
      - Description
    * - page_x_gap
      - float
-     - 0.0cm
+     - '0.0cm'
      - Gap between pages in X direction
    * - page_y_gap
      - float
-     - 0.0cm
+     - '0.0cm'
      - Gap between pages in Y direction
    * - plot_direction
      - string
-     - vertical
+     - 'vertical'
      - Direction of plotting (HORIZONTAL/VERTICAL)
    * - plot_start
      - string
-     - bottom
+     - 'bottom'
      - Position of first page plotted (BOTTOM/TOP)
 
 pplot
@@ -3607,7 +3607,7 @@ pplot
      - Description
    * - crs
      - string
-     - 
+     - ''
      - Metview info :Crs used for the import
    * - crs_maxx
      - float
@@ -3627,7 +3627,7 @@ pplot
      - Metview info :Crs used for the import
    * - import_format
      - string
-     - PNG
+     - 'PNG'
      - Specify the format of the imported file
    * - import_height
      - float
@@ -3635,7 +3635,7 @@ pplot
      - Height of the imported image (-1 means use the dimension of the image)
    * - import_system_coordinates
      - string
-     - user
+     - 'user'
      - Specify the format of the imported file
    * - import_width
      - float
@@ -3665,7 +3665,7 @@ projection
      - Description
    * - subpage_coordinates_system
      - string
-     - latlon
+     - 'latlon'
      - Proj4 defintion string : to be used very carefully --> possible side effect
    * - subpage_lower_left_latitude
      - float
@@ -3693,15 +3693,15 @@ projection
      - Longitude of lower left corner of map.
    * - subpage_map_area_coordinate_system
      - string
-     - users
+     - 'users'
      - If set to projection, the coordinates of the bounding box are described in projection coordinates      instead of the more natural lat/lon system ( this is useful in the WMS context)
    * - subpage_map_area_definition
      - string
-     - full
+     - 'full'
      - method used to define the geographical area.
    * - subpage_map_area_definition_polar
      - string
-     - corners
+     - 'corners'
      - Method of defining a polar stereographic map
    * - subpage_map_centre_latitude
      - float
@@ -3717,11 +3717,11 @@ projection
      - the sweep angle axis of the viewing instrument
    * - subpage_map_hemisphere
      - Hemisphere(string)
-     - north
+     - 'north'
      - Hemisphere required for polar stereographic map(NORTH/SOUTH)
    * - subpage_map_proj4_definition
      - string
-     - 
+     - ''
      - Proj4 defintion string : to be used very carefully --> possible side effect
    * - subpage_map_projection_azimuth
      - float
@@ -3807,7 +3807,7 @@ pshape
      - Description
    * - shape_input_file_name
      - string
-     - 
+     - ''
      - The name of the input file containing the shape data ( geography only)
 
 pskewt
@@ -3879,11 +3879,11 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Connect all the symbols with a line
    * - symbol_connect_line_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of the connecting line
    * - symbol_connect_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of connecting line
    * - symbol_connect_line_thickness
      - int
@@ -3891,7 +3891,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - thickness of the connecting line
    * - symbol_format
      - string
-     - (automatic)
+     - '(automatic)'
      - Format used to plot values (MAGICS Format/(AUTOMATIC))
    * - symbol_legend_only
      - bool(string)
@@ -3899,7 +3899,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Inform the contour object do generate only the legend and not the plot .. [Web sdpecific]
    * - symbol_marker_mode
      - string
-     - index
+     - 'index'
      - Method to select a marker : by name, by index, by image : in that case, Magics will use an external image as marker.
    * - symbol_outline
      - bool(string)
@@ -3907,11 +3907,11 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Add an outline to each symbol
    * - symbol_outline_colour
      - Colour(string)
-     - black
+     - 'black'
      - Colour of the outline
    * - symbol_outline_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of outline
    * - symbol_outline_thickness
      - int
@@ -3931,7 +3931,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Turn legend on or off (ON/OFF) : New Parameter!
    * - symbol_table_mode
      - SymbolMode(string)
-     - OFF
+     - 'OFF'
      - Specifies if plotting is to be in advanced, table (on) or individual mode (off).           Note: The simple table mode is not recommended anymore, try to use the advanced mode instead,          this should give you easier control of the plot.
    * - symbol_text_blanking
      - bool(string)
@@ -3939,7 +3939,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - blanking of the text
    * - symbol_type
      - string
-     - number
+     - 'number'
      - Defines the type of symbol plotting required
 
 ptaylor
@@ -3957,11 +3957,11 @@ None
      - Description
    * - taylor_label
      - string
-     - Correlation
+     - 'Correlation'
      - Label of the grid
    * - taylor_label_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour of the label
    * - taylor_label_height
      - float
@@ -3973,11 +3973,11 @@ None
      - Reference used of the Standard deviation plotting.
    * - taylor_primary_grid_line_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour used to plot the primary grid
    * - taylor_primary_grid_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style used to plot the primary grid
    * - taylor_primary_grid_line_thickness
      - int
@@ -3993,7 +3993,7 @@ None
      - Turn the labels (on/off) of the primary grid
    * - taylor_primary_label_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour of the labels of the primary grid
    * - taylor_primary_label_height
      - float
@@ -4001,11 +4001,11 @@ None
      - Height of the labels of the primary grid
    * - taylor_reference_line_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour used to plot the primary grid
    * - taylor_reference_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style used to plot the primary grid
    * - taylor_reference_line_thickness
      - int
@@ -4021,11 +4021,11 @@ None
      - Reference used of the Standard deviation plotting.
    * - taylor_secondary_grid_line_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour used to plot the primary grid
    * - taylor_secondary_grid_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style used to plot the primary grid
    * - taylor_secondary_grid_line_thickness
      - int
@@ -4041,7 +4041,7 @@ None
      - Turn the labels (on/off) of the secondary grid
    * - taylor_secondary_label_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour of the labels of the secondary grid
    * - taylor_secondary_label_height
      - float
@@ -4087,7 +4087,7 @@ ptephi
      - Percentage of the width used to display the annotation on the right side .
    * - thermo_dry_adiabatic_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Colou of the dry_adiabatics
    * - thermo_dry_adiabatic_grid
      - bool(string)
@@ -4099,11 +4099,11 @@ ptephi
      - Interval between 2 dry_adiabatics.
    * - thermo_dry_adiabatic_label_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Label Colour for the isotherms
    * - thermo_dry_adiabatic_label_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name used for the dry_adiabatics labels
    * - thermo_dry_adiabatic_label_font_size
      - float
@@ -4111,7 +4111,7 @@ ptephi
      - Font Size used for the dry_adiabatics labels
    * - thermo_dry_adiabatic_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font Style used for the dry_adiabatics labels
    * - thermo_dry_adiabatic_label_frequency
      - int
@@ -4123,7 +4123,7 @@ ptephi
      - Reference  of the dry_adiabatics
    * - thermo_dry_adiabatic_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the dry_adiabatics
    * - thermo_dry_adiabatic_thickness
      - int
@@ -4131,7 +4131,7 @@ ptephi
      - Thickness of the dry_adiabatics
    * - thermo_isobar_colour
      - Colour(string)
-     - evergreen
+     - 'evergreen'
      - Colou of the isobars
    * - thermo_isobar_grid
      - bool(string)
@@ -4143,11 +4143,11 @@ ptephi
      - Interval between isobars
    * - thermo_isobar_label_colour
      - Colour(string)
-     - evergreen
+     - 'evergreen'
      - Label Colour for the isotherms
    * - thermo_isobar_label_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name used for the isobars labels
    * - thermo_isobar_label_font_size
      - float
@@ -4155,7 +4155,7 @@ ptephi
      - Font Size used for the isobars labels
    * - thermo_isobar_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font Style used for the isobars labels
    * - thermo_isobar_label_frequency
      - int
@@ -4167,7 +4167,7 @@ ptephi
      - Line Style of the isobars
    * - thermo_isobar_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the isobars
    * - thermo_isobar_thickness
      - int
@@ -4175,7 +4175,7 @@ ptephi
      - Thickness of the isobars
    * - thermo_isotherm_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Colou of the isotherms
    * - thermo_isotherm_grid
      - bool(string)
@@ -4187,11 +4187,11 @@ ptephi
      - interval for isotherms grid
    * - thermo_isotherm_label_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Label Colour for the isotherms
    * - thermo_isotherm_label_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name used for the isotherms labels
    * - thermo_isotherm_label_font_size
      - float
@@ -4199,7 +4199,7 @@ ptephi
      - Font Size used for the isotherms labels
    * - thermo_isotherm_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font Style used for the isotherms labels
    * - thermo_isotherm_label_frequency
      - int
@@ -4211,11 +4211,11 @@ ptephi
      - Reference  of the isotherms
    * - thermo_isotherm_reference_colour
      - Colour(string)
-     - red
+     - 'red'
      - Reference  of the isotherms
    * - thermo_isotherm_reference_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Reference  of the isotherms
    * - thermo_isotherm_reference_thickness
      - int
@@ -4223,7 +4223,7 @@ ptephi
      - Reference  of the isotherms
    * - thermo_isotherm_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the isotherms
    * - thermo_isotherm_thickness
      - int
@@ -4231,7 +4231,7 @@ ptephi
      - Thickness of the isotherms
    * - thermo_mixing_ratio_colour
      - Colour(string)
-     - purple
+     - 'purple'
      - Colou of the mixing_ratios
    * - thermo_mixing_ratio_frequency
      - int
@@ -4243,11 +4243,11 @@ ptephi
      - Plot the mixing_ratios
    * - thermo_mixing_ratio_label_colour
      - Colour(string)
-     - purple
+     - 'purple'
      - Label Colour for the isotherms
    * - thermo_mixing_ratio_label_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name used for the mixing_ratios labels
    * - thermo_mixing_ratio_label_font_size
      - float
@@ -4255,7 +4255,7 @@ ptephi
      - Font Size used for the mixing_ratios labels
    * - thermo_mixing_ratio_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font Style used for the mixing_ratios labels
    * - thermo_mixing_ratio_label_frequency
      - int
@@ -4263,7 +4263,7 @@ ptephi
      - mixing_ratio frequency for labelling
    * - thermo_mixing_ratio_style
      - LineStyle(string)
-     - dash
+     - 'dash'
      - Line Style of the mixing_ratios
    * - thermo_mixing_ratio_thickness
      - int
@@ -4271,7 +4271,7 @@ ptephi
      - Thickness of the mixing_ratios
    * - thermo_saturated_adiabatic_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Colou of the saturated_adiabatics
    * - thermo_saturated_adiabatic_grid
      - bool(string)
@@ -4283,11 +4283,11 @@ ptephi
      - interval for saturated_adiabatics grid
    * - thermo_saturated_adiabatic_label_colour
      - Colour(string)
-     - charcoal
+     - 'charcoal'
      - Label Colour for the isotherms
    * - thermo_saturated_adiabatic_label_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name used for the saturated_adiabatics labels
    * - thermo_saturated_adiabatic_label_font_size
      - float
@@ -4295,7 +4295,7 @@ ptephi
      - Font Size used for the saturated_adiabatics labels
    * - thermo_saturated_adiabatic_label_font_style
      - string
-     - normal
+     - 'normal'
      - Font Style used for the saturated_adiabatics labels
    * - thermo_saturated_adiabatic_label_frequency
      - int
@@ -4307,7 +4307,7 @@ ptephi
      - Reference  of the saturated_adiabatics
    * - thermo_saturated_adiabatic_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line Style of the saturated_adiabatics
    * - thermo_saturated_adiabatic_thickness
      - int
@@ -4353,11 +4353,11 @@ None
      - Plot border around text box (ON/OFF)
    * - text_border_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of border around text box (Full choice of colours)
    * - text_border_line_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of border around text box (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - text_border_thickness
      - int
@@ -4385,51 +4385,51 @@ None
      - Y coordinate of lower left corner of text box (Relative to PAGE_Y_POSITION)
    * - text_character_1
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_10
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_2
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_3
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_4
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_5
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_6
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_7
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_8
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_character_9
      - string
-     - 
+     - ''
      - 10 Magics parameters enabling users to store CHARACTER info for plotting in text lines (n=1,10)
    * - text_colour
      - Colour(string)
-     - navy
+     - 'navy'
      - Colour of text in text block (Full choice of colours)
    * - text_escape_character
      - string
-     - #
+     - '#'
      - Symbol or character followed by 3 octal numbers
    * - text_first_line
      - int
@@ -4437,7 +4437,7 @@ None
      - The first line in the text block to be plotted
    * - text_font
      - string
-     - helvetica
+     - 'helvetica'
      - Font name - please make sure this font is installed!
    * - text_font_size
      - string
@@ -4445,7 +4445,7 @@ None
      - Font size, specified in cm.
    * - text_font_style
      - string
-     - normal
+     - 'normal'
      - Font style. Set this to an empty string in order to remove all styling.
    * - text_html
      - bool(string)
@@ -4453,7 +4453,7 @@ None
      - enable use of HTML convention
    * - text_instruction_shift_character
      - string
-     - \
+     - '\\'
      - Symbol or character for indicating that an Instruction String follows
    * - text_integer_1
      - int
@@ -4497,47 +4497,47 @@ None
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_justification
      - Justification(string)
-     - centre
+     - 'centre'
      - How text is to be positioned in each line (LEFT/CENTRE/RIGHT)
    * - text_line_1
      - string
-     - <magics_title/>
+     - '<magics_title/>'
      - Character string for holding lines of text (n=1,10)
    * - text_line_10
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_2
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_3
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_4
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_5
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_6
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_7
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_8
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_9
      - string
-     - 
+     - ''
      - Character string for holding lines of text (n=1,10)
    * - text_line_count
      - int
@@ -4597,15 +4597,15 @@ None
      - text block to be plotted
    * - text_mode
      - string
-     - title
+     - 'title'
      - Whether text is to be a title or user positioned (TITLE/POSITIONAL)
    * - text_orientation
      - string
-     - horizontal
+     - 'horizontal'
      - Orientation of the text
    * - text_parameter_escape_character
      - string
-     - 
+     - ''
      - Symbol or character for indicating that a Magics parameter follows. The Magics parameter is also terminated by the same symbol or character.
    * - text_real_1
      - float
@@ -4667,7 +4667,7 @@ Parameters common to the flags and arrows.
      - Add a wind legend information in the legend
    * - wind_advanced_colour_direction
      - string
-     - anti_clockwise
+     - 'anti_clockwise'
      - Direction of colour sequencing for plotting
    * - wind_advanced_colour_level_count
      - int
@@ -4691,11 +4691,11 @@ Parameters common to the flags and arrows.
      - List of colours to be used in wind plotting
    * - wind_advanced_colour_list_policy
      - ListPolicy(string)
-     - lastone
+     - 'lastone'
      - What to do if, the list of colours is smaller that the list of intervals: lastone/cycle
    * - wind_advanced_colour_max_level_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Highest shading band colour
    * - wind_advanced_colour_max_value
      - float
@@ -4703,7 +4703,7 @@ Parameters common to the flags and arrows.
      - Max value to plot
    * - wind_advanced_colour_min_level_colour
      - Colour(string)
-     - red
+     - 'red'
      - Lowest shading band colour
    * - wind_advanced_colour_min_value
      - float
@@ -4711,7 +4711,7 @@ Parameters common to the flags and arrows.
      - Min value to plot
    * - wind_advanced_colour_parameter
      - string
-     - speed
+     - 'speed'
      - if speed, the wind is coloured using the norm of the vector, If parameter, a third parameter is used.
    * - wind_advanced_colour_reference_level
      - float
@@ -4719,11 +4719,11 @@ Parameters common to the flags and arrows.
      - Level from which the level interval is calculated
    * - wind_advanced_colour_selection_type
      - LevelSelection(string)
-     - count
+     - 'count'
      - Set selection method
    * - wind_advanced_colour_table_colour_method
      - ColourTechnique(string)
-     - calculate
+     - 'calculate'
      - Method of generating the colours
    * - wind_advanced_method
      - string
@@ -4743,7 +4743,7 @@ Parameters common to the flags and arrows.
      - The radius of the circle which indicates calm
    * - wind_arrow_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of wind arrow
    * - wind_arrow_cross_boundary
      - bool(string)
@@ -4763,7 +4763,7 @@ Parameters common to the flags and arrows.
      - Table number, XY, indicating shape of arrowhead X
    * - wind_arrow_legend_text
      - string
-     - m/s
+     - 'm/s'
      - Text to be used as units in the legend text
    * - wind_arrow_max_speed
      - float
@@ -4775,11 +4775,11 @@ Parameters common to the flags and arrows.
      - Lowest value of wind speed to be plotted
    * - wind_arrow_origin_position
      - ArrowPosition(string)
-     - tail
+     - 'tail'
      - The position of the wind arrow relative to the wind origin
    * - wind_arrow_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Controls the line style of the arrow flag shaft.
    * - wind_arrow_thickness
      - int
@@ -4787,7 +4787,7 @@ Parameters common to the flags and arrows.
      - Thickness of wind arrow shaft
    * - wind_arrow_unit_system
      - string
-     - paper
+     - 'paper'
      - Coordinates sysem used to sacle the arrow : paper -->1cm, user-->1 user unit
    * - wind_arrow_unit_velocity
      - float
@@ -4795,7 +4795,7 @@ Parameters common to the flags and arrows.
      - Wind speed in m/s represented by a unit vector (1.0 cm or 1.0 user unit depending on the value of wind_arrow_unit_system ).
    * - wind_field_type
      - WindPlotting(string)
-     - arrows
+     - 'arrows'
      - Method of wind field plotting
    * - wind_flag_calm_below
      - float
@@ -4811,7 +4811,7 @@ Parameters common to the flags and arrows.
      - The radius of the circle which indicates calm in centimeter
    * - wind_flag_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of wind flag shaft, barbs and pennants
    * - wind_flag_cross_boundary
      - bool(string)
@@ -4831,11 +4831,11 @@ Parameters common to the flags and arrows.
      - Lowest value of wind speed to be plotted
    * - wind_flag_mode
      - string
-     - normal
+     - 'normal'
      - Controls the line style of the wind flag shaft.(NORMAL / OFF_LEVEL / OFF_TIME)
    * - wind_flag_origin_marker
      - OriginMarker(string)
-     - circle
+     - 'circle'
      - Symbol for marking the exact location of the current grid point.
    * - wind_flag_origin_marker_size
      - float
@@ -4843,7 +4843,7 @@ Parameters common to the flags and arrows.
      - 
    * - wind_flag_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Controls the line style of the wind flag shaft.
    * - wind_flag_thickness
      - int
@@ -4855,11 +4855,11 @@ Parameters common to the flags and arrows.
      - {'for_docs': False, '#text': 'Wrep only : to build only the legned...'}
    * - wind_legend_text
      - string
-     - vector
+     - 'vector'
      - Use your own text in the legend
    * - wind_streamline_colour
      - Colour(string)
-     - blue
+     - 'blue'
      - Colour of streamlines
    * - wind_streamline_head_ratio
      - float
@@ -4879,7 +4879,7 @@ Parameters common to the flags and arrows.
      - Wind speed below which streamline plotting will be stopped
    * - wind_streamline_style
      - LineStyle(string)
-     - solid
+     - 'solid'
      - Line style of streamlines
    * - wind_streamline_thickness
      - int
@@ -4895,7 +4895,7 @@ Parameters common to the flags and arrows.
      - Controls the actual number of wind arrows or flags plotted. See main text for explanation. Needs to 1.0 or larger.
    * - wind_thinning_method
      - string
-     - data
+     - 'data'
      - Method to control the thinning:      data : wind_thinning_factor will determine the frequency as before      user : wind_thining_factor will determine the minimal distance in user coordinates betvween 2 winds.      the default is "data" for backward compatibility.
 
 pwrepjson
@@ -4913,7 +4913,7 @@ pwrepjson
      - Description
    * - wrepjson_clim_parameter
      - string
-     - 
+     - ''
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - wrepjson_clim_step
      - int
@@ -4921,7 +4921,7 @@ pwrepjson
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - wrepjson_family
      - string
-     - eps
+     - 'eps'
      - How to interpret the json file
    * - wrepjson_hodograph_grid
      - bool(string)
@@ -4945,15 +4945,15 @@ pwrepjson
      - Plot or not information about station/forecast in a long title
    * - wrepjson_input_filename
      - string
-     - 
+     - ''
      - Path to the file containing the Bufr data
    * - wrepjson_key
      - string
-     - 
+     - ''
      - Forecast information to plot!
    * - wrepjson_keyword
      - string
-     - 
+     - ''
      - if several eps data are put in the same json object, give the keyowrd to find them
    * - wrepjson_missing_value
      - float
@@ -4965,7 +4965,7 @@ pwrepjson
      - Scaling factor to apply to the values
    * - wrepjson_parameter_information
      - string
-     - 
+     - ''
      - Product information for key=parameter_info
    * - wrepjson_parameter_offset_factor
      - float
@@ -4985,15 +4985,15 @@ pwrepjson
      - Switch on/off the position information in the title.
    * - wrepjson_product_information
      - string
-     - 
+     - ''
      - Product information for key=product_info
    * - wrepjson_profile_quantile
      - string
-     - 
+     - ''
      - List of keys to ignore when reading onput data
    * - wrepjson_station_name
      - string
-     - 
+     - ''
      - Name of the station to use in the title
    * - wrepjson_steps
      - intarray
@@ -5017,7 +5017,7 @@ pwrepjson
      - use of threshold  to get rid of the unlikely values
    * - wrepjson_y_max_threshold
      - float
-     - INT_MAX
+     - 'INT_MAX'
      - If all the values are below the threshold, use the threshold as max value when automatic setting of y axis
    * - wrepjson_y_percentage
      - float
@@ -5039,7 +5039,7 @@ The Efi decoder is responsible for decoding EFi Ascii file.(Metops)
      - Description
    * - efi_filename
      - string
-     - 
+     - ''
      - Efi file name Path
    * - efi_record
      - int

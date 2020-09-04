@@ -163,5 +163,5 @@ for p, v in sorted(ACTIONS.items()):
                 x["default"] = float(x["default"])
             except:
                 pass
-        print("     - %s" % (x.get("default", "?")))
+        print("     - %r" % (x.get("default", "?")))
         print("     - %s" % (x.get("documentation", "")))
