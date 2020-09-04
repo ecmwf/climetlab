@@ -22,7 +22,7 @@ def _given_args(frame):
 
 def mcoast(
     *,
-    # [CoastPlotting]
+    # [CoastPlotting] 
     map_coastline_resolution: str = "automatic",
     map_coastline_land_shade: bool = False,
     map_coastline_land_shade_colour: str = "green",

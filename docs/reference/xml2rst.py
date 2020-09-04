@@ -321,9 +321,25 @@ def produce_python():
         print("    return macro.%s(**_given_args(inspect.currentframe()))" % (action,))
 
 
+def produce_yaml():
+
+    print("---")
+
+    for action, klasses in sorted(ACTIONS.items()):
+        print()
+
+        print("%s:" % (action,))
+
+
+        for k in klasses:
+            for p in k.parameters:
+                print(" ", p.name)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--rst", action="store_true")
 parser.add_argument("--python", action="store_true")
+parser.add_argument("--yaml", action="store_true")
 parser.add_argument(
     "xml", metavar="N", nargs="+",
 )
@@ -348,3 +364,6 @@ if args.rst:
 
 if args.python:
     produce_python()
+
+if args.yaml:
+    produce_yaml()
