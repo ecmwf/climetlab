@@ -36,14 +36,15 @@ def tidy(x):
             return x[1:]
 
     try:
-        return float(x)
+        return int(x)
     except:
         pass
 
     try:
-        return int(x)
+        return float(x)
     except:
         pass
+
 
     x = T.get(x, x)
 
@@ -155,6 +156,12 @@ for p, v in sorted(ACTIONS.items()):
         if x["to"] == x["from"]:
             print("     - %s" % (x["to"],))
         else:
-            print("     - %s(%s)" % (x["to"],x["from"]))
+            print("     - %s(%s)" % (x["to"], x["from"]))
+
+        if x["from"] == 'float':
+            try:
+                x["default"] = float(x["default"])
+            except:
+                pass
         print("     - %s" % (x.get("default", "?")))
         print("     - %s" % (x.get("documentation", "")))

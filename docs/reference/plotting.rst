@@ -37,7 +37,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Line style of border around legend box
    * - legend_border_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of legend box border
    * - legend_box_blanking
      - bool(string)
@@ -65,7 +65,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Y coordinate of lower left corner of legend box (Relative to page_y_position)
    * - legend_column_count
      - int
-     - 1.0
+     - 1
      - Number of columns in the legend
    * - legend_display_type
      - LegendMethod(string)
@@ -109,7 +109,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - Line Style of the grids
    * - legend_histogram_grid_thickness
      - int
-     - 1.0
+     - 1
      - thickness of the grids
    * - legend_histogram_max_value
      - bool(string)
@@ -121,7 +121,7 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - show the mean value
    * - legend_histogram_mean_value_marker
      - int
-     - 15.0
+     - 15
      - show the mean value
    * - legend_histogram_mean_value_marker_colour
      - Colour(string)
@@ -133,11 +133,11 @@ Collection of parameters defining how a legend will be plotted. To plot a legend
      - show the mean value
    * - legend_label_frequency
      - int
-     - 1.0
+     - 1
      - Frequency of the labels.
    * - legend_label_frequency
      - int
-     - 1.0
+     - 1
      - Frequency of the labels.
    * - legend_only
      - bool(string)
@@ -299,7 +299,7 @@ pbinning
      - Description
    * - binning_x_count
      - int
-     - 10.0
+     - 10
      - Aprroximate number on binns when using the count method
    * - binning_x_interval
      - float
@@ -327,7 +327,7 @@ pbinning
      - list of binns when using the interval method
    * - binning_y_count
      - int
-     - 10.0
+     - 10
      - Aprroximate number on binns when using the count method
    * - binning_y_interval
      - float
@@ -377,7 +377,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Style of the clim curve
    * - cdf_clim_line_thickness
      - int
-     - 4.0
+     - 4
      - Thickness of the clim curve
    * - cdf_graph_type
      - string
@@ -405,7 +405,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Style of the curve
    * - efi_box_border_thickness
      - int
-     - 1.0
+     - 1
      - Style of the curve
    * - efi_box_colour_array
      - stringarray
@@ -437,7 +437,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Style of the curve
    * - efi_normal_thickness
      - int
-     - 4.0
+     - 4
      - Style of the curve
    * - legend
      - bool(string)
@@ -475,7 +475,7 @@ This object suppresses the plotting of the map grid labels
      - Line style of administrative boundaries
    * - map_administrative_boundaries_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of administrative boundaries
    * - map_boundaries
      - NoBoundaries(string)
@@ -491,7 +491,7 @@ This object suppresses the plotting of the map grid labels
      - Line style of boundaries
    * - map_boundaries_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of boundaries
    * - map_cities
      - NoCities(string)
@@ -575,7 +575,7 @@ This object suppresses the plotting of the map grid labels
      - Line style of coastlines
    * - map_coastline_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of coastlines
    * - map_disputed_boundaries
      - bool(string)
@@ -591,7 +591,7 @@ This object suppresses the plotting of the map grid labels
      - Line style of disputed boundaries
    * - map_disputed_boundaries_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of disputed boundaries
    * - map_efas
      - string
@@ -611,7 +611,7 @@ This object suppresses the plotting of the map grid labels
      - Line style for EFAS
    * - map_efas_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of EFAS
    * - map_grid
      - NoGridPlotting(string)
@@ -635,7 +635,7 @@ This object suppresses the plotting of the map grid labels
      - Line style of map grid lines
    * - map_grid_frame_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of map grid lines
    * - map_grid_latitude_increment
      - float
@@ -659,7 +659,7 @@ This object suppresses the plotting of the map grid labels
      - Reference Longitude from which all longitude lines are drawn
    * - map_grid_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of map grid lines
    * - map_label
      - NoLabelPlotting(string)
@@ -691,7 +691,7 @@ This object suppresses the plotting of the map grid labels
      - Height og grid labels
    * - map_label_latitude_frequency
      - int
-     - 1.0
+     - 1
      - Evry Nth latitue grid is labelled
    * - map_label_left
      - bool(string)
@@ -699,7 +699,7 @@ This object suppresses the plotting of the map grid labels
      - Enable the labels on the left of the map
    * - map_label_longitude_frequency
      - int
-     - 1.0
+     - 1
      - Evry Nth longitude grid is labelled
    * - map_label_right
      - bool(string)
@@ -727,7 +727,7 @@ This object suppresses the plotting of the map grid labels
      - Line style for rivers
    * - map_rivers_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of rivers
    * - map_user_layer
      - string
@@ -751,7 +751,7 @@ This object suppresses the plotting of the map grid labels
      - Line style for User Layer
    * - map_user_layer_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of User Layer
 
 pcont
@@ -865,11 +865,11 @@ pcont
      - (LEFT/CENTRE/RIGHT)
    * - contour_grid_value_lat_frequency
      - int
-     - 1.0
+     - 1
      - The grid point values in every Nth latitude row are plotted
    * - contour_grid_value_lon_frequency
      - int
-     - 1.0
+     - 1
      - The grid point values in every Nth longitude column are plotted
    * - contour_grid_value_marker_colour
      - Colour(string)
@@ -889,11 +889,11 @@ pcont
      - Height of grid point markers
    * - contour_grid_value_marker_index
      - int
-     - 3.0
+     - 3
      - Table number of marker index. See Appendix for Plotting Attributes
    * - contour_grid_value_marker_index
      - int
-     - 3.0
+     - 3
      - Table number of marker index. See Appendix for Plotting Attributes
    * - contour_grid_value_marker_qual
      - string
@@ -961,7 +961,7 @@ pcont
      - Colour of highlight line
    * - contour_highlight_frequency
      - int
-     - 4.0
+     - 4
      - Frequency of highlight line
    * - contour_highlight_style
      - LineStyle(string)
@@ -969,7 +969,7 @@ pcont
      - Style of highlighting (SOLID/ DASH/ DOT/ CHAIN_DASH/ CHAIN_DOT)
    * - contour_highlight_thickness
      - int
-     - 3.0
+     - 3
      - Thickness of highlight line
    * - contour_hilo
      - HiLoBase(string)
@@ -1001,7 +1001,7 @@ pcont
      - Height of HILO marker symbol
    * - contour_hilo_marker_index
      - int
-     - 3.0
+     - 3
      - Table number of marker symbol. See chapter on Plotting Attributes
    * - contour_hilo_max_value
      - float
@@ -1029,7 +1029,7 @@ pcont
      - Type of high/low (TEXT/NUMBER/BOTH)
    * - contour_hilo_window_size
      - int
-     - 3.0
+     - 3
      - Size of the window used to calculate the Hi/Lo
    * - contour_internal_reduction_factor
      - float
@@ -1077,7 +1077,7 @@ pcont
      - Format of contour labels (MAGICS Format/(AUTOMATIC))
    * - contour_label_frequency
      - int
-     - 2.0
+     - 2
      - Every Nth contour line is labelled
    * - contour_label_height
      - float
@@ -1105,7 +1105,7 @@ pcont
      - Text to be used in legend
    * - contour_level_count
      - int
-     - 10.0
+     - 10
      - Count or number of levels to be plotted. Magics will try to find "nice levels",      this means that the number of levels could be slightly different from the asked number of levels
    * - contour_level_list
      - floatarray
@@ -1117,7 +1117,7 @@ pcont
      - count: calculate a reasonable contour interval taking into account the min/max and the requested number of isolines.     interval: regularly spaced intervals using the reference_level as base.     level_list: uses the given list of levels.
    * - contour_level_tolerance
      - int
-     - 2.0
+     - 2
      - Tolerance: Do not use nice levels if the number of levels is really to different [count +/- tolerance]
    * - contour_line_colour
      - Colour(string)
@@ -1165,7 +1165,7 @@ pcont
      - What to do if the list of line styles is smaller that the list of contour: lastone/cycle
    * - contour_line_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of contour line
    * - contour_line_thickness_rainbow_list
      - intarray
@@ -1273,11 +1273,11 @@ pcont
      - Number of hatch lines per cm.
    * - contour_shade_hatch_index
      - int
-     - 0.0
+     - 0
      - The hatching pattern(s) to use. 0 Provides an automatic sequence of patterns, other values set a constant pattern across all contour bands.
    * - contour_shade_hatch_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of hatch lines
    * - contour_shade_height_table
      - floatarray
@@ -1353,7 +1353,7 @@ pcont
      - Use of a predeined setting
    * - contour_threads
      - int
-     - 4.0
+     - 4
      - NUmber of threads used to optimise the contouring (possible 1, 4 or 9)
    * - image_colour_table
      - stringarray
@@ -1391,7 +1391,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - climatalogy database
    * - efi_clim_step
      - int
-     - 36.0
+     - 36
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - efi_dates
      - stringarray
@@ -1419,7 +1419,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend colour box
    * - efi_legend_normal_thickness
      - int
-     - 4.0
+     - 4
      - legend colour box
    * - efi_legend_root_database
      - string
@@ -1547,7 +1547,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - cape_marker_index
      - int
-     - 15.0
+     - 15
      - 
    * - cape_text_font_colour
      - Colour(string)
@@ -1563,7 +1563,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_box_border_thickness
      - int
-     - 3.0
+     - 3
      - 
    * - eps_box_colour
      - Colour(string)
@@ -1575,7 +1575,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - 
    * - eps_box_median_thickness
      - int
-     - 3.0
+     - 3
      - 
    * - eps_box_quantiles_colour
      - stringarray
@@ -1583,7 +1583,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - if set, the list of colours will be used as follow colour1 between 10-25, colour2 between 25-75, colour3 between 75-90
    * - eps_box_shift
      - int
-     - 0.0
+     - 0
      - 
    * - eps_box_width
      - float
@@ -1607,7 +1607,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Control of deterministic Forecast
    * - eps_control_line_thickness
      - int
-     - 2.0
+     - 2
      - line style of deterministic Forecast
    * - eps_database
      - string
@@ -1615,7 +1615,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Epsgram Database Path
    * - eps_date
      - string
-     - -1.0
+     - -1
      - epsgram longitude column name
    * - eps_deterministic
      - bool(string)
@@ -1635,7 +1635,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - line style of deterministic Forecast
    * - eps_deterministic_line_thickness
      - int
-     - 2.0
+     - 2
      - line style of deterministic Forecast
    * - eps_font
      - string
@@ -1783,7 +1783,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Temperature correction
    * - eps_time
      - string
-     - 0.0
+     - 0
      - epsgram date
    * - eps_title
      - stringarray
@@ -1909,7 +1909,7 @@ pgrib
      - Metview:dimension of the input : 1 for field, 2 for wind
    * - grib_field_position
      - int
-     - 1.0
+     - 1
      - The position in the input file of a field other than a wind component
    * - grib_file_address_mode
      - GribAddressMode(string)
@@ -1945,11 +1945,11 @@ pgrib
      - Used for reduced gaussian grid: use an linear interpolation to convert from reduced to regular
    * - grib_interpolation_method_missing_fill_count
      - int
-     - 1.0
+     - 1
      - Number of missing values to fill with the nearest valid value
    * - grib_interpolation_method_missing_fill_count
      - int
-     - 1.0
+     - 1
      - Number of missing values to fill with the nearest valid value
    * - grib_interpolation_regular_resolution
      - float
@@ -2037,15 +2037,15 @@ pgrib
      - 
    * - grib_tile_x
      - int
-     - 0.0
+     - 0
      - 
    * - grib_tile_y
      - int
-     - 0.0
+     - 0
      - 
    * - grib_tile_z
      - int
-     - 1.0
+     - 1
      - 
    * - grib_wind_mode
      - WindMode(string)
@@ -2057,15 +2057,15 @@ pgrib
      - The incoming wind field may contain data other than wind components, e.g. wave height and direction.          grib_wind_mode should be set to indicate how to interpret the incoming wind field,          as u/v components, or speed/direction (uv/vd).
    * - grib_wind_position_1
      - int
-     - 1.0
+     - 1
      - The position in the input file of a wind component field
    * - grib_wind_position_2
      - int
-     - 2.0
+     - 2
      - The position in the input file of a wind component field
    * - grib_wind_position_colour
      - int
-     - 3.0
+     - 3
      - The position in the input file of a wind component field used to colour the flag
 
 pimage
@@ -2095,7 +2095,7 @@ Here comes the documentation of the ImagePlotting object
      - Method for setting Colour table for imaging.
    * - image_level_count
      - int
-     - 127.0
+     - 127
      - Number of levels
    * - image_max_level_colour
      - Colour(string)
@@ -2107,7 +2107,7 @@ Here comes the documentation of the ImagePlotting object
      - Lowest image band colour
    * - image_pixel_selection_frequency
      - int
-     - 10.0
+     - 10
      - Number of pixels/centimetre to be plotted
 
 pimport
@@ -2243,7 +2243,7 @@ pline
      - {'for_docs': False, '#text': 'Wrep only : to build only the legend...'}
    * - polyline_level_count
      - int
-     - 10.0
+     - 10
      - Count or number of levels to be plotted. Magics will try to find "nice levels",      this means that the number of levels could be slightly different from the requested number of levels
    * - polyline_level_list
      - floatarray
@@ -2251,7 +2251,7 @@ pline
      - List of shading band levels to be plotted
    * - polyline_level_tolerance
      - int
-     - 2.0
+     - 2
      - Tolerance: Do not use "nice levels" if the number of levels is really to different [count +/- tolerance]
    * - polyline_line_colour
      - Colour(string)
@@ -2279,7 +2279,7 @@ pline
      - Data Variable used for setting the line style of the segments
    * - polyline_line_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of the polylines
    * - polyline_pivot_marker
      - string
@@ -2359,11 +2359,11 @@ pline
      - Data Variable used for setting the thickness of the segments
    * - polyline_trajectory_factor
      - int
-     - -1.0
+     - -1
      - Method applied to draw the line
    * - polyline_trajectory_pivot_index
      - int
-     - -1.0
+     - -1
      - Method applied to draw the line
    * - polyline_transparency_level_list
      - floatarray
@@ -2397,7 +2397,7 @@ pmapgen
      - The name of the input file containing the MapGen data
    * - mapgen_record
      - int
-     - -1.0
+     - -1
      - The name of the input file containing the MapGen data to plot
 
 pmetgram
@@ -2431,7 +2431,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - legend colour box
    * - efi_legend_normal_thickness
      - int
-     - 4.0
+     - 4
      - legend colour box
    * - efi_long_title
      - bool(string)
@@ -2459,7 +2459,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Line Style
    * - eps_direction_line_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of the line ...
    * - eps_plume_control
      - bool(string)
@@ -2475,7 +2475,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Line Style of the control forecast
    * - eps_plume_control_line_thickness
      - int
-     - 5.0
+     - 5
      - Line thickness of the deterministic forecast
    * - eps_plume_forecast
      - bool(string)
@@ -2491,7 +2491,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Line Style of the deterministic forecast
    * - eps_plume_forecast_line_thickness
      - int
-     - 5.0
+     - 5
      - Line thickness of the deterministic forecast
    * - eps_plume_legend
      - bool(string)
@@ -2507,7 +2507,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Line style of the eps members
    * - eps_plume_line_thickness
      - int
-     - 1.0
+     - 1
      - Line thickness of the eps members
    * - eps_plume_median
      - bool(string)
@@ -2523,7 +2523,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Line Style of the control forecast
    * - eps_plume_median_line_thickness
      - int
-     - 5.0
+     - 5
      - Line thickness of the deterministic forecast
    * - eps_plume_members
      - bool(string)
@@ -2559,7 +2559,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Colour of the darkest shade area ...
    * - eps_shade_line_thickness
      - int
-     - 1.0
+     - 1
      - Colour of the darkest shade area ...
    * - epsbufr_accumulated_parameter
      - bool(string)
@@ -2575,11 +2575,11 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Path to the file containing the Bufr data
    * - epsbufr_parameter_2_descriptor
      - int
-     - 0.0
+     - 0
      - Descriptor to use
    * - epsbufr_parameter_descriptor
      - int
-     - 0.0
+     - 0
      - Descriptor to use
    * - epsbufr_parameter_offset_factor
      - float
@@ -2655,7 +2655,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - LineStyle of the second curve
    * - metgram_curve2_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of the second curve
    * - metgram_curve_colour
      - Colour(string)
@@ -2675,7 +2675,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - LineStyle of the curve
    * - metgram_curve_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of the curve
    * - metgram_database
      - string
@@ -2683,7 +2683,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Classic Metgram Database Path
    * - metgram_date
      - string
-     - -1.0
+     - -1
      - Classic Metgram date
    * - metgram_flag_colour
      - Colour(string)
@@ -2699,7 +2699,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Keyword used for the second component
    * - metgram_flag_frequency
      - int
-     - 1.0
+     - 1
      - Frequency to plot the flags
    * - metgram_flag_length
      - float
@@ -2755,7 +2755,7 @@ The Epsgram is responsible for accessing the espgram database its data to MAGICS
      - Temperature correction
    * - metgram_time
      - string
-     - 0.0
+     - 0
      - Classic Metgram time
 
 pnetcdf
@@ -2849,7 +2849,7 @@ pnetcdf
      - Name of the number variable
    * - netcdf_reference_date
      - string
-     - 0.0
+     - 0
      - attribute indicating the reference date
    * - netcdf_speed_component_variable
      - string
@@ -2975,7 +2975,7 @@ pnew
      - Style of page frame(SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - page_frame_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of page frame
    * - page_id_line
      - NoPageID(string)
@@ -3067,7 +3067,7 @@ pnew
      - Style of subpage frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - subpage_frame_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of subpage frame
    * - subpage_horizontal_axis_height
      - float
@@ -3323,11 +3323,11 @@ pnew
      - Style of super page frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - super_page_frame_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of super page frame
    * - super_page_frame_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of super page frame
    * - super_page_theme
      - string
@@ -3457,15 +3457,15 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - odb Column name for the longitudes
    * - odb_nb_rows
      - int
-     - -1.0
+     - -1
      - umber of rows to be retrieved
    * - odb_nb_rows
      - int
-     - -1.0
+     - -1
      - umber of rows to be retrieved
    * - odb_nb_rows
      - int
-     - 1000.0
+     - 1000
      - info sent to the odb server to set the number of rows to be retrieved from the starting row
    * - odb_observation
      - string
@@ -3485,7 +3485,7 @@ This is responsible for accessing the ODB and passing  its data to MAGICS.
      - Odb Query
    * - odb_starting_row
      - int
-     - 1.0
+     - 1
      - info sent to the odb server to set the starting row
    * - odb_time
      - string
@@ -3887,7 +3887,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Line Style of connecting line
    * - symbol_connect_line_thickness
      - int
-     - 1.0
+     - 1
      - thickness of the connecting line
    * - symbol_format
      - string
@@ -3915,7 +3915,7 @@ This action routine (and C++object) controls the plotting of meteorological and 
      - Line Style of outline
    * - symbol_outline_thickness
      - int
-     - 1.0
+     - 1
      - thickness of the outline
    * - symbol_scaling_factor
      - float
@@ -3981,7 +3981,7 @@ None
      - Line Style used to plot the primary grid
    * - taylor_primary_grid_line_thickness
      - int
-     - 1.0
+     - 1
      - Thickness used to plot the primary grid
    * - taylor_primary_grid_reference
      - float
@@ -4009,7 +4009,7 @@ None
      - Line Style used to plot the primary grid
    * - taylor_reference_line_thickness
      - int
-     - 2.0
+     - 2
      - Thickness used to plot the primary grid
    * - taylor_secondary_grid
      - bool(string)
@@ -4029,7 +4029,7 @@ None
      - Line Style used to plot the primary grid
    * - taylor_secondary_grid_line_thickness
      - int
-     - 1.0
+     - 1
      - Thickness used to plot the primary grid
    * - taylor_secondary_grid_reference
      - float
@@ -4115,7 +4115,7 @@ ptephi
      - Font Style used for the dry_adiabatics labels
    * - thermo_dry_adiabatic_label_frequency
      - int
-     - 1.0
+     - 1
      - frequency for dry_adiabatic labelling
    * - thermo_dry_adiabatic_reference
      - float
@@ -4127,7 +4127,7 @@ ptephi
      - Line Style of the dry_adiabatics
    * - thermo_dry_adiabatic_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of the dry_adiabatics
    * - thermo_isobar_colour
      - Colour(string)
@@ -4159,7 +4159,7 @@ ptephi
      - Font Style used for the isobars labels
    * - thermo_isobar_label_frequency
      - int
-     - 1.0
+     - 1
      - isobar frequency for labelling
    * - thermo_isobar_reference
      - float
@@ -4171,7 +4171,7 @@ ptephi
      - Line Style of the isobars
    * - thermo_isobar_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of the isobars
    * - thermo_isotherm_colour
      - Colour(string)
@@ -4203,7 +4203,7 @@ ptephi
      - Font Style used for the isotherms labels
    * - thermo_isotherm_label_frequency
      - int
-     - 1.0
+     - 1
      - Isotherm frequency for labelling
    * - thermo_isotherm_reference
      - float
@@ -4219,7 +4219,7 @@ ptephi
      - Reference  of the isotherms
    * - thermo_isotherm_reference_thickness
      - int
-     - 2.0
+     - 2
      - Reference  of the isotherms
    * - thermo_isotherm_style
      - LineStyle(string)
@@ -4227,7 +4227,7 @@ ptephi
      - Line Style of the isotherms
    * - thermo_isotherm_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of the isotherms
    * - thermo_mixing_ratio_colour
      - Colour(string)
@@ -4235,7 +4235,7 @@ ptephi
      - Colou of the mixing_ratios
    * - thermo_mixing_ratio_frequency
      - int
-     - 1.0
+     - 1
      - mixing_ratio frequency for grid
    * - thermo_mixing_ratio_grid
      - bool(string)
@@ -4259,7 +4259,7 @@ ptephi
      - Font Style used for the mixing_ratios labels
    * - thermo_mixing_ratio_label_frequency
      - int
-     - 1.0
+     - 1
      - mixing_ratio frequency for labelling
    * - thermo_mixing_ratio_style
      - LineStyle(string)
@@ -4267,7 +4267,7 @@ ptephi
      - Line Style of the mixing_ratios
    * - thermo_mixing_ratio_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of the mixing_ratios
    * - thermo_saturated_adiabatic_colour
      - Colour(string)
@@ -4299,7 +4299,7 @@ ptephi
      - Font Style used for the saturated_adiabatics labels
    * - thermo_saturated_adiabatic_label_frequency
      - int
-     - 1.0
+     - 1
      - saturated_adiabatic frequency for labelling
    * - thermo_saturated_adiabatic_reference
      - float
@@ -4311,7 +4311,7 @@ ptephi
      - Line Style of the saturated_adiabatics
    * - thermo_saturated_adiabatic_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of the dry_adiabatics
    * - x_max
      - float
@@ -4361,7 +4361,7 @@ None
      - Line style of border around text box (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
    * - text_border_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of text box border
    * - text_box_blanking
      - bool(string)
@@ -4433,7 +4433,7 @@ None
      - Symbol or character followed by 3 octal numbers
    * - text_first_line
      - int
-     - 1.0
+     - 1
      - The first line in the text block to be plotted
    * - text_font
      - string
@@ -4457,43 +4457,43 @@ None
      - Symbol or character for indicating that an Instruction String follows
    * - text_integer_1
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_10
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_2
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_3
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_4
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_5
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_6
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_7
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_8
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_integer_9
      - int
-     - 0.0
+     - 0
      - 10 Magics parameters enabling users to store INTEGER info for plotting in text lines (n=1,10)
    * - text_justification
      - Justification(string)
@@ -4541,7 +4541,7 @@ None
      - Character string for holding lines of text (n=1,10)
    * - text_line_count
      - int
-     - 1.0
+     - 1
      - The number of lines of text to be plotted
    * - text_line_height_ratio_1
      - float
@@ -4671,7 +4671,7 @@ Parameters common to the flags and arrows.
      - Direction of colour sequencing for plotting
    * - wind_advanced_colour_level_count
      - int
-     - 10.0
+     - 10
      - Number of levels to be plotted. Magics will try to find "nice levels",      this means that the number of levels could be slightly different
    * - wind_advanced_colour_level_interval
      - float
@@ -4683,7 +4683,7 @@ Parameters common to the flags and arrows.
      - List of levels to be used
    * - wind_advanced_colour_level_tolerance
      - int
-     - 2.0
+     - 2
      - Tolerance: Do not use "nice levels" if the number of levels is really to different [count +/- tolerance]
    * - wind_advanced_colour_list
      - stringarray
@@ -4759,7 +4759,7 @@ Parameters common to the flags and arrows.
      - Table number, XY, indicating style and shape of arrowhead X
    * - wind_arrow_head_shape
      - int
-     - 0.0
+     - 0
      - Table number, XY, indicating shape of arrowhead X
    * - wind_arrow_legend_text
      - string
@@ -4783,7 +4783,7 @@ Parameters common to the flags and arrows.
      - Controls the line style of the arrow flag shaft.
    * - wind_arrow_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of wind arrow shaft
    * - wind_arrow_unit_system
      - string
@@ -4847,7 +4847,7 @@ Parameters common to the flags and arrows.
      - Controls the line style of the wind flag shaft.
    * - wind_flag_thickness
      - int
-     - 1.0
+     - 1
      - Thickness of wind flag shaft
    * - wind_legend_only
      - bool(string)
@@ -4867,7 +4867,7 @@ Parameters common to the flags and arrows.
      - Table number, XY, indicating style and shape of arrowhead X
    * - wind_streamline_head_shape
      - int
-     - 1.0
+     - 1
      - Table number, XY, indicating shape of arrowhead X
    * - wind_streamline_min_density
      - float
@@ -4883,7 +4883,7 @@ Parameters common to the flags and arrows.
      - Line style of streamlines
    * - wind_streamline_thickness
      - int
-     - 2.0
+     - 2
      - Thickness of streamlines
    * - wind_thinning_debug
      - bool(string)
@@ -4917,7 +4917,7 @@ pwrepjson
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - wrepjson_clim_step
      - int
-     - 36.0
+     - 36
      - date to select for the clim In date format (YYYYMMDDHHHH)
    * - wrepjson_family
      - string
@@ -4929,7 +4929,7 @@ pwrepjson
      - add the Grid for the hodograph!
    * - wrepjson_hodograph_member
      - int
-     - -1.0
+     - -1
      - slecet only one member
    * - wrepjson_hodograph_tephi
      - bool(string)
@@ -4961,7 +4961,7 @@ pwrepjson
      - Missing value
    * - wrepjson_parameter
      - string
-     - 1.0
+     - 1
      - Scaling factor to apply to the values
    * - wrepjson_parameter_information
      - string
@@ -5043,5 +5043,5 @@ The Efi decoder is responsible for decoding EFi Ascii file.(Metops)
      - Efi file name Path
    * - efi_record
      - int
-     - 0.0
+     - 0
      - Efi record ( starting at 0)
