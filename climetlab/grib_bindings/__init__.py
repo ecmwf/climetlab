@@ -8,3 +8,5 @@
 #
 
 from .GribFile import GribFile
+
+__all__ = ['GribFile']

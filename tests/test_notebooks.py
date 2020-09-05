@@ -23,6 +23,8 @@ EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "exa
 
 def notebooks_list():
 
+    # return []
+
     notebooks = []
     for path in os.listdir(EXAMPLES):
         if re.match(r"^\d\d-.*\.ipynb$", path):

@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../climetlab-demo-dataset"
-		},
-		{
-			"path": "../magics"
 		}
 	],
 	"settings": {
