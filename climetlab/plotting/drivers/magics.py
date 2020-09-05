@@ -152,7 +152,8 @@ def _apply(collection, value, action):
                 LOG.warning(
                     "Cannot establish Magics action from [%r], it could be %s or %s",
                     list(value.keys()),
-                    best[0][1] == best[1][1],
+                    best[0][1],
+                    best[1][1],
                 )
 
         if len(best) > 0:
