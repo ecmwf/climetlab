@@ -39,4 +39,4 @@ def test_notebook(path):
         nb = nbformat.read(f, as_version=4)
 
     proc = ExecutePreprocessor(timeout=600, kernel_name="python3")
-    proc.preprocess(nb, {"metadata": {"path": "/"}})
+    proc.preprocess(nb, {"metadata": {"path": EXAMPLES}})
