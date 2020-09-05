@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
 from . import Reader
 from zipfile import ZipFile
 
@@ -18,13 +19,19 @@ class ZIPReader(Reader):
         with ZipFile(path, "r") as zip:
             self._content = zip.namelist()
 
-        assert False, self._content
+        if len(self._content) != 1:
+            raise NotImplementedError("Multi-file zip not yet supported")
 
-    # def to_pandas(self, **kwargs):
-    #     import pandas
+    def to_pandas(self, **kwargs):
 
-    #     options = dict()
-    #     options.update(self.source.read_csv_options())
-    #     options.update(kwargs)
+        _, ext = os.path.splitext(self._content[0])
+        if ext not in ('.csv', '.txt'):
+            raise NotImplementedError("File type", ext)
 
-    #     return pandas.read_csv(self.path, **options)
+        import pandas
+
+        options = dict(compression='zip')
+        options.update(self.source.read_csv_options())
+        options.update(kwargs)
+
+        return pandas.read_csv(self.path, **options)
