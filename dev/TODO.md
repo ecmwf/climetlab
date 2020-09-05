@@ -112,7 +112,6 @@ Use `doc8` instead of `rstcheck`
   - Location
 - Work on settings
 - Work on the definition of datasets in YAML
-- Use logging
 - Documentation
 - Decisions regarding plotting
 - YAML files for:

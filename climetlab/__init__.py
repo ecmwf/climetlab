@@ -12,6 +12,7 @@ from .datasets import load as load_dataset
 from .plotting import plot_map, new_plot
 from .core.settings import SETTINGS as settings
 from .core.caching import CACHE as cache
+from .core.metadata import init_metadata
 
 # from climetlab.core.ipython import ipython_active
 
@@ -36,3 +37,5 @@ __all__ = [
     "Dataset",
     "DataSource",
 ]
+
+init_metadata()
