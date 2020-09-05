@@ -46,6 +46,7 @@ class XArrayHelper:
 
 
 def helper(data, *args, **kwargs):
+    import xarray as xr
     if isinstance(data, xr.Dataset):
         return XArrayHelper(data, *args, **kwargs)
     else:
