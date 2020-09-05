@@ -330,7 +330,6 @@ def produce_yaml():
 
         print("%s:" % (action,))
 
-
         for k in klasses:
             for p in k.parameters:
                 print(" ", p.name)
