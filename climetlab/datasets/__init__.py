@@ -14,6 +14,7 @@ from climetlab.core.plugins import find_plugin
 import os
 import yaml
 from climetlab.utils.html import table
+from climetlab.core.metadata import annotate
 
 
 class Dataset:
@@ -58,6 +59,9 @@ class Dataset:
 
     def _repr_html_(self):
         return table(self)
+
+    def annotate(self, data, **kargs):
+        return annotate(data, self, **kargs)
 
 
 def _module_callback(plugin):

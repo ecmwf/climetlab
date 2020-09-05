@@ -15,24 +15,17 @@ ANNOTATIONS = []
 
 def free_slot():
     for i, a in enumerate(ANNOTATIONS):
+        if a is None:
+            return i
         if a.owner is None:
             return i
     ANNOTATIONS.append(None)
     return len(ANNOTATIONS) - 1
 
 
-# @xr.register_dataset_accessor("climetlab")
-# class CliMetLabAccessor:
-#     def __init__(self, xarray_obj):
-#         self._obj = xarray_obj
-#         print("CliMetLabAccessor")
-#     def foo(self, v):
-#         print("foo", v)
-
-
 class Annotation:
     def __init__(self, owner, **kwargs):
-        self._owner = weakref.ref(owner) if owner else None
+        self._owner = None if owner is None else weakref.ref(owner)
         self._kwargs = kwargs
 
     def get(self, name):

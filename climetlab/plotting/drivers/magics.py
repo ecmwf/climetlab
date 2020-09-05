@@ -55,6 +55,9 @@ class Action:
     def execute(self):
         return getattr(macro, self.action)(**self.kwargs).execute()
 
+    def update(self, action, values):
+        pass
+
 
 class mcont(Action):
     pass
@@ -93,11 +96,24 @@ class mtext(Action):
 
 
 class msymb(Action):
-    pass
+    def update(self, action, values):
+        if type(self) is action:
+            for k, v in values.items():
+                if k[0] in ("+",):
+                    self.kwargs[k[1:]] = v
+                if k[0] in ("-",):
+                    self.kwargs.pop(k[1:], None)
+            return True
+        return False
 
 
 class output(Action):
     pass
+
+
+class delta:
+    def __init__(self, magics, action, **kwargs):
+        pass
 
 
 class Layer:
@@ -116,63 +132,6 @@ class Layer:
 
 
 MAGICS_KEYS = None
-
-
-def _apply(collection, value, action):
-
-    if value is None:
-        return None
-
-    if isinstance(value, dict):
-        global MAGICS_KEYS
-
-        if MAGICS_KEYS is None:
-            MAGICS_KEYS = defaultdict(set)
-            with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
-                magics = yaml.load(f, Loader=yaml.SafeLoader)
-                for name, params in magics.items():
-                    for param in params:
-                        MAGICS_KEYS[param].add(name)
-
-        # Guess the best action from the keys
-        scores = defaultdict(int)
-        for param in value.keys():
-            acts = MAGICS_KEYS.get(param, [])
-            if len(acts) == 1:
-                # Only consider unambiguous parameters
-                scores[list(acts)[0]] += 1
-
-        best = sorted((v, k) for k, v in scores.items())
-
-        if len(best) == 0:
-            LOG.warning("Cannot establish Magics action from [%r]", list(value.keys()))
-
-        if len(best) >= 2:
-            if best[0][0] == best[1][0]:
-                LOG.warning(
-                    "Cannot establish Magics action from [%r], it could be %s or %s",
-                    list(value.keys()),
-                    best[0][1],
-                    best[1][1],
-                )
-
-        if len(best) > 0:
-            action = globals()[best[0][1]]
-
-        return action(**value)
-
-    if isinstance(value, str):
-
-        data = get_data_entry(collection, value).data
-
-        magics = data["magics"]
-        actions = list(magics.keys())
-        assert len(actions) == 1, actions
-
-        action = globals()[actions[0]]
-        return action(**magics[actions[0]])
-
-    assert False, (collection, value)
 
 
 class Driver:
@@ -388,13 +347,13 @@ class Driver:
             self.style(style)
 
     def projection(self, projection):
-        self._projection = _apply("projections", projection, mmap)
+        self._projection = self._apply("projections", projection, mmap)
 
     def style(self, style):
         if len(self._layers):
-            self._layers[-1].style(_apply("styles", style, mcont))
+            self._layers[-1].style(self._apply("styles", style, mcont))
         else:
-            LOG.warning("No current data layer: ignoring style '%r'", style)
+            raise Exception("No current data layer: cannot set style '%r'" % (style,))
 
     def option(self, name: str, default=NONE):
         self._used_options.add(name)
@@ -527,3 +486,83 @@ class Driver:
             self._title,
         ]
         return [x for x in m if x is not None]
+
+    def _apply(self, collection, value, action):
+
+        if value is None:
+            return None
+
+        if isinstance(value, dict):
+            global MAGICS_KEYS
+
+            if MAGICS_KEYS is None:
+                MAGICS_KEYS = defaultdict(set)
+                with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
+                    magics = yaml.load(f, Loader=yaml.SafeLoader)
+                    for name, params in magics.items():
+                        for param in params:
+                            MAGICS_KEYS[param].add(name)
+
+            # Guess the best action from the keys
+            scores = defaultdict(int)
+            special = 0
+            for param in value.keys():
+
+                if not param[0].isalpha():
+                    special += 1
+                    param = param[1:]
+
+                acts = MAGICS_KEYS.get(param, [])
+                if len(acts) == 1:
+                    # Only consider unambiguous parameters
+                    scores[list(acts)[0]] += 1
+
+            best = sorted((v, k) for k, v in scores.items())
+
+            if len(best) == 0:
+                LOG.warning(
+                    "Cannot establish Magics action from [%r]", list(value.keys())
+                )
+
+            if len(best) >= 2:
+                if best[0][0] == best[1][0]:
+                    LOG.warning(
+                        "Cannot establish Magics action from [%r], it could be %s or %s",
+                        list(value.keys()),
+                        best[0][1],
+                        best[1][1],
+                    )
+
+            if len(best) > 0:
+                action = globals()[best[0][1]]
+
+            if special:
+                if special != len(value):
+                    raise Exception(
+                        "Cannot set some attributes and override others %r"
+                        % list(value.keys())
+                    )
+
+                for a in reversed(self.macro()):
+                    if a.update(action, value):
+                        return a
+
+                raise Exception(
+                    "Cannot override attributes %r (no matching style)"
+                    % list(value.keys())
+                )
+
+            return action(**value)
+
+        if isinstance(value, str):
+
+            data = get_data_entry(collection, value).data
+
+            magics = data["magics"]
+            actions = list(magics.keys())
+            assert len(actions) == 1, actions
+
+            action = globals()[actions[0]]
+            return action(**magics[actions[0]])
+
+        assert False, (collection, value)

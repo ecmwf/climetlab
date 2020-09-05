@@ -14,7 +14,6 @@ import numpy as np
 from . import Dataset
 from climetlab.utils import download_and_cache
 from climetlab.utils.datetime import parse_date
-from climetlab.core.metadata import annotate
 
 SIGN = {"N": 1, "W": -1, "E": 1, "S": -1}
 
@@ -121,7 +120,7 @@ class HurricaneDatabase(Dataset):
                         )
                     )
 
-        self.cyclones = annotate(pd.DataFrame(p), style="cyclone-track")
+        self.cyclones = self.annotate(pd.DataFrame(p), style="cyclone-track")
 
     def to_pandas(self):
         return self.cyclones
