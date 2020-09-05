@@ -8,10 +8,10 @@
 #
 
 import logging
+from . import Reader
 
 LOG = logging.getLogger(__name__)
 
-from . import Reader
 
 try:
     import codc as odc

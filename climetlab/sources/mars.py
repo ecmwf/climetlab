@@ -68,8 +68,8 @@ def service(name):
         if ".ecmwfapirc" in str(e):
             MARSAPI().ask_user_and_save()
             return ecmwfapi.ECMWFService(name)
-        else:
-            raise
+
+        raise
 
 
 class MARSRetriever(FileSource):

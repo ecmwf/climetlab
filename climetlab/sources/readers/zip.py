@@ -16,8 +16,8 @@ class ZIPReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
 
-        with ZipFile(path, "r") as zip:
-            self._content = zip.namelist()
+        with ZipFile(path, "r") as z:
+            self._content = z.namelist()
 
         if len(self._content) != 1:
             raise NotImplementedError("Multi-file zip not yet supported")

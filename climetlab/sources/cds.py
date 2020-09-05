@@ -48,8 +48,8 @@ def client():
         if ".cdsapirc" in str(e):
             CDSAPI().ask_user_and_save()
             return cdsapi.Client()
-        else:
-            raise
+
+        raise
 
 
 class CDSRetriever(FileSource):

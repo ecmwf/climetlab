@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import json
 import weakref
 
 ANNOTATIONS = []

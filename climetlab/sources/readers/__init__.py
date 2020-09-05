@@ -88,12 +88,12 @@ def reader(source, path):
 
     if os.path.isdir(path):
         return directory_reader(source, path).mutate()
-    else:
-        with open(path, "rb") as f:
-            header = f.read(4)
 
-        if header in READERS:
-            return READERS[header](source, path).mutate()
+    with open(path, "rb") as f:
+        header = f.read(4)
+
+    if header in READERS:
+        return READERS[header](source, path).mutate()
 
     raise ValueError(
         "Unsupported file {} (header={}, extension={})".format(path, header, extension)

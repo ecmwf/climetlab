@@ -255,11 +255,9 @@ class NetCDFReader(Reader):
                 fields.append(NetCDFField(self.path, ds, name, slices))
 
         if not fields:
-            raise Exception("NetCDFReader no 2D fields found in %s", self.path)
+            raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
 
         return fields
 
     def to_xarray(self):
-        import xarray as xr
-
         return xr.open_dataset(self.path)
