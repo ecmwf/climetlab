@@ -9,7 +9,8 @@
 
 import os
 import logging
-
+import yaml
+from collections import defaultdict
 
 # This is needed when running Sphinx on ReadTheDoc
 
@@ -112,6 +113,65 @@ class Layer:
 
     def style(self, style):
         self._style = style
+
+
+MAGICS_KEYS = None
+
+
+def _apply(collection, value, action):
+
+    if value is None:
+        return None
+
+    if isinstance(value, dict):
+        global MAGICS_KEYS
+
+        if MAGICS_KEYS is None:
+            MAGICS_KEYS = defaultdict(set)
+            with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
+                magics = yaml.load(f, Loader=yaml.SafeLoader)
+                for name, params in magics.items():
+                    for param in params:
+                        MAGICS_KEYS[param].add(name)
+
+        # Guess the best action from the keys
+        scores = defaultdict(int)
+        for param in value.keys():
+            acts = MAGICS_KEYS.get(param, [])
+            if len(acts) == 1:
+                # Only consider unambiguous parameters
+                scores[list(acts)[0]] += 1
+
+        best = sorted((v, k) for k, v in scores.items())
+
+        if len(best) == 0:
+            LOG.warning("Cannot establish Magics action from [%r]", list(value.keys()))
+
+        if len(best) >= 2:
+            if best[0][0] == best[1][0]:
+                LOG.warning(
+                    "Cannot establish Magics action from [%r], it could be %s or %s",
+                    list(value.keys()),
+                    best[0][1] == best[1][1],
+                )
+
+        if len(best) > 0:
+            action = globals()[best[0][1]]
+
+        return action(**value)
+
+    if isinstance(value, str):
+
+        data = get_data_entry(collection, value).data
+
+        magics = data["magics"]
+        actions = list(magics.keys())
+        assert len(actions) == 1, actions
+
+        action = globals()[actions[0]]
+        return action(**magics[actions[0]])
+
+    assert False, (collection, value)
 
 
 class Driver:
@@ -326,33 +386,12 @@ class Driver:
         if style is not None:
             self.style(style)
 
-    def _apply(self, collection, value, action):
-
-        if value is None:
-            return None
-
-        if isinstance(value, dict):
-            return action(**value)
-
-        if isinstance(value, str):
-
-            data = get_data_entry(collection, value).data
-
-            magics = data["magics"]
-            actions = list(magics.keys())
-            assert len(actions) == 1, actions
-
-            action = globals()[actions[0]]
-            return action(**magics[actions[0]])
-
-        assert False, (collection, value)
-
     def projection(self, projection):
-        self._projection = self._apply("projections", projection, mmap)
+        self._projection = _apply("projections", projection, mmap)
 
     def style(self, style):
         if len(self._layers):
-            self._layers[-1].style(self._apply("styles", style, mcont))
+            self._layers[-1].style(_apply("styles", style, mcont))
         else:
             LOG.warning("No current data layer: ignoring style '%r'", style)
 

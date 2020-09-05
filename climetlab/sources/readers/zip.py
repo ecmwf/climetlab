@@ -25,12 +25,12 @@ class ZIPReader(Reader):
     def to_pandas(self, **kwargs):
 
         _, ext = os.path.splitext(self._content[0])
-        if ext not in ('.csv', '.txt'):
+        if ext not in (".csv", ".txt"):
             raise NotImplementedError("File type", ext)
 
         import pandas
 
-        options = dict(compression='zip')
+        options = dict(compression="zip")
         options.update(self.source.read_csv_options())
         options.update(kwargs)
 

@@ -332,7 +332,7 @@ def produce_yaml():
 
         for k in klasses:
             for p in k.parameters:
-                print(" ", p.name)
+                print("  -", p.name)
 
 
 parser = argparse.ArgumentParser()

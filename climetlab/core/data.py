@@ -19,6 +19,8 @@ LOG = logging.getLogger(__name__)
 
 YAML_FILES = None
 
+IGNORE = ["magics.yaml"]
+
 
 def _guess(data, path):
     if "dataset" in data:
@@ -72,6 +74,8 @@ def _load_yaml_files():
     YAML_FILES = defaultdict(dict)
     for root, _, files in os.walk(*directories()):
         for file in [f for f in files if f.endswith(".yaml")]:
+            if file in IGNORE:
+                continue
             path = os.path.join(root, file)
             try:
                 with open(path) as f:
