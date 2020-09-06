@@ -75,6 +75,6 @@ setuptools.setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Operating System :: OS Independent",
     ],
-    tests_require=["pytest", "nbconvert", "jupyter"],
+    tests_require=["pytest", "nbconvert", "jupyter", "pytest-cov"],
     test_suite="tests",
 )
