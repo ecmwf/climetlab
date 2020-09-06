@@ -51,8 +51,8 @@ def execute():
     print("     - | Description")
     print()
     for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
-        print("   * - |", k.replace('-', "\u2011")) # Non-breaking hyphen
-        print("     - |", repr(v[0]).replace('-', "\u2011"))
+        print("   * - |", k.replace("-", "\u2011"))  # Non-breaking hyphen
+        print("     - |", repr(v[0]).replace("-", "\u2011"))
         print("     - |", v[1])
     print()
 

@@ -21,7 +21,10 @@ cml.plot_map(
     ),
 )
 
+# Partial update of the current `foreground`
+# How to do is still to be decided
 
+# Option 1
 cml.plot_map(
     data,
     foreground={
@@ -32,7 +35,7 @@ cml.plot_map(
     },
 )
 
-
+# Option 2
 cml.plot_map(
     data,
     foreground={
@@ -40,11 +43,34 @@ cml.plot_map(
         "clear": ["map_boundaries"],
     },
 )
-
+# Option 3
 cml.plot_map(
     data,
     foreground={
         "+": {"map_rivers": True, "map_cities": True, "map_label": True},
         "-": ["map_boundaries"],
+    },
+)
+# Option 4
+cml.plot_map(
+    data,
+    update_foreground={
+        "map_rivers": True,
+        "map_cities": True,
+        "map_label": True,
+        "map_boundaries": None,
+    },
+)
+
+# Option 5
+cml.plot_map(
+    data,
+    update={
+        "foreground": {
+            "map_rivers": True,
+            "map_cities": True,
+            "map_label": True,
+            "map_boundaries": None,
+        },
     },
 )

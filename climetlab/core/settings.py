@@ -114,6 +114,7 @@ class Settings:
 
     def _save(self):
         import climetlab
+
         # Don't persist changes when running pytest
         if climetlab._running_pytest_:
             return
