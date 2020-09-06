@@ -9,7 +9,7 @@
 
 from .sources import load as load_source
 from .datasets import load as load_dataset
-from .plotting import plot_map, new_plot
+from .plotting import plot_map, new_plot, options as plotting_options
 from .core.settings import SETTINGS as settings
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
@@ -36,6 +36,7 @@ __all__ = [
     "cache",
     "Dataset",
     "DataSource",
+    "plotting_options",
 ]
 
 init_metadata()

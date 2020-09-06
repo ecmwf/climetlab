@@ -56,7 +56,14 @@ class Action:
         return getattr(macro, self.action)(**self.kwargs).execute()
 
     def update(self, action, values):
-        pass
+        if type(self) is action:
+            for k, v in values.items():
+                if k[0] in ("+",):
+                    self.kwargs[k[1:]] = v
+                if k[0] in ("-",):
+                    self.kwargs.pop(k[1:], None)
+            return self
+        return None
 
 
 class mcont(Action):
@@ -96,15 +103,7 @@ class mtext(Action):
 
 
 class msymb(Action):
-    def update(self, action, values):
-        if type(self) is action:
-            for k, v in values.items():
-                if k[0] in ("+",):
-                    self.kwargs[k[1:]] = v
-                if k[0] in ("-",):
-                    self.kwargs.pop(k[1:], None)
-            return True
-        return False
+    pass
 
 
 class output(Action):
@@ -130,8 +129,102 @@ class Layer:
     def style(self, style):
         self._style = style
 
+    def update(self, action, value):
+        return self._style.update(action, value)
+
 
 MAGICS_KEYS = None
+
+
+def _apply(*, value, collection=None, action=None, default=True, target=None):
+
+    if value is None:
+        return None
+
+    if value is False:
+        return None
+
+    if value is True:
+        assert default is not True
+        return _apply(
+            value=default,
+            collection=collection,
+            action=action,
+            default=None,
+            target=target,
+        )
+
+    if isinstance(value, dict):
+        global MAGICS_KEYS
+
+        if MAGICS_KEYS is None:
+            MAGICS_KEYS = defaultdict(set)
+            with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
+                magics = yaml.load(f, Loader=yaml.SafeLoader)
+                for name, params in magics.items():
+                    for param in params:
+                        MAGICS_KEYS[param].add(name)
+
+        # Guess the best action from the keys
+        scores = defaultdict(int)
+        special = 0
+        for param in value.keys():
+
+            if not param[0].isalpha():
+                special += 1
+                param = param[1:]
+
+            acts = MAGICS_KEYS.get(param, [])
+            if len(acts) == 1:
+                # Only consider unambiguous parameters
+                scores[list(acts)[0]] += 1
+
+        best = sorted((v, k) for k, v in scores.items())
+
+        if len(best) == 0:
+            LOG.warning("Cannot establish Magics action from [%r]", list(value.keys()))
+
+        if len(best) >= 2:
+            if best[0][0] == best[1][0]:
+                LOG.warning(
+                    "Cannot establish Magics action from [%r], it could be %s or %s",
+                    list(value.keys()),
+                    best[0][1],
+                    best[1][1],
+                )
+
+        if len(best) > 0:
+            action = globals()[best[0][1]]
+
+        if special:
+            if special != len(value):
+                raise Exception(
+                    "Cannot set some attributes and override others %r"
+                    % list(value.keys())
+                )
+
+            result = target.update(action, value)
+            if result is not None:
+                return result
+
+            raise Exception(
+                "Cannot override attributes %r (no matching style)" % list(value.keys())
+            )
+
+        return action(**value)
+
+    if isinstance(value, str):
+
+        data = get_data_entry(collection, value).data
+
+        magics = data["magics"]
+        actions = list(magics.keys())
+        assert len(actions) == 1, actions
+
+        action = globals()[actions[0]]
+        return action(**magics[actions[0]])
+
+    assert False, (collection, value)
 
 
 class Driver:
@@ -144,30 +237,17 @@ class Driver:
         self._used_options = set()
 
         self._projection = None
+        self._background = None
+        self._foreground = None
+
         self._layers = []
         self._width_cm = 10.0
         self._height_cm = 10.0
 
         self._page_ratio = 1.0
 
-        self._background = mcoast(
-            map_grid=False,
-            map_grid_colour="tan",
-            map_label=False,
-            map_boundaries=True,
-            map_coastline_land_shade=True,
-            map_coastline_land_shade_colour="cream",
-            map_coastline_colour="tan",
-            map_grid_frame=True,
-            map_grid_frame_thickness=5,
-        )
-
-        self._foreground = mcoast(
-            map_grid=False,
-            map_label=False,
-            map_grid_frame=True,
-            map_grid_frame_thickness=5,
-        )
+        self.background(True)
+        self.foreground(True)
 
         self._grid = None
         self._rivers = None
@@ -181,7 +261,7 @@ class Driver:
         self._tmp = []
 
     def temporary_file(self, extension: str = ".tmp") -> str:
-        """Return a temporary file name that will be deleted once the plot is produced.abspath
+        """Return a temporary file name that will be deleted once the plot is produced.
 
         :param extension: File name extension, defaults to ".tmp"
         :type extension: str, optional
@@ -218,13 +298,7 @@ class Driver:
         self._layers.append(Layer(data))
 
     def plot_grib(self, path: str, offset: int):
-        """[summary]
 
-        :param path: [description]
-        :type path: [type]
-        :param offset: [description]
-        :type offset: [type]
-        """
         self._push_layer(
             mgrib(
                 grib_input_file_name=path,
@@ -234,15 +308,7 @@ class Driver:
         )
 
     def plot_netcdf(self, path: str, variable: str, dimensions: dict = {}):
-        """[summary]
 
-        :param path: [description]
-        :type path: [type]
-        :param variable: [description]
-        :type variable: [type]
-        :param dimensions: [description], defaults to {}
-        :type dimensions: dict, optional
-        """
         dimension_setting = ["%s:%s" % (k, v) for k, v in dimensions.items()]
 
         if dimension_setting:
@@ -266,21 +332,6 @@ class Driver:
         west_east_increment: float,
         metadata: dict = {},
     ):
-        """[summary]
-
-        :param data: [description]
-        :type data: [type]
-        :param north: [description]
-        :type north: [type]
-        :param west: [description]
-        :type west: [type]
-        :param south_north_increment: [description]
-        :type south_north_increment: [type]
-        :param west_east_increment: [description]
-        :type west_east_increment: [type]
-        :param metadata: [description]
-        :type metadata: [type]
-        """
         self._push_layer(
             minput(
                 input_field=data,
@@ -293,27 +344,11 @@ class Driver:
         )
 
     def plot_xarray(self, ds, variable: str, dimensions: dict = {}):
-        """[summary]
-
-        :param ds: [description]
-        :type ds: [type]
-        :param variable: [description]
-        :type variable: [type]
-        :param dimensions: [description], defaults to {}
-        :type dimensions: dict, optional
-        """
         tmp = self.temporary_file(".nc")
         ds.to_netcdf(tmp)
         self.plot_netcdf(tmp, variable, dimensions)
 
     def plot_csv(self, path: str, variable: str):
-        """[summary]
-
-        :param path: [description]
-        :type path: [type]
-        :param variable: [description]
-        :type variable: [type]
-        """
         self._push_layer(
             mtable(
                 table_filename=path,
@@ -327,17 +362,6 @@ class Driver:
         self.style("default-style-observations")
 
     def plot_pandas(self, frame, latitude: str, longitude: str, variable: str):
-        """[summary]
-
-        :param frame: [description]
-        :type frame: [type]
-        :param latitude: [description]
-        :type latitude: [type]
-        :param longitude: [description]
-        :type longitude: [type]
-        :param variable: [description]
-        :type variable: [type]
-        """
         tmp = self.temporary_file(".csv")
         frame[[latitude, longitude, variable]].to_csv(tmp, header=False, index=False)
         self.plot_csv(tmp, variable)
@@ -346,12 +370,33 @@ class Driver:
         if style is not None:
             self.style(style)
 
+    def background(self, background):
+        self._background = _apply(
+            value=background,
+            collection="layers",
+            target=self._background,
+            default="default-background",
+        )
+
+    def foreground(self, foreground):
+        self._foreground = _apply(
+            value=foreground,
+            collection="layers",
+            target=self._foreground,
+            default="default-foreground",
+        )
+
     def projection(self, projection):
-        self._projection = self._apply("projections", projection, mmap)
+        self._projection = _apply(
+            value=projection, collection="projections", target=self._projection
+        )
 
     def style(self, style):
         if len(self._layers):
-            self._layers[-1].style(self._apply("styles", style, mcont))
+            last_layer = self._layers[-1]
+            last_layer.style(
+                _apply(value=style, target=last_layer, collection="styles")
+            )
         else:
             raise Exception("No current data layer: cannot set style '%r'" % (style,))
 
@@ -362,21 +407,24 @@ class Driver:
         else:
             return self._options.get(name, default)
 
+    def option_provided(self, name: str) -> bool:
+        return name in self._options
+
     def apply_options(self, options):
         pass
 
     def show(self):
 
-        if not self.option("background", True):
-            self._background = None
+        if self.option_provided("background"):
+            self.background(self.option("background"))
 
-        if not self.option("foreground", True):
-            self._foreground = None
+        if self.option_provided("foreground"):
+            self.foreground(self.option("foreground"))
 
-        if self.option("style", None):
+        if self.option_provided("style"):
             self.style(self.option("style"))
 
-        if self.option("projection", None):
+        if self.option_provided("projection"):
             self.projection(self.option("projection"))
 
         title = self.option("title", None)
@@ -486,83 +534,3 @@ class Driver:
             self._title,
         ]
         return [x for x in m if x is not None]
-
-    def _apply(self, collection, value, action):
-
-        if value is None:
-            return None
-
-        if isinstance(value, dict):
-            global MAGICS_KEYS
-
-            if MAGICS_KEYS is None:
-                MAGICS_KEYS = defaultdict(set)
-                with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
-                    magics = yaml.load(f, Loader=yaml.SafeLoader)
-                    for name, params in magics.items():
-                        for param in params:
-                            MAGICS_KEYS[param].add(name)
-
-            # Guess the best action from the keys
-            scores = defaultdict(int)
-            special = 0
-            for param in value.keys():
-
-                if not param[0].isalpha():
-                    special += 1
-                    param = param[1:]
-
-                acts = MAGICS_KEYS.get(param, [])
-                if len(acts) == 1:
-                    # Only consider unambiguous parameters
-                    scores[list(acts)[0]] += 1
-
-            best = sorted((v, k) for k, v in scores.items())
-
-            if len(best) == 0:
-                LOG.warning(
-                    "Cannot establish Magics action from [%r]", list(value.keys())
-                )
-
-            if len(best) >= 2:
-                if best[0][0] == best[1][0]:
-                    LOG.warning(
-                        "Cannot establish Magics action from [%r], it could be %s or %s",
-                        list(value.keys()),
-                        best[0][1],
-                        best[1][1],
-                    )
-
-            if len(best) > 0:
-                action = globals()[best[0][1]]
-
-            if special:
-                if special != len(value):
-                    raise Exception(
-                        "Cannot set some attributes and override others %r"
-                        % list(value.keys())
-                    )
-
-                for a in reversed(self.macro()):
-                    if a.update(action, value):
-                        return a
-
-                raise Exception(
-                    "Cannot override attributes %r (no matching style)"
-                    % list(value.keys())
-                )
-
-            return action(**value)
-
-        if isinstance(value, str):
-
-            data = get_data_entry(collection, value).data
-
-            magics = data["magics"]
-            actions = list(magics.keys())
-            assert len(actions) == 1, actions
-
-            action = globals()[actions[0]]
-            return action(**magics[actions[0]])
-
-        assert False, (collection, value)

@@ -12,6 +12,14 @@ from climetlab.core.ipython import display
 from .drivers.magics import Driver
 from climetlab.core import docstring
 from climetlab.core.data import data_entries, get_data_entry
+from climetlab.core.settings import SETTINGS
+
+OPTIONS = dict()
+
+
+def options(**kwargs):
+    global OPTIONS
+    OPTIONS = kwargs
 
 
 def projection(name):
@@ -43,7 +51,11 @@ class Plot:
     """
 
     def __init__(self, kwargs):
-        self.driver = Driver(kwargs)
+        options = dict()
+        options.update(SETTINGS.get("plotting_options", {}))
+        options.update(OPTIONS)
+        options.update(kwargs)
+        self.driver = Driver(options)
 
     def plot_map(self, data=None, **kwargs):
 
@@ -62,7 +74,7 @@ class Plot:
 
             d.plot_map(self.driver)
 
-        self.driver.apply_options(kwargs)
+        self.driver.apply_options(options)
 
     def show(self):
         return display(self.driver.show())

@@ -24,6 +24,7 @@ DEFAULTS = dict(
     styles_directories=[os.path.join(DOT_CLIMETLAB, "styles")],
     projections_directories=[os.path.join(DOT_CLIMETLAB, "projections")],
     layers_directories=[os.path.join(DOT_CLIMETLAB, "layers")],
+    plotting_options={},
 )
 
 NONE = object()

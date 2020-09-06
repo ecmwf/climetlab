@@ -62,7 +62,13 @@ def find_plugin(directory, name, loader):
 
 
 def directories():
-    result = [os.path.dirname(climetlab.__file__)]
+
+    result = []
+    for conf in ("styles_directories", "projections_directories", "layers_directories"):
+        for d in SETTINGS.get(conf):
+            if os.path.exists(d) and os.path.isdir(d):
+                result.append(d)
+
     for kind in ("dataset", "source"):
         for _, v in load_plugins(kind).items():
             try:
@@ -71,9 +77,6 @@ def directories():
             except Exception:
                 LOG.error("Cannot load module %s", v.module_name, exc_info=True)
 
-    for conf in ("styles_directories", "projections_directories", "layers_directories"):
-        for d in SETTINGS.get(conf):
-            if os.path.exists(d) and os.path.isdir(d):
-                result.append(d)
+    result.append(os.path.dirname(climetlab.__file__))
 
     return result
