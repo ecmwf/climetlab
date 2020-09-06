@@ -48,8 +48,8 @@ class Settings:
         """
         if default is NONE:
             return self._settings[name]
-        else:
-            return self._settings.get(name, default)
+
+        return self._settings.get(name, default)
 
     def set(self, name: str, value):
         """[summary]

@@ -183,8 +183,8 @@ class NetCDFReader(Reader):
 
         for name in ds.data_vars:
             v = ds[name]
-            skip.update([c for c in getattr(v, "coordinates", "").split(" ")])
-            skip.update([c for c in getattr(v, "bounds", "").split(" ")])
+            skip.update(getattr(v, "coordinates", "").split(" "))
+            skip.update(getattr(v, "bounds", "").split(" "))
 
         for name in ds.data_vars:
 

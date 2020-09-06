@@ -50,5 +50,5 @@ def helper(data, *args, **kwargs):
 
     if isinstance(data, xr.Dataset):
         return XArrayHelper(data, *args, **kwargs)
-    else:
-        return XArrayHelper(data.to_dataset(), *args, **kwargs)
+
+    return XArrayHelper(data.to_dataset(), *args, **kwargs)

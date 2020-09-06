@@ -69,7 +69,7 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     # "sphinx-prompt",
     # "climetlab.sphinxext.sources",
-    # 'climetlab.sphinxext.datasets',
+    "climetlab.sphinxext.command_output",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

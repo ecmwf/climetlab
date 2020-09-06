@@ -40,3 +40,11 @@ cml.plot_map(
         "clear": ["map_boundaries"],
     },
 )
+
+cml.plot_map(
+    data,
+    foreground={
+        "+": {"map_rivers": True, "map_cities": True, "map_label": True},
+        "-": ["map_boundaries"],
+    },
+)

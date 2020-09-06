@@ -74,7 +74,7 @@ class PandasHelper:
         ]
 
     def dates(self):
-        return sorted(set([str(x).split("T")[0] for x in self.frame["time"].values]))
+        return sorted(set(str(x).split("T")[0] for x in self.frame["time"].values))
 
 
 helper = PandasHelper

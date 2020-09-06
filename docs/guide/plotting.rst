@@ -1,20 +1,12 @@
 Plotting
 ========
 
-.. .. todo:
+.. todo:
 
-..     TODO
-
-
-.. literalinclude:: plotting_options.py
+    Introduce advance plotting options
 
 
-
-## XXX
-------
-
-.. literalinclude:: plotting_attributes.py
+.. literalinclude:: plotting-attributes.py
 
 
-YYYY
-----
+.. literalinclude:: plotting-options.py

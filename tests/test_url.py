@@ -9,10 +9,16 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils import bytes_to_string
+from climetlab.utils import download_and_cache
+import time
 
 
-def test_bytes():
-    assert bytes_to_string(10) == "10"
-    assert bytes_to_string(1024) == "1 KiB"
-    assert bytes_to_string(1024 * 1024) == "1 MiB"
+def test_download():
+    url = (
+        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib?_=%s"
+        % (time.time(),)
+    )
+    download_and_cache(url)
+
+
+# TODO: test .tar, .zip, .tar.gz

@@ -117,8 +117,8 @@ class HighLow(Dataset):
 
         if fields:
             return (x_train, y_train, f_train), (x_test, y_test, f_test)
-        else:
-            return (x_train, y_train), (x_test, y_test)
+
+        return (x_train, y_train), (x_test, y_test)
 
 
 dataset = HighLow

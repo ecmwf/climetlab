@@ -7,6 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+# Keep linters happy
+# N801 = classes should start with uppercase
+# N806 = variables should be lower case
+
 import os
 import logging
 import yaml
@@ -56,7 +60,7 @@ class Action:
         return getattr(macro, self.action)(**self.kwargs).execute()
 
     def update(self, action, values):
-        if type(self) is action:
+        if isinstance(self, action):
             for k, v in values.items():
                 if k[0] in ("+",):
                     self.kwargs[k[1:]] = v
@@ -66,15 +70,15 @@ class Action:
         return None
 
 
-class mcont(Action):
+class mcont(Action):  # noqa: N801
     pass
 
 
-class mcoast(Action):
+class mcoast(Action):  # noqa: N801
     pass
 
 
-class mmap(Action):
+class mmap(Action):  # noqa: N801
     pass
 
 
@@ -82,37 +86,32 @@ class FieldAction(Action):
     default_style = mcont(contour_automatic_setting="ecmwf", legend=False)
 
 
-class mgrib(FieldAction):
+class mgrib(FieldAction):  # noqa: N801
     pass
 
 
-class mnetcdf(FieldAction):
+class mnetcdf(FieldAction):  # noqa: N801
     pass
 
 
-class minput(FieldAction):
+class minput(FieldAction):  # noqa: N801
     pass
 
 
-class mtable(Action):
+class mtable(Action):  # noqa: N801
     pass
 
 
-class mtext(Action):
+class mtext(Action):  # noqa: N801
     pass
 
 
-class msymb(Action):
+class msymb(Action):  # noqa: N801
     pass
 
 
-class output(Action):
+class output(Action):  # noqa: N801
     pass
-
-
-class delta:
-    def __init__(self, magics, action, **kwargs):
-        pass
 
 
 class Layer:
@@ -162,6 +161,22 @@ def _apply(*, value, collection=None, action=None, default=True, target=None):
                 newvalue["+{}".format(k)] = v
 
             for k in value.get("clear", []):
+                newvalue["-{}".format(k)] = None
+
+            return _apply(
+                value=newvalue,
+                collection=collection,
+                action=action,
+                default=default,
+                target=target,
+            )
+
+        if "+" in value or "-" in value:
+            newvalue = {}
+            for k, v in value.get("+", {}).items():
+                newvalue["+{}".format(k)] = v
+
+            for k in value.get("-", []):
                 newvalue["-{}".format(k)] = None
 
             return _apply(
@@ -232,6 +247,8 @@ def _apply(*, value, collection=None, action=None, default=True, target=None):
 
     if isinstance(value, str):
 
+        # TODO: Consider `value` being a URL (yaml or json)
+
         data = get_data_entry(collection, value).data
 
         magics = data["magics"]
@@ -248,9 +265,9 @@ class Driver:
     """TODO: Docscting
     """
 
-    def __init__(self, options: dict = {}):
+    def __init__(self, options=None):
 
-        self._options = options
+        self._options = {} if options is None else options
         self._used_options = set()
 
         self._projection = None
@@ -324,7 +341,10 @@ class Driver:
             )
         )
 
-    def plot_netcdf(self, path: str, variable: str, dimensions: dict = {}):
+    def plot_netcdf(self, path: str, variable: str, dimensions: dict = None):
+
+        if dimensions is None:
+            dimensions = {}
 
         dimension_setting = ["%s:%s" % (k, v) for k, v in dimensions.items()]
 
@@ -347,8 +367,11 @@ class Driver:
         west: float,
         south_north_increment: float,
         west_east_increment: float,
-        metadata: dict = {},
+        metadata: dict = None,
     ):
+        if metadata is None:
+            metadata = {}
+
         self._push_layer(
             minput(
                 input_field=data,
@@ -360,10 +383,10 @@ class Driver:
             )
         )
 
-    def plot_xarray(self, ds, variable: str, dimensions: dict = {}):
+    def plot_xarray(self, ds, variable: str, dimensions: dict = None):
         tmp = self.temporary_file(".nc")
         ds.to_netcdf(tmp)
-        self.plot_netcdf(tmp, variable, dimensions)
+        self.plot_netcdf(tmp, variable, {} if dimensions is None else dimensions)
 
     def plot_csv(self, path: str, variable: str):
         self._push_layer(
@@ -409,7 +432,7 @@ class Driver:
         )
 
     def style(self, style):
-        if len(self._layers):
+        if len(self._layers) > 0:
             last_layer = self._layers[-1]
             last_layer.style(
                 _apply(value=style, target=last_layer, collection="styles")
@@ -421,8 +444,8 @@ class Driver:
         self._used_options.add(name)
         if default is NONE:
             return self._options[name]
-        else:
-            return self._options.get(name, default)
+
+        return self._options.get(name, default)
 
     def option_provided(self, name: str) -> bool:
         return name in self._options
@@ -528,9 +551,9 @@ class Driver:
             raise
 
         if fmt == ".svg":
-            Display = SVG
+            Display = SVG  # noqa: N806
         else:
-            Display = Image
+            Display = Image  # noqa: N806
 
         return Display(path, metadata=dict(width=width))
 
