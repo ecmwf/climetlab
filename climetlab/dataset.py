@@ -12,6 +12,6 @@ import climetlab
 
 def __getattr__(name):
     def wrapped(*args, **kwargs):
-        return climetlab.load_dataset(name.replace('_', '-'), *args, **kwargs)
+        return climetlab.load_dataset(name.replace("_", "-"), *args, **kwargs)
 
     return wrapped

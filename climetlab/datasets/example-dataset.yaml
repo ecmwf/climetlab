@@ -1,0 +1,9 @@
+---
+hidden: True
+dataset:
+  source: url
+  args:
+    url: https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib
+
+  metadata:
+    documentation: Sample GRIB file

@@ -13,7 +13,7 @@ import os
 import re
 import pytest
 
-IGNORE=['conf.py', 'xml2rst.py']
+IGNORE = ["conf.py", "xml2rst.py"]
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
 
 
@@ -25,7 +25,7 @@ def example_list():
     for root, _, files in os.walk(EXAMPLES):
         for file in files:
             path = os.path.join(root, file)
-            if path.endswith(".py") and  file not in IGNORE:
+            if path.endswith(".py") and file not in IGNORE:
                 examples.append(path[len(EXAMPLES) + 1 :])
 
     return sorted(examples)

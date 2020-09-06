@@ -47,6 +47,7 @@ Documentation
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
+* :doc:`guide/plotting`
 
 .. toctree::
    :maxdepth: 1
@@ -56,6 +57,7 @@ Documentation
    guide/howtos
    guide/datasets
    guide/sources
+   guide/plotting
 
 **Reference (TODO)**
 
