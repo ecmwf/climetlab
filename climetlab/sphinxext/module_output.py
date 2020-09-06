@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import sys
 from docutils.parsers.rst import Directive
 from docutils import statemachine
 from importlib import import_module
@@ -23,6 +24,7 @@ class ModuleOutput(Directive):
 
         self.assert_has_content()
 
+        save = sys.stdout
         try:
 
             # Get current file
@@ -34,9 +36,9 @@ class ModuleOutput(Directive):
 
             module = import_module("..%s" % (name.replace("-", "_"),), package=__name__)
 
-            out = StringIO()
-            module.execute(out)
-            out = out.getvalue()
+            sys.stdout = StringIO()
+            module.execute()
+            out = sys.stdout.getvalue()
 
             # Parse output
             rst_lines = statemachine.string2lines(out)
@@ -46,7 +48,8 @@ class ModuleOutput(Directive):
         except Exception as e:
             rst_lines = statemachine.string2lines(str(e))
             self.state_machine.insert_input(rst_lines, current_rst_file)
-
+        finally:
+            sys.stdout = save
         return []
 
 
