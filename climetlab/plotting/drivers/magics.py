@@ -155,6 +155,23 @@ def _apply(*, value, collection=None, action=None, default=True, target=None):
         )
 
     if isinstance(value, dict):
+
+        if "set" in value or "clear" in value:
+            newvalue = {}
+            for k, v in value.get("set", {}).items():
+                newvalue["+{}".format(k)] = v
+
+            for k in value.get("clear", []):
+                newvalue["-{}".format(k)] = None
+
+            return _apply(
+                value=newvalue,
+                collection=collection,
+                action=action,
+                default=default,
+                target=target,
+            )
+
         global MAGICS_KEYS
 
         if MAGICS_KEYS is None:
