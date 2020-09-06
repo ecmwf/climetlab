@@ -3,5 +3,6 @@ magics:
   mcoast:
     map_grid: off
     map_label: off
+    map_grid_label: off
     map_grid_frame: on
     map_grid_frame_thickness: 5

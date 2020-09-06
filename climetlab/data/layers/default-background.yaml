@@ -2,6 +2,7 @@
 magics:
   mcoast:
     map_grid: off
+    map_grid_label: off
     map_grid_colour: tan
     map_label: off
     map_boundaries: on
