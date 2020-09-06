@@ -10,6 +10,6 @@ Settings
 Default values
 --------------
 
-.. command-output:: ./generate-settings-rst.py
+.. module-output:: generate_settings_rst
 
 where ``${USER}`` is the user id.

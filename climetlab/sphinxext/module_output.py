@@ -7,25 +7,21 @@
 # nor does it submit to any jurisdiction.
 #
 
-import subprocess
-import os
-
 from docutils.parsers.rst import Directive
 from docutils import statemachine
-from shlex import split
+from importlib import import_module
+from io import StringIO
 
 # Examples at https://github.com/docutils-mirror/docutils
 
 
-class CommandOutput(Directive):
+class ModuleOutput(Directive):
 
     has_content = True
 
     def run(self):
 
         self.assert_has_content()
-
-        here = os.getcwd()
 
         try:
 
@@ -34,11 +30,13 @@ class CommandOutput(Directive):
                 self.lineno - self.state_machine.input_offset - 1
             )
 
-            os.chdir(os.path.dirname(current_rst_file))
+            name = [x for x in self.content if x != ""][0]
 
-            cmd = [x for x in self.content if x != ""][0]
+            module = import_module("..%s" % (name.replace("-", "_"),), package=__name__)
 
-            out = subprocess.check_output(split(cmd)).decode("utf-8")
+            out = StringIO()
+            module.execute(out)
+            out = out.getvalue()
 
             # Parse output
             rst_lines = statemachine.string2lines(out)
@@ -49,11 +47,8 @@ class CommandOutput(Directive):
             rst_lines = statemachine.string2lines(str(e))
             self.state_machine.insert_input(rst_lines, current_rst_file)
 
-        finally:
-            os.chdir(here)
-
         return []
 
 
 def setup(app):
-    app.add_directive("command-output", CommandOutput)
+    app.add_directive("module-output", ModuleOutput)
