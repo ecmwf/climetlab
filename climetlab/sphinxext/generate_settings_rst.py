@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
+# (C) Copyright 2020 ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+#
+
 import os
 import getpass
 
-from climetlab.core.settings import DEFAULTS
+from climetlab.core.settings import SETTINGS_AND_HELP
 
 HOME = os.path.expanduser("~/")
 USER = getpass.getuser()
@@ -35,16 +44,16 @@ def execute():
     print()
     print(".. list-table::")
     print("   :header-rows: 1")
-    print("   :widths: 70 20 10")
+    print("   :widths: 10 10 80")
     print()
     print("   * - | Name")
     print("     - | Default")
     print("     - | Description")
     print()
-    for k, v in sorted(tidy(DEFAULTS).items()):
+    for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
         print("   * - |", k)
-        print("     - |", v)
-        print("     - |", "TODO...")
+        print("     - |", v[0])
+        print("     - |", v[1])
     print()
 
 

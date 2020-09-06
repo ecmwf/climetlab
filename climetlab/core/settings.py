@@ -18,14 +18,21 @@ LOG = logging.getLogger(__name__)
 
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
-
-DEFAULTS = dict(
-    cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),),
-    styles_directories=[os.path.join(DOT_CLIMETLAB, "styles")],
-    projections_directories=[os.path.join(DOT_CLIMETLAB, "projections")],
-    layers_directories=[os.path.join(DOT_CLIMETLAB, "layers")],
-    plotting_options={},
+SETTINGS_AND_HELP = dict(
+    cache_directory=(
+        "/var/tmp/climetlab-%s" % (getpass.getuser(),),
+        "Directory of where the dowloaded files are cached, with ``${USER}`` is the user id. See :ref:`caching` for more information.",
+    ),
+    styles_directories=([os.path.join(DOT_CLIMETLAB, "styles")], "..."),
+    projections_directories=([os.path.join(DOT_CLIMETLAB, "projections")], "..."),
+    layers_directories=([os.path.join(DOT_CLIMETLAB, "layers")], "..."),
+    plotting_options=({}, "See :ref:`plotting` for more information."),
 )
+
+DEFAULTS = {}
+for k, v in SETTINGS_AND_HELP.items():
+    DEFAULTS[k] = v[0]
+
 
 NONE = object()
 
@@ -79,7 +86,10 @@ class Settings:
         html = [css("table")]
         html.append("<table class='climetlab'>")
         for k, v in sorted(self._settings.items()):
-            html.append("<tr><td>%s</td><td>%r</td></td>" % (k, v))
+            html.append(
+                "<tr><td>%s</td><td>%r</td><td>%r</td></td>"
+                % (k, v, SETTINGS_AND_HELP.get(k, (None, "..."))[0])
+            )
         html.append("</table>")
         return "".join(html)
 

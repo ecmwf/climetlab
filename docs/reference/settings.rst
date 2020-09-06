@@ -14,5 +14,3 @@ Default values
 --------------
 
 .. module-output:: generate_settings_rst
-
-where ``${USER}`` is the user id.
