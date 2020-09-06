@@ -24,7 +24,7 @@ _connection = None
 def connection():
     global _connection
     if _connection is None:
-        cache_dir = SETTINGS.get("cache_directory")
+        cache_dir = SETTINGS.get("cache-directory")
         if not os.path.exists(cache_dir):
             os.mkdir(cache_dir)
         cache_db = os.path.join(cache_dir, "cache.db")
@@ -154,7 +154,7 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
     update(m, owner)
     update(m, args)
     path = "%s/%s-%s%s" % (
-        SETTINGS.get("cache_directory"),
+        SETTINGS.get("cache-directory"),
         owner.lower(),
         m.hexdigest(),
         extension,

@@ -23,6 +23,8 @@ from climetlab.datasets import Dataset
 
 __version__ = "0.0.87"
 
+_running_pytest_ = False
+
 # if ipython_active:
 #     logging.
 

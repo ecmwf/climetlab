@@ -12,3 +12,27 @@ Plotting
 
 
 .. literalinclude:: plotting-options.py
+
+
+
+
+.. _projections:
+
+Projections
+-----------
+
+TODO
+
+.. _styles:
+
+Styles
+------
+
+TODO
+
+.. _layers:
+
+Layers
+------
+
+TODO

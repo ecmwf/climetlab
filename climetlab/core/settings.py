@@ -14,20 +14,31 @@ from climetlab.utils.html import css
 import logging
 from typing import Callable
 
+
 LOG = logging.getLogger(__name__)
 
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
-SETTINGS_AND_HELP = dict(
-    cache_directory=(
+SETTINGS_AND_HELP = {
+    "cache-directory": (
         "/var/tmp/climetlab-%s" % (getpass.getuser(),),
-        "Directory of where the dowloaded files are cached, with ``${USER}`` is the user id. See :ref:`caching` for more information.",
+        """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
+        See :ref:`caching` for more information.""",
     ),
-    styles_directories=([os.path.join(DOT_CLIMETLAB, "styles")], "..."),
-    projections_directories=([os.path.join(DOT_CLIMETLAB, "projections")], "..."),
-    layers_directories=([os.path.join(DOT_CLIMETLAB, "layers")], "..."),
-    plotting_options=({}, "See :ref:`plotting` for more information."),
-)
+    "styles-directories": (
+        [os.path.join(DOT_CLIMETLAB, "styles")],
+        """See :ref:`styles` for more information.""",
+    ),
+    "projections-directories": (
+        [os.path.join(DOT_CLIMETLAB, "projections")],
+        """See :ref:`projections` for more information.""",
+    ),
+    "layers-directories": (
+        [os.path.join(DOT_CLIMETLAB, "layers")],
+        """See :ref:`layers` for more information.""",
+    ),
+    "plotting-options": ({}, """See :ref:`plotting` for more information."""),
+}
 
 DEFAULTS = {}
 for k, v in SETTINGS_AND_HELP.items():
@@ -102,6 +113,11 @@ class Settings:
         self._callbacks.append(callback)
 
     def _save(self):
+        import climetlab
+        # Don't persist changes when running pytest
+        if climetlab._running_pytest_:
+            return
+
         try:
             with open(self._settings_yaml, "w") as f:
                 yaml.dump(self._settings, f, default_flow_style=False)

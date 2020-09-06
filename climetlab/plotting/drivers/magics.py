@@ -533,7 +533,7 @@ class Driver:
 
         unused = set(self._options.keys()) - self._used_options
         if unused:
-            LOG.warning(
+            raise TypeError(
                 "".join(
                     [
                         "Unused argument%s:" % ("s" if len(unused) > 1 else "",),

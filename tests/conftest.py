@@ -1,2 +1,6 @@
+
+
+
 def pytest_configure(config):
-    pass
+    import climetlab
+    climetlab._running_pytest_ = True
