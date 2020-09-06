@@ -13,5 +13,5 @@ from climetlab import load_source, source
 
 
 def test_source():
-    s1 = load_source("file", "docs/examples/test.grib")
-    s2 = source.file("docs/examples/test.grib")
+    load_source("file", "docs/examples/test.grib")
+    source.file("docs/examples/test.grib")

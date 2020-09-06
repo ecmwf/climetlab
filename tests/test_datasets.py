@@ -9,8 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_source, plot_map
+from climetlab import load_dataset, dataset
 
 
 def test_dataset():
-    pass
+    load_dataset("sample-bufr-data")
+    dataset.sample_bufr_data()
