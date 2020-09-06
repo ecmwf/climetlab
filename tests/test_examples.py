@@ -35,4 +35,4 @@ def example_list():
 def test_example(path):
 
     with open(os.path.join(EXAMPLES, path)) as f:
-        exec(f.read())
+        exec(f.read(), {}, {})
