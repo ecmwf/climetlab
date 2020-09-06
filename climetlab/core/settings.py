@@ -12,10 +12,19 @@ import yaml
 import getpass
 from climetlab.utils.html import css
 import logging
+from typing import Callable
 
 LOG = logging.getLogger(__name__)
 
-DEFAULTS = dict(cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),))
+DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
+
+
+DEFAULTS = dict(
+    cache_directory="/var/tmp/climetlab-%s" % (getpass.getuser(),),
+    styles_directories=[os.path.join(DOT_CLIMETLAB, "styles")],
+    projections_directories=[os.path.join(DOT_CLIMETLAB, "projections")],
+    layers_directories=[os.path.join(DOT_CLIMETLAB, "layers")],
+)
 
 NONE = object()
 
@@ -49,7 +58,7 @@ class Settings:
             value ([type]): [description]
         """
         self._settings[name] = value
-        self.changed()
+        self._changed()
 
     def reset(self, name: str = None):
         """Reset setting(s) to default values.
@@ -63,7 +72,7 @@ class Settings:
             self._settings.pop(name, None)
             if name in DEFAULTS:
                 self._settings[name] = DEFAULTS[name]
-        self.changed()
+        self._changed()
 
     def _repr_html_(self):
         html = [css("table")]
@@ -73,15 +82,15 @@ class Settings:
         html.append("</table>")
         return "".join(html)
 
-    def changed(self):
-        self.save()
+    def _changed(self):
+        self._save()
         for cb in self._callbacks:
             cb()
 
-    def on_change(self, callback):
+    def on_change(self, callback: Callable[[], None]):
         self._callbacks.append(callback)
 
-    def save(self):
+    def _save(self):
         try:
             with open(self._settings_yaml, "w") as f:
                 yaml.dump(self._settings, f, default_flow_style=False)
@@ -94,9 +103,8 @@ class Settings:
 
 
 try:
-    user_climetlab = os.path.expanduser("~/.climetlab")
-    if not os.path.exists(user_climetlab):
-        os.mkdir(user_climetlab, 0o700)
+    if not os.path.exists(DOT_CLIMETLAB):
+        os.mkdir(DOT_CLIMETLAB, 0o700)
 
     settings_yaml = os.path.expanduser("~/.climetlab/settings.yaml")
     if not os.path.exists(settings_yaml):

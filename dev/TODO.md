@@ -133,3 +133,8 @@ Use `doc8` instead of `rstcheck`
 - Iterators?
   - plot_map(d) vs plot_map(d[0])
 - CI/CD
+
+** Jupyter
+
+- Check _ipython_key_completions_
+- Use jsonschemo.org for magics

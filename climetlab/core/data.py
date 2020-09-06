@@ -72,30 +72,32 @@ def _load_yaml_files():
         return YAML_FILES
 
     YAML_FILES = defaultdict(dict)
-    for root, _, files in os.walk(*directories()):
-        for file in [f for f in files if f.endswith(".yaml")]:
-            if file in IGNORE:
-                continue
-            path = os.path.join(root, file)
-            try:
-                with open(path) as f:
-                    data = yaml.load(f.read(), Loader=yaml.SafeLoader)
-                    name, _ = os.path.splitext(os.path.basename(path))
-                    kind = _guess(data, path)
-                    collection = YAML_FILES[kind]
-                    if name in collection:
-                        LOG.warning(
-                            "Duplicate entry for %s %s (using %s, ignoring %s)",
-                            kind,
-                            name,
-                            collection[name].path,
-                            path,
-                        )
-                    else:
-                        collection[name] = Entry(name, kind, path, data)
+    for directory in directories():
+        for root, _, files in os.walk(directory):
+            for file in [f for f in files if f.endswith(".yaml")]:
+                if file in IGNORE:
+                    continue
+                path = os.path.join(root, file)
+                try:
+                    with open(path) as f:
+                        data = yaml.load(f.read(), Loader=yaml.SafeLoader)
+                        name, _ = os.path.splitext(os.path.basename(path))
+                        kind = _guess(data, path)
+                        collection = YAML_FILES[kind]
+                        if name in collection:
+                            LOG.warning(
+                                "Duplicate entry for %s %s (using %s, ignoring %s)",
+                                kind,
+                                name,
+                                collection[name].path,
+                                path,
+                            )
+                        else:
+                            collection[name] = Entry(name, kind, path, data)
 
-            except Exception:
-                LOG.error("Cannot process YAML file %s", path, exc_info=True)
+                except Exception:
+                    LOG.error("Cannot process YAML file %s", path, exc_info=True)
+                    raise
 
     return YAML_FILES
 
@@ -103,9 +105,9 @@ def _load_yaml_files():
 def get_data_entry(kind, name):
     files = _load_yaml_files()
     if kind not in files:
-        raise Exception("No collection named '%s'" % (kind,))
+        raise KeyError("No collection named '%s'" % (kind,))
     if name not in files[kind]:
-        raise Exception("No object '%s' in collection named '%s'" % (name, kind,))
+        raise KeyError("No object '%s' in collection named '%s'" % (name, kind,))
 
     return files[kind][name]
 
@@ -120,3 +122,8 @@ def data_entries(kind=None):
         for entry in _load_yaml_files().get(kind, {}).values():
             if not entry.hidden:
                 yield entry
+
+
+def clear_cache():
+    global YAML_FILES
+    YAML_FILES = None

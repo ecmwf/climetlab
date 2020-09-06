@@ -12,6 +12,7 @@ import entrypoints
 import climetlab
 from importlib import import_module
 import logging
+from .settings import SETTINGS
 
 LOG = logging.getLogger(__name__)
 
@@ -69,4 +70,10 @@ def directories():
                 result.append(os.path.dirname(module.__file__))
             except Exception:
                 LOG.error("Cannot load module %s", v.module_name, exc_info=True)
+
+    for conf in ("styles_directories", "projections_directories", "layers_directories"):
+        for d in SETTINGS.get(conf):
+            if os.path.exists(d) and os.path.isdir(d):
+                result.append(d)
+
     return result
