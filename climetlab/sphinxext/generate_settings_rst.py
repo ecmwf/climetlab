@@ -44,15 +44,15 @@ def execute():
     print()
     print(".. list-table::")
     print("   :header-rows: 1")
-    print("   :widths: 10 10 80")
+    print("   :widths: 10 10 70")
     print()
     print("   * - | Name")
     print("     - | Default")
     print("     - | Description")
     print()
     for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
-        print("   * - |", k)
-        print("     - |", v[0])
+        print("   * - |", k.replace('-', "\u2011")) # Non-breaking hyphen
+        print("     - |", repr(v[0]).replace('-', "\u2011"))
         print("     - |", v[1])
     print()
 
