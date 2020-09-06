@@ -64,7 +64,7 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
 def test_user_projections():
     check_user_defined_objects(
         "projections",
-        "projections_directories",
+        "projections-directories",
         {"magics": {"mmap": {}}},
         ["magics", "mmap", "subpage_lower_left_latitude"],
         climetlab.plotting.projections,
@@ -75,7 +75,7 @@ def test_user_projections():
 def test_user_styles_msymb():
     check_user_defined_objects(
         "styles",
-        "styles_directories",
+        "styles-directories",
         {"magics": {"msymb": {}}},
         ["magics", "msymb", "symbol_marker_index"],
         climetlab.plotting.styles,
@@ -86,7 +86,7 @@ def test_user_styles_msymb():
 def test_user_styles_mcont():
     check_user_defined_objects(
         "styles",
-        "styles_directories",
+        "styles-directories",
         {"magics": {"mcont": {}}},
         ["magics", "mcont", "contour_line_thickness"],
         climetlab.plotting.styles,
@@ -97,7 +97,7 @@ def test_user_styles_mcont():
 def test_user_layers():
     check_user_defined_objects(
         "layers",
-        "layers_directories",
+        "layers-directories",
         {"magics": {"mcoast": {}}},
         ["magics", "mcoast", "map_grid_frame_thickness"],
         climetlab.plotting.layers,
