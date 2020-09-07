@@ -33,18 +33,8 @@ on plotting below).
 
 .. _data source example:
 
-.. code-block:: python
+.. literalinclude:: datasource-example.py
 
-
-
-    import climetlab as cml
-
-    data = cml.load_source("url",
-                          "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/csv/ibtracs.SP.list.v04r00.csv")
-
-    pd = data.to_pandas()
-    uma = pd[pd.NAME == "UMA:VELI"]
-    cml.plot_map(uma, style="cyclone-track")
 
 .. image:: _static/uma.svg
   :width: 100%
@@ -87,13 +77,8 @@ Datasets are a higher-level concept compared to data sources.
 
 The following Python code:
 
-
-.. code-block:: python
-
-  import climetlab as cml
-
-  data = cml.load_dataset("hurricane-database", "atlantic")
-  print(data.home_page)
+.. literalinclude:: dataset-example.py
+  :lines: 1-4
 
 will print:
 
@@ -103,11 +88,9 @@ will print:
 
 then,
 
-.. code-block:: python
+.. literalinclude:: dataset-example.py
+  :lines: 7-9
 
-  df = data.to_pandas()
-  irma = df[(df.name=='irma') & (df.year==2017)]
-  cml.plot_map(irma)
 
 will plot:
 
