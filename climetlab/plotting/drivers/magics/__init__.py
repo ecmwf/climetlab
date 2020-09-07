@@ -36,8 +36,6 @@ LOG = logging.getLogger(__name__)
 # Examples of Magics macros:
 # https://github.com/ecmwf/notebook-examples/tree/master/visualisation
 
-NONE = object()
-
 
 class Action:
 
@@ -274,10 +272,9 @@ class Driver:
     """TODO: Docscting
     """
 
-    def __init__(self, options=None):
+    def __init__(self, options):
 
-        self._options = {} if options is None else options
-        self._used_options = set()
+        self._options = options
 
         self._projection = None
         self._background = None
@@ -321,15 +318,6 @@ class Driver:
             self._bounding_box = bbox
         else:
             self._bounding_box = self._bounding_box.merge(bbox)
-
-        # self._projection = mmap(
-        #     subpage_upper_right_longitude=east,
-        #     subpage_upper_right_latitude=north,
-        #     subpage_lower_left_latitude=south,
-        #     subpage_lower_left_longitude=west,
-        #     subpage_map_projection="cylindrical",
-        # )
-        self._page_ratio = (north - south) / (east - west)
 
     def _push_layer(self, data):
         self._layers.append(Layer(data))
@@ -443,41 +431,30 @@ class Driver:
         else:
             raise Exception("No current data layer: cannot set style '%r'" % (style,))
 
-    def option(self, name: str, default=NONE):
-        self._used_options.add(name)
-        if default is NONE:
-            return self._options[name]
-
-        return self._options.get(name, default)
-
-    def option_provided(self, name: str) -> bool:
-        return name in self._options
-
     def apply_options(self, options):
-        pass
+        if options.provided("style"):
+            self.style(options["style"])
+
+    def option(self, name, default=None):
+        return self._options(name, default)
 
     def show(self):
 
-        if self.option_provided("background"):
-            self.background(self.option("background"))
+        self.apply_options(self._options)
 
-        if self.option_provided("foreground"):
-            self.foreground(self.option("foreground"))
+        if self._options.provided("background"):
+            self.background(self._options["background"])
 
-        if self.option_provided("style"):
-            self.style(self.option("style"))
+        if self._options.provided("foreground"):
+            self.foreground(self._options["foreground"])
 
-        if self.option_provided("projection"):
-            self.projection(self.option("projection"))
+        if self._options.provided("projection"):
+            self.projection(self._options["projection"])
 
-        title = self.option("title", None)
-        width = self.option("width", 680)
-        frame = self.option("frame", False)
-
-        if self.option("grid", False):
+        if self._options("grid", False):
             self._grid = mcoast(map_grid=True, map_coastline=False)
 
-        if self.option("borders", False):
+        if self._options("borders", False):
             self._borders = mcoast(
                 map_boundaries=True,
                 map_grid=False,
@@ -485,18 +462,21 @@ class Driver:
                 map_label=False,
             )
 
-        if self.option("rivers", False):
+        if self._options("rivers", False):
             self._rivers = mcoast(
                 map_rivers=True, map_grid=False, map_coastline=False, map_label=False
             )
 
-        if self.option("cities", False):
+        if self._options("cities", False):
             self._cities = mcoast(
                 map_cities=True, map_label=False, map_grid=False, map_coastline=False
             )
+        title = self._options("title", None)
+        width = self._options("width", 680)
+        frame = self._options("frame", False)
 
-        path = self.option(
-            "path", self.temporary_file("." + self.option("format", "png"))
+        path = self._options(
+            "path", self.temporary_file("." + self._options("format", "png"))
         )
 
         if self._projection is None:
@@ -504,12 +484,13 @@ class Driver:
             self._projection = mmap(subpage_map_projection="cylindrical")
 
         if self._bounding_box is not None:
+            bbox = self._bounding_box.add_margins(self._options("margins", 0))
             self._projection = _apply(
                 value={
-                    "=subpage_upper_right_longitude": self._bounding_box.east,
-                    "=subpage_upper_right_latitude": self._bounding_box.north,
-                    "=subpage_lower_left_latitude": self._bounding_box.south,
-                    "=subpage_lower_left_longitude": self._bounding_box.west,
+                    "=subpage_upper_right_longitude": bbox.east,
+                    "=subpage_upper_right_latitude": bbox.north,
+                    "=subpage_lower_left_latitude": bbox.south,
+                    "=subpage_lower_left_longitude": bbox.west,
                 },
                 target=self._projection,
                 action=mmap,
@@ -553,19 +534,10 @@ class Driver:
         )
 
         # TODO
-        self.option("update", False)
-        self.option("update_foreground", False)
+        self._options("update", False)
+        self._options("update_foreground", False)
 
-        unused = set(self._options.keys()) - self._used_options
-        if unused:
-            raise TypeError(
-                "".join(
-                    [
-                        "Unused argument%s:" % ("s" if len(unused) > 1 else "",),
-                        ", ".join("%s=%s" % (x, self._options[x]) for x in unused),
-                    ]
-                )
-            )
+        self._options.check_unused()
 
         args = [page] + self.macro()
 

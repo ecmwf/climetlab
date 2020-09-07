@@ -10,7 +10,6 @@
 #
 
 import os
-import re
 import pytest
 
 IGNORE = ["conf.py", "xml2rst.py"]
@@ -26,7 +25,8 @@ def example_list():
         for file in files:
             path = os.path.join(root, file)
             if path.endswith(".py") and file not in IGNORE:
-                examples.append(path[len(EXAMPLES) + 1 :])
+                n = len(EXAMPLES) + 1
+                examples.append(path[n:])
 
     return sorted(examples)
 

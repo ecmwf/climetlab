@@ -18,10 +18,9 @@ LATLON = (
 
 
 class PandasHelper:
-    def __init__(self, frame, margins=0, **kwargs):
+    def __init__(self, frame, **kwargs):
 
         self.frame = frame
-        self.margins = margins
 
         self.lat = "cannot-find-latitude-column"
         self.lon = "cannot-find-longitude-column"
@@ -33,8 +32,17 @@ class PandasHelper:
 
     def plot_map(self, driver):
 
-        margins = driver.option("margins", self.margins)
         column = driver.option("column", self.lat)
+
+        north, west, south, east = self.bounding_box()
+
+        driver.bounding_box(
+            north=north, south=south, west=west, east=east,
+        )
+
+        driver.plot_pandas(self.frame, self.lat, self.lon, column)
+
+    def bounding_box(self):
 
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
@@ -52,26 +60,7 @@ class PandasHelper:
         else:
             east, west = east2, west2
 
-        driver.bounding_box(
-            north=north + margins,
-            south=south - margins,
-            west=west - margins,
-            east=east + margins,
-        )
-
-        driver.plot_pandas(self.frame, self.lat, self.lon, column)
-
-    def bounding_box(self):
-
-        north, east = self.frame[[self.lat, self.lon]].max()
-        south, west = self.frame[[self.lat, self.lon]].min()
-
-        return [
-            north + self.margins,
-            west - self.margins,
-            south - self.margins,
-            east + self.margins,
-        ]
+        return [north, west, south, east]
 
     def dates(self):
         return sorted(set(str(x).split("T")[0] for x in self.frame["time"].values))

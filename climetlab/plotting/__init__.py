@@ -13,6 +13,7 @@ from .drivers.magics import Driver
 from climetlab.core import docstring
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.settings import SETTINGS
+from .options import Options
 
 OPTIONS = dict()
 
@@ -52,10 +53,10 @@ class Plot:
 
     def __init__(self, kwargs):
         options = dict()
-        options.update(SETTINGS.get("plotting_options", {}))
+        options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        self.driver = Driver(options)
+        self.driver = Driver(Options(options))
 
     def plot_map(self, data=None, **kwargs):
 
@@ -74,7 +75,9 @@ class Plot:
 
             d.plot_map(self.driver)
 
+        options = Options(kwargs)
         self.driver.apply_options(options)
+        options.check_unused()
 
     def show(self):
         return display(self.driver.show())
