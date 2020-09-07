@@ -531,6 +531,10 @@ class Driver:
             output_name=base,
         )
 
+        # TODO
+        self.option("update", False)
+        self.option("update_foreground", False)
+
         unused = set(self._options.keys()) - self._used_options
         if unused:
             raise TypeError(

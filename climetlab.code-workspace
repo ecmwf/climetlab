@@ -46,6 +46,9 @@
 		],
 		"python.linting.pylamaArgs": [
 			"--ignore=E392,E501,D100,D101,D102,D105"
-		]
+		],
+		"code-runner.fileDirectoryAsCwd": true,
+		"code-runner.showRunCommandInEditorContextMenu": false,
+	
 	}
 }

@@ -8,6 +8,7 @@
 #
 
 import os
+import sys
 import yaml
 import getpass
 from climetlab.utils.html import css
@@ -50,9 +51,11 @@ NONE = object()
 
 class Settings:
     def __init__(self, settings_yaml: str, defaults: dict):
+        self._defaults = defaults
         self._settings = dict(**defaults)
         self._callbacks = []
         self._settings_yaml = settings_yaml
+        self._pytest = None
 
     def get(self, name: str, default=NONE):
         """[summary]
@@ -64,6 +67,9 @@ class Settings:
         Returns:
             [type]: [description]
         """
+
+        self._check_pytest()
+
         if default is NONE:
             return self._settings[name]
 
@@ -113,10 +119,8 @@ class Settings:
         self._callbacks.append(callback)
 
     def _save(self):
-        import climetlab
-
         # Don't persist changes when running pytest
-        if climetlab._running_pytest_:
+        if "PYTEST_CURRENT_TEST" in os.environ:
             return
 
         try:
@@ -128,6 +132,12 @@ class Settings:
                 self._settings_yaml,
                 exc_info=True,
             )
+
+    def _check_pytest(self):
+        # We don't want the settings to persist between tests
+        if os.environ.get("PYTEST_CURRENT_TEST") != self._pytest:
+            self._pytest = os.environ.get("PYTEST_CURRENT_TEST")
+            self._settings = dict(**self._defaults)
 
 
 try:

@@ -64,7 +64,7 @@ def find_plugin(directory, name, loader):
 def directories():
 
     result = []
-    for conf in ("styles_directories", "projections_directories", "layers_directories"):
+    for conf in ("styles-directories", "projections-directories", "layers-directories"):
         for d in SETTINGS.get(conf):
             if os.path.exists(d) and os.path.isdir(d):
                 result.append(d)
