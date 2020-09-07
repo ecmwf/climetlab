@@ -12,7 +12,7 @@
 import os
 import pytest
 
-IGNORE = ["conf.py", "xml2rst.py"]
+IGNORE = ["conf.py", "xml2rst.py", "actions.py"]
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
 
 
