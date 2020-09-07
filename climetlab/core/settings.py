@@ -27,18 +27,24 @@ SETTINGS_AND_HELP = {
     ),
     "styles-directories": (
         [os.path.join(DOT_CLIMETLAB, "styles")],
-        """See :ref:`styles` for more information.""",
+        """List of directories where to search for styles definitions.
+        See :ref:`styles` for more information.""",
     ),
     "projections-directories": (
         [os.path.join(DOT_CLIMETLAB, "projections")],
-        """See :ref:`projections` for more information.""",
+        """List of directories where to search for projections definitions.
+        See :ref:`projections` for more information.""",
     ),
     "layers-directories": (
         [os.path.join(DOT_CLIMETLAB, "layers")],
-        """See :ref:`layers` for more information.""",
+        """List of directories where to search for layers definitions.
+        See :ref:`layers` for more information.""",
     ),
-    "plotting-options": ({}, """Dictionary of default plotting options.
-                         See :ref:`plotting` for more information."""),
+    "plotting-options": (
+        {},
+        """Dictionary of default plotting options.
+                         See :ref:`plotting` for more information.""",
+    ),
 }
 
 DEFAULTS = {}

@@ -19,6 +19,7 @@
 			"Netcdf",
 			"climetlab",
 			"geopoints",
+			"literalinclude",
 			"netcdf",
 			"numpy",
 			"plugins",

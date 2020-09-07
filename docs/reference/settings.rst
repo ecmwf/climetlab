@@ -5,7 +5,7 @@ Settings
 
     List all settings and their default values.
 
-Seetings are saved in ``~/.climetlab/settings.yaml``.
+Settings are saved in ``~/.climetlab/settings.yaml``.
 
 
 .. literalinclude:: settings-get.py

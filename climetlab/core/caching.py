@@ -142,12 +142,6 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
-def class_full_name(o):
-    if o.__module__ is None:
-        return o.__name__
-    return o.__module__ + "." + o.__name__
-
-
 def cache_file(owner: str, *args, extension: str = ".cache"):
 
     m = hashlib.sha256()
