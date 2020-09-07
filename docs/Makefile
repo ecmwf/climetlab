@@ -1,3 +1,5 @@
+#!/usr/bin/env make -f
+
 # Minimal makefile for Sphinx documentation
 #
 

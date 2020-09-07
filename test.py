@@ -1,29 +1,19 @@
-import inspect
+import pandas as pd
+import numpy as np
+import xarray as xr
 
+data = np.random.rand(4, 3)
 
-def g(**wargs):
-    print(wargs)
+locs = ["IA", "IL", "IN"]
 
+times = pd.date_range("2000-01-01", periods=4)
 
-def args(frame):
-    func = frame.f_globals[frame.f_code.co_name]
-    user_args = inspect.getargvalues(frame)
-    code_args = inspect.getfullargspec(func)
-    given = {}
+foo = xr.DataArray(data, coords=[times, locs], dims=["time", "space"])
 
-    if code_args.kwonlydefaults:
-        pairs = list(code_args.kwonlydefaults.items())
-    else:
-        pairs = list(zip(code_args.args, code_args.defaults))
+foo.attrs["_climetlab"] = 2
+print(foo)
 
-    for name, value in pairs:
-        if user_args.locals[name] is not value:
-            given[name] = user_args.locals[name]
-    return given
+bar = foo.to_dataset(name="foo")
+bar.attrs["_climetlab"] = 3
 
-
-def f(*, a=1, b=2, c=3):
-    g(**args(inspect.currentframe()))
-
-
-f(b=42)
+print(bar)
