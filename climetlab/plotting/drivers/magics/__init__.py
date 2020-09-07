@@ -83,7 +83,12 @@ class mcoast(Action):  # noqa: N801
 
 
 class mmap(Action):  # noqa: N801
-    pass
+    def page_ratio(self):
+        south = self.kwargs.get("subpage_lower_left_latitude", -90.0)
+        west = self.kwargs.get("subpage_lower_left_longitude", -180)
+        north = self.kwargs.get("subpage_upper_right_latitude", 90.0)
+        east = self.kwargs.get("subpage_upper_right_longitude", 180.0)
+        return (north - south) / (east - west)
 
 
 class FieldAction(Action):
@@ -509,6 +514,8 @@ class Driver:
                 target=self._projection,
                 action=mmap,
             )
+
+        self._page_ratio = self._projection.page_ratio()
 
         _title_height_cm = 0
         if title:
