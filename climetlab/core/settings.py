@@ -8,7 +8,6 @@
 #
 
 import os
-import sys
 import yaml
 import getpass
 from climetlab.utils.html import css
@@ -38,7 +37,8 @@ SETTINGS_AND_HELP = {
         [os.path.join(DOT_CLIMETLAB, "layers")],
         """See :ref:`layers` for more information.""",
     ),
-    "plotting-options": ({}, """See :ref:`plotting` for more information."""),
+    "plotting-options": ({}, """Dictionary of default plotting options.
+                         See :ref:`plotting` for more information."""),
 }
 
 DEFAULTS = {}

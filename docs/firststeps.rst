@@ -159,21 +159,7 @@ Below are the parameters you can pass to the plot function:
 You can find out what are the possible values for *projection*,
 *style*, *foreground* and *background* parameters using the code below:
 
-.. code-block:: python
-
-  import climetlab.plotting
-
-  # List of possible projections
-  for p in climetlab.plotting.projections():
-      print(p)
-
-  # List of possible styles
-  for p in climetlab.plotting.styles():
-      print(p)
-
-  # List of possible backgrounds/foregrounds
-  for p in climetlab.plotting.layers():
-      print(p)
+.. literalinclude:: print-magics-objects.py
 
 
 To get more information about a given projection, in a Jupyter Notebook:
