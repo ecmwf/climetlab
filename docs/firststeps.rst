@@ -72,7 +72,7 @@ Datasets are a higher-level concept compared to data sources.
 
 .. todo::
 
-  metadata, hidden access to sources, control plotting, control converstion to pandas
+  metadata, hidden access to sources, control plotting, control conversion to pandas
 
 
 The following Python code:

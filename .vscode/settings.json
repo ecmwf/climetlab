@@ -31,6 +31,7 @@
         "setuptools",
         "startup",
         "toctree",
-        "xarray"
+        "xarray",
+        "literalinclude",
     ]
 }

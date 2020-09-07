@@ -22,7 +22,7 @@ def _given_args(frame):
 
 def mcoast(
     *,
-    # [CoastPlotting]
+    # [CoastPlotting] 
     map_coastline_resolution: str = "automatic",
     map_coastline_land_shade: bool = False,
     map_coastline_land_shade_colour: str = "green",
@@ -81,8 +81,8 @@ def msymb(
     *,
     # [SymbolAdvancedTableMode] Here comes the description of the SymbolTableMode object
     symbol_advanced_table_selection_type: str = "count",
-    symbol_advanced_table_min_value: float = -1e21,
-    symbol_advanced_table_max_value: float = 1e21,
+    symbol_advanced_table_min_value: float = -1e+21,
+    symbol_advanced_table_max_value: float = 1e+21,
     symbol_advanced_table_level_count: int = 10.0,
     symbol_advanced_table_level_tolerance: int = 2.0,
     symbol_advanced_table_interval: float = 8.0,
@@ -110,8 +110,8 @@ def msymb(
     symbol_advanced_table_text_font_colour: str = "automatic",
     symbol_advanced_table_text_display_type: str = "none",
     symbol_advanced_table_outlayer_method: bool = "none",
-    symbol_advanced_table_outlayer_min_value: float = -1e21,
-    symbol_advanced_table_outlayer_max_value: float = 1e21,
+    symbol_advanced_table_outlayer_min_value: float = -1e+21,
+    symbol_advanced_table_outlayer_max_value: float = 1e+21,
     # [SymbolIndividualMode] Here comes the description of the SymbolIndividualMode object
     legend_user_text: str = "",
     symbol_colour: str = "BLUE",
@@ -137,7 +137,7 @@ def msymb(
     symbol_scaling_factor: float = 4.0,
     symbol_type: str = "number",
     symbol_table_mode: str = "OFF",
-    # symbol_marker_mode: str = "index",
+    #symbol_marker_mode: str = "index",
     symbol_format: str = "(automatic)",
     symbol_text_blanking: bool = False,
     symbol_outline: bool = False,
