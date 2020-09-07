@@ -28,6 +28,7 @@ from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.data import get_data_entry
 from climetlab.core.metadata import annotation
+from climetlab.core.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)
 
@@ -66,6 +67,9 @@ class Action:
                     self.kwargs[k[1:]] = v
                 if k[0] in ("-",):
                     self.kwargs.pop(k[1:], None)
+                if k[0] in ("=",):
+                    if k[1:] not in self.kwargs:
+                        self.kwargs[k[1:]] = v
             return self
         return None
 
@@ -291,7 +295,7 @@ class Driver:
         self._legend = None
         self._title = None
 
-        self.bounding_box(90, -180, -90, 180)
+        self._bounding_box = None
         self._tmp = []
 
     def temporary_file(self, extension: str = ".tmp") -> str:
@@ -307,25 +311,19 @@ class Driver:
 
     def bounding_box(self, north: float, west: float, south: float, east: float):
 
-        # Convert to float as these values may come from Numpy
-        north = float(north)
-        west = float(west)
-        south = float(south)
-        east = float(east)
+        bbox = BoundingBox(north=north, west=west, south=south, east=east)
+        if self._bounding_box is None:
+            self._bounding_box = bbox
+        else:
+            self._bounding_box = self._bounding_box.merge(bbox)
 
-        assert north > south, "North (%s) must be greater than south (%s)" % (
-            north,
-            south,
-        )
-        assert west != east
-
-        self._projection = mmap(
-            subpage_upper_right_longitude=east,
-            subpage_upper_right_latitude=north,
-            subpage_lower_left_latitude=south,
-            subpage_lower_left_longitude=west,
-            subpage_map_projection="cylindrical",
-        )
+        # self._projection = mmap(
+        #     subpage_upper_right_longitude=east,
+        #     subpage_upper_right_latitude=north,
+        #     subpage_lower_left_latitude=south,
+        #     subpage_lower_left_longitude=west,
+        #     subpage_map_projection="cylindrical",
+        # )
         self._page_ratio = (north - south) / (east - west)
 
     def _push_layer(self, data):
@@ -495,6 +493,22 @@ class Driver:
         path = self.option(
             "path", self.temporary_file("." + self.option("format", "png"))
         )
+
+        if self._projection is None:
+            # TODO: select best projection based on bbox
+            self._projection = mmap(subpage_map_projection="cylindrical")
+
+        if self._bounding_box is not None:
+            self._projection = _apply(
+                value={
+                    "=subpage_upper_right_longitude": self._bounding_box.east,
+                    "=subpage_upper_right_latitude": self._bounding_box.north,
+                    "=subpage_lower_left_latitude": self._bounding_box.south,
+                    "=subpage_lower_left_longitude": self._bounding_box.west,
+                },
+                target=self._projection,
+                action=mmap,
+            )
 
         _title_height_cm = 0
         if title:

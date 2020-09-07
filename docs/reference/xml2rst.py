@@ -343,6 +343,13 @@ def produce_yaml():
             for p in k.parameters:
                 print("  -", p.name)
 
+    print("""
+mmap:
+  - subpage_upper_right_longitude
+  - subpage_upper_right_latitude
+  - subpage_lower_left_latitude
+  - subpage_lower_left_longitude
+          """)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--rst", action="store_true")

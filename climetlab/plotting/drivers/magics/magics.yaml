@@ -124,3 +124,10 @@ msymb:
   - symbol_name_table
   - symbol_colour_table
   - symbol_height_table
+
+mmap:
+  - subpage_upper_right_longitude
+  - subpage_upper_right_latitude
+  - subpage_lower_left_latitude
+  - subpage_lower_left_longitude
+          
