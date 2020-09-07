@@ -104,7 +104,7 @@ class Settings:
         if klass is list:
             assert len(args) > 0
             assert len(kwargs) == 0
-            value = args
+            value = list(args)
             if len(args) == 1 and isinstance(args[0], list):
                 value = args[0]
 
@@ -119,7 +119,7 @@ class Settings:
                 value = args[0]
 
         if not isinstance(value, klass):
-            raise AttributeError("Setting '%s' must be of type '%s'" % (name, klass))
+            raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
 
         self._settings[name] = value
         self._changed()

@@ -15,7 +15,7 @@ import yaml
 import climetlab.plotting
 from climetlab.core.data import get_data_entry, clear_cache
 from climetlab.core.plugins import directories
-
+import pytest
 
 def check_user_defined_objects(collection, setting, obj, tree, get_list, get_entry):
 
@@ -105,4 +105,32 @@ def test_user_layers():
     )
 
 def test_settings():
-    pass
+
+    settings.reset()
+
+    assert settings.get("plotting-options") == {}, "Check 1"
+    settings.set("plotting-options", width=400)
+    assert settings.get("plotting-options") == {'width': 400}
+    settings.reset("plotting-options")
+    assert settings.get("plotting-options") == {}, "Check 2"
+    settings.set("plotting-options", {'width':400})
+    assert settings.get("plotting-options") == {'width': 400}
+    settings.reset()
+    assert settings.get("plotting-options") == {}, "Check 3"
+
+    with pytest.raises(TypeError):
+        settings.set("plotting-options", 3)
+
+    settings.set("styles-directories", ["/a", "/b"])
+    assert settings.get("styles-directories") == ["/a", "/b"]
+
+    settings.set("styles-directories", "/c", "/d")
+    assert settings.get("styles-directories") == ["/c", "/d"]
+
+    with pytest.raises(KeyError):
+        settings.set("test", 42)
+
+    with pytest.raises(KeyError):
+        settings.get("test")
+
+    settings.reset()
