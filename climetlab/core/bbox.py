@@ -9,7 +9,7 @@
 
 
 class BoundingBox:
-    def __init__(self, *, north, west, south, east):
+    def __init__(self, north, west, south, east):
         # Convert to float as these values may come from Numpy
         self.north = min(float(north), 90.0)
         self.west = float(west)
@@ -21,12 +21,23 @@ class BoundingBox:
             self.south,
         )
 
-        assert self.west != self.east
+        assert self.west != self.east, "West %s, East %s" % (west, east)
+
+        while self.east < self.west:
+            self.east += 360
 
         while self.east - self.west > 360:
             self.east -= 360
 
-    def _repr_(self):
+        while self.east >= 360 and self.west >= 360:
+            self.east -= 360
+            self.west -= 360
+
+        while self.east < -180 and self.west < -180:
+            self.east += 360
+            self.west += 360
+
+    def __repr__(self):
         return "BoundingBox(north=%g,west=%g,south=%g,east=%g)" % (
             self.north,
             self.west,
@@ -34,13 +45,38 @@ class BoundingBox:
             self.east,
         )
 
+    @property
+    def width(self):
+        return self.east - self.west
+
+    @property
+    def height(self):
+        return self.north - self.south
+
     def merge(self, other):
-        # TODO:check east/west
+
+        west1, east1 = self.west, self.east
+        west2, east2 = other.west, other.east
+
+        while west1 < 0 or east1 < 0:
+            west1 += 360
+            east1 += 360
+
+        while west2 < 0 or east2 < 0:
+            west2 += 360
+            east2 += 360
+
+        if abs(west1 - (west2 + 360)) < abs(west1 - west2):
+            east2, west2 = east2 + 360, west2 + 360
+        elif abs(west2 - (west1 + 360)) < abs(west2 - west1):
+            east1, west1 = east1 + 360, west1 + 360
+
+        # print(west1, east1, west2, east2)
         return BoundingBox(
             north=max(self.north, other.north),
-            west=min(self.west, other.west),
+            west=min(west1, west2),
             south=min(self.south, other.south),
-            east=max(self.east, other.east),
+            east=max(east1, east2),
         )
 
     def add_margins(self, margins):

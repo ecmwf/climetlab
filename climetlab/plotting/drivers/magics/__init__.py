@@ -435,6 +435,17 @@ class Driver:
         if options.provided("style"):
             self.style(options["style"])
 
+        if options.provided("bounding_box"):
+            bbox = options["bounding_box"]
+            if isinstance(bbox, (list, tuple)):
+                self.bounding_box(
+                    north=bbox[0], west=bbox[1], south=bbox[2], east=bbox[3]
+                )
+            else:
+                self.bounding_box(
+                    north=bbox.north, west=bbox.west, south=bbox.south, east=bbox.east
+                )
+
     def option(self, name, default=None):
         return self._options(name, default)
 
