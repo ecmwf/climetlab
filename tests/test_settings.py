@@ -103,3 +103,6 @@ def test_user_layers():
         climetlab.plotting.layers,
         climetlab.plotting.layer,
     )
+
+def test_settings():
+    pass

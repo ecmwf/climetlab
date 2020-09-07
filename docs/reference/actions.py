@@ -159,3 +159,6 @@ def msymb(
     symbol_height_table: List[float] = [],
 ):
     return macro.msymb(**_given_args(inspect.currentframe()))
+
+
+msymb(symbol_advanced_table_colour_list=[12])

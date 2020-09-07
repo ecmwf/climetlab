@@ -43,7 +43,7 @@ SETTINGS_AND_HELP = {
     "plotting-options": (
         {},
         """Dictionary of default plotting options.
-                         See :ref:`plotting` for more information.""",
+           See :ref:`plotting` for more information.""",
     ),
 }
 
@@ -74,20 +74,53 @@ class Settings:
             [type]: [description]
         """
 
-        self._check_pytest()
+        if name not in DEFAULTS:
+            raise KeyError("No setting name '%s'" % (name,))
 
         if default is NONE:
             return self._settings[name]
 
         return self._settings.get(name, default)
 
-    def set(self, name: str, value):
+    def set(self, name: str, *args, **kwargs):
         """[summary]
 
         Args:
             name (set): [description]
             value ([type]): [description]
         """
+
+        if name not in DEFAULTS:
+            raise KeyError("No setting name '%s'" % (name,))
+
+        klass = type(DEFAULTS[name])
+
+        if klass in (bool, int, float, str):
+            # TODO: Proper exceptions
+            assert len(args) == 1
+            assert len(kwargs) == 0
+            value = args[0]
+
+        if klass is list:
+            assert len(args) > 0
+            assert len(kwargs) == 0
+            value = args
+            if len(args) == 1 and isinstance(args[0], list):
+                value = args[0]
+
+        if klass is dict:
+            assert len(args) <= 1
+            if len(args) == 0:
+                assert len(kwargs) > 0
+                value = kwargs
+
+            if len(args) == 1:
+                assert len(kwargs) == 0
+                value = args[0]
+
+        if not isinstance(value, klass):
+            raise AttributeError("Setting '%s' must be of type '%s'" % (name, klass))
+
         self._settings[name] = value
         self._changed()
 
@@ -100,6 +133,9 @@ class Settings:
         if name is None:
             self._settings = dict(**DEFAULTS)
         else:
+            if name not in DEFAULTS:
+                raise KeyError("No setting name '%s'" % (name,))
+
             self._settings.pop(name, None)
             if name in DEFAULTS:
                 self._settings[name] = DEFAULTS[name]
@@ -125,9 +161,6 @@ class Settings:
         self._callbacks.append(callback)
 
     def _save(self):
-        # Don't persist changes when running pytest
-        if "PYTEST_CURRENT_TEST" in os.environ:
-            return
 
         try:
             with open(self._settings_yaml, "w") as f:
@@ -138,12 +171,6 @@ class Settings:
                 self._settings_yaml,
                 exc_info=True,
             )
-
-    def _check_pytest(self):
-        # We don't want the settings to persist between tests
-        if os.environ.get("PYTEST_CURRENT_TEST") != self._pytest:
-            self._pytest = os.environ.get("PYTEST_CURRENT_TEST")
-            self._settings = dict(**self._defaults)
 
 
 try:
