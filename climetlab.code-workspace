@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../magics-python-b8raoult"
+		},
+		{
+			"path": "../magics"
 		}
 	],
 	"settings": {
@@ -50,6 +56,6 @@
 		],
 		"code-runner.fileDirectoryAsCwd": true,
 		"code-runner.showRunCommandInEditorContextMenu": false,
-	
+
 	}
 }
