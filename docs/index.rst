@@ -67,6 +67,7 @@ Documentation
 * :doc:`reference/settings`
 * :doc:`reference/caching`
 * :doc:`reference/plotting`
+* :doc:`reference/gallery`
 
 .. toctree::
    :maxdepth: 1
@@ -79,11 +80,13 @@ Documentation
    reference/settings
    reference/caching
    reference/plotting
+   reference/gallery
 
 **Contributing (TODO)**
 
 * :doc:`contributing/datasets`
 * :doc:`contributing/sources`
+* :doc:`contributing/plotting`
 
 .. toctree::
    :maxdepth: 1
@@ -92,6 +95,7 @@ Documentation
 
    contributing/datasets
    contributing/sources
+   contributing/plotting
 
 
 License
