@@ -22,40 +22,40 @@ def test_bytes():
 def test_bbox():
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i, 30, 10 + i)
+        bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)
         assert bbox.width == 10, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i, 30, 350 + i)
+        bbox = BoundingBox(north=90, west=i, south=30, east=350 + i)
         assert bbox.width == 350, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i, 30, (10 + i) % 360)
+        bbox = BoundingBox(north=90, west=i, south=30, east=(10 + i) % 360)
         assert bbox.width == 10, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i, 30, (350 + i) % 360)
+        bbox = BoundingBox(north=90, west=i, south=30, east=(350 + i) % 360)
         assert bbox.width == 350, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i % 360, 30, 10 + i)
+        bbox = BoundingBox(north=90, west=i % 360, south=30, east=10 + i)
         assert bbox.width == 10, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i % 360, 30, 350 + i)
+        bbox = BoundingBox(north=90, west=i % 360, south=30, east=350 + i)
         assert bbox.width == 350, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i % 360, 30, (10 + i) % 360)
+        bbox = BoundingBox(north=90, west=i % 360, south=30, east=(10 + i) % 360)
         assert bbox.width == 10, bbox
 
     for i in range(-365, 365):
-        bbox = BoundingBox(90, i % 360, 30, (350 + i) % 360)
+        bbox = BoundingBox(north=90, west=i % 360, south=30, east=(350 + i) % 360)
         assert bbox.width == 350, bbox
 
     for i in range(-365, 365):
-        bbox1 = BoundingBox(90, 150 + i, 30, 170 + i)
-        bbox2 = BoundingBox(90, -170 + i, 30, -150 + i)
+        bbox1 = BoundingBox(north=90, west=150 + i, south=30, east=170 + i)
+        bbox2 = BoundingBox(north=90, west=-170 + i, south=30, east=-150 + i)
         bbox = bbox1.merge(bbox2)
         assert bbox.width == 60, (bbox1, bbox2, bbox)
 

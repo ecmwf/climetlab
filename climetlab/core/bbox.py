@@ -9,7 +9,7 @@
 
 
 class BoundingBox:
-    def __init__(self, north, west, south, east):
+    def __init__(self, *, north, west, south, east):
         # Convert to float as these values may come from Numpy
         self.north = min(float(north), 90.0)
         self.west = float(west)

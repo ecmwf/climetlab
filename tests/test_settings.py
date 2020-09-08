@@ -17,6 +17,7 @@ from climetlab.core.data import get_data_entry, clear_cache
 from climetlab.core.plugins import directories
 import pytest
 
+
 def check_user_defined_objects(collection, setting, obj, tree, get_list, get_entry):
 
     # Clear cache
@@ -104,17 +105,18 @@ def test_user_layers():
         climetlab.plotting.layer,
     )
 
+
 def test_settings():
 
     settings.reset()
 
     assert settings.get("plotting-options") == {}, "Check 1"
     settings.set("plotting-options", width=400)
-    assert settings.get("plotting-options") == {'width': 400}
+    assert settings.get("plotting-options") == {"width": 400}
     settings.reset("plotting-options")
     assert settings.get("plotting-options") == {}, "Check 2"
-    settings.set("plotting-options", {'width':400})
-    assert settings.get("plotting-options") == {'width': 400}
+    settings.set("plotting-options", {"width": 400})
+    assert settings.get("plotting-options") == {"width": 400}
     settings.reset()
     assert settings.get("plotting-options") == {}, "Check 3"
 
