@@ -1,0 +1,7 @@
+magics:
+  mmap:
+    subpage_lower_left_latitude: -70
+    subpage_lower_left_longitude: -190
+    subpage_map_projection: mercator
+    subpage_upper_right_latitude: -20
+    subpage_upper_right_longitude: -50

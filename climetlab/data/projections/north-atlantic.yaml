@@ -1,0 +1,8 @@
+magics:
+  mmap:
+    subpage_lower_left_latitude: 5
+    subpage_lower_left_longitude: -48
+    subpage_map_hemisphere: north
+    subpage_map_projection: polar_stereographic
+    subpage_upper_right_latitude: 40
+    subpage_upper_right_longitude: 87

@@ -1,0 +1,7 @@
+magics:
+  mmap:
+    subpage_lower_left_latitude: 34.5
+    subpage_lower_left_longitude: -10.67
+    subpage_map_projection: cylindrical
+    subpage_upper_right_latitude: 71.05
+    subpage_upper_right_longitude: 31.55

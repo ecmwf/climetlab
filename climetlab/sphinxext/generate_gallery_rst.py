@@ -42,8 +42,7 @@ def plot_style(name, path):
     if "mcont" in yaml["magics"]:
         data = climetlab.load_dataset("sample-grib-data")[0]
 
-
-    extra = yaml.get("gallery",{}).get("plot_map", {})
+    extra = yaml.get("gallery", {}).get("plot_map", {})
 
     climetlab.plot_map(data, style=name, path=path, **extra)
 
