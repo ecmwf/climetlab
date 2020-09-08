@@ -8,10 +8,11 @@
 #
 
 import sys
-from docutils.parsers.rst import Directive
-from docutils import statemachine
 from importlib import import_module
 from io import StringIO
+
+from docutils import statemachine
+from docutils.parsers.rst import Directive
 
 # Examples at https://github.com/docutils-mirror/docutils
 

@@ -7,14 +7,16 @@
 # nor does it submit to any jurisdiction.
 #
 
-import numpy as np
-import climetlab
-from importlib import import_module
-from climetlab.core.plugins import find_plugin
 import os
+from importlib import import_module
+
+import numpy as np
 import yaml
-from climetlab.utils.html import table
+
+import climetlab
 from climetlab.core.metadata import annotate
+from climetlab.core.plugins import find_plugin
+from climetlab.utils.html import table
 
 
 class Dataset:

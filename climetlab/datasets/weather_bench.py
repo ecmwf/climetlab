@@ -7,8 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from . import Dataset
 from climetlab import load_source
+
+from . import Dataset
 
 
 class WeatherBench(Dataset):

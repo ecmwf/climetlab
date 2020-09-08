@@ -9,10 +9,11 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core.metadata import annotate, annotation
+import numpy as np
 import pandas as pd
 import xarray as xr
-import numpy as np
+
+from climetlab.core.metadata import annotate, annotation
 
 
 class Owner:

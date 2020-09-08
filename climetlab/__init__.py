@@ -7,17 +7,20 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .sources import load as load_source
-from .datasets import load as load_dataset
-from .plotting import plot_map, new_plot, options as plotting_options
-from .core.settings import SETTINGS as settings
+from climetlab.datasets import Dataset
+from climetlab.sources import DataSource
+
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
+from .core.settings import SETTINGS as settings
+from .datasets import load as load_dataset
+from .plotting import new_plot
+from .plotting import options as plotting_options
+from .plotting import plot_map
+from .sources import load as load_source
 
 # from climetlab.core.ipython import ipython_active
 
-from climetlab.sources import DataSource
-from climetlab.datasets import Dataset
 
 # import logging
 

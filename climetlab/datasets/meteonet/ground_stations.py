@@ -9,8 +9,9 @@
 
 import pandas as pd
 
-from . import Meteonet
 from climetlab.utils import download_and_cache
+
+from . import Meteonet
 
 
 class MeteonetGroundStations(Meteonet):

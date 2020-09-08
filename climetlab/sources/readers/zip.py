@@ -8,8 +8,9 @@
 #
 
 import os
-from . import Reader
 from zipfile import ZipFile
+
+from . import Reader
 
 
 class ZIPReader(Reader):

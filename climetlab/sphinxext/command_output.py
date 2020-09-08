@@ -7,12 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-import subprocess
 import os
-
-from docutils.parsers.rst import Directive
-from docutils import statemachine
+import subprocess
 from shlex import split
+
+from docutils import statemachine
+from docutils.parsers.rst import Directive
 
 # Examples at https://github.com/docutils-mirror/docutils
 

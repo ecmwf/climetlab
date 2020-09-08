@@ -8,11 +8,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import argparse
 import sys
+from collections import OrderedDict, defaultdict
+
 import xmltodict
 import yaml
-from collections import defaultdict, OrderedDict
-import argparse
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 

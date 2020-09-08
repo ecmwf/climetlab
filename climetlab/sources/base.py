@@ -7,14 +7,17 @@
 # nor does it submit to any jurisdiction.
 #
 
+import getpass
+import logging
+import os
+from abc import ABC, abstractmethod
+
+import markdown
+
+from climetlab.core.ipython import HTML, display, ipython_active
+
 from . import DataSource
 from .readers import reader
-import getpass
-import os
-import markdown
-from abc import ABC, abstractmethod
-import logging
-from climetlab.core.ipython import ipython_active, display, HTML
 
 LOG = logging.getLogger(__name__)
 

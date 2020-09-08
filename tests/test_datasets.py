@@ -9,7 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_dataset, dataset
+from climetlab import dataset, load_dataset
 
 
 def test_dataset():

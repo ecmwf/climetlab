@@ -7,12 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.helpers import helper
-from climetlab.core.ipython import display
-from .drivers.magics import Driver
 from climetlab.core import docstring
 from climetlab.core.data import data_entries, get_data_entry
+from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
+from climetlab.helpers import helper
+
+from .drivers.magics import Driver
 from .options import Options
 
 OPTIONS = dict()

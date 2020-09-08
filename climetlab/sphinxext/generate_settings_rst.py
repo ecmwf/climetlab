@@ -8,8 +8,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 import getpass
+import os
 
 from climetlab.core.settings import SETTINGS_AND_HELP
 

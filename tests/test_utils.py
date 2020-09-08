@@ -9,8 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils import bytes_to_string
 from climetlab.core.bbox import BoundingBox
+from climetlab.utils import bytes_to_string
 
 
 def test_bytes():

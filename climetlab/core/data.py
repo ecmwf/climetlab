@@ -7,11 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core.plugins import directories
-import os
-import yaml
-from collections import defaultdict
 import logging
+import os
+from collections import defaultdict
+
+import yaml
+
+from climetlab.core.plugins import directories
 from climetlab.utils.html import css
 
 LOG = logging.getLogger(__name__)

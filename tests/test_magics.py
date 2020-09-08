@@ -9,9 +9,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+import pytest
+
 import climetlab as cml
 from climetlab.core.bbox import BoundingBox
-import pytest
 
 
 def test_settings():

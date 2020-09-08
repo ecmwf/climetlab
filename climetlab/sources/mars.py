@@ -7,11 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-import ecmwfapi
-import os
 import json
+import os
 
-from .base import FileSource, APIKeyPrompt
+import ecmwfapi
+
+from .base import APIKeyPrompt, FileSource
 
 
 class MARSAPI(APIKeyPrompt):

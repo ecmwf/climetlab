@@ -11,10 +11,17 @@
 # N801 = classes should start with uppercase
 # N806 = variables should be lower case
 
-import os
 import logging
-import yaml
+import os
 from collections import defaultdict
+
+import yaml
+
+from climetlab.core.bbox import BoundingBox
+from climetlab.core.caching import temp_file
+from climetlab.core.data import get_data_entry
+from climetlab.core.ipython import SVG, Image
+from climetlab.core.metadata import annotation
 
 # This is needed when running Sphinx on ReadTheDoc
 
@@ -24,11 +31,6 @@ except Exception:
     macro = None
 
 
-from climetlab.core.caching import temp_file
-from climetlab.core.ipython import SVG, Image
-from climetlab.core.data import get_data_entry
-from climetlab.core.metadata import annotation
-from climetlab.core.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)
 

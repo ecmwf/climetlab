@@ -7,10 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-import numpy as np
-from . import Dataset
 import random
+
+import numpy as np
+
 from climetlab import load_source
+
+from . import Dataset
 
 
 def normalise_01(a):

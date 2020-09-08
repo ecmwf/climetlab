@@ -7,11 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-import entrypoints
-import climetlab
-from importlib import import_module
 import logging
+import os
+from importlib import import_module
+
+import entrypoints
+
+import climetlab
+
 from .settings import SETTINGS
 
 LOG = logging.getLogger(__name__)

@@ -9,13 +9,15 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import settings
 import os
-import yaml
-import climetlab.plotting
-from climetlab.core.data import get_data_entry, clear_cache
-from climetlab.core.plugins import directories
+
 import pytest
+import yaml
+
+import climetlab.plotting
+from climetlab import settings
+from climetlab.core.data import clear_cache, get_data_entry
+from climetlab.core.plugins import directories
 
 
 def check_user_defined_objects(collection, setting, obj, tree, get_list, get_entry):

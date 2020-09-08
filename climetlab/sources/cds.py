@@ -7,12 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-import cdsapi
 import os
 
-from .base import FileSource, APIKeyPrompt
+import cdsapi
+
 from climetlab.helpers import helper
 
+from .base import APIKeyPrompt, FileSource
 
 APIRC = "key: {key}\nurl: https://cds.climate.copernicus.eu/api/v2"
 

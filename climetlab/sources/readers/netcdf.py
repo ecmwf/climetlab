@@ -9,12 +9,13 @@
 
 # The code is copied from skinnywms, and we should combile later
 
+import datetime
 from contextlib import closing
 from itertools import product
 
-import xarray as xr
-import datetime
 import numpy as np
+import xarray as xr
+
 from . import Reader
 
 

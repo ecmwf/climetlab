@@ -11,12 +11,13 @@
 
 import os
 import re
+
 import nbformat
 import pytest
+from nbconvert.preprocessors import ExecutePreprocessor
 
 # See https://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
 
-from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 

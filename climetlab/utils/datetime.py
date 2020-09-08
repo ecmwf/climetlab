@@ -7,12 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-from collections import defaultdict
 import datetime
-from dateutil.parser import parse
+from collections import defaultdict
 
 # datetime.fromisoformat() only available from Python3.7
 from backports.datetime_fromisoformat import MonkeyPatch
+from dateutil.parser import parse
 
 MonkeyPatch.patch_fromisoformat()
 

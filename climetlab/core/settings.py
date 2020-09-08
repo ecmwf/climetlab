@@ -7,13 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-import yaml
 import getpass
-from climetlab.utils.html import css
 import logging
+import os
 from typing import Callable
 
+import yaml
+
+from climetlab.utils.html import css
 
 LOG = logging.getLogger(__name__)
 

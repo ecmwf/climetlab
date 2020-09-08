@@ -10,6 +10,7 @@
 #
 
 import os
+
 import pytest
 
 IGNORE = ["conf.py", "xml2rst.py", "actions.py"]

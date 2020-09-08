@@ -7,16 +7,17 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-import tempfile
-import hashlib
 import datetime
-import sqlite3
+import hashlib
 import json
+import os
+import sqlite3
+import tempfile
+
+from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
 
 from .settings import SETTINGS
-from climetlab.utils import bytes_to_string
 
 _connection = None
 

@@ -23,6 +23,17 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+
+        {
+            "label": "isort",
+            "type": "shell",
+            "command": "isort -y",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

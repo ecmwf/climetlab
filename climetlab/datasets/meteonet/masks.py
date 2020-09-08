@@ -8,8 +8,9 @@
 #
 
 
-from . import Meteonet
 from climetlab import load_source
+
+from . import Meteonet
 
 
 class MeteonetMasks(Meteonet):

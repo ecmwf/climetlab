@@ -7,11 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-from importlib import import_module
 import os
 import weakref
-from climetlab.utils.html import table
+from importlib import import_module
+
 from climetlab.core.caching import cache_file
+from climetlab.utils.html import table
 
 
 def lookup(name):

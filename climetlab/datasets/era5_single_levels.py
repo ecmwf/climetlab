@@ -7,9 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
-from . import Dataset
-from climetlab.utils.domains import domain_to_area
 from climetlab import load_source
+from climetlab.utils.domains import domain_to_area
+
+from . import Dataset
 
 
 class Era5SingleLevels(Dataset):

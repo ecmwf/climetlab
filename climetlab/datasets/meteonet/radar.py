@@ -10,8 +10,9 @@
 import numpy as np
 import xarray as xr
 
-from . import Meteonet
 from climetlab.utils import download_and_cache
+
+from . import Meteonet
 
 
 """

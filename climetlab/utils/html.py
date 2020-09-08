@@ -7,8 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-import re
 import os
+import re
 
 
 def urlify(text):

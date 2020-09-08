@@ -9,8 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils import download_and_cache
 import time
+
+from climetlab.utils import download_and_cache
 
 
 def test_download():

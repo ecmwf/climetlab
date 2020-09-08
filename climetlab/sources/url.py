@@ -7,12 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
-from .base import FileSource
+import shutil
+
 import requests
 from tqdm import tqdm
-import shutil
-import logging
+
+from .base import FileSource
 
 LOG = logging.getLogger(__name__)
 

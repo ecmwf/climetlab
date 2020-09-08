@@ -9,11 +9,11 @@
 
 import ctypes
 import ctypes.util
-import sys
 import os
+import sys
+from functools import partial
 
 import numpy as np
-from functools import partial
 
 lib = None
 
