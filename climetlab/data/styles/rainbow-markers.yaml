@@ -13,3 +13,6 @@ magics:
     symbol_table_mode: advanced
     symbol_type: marker
     symbol_advanced_table_height_list: [0.08]
+gallery:
+  plot_map:
+    background: false

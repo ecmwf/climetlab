@@ -25,8 +25,27 @@ def plot_layer(name, path):
 
 
 def plot_style(name, path):
-    # climetlab.plot_map(None, background=False, foreground=name, path=path)
-    pass
+    yaml = climetlab.plotting.style(name).data
+    if "msymb" in yaml["magics"]:
+        data = climetlab.load_dataset("sample-bufr-data")
+        data = data.to_pandas(
+            columns=(
+                "stationNumber",
+                "latitude",
+                "longitude",
+                "data_datetime",
+                "pressure",
+                "airTemperature",
+            ),
+            filters={},
+        )
+    if "mcont" in yaml["magics"]:
+        data = climetlab.load_dataset("sample-grib-data")[0]
+
+
+    extra = yaml.get("gallery",{}).get("plot_map", {})
+
+    climetlab.plot_map(data, style=name, path=path, **extra)
 
 
 def output(title, collection, plotter):
@@ -51,7 +70,10 @@ def output(title, collection, plotter):
                 os.makedirs(os.path.dirname(path))
             except FileExistsError:
                 pass
-            plotter(p, path)
+            try:
+                plotter(p, path)
+            except Exception as e:
+                print(e)
 
         print()
         print(".. image::", "/" + image)
