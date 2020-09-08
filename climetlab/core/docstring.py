@@ -7,8 +7,11 @@
 # nor does it submit to any jurisdiction.
 #
 
+# Keep linters happy
+# N801 = classes should start with uppercase
 
-class docstring:
+
+class docstring:  # noqa: N801
     def __init__(self):
         pass
 

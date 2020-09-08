@@ -7,8 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .bindings import (GribError, grib_file_open, grib_get, grib_handle_delete,
-                       grib_values)
+from .bindings import (
+    GribError,
+    grib_file_open,
+    grib_get,
+    grib_handle_delete,
+    grib_values,
+)
 
 
 class GribField:

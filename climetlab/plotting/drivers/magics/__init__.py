@@ -31,7 +31,6 @@ except Exception:
     macro = None
 
 
-
 LOG = logging.getLogger(__name__)
 
 
@@ -41,7 +40,7 @@ LOG = logging.getLogger(__name__)
 
 class Action:
 
-    default_style = None
+    default_style: object = None
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs

@@ -86,11 +86,11 @@ class HighLow(Dataset):
         return self._fields
 
     def title(self, label):
-        T = ["Trough", "Low", "Ridge", "High"]
+        titles = ["Trough", "Low", "Ridge", "High"]
         i = np.argmax(label)
         if label[i] == 1.0:
-            return T[i]
-        return "%s (%s%%)" % (T[i], int(label[i] * 100 + 0.5))
+            return titles[i]
+        return "%s (%s%%)" % (titles[i], int(label[i] * 100 + 0.5))
 
     # load_data is used by keras
     def load_data(self, normalise=True, test_size=0.5, shuffle=True, fields=False):

@@ -29,10 +29,10 @@ class WeatherBench(Dataset):
 """
 
     def __init__(self, parameter="geopotential_500", resolution=5.625):
-        URL = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(
+        url = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(
             resolution=resolution, parameter=parameter
         )
-        self.source = load_source("url", URL, unpack=True)
+        self.source = load_source("url", url, unpack=True)
 
 
 dataset = WeatherBench
