@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 YAML_FILES = None
 
-IGNORE = ["magics.yaml"]
+IGNORE = ["magics.yaml", "colours.yaml"]
 
 
 def _guess(data, path):
@@ -55,11 +55,14 @@ class Entry:
         self.hidden = data.get("hidden", False)
 
     def _repr_html_(self):
-        html = [css("table")]
-        html.append("<table class='climetlab'>")
-        html.append("<tr><td>Name:</td><td>%s</td></tr>" % self.name)
-        html.append("<tr><td>Collection:</td><td>%s</td></tr>" % self.kind)
-        html.append("<tr><td>Path:</td><td>%s</td></tr>" % self.path)
+        html = [
+            css("table"),
+            "<table class='climetlab'>",
+            "<tr><td>Name:</td><td>%s</td></tr>" % self.name,
+            "<tr><td>Collection:</td><td>%s</td></tr>" % self.kind,
+            "<tr><td>Path:</td><td>%s</td></tr>" % self.path,
+        ]
+
         html.append(
             "<tr><td>Definition:</td><td><pre>%s</pre></td></tr>"
             % (yaml.dump(self.data, default_flow_style=False),)

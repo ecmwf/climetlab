@@ -7,6 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+# TODO: Use magics types
+
+
+def convert_colours():
+    pass
+
 
 def convert(args):
     a = {}

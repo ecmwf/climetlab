@@ -7,10 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-# Keep linters happy
-# N801 = classes should start with uppercase
-# N806 = variables should be lower case
-
 import logging
 import os
 

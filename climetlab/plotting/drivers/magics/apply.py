@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
 import logging
 import os
 from collections import defaultdict
@@ -73,6 +74,22 @@ def _find_action(value, action):
 
 
 def _apply_dict(*, value, collection=None, action=None, default=True, target=None):
+
+    if "update" in value:
+        newvalue = {}
+        for k, v in value.get("set", {}).items():
+            if v is None:
+                newvalue["-{}".format(k)] = v
+            else:
+                newvalue["+{}".format(k)] = v
+
+        return apply(
+            value=newvalue,
+            collection=collection,
+            action=action,
+            default=default,
+            target=target,
+        )
 
     if "set" in value or "clear" in value:
         newvalue = {}
@@ -143,7 +160,11 @@ def _apply_string(*, value, collection=None, action=None, default=True, target=N
 
     magics = data["magics"]
     actions = list(magics.keys())
-    assert len(actions) == 1, actions
+    if len(actions) != 1:
+        raise ValueError(
+            "%s %s: one, and only one magics action can be defined in a yaml file: %r"
+            % (collection, value, actions)
+        )
 
     name = actions[0]
     action = lookup(name)

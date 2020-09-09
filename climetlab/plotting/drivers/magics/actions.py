@@ -70,6 +70,7 @@ class mcoast(Action):  # noqa: N801
 
 class mmap(Action):  # noqa: N801
     def page_ratio(self):
+        # TODO: Use projection
         south = self.kwargs.get("subpage_lower_left_latitude", -90.0)
         west = self.kwargs.get("subpage_lower_left_longitude", -180)
         north = self.kwargs.get("subpage_upper_right_latitude", 90.0)

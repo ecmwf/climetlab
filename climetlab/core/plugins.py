@@ -49,10 +49,9 @@ def find_plugin(directory, name, loader):
     for path, _, files in os.walk(directory):
         path = path[n:]
         for f in files:
-            if f.endswith(".yaml"):
-                if f[:-5] == name:
-                    full = os.path.join(directory, path, f)
-                    return loader.load_yaml(full)
+            if f.endswith(".yaml") and f[:-5] == name:
+                full = os.path.join(directory, path, f)
+                return loader.load_yaml(full)
 
             if f.endswith(".py"):
                 p = os.path.join(path, f[:-3])
