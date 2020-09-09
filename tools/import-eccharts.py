@@ -8,8 +8,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 import json
+import os
+
 import yaml
 
 SOURCE = os.path.expanduser("~/git/webdev/data/catalogue/eccharts/projection")

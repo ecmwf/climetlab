@@ -13,10 +13,10 @@ from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
 from climetlab.helpers import helper
 
-from .drivers.magics import Driver
+from .drivers.magics.driver import Driver
 from .options import Options
 
-OPTIONS = dict()
+OPTIONS = {}
 
 
 def options(**kwargs):
@@ -53,7 +53,7 @@ class Plot:
     """
 
     def __init__(self, kwargs):
-        options = dict()
+        options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)

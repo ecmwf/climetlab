@@ -6,3 +6,12 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
+
+def convert(args):
+    a = {}
+    for k, v in args.items():
+        a[k] = v
+        if isinstance(v, tuple):
+            a[k] = "rgba%r" % (v,)
+    return a
