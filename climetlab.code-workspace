@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../magics-python-b8raoult"
-		},
-		{
-			"path": "../magics"
 		}
 	],
 	"settings": {
@@ -49,10 +43,10 @@
 		"compile-hero.disable-compile-files-on-did-save-code": true,
 		"python.testing.pytestEnabled": true,
 		"python.linting.pycodestyleArgs": [
-			"--ignore=E392,E501,D100,D101,D102,D105"
+
 		],
 		"python.linting.pylamaArgs": [
-			"--ignore=E392,E501,D100,D101,D102,D105"
+
 		],
 		"code-runner.fileDirectoryAsCwd": true,
 		"code-runner.showRunCommandInEditorContextMenu": false,

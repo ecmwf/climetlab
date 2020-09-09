@@ -163,6 +163,21 @@ def _apply(*, value, collection=None, action=None, default=True, target=None):
 
     if isinstance(value, dict):
 
+        if "update" in value:
+            newvalue = {}
+            for k, v in value.get("update").items():
+                if v is None:
+                    newvalue["-{}".format(k)] = v
+                else:
+                    newvalue["+{}".format(k)] = v
+            return _apply(
+                value=newvalue,
+                collection=collection,
+                action=action,
+                default=default,
+                target=target,
+            )
+
         if "set" in value or "clear" in value:
             newvalue = {}
             for k, v in value.get("set", {}).items():

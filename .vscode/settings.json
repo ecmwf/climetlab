@@ -33,5 +33,14 @@
         "toctree",
         "xarray",
         "literalinclude",
+    ],
+    "python.linting.flake8Args": [
+        "--ignore E501"
+    ],
+    "python.linting.pycodestyleArgs": [
+        "--ignore E501"
+    ],
+    "python.linting.pylamaArgs": [
+        "--ignore E501"
     ]
 }
