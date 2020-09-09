@@ -14,7 +14,7 @@ class CSVReader(Reader):
     def to_pandas(self, **kwargs):
         import pandas
 
-        options = dict()
+        options = {}
         options.update(self.source.read_csv_options())
         options.update(kwargs)
 

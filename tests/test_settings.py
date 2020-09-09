@@ -46,7 +46,7 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
             a[tree[-1]] = i
             yaml.dump(obj, f, default_flow_style=False)
 
-    for i in range(0, len(paths)):
+    for i in range(len(paths)):
         name = "pytest-%s-%s" % (tree[1], i)
         get_data_entry(collection, name)
         assert name in get_list()

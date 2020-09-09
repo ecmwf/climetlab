@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import logging
 
 from . import Reader
@@ -78,13 +79,20 @@ class GribField:
         )
 
     def metadata(self):
-        m = dict()
+        m = {}
         for n in ("shortName", "units"):
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
 
         return m
+
+    def datetime(self):
+        date = self.handle.get("date")
+        time = self.handle.get("time")
+        return datetime.datetime(
+            date // 10000, date % 10000 // 100, date % 100, time // 100, time % 100
+        )
 
 
 class GRIBIterator:

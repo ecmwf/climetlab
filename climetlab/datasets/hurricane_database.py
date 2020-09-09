@@ -9,6 +9,8 @@
 
 # See https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html
 
+import functools
+
 import numpy as np
 import pandas as pd
 
@@ -124,7 +126,11 @@ class HurricaneDatabase(Dataset):
 
         self.cyclones = self.annotate(pd.DataFrame(p), style="cyclone-track")
 
-    def to_pandas(self):
+    def to_pandas(self, **kwargs):
+        if kwargs:
+            df = self.cyclones
+            f = [df[k] == v for k, v in kwargs.items()]
+            return df[functools.reduce(lambda a, b: a & b, f)]
         return self.cyclones
 
 

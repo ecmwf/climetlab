@@ -9,9 +9,23 @@
 # nor does it submit to any jurisdiction.
 #
 
+import climetlab as cml
 from climetlab import dataset, load_dataset
 
 
 def test_dataset():
     load_dataset("sample-bufr-data")
     dataset.sample_bufr_data()
+
+
+def test_datetime():
+    data = cml.load_dataset(
+        "era5-temperature", domain="france", period=(1980,), time=12
+    )
+    data["1980-12-09 12:00"]
+
+
+def test_pandas_filter():
+    data = cml.load_dataset("hurricane-database", "atlantic")
+    irma = data.to_pandas(name="irma", year=2017)
+    assert len(irma) == 66
