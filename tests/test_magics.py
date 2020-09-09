@@ -10,6 +10,7 @@
 #
 
 import pytest
+from Magics import MagicException
 
 import climetlab as cml
 from climetlab.core.bbox import BoundingBox
@@ -19,5 +20,5 @@ def test_settings():
 
     bbox = BoundingBox(north=90, west=0, east=360, south=-90)
 
-    with pytest.raises(Exception):
+    with pytest.raises(MagicException):
         cml.plot_map(bounding_box=bbox, projection="polar-north")
