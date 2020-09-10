@@ -123,7 +123,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_latitude_increment**
        | Interval between latitude grid lines
      - | float
-     - | 10.0
+     - | 10
    * - | **map_grid_longitude_reference**
        | Reference Longitude from which all longitude lines are drawn
      - | float
@@ -131,7 +131,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_grid_longitude_increment**
        | Interval between longitude grid lines
      - | float
-     - | 20.0
+     - | 20
    * - | **map_grid_line_style**
        | Line style of map grid lines
      - | LineStyle(string)
@@ -175,7 +175,7 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
    * - | **map_label_height**
        | Height og grid labels
      - | float
-     - | 0.25
+     - | 0
    * - | **map_label_blanking**
        | Blanking of the grid labels
      - | bool
@@ -227,23 +227,23 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_min_value**
        | Min value to plot
      - | float
-     - | -1e+21
+     - | -1000000000000000000000
    * - | **symbol_advanced_table_max_value**
        | Max value to plot
      - | float
-     - | 1e+21
+     - | 1000000000000000000000
    * - | **symbol_advanced_table_level_count**
        | Count or number of levels to be plotted. Magics will try to find "nice levels", this means that the number of levels could be slightly different from the requested number of levels
      - | int
-     - | 10.0
+     - | 10
    * - | **symbol_advanced_table_level_tolerance**
        | Tolerance: Do not use "nice levels" if the number of levels is really to different [count +/- tolerance]
      - | int
-     - | 2.0
+     - | 2
    * - | **symbol_advanced_table_interval**
        | Interval in data units between different bands of shading
      - | float
-     - | 8.0
+     - | 8
    * - | **symbol_advanced_table_reference_level**
        | Level from which the level interval is calculated
      - | float
@@ -295,11 +295,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_height_max_value**
        | Maximum height to use
      - | float
-     - | 0.2
+     - | 0
    * - | **symbol_advanced_table_height_min_value**
        | Mininimum height to use
      - | float
-     - | 0.1
+     - | 0
    * - | **symbol_advanced_table_height_list**
        | List of heights to be used
      - | floatarray
@@ -323,7 +323,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_text_font_size**
        | Font size
      - | float
-     - | 0.25
+     - | 0
    * - | **symbol_advanced_table_text_font_style**
        | Font Style
      - | string
@@ -343,11 +343,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_advanced_table_outlayer_min_value**
        | outlayer min value
      - | float
-     - | -1e+21
+     - | -1000000000000000000000
    * - | **symbol_advanced_table_outlayer_max_value**
        | outlayer max value
      - | float
-     - | 1e+21
+     - | 1000000000000000000000
    * - | **legend_user_text**
        | if set, the text to be shown for the symbol group in the legend
      - | string
@@ -359,7 +359,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_height**
        | Height of symbols.
      - | float
-     - | 0.2
+     - | 0
    * - | **symbol_marker_mode**
        | Method to select a marker : by name, by index, by image : in that case, Magics will use an external image as marker.
      - | string
@@ -383,11 +383,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_image_width**
        | width of the image
      - | float
-     - | -1.0
+     - | -1
    * - | **symbol_image_height**
        | height of the image
      - | float
-     - | -1.0
+     - | -1
    * - | **symbol_text_list**
        | list of texts to plot
      - | stringarray
@@ -403,7 +403,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_text_font_size**
        | Font size
      - | float
-     - | 0.25
+     - | 0
    * - | **symbol_text_font_style**
        | Font style
      - | string
@@ -415,7 +415,7 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_legend_height**
        | If set, the height will be used to plot the symbols in the legend
      - | float
-     - | -1.0
+     - | -1
    * - | **legend**
        | Turn legend on or off (ON/OFF) : New Parameter!
      - | bool
@@ -427,11 +427,11 @@ Here comes the description of the SymbolTableMode object Here comes the descript
    * - | **symbol_scaling_level_0_height**
        | Turn legend on or off (ON/OFF) : New Parameter!
      - | float
-     - | 0.1
+     - | 0
    * - | **symbol_scaling_factor**
        | Turn legend on or off (ON/OFF) : New Parameter!
      - | float
-     - | 4.0
+     - | 4
    * - | **symbol_type**
        | Defines the type of symbol plotting required
      - | 'number', 'text', 'marker', 'wind'

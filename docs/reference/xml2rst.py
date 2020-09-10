@@ -117,7 +117,7 @@ class Param:
             return default
 
         try:
-            return float(default)
+            return int(default)
         except Exception:
             pass
 
@@ -127,6 +127,26 @@ class Param:
             pass
 
         return repr(default).replace("'", '"')
+
+    @property
+    def yaml_default(self):
+
+        default = self._defs.get("default")
+
+        if default in (None, False, True):
+            return default
+
+        try:
+            return int(default)
+        except Exception:
+            pass
+
+        try:
+            return float(default)
+        except Exception:
+            pass
+
+        return default
 
     @property
     def values(self):
@@ -146,6 +166,21 @@ class Param:
             return t
 
         return "%s(%s)" % (t, f)
+
+    @property
+    def yaml_values(self):
+
+        if "values" in self._defs:
+            return [tidy(x) for x in self._defs.get("values").split("/")]
+
+        return None
+
+    @property
+    def yaml_type(self):
+        t = self._defs.get("to")
+        if t.startswith("No"):
+            t = "bool"
+        return t
 
     @property
     def python_type(self):
@@ -333,26 +368,31 @@ def produce_python():
 
 def produce_yaml():
 
-    print("---")
+    m = {}
 
     for action, klasses in sorted(ACTIONS.items()):
         print()
 
-        print("%s:" % (action,))
+        m[action] = []
 
         for k in klasses:
             for p in k.parameters:
-                print("  -", p.name)
+                d = dict(name=p.name, type=p.yaml_type)
+                if p.yaml_default:
+                    d["default"] = p.yaml_default
 
-    print(
-        """
-mmap:
-  - subpage_upper_right_longitude
-  - subpage_upper_right_latitude
-  - subpage_lower_left_latitude
-  - subpage_lower_left_longitude
-          """
-    )
+                if p.yaml_values:
+                    d["values"] = p.yaml_values
+                m[action].append(d)
+
+    m["mmap"] = [
+        dict(name="subpage_upper_right_longitude"),
+        dict(name="subpage_upper_right_latitude"),
+        dict(name="subpage_lower_left_latitude"),
+        dict(name="subpage_lower_left_longitude"),
+    ]
+
+    print(yaml.dump(m, default_flow_style=False))
 
 
 parser = argparse.ArgumentParser()
@@ -368,15 +408,17 @@ args = parser.parse_args()
 for n in args.xml:
     load(n)
 
+assert DEFS
+
 for v in DEFS.values():
     v.inherits
 
 ACTIONS = defaultdict(list)
 for k, v in DEFS.items():
-    if not v._super:
-        if v.action is not None:
-            ACTIONS[v.action].append(v)
+    if not v._super and v.action is not None:
+        ACTIONS[v.action].append(v)
 
+assert ACTIONS
 
 if args.rst:
     produce_rst()

@@ -15,30 +15,15 @@ import yaml
 
 from climetlab.core.data import get_data_entry
 
+from . import magics_keys_to_actions
 from .actions import lookup
 
 LOG = logging.getLogger(__name__)
 
 
-MAGICS_KEYS = None
-
-
-def _magics_keys():
-    global MAGICS_KEYS
-
-    if MAGICS_KEYS is None:
-        MAGICS_KEYS = defaultdict(set)
-        with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
-            magics = yaml.load(f, Loader=yaml.SafeLoader)
-            for name, params in magics.items():
-                for param in params:
-                    MAGICS_KEYS[param].add(name)
-    return MAGICS_KEYS
-
-
 def _find_action(value, action):
 
-    magics_keys = _magics_keys()
+    magics_keys = magics_keys_to_actions()
 
     # Guess the best action from the keys
     scores = defaultdict(int)
