@@ -8,3 +8,5 @@ magics:
     symbol_height: 0.20
     symbol_text_font_colour: black
     symbol_connect_line: on
+plot_map:
+  margins: 1

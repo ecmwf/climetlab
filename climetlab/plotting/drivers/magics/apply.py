@@ -73,7 +73,7 @@ def _find_action(value, action):
     return action, special
 
 
-def _apply_dict(*, value, collection=None, action=None, default=True, target=None):
+def _apply_dict(*, value, collection, action, default, target, options):
 
     if "update" in value:
         newvalue = {}
@@ -89,6 +89,7 @@ def _apply_dict(*, value, collection=None, action=None, default=True, target=Non
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     if "set" in value or "clear" in value:
@@ -105,6 +106,7 @@ def _apply_dict(*, value, collection=None, action=None, default=True, target=Non
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     if "+" in value or "-" in value:
@@ -121,6 +123,7 @@ def _apply_dict(*, value, collection=None, action=None, default=True, target=Non
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     action, special = _find_action(value, action)
@@ -141,7 +144,7 @@ def _apply_dict(*, value, collection=None, action=None, default=True, target=Non
     return action(**value)
 
 
-def _apply_true(*, value, collection=None, action=None, default=True, target=None):
+def _apply_true(*, value, collection, action, default, target, options):
     assert default is not True
     return apply(
         value=default,
@@ -149,14 +152,17 @@ def _apply_true(*, value, collection=None, action=None, default=True, target=Non
         action=action,
         default=None,
         target=target,
+        options=options,
     )
 
 
-def _apply_string(*, value, collection=None, action=None, default=True, target=None):
+def _apply_string(*, value, collection, action, default, target, options):
 
     # TODO: Consider `value` being a URL (yaml or json)
 
     data = get_data_entry(collection, value).data
+
+    options.update_if_not_set(**data.get("plot_map", {}))
 
     magics = data["magics"]
     actions = list(magics.keys())
@@ -172,7 +178,7 @@ def _apply_string(*, value, collection=None, action=None, default=True, target=N
     return action(**kwargs)
 
 
-def apply(*, value, collection=None, action=None, default=True, target=None):
+def apply(*, value, collection=None, action=None, default=None, target, options):
 
     if value in (None, False):
         return None
@@ -184,6 +190,7 @@ def apply(*, value, collection=None, action=None, default=True, target=None):
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     if isinstance(value, dict):
@@ -193,6 +200,7 @@ def apply(*, value, collection=None, action=None, default=True, target=None):
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     if isinstance(value, str):
@@ -202,6 +210,7 @@ def apply(*, value, collection=None, action=None, default=True, target=None):
             action=action,
             default=default,
             target=target,
+            options=options,
         )
 
     raise ValueError("Unsupported type %s, %s (%s)" % (type(value), value, collection))

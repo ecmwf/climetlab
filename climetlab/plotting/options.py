@@ -35,3 +35,8 @@ class Options:
                     ]
                 )
             )
+
+    def update_if_not_set(self, **kwargs):
+        for k, v in kwargs.items():
+            if k not in self._options:
+                self._options[k] = v

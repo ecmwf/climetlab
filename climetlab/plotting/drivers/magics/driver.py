@@ -178,6 +178,7 @@ class Driver:
             collection="layers",
             target=self._background,
             default="default-background",
+            options=self._options,
         )
 
     def foreground(self, foreground):
@@ -186,17 +187,30 @@ class Driver:
             collection="layers",
             target=self._foreground,
             default="default-foreground",
+            options=self._options,
         )
 
     def projection(self, projection):
         self._projection = apply(
-            value=projection, collection="projections", target=self._projection
+            value=projection,
+            collection="projections",
+            target=self._projection,
+            default=None,
+            options=self._options,
         )
 
     def style(self, style):
         if len(self._layers) > 0:
             last_layer = self._layers[-1]
-            last_layer.style(apply(value=style, target=last_layer, collection="styles"))
+            last_layer.style(
+                apply(
+                    value=style,
+                    target=last_layer,
+                    collection="styles",
+                    default=None,
+                    options=self._options,
+                )
+            )
         else:
             raise Exception("No current data layer: cannot set style '%r'" % (style,))
 
@@ -274,6 +288,8 @@ class Driver:
                 },
                 target=self._projection,
                 action=mmap,
+                default=None,
+                options=self._options,
             )
 
         self._page_ratio = self._projection.page_ratio()
