@@ -1,5 +1,6 @@
 
 
+
 mcoast:
 - default: automatic
   name: map_coastline_resolution
@@ -38,6 +39,26 @@ mcoast:
   type: Colour
 - default: 1
   name: map_rivers_thickness
+  type: Int
+- name: map_efas
+  type: String
+  values:
+  - true
+  - false
+- default: current
+  name: map_efas_domain
+  type: String
+  values:
+  - current
+  - extended
+- default: solid
+  name: map_efas_style
+  type: LineStyle
+- default: blue
+  name: map_efas_colour
+  type: Colour
+- default: 1
+  name: map_efas_thickness
   type: Int
 - name: map_user_layer
   type: String
@@ -79,12 +100,12 @@ mcoast:
   type: Bool
 - name: map_grid_latitude_reference
   type: Float
-- default: 10
+- default: 10.0
   name: map_grid_latitude_increment
   type: Float
 - name: map_grid_longitude_reference
   type: Float
-- default: 20
+- default: 20.0
   name: map_grid_longitude_increment
   type: Float
 - default: solid
@@ -116,7 +137,8 @@ mcoast:
 - default: black
   name: map_label_colour
   type: Colour
-- name: map_label_height
+- default: 0.25
+  name: map_label_height
   type: Float
 - default: true
   name: map_label_blanking
@@ -159,10 +181,10 @@ msymb:
   - count
   - interval
   - list
-- default: -1000000000000000000000
+- default: -1.0e+21
   name: symbol_advanced_table_min_value
   type: Float
-- default: 1000000000000000000000
+- default: 1.0e+21
   name: symbol_advanced_table_max_value
   type: Float
 - default: 10
@@ -171,7 +193,7 @@ msymb:
 - default: 2
   name: symbol_advanced_table_level_tolerance
   type: Int
-- default: 8
+- default: 8.0
   name: symbol_advanced_table_interval
   type: Float
 - name: symbol_advanced_table_reference_level
@@ -208,9 +230,11 @@ msymb:
 - default: list
   name: symbol_advanced_table_height_method
   type: HeightTechnique
-- name: symbol_advanced_table_height_max_value
+- default: 0.2
+  name: symbol_advanced_table_height_max_value
   type: Float
-- name: symbol_advanced_table_height_min_value
+- default: 0.1
+  name: symbol_advanced_table_height_min_value
   type: Float
 - name: symbol_advanced_table_height_list
   type: FloatList
@@ -225,7 +249,8 @@ msymb:
 - default: sansserif
   name: symbol_advanced_table_text_font
   type: String
-- name: symbol_advanced_table_text_font_size
+- default: 0.25
+  name: symbol_advanced_table_text_font_size
   type: Float
 - default: normal
   name: symbol_advanced_table_text_font_style
@@ -246,10 +271,10 @@ msymb:
 - default: none
   name: symbol_advanced_table_outlayer_method
   type: Bool
-- default: -1000000000000000000000
+- default: -1.0e+21
   name: symbol_advanced_table_outlayer_min_value
   type: Float
-- default: 1000000000000000000000
+- default: 1.0e+21
   name: symbol_advanced_table_outlayer_max_value
   type: Float
 - name: legend_user_text
@@ -257,7 +282,8 @@ msymb:
 - default: BLUE
   name: symbol_colour
   type: Colour
-- name: symbol_height
+- default: 0.2
+  name: symbol_height
   type: Float
 - default: index
   name: symbol_marker_mode
@@ -277,10 +303,10 @@ msymb:
   - automatic
   - png
   - svg
-- default: -1
+- default: -1.0
   name: symbol_image_width
   type: Float
-- default: -1
+- default: -1.0
   name: symbol_image_height
   type: Float
 - name: symbol_text_list
@@ -296,7 +322,8 @@ msymb:
 - default: sansserif
   name: symbol_text_font
   type: String
-- name: symbol_text_font_size
+- default: 0.25
+  name: symbol_text_font_size
   type: Float
 - default: normal
   name: symbol_text_font_style
@@ -304,16 +331,17 @@ msymb:
 - default: automatic
   name: symbol_text_font_colour
   type: Colour
-- default: -1
+- default: -1.0
   name: symbol_legend_height
   type: Float
 - name: legend
   type: Bool
 - name: symbol_scaling_method
   type: Bool
-- name: symbol_scaling_level_0_height
+- default: 0.1
+  name: symbol_scaling_level_0_height
   type: Float
-- default: 4
+- default: 4.0
   name: symbol_scaling_factor
   type: Float
 - default: number

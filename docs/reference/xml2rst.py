@@ -26,29 +26,18 @@ T = {
     "stringarray()": [],
     "intarray()": [],
     "floatarray()": [],
+    "longintarray()": [],
 }
 
 TYPES = {
-    "string": "str",
     "bool": "bool",
-    "Colour": "str",
-    "NoBoundaries": "bool",
-    "NoCities": "bool",
-    "LineStyle": "str",
-    "int": "int",
-    "NoCoastPlotting": "bool",
-    "NoGridPlotting": "bool",
-    "NoLabelPlotting": "bool",
     "float": "float",
-    "LevelSelection": "str",
     "floatarray": "List[float]",
-    "ColourTechnique": "str",
-    "stringarray": "List[str]",
-    "ListPolicy": "str",
+    "int": "int",
     "intarray": "List[int]",
-    "HeightTechnique": "str",
-    "NoOutLayerTechnique": "bool",
-    "SymbolMode": "str",
+    "string": "str",
+    "stringarray": "List[str]",
+    "longintarray": "List[int]",
 }
 
 
@@ -116,15 +105,17 @@ class Param:
         if default in (None, False, True):
             return default
 
-        try:
+        if self.python_type == 'int':
             return int(default)
-        except Exception:
-            pass
 
-        try:
+        if self.python_type == 'float':
+            if default == '-INT_MAX':
+                return -2147483647
+            if default == 'INT_MAX':
+                return 2147483647
             return float(default)
-        except Exception:
-            pass
+
+
 
         return repr(default).replace("'", '"')
 
@@ -136,15 +127,16 @@ class Param:
         if default in (None, False, True):
             return default
 
-        try:
+        if self.python_type == 'int':
             return int(default)
-        except Exception:
-            pass
 
-        try:
+        if self.python_type == 'float':
+            if default == '-INT_MAX':
+                return -2147483647
+            if default == 'INT_MAX':
+                return 2147483647
             return float(default)
-        except Exception:
-            pass
+
 
         return default
 
@@ -191,7 +183,9 @@ class Param:
     @property
     def python_type(self):
         t = self._defs.get("to")
-        return TYPES[t]
+        if t.startswith("No"):
+            return "bool"
+        return TYPES.get(t, "str")
 
 
 class Klass:
@@ -213,6 +207,25 @@ class Klass:
     @property
     def action(self):
         action = self._defs.get("python")
+        if action is None:
+            # FIXME: Remove when magics is ready
+            action = self._defs.get("action")
+            if action == "pcont":
+                action = "mcont"
+            # elif action == "pgrib":
+            #     action = "mgrib"
+            # elif action == "pnetcdf":
+            #     action = "mnetcdf"
+            # elif action == "ptable":
+            #     action = "mtable"
+            # elif action == "pinput":
+            #     action = "minput"
+            # elif action == "ptext":
+            #     action = "output"
+            else:
+                action = None
+
+
         if action is None:
             for parent in self.inherits:
                 if parent.action:
@@ -239,7 +252,7 @@ class Klass:
                 parms = [parms]
 
             for p in parms:
-                if p.get("python", True):
+                # if p.get("python", True):
                     self._parameters.append(Param(p))
         return self._parameters
 
