@@ -398,6 +398,10 @@ def produce_yaml():
         dict(name="subpage_lower_left_longitude", type="Float"),
     ]
 
+    m["mcont"] = [
+        dict(name="contour_shade_colour_list", type="ColourList"),
+    ]
+
     print(yaml.dump(m, default_flow_style=False))
 
 

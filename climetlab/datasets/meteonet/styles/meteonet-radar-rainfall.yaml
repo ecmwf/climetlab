@@ -28,23 +28,23 @@ magics:
     - 75.0
     contour_shade: on
     contour_shade_colour_list:
-    - '#c0c0c0'
-    - rgba(0,0,0,0)
-    - '#483d8b'
-    - '#0000cd'
-    - '#1e90ff'
-    - '#87ceeb'
-    - '#808000'
-    - '#3cb371'
-    - '#00ffff'
-    - '#00ff00'
-    - '#ffff00'
-    - '#c3b091'
-    - '#deb887'
-    - '#ffa500'
-    - '#a52a2a'
-    - '#ffc0cb'
-    - '#ff0000'
-    - '#dda0dd'
+    - silver
+    - transparent
+    - darkslateblue
+    - mediumblue
+    - dodgerblue
+    - skyblue
+    - olive
+    - mediumseagreen
+    - cyan
+    - lime
+    - yellow
+    - khaki
+    - burlywood
+    - orange
+    - brown
+    - pink
+    - red
+    - plum
     contour_shade_colour_method: list
     contour_shade_technique: grid_shading

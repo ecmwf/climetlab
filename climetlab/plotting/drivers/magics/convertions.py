@@ -10,6 +10,7 @@
 # TODO: Use magics types
 
 from . import magics_keys_parameters
+from .colour import Colour
 
 
 class NoConvertion:
@@ -35,13 +36,6 @@ class Int(NoConvertion):
 class String(NoConvertion):
     def convert(self, name, value):
         return str(value)
-
-
-class Colour:
-    def convert(self, name, value):
-        if isinstance(value, tuple):
-            return "rgba%r" % (value,)
-        return value
 
 
 class ColourList:

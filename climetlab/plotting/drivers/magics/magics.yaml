@@ -139,6 +139,9 @@ mcoast:
 - default: true
   name: map_label_bottom
   type: Bool
+mcont:
+- name: contour_shade_colour_list
+  type: ColourList
 mmap:
 - name: subpage_upper_right_longitude
   type: Float
