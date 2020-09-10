@@ -18,22 +18,22 @@ class NoConvertion:
         return value
 
 
-class Bool(NoConvertion):
+class Bool:
     def convert(self, name, value):
         return bool(value)
 
 
-class Float(NoConvertion):
+class Float:
     def convert(self, name, value):
         return float(value)
 
 
-class Int(NoConvertion):
+class Int:
     def convert(self, name, value):
         return int(value)
 
 
-class String(NoConvertion):
+class String:
     def convert(self, name, value):
         return str(value)
 
@@ -45,46 +45,22 @@ class ColourList:
         return [colour.convert(name, x) for x in value]
 
 
-class ColourTechnique(NoConvertion):
-    pass
-
-
-class FloatList(NoConvertion):
+class FloatList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         return [float(x) for x in value]
 
 
-class HeightTechnique(NoConvertion):
-    pass
-
-
-class IntList(NoConvertion):
+class IntList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         return [int(x) for x in value]
 
 
-class LevelSelection(NoConvertion):
-    pass
-
-
-class LineStyle(NoConvertion):
-    pass
-
-
-class ListPolicy(NoConvertion):
-    pass
-
-
-class StringList(NoConvertion):
+class StringList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         return [str(x) for x in value]
-
-
-class SymbolMode(NoConvertion):
-    pass
 
 
 def convert(action, args):
@@ -94,7 +70,7 @@ def convert(action, args):
     converted = {}
     for k, v in args.items():
         klass = magics_keys.get(k, {}).get("type", "NoConvertion")
-        klass = globals()[klass]()
+        klass = globals().get(klass, NoConvertion)()
 
         converted[k] = klass.convert(k, v)
 

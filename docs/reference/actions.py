@@ -22,7 +22,7 @@ def _given_args(frame):
 
 def mcoast(
     *,
-    # [CoastPlotting] 
+    # [CoastPlotting]
     map_coastline_resolution: str = "automatic",
     map_coastline_land_shade: bool = False,
     map_coastline_land_shade_colour: str = "green",
@@ -84,7 +84,7 @@ def mcoast(
 
 def mcont(
     *,
-    # [GradientColourTechnique] 
+    # [GradientColourTechnique]
     contour_gradients_colour_list: List[str] = [],
     contour_gradients_value_list: List[float] = [],
     contour_gradients_technique_list: List[str] = [],
@@ -93,14 +93,14 @@ def mcont(
     contour_akima_x_resolution: float = 1.5,
     contour_akima_y_resolution: float = 1.5,
     # [Akima760Method] Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines.
-    #contour_akima_x_resolution: float = 1.5,
-    #contour_akima_y_resolution: float = 1.5,
+    # contour_akima_x_resolution: float = 1.5,
+    # contour_akima_y_resolution: float = 1.5,
     # [Akima761Method] Generates contour lines from an irregularly-distributed set of points.
-    #contour_akima_x_resolution: float = 1.5,
-    #contour_akima_y_resolution: float = 1.5,
+    # contour_akima_x_resolution: float = 1.5,
+    # contour_akima_y_resolution: float = 1.5,
     # [BothValuePlotMethod] This object is reponsible for plotting both values and markers on grid points.
-    contour_grid_value_min: float = -1e+21,
-    contour_grid_value_max: float = 1e+21,
+    contour_grid_value_min: float = -1e21,
+    contour_grid_value_max: float = 1e21,
     contour_grid_value_lat_frequency: int = 1,
     contour_grid_value_lon_frequency: int = 1,
     contour_grid_value_height: float = 0.25,
@@ -114,11 +114,11 @@ def mcont(
     contour_grid_value_marker_qual: str = "low",
     contour_grid_value_marker_index: int = 3,
     contour_grid_value_position: str = "top",
-    # [CalculateColourTechnique] 
+    # [CalculateColourTechnique]
     contour_shade_max_level_colour: str = "blue",
     contour_shade_min_level_colour: str = "red",
     contour_shade_colour_direction: str = "anti_clockwise",
-    # [CellShading] 
+    # [CellShading]
     contour_shade_cell_resolution: float = 10.0,
     contour_shade_cell_method: str = "nearest",
     contour_shade_cell_resolution_method: str = "classic",
@@ -134,39 +134,39 @@ def mcont(
     contour_automatic_library_path: str = "",
     contour_hilo: str = False,
     contour_grid_value_plot: str = False,
-    # [ContourLibrary] 
+    # [ContourLibrary]
     contour_predefined_setting: str = "",
-    #contour_automatic_library_path: str = "",
+    # contour_automatic_library_path: str = "",
     # [CountSelectionType] The number of contour levels may be set by the user by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'COUNT' (default) and CONTOUR_LEVEL_COUNT to the number of levels to be plotted. MAGICS will then calculate the contour interval and the user's plot will consist of the number of levels specified with a regular contour interval. This is the default method and the default number of levels is 10. The exact number of contour levels plotted may not be CONTOUR_LEVEL_COUNT as PCONT will always use the value stored in CONTOUR_REFERENCE_LEVEL as a starting point and will pick reasonable values for the contour interval.
-    contour_max_level: float = 1e+21,
-    contour_min_level: float = -1e+21,
-    contour_shade_max_level: float = 1e+21,
-    contour_shade_min_level: float = -1e+21,
+    contour_max_level: float = 1e21,
+    contour_min_level: float = -1e21,
+    contour_shade_max_level: float = 1e21,
+    contour_shade_min_level: float = -1e21,
     contour_level_count: int = 10,
     contour_level_tolerance: int = 2,
     contour_reference_level: float = 0.0,
-    # [DotPolyShadingMethod] 
+    # [DotPolyShadingMethod]
     contour_shade_dot_size: float = 0.02,
     contour_shade_max_level_density: float = 50.0,
     contour_shade_min_level_density: float = 1.0,
-    # [DumpShading] 
-    # [DumpShadingWrapper] 
-    #contour_shade_cell_resolution: float = 10.0,
-    #contour_shade_cell_method: str = "nearest",
-    # [GradientsColourTechnique] 
-    #contour_gradients_colour_list: List[str] = [],
+    # [DumpShading]
+    # [DumpShadingWrapper]
+    # contour_shade_cell_resolution: float = 10.0,
+    # contour_shade_cell_method: str = "nearest",
+    # [GradientsColourTechnique]
+    # contour_gradients_colour_list: List[str] = [],
     contour_gradients_waypoint_method: str = "both",
     contour_gradients_technique: str = "rgb",
     contour_gradients_technique_direction: str = "clockwise",
-    #contour_gradients_step_list: List[int] = [],
-    # [GridShading] 
+    # contour_gradients_step_list: List[int] = [],
+    # [GridShading]
     contour_shade_method: str = "dot",
     contour_grid_shading_position: str = "middle",
-    # [HatchPolyShadingMethod] 
+    # [HatchPolyShadingMethod]
     contour_shade_hatch_index: int = 0,
     contour_shade_hatch_thickness: int = 1,
     contour_shade_hatch_density: float = 18.0,
-    # [HiLoBoth] 
+    # [HiLoBoth]
     contour_hilo_height: float = 0.4,
     contour_hilo_quality: str = "low",
     contour_hi_colour: str = "blue",
@@ -177,44 +177,44 @@ def mcont(
     contour_hilo_marker_index: int = 3,
     contour_hilo_marker_colour: str = "red",
     # [HiLoNumber] This object is reponsible for plotting the HI/Lo as text.
-    #contour_hilo_height: float = 0.4,
-    #contour_hilo_quality: str = "low",
-    #contour_hi_colour: str = "blue",
-    #contour_lo_colour: str = "blue",
-    #contour_hilo_format: str = "(automatic)",
+    # contour_hilo_height: float = 0.4,
+    # contour_hilo_quality: str = "low",
+    # contour_hi_colour: str = "blue",
+    # contour_lo_colour: str = "blue",
+    # contour_hilo_format: str = "(automatic)",
     # [HiLoText] This object is reponsible for plotting the HI/Lo as text.
-    #contour_hilo_height: float = 0.4,
-    #contour_hilo_quality: str = "low",
-    #contour_hi_colour: str = "blue",
-    #contour_lo_colour: str = "blue",
-    #contour_hilo_format: str = "(automatic)",
+    # contour_hilo_height: float = 0.4,
+    # contour_hilo_quality: str = "low",
+    # contour_hi_colour: str = "blue",
+    # contour_lo_colour: str = "blue",
+    # contour_hilo_format: str = "(automatic)",
     contour_hi_text: str = "H",
     contour_lo_text: str = "L",
     contour_hilo_blanking: bool = False,
-    # [HighHiLo] 
+    # [HighHiLo]
     contour_hilo_type: str = "text",
     contour_hilo_window_size: int = 3,
     contour_hilo_reduction_radius: float = 0.0,
     contour_hilo_suppress_radius: float = 15.0,
-    contour_hilo_max_value: float = 1e+21,
-    contour_hilo_min_value: float = -1e+21,
-    contour_hi_max_value: float = 1e+21,
-    contour_hi_min_value: float = -1e+21,
-    contour_lo_max_value: float = 1e+21,
-    contour_lo_min_value: float = -1e+21,
+    contour_hilo_max_value: float = 1e21,
+    contour_hilo_min_value: float = -1e21,
+    contour_hi_max_value: float = 1e21,
+    contour_hi_min_value: float = -1e21,
+    contour_lo_max_value: float = 1e21,
+    contour_lo_min_value: float = -1e21,
     contour_hilo_marker: str = False,
-    # [ImageListColourTechnique] 
+    # [ImageListColourTechnique]
     image_colour_table: List[str] = [],
     # [IntervalSelectionType] If the parameter CONTOUR_LEVEL_SELECTION_TYPE is set to 'INTERVAL' , MAGICS will plot contours at regularly spaced intervals using the value of CONTOUR_REFERENCE_LEVEL as a base and the value in CONTOUR_INTERVAL as the interval between levels.
-    #contour_max_level: float = 1e+21,
-    #contour_min_level: float = -1e+21,
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
-    #contour_reference_level: float = 0.0,
+    # contour_max_level: float = 1e+21,
+    # contour_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
+    # contour_reference_level: float = 0.0,
     contour_interval: float = 8.0,
     # [IsoHighlight] This object is responsible of plotting the hightlight isolines
     contour_highlight_style: str = "solid",
-    #contour_reference_level: float = 0.0,
+    # contour_reference_level: float = 0.0,
     contour_highlight_colour: str = "blue",
     contour_highlight_thickness: int = 3,
     contour_highlight_frequency: int = 4,
@@ -229,55 +229,55 @@ def mcont(
     contour_label_font_style: str = "normal",
     contour_label_colour: str = "contour_line_colour",
     contour_label_frequency: int = 2,
-    # [IsoShading] 
+    # [IsoShading]
     contour_shade_technique: str = "polygon_shading",
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
     contour_shade_colour_method: str = "calculate",
     # [LevelListSelectionType] Users may supply a list of the contour levels to be plotted by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'LEVEL_LIST' and passing an array of contour level values. This method enables users to plot contours with irregular intervals.
-    #contour_max_level: float = 1e+21,
-    #contour_min_level: float = -1e+21,
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
+    # contour_max_level: float = 1e+21,
+    # contour_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
     contour_level_list: List[float] = [],
-    # [ListColourTechnique] 
+    # [ListColourTechnique]
     contour_shade_colour_list: List[str] = [],
-    # [LowHiLo] 
-    #contour_hilo_type: str = "text",
-    #contour_hilo_window_size: int = 3,
-    #contour_hilo_reduction_radius: float = 0.0,
-    #contour_hilo_suppress_radius: float = 15.0,
-    #contour_hilo_max_value: float = 1e+21,
-    #contour_hilo_min_value: float = -1e+21,
-    #contour_hi_max_value: float = 1e+21,
-    #contour_hi_min_value: float = -1e+21,
-    #contour_lo_max_value: float = 1e+21,
-    #contour_lo_min_value: float = -1e+21,
-    #contour_hilo_marker: str = False,
-    # [MarkerShadingTechnique] 
+    # [LowHiLo]
+    # contour_hilo_type: str = "text",
+    # contour_hilo_window_size: int = 3,
+    # contour_hilo_reduction_radius: float = 0.0,
+    # contour_hilo_suppress_radius: float = 15.0,
+    # contour_hilo_max_value: float = 1e+21,
+    # contour_hilo_min_value: float = -1e+21,
+    # contour_hi_max_value: float = 1e+21,
+    # contour_hi_min_value: float = -1e+21,
+    # contour_lo_max_value: float = 1e+21,
+    # contour_lo_min_value: float = -1e+21,
+    # contour_hilo_marker: str = False,
+    # [MarkerShadingTechnique]
     contour_shade_colour_table: List[str] = [],
     contour_shade_height_table: List[float] = [],
     contour_shade_marker_table_type: str = "index",
     contour_shade_marker_table: List[int] = [],
     contour_shade_marker_name_table: List[str] = [],
-    # [MarkerValuePlotMethod] 
-    #contour_grid_value_min: float = -1e+21,
-    #contour_grid_value_max: float = 1e+21,
-    #contour_grid_value_lat_frequency: int = 1,
-    #contour_grid_value_lon_frequency: int = 1,
-    #contour_grid_value_height: float = 0.25,
-    #contour_grid_value_colour: str = "blue",
-    #contour_grid_value_format: str = "(automatic)",
-    #contour_grid_value_quality: str = "low",
-    #contour_grid_value_justification: str = "centre",
-    #contour_grid_value_vertical_align: str = "base",
-    #contour_grid_value_marker_height: float = 0.25,
-    #contour_grid_value_marker_colour: str = "red",
-    #contour_grid_value_marker_qual: str = "low",
-    #contour_grid_value_marker_index: int = 3,
+    # [MarkerValuePlotMethod]
+    # contour_grid_value_min: float = -1e+21,
+    # contour_grid_value_max: float = 1e+21,
+    # contour_grid_value_lat_frequency: int = 1,
+    # contour_grid_value_lon_frequency: int = 1,
+    # contour_grid_value_height: float = 0.25,
+    # contour_grid_value_colour: str = "blue",
+    # contour_grid_value_format: str = "(automatic)",
+    # contour_grid_value_quality: str = "low",
+    # contour_grid_value_justification: str = "centre",
+    # contour_grid_value_vertical_align: str = "base",
+    # contour_grid_value_marker_height: float = 0.25,
+    # contour_grid_value_marker_colour: str = "red",
+    # contour_grid_value_marker_qual: str = "low",
+    # contour_grid_value_marker_index: int = 3,
     # [NoHiLo] This object suppresses Hi/Lo information.
     # [NoHiLoMarker] This object suppresses the plotting of Hi/Lo markers
-    # [NoIsoPlot] 
+    # [NoIsoPlot]
     contour_special_legend: str = "",
     contour_threads: int = 4,
     contour_internal_reduction_factor: float = 4.0,
@@ -303,10 +303,10 @@ def mcont(
     contour_shade: bool = False,
     contour_legend_only: bool = False,
     # [NoValuePlot] This object suppresses the plotting of grid values.
-    # [PaletteColourTechnique] 
+    # [PaletteColourTechnique]
     contour_shade_palette_name: str = "",
     contour_shade_palette_policy: str = "lastone",
-    # [ValuePlot] 
+    # [ValuePlot]
     contour_grid_value_type: str = "normal",
     contour_grid_value_plot_type: str = "value",
 ):
@@ -317,8 +317,8 @@ def msymb(
     *,
     # [SymbolAdvancedTableMode] Here comes the description of the SymbolTableMode object
     symbol_advanced_table_selection_type: str = "count",
-    symbol_advanced_table_min_value: float = -1e+21,
-    symbol_advanced_table_max_value: float = 1e+21,
+    symbol_advanced_table_min_value: float = -1e21,
+    symbol_advanced_table_max_value: float = 1e21,
     symbol_advanced_table_level_count: int = 10,
     symbol_advanced_table_level_tolerance: int = 2,
     symbol_advanced_table_interval: float = 8.0,
@@ -346,8 +346,8 @@ def msymb(
     symbol_advanced_table_text_font_colour: str = "automatic",
     symbol_advanced_table_text_display_type: str = "none",
     symbol_advanced_table_outlayer_method: bool = "none",
-    symbol_advanced_table_outlayer_min_value: float = -1e+21,
-    symbol_advanced_table_outlayer_max_value: float = 1e+21,
+    symbol_advanced_table_outlayer_min_value: float = -1e21,
+    symbol_advanced_table_outlayer_max_value: float = 1e21,
     # [SymbolIndividualMode] Here comes the description of the SymbolIndividualMode object
     legend_user_text: str = "",
     symbol_colour: str = "BLUE",
@@ -373,7 +373,7 @@ def msymb(
     symbol_scaling_factor: float = 4.0,
     symbol_type: str = "number",
     symbol_table_mode: str = "OFF",
-    #symbol_marker_mode: str = "index",
+    # symbol_marker_mode: str = "index",
     symbol_format: str = "(automatic)",
     symbol_text_blanking: bool = False,
     symbol_outline: bool = False,

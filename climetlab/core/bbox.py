@@ -16,12 +16,13 @@ class BoundingBox:
         self.south = max(float(south), -90.0)
         self.east = float(east)
 
-        assert self.north > self.south, "North (%s) must be greater than south (%s)" % (
-            self.north,
-            self.south,
-        )
+        if self.north <= self.south:
+            raise ValueError(
+                "North (%s) must be greater than south (%s)" % (self.north, self.south,)
+            )
 
-        assert self.west != self.east, "West %s, East %s" % (west, east)
+        if self.west == self.east:
+            raise ValueError("West (%s) is equal to east (%s)" % (west, east))
 
         while self.east < self.west:
             self.east += 360

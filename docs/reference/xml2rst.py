@@ -105,17 +105,15 @@ class Param:
         if default in (None, False, True):
             return default
 
-        if self.python_type == 'int':
+        if self.python_type == "int":
             return int(default)
 
-        if self.python_type == 'float':
-            if default == '-INT_MAX':
+        if self.python_type == "float":
+            if default == "-INT_MAX":
                 return -2147483647
-            if default == 'INT_MAX':
+            if default == "INT_MAX":
                 return 2147483647
             return float(default)
-
-
 
         return repr(default).replace("'", '"')
 
@@ -127,16 +125,15 @@ class Param:
         if default in (None, False, True):
             return default
 
-        if self.python_type == 'int':
+        if self.python_type == "int":
             return int(default)
 
-        if self.python_type == 'float':
-            if default == '-INT_MAX':
+        if self.python_type == "float":
+            if default == "-INT_MAX":
                 return -2147483647
-            if default == 'INT_MAX':
+            if default == "INT_MAX":
                 return 2147483647
             return float(default)
-
 
         return default
 
@@ -225,7 +222,6 @@ class Klass:
             else:
                 action = None
 
-
         if action is None:
             for parent in self.inherits:
                 if parent.action:
@@ -253,7 +249,7 @@ class Klass:
 
             for p in parms:
                 # if p.get("python", True):
-                    self._parameters.append(Param(p))
+                self._parameters.append(Param(p))
         return self._parameters
 
     @property
