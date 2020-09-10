@@ -9,15 +9,99 @@
 
 # TODO: Use magics types
 
+from . import magics_keys_parameters
 
-def convert_colours():
+
+class NoConvertion:
+    def convert(self, name, value):
+        return value
+
+
+class Bool(NoConvertion):
+    def convert(self, name, value):
+        return bool(value)
+
+
+class Float(NoConvertion):
+    def convert(self, name, value):
+        return float(value)
+
+
+class Int(NoConvertion):
+    def convert(self, name, value):
+        return int(value)
+
+
+class String(NoConvertion):
+    def convert(self, name, value):
+        return str(value)
+
+
+class Colour:
+    def convert(self, name, value):
+        if isinstance(value, tuple):
+            return "rgba%r" % (value,)
+        return value
+
+
+class ColourList:
+    def convert(self, name, value):
+        assert isinstance(value, (list, tuple))
+        colour = Colour()
+        return [colour.convert(name, x) for x in value]
+
+
+class ColourTechnique(NoConvertion):
     pass
 
 
-def convert(args):
-    a = {}
+class FloatList(NoConvertion):
+    def convert(self, name, value):
+        assert isinstance(value, (list, tuple))
+        return [float(x) for x in value]
+
+
+class HeightTechnique(NoConvertion):
+    pass
+
+
+class IntList(NoConvertion):
+    def convert(self, name, value):
+        assert isinstance(value, (list, tuple))
+        return [int(x) for x in value]
+
+
+class LevelSelection(NoConvertion):
+    pass
+
+
+class LineStyle(NoConvertion):
+    pass
+
+
+class ListPolicy(NoConvertion):
+    pass
+
+
+class StringList(NoConvertion):
+    def convert(self, name, value):
+        assert isinstance(value, (list, tuple))
+        return [str(x) for x in value]
+
+
+class SymbolMode(NoConvertion):
+    pass
+
+
+def convert(action, args):
+
+    magics_keys = magics_keys_parameters(action)
+
+    converted = {}
     for k, v in args.items():
-        a[k] = v
-        if isinstance(v, tuple):
-            a[k] = "rgba%r" % (v,)
-    return a
+        klass = magics_keys.get(k, {}).get("type", "NoConvertion")
+        klass = globals()[klass]()
+
+        converted[k] = klass.convert(k, v)
+
+    return converted

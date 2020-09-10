@@ -179,8 +179,14 @@ class Param:
     def yaml_type(self):
         t = self._defs.get("to")
         if t.startswith("No"):
-            t = "bool"
-        return t
+            t = "Bool"
+
+        if "colour" in self.name and isinstance(self.yaml_default, list):
+            t = "Colourarray"
+
+        t = t.replace("array", "List")
+
+        return t[0].upper() + t[1:]
 
     @property
     def python_type(self):
@@ -386,10 +392,10 @@ def produce_yaml():
                 m[action].append(d)
 
     m["mmap"] = [
-        dict(name="subpage_upper_right_longitude"),
-        dict(name="subpage_upper_right_latitude"),
-        dict(name="subpage_lower_left_latitude"),
-        dict(name="subpage_lower_left_longitude"),
+        dict(name="subpage_upper_right_longitude", type="Float"),
+        dict(name="subpage_upper_right_latitude", type="Float"),
+        dict(name="subpage_lower_left_latitude", type="Float"),
+        dict(name="subpage_lower_left_longitude", type="Float"),
     ]
 
     print(yaml.dump(m, default_flow_style=False))

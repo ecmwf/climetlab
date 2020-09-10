@@ -45,7 +45,9 @@ class Action:
         return self.__class__.__name__
 
     def execute(self):
-        return getattr(macro, self.action)(**convert(self.kwargs)).execute()
+        return getattr(macro, self.action)(
+            **convert(self.action, self.kwargs)
+        ).execute()
 
     def update(self, action, values):
         if not isinstance(self, action):

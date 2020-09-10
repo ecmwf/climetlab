@@ -3,30 +3,30 @@
 mcoast:
 - default: automatic
   name: map_coastline_resolution
-  type: string
+  type: String
   values:
   - automatic
   - low
   - medium
   - high
 - name: map_coastline_land_shade
-  type: bool
+  type: Bool
 - default: green
   name: map_coastline_land_shade_colour
   type: Colour
 - name: map_coastline_sea_shade
-  type: bool
+  type: Bool
 - default: blue
   name: map_coastline_sea_shade_colour
   type: Colour
 - name: map_boundaries
-  type: bool
+  type: Bool
 - name: map_cities
-  type: bool
+  type: Bool
 - name: map_preview
-  type: bool
+  type: Bool
 - name: map_rivers
-  type: string
+  type: String
   values:
   - true
   - false
@@ -38,16 +38,16 @@ mcoast:
   type: Colour
 - default: 1
   name: map_rivers_thickness
-  type: int
+  type: Int
 - name: map_user_layer
-  type: string
+  type: String
   values:
   - true
   - false
 - name: map_user_layer_name
-  type: string
+  type: String
 - name: map_user_layer_projection
-  type: string
+  type: String
 - default: solid
   name: map_user_layer_style
   type: LineStyle
@@ -56,7 +56,7 @@ mcoast:
   type: Colour
 - default: 1
   name: map_user_layer_thickness
-  type: int
+  type: Int
 - default: black
   name: map_coastline_colour
   type: Colour
@@ -65,85 +65,89 @@ mcoast:
   type: LineStyle
 - default: 1
   name: map_coastline_thickness
-  type: int
+  type: Int
 - name: map_coastline_general_style
-  type: string
+  type: String
 - default: true
   name: map_coastline
-  type: bool
+  type: Bool
 - default: true
   name: map_grid
-  type: bool
+  type: Bool
 - default: true
   name: map_label
-  type: bool
+  type: Bool
 - name: map_grid_latitude_reference
-  type: float
+  type: Float
 - default: 10
   name: map_grid_latitude_increment
-  type: float
+  type: Float
 - name: map_grid_longitude_reference
-  type: float
+  type: Float
 - default: 20
   name: map_grid_longitude_increment
-  type: float
+  type: Float
 - default: solid
   name: map_grid_line_style
   type: LineStyle
 - default: 1
   name: map_grid_thickness
-  type: int
+  type: Int
 - default: BLACK
   name: map_grid_colour
   type: Colour
 - name: map_grid_frame
-  type: bool
+  type: Bool
 - default: solid
   name: map_grid_frame_line_style
   type: LineStyle
 - default: 1
   name: map_grid_frame_thickness
-  type: int
+  type: Int
 - default: black
   name: map_grid_frame_colour
   type: Colour
 - default: sansserif
   name: map_label_font
-  type: string
+  type: String
 - default: normal
   name: map_label_font_style
-  type: string
+  type: String
 - default: black
   name: map_label_colour
   type: Colour
 - name: map_label_height
-  type: float
+  type: Float
 - default: true
   name: map_label_blanking
-  type: bool
+  type: Bool
 - default: 1
   name: map_label_latitude_frequency
-  type: int
+  type: Int
 - default: 1
   name: map_label_longitude_frequency
-  type: int
+  type: Int
 - default: true
   name: map_label_left
-  type: bool
+  type: Bool
 - default: true
   name: map_label_right
-  type: bool
+  type: Bool
 - default: true
   name: map_label_top
-  type: bool
+  type: Bool
 - default: true
   name: map_label_bottom
-  type: bool
+  type: Bool
 mmap:
 - name: subpage_upper_right_longitude
+  type: Float
 - name: subpage_upper_right_latitude
+  type: Float
 - name: subpage_lower_left_latitude
+  type: Float
 - name: subpage_lower_left_longitude
+  type: Float
 msymb:
 - default: count
   name: symbol_advanced_table_selection_type
@@ -154,23 +158,23 @@ msymb:
   - list
 - default: -1000000000000000000000
   name: symbol_advanced_table_min_value
-  type: float
+  type: Float
 - default: 1000000000000000000000
   name: symbol_advanced_table_max_value
-  type: float
+  type: Float
 - default: 10
   name: symbol_advanced_table_level_count
-  type: int
+  type: Int
 - default: 2
   name: symbol_advanced_table_level_tolerance
-  type: int
+  type: Int
 - default: 8
   name: symbol_advanced_table_interval
-  type: float
+  type: Float
 - name: symbol_advanced_table_reference_level
-  type: float
+  type: Float
 - name: symbol_advanced_table_level_list
-  type: floatarray
+  type: FloatList
 - default: calculate
   name: symbol_advanced_table_colour_method
   type: ColourTechnique
@@ -182,19 +186,19 @@ msymb:
   type: Colour
 - default: anti_clockwise
   name: symbol_advanced_table_colour_direction
-  type: string
+  type: String
   values:
   - clockwise
   - anti-clockwise
 - name: symbol_advanced_table_colour_list
-  type: stringarray
+  type: ColourList
 - default: lastone
   name: symbol_advanced_table_colour_list_policy
   type: ListPolicy
 - name: symbol_advanced_table_marker_list
-  type: intarray
+  type: IntList
 - name: symbol_advanced_table_marker_name_list
-  type: stringarray
+  type: StringList
 - default: lastone
   name: symbol_advanced_table_marker_list_policy
   type: ListPolicy
@@ -202,33 +206,33 @@ msymb:
   name: symbol_advanced_table_height_method
   type: HeightTechnique
 - name: symbol_advanced_table_height_max_value
-  type: float
+  type: Float
 - name: symbol_advanced_table_height_min_value
-  type: float
+  type: Float
 - name: symbol_advanced_table_height_list
-  type: floatarray
+  type: FloatList
 - default: lastone
   name: symbol_advanced_table_height_list_policy
   type: ListPolicy
 - name: symbol_advanced_table_text_list
-  type: stringarray
+  type: StringList
 - default: cycle
   name: symbol_advanced_table_text_list_policy
   type: ListPolicy
 - default: sansserif
   name: symbol_advanced_table_text_font
-  type: string
+  type: String
 - name: symbol_advanced_table_text_font_size
-  type: float
+  type: Float
 - default: normal
   name: symbol_advanced_table_text_font_style
-  type: string
+  type: String
 - default: automatic
   name: symbol_advanced_table_text_font_colour
   type: Colour
 - default: none
   name: symbol_advanced_table_text_display_type
-  type: string
+  type: String
   values:
   - centre
   - none
@@ -238,49 +242,49 @@ msymb:
   - bottom
 - default: none
   name: symbol_advanced_table_outlayer_method
-  type: bool
+  type: Bool
 - default: -1000000000000000000000
   name: symbol_advanced_table_outlayer_min_value
-  type: float
+  type: Float
 - default: 1000000000000000000000
   name: symbol_advanced_table_outlayer_max_value
-  type: float
+  type: Float
 - name: legend_user_text
-  type: string
+  type: String
 - default: BLUE
   name: symbol_colour
   type: Colour
 - name: symbol_height
-  type: float
+  type: Float
 - default: index
   name: symbol_marker_mode
-  type: string
+  type: String
 - default: 1
   name: symbol_marker_index
-  type: int
+  type: Int
 - default: dot
   name: symbol_marker_name
-  type: string
+  type: String
 - name: symbol_image_path
-  type: string
+  type: String
 - default: automatic
   name: symbol_image_format
-  type: string
+  type: String
   values:
   - automatic
   - png
   - svg
 - default: -1
   name: symbol_image_width
-  type: float
+  type: Float
 - default: -1
   name: symbol_image_height
-  type: float
+  type: Float
 - name: symbol_text_list
-  type: stringarray
+  type: StringList
 - default: right
   name: symbol_text_position
-  type: string
+  type: String
   values:
   - right
   - left
@@ -288,30 +292,30 @@ msymb:
   - top
 - default: sansserif
   name: symbol_text_font
-  type: string
+  type: String
 - name: symbol_text_font_size
-  type: float
+  type: Float
 - default: normal
   name: symbol_text_font_style
-  type: string
+  type: String
 - default: automatic
   name: symbol_text_font_colour
   type: Colour
 - default: -1
   name: symbol_legend_height
-  type: float
+  type: Float
 - name: legend
-  type: bool
+  type: Bool
 - name: symbol_scaling_method
-  type: bool
+  type: Bool
 - name: symbol_scaling_level_0_height
-  type: float
+  type: Float
 - default: 4
   name: symbol_scaling_factor
-  type: float
+  type: Float
 - default: number
   name: symbol_type
-  type: string
+  type: String
   values:
   - number
   - text
@@ -322,53 +326,53 @@ msymb:
   type: SymbolMode
 - default: index
   name: symbol_marker_mode
-  type: string
+  type: String
   values:
   - index
   - name
   - image
 - default: (automatic)
   name: symbol_format
-  type: string
+  type: String
 - name: symbol_text_blanking
-  type: bool
+  type: Bool
 - name: symbol_outline
-  type: bool
+  type: Bool
 - default: black
   name: symbol_outline_colour
   type: Colour
 - default: 1
   name: symbol_outline_thickness
-  type: int
+  type: Int
 - default: solid
   name: symbol_outline_style
   type: LineStyle
 - name: symbol_connect_line
-  type: bool
+  type: Bool
 - default: true
   name: symbol_connect_automatic_line_colour
-  type: bool
+  type: Bool
 - default: black
   name: symbol_connect_line_colour
   type: Colour
 - default: 1
   name: symbol_connect_line_thickness
-  type: int
+  type: Int
 - default: solid
   name: symbol_connect_line_style
   type: LineStyle
 - name: symbol_legend_only
-  type: bool
+  type: Bool
 - name: symbol_min_table
-  type: floatarray
+  type: FloatList
 - name: symbol_max_table
-  type: floatarray
+  type: FloatList
 - name: symbol_marker_table
-  type: intarray
+  type: IntList
 - name: symbol_name_table
-  type: stringarray
+  type: StringList
 - name: symbol_colour_table
-  type: stringarray
+  type: ColourList
 - name: symbol_height_table
-  type: floatarray
+  type: FloatList
 

@@ -12,21 +12,25 @@ from collections import defaultdict
 import yaml
 
 MAGICS_KEYS = None
-
+MAGICS_DEF = None
+MAGICS_PARAMS = None
 _inited = False
 
 
 def init():
-    global _inited, MAGICS_KEYS
+    global _inited, MAGICS_KEYS, MAGICS_DEF, MAGICS_PARAMS
 
     if not _inited:
 
         MAGICS_KEYS = defaultdict(set)
+        MAGICS_PARAMS = defaultdict(dict)
         with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:
-            magics = yaml.load(f, Loader=yaml.SafeLoader)
-            for action, params in magics.items():
+            MAGICS_DEF = yaml.load(f, Loader=yaml.SafeLoader)
+            for action, params in MAGICS_DEF.items():
                 for param in params:
-                    MAGICS_KEYS[param["name"]].add(action)
+                    name = param["name"]
+                    MAGICS_KEYS[name].add(action)
+                    MAGICS_PARAMS[action][name] = param
 
     _inited = True
 
@@ -34,3 +38,13 @@ def init():
 def magics_keys_to_actions():
     init()
     return MAGICS_KEYS
+
+
+def magics_keys_definitions():
+    init()
+    return MAGICS_DEF
+
+
+def magics_keys_parameters(name):
+    init()
+    return MAGICS_PARAMS[name]

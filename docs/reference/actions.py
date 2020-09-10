@@ -1,6 +1,5 @@
 import inspect
 from typing import List
-
 from Magics import macro
 
 
