@@ -16,3 +16,5 @@ magics:
 gallery:
   plot_map:
     background: false
+plot_map:
+  margins: 1
