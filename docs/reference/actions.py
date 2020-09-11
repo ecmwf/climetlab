@@ -79,6 +79,13 @@ def mcoast(
 
 def mcont(
     *,
+    # [Akima474Method] Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines.
+    contour_akima_x_resolution: float = 1.5,
+    contour_akima_y_resolution: float = 1.5,
+    # [Akima760Method] Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines.
+    #contour_akima_x_resolution: float = 1.5,
+    #contour_akima_y_resolution: float = 1.5,
+    # [AutomaticContourMethod] 
     # [Contour] This controls the plotting of isolines, contour bands and grid points.
     legend: bool = False,
     contour: str = True,
@@ -90,6 +97,26 @@ def mcont(
     contour_metadata_only: bool = False,
     contour_hilo: str = False,
     contour_grid_value_plot: str = False,
+    # [HighHiLo] 
+    contour_hilo_type: str = "text",
+    contour_hilo_window_size: int = 3,
+    contour_hilo_max_value: float = 1e+21,
+    contour_hilo_min_value: float = -1e+21,
+    contour_hi_max_value: float = 1e+21,
+    contour_hi_min_value: float = -1e+21,
+    contour_lo_max_value: float = 1e+21,
+    contour_lo_min_value: float = -1e+21,
+    contour_hilo_marker: str = False,
+    # [LowHiLo] 
+    #contour_hilo_type: str = "text",
+    #contour_hilo_window_size: int = 3,
+    #contour_hilo_max_value: float = 1e+21,
+    #contour_hilo_min_value: float = -1e+21,
+    #contour_hi_max_value: float = 1e+21,
+    #contour_hi_min_value: float = -1e+21,
+    #contour_lo_max_value: float = 1e+21,
+    #contour_lo_min_value: float = -1e+21,
+    #contour_hilo_marker: str = False,
     # [NoIsoPlot] 
     contour_line_style: str = "solid",
     contour_line_thickness: int = 1,
@@ -110,6 +137,9 @@ def mcont(
     contour_label: bool = True,
     contour_shade: bool = False,
     contour_legend_only: bool = False,
+    # [ValuePlot] 
+    contour_grid_value_type: str = "normal",
+    contour_grid_value_plot_type: str = "value",
 ):
     return macro.mcont(**_given_args(inspect.currentframe()))
 

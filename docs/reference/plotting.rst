@@ -209,9 +209,9 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
 mcont
 -----
 
-.. ['Contour', 'NoIsoPlot']
+.. ['Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'Contour', 'HighHiLo', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
 
-This controls the plotting of isolines, contour bands and grid points.
+Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. This controls the plotting of isolines, contour bands and grid points.
 
 .. list-table::
    :header-rows: 1
@@ -220,6 +220,22 @@ This controls the plotting of isolines, contour bands and grid points.
    * - | Name
      - | Type
      - | Default
+   * - | **contour_akima_x_resolution**
+       | X Resolution
+     - | float
+     - | 1.5
+   * - | **contour_akima_y_resolution**
+       | Y Resolution
+     - | float
+     - | 1.5
+   * - | **contour_akima_x_resolution**
+       | X resolution of Akima interpolation
+     - | float
+     - | 1.5
+   * - | **contour_akima_y_resolution**
+       | Y resolution of Akima interpolation
+     - | float
+     - | 1.5
    * - | **legend**
        | Turn legend on or off
      - | bool
@@ -258,6 +274,78 @@ This controls the plotting of isolines, contour bands and grid points.
      - | False
    * - | **contour_grid_value_plot**
        | Plot Grid point values
+     - | True, False
+     - | False
+   * - | **contour_hilo_type**
+       | Type of high/low (TEXT/NUMBER/BOTH)
+     - | 'text', 'number', 'both'
+     - | "text"
+   * - | **contour_hilo_window_size**
+       | Size of the window used to calculate the Hi/Lo
+     - | int
+     - | 3
+   * - | **contour_hilo_max_value**
+       | Local HiLo above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_hilo_min_value**
+       | Local HiLo below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_hi_max_value**
+       | Local HI above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_hi_min_value**
+       | Local HI below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_lo_max_value**
+       | Local Lo above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_lo_min_value**
+       | Local Lo below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_hilo_marker**
+       | Plot hilo marker (ON/OFF)
+     - | True, False
+     - | False
+   * - | **contour_hilo_type**
+       | Type of high/low (TEXT/NUMBER/BOTH)
+     - | 'text', 'number', 'both'
+     - | "text"
+   * - | **contour_hilo_window_size**
+       | Size of the window used to calculate the Hi/Lo
+     - | int
+     - | 3
+   * - | **contour_hilo_max_value**
+       | Local HiLo above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_hilo_min_value**
+       | Local HiLo below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_hi_max_value**
+       | Local HI above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_hi_min_value**
+       | Local HI below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_lo_max_value**
+       | Local Lo above specified value are not drawn
+     - | float
+     - | 1e+21
+   * - | **contour_lo_min_value**
+       | Local Lo below specified value are not drawn
+     - | float
+     - | -1e+21
+   * - | **contour_hilo_marker**
+       | Plot hilo marker (ON/OFF)
      - | True, False
      - | False
    * - | **contour_line_style**
@@ -336,6 +424,14 @@ This controls the plotting of isolines, contour bands and grid points.
        | Inform the contour object do generate only the legend and not the plot!
      - | bool
      - | False
+   * - | **contour_grid_value_type**
+       | For Gaussian fields, plot normal (regular) values or reduced grid values. (NORMAL/REDUCED/akima). If akima, the akima grid values will be plotted
+     - | 'normal', 'reduced', 'akima'
+     - | "normal"
+   * - | **contour_grid_value_plot_type**
+       | (VALUE/MARKER/BOTH)
+     - | 'value', 'marker', 'both'
+     - | "value"
 
 
 msymb

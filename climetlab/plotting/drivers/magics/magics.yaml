@@ -139,6 +139,18 @@ mcoast:
   name: map_label_bottom
   type: Bool
 mcont:
+- default: 1.5
+  name: contour_akima_x_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_y_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_x_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_y_resolution
+  type: Float
 - name: legend
   type: Bool
 - default: true
@@ -178,6 +190,72 @@ mcont:
   - false
 - name: contour_grid_value_plot
   type: ValuePlotBase
+  values:
+  - true
+  - false
+- default: text
+  name: contour_hilo_type
+  type: HiLoTechnique
+  values:
+  - text
+  - number
+  - both
+- default: 3
+  name: contour_hilo_window_size
+  type: Int
+- default: 1.0e+21
+  name: contour_hilo_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_hilo_min_value
+  type: Float
+- default: 1.0e+21
+  name: contour_hi_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_hi_min_value
+  type: Float
+- default: 1.0e+21
+  name: contour_lo_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_lo_min_value
+  type: Float
+- name: contour_hilo_marker
+  type: HiLoMarkerBase
+  values:
+  - true
+  - false
+- default: text
+  name: contour_hilo_type
+  type: HiLoTechnique
+  values:
+  - text
+  - number
+  - both
+- default: 3
+  name: contour_hilo_window_size
+  type: Int
+- default: 1.0e+21
+  name: contour_hilo_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_hilo_min_value
+  type: Float
+- default: 1.0e+21
+  name: contour_hi_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_hi_min_value
+  type: Float
+- default: 1.0e+21
+  name: contour_lo_max_value
+  type: Float
+- default: -1.0e+21
+  name: contour_lo_min_value
+  type: Float
+- name: contour_hilo_marker
+  type: HiLoMarkerBase
   values:
   - true
   - false
@@ -251,6 +329,20 @@ mcont:
   - false
 - name: contour_legend_only
   type: Bool
+- default: normal
+  name: contour_grid_value_type
+  type: String
+  values:
+  - normal
+  - reduced
+  - akima
+- default: value
+  name: contour_grid_value_plot_type
+  type: ValuePlotMethod
+  values:
+  - value
+  - marker
+  - both
 mmap:
 - name: subpage_upper_right_longitude
   type: Float
