@@ -193,6 +193,26 @@ mcont:
   values:
   - true
   - false
+- default: 1.0e+21
+  name: contour_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_min_level
+  type: Float
+- default: 1.0e+21
+  name: contour_shade_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_shade_min_level
+  type: Float
+- default: 10
+  name: contour_level_count
+  type: Int
+- default: 2
+  name: contour_level_tolerance
+  type: Int
+- name: contour_reference_level
+  type: Float
 - default: text
   name: contour_hilo_type
   type: HiLoTechnique
@@ -226,6 +246,93 @@ mcont:
   values:
   - true
   - false
+- default: 1.0e+21
+  name: contour_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_min_level
+  type: Float
+- default: 1.0e+21
+  name: contour_shade_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_shade_min_level
+  type: Float
+- name: contour_reference_level
+  type: Float
+- default: 8.0
+  name: contour_interval
+  type: Float
+- default: number
+  name: contour_label_type
+  type: String
+  values:
+  - text
+  - number
+  - both
+- name: contour_label_text
+  type: String
+- default: 0.3
+  name: contour_label_height
+  type: Float
+- default: (automatic)
+  name: contour_label_format
+  type: String
+- default: true
+  name: contour_label_blanking
+  type: Bool
+- default: sansserif
+  name: contour_label_font
+  type: String
+- default: normal
+  name: contour_label_font_style
+  type: String
+  values:
+  - normal
+  - bold
+  - italic
+- default: contour_line_colour
+  name: contour_label_colour
+  type: String
+- default: 2
+  name: contour_label_frequency
+  type: Int
+- default: polygon_shading
+  name: contour_shade_technique
+  type: ShadingTechnique
+  values:
+  - polygon
+  - grid_shading
+  - cell_shading
+  - marker
+- default: 1.0e+21
+  name: contour_shade_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_shade_min_level
+  type: Float
+- default: calculate
+  name: contour_shade_colour_method
+  type: ColourTechnique
+  values:
+  - calculate
+  - list
+  - gradients
+  - palette
+- default: 1.0e+21
+  name: contour_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_min_level
+  type: Float
+- default: 1.0e+21
+  name: contour_shade_max_level
+  type: Float
+- default: -1.0e+21
+  name: contour_shade_min_level
+  type: Float
+- name: contour_level_list
+  type: FloatList
 - default: text
   name: contour_hilo_type
   type: HiLoTechnique

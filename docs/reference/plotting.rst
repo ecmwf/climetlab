@@ -209,9 +209,9 @@ The parameters relating to action routine PCOAST (C++ class Coastlines) enable u
 mcont
 -----
 
-.. ['Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'Contour', 'HighHiLo', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
+.. ['Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'Contour', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
 
-Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. This controls the plotting of isolines, contour bands and grid points.
+Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. This controls the plotting of isolines, contour bands and grid points. The number of contour levels may be set by the user by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'COUNT' (default) and CONTOUR_LEVEL_COUNT to the number of levels to be plotted. MAGICS will then calculate the contour interval and the user's plot will consist of the number of levels specified with a regular contour interval. This is the default method and the default number of levels is 10. The exact number of contour levels plotted may not be CONTOUR_LEVEL_COUNT as PCONT will always use the value stored in CONTOUR_REFERENCE_LEVEL as a starting point and will pick reasonable values for the contour interval. If the parameter CONTOUR_LEVEL_SELECTION_TYPE is set to 'INTERVAL' , MAGICS will plot contours at regularly spaced intervals using the value of CONTOUR_REFERENCE_LEVEL as a base and the value in CONTOUR_INTERVAL as the interval between levels. The action routine PCONT will plot labels on contour lines either by default or as directed by the user. Contour labels may be plotted with different attributes from the contour line, e.g. colour and thickness. Contour labels are, by default, plotted on every 2nd contour line, but this may be changed by the user, if desired. Users may supply a list of the contour levels to be plotted by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'LEVEL_LIST' and passing an array of contour level values. This method enables users to plot contours with irregular intervals.
 
 .. list-table::
    :header-rows: 1
@@ -276,6 +276,34 @@ Generates contour lines from a regular/irregular grid of data points. First a de
        | Plot Grid point values
      - | True, False
      - | False
+   * - | **contour_max_level**
+       | Highest level for contours to be drawn
+     - | float
+     - | 1e+21
+   * - | **contour_min_level**
+       | Lowest level for contours to be drawn
+     - | float
+     - | -1e+21
+   * - | **contour_shade_max_level**
+       | Highest level for contours to be shaded
+     - | float
+     - | 1e+21
+   * - | **contour_shade_min_level**
+       | Lowest level for contours to be shaded
+     - | float
+     - | -1e+21
+   * - | **contour_level_count**
+       | Count or number of levels to be plotted. Magics will try to find "nice levels", this means that the number of levels could be slightly different from the asked number of levels
+     - | int
+     - | 10
+   * - | **contour_level_tolerance**
+       | Tolerance: Do not use nice levels if the number of levels is really to different [count +/- tolerance]
+     - | int
+     - | 2
+   * - | **contour_reference_level**
+       | Contour level from which contour interval is calculated
+     - | float
+     - | 0.0
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
      - | 'text', 'number', 'both'
@@ -312,6 +340,102 @@ Generates contour lines from a regular/irregular grid of data points. First a de
        | Plot hilo marker (ON/OFF)
      - | True, False
      - | False
+   * - | **contour_max_level**
+       | Highest level for contours to be drawn
+     - | float
+     - | 1e+21
+   * - | **contour_min_level**
+       | Lowest level for contours to be drawn
+     - | float
+     - | -1e+21
+   * - | **contour_shade_max_level**
+       | Highest level for contours to be shaded
+     - | float
+     - | 1e+21
+   * - | **contour_shade_min_level**
+       | Lowest level for contours to be shaded
+     - | float
+     - | -1e+21
+   * - | **contour_reference_level**
+       | Contour level from which contour interval is calculated
+     - | float
+     - | 0.0
+   * - | **contour_interval**
+       | Interval in data units between two contour lines
+     - | float
+     - | 8.0
+   * - | **contour_label_type**
+       | Type of label (text/number/both
+     - | 'text', 'number', 'both'
+     - | "number"
+   * - | **contour_label_text**
+       | Text for labels
+     - | string
+     - | ""
+   * - | **contour_label_height**
+       | Height of contour labels
+     - | float
+     - | 0.3
+   * - | **contour_label_format**
+       | Format of contour labels (MAGICS Format/(AUTOMATIC))
+     - | string
+     - | "(automatic)"
+   * - | **contour_label_blanking**
+       | Label Blanking
+     - | bool
+     - | True
+   * - | **contour_label_font**
+       | Name of the font
+     - | string
+     - | "sansserif"
+   * - | **contour_label_font_style**
+       | Style of the font normal/bold/italic
+     - | 'normal', 'bold', 'italic'
+     - | "normal"
+   * - | **contour_label_colour**
+       | Colour of contour labels
+     - | string
+     - | "contour_line_colour"
+   * - | **contour_label_frequency**
+       | Every Nth contour line is labelled
+     - | int
+     - | 2
+   * - | **contour_shade_technique**
+       | Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
+     - | 'polygon', 'grid_shading', 'cell_shading', 'marker'
+     - | "polygon_shading"
+   * - | **contour_shade_max_level**
+       | Maximum level for which shading is required
+     - | float
+     - | 1e+21
+   * - | **contour_shade_min_level**
+       | Minimum level for which shading is required
+     - | float
+     - | -1e+21
+   * - | **contour_shade_colour_method**
+       | Method of generating the colours of the bands in contour shading (list/calculate/advanced)
+     - | 'calculate', 'list', 'gradients', 'palette'
+     - | "calculate"
+   * - | **contour_max_level**
+       | Highest level for contours to be drawn
+     - | float
+     - | 1e+21
+   * - | **contour_min_level**
+       | Lowest level for contours to be drawn
+     - | float
+     - | -1e+21
+   * - | **contour_shade_max_level**
+       | Highest level for contours to be shaded
+     - | float
+     - | 1e+21
+   * - | **contour_shade_min_level**
+       | Lowest level for contours to be shaded
+     - | float
+     - | -1e+21
+   * - | **contour_level_list**
+       | List of contour levels to be plotted
+     - | floatarray
+     - | []
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
      - | 'text', 'number', 'both'
