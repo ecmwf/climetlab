@@ -52,7 +52,7 @@ setuptools.setup(
         "tqdm",
         "requests",
         "eccodes>=0.9.9",
-        "magics>=1.3.0",
+        "magics>=1.5.0",
         "ecmwflibs",
         "pdbufr",
         "pyodc",
