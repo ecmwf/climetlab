@@ -34,3 +34,8 @@ img.badge {
     max-width: 100%;
     overflow: visible;
 }
+
+/* Hide notebooks warnings */
+.nboutput .stderr {
+    visibility: hidden;
+}
