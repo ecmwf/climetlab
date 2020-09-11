@@ -42,5 +42,8 @@
     ],
     "python.linting.pylamaArgs": [
         "--ignore E501"
+    ],
+    "python.linting.banditArgs": [
+        "--ignore B101"
     ]
 }
