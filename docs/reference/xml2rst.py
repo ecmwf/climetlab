@@ -204,23 +204,23 @@ class Klass:
     @property
     def action(self):
         action = self._defs.get("python")
-        if action is None:
-            # FIXME: Remove when magics is ready
-            action = self._defs.get("action")
-            if action == "pcont":
-                action = "mcont"
-            # elif action == "pgrib":
-            #     action = "mgrib"
-            # elif action == "pnetcdf":
-            #     action = "mnetcdf"
-            # elif action == "ptable":
-            #     action = "mtable"
-            # elif action == "pinput":
-            #     action = "minput"
-            # elif action == "ptext":
-            #     action = "output"
-            else:
-                action = None
+        # if action is None:
+        #     # FIXME: Remove when magics is ready
+        #     action = self._defs.get("action")
+        #     if action == "pcont":
+        #         action = "mcont"
+        #     # elif action == "pgrib":
+        #     #     action = "mgrib"
+        #     # elif action == "pnetcdf":
+        #     #     action = "mnetcdf"
+        #     # elif action == "ptable":
+        #     #     action = "mtable"
+        #     # elif action == "pinput":
+        #     #     action = "minput"
+        #     # elif action == "ptext":
+        #     #     action = "output"
+        #     else:
+        #         action = None
 
         if action is None:
             for parent in self.inherits:
@@ -248,8 +248,8 @@ class Klass:
                 parms = [parms]
 
             for p in parms:
-                # if p.get("python", True):
-                self._parameters.append(Param(p))
+                if p.get("python", True):
+                    self._parameters.append(Param(p))
         return self._parameters
 
     @property
