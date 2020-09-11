@@ -271,7 +271,10 @@ class Klass:
 
 def load(n):
     with open(n) as f:
-        x = tidy(xmltodict.parse(f.read()))
+        try:
+            x = tidy(xmltodict.parse(f.read()))
+        except Exception as e:
+            raise Exception(n, e)
 
     klass = x["magics"]["class"]
     klass["PATH"] = n
