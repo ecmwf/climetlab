@@ -51,21 +51,21 @@ class FloatList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         c = Float()
-        return [c.convert(x) for x in value]
+        return [c.convert(name, x) for x in value]
 
 
 class IntList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         c = Int()
-        return [c.convert(x) for x in value]
+        return [c.convert(name, x) for x in value]
 
 
 class StringList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
         c = String()
-        return [c.convert(x) for x in value]
+        return [c.convert(name, x) for x in value]
 
 
 def convert(action, args):
