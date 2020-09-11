@@ -37,5 +37,5 @@ img.badge {
 
 /* Hide notebooks warnings */
 .nboutput .stderr {
-    visibility: hidden;
+    display: none;
 }
