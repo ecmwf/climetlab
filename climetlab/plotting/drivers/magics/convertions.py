@@ -20,7 +20,8 @@ class NoConvertion:
 
 class Bool:
     def convert(self, name, value):
-        return bool(value)
+        c = {"on": True, "yes": True, "off": False, "no": False, None: False}
+        return bool(c.get(value, value))
 
 
 class Float:
@@ -35,32 +36,36 @@ class Int:
 
 class String:
     def convert(self, name, value):
-        return str(value)
+        c = {None: "", False: "off", True: "on"}
+        return str(c.get(value, value))
 
 
 class ColourList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
-        colour = Colour()
-        return [colour.convert(name, x) for x in value]
+        c = Colour()
+        return [c.convert(name, x) for x in value]
 
 
 class FloatList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
-        return [float(x) for x in value]
+        c = Float()
+        return [c.convert(x) for x in value]
 
 
 class IntList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
-        return [int(x) for x in value]
+        c = Int()
+        return [c.convert(x) for x in value]
 
 
 class StringList:
     def convert(self, name, value):
         assert isinstance(value, (list, tuple))
-        return [str(x) for x in value]
+        c = String()
+        return [c.convert(x) for x in value]
 
 
 def convert(action, args):
