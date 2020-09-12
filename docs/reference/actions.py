@@ -44,12 +44,12 @@ def mcoast(
     map_coastline_colour: str = "black",
     map_coastline_style: str = "solid",
     map_coastline_thickness: int = 1,
-    # [Coastlines] The parameters relating to action routine PCOAST (C++ class Coastlines) enable users to control the plotting of coastlines and grid lines.
+    # [Coastlines] This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
     map_coastline_general_style: str = "",
     map_coastline: bool = True,
     map_grid: bool = True,
     map_label: bool = True,
-    # [GridPlotting] This object will control the settings of the Map Grids.
+    # [GridPlotting] 
     map_grid_latitude_reference: float = 0,
     map_grid_latitude_increment: float = 10.0,
     map_grid_longitude_reference: float = 0,
@@ -61,7 +61,7 @@ def mcoast(
     map_grid_frame_line_style: str = "solid",
     map_grid_frame_thickness: int = 1,
     map_grid_frame_colour: str = "black",
-    # [LabelPlotting] This object will control the settings of the Map Labels.
+    # [LabelPlotting] 
     map_label_font: str = "sansserif",
     map_label_font_style: str = "normal",
     map_label_colour: str = "black",
@@ -79,14 +79,14 @@ def mcoast(
 
 def mcont(
     *,
-    # [Akima474Method] Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines.
+    # [Akima474Method] 
     contour_akima_x_resolution: float = 1.5,
     contour_akima_y_resolution: float = 1.5,
-    # [Akima760Method] Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines.
+    # [Akima760Method] 
     #contour_akima_x_resolution: float = 1.5,
     #contour_akima_y_resolution: float = 1.5,
     # [AutomaticContourMethod] 
-    # [Contour] This controls the plotting of isolines, contour bands and grid points.
+    # [Contour] 
     legend: bool = False,
     contour: str = True,
     contour_method: str = "automatic",
@@ -97,7 +97,7 @@ def mcont(
     contour_metadata_only: bool = False,
     contour_hilo: str = False,
     contour_grid_value_plot: str = False,
-    # [CountSelectionType] The number of contour levels may be set by the user by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'COUNT' (default) and CONTOUR_LEVEL_COUNT to the number of levels to be plotted. MAGICS will then calculate the contour interval and the user's plot will consist of the number of levels specified with a regular contour interval. This is the default method and the default number of levels is 10. The exact number of contour levels plotted may not be CONTOUR_LEVEL_COUNT as PCONT will always use the value stored in CONTOUR_REFERENCE_LEVEL as a starting point and will pick reasonable values for the contour interval.
+    # [CountSelectionType] 
     contour_max_level: float = 1e+21,
     contour_min_level: float = -1e+21,
     contour_shade_max_level: float = 1e+21,
@@ -115,14 +115,14 @@ def mcont(
     contour_lo_max_value: float = 1e+21,
     contour_lo_min_value: float = -1e+21,
     contour_hilo_marker: str = False,
-    # [IntervalSelectionType] If the parameter CONTOUR_LEVEL_SELECTION_TYPE is set to 'INTERVAL' , MAGICS will plot contours at regularly spaced intervals using the value of CONTOUR_REFERENCE_LEVEL as a base and the value in CONTOUR_INTERVAL as the interval between levels.
+    # [IntervalSelectionType] 
     #contour_max_level: float = 1e+21,
     #contour_min_level: float = -1e+21,
     #contour_shade_max_level: float = 1e+21,
     #contour_shade_min_level: float = -1e+21,
     #contour_reference_level: float = 0.0,
     contour_interval: float = 8.0,
-    # [IsoLabel] The action routine PCONT will plot labels on contour lines either by default or as directed by the user. Contour labels may be plotted with different attributes from the contour line, e.g. colour and thickness. Contour labels are, by default, plotted on every 2nd contour line, but this may be changed by the user, if desired.
+    # [IsoLabel] 
     contour_label_type: str = "number",
     contour_label_text: str = "",
     contour_label_height: float = 0.3,
@@ -137,7 +137,7 @@ def mcont(
     #contour_shade_max_level: float = 1e+21,
     #contour_shade_min_level: float = -1e+21,
     contour_shade_colour_method: str = "calculate",
-    # [LevelListSelectionType] Users may supply a list of the contour levels to be plotted by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'LEVEL_LIST' and passing an array of contour level values. This method enables users to plot contours with irregular intervals.
+    # [LevelListSelectionType] 
     #contour_max_level: float = 1e+21,
     #contour_min_level: float = -1e+21,
     #contour_shade_max_level: float = 1e+21,
@@ -182,7 +182,7 @@ def mcont(
 
 def msymb(
     *,
-    # [SymbolAdvancedTableMode] Here comes the description of the SymbolTableMode object
+    # [SymbolAdvancedTableMode] 
     symbol_advanced_table_selection_type: str = "count",
     symbol_advanced_table_min_value: float = -1e+21,
     symbol_advanced_table_max_value: float = 1e+21,
@@ -215,7 +215,7 @@ def msymb(
     symbol_advanced_table_outlayer_method: bool = "none",
     symbol_advanced_table_outlayer_min_value: float = -1e+21,
     symbol_advanced_table_outlayer_max_value: float = 1e+21,
-    # [SymbolIndividualMode] Here comes the description of the SymbolIndividualMode object
+    # [SymbolIndividualMode] 
     legend_user_text: str = "",
     symbol_colour: str = "blue",
     symbol_height: float = 0.2,
@@ -233,7 +233,7 @@ def msymb(
     symbol_text_font_style: str = "normal",
     symbol_text_font_colour: str = "automatic",
     symbol_legend_height: float = -1.0,
-    # [SymbolPlotting] This action routine (and C++object) controls the plotting of meteorological and marker symbols.
+    # [SymbolPlotting] 
     legend: bool = False,
     symbol_scaling_method: bool = False,
     symbol_scaling_level_0_height: float = 0.1,
@@ -253,7 +253,7 @@ def msymb(
     symbol_connect_line_thickness: int = 1,
     symbol_connect_line_style: str = "solid",
     symbol_legend_only: bool = False,
-    # [SymbolTableMode] Here comes the description of the SymbolTableMode object
+    # [SymbolTableMode] 
     symbol_min_table: List[float] = [],
     symbol_max_table: List[float] = [],
     symbol_marker_table: List[int] = [],

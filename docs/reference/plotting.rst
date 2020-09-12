@@ -7,7 +7,7 @@ mcoast
 
 .. ['CoastPlotting', 'Coastlines', 'GridPlotting', 'LabelPlotting']
 
-The parameters relating to action routine PCOAST (C++ class Coastlines) enable users to control the plotting of coastlines and grid lines. This object will control the settings of the Map Grids. This object will control the settings of the Map Labels.
+This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
 
 .. list-table::
    :header-rows: 1
@@ -211,7 +211,7 @@ mcont
 
 .. ['Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'Contour', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
 
-Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. Generates contour lines from a regular/irregular grid of data points. First a denser regular grid is created based on the original grid and then the isolines are produced by applying a simple linear contouring algorithm. The user may, by calling the parameter setting routines, select the interpolation level which defines the density of the output grid, which then determines the smoothness of the isolines. This controls the plotting of isolines, contour bands and grid points. The number of contour levels may be set by the user by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'COUNT' (default) and CONTOUR_LEVEL_COUNT to the number of levels to be plotted. MAGICS will then calculate the contour interval and the user's plot will consist of the number of levels specified with a regular contour interval. This is the default method and the default number of levels is 10. The exact number of contour levels plotted may not be CONTOUR_LEVEL_COUNT as PCONT will always use the value stored in CONTOUR_REFERENCE_LEVEL as a starting point and will pick reasonable values for the contour interval. If the parameter CONTOUR_LEVEL_SELECTION_TYPE is set to 'INTERVAL' , MAGICS will plot contours at regularly spaced intervals using the value of CONTOUR_REFERENCE_LEVEL as a base and the value in CONTOUR_INTERVAL as the interval between levels. The action routine PCONT will plot labels on contour lines either by default or as directed by the user. Contour labels may be plotted with different attributes from the contour line, e.g. colour and thickness. Contour labels are, by default, plotted on every 2nd contour line, but this may be changed by the user, if desired. Users may supply a list of the contour levels to be plotted by setting the parameter CONTOUR_LEVEL_SELECTION_TYPE to 'LEVEL_LIST' and passing an array of contour level values. This method enables users to plot contours with irregular intervals.
+
 
 .. list-table::
    :header-rows: 1
@@ -563,7 +563,7 @@ msymb
 
 .. ['SymbolAdvancedTableMode', 'SymbolIndividualMode', 'SymbolPlotting', 'SymbolTableMode']
 
-Here comes the description of the SymbolTableMode object Here comes the description of the SymbolIndividualMode object This action routine (and C++object) controls the plotting of meteorological and marker symbols. Here comes the description of the SymbolTableMode object
+
 
 .. list-table::
    :header-rows: 1

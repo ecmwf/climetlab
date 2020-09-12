@@ -199,7 +199,7 @@ class Klass:
 
     @property
     def documentation(self):
-        return cleanup(self._defs.get("documentation", ""))
+        return cleanup(self._defs.get("userdoc", ""))
 
     @property
     def action(self):
