@@ -14,7 +14,6 @@ from collections import OrderedDict, defaultdict
 
 import xmltodict
 import yaml
-from operator import itemgetter
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -200,12 +199,10 @@ class Klass:
 
     @property
     def rank(self):
-        return self._defs.get("python_rank", 99)
+        return int(self._defs.get("python_rank", 99))
 
     def __lt__(self, other):
-        if self.name == other.name:
-            return self.rank < other.rank
-        return self.name < other.name
+        return self.rank < other.rank
 
     @property
     def documentation(self):
@@ -301,15 +298,15 @@ def produce_rst():
     print("========")
     print()
 
-    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
+    for action, klasses in sorted(ACTIONS.items()):
         print()
         print(action)
         print("-" * len(action))
         print()
         documentation = []
-        print(".. %s" % [k.name for k in klasses])
+        print(".. %s" % [k.name for k in sorted(klasses)])
         print()
-        for k in klasses:
+        for k in sorted(klasses):
             documentation.append(k.documentation)
         print(cleanup(" ".join(documentation)))
         print()
@@ -322,7 +319,7 @@ def produce_rst():
         print("     - | Type")
         print("     - | Default")
 
-        for k in klasses:
+        for k in sorted(klasses):
 
             for p in k.parameters:
                 print("   * - |", "**%s**" % p.name)
@@ -362,7 +359,7 @@ def produce_python():
         )
     )
 
-    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
+    for action, klasses in sorted(ACTIONS.items()):
         print()
         print()
         print("def %s(" % action)
@@ -378,7 +375,7 @@ def produce_python():
 
         seen = set()
 
-        for k in klasses:
+        for k in sorted(klasses):
             print("    # [%s]" % (k.name,), k.documentation)
             for p in k.parameters:
 
@@ -398,11 +395,11 @@ def produce_yaml():
 
     m = {}
 
-    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
+    for action, klasses in sorted(ACTIONS.items()):
 
         m[action] = []
 
-        for k in klasses:
+        for k in sorted(klasses):
             for p in k.parameters:
                 d = dict(name=p.name, type=p.yaml_type)
                 if p.yaml_default:
@@ -448,6 +445,8 @@ ACTIONS = defaultdict(list)
 for k, v in DEFS.items():
     if not v._super and v.action is not None:
         ACTIONS[v.action].append(v)
+
+
 
 assert ACTIONS
 

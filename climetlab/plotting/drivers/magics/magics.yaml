@@ -139,18 +139,6 @@ mcoast:
   name: map_label_bottom
   type: Bool
 mcont:
-- default: 1.5
-  name: contour_akima_x_resolution
-  type: Float
-- default: 1.5
-  name: contour_akima_y_resolution
-  type: Float
-- default: 1.5
-  name: contour_akima_x_resolution
-  type: Float
-- default: 1.5
-  name: contour_akima_y_resolution
-  type: Float
 - name: legend
   type: Bool
 - default: true
@@ -193,6 +181,18 @@ mcont:
   values:
   - true
   - false
+- default: 1.5
+  name: contour_akima_x_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_y_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_x_resolution
+  type: Float
+- default: 1.5
+  name: contour_akima_y_resolution
+  type: Float
 - default: 1.0e+21
   name: contour_max_level
   type: Float

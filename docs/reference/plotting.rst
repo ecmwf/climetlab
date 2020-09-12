@@ -2,12 +2,12 @@ Plotting
 ========
 
 
-mcont
------
+mcoast
+------
 
-.. ['Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'Contour', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
+.. ['CoastPlotting', 'Coastlines', 'GridPlotting', 'LabelPlotting']
 
-
+This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
 
 .. list-table::
    :header-rows: 1
@@ -16,22 +16,210 @@ mcont
    * - | Name
      - | Type
      - | Default
-   * - | **contour_akima_x_resolution**
-       | X Resolution
+   * - | **map_coastline_resolution**
+       | Select one of the pre-defined resolutions: automatic, low, medium, and high. When set to AUTOMATIC, a resolution appropriate to the scale of the map is chosen in order to balance quality with speed.
+     - | 'automatic', 'low', 'medium', 'high'
+     - | "automatic"
+   * - | **map_coastline_land_shade**
+       | Sets if land areas are shaded
+     - | bool
+     - | False
+   * - | **map_coastline_land_shade_colour**
+       | Colour of Shading of land areas
+     - | Colour(string)
+     - | "green"
+   * - | **map_coastline_sea_shade**
+       | Shade the sea areas
+     - | bool
+     - | False
+   * - | **map_coastline_sea_shade_colour**
+       | Colour of Shading of sea areas
+     - | Colour(string)
+     - | "blue"
+   * - | **map_boundaries**
+       | Add the political boundaries
+     - | NoBoundaries(string)
+     - | False
+   * - | **map_cities**
+       | Add the cities (capitals)
+     - | NoCities(string)
+     - | False
+   * - | **map_preview**
+       | OrderedDict([('for_docs', False), ('#text', 'Add a preview : only for metview')])
+     - | bool
+     - | False
+   * - | **map_rivers**
+       | Display rivers (on/off)
+     - | True, False
+     - | False
+   * - | **map_rivers_style**
+       | Line style for rivers
+     - | LineStyle(string)
+     - | "solid"
+   * - | **map_rivers_colour**
+       | Colour of the rivers
+     - | Colour(string)
+     - | "blue"
+   * - | **map_rivers_thickness**
+       | Line thickness of rivers
+     - | int
+     - | 1
+   * - | **map_user_layer**
+       | Display user shape file layer
+     - | True, False
+     - | False
+   * - | **map_user_layer_name**
+       | Path + name of the shape file to use
+     - | string
+     - | ""
+   * - | **map_user_layer_projection**
+       | Projection used in the shape file
+     - | string
+     - | ""
+   * - | **map_user_layer_style**
+       | Line style for User Layer
+     - | LineStyle(string)
+     - | "solid"
+   * - | **map_user_layer_colour**
+       | Colour of the User Layer
+     - | Colour(string)
+     - | "blue"
+   * - | **map_user_layer_thickness**
+       | Line thickness of User Layer
+     - | int
+     - | 1
+   * - | **map_coastline_colour**
+       | Colour of coastlines
+     - | Colour(string)
+     - | "black"
+   * - | **map_coastline_style**
+       | Line style of coastlines
+     - | LineStyle(string)
+     - | "solid"
+   * - | **map_coastline_thickness**
+       | Line thickness of coastlines
+     - | int
+     - | 1
+   * - | **map_coastline_general_style**
+       | Use a predefined style depending on the general theme
+     - | string
+     - | ""
+   * - | **map_coastline**
+       | Plot coastlines on map (ON/OFF)
+     - | NoCoastPlotting(string)
+     - | True
+   * - | **map_grid**
+       | Plot grid lines on map (On/OFF)
+     - | NoGridPlotting(string)
+     - | True
+   * - | **map_label**
+       | Plot label on map grid lines (On/OFF)
+     - | NoLabelPlotting(string)
+     - | True
+   * - | **map_grid_latitude_reference**
+       | Reference Latitude from which all latitude lines are drawn
      - | float
-     - | 1.5
-   * - | **contour_akima_y_resolution**
-       | Y Resolution
+     - | 0
+   * - | **map_grid_latitude_increment**
+       | Interval between latitude grid lines
      - | float
-     - | 1.5
-   * - | **contour_akima_x_resolution**
-       | X resolution of Akima interpolation
+     - | 10.0
+   * - | **map_grid_longitude_reference**
+       | Reference Longitude from which all longitude lines are drawn
      - | float
-     - | 1.5
-   * - | **contour_akima_y_resolution**
-       | Y resolution of Akima interpolation
+     - | 0
+   * - | **map_grid_longitude_increment**
+       | Interval between longitude grid lines
      - | float
-     - | 1.5
+     - | 20.0
+   * - | **map_grid_line_style**
+       | Line style of map grid lines
+     - | LineStyle(string)
+     - | "solid"
+   * - | **map_grid_thickness**
+       | Thickness of map grid lines
+     - | int
+     - | 1
+   * - | **map_grid_colour**
+       | Colour of map grid lines
+     - | Colour(string)
+     - | "black"
+   * - | **map_grid_frame**
+       | Add a frame around the projection
+     - | bool
+     - | False
+   * - | **map_grid_frame_line_style**
+       | Line style of map grid lines
+     - | LineStyle(string)
+     - | "solid"
+   * - | **map_grid_frame_thickness**
+       | Thickness of map grid lines
+     - | int
+     - | 1
+   * - | **map_grid_frame_colour**
+       | Colour of map grid lines
+     - | Colour(string)
+     - | "black"
+   * - | **map_label_font**
+       | Font of grid labels
+     - | string
+     - | "sansserif"
+   * - | **map_label_font_style**
+       | Font of grid labels
+     - | string
+     - | "normal"
+   * - | **map_label_colour**
+       | Colour of map labels
+     - | Colour(string)
+     - | "black"
+   * - | **map_label_height**
+       | Height og grid labels
+     - | float
+     - | 0.25
+   * - | **map_label_blanking**
+       | Blanking of the grid labels
+     - | bool
+     - | True
+   * - | **map_label_latitude_frequency**
+       | Evry Nth latitue grid is labelled
+     - | int
+     - | 1
+   * - | **map_label_longitude_frequency**
+       | Evry Nth longitude grid is labelled
+     - | int
+     - | 1
+   * - | **map_label_left**
+       | Enable the labels on the left of the map
+     - | bool
+     - | True
+   * - | **map_label_right**
+       | Enable the labels on the right of the map
+     - | bool
+     - | True
+   * - | **map_label_top**
+       | Enable the labels on the top of the map
+     - | bool
+     - | True
+   * - | **map_label_bottom**
+       | Enable the labels on the bottom of the map
+     - | bool
+     - | True
+
+
+mcont
+-----
+
+.. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
+
+This action controls the plotting of isolines, contour bands and grid points.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 70 20 10
+
+   * - | Name
+     - | Type
+     - | Default
    * - | **legend**
        | Turn legend on or off
      - | bool
@@ -72,6 +260,22 @@ mcont
        | Plot Grid point values
      - | True, False
      - | False
+   * - | **contour_akima_x_resolution**
+       | X Resolution
+     - | float
+     - | 1.5
+   * - | **contour_akima_y_resolution**
+       | Y Resolution
+     - | float
+     - | 1.5
+   * - | **contour_akima_x_resolution**
+       | X resolution of Akima interpolation
+     - | float
+     - | 1.5
+   * - | **contour_akima_y_resolution**
+       | Y resolution of Akima interpolation
+     - | float
+     - | 1.5
    * - | **contour_max_level**
        | Highest level for contours to be drawn
      - | float
@@ -352,210 +556,6 @@ mcont
        | (VALUE/MARKER/BOTH)
      - | 'value', 'marker', 'both'
      - | "value"
-
-
-mcoast
-------
-
-.. ['CoastPlotting', 'Coastlines', 'GridPlotting', 'LabelPlotting']
-
-This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 70 20 10
-
-   * - | Name
-     - | Type
-     - | Default
-   * - | **map_coastline_resolution**
-       | Select one of the pre-defined resolutions: automatic, low, medium, and high. When set to AUTOMATIC, a resolution appropriate to the scale of the map is chosen in order to balance quality with speed.
-     - | 'automatic', 'low', 'medium', 'high'
-     - | "automatic"
-   * - | **map_coastline_land_shade**
-       | Sets if land areas are shaded
-     - | bool
-     - | False
-   * - | **map_coastline_land_shade_colour**
-       | Colour of Shading of land areas
-     - | Colour(string)
-     - | "green"
-   * - | **map_coastline_sea_shade**
-       | Shade the sea areas
-     - | bool
-     - | False
-   * - | **map_coastline_sea_shade_colour**
-       | Colour of Shading of sea areas
-     - | Colour(string)
-     - | "blue"
-   * - | **map_boundaries**
-       | Add the political boundaries
-     - | NoBoundaries(string)
-     - | False
-   * - | **map_cities**
-       | Add the cities (capitals)
-     - | NoCities(string)
-     - | False
-   * - | **map_preview**
-       | OrderedDict([('for_docs', False), ('#text', 'Add a preview : only for metview')])
-     - | bool
-     - | False
-   * - | **map_rivers**
-       | Display rivers (on/off)
-     - | True, False
-     - | False
-   * - | **map_rivers_style**
-       | Line style for rivers
-     - | LineStyle(string)
-     - | "solid"
-   * - | **map_rivers_colour**
-       | Colour of the rivers
-     - | Colour(string)
-     - | "blue"
-   * - | **map_rivers_thickness**
-       | Line thickness of rivers
-     - | int
-     - | 1
-   * - | **map_user_layer**
-       | Display user shape file layer
-     - | True, False
-     - | False
-   * - | **map_user_layer_name**
-       | Path + name of the shape file to use
-     - | string
-     - | ""
-   * - | **map_user_layer_projection**
-       | Projection used in the shape file
-     - | string
-     - | ""
-   * - | **map_user_layer_style**
-       | Line style for User Layer
-     - | LineStyle(string)
-     - | "solid"
-   * - | **map_user_layer_colour**
-       | Colour of the User Layer
-     - | Colour(string)
-     - | "blue"
-   * - | **map_user_layer_thickness**
-       | Line thickness of User Layer
-     - | int
-     - | 1
-   * - | **map_coastline_colour**
-       | Colour of coastlines
-     - | Colour(string)
-     - | "black"
-   * - | **map_coastline_style**
-       | Line style of coastlines
-     - | LineStyle(string)
-     - | "solid"
-   * - | **map_coastline_thickness**
-       | Line thickness of coastlines
-     - | int
-     - | 1
-   * - | **map_coastline_general_style**
-       | Use a predefined style depending on the general theme
-     - | string
-     - | ""
-   * - | **map_coastline**
-       | Plot coastlines on map (ON/OFF)
-     - | NoCoastPlotting(string)
-     - | True
-   * - | **map_grid**
-       | Plot grid lines on map (On/OFF)
-     - | NoGridPlotting(string)
-     - | True
-   * - | **map_label**
-       | Plot label on map grid lines (On/OFF)
-     - | NoLabelPlotting(string)
-     - | True
-   * - | **map_grid_latitude_reference**
-       | Reference Latitude from which all latitude lines are drawn
-     - | float
-     - | 0
-   * - | **map_grid_latitude_increment**
-       | Interval between latitude grid lines
-     - | float
-     - | 10.0
-   * - | **map_grid_longitude_reference**
-       | Reference Longitude from which all longitude lines are drawn
-     - | float
-     - | 0
-   * - | **map_grid_longitude_increment**
-       | Interval between longitude grid lines
-     - | float
-     - | 20.0
-   * - | **map_grid_line_style**
-       | Line style of map grid lines
-     - | LineStyle(string)
-     - | "solid"
-   * - | **map_grid_thickness**
-       | Thickness of map grid lines
-     - | int
-     - | 1
-   * - | **map_grid_colour**
-       | Colour of map grid lines
-     - | Colour(string)
-     - | "black"
-   * - | **map_grid_frame**
-       | Add a frame around the projection
-     - | bool
-     - | False
-   * - | **map_grid_frame_line_style**
-       | Line style of map grid lines
-     - | LineStyle(string)
-     - | "solid"
-   * - | **map_grid_frame_thickness**
-       | Thickness of map grid lines
-     - | int
-     - | 1
-   * - | **map_grid_frame_colour**
-       | Colour of map grid lines
-     - | Colour(string)
-     - | "black"
-   * - | **map_label_font**
-       | Font of grid labels
-     - | string
-     - | "sansserif"
-   * - | **map_label_font_style**
-       | Font of grid labels
-     - | string
-     - | "normal"
-   * - | **map_label_colour**
-       | Colour of map labels
-     - | Colour(string)
-     - | "black"
-   * - | **map_label_height**
-       | Height og grid labels
-     - | float
-     - | 0.25
-   * - | **map_label_blanking**
-       | Blanking of the grid labels
-     - | bool
-     - | True
-   * - | **map_label_latitude_frequency**
-       | Evry Nth latitue grid is labelled
-     - | int
-     - | 1
-   * - | **map_label_longitude_frequency**
-       | Evry Nth longitude grid is labelled
-     - | int
-     - | 1
-   * - | **map_label_left**
-       | Enable the labels on the left of the map
-     - | bool
-     - | True
-   * - | **map_label_right**
-       | Enable the labels on the right of the map
-     - | bool
-     - | True
-   * - | **map_label_top**
-       | Enable the labels on the top of the map
-     - | bool
-     - | True
-   * - | **map_label_bottom**
-       | Enable the labels on the bottom of the map
-     - | bool
-     - | True
 
 
 msymb
