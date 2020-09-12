@@ -20,63 +20,6 @@ def _given_args(frame):
     return given
 
 
-def mcoast(
-    *,
-    # [CoastPlotting] 
-    map_coastline_resolution: str = "automatic",
-    map_coastline_land_shade: bool = False,
-    map_coastline_land_shade_colour: str = "green",
-    map_coastline_sea_shade: bool = False,
-    map_coastline_sea_shade_colour: str = "blue",
-    map_boundaries: bool = False,
-    map_cities: bool = False,
-    map_preview: bool = False,
-    map_rivers: str = False,
-    map_rivers_style: str = "solid",
-    map_rivers_colour: str = "blue",
-    map_rivers_thickness: int = 1,
-    map_user_layer: str = False,
-    map_user_layer_name: str = "",
-    map_user_layer_projection: str = "",
-    map_user_layer_style: str = "solid",
-    map_user_layer_colour: str = "blue",
-    map_user_layer_thickness: int = 1,
-    map_coastline_colour: str = "black",
-    map_coastline_style: str = "solid",
-    map_coastline_thickness: int = 1,
-    # [Coastlines] This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
-    map_coastline_general_style: str = "",
-    map_coastline: bool = True,
-    map_grid: bool = True,
-    map_label: bool = True,
-    # [GridPlotting] 
-    map_grid_latitude_reference: float = 0,
-    map_grid_latitude_increment: float = 10.0,
-    map_grid_longitude_reference: float = 0,
-    map_grid_longitude_increment: float = 20.0,
-    map_grid_line_style: str = "solid",
-    map_grid_thickness: int = 1,
-    map_grid_colour: str = "black",
-    map_grid_frame: bool = False,
-    map_grid_frame_line_style: str = "solid",
-    map_grid_frame_thickness: int = 1,
-    map_grid_frame_colour: str = "black",
-    # [LabelPlotting] 
-    map_label_font: str = "sansserif",
-    map_label_font_style: str = "normal",
-    map_label_colour: str = "black",
-    map_label_height: float = 0.25,
-    map_label_blanking: bool = True,
-    map_label_latitude_frequency: int = 1,
-    map_label_longitude_frequency: int = 1,
-    map_label_left: bool = True,
-    map_label_right: bool = True,
-    map_label_top: bool = True,
-    map_label_bottom: bool = True,
-):
-    return macro.mcoast(**_given_args(inspect.currentframe()))
-
-
 def mcont(
     *,
     # [Akima474Method] 
@@ -178,6 +121,63 @@ def mcont(
     contour_grid_value_plot_type: str = "value",
 ):
     return macro.mcont(**_given_args(inspect.currentframe()))
+
+
+def mcoast(
+    *,
+    # [CoastPlotting] 
+    map_coastline_resolution: str = "automatic",
+    map_coastline_land_shade: bool = False,
+    map_coastline_land_shade_colour: str = "green",
+    map_coastline_sea_shade: bool = False,
+    map_coastline_sea_shade_colour: str = "blue",
+    map_boundaries: bool = False,
+    map_cities: bool = False,
+    map_preview: bool = False,
+    map_rivers: str = False,
+    map_rivers_style: str = "solid",
+    map_rivers_colour: str = "blue",
+    map_rivers_thickness: int = 1,
+    map_user_layer: str = False,
+    map_user_layer_name: str = "",
+    map_user_layer_projection: str = "",
+    map_user_layer_style: str = "solid",
+    map_user_layer_colour: str = "blue",
+    map_user_layer_thickness: int = 1,
+    map_coastline_colour: str = "black",
+    map_coastline_style: str = "solid",
+    map_coastline_thickness: int = 1,
+    # [Coastlines] This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
+    map_coastline_general_style: str = "",
+    map_coastline: bool = True,
+    map_grid: bool = True,
+    map_label: bool = True,
+    # [GridPlotting] 
+    map_grid_latitude_reference: float = 0,
+    map_grid_latitude_increment: float = 10.0,
+    map_grid_longitude_reference: float = 0,
+    map_grid_longitude_increment: float = 20.0,
+    map_grid_line_style: str = "solid",
+    map_grid_thickness: int = 1,
+    map_grid_colour: str = "black",
+    map_grid_frame: bool = False,
+    map_grid_frame_line_style: str = "solid",
+    map_grid_frame_thickness: int = 1,
+    map_grid_frame_colour: str = "black",
+    # [LabelPlotting] 
+    map_label_font: str = "sansserif",
+    map_label_font_style: str = "normal",
+    map_label_colour: str = "black",
+    map_label_height: float = 0.25,
+    map_label_blanking: bool = True,
+    map_label_latitude_frequency: int = 1,
+    map_label_longitude_frequency: int = 1,
+    map_label_left: bool = True,
+    map_label_right: bool = True,
+    map_label_top: bool = True,
+    map_label_bottom: bool = True,
+):
+    return macro.mcoast(**_given_args(inspect.currentframe()))
 
 
 def msymb(

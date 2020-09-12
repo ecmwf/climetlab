@@ -14,6 +14,7 @@ from collections import OrderedDict, defaultdict
 
 import xmltodict
 import yaml
+from operator import itemgetter
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -198,6 +199,15 @@ class Klass:
         return self._defs.get("name")
 
     @property
+    def rank(self):
+        return self._defs.get("python_rank", 99)
+
+    def __lt__(self, other):
+        if self.name == other.name:
+            return self.rank < other.rank
+        return self.name < other.name
+
+    @property
     def documentation(self):
         return cleanup(self._defs.get("userdoc", ""))
 
@@ -291,7 +301,7 @@ def produce_rst():
     print("========")
     print()
 
-    for action, klasses in sorted(ACTIONS.items()):
+    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
         print()
         print(action)
         print("-" * len(action))
@@ -352,7 +362,7 @@ def produce_python():
         )
     )
 
-    for action, klasses in sorted(ACTIONS.items()):
+    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
         print()
         print()
         print("def %s(" % action)
@@ -388,7 +398,7 @@ def produce_yaml():
 
     m = {}
 
-    for action, klasses in sorted(ACTIONS.items()):
+    for action, klasses in sorted(ACTIONS.items(),key=itemgetter(1)):
 
         m[action] = []
 
