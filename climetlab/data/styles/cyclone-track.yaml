@@ -10,3 +10,13 @@ magics:
     symbol_connect_line: on
 plot_map:
   margins: 1
+gallery:
+  sample:
+    dataset:
+      name: hurricane-database
+      args:
+        bassin: atlantic
+    to_pandas:
+      name: irma
+      year: 2017
+

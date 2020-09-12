@@ -77,3 +77,15 @@ magics:
     contour_shade_max_level: 8000
     contour_shade_method: area_fill
     contour_shade_min_level: -400
+gallery:
+  sample:
+    source:
+      name: cds
+      args:
+        dataset: reanalysis-era5-single-levels
+        product_type: reanalysis
+        format: grib
+        variable: orography
+        date: '1979-01-01'
+        time: 00:00
+        area: [90, -180, -90, 180]

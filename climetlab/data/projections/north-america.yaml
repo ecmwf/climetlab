@@ -5,4 +5,4 @@ magics:
     subpage_map_projection: polar_stereographic
     subpage_upper_right_latitude: 30
     subpage_upper_right_longitude: -15
-    subpage_vertical_longitude: -100
+    subpage_map_vertical_longitude: -100

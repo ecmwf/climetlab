@@ -1,8 +1,9 @@
+hidden: true
 magics:
   mmap:
-    subpage_lower_left_latitude: 0
+    subpage_lower_left_latitude: 0.0
     subpage_lower_left_longitude: 44.9
     subpage_map_hemisphere: south
     subpage_map_projection: polar_stereographic
-    subpage_upper_right_latitude: 0
+    subpage_upper_right_latitude: 0.0
     subpage_upper_right_longitude: -134.9

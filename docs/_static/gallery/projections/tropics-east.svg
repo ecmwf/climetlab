@@ -17,7 +17,7 @@ viewBox="0 0 681 265" xml:space="preserve">
 	<dc:format>image/svg+xml</dc:format>
 	<dc:title>Magics plot</dc:title>
 	<dc:author>baudouin on Baudouins-iMac-3.local</dc:author>
-	<dc:date>Tue Sep  8 14:21:02 2020</dc:date>
+	<dc:date>Sat Sep 12 16:29:35 2020</dc:date>
 	<dc:language>en-GB</dc:language>
 	<dc:publisher><cc:Agent>
 	 <dc:title>Magics 4.4.5 (64 bit)</dc:title>
@@ -26,7 +26,7 @@ viewBox="0 0 681 265" xml:space="preserve">
 </cc:Work></rdf:RDF>
 </metadata>
 <g id="page" transform="translate(0,264.444)" vector-effect="non-scaling-stroke">
-<g id="Page11">
+<g id="Page27">
 <g inkscape:groupmode="layer" inkscape:label="Coastline" id="Coastline"><title>Coastline</title>
 <g>
 <g id="drawing" transform="translate(0,-132.222)">
@@ -132,7 +132,7 @@ M627.828 83.6011L625.125 81.9007L622.69 79.8993L620.19 77.2357L619.667 75.9547L6
 <path fill="rgb(114,163,255)" d="M133.205 53.9371l-0.771518 -2.01938l-0.71178 -0.157935l-0.656141 -4.83077l0.91852 -3.62274l-1.24337 -1.4466l-0.316065 -3.96808l-1.99712 -2.01996l-0.336172 1.15708l1.33473 2.43989l0.237195 4.55375l-1.09617 2.09883l1.1237 2.78055l-0.034164 1.6426l0.869519 1.10574l-0.016399 1.41887l0.603627 0.809781l0.65985 -0.944484l1.34118 1.47061l0.0905832 -0.467752"/>
 <path fill="rgb(114,163,255)" d="M141.598 -44.6726l0.137827 -1.26748l-1.03643 -0.276825l-0.86581 0.749067l0.486884 0.698895l0.727788 0.518315l0.549745 -0.421972"/>
 </g>
-<g stroke-width="0.5px" stroke="rgb(102,84,51)" fill="none">
+<g stroke-width="0.5px" stroke="rgb(209,179,139)" fill="none">
 <path d="M652.18 130.443l1.40169 -0.296347"/>
 <path d="M631.342 83.7155l-1.43547 0.906611l-2.07892 -1.02101l-2.70246 -1.70038l-2.435 -2.00142l-2.50021 -2.66361l-0.522805 -1.28105l1.62581 0.0542717l2.11582 1.28437l1.66212 1.28456l1.20882 1.05771l3.09778 2.34227l1.96452 1.73767"/>
 <path d="M673.856 65.5064l1.30129 1.09004l-0.624656 1.97249l-2.34241 0.519067l-2.08231 -0.467198l-0.364253 -1.66098l1.45758 -1.2977l1.71776 0.467198l0.937002 -0.622918"/>

@@ -9,6 +9,7 @@
 #
 
 import os
+import sys
 
 import climetlab
 import climetlab.plotting
@@ -17,34 +18,58 @@ DOCS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
 
 
 def plot_projection(name, path):
+    print("plot_projection", name, file=sys.stderr)
     climetlab.plot_map(None, projection=name, background="land-sea", path=path)
-
+    print("done", name, file=sys.stderr)
 
 def plot_layer(name, path):
+    print("plot_layer", name, file=sys.stderr)
     climetlab.plot_map(None, background=False, foreground=name, path=path)
-
+    print("done", name, file=sys.stderr)
 
 def plot_style(name, path):
+    print("plot_style", name, file=sys.stderr)
     yaml = climetlab.plotting.style(name).data
-    if "msymb" in yaml["magics"]:
-        data = climetlab.load_dataset("sample-bufr-data")
-        data = data.to_pandas(
-            columns=(
-                "stationNumber",
-                "latitude",
-                "longitude",
-                "data_datetime",
-                "pressure",
-                "airTemperature",
-            ),
-            filters={},
-        )
-    if "mcont" in yaml["magics"]:
-        data = climetlab.load_dataset("sample-grib-data")[0]
 
-    extra = yaml.get("gallery", {}).get("plot_map", {})
+    gallery = yaml.get("gallery", {})
+
+    if "sample" in gallery:
+        sample = gallery["sample"]
+        if "source" in sample:
+            source  = sample["source"]
+            print("source", source["name"], source.get("args", {}), file=sys.stderr)
+            data = climetlab.load_source(source["name"], **source.get("args", {}))
+            data = data[0]
+            print("done", source["name"], file=sys.stderr)
+        else:
+            dataset  = sample["dataset"]
+            print("dataset", dataset["name"], dataset.get("args", {}), file=sys.stderr)
+            data = climetlab.load_dataset(dataset["name"], **dataset.get("args", {}))
+            if "to_pandas" in sample:
+                data = data.to_pandas(**sample["to_pandas"])
+            print("done", dataset["name"], file=sys.stderr)
+    else:
+        if "msymb" in yaml["magics"]:
+            data = climetlab.load_dataset("sample-bufr-data")
+            data = data.to_pandas(
+                columns=(
+                    "stationNumber",
+                    "latitude",
+                    "longitude",
+                    "data_datetime",
+                    "pressure",
+                    "airTemperature",
+                ),
+                filters={},
+            )
+        if "mcont" in yaml["magics"]:
+            data = climetlab.load_dataset("sample-grib-data")[0]
+
+
+    extra = gallery.get("plot_map", {})
 
     climetlab.plot_map(data, style=name, path=path, **extra)
+    print("done", name, file=sys.stderr)
 
 
 def output(title, collection, plotter):
@@ -69,10 +94,10 @@ def output(title, collection, plotter):
                 os.makedirs(os.path.dirname(path))
             except FileExistsError:
                 pass
-            try:
-                plotter(p, path)
-            except Exception as e:
-                print(e)
+            # try:
+            plotter(p, path)
+            # except Exception as e:
+            #     print(e)
 
         print()
         print(".. image::", "/" + image)
