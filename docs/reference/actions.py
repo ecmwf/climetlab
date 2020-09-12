@@ -22,6 +22,11 @@ def _given_args(frame):
 
 def mcoast(
     *,
+    # [Coastlines] This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
+    map_coastline_general_style: str = "",
+    map_coastline: bool = True,
+    map_grid: bool = True,
+    map_label: bool = True,
     # [CoastPlotting] 
     map_coastline_resolution: str = "automatic",
     map_coastline_land_shade: bool = False,
@@ -44,11 +49,6 @@ def mcoast(
     map_coastline_colour: str = "black",
     map_coastline_style: str = "solid",
     map_coastline_thickness: int = 1,
-    # [Coastlines] This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
-    map_coastline_general_style: str = "",
-    map_coastline: bool = True,
-    map_grid: bool = True,
-    map_label: bool = True,
     # [GridPlotting] 
     map_grid_latitude_reference: float = 0,
     map_grid_latitude_increment: float = 10.0,
@@ -79,7 +79,7 @@ def mcoast(
 
 def mcont(
     *,
-    # [Contour] This action controls the plotting of isolines, contour bands and grid points.
+    # [Contour] This action controls the plotting of isolines, contour bands and grid points. It is used to plot gridded data, such as fields.
     legend: bool = False,
     contour: str = True,
     contour_method: str = "automatic",
@@ -233,7 +233,7 @@ def msymb(
     symbol_text_font_style: str = "normal",
     symbol_text_font_colour: str = "automatic",
     symbol_legend_height: float = -1.0,
-    # [SymbolPlotting] 
+    # [SymbolPlotting] This action controls the plotting of meteorological and marker symbols. It is used to plot point data, such as observations.
     legend: bool = False,
     symbol_scaling_method: bool = False,
     symbol_scaling_level_0_height: float = 0.1,

@@ -5,7 +5,7 @@ Plotting
 mcoast
 ------
 
-.. ['CoastPlotting', 'Coastlines', 'GridPlotting', 'LabelPlotting']
+.. ['Coastlines', 'CoastPlotting', 'GridPlotting', 'LabelPlotting']
 
 This action controls the plotting of coastlines, rivers, cities and country boundaries, as well as the latitude/longitude grid lines.
 
@@ -16,6 +16,22 @@ This action controls the plotting of coastlines, rivers, cities and country boun
    * - | Name
      - | Type
      - | Default
+   * - | **map_coastline_general_style**
+       | Use a predefined style depending on the general theme
+     - | string
+     - | ""
+   * - | **map_coastline**
+       | Plot coastlines on map (ON/OFF)
+     - | NoCoastPlotting(string)
+     - | True
+   * - | **map_grid**
+       | Plot grid lines on map (On/OFF)
+     - | NoGridPlotting(string)
+     - | True
+   * - | **map_label**
+       | Plot label on map grid lines (On/OFF)
+     - | NoLabelPlotting(string)
+     - | True
    * - | **map_coastline_resolution**
        | Select one of the pre-defined resolutions: automatic, low, medium, and high. When set to AUTOMATIC, a resolution appropriate to the scale of the map is chosen in order to balance quality with speed.
      - | 'automatic', 'low', 'medium', 'high'
@@ -100,22 +116,6 @@ This action controls the plotting of coastlines, rivers, cities and country boun
        | Line thickness of coastlines
      - | int
      - | 1
-   * - | **map_coastline_general_style**
-       | Use a predefined style depending on the general theme
-     - | string
-     - | ""
-   * - | **map_coastline**
-       | Plot coastlines on map (ON/OFF)
-     - | NoCoastPlotting(string)
-     - | True
-   * - | **map_grid**
-       | Plot grid lines on map (On/OFF)
-     - | NoGridPlotting(string)
-     - | True
-   * - | **map_label**
-       | Plot label on map grid lines (On/OFF)
-     - | NoLabelPlotting(string)
-     - | True
    * - | **map_grid_latitude_reference**
        | Reference Latitude from which all latitude lines are drawn
      - | float
@@ -211,7 +211,7 @@ mcont
 
 .. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
 
-This action controls the plotting of isolines, contour bands and grid points.
+This action controls the plotting of isolines, contour bands and grid points. It is used to plot gridded data, such as fields.
 
 .. list-table::
    :header-rows: 1
@@ -475,7 +475,7 @@ msymb
 
 .. ['SymbolAdvancedTableMode', 'SymbolIndividualMode', 'SymbolPlotting', 'SymbolTableMode']
 
-
+This action controls the plotting of meteorological and marker symbols. It is used to plot point data, such as observations.
 
 .. list-table::
    :header-rows: 1

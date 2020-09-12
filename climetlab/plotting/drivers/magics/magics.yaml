@@ -1,4 +1,15 @@
 mcoast:
+- name: map_coastline_general_style
+  type: String
+- default: true
+  name: map_coastline
+  type: Bool
+- default: true
+  name: map_grid
+  type: Bool
+- default: true
+  name: map_label
+  type: Bool
 - default: automatic
   name: map_coastline_resolution
   type: String
@@ -64,17 +75,6 @@ mcoast:
 - default: 1
   name: map_coastline_thickness
   type: Int
-- name: map_coastline_general_style
-  type: String
-- default: true
-  name: map_coastline
-  type: Bool
-- default: true
-  name: map_grid
-  type: Bool
-- default: true
-  name: map_label
-  type: Bool
 - name: map_grid_latitude_reference
   type: Float
 - default: 10.0
