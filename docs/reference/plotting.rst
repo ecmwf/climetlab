@@ -261,19 +261,11 @@ This action controls the plotting of isolines, contour bands and grid points.
      - | True, False
      - | False
    * - | **contour_akima_x_resolution**
-       | X Resolution
+       | X resolution of Akima interpolation.
      - | float
      - | 1.5
    * - | **contour_akima_y_resolution**
-       | Y Resolution
-     - | float
-     - | 1.5
-   * - | **contour_akima_x_resolution**
-       | X resolution of Akima interpolation
-     - | float
-     - | 1.5
-   * - | **contour_akima_y_resolution**
-       | Y resolution of Akima interpolation
+       | Y resolution of Akima interpolation.
      - | float
      - | 1.5
    * - | **contour_max_level**
@@ -340,26 +332,6 @@ This action controls the plotting of isolines, contour bands and grid points.
        | Plot hilo marker (ON/OFF)
      - | True, False
      - | False
-   * - | **contour_max_level**
-       | Highest level for contours to be drawn
-     - | float
-     - | 1e+21
-   * - | **contour_min_level**
-       | Lowest level for contours to be drawn
-     - | float
-     - | -1e+21
-   * - | **contour_shade_max_level**
-       | Highest level for contours to be shaded
-     - | float
-     - | 1e+21
-   * - | **contour_shade_min_level**
-       | Lowest level for contours to be shaded
-     - | float
-     - | -1e+21
-   * - | **contour_reference_level**
-       | Contour level from which contour interval is calculated
-     - | float
-     - | 0.0
    * - | **contour_interval**
        | Interval in data units between two contour lines
      - | float
@@ -404,74 +376,14 @@ This action controls the plotting of isolines, contour bands and grid points.
        | Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
      - | 'polygon', 'grid_shading', 'cell_shading', 'marker'
      - | "polygon_shading"
-   * - | **contour_shade_max_level**
-       | Maximum level for which shading is required
-     - | float
-     - | 1e+21
-   * - | **contour_shade_min_level**
-       | Minimum level for which shading is required
-     - | float
-     - | -1e+21
    * - | **contour_shade_colour_method**
        | Method of generating the colours of the bands in contour shading (list/calculate/advanced)
      - | 'calculate', 'list', 'gradients', 'palette'
      - | "calculate"
-   * - | **contour_max_level**
-       | Highest level for contours to be drawn
-     - | float
-     - | 1e+21
-   * - | **contour_min_level**
-       | Lowest level for contours to be drawn
-     - | float
-     - | -1e+21
-   * - | **contour_shade_max_level**
-       | Highest level for contours to be shaded
-     - | float
-     - | 1e+21
-   * - | **contour_shade_min_level**
-       | Lowest level for contours to be shaded
-     - | float
-     - | -1e+21
    * - | **contour_level_list**
        | List of contour levels to be plotted
      - | floatarray
      - | []
-   * - | **contour_hilo_type**
-       | Type of high/low (TEXT/NUMBER/BOTH)
-     - | 'text', 'number', 'both'
-     - | "text"
-   * - | **contour_hilo_window_size**
-       | Size of the window used to calculate the Hi/Lo
-     - | int
-     - | 3
-   * - | **contour_hilo_max_value**
-       | Local HiLo above specified value are not drawn
-     - | float
-     - | 1e+21
-   * - | **contour_hilo_min_value**
-       | Local HiLo below specified value are not drawn
-     - | float
-     - | -1e+21
-   * - | **contour_hi_max_value**
-       | Local HI above specified value are not drawn
-     - | float
-     - | 1e+21
-   * - | **contour_hi_min_value**
-       | Local HI below specified value are not drawn
-     - | float
-     - | -1e+21
-   * - | **contour_lo_max_value**
-       | Local Lo above specified value are not drawn
-     - | float
-     - | 1e+21
-   * - | **contour_lo_min_value**
-       | Local Lo below specified value are not drawn
-     - | float
-     - | -1e+21
-   * - | **contour_hilo_marker**
-       | Plot hilo marker (ON/OFF)
-     - | True, False
-     - | False
    * - | **contour_line_style**
        | Style of contour line
      - | LineStyle(string)
@@ -792,10 +704,6 @@ msymb
        | Specifies if plotting is to be in advanced, table (on) or individual mode (off). Note: The simple table mode is not recommended anymore, try to use the advanced mode instead, this should give you easier control of the plot.
      - | SymbolMode(string)
      - | "OFF"
-   * - | **symbol_marker_mode**
-       | Method to select a marker : by name, by index, by image : in that case, Magics will use an external image as marker.
-     - | 'index', 'name', 'image'
-     - | "index"
    * - | **symbol_format**
        | Format used to plot values (MAGICS Format/(AUTOMATIC))
      - | string

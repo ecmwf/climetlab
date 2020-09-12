@@ -199,7 +199,7 @@ class Klass:
 
     @property
     def rank(self):
-        return int(self._defs.get("python_rank", 99))
+        return int(self._defs.get("python_rank", 100000))
 
     def __lt__(self, other):
         return self.rank < other.rank
@@ -319,9 +319,18 @@ def produce_rst():
         print("     - | Type")
         print("     - | Default")
 
+        seen = set()
+
         for k in sorted(klasses):
 
+
             for p in k.parameters:
+
+                if p.name in seen:
+                    continue
+
+                seen.add(p.name)
+
                 print("   * - |", "**%s**" % p.name)
                 print("       |", p.documentation)
                 print("     - |", p.values)
