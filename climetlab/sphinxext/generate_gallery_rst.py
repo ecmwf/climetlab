@@ -22,10 +22,32 @@ def plot_projection(name, path):
     climetlab.plot_map(None, projection=name, background="land-sea", path=path)
     print("done", name, file=sys.stderr)
 
+
 def plot_layer(name, path):
     print("plot_layer", name, file=sys.stderr)
     climetlab.plot_map(None, background=False, foreground=name, path=path)
     print("done", name, file=sys.stderr)
+
+
+def get_data(how, name, to_pandas=None, **kwargs):
+    data = how(name, **kwargs)
+
+    if to_pandas is not None:
+        return data.to_pandas(**to_pandas)
+
+    try:
+        return data[0]
+    except Exception:
+        return data
+
+
+def get_dataset(name, to_pandas=None, **kwargs):
+    return get_data(climetlab.load_dataset, name, to_pandas, **kwargs)
+
+
+def get_source(name, to_pandas=None, **kwargs):
+    return get_data(climetlab.load_source, name, to_pandas, **kwargs)
+
 
 def plot_style(name, path):
     print("plot_style", name, file=sys.stderr)
@@ -36,35 +58,23 @@ def plot_style(name, path):
     if "sample" in gallery:
         sample = gallery["sample"]
         if "source" in sample:
-            source  = sample["source"]
-            print("source", source["name"], source.get("args", {}), file=sys.stderr)
-            data = climetlab.load_source(source["name"], **source.get("args", {}))
-            data = data[0]
-            print("done", source["name"], file=sys.stderr)
+            source = sample["source"]
+            data = get_source(
+                source["name"], source.get("to_pandas"), **source.get("args", {})
+            )
         else:
-            dataset  = sample["dataset"]
-            print("dataset", dataset["name"], dataset.get("args", {}), file=sys.stderr)
-            data = climetlab.load_dataset(dataset["name"], **dataset.get("args", {}))
-            if "to_pandas" in sample:
-                data = data.to_pandas(**sample["to_pandas"])
-            print("done", dataset["name"], file=sys.stderr)
+            dataset = sample["dataset"]
+            data = get_dataset(
+                dataset["name"], dataset.get("to_pandas"), **dataset.get("args", {})
+            )
     else:
         if "msymb" in yaml["magics"]:
-            data = climetlab.load_dataset("sample-bufr-data")
-            data = data.to_pandas(
-                columns=(
-                    "stationNumber",
-                    "latitude",
-                    "longitude",
-                    "data_datetime",
-                    "pressure",
-                    "airTemperature",
-                ),
-                filters={},
+            data = get_dataset(
+                "sample-bufr-data",
+                to_pandas={"columns": ("latitude", "longitude"), "filters": {}},
             )
         if "mcont" in yaml["magics"]:
-            data = climetlab.load_dataset("sample-grib-data")[0]
-
+            data = get_dataset("sample-grib-data")
 
     extra = gallery.get("plot_map", {})
 

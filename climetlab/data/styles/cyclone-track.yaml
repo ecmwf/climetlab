@@ -16,7 +16,6 @@ gallery:
       name: hurricane-database
       args:
         bassin: atlantic
-    to_pandas:
-      name: irma
-      year: 2017
-
+      to_pandas:
+        name: irma
+        year: 2017
