@@ -293,6 +293,8 @@ class Driver:
             )
 
         self._page_ratio = self._projection.page_ratio()
+        if self._page_ratio <= 0:
+            self._page_ratio = 1.0
 
         _title_height_cm = 0
         if title:
@@ -336,6 +338,8 @@ class Driver:
         self._options.check_unused()
 
         args = [page] + self.macro()
+
+        # print(args)
 
         try:
             plot(*args)
