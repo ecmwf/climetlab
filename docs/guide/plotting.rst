@@ -30,9 +30,15 @@ Styles
 
 TODO
 
+See `mcont <magics-mcont>`_ and `msymb <magics-msymb>`_.
+
+
 .. _layers:
 
 Layers
 ------
+
+See `mcoast <magics-mcoast>`_.
+
 
 TODO
