@@ -47,5 +47,6 @@
     ],
     "python.linting.banditArgs": [
         "--ignore B101"
-    ]
+    ],
+    "cmake.configureOnOpen": false
 }

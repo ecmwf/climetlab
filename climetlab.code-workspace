@@ -53,6 +53,7 @@
 		],
 		"code-runner.fileDirectoryAsCwd": true,
 		"code-runner.showRunCommandInEditorContextMenu": false,
+		"liveServer.settings.multiRootWorkspaceName": "climetlab",
 
 	}
 }
