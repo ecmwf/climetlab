@@ -6,12 +6,29 @@ Data sources
 .. todo::
 
     Explain what are Data sources. List the built-in ones.
+    Explain fields.to_xarray() and obs.to_pandas().
+    Explain data[0]
+
+
+
+.. code-block:: python
+
+    import climetlab as cml
+
+    data = cml.load_source("source-name",
+                           "parameter1",
+                           "parameter2", ...)
+
 
 
 .. _data-sources-file:
 
+
 file
 ----
+
+The simplest data source is the *file* source that accesses a local file.
+
 
 .. code-block:: python
 
@@ -20,7 +37,8 @@ file
     data = cml.load_source("file", "/path/to/file")
 
 
-Supported data types are:
+*CliMetLab* will inspect the content of the file to check for any of the
+supported data formats listed below:
 
 - Fields:
     - NetCDF
@@ -37,6 +55,10 @@ Supported data types are:
 
 url
 ---
+
+The *url* data source will download the data from the address
+specified and store it in the :ref:`cache <caching>`. The supported
+data formats are the same as for the *file* data source above.
 
 .. code-block:: python
 
@@ -97,6 +119,8 @@ to perform the same operation with *CliMetLab*, use the following code:
                             ...})
 
 
+Data downloaded from the CDS is stored in the the :ref:`cache <caching>`.
+
 To access data from the CDS, you will need to register and retrieve an
 access token. The process is described here_.
 
@@ -120,6 +144,7 @@ https://apps.ecmwf.int/datasets/
 https://confluence.ecmwf.int/display/UDOC/Web-MARS
 https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
 
+Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
 
 multi
 -----
