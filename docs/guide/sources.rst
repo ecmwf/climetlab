@@ -139,12 +139,18 @@ For more information, see the CDS `knowledge base`_.
 mars
 ----
 
-https://www.ecmwf.int/en/forecasts/datasets/archive-datasets
-https://apps.ecmwf.int/datasets/
-https://confluence.ecmwf.int/display/UDOC/Web-MARS
-https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
+Meteorological Archival and Retrieval System (MARS)
+
+.. _public datasets: https://apps.ecmwf.int/datasets/
+
+.. _catalogue: https://www.ecmwf.int/en/forecasts/datasets/archive-datasets
+
+.. _WebMARS: https://confluence.ecmwf.int/display/UDOC/Web-MARS
+.. _documentation: https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
 
 Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
 
 multi
 -----
+
+TODO

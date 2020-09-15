@@ -150,7 +150,7 @@ class Param:
 
         if "values" in self._defs:
             return ", ".join(
-                [repr(tidy(x)) for x in self._defs.get("values").split("/")]
+                [repr(tidy(x)).replace("'", '"') for x in self._defs.get("values").split("/")]
             )
 
         if f == t:

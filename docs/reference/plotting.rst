@@ -47,7 +47,7 @@ country boundaries, as well as the latitude/longitude grid lines.
          high. When set to AUTOMATIC, a resolution appropriate to the
          scale of the map is chosen in order to balance quality with
          speed.
-     - | 'automatic', 'low', 'medium', 'high'
+     - | "automatic", "low", "medium", "high"
      - | "automatic"
 
    * - | **map_coastline_land_shade**
@@ -293,7 +293,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_method**
        | Contouring method
-     - | 'automatic', 'linear', 'akima474', 'akima760'
+     - | "automatic", "linear", "akima474", "akima760"
      - | "automatic"
 
    * - | **contour_interpolation_floor**
@@ -311,7 +311,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_automatic_setting**
        | Turn the automatic setting of contouring attributes
-     - | False, 'style_name', 'ecmwf'
+     - | False, "style_name", "ecmwf"
      - | False
 
    * - | **contour_style_name**
@@ -384,7 +384,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
-     - | 'text', 'number', 'both'
+     - | "text", "number", "both"
      - | "text"
 
    * - | **contour_hilo_window_size**
@@ -434,7 +434,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_type**
        | Type of label (text/number/both
-     - | 'text', 'number', 'both'
+     - | "text", "number", "both"
      - | "number"
 
    * - | **contour_label_text**
@@ -464,7 +464,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_font_style**
        | Style of the font normal/bold/italic
-     - | 'normal', 'bold', 'italic'
+     - | "normal", "bold", "italic"
      - | "normal"
 
    * - | **contour_label_colour**
@@ -479,13 +479,13 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_technique**
        | Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
-     - | 'polygon', 'grid_shading', 'cell_shading', 'marker'
+     - | "polygon", "grid_shading", "cell_shading", "marker"
      - | "polygon_shading"
 
    * - | **contour_shade_colour_method**
        | Method of generating the colours of the bands in contour shading
          (list/calculate/advanced)
-     - | 'calculate', 'list', 'gradients', 'palette'
+     - | "calculate", "list", "gradients", "palette"
      - | "calculate"
 
    * - | **contour_level_list**
@@ -515,7 +515,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_colour_rainbow_method**
        | Method of generating the colours for isoline
-     - | 'calculate', 'list'
+     - | "calculate", "list"
      - | "calculate"
 
    * - | **contour_line_colour_rainbow_max_level_colour**
@@ -530,7 +530,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_colour_rainbow_direction**
        | Direction of colour sequencing for colouring
-     - | 'clockwise', 'anti_clockwise'
+     - | "clockwise", "anti_clockwise"
      - | "anti_clockwise"
 
    * - | **contour_line_colour_rainbow_colour_list**
@@ -576,7 +576,7 @@ points. It is used to plot gridded data, such as fields.
          min/max and the requested number of isolines. interval:
          regularly spaced intervals using the reference_level as base.
          level_list: uses the given list of levels.
-     - | 'count', 'interval', 'list'
+     - | "count", "interval", "list"
      - | "count"
 
    * - | **contour_label**
@@ -599,12 +599,12 @@ points. It is used to plot gridded data, such as fields.
        | For Gaussian fields, plot normal (regular) values or reduced grid
          values. (NORMAL/REDUCED/akima). If akima, the akima grid
          values will be plotted
-     - | 'normal', 'reduced', 'akima'
+     - | "normal", "reduced", "akima"
      - | "normal"
 
    * - | **contour_grid_value_plot_type**
        | (VALUE/MARKER/BOTH)
-     - | 'value', 'marker', 'both'
+     - | "value", "marker", "both"
      - | "value"
 
 
@@ -629,7 +629,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_selection_type**
        | Technique to use to calculate the shading band levels.
-     - | 'count', 'interval', 'list'
+     - | "count", "interval", "list"
      - | "count"
 
    * - | **symbol_advanced_table_min_value**
@@ -688,7 +688,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_colour_direction**
        | Direction of colour sequencing for plotting (CLOCKWISE/
          ANTI_CLOCKWISE)
-     - | 'clockwise', 'anti-clockwise'
+     - | "clockwise", "anti-clockwise"
      - | "anti_clockwise"
 
    * - | **symbol_advanced_table_colour_list**
@@ -780,7 +780,7 @@ symbols. It is used to plot point data, such as observations.
          of the symbol, right : attached it to the right of the
          symbol, top : attached it to the top of the symbol, bottom:
          attached it to the bottom of the symbol,
-     - | 'centre', 'none', 'right', 'left', 'top', 'bottom'
+     - | "centre", "none", "right", "left", "top", "bottom"
      - | "none"
 
    * - | **symbol_advanced_table_outlayer_method**
@@ -838,7 +838,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_image_format**
        | Format of the image file. If set to AUTOMATIC, the file extension will
          be used to determine the file type.
-     - | 'automatic', 'png', 'svg'
+     - | "automatic", "png", "svg"
      - | "automatic"
 
    * - | **symbol_image_width**
@@ -858,7 +858,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_text_position**
        | Position of the text
-     - | 'right', 'left', 'bottom', 'top'
+     - | "right", "left", "bottom", "top"
      - | "right"
 
    * - | **symbol_text_font**
@@ -908,7 +908,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_type**
        | Defines the type of symbol plotting required
-     - | 'number', 'text', 'marker', 'wind'
+     - | "number", "text", "marker", "wind"
      - | "number"
 
    * - | **symbol_table_mode**
