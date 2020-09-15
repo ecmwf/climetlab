@@ -8,12 +8,10 @@ Plotting
     Introduce advance plotting options
 
 
-.. literalinclude:: plotting-attributes.py
+literalinclude:: plotting-attributes.py
 
 
-.. literalinclude:: plotting-options.py
-
-
+literalinclude:: plotting-options.py
 
 
 .. _projections:
@@ -21,7 +19,9 @@ Plotting
 Projections
 -----------
 
-TODO
+.. module-output:: file_content data/projections/global.yaml
+
+See `mmap <magics-mmap>`_.
 
 .. _styles:
 

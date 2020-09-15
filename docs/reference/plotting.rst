@@ -4,6 +4,8 @@ Plotting
 ========
 
 
+.. _magics-mcoast:
+
 mcoast
 ------
 
@@ -260,6 +262,8 @@ country boundaries, as well as the latitude/longitude grid lines.
      - | True
 
 
+
+.. _magics-mcont:
 
 mcont
 -----
@@ -604,6 +608,8 @@ points. It is used to plot gridded data, such as fields.
      - | "value"
 
 
+
+.. _magics-msymb:
 
 msymb
 -----

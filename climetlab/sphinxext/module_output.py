@@ -33,12 +33,13 @@ class ModuleOutput(Directive):
                 self.lineno - self.state_machine.input_offset - 1
             )
 
-            name = [x for x in self.content if x != ""][0]
+            args = [x for x in self.content if x != ""][0].split(" ")
+            name = args.pop(0)
 
             module = import_module("..%s" % (name.replace("-", "_"),), package=__name__)
 
             sys.stdout = StringIO()
-            module.execute()
+            module.execute(*args)
             out = sys.stdout.getvalue()
 
             # Parse output

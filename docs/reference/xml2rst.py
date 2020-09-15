@@ -289,6 +289,9 @@ def produce_rst():
 
     for action, klasses in sorted(ACTIONS.items()):
         print()
+        print(".. _magics-{}:".format(action))
+
+        print()
         print(action)
         print("-" * len(action))
         print()
