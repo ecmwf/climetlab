@@ -10,6 +10,7 @@
     "cSpell.words": [
         "BUFR",
         "ECMWF",
+        "GRIB",
         "Jupyter",
         "Keras",
         "Magics",
@@ -19,9 +20,11 @@
         "automodule",
         "autoreload",
         "autosummary",
+        "cdsapi",
         "climetlab",
         "geopoints",
         "ipynb",
+        "literalinclude",
         "maxdepth",
         "netcdf",
         "numpy",
@@ -31,8 +34,7 @@
         "setuptools",
         "startup",
         "toctree",
-        "xarray",
-        "literalinclude",
+        "xarray"
     ],
     "python.linting.flake8Args": [
         "--ignore E501"

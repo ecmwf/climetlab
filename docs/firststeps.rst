@@ -217,7 +217,7 @@ or, if you want to specify a per-data custom *style*, you can use
 
 .. External URLs
 
-.. _Copernicus Climate Data Store: https://cds.climate.copernicus.eu/#!/home
+.. _Copernicus Climate Data Store: https://cds.climate.copernicus.eu/
 .. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 .. _ECMWF web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 .. _Uma: https://en.wikipedia.org/wiki/1986–87_South_Pacific_cyclone_season#Severe_Tropical_Cyclone_Uma

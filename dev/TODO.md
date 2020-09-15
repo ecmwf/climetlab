@@ -139,3 +139,7 @@ Use `doc8` instead of `rstcheck`
 - Check _ipython_key_completions_
 - Use jsonschemo.org for magics
 - See https://github.com/readthedocs/sphinx-autoapi
+
+** Doc
+- Check external links https://sublime-and-sphinx-guide.readthedocs.io/en/latest/references.html
+- 
