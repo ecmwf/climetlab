@@ -148,9 +148,8 @@ Meteorological Archival and Retrieval System (MARS)
 .. _WebMARS: https://confluence.ecmwf.int/display/UDOC/Web-MARS
 .. _documentation: https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
 
-https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 
-https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
+.. _webapi: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 
 .. code-block:: python
 
