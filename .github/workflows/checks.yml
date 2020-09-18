@@ -21,6 +21,13 @@ jobs:
         run: |
           pip install black
 
-      - name: black
+      - name: Black
         run: |
           black --check .
+
+      - name: Documentation
+        run: |
+          make clean
+          make html
+          # make linkcheck (don't run yet)
+        working-directory: docs
