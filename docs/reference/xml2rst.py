@@ -20,7 +20,7 @@ import yaml
 yaml.Dumper.ignore_aliases = lambda *args: True
 
 DEFS = OrderedDict()
-TYPES = {}
+ENUMS = {}
 
 T = {
     "on": True,
@@ -143,27 +143,19 @@ class Param:
     @property
     def values(self):
 
-        enumerations = {
-            "LineStyle": ["solid", "dash", "dot", "chain_dash", "chain_dot"],
-            "ListPolicy": ["lastone", "cycle"],
-            "Justification": ["left", "centre", "right"],
-            "Position": ["automatic", "top", "bottom", "left", "right"],
-        }
-
         f = self._defs.get("from")
         t = self._defs.get("to")
 
         if t == "bool":
             return t
 
-        if t in TYPES:
+        if t in ENUMS:
             return ", ".join(
                 [
                     repr(tidy(x)).replace("'", '"')
-                    for x in sorted(TYPES[t]["values"].keys())
+                    for x in sorted(ENUMS[t]["values"].keys())
                 ]
             )
-
 
         if "values" in self._defs:
             return ", ".join(
@@ -459,7 +451,7 @@ args = parser.parse_args()
 
 if args.types:
     with open(args.types) as f:
-        TYPES=yaml.load(f, Loader=yaml.SafeLoader)
+        ENUMS = yaml.load(f, Loader=yaml.SafeLoader)
 
 for n in args.xml:
     load(n)
