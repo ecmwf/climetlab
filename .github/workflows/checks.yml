@@ -41,7 +41,7 @@ jobs:
           TEST: ${{ secrets.TEST }}
         run: |
           import os
-          for n in ('ECMWFAPIRC', 'CDSAPIRC', 'TEST'):
+          for n in ('ECMWFAPIRC', 'CDSAPIRC'):
               m = os.path.expanduser("~/." + n.lower())
               assert os.environ[n], n
               with open(m, "w") as f:
@@ -49,10 +49,6 @@ jobs:
 
       - name: Tests
         run: |
-          echo '========'
-          cat ~/.test
-          echo '========'
-
           python setup.py develop
           pytest
 
