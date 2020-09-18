@@ -43,6 +43,7 @@ jobs:
           import os
           for n in ('ECMWFAPIRC', 'CDSAPIRC', 'TEST'):
               m = os.path.expanduser("~/." + n.lower())
+              assert os.environ[n], n
               with open(m, "w") as f:
                   print(os.environ[n], file=f)
 
