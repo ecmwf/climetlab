@@ -48,6 +48,7 @@ class Dataset:
 
     def to_numpy(self, *args, **kwargs):
         import numpy as np
+
         return np.array([s.to_numpy(*args, **kwargs) for s in self.source])
 
     def to_xarray(self, *args, **kwargs):
