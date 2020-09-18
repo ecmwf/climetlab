@@ -19,8 +19,7 @@ jobs:
 
       - name: Install packages
         run: |
-          pip install black
-          pip install sphinx
+          pip install black sphinx pytest
           pip install -r docs/requirements.txt
           sudo apt-get install pandoc
 
@@ -35,3 +34,7 @@ jobs:
           make html
           # make linkcheck (don't run yet)
         working-directory: docs
+
+      - name: Tests
+        run: |
+          pytest
