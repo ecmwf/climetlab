@@ -37,6 +37,10 @@ jobs:
         run: |
           echo '${{ secrets.ECMWFAPIRC }}' > ~/.ecmwfapirc
           echo '${{ secrets.CDSAPIRC }}' > ~/.cdsapirc
+          echo '${{ secrets.TEST }}' > ~/.test
+          echo '========'
+          cat ~/.test
+          echo '========'
           python setup.py develop
           pytest
 
