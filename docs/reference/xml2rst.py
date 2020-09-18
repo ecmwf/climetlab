@@ -141,12 +141,22 @@ class Param:
 
     @property
     def values(self):
+        
+         enumerations = {
+            "LineStyle" = ["solid", "dash", "dot", "chain_dash", "chain_dot"], 
+            "ListPolicy" = ["lastone", "cycle"],   
+            "Justification" = ["left", "centre", "right"], 
+            "Position" = ["automatic", "top", "bottom", "left", "right"],
+        }
 
         f = self._defs.get("from")
         t = self._defs.get("to")
 
         if t == "bool":
             return t
+        
+        if t in enumerations:
+            return ", ".join(enumerations[t])
 
         if "values" in self._defs:
             return ", ".join(
