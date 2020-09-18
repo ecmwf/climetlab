@@ -52,6 +52,7 @@ jobs:
           echo '========'
           cat ~/.test
           echo '========'
+
           python setup.py develop
           pytest
 
