@@ -44,7 +44,7 @@ jobs:
           for n in ('ECMWFAPIRC', 'CDSAPIRC', 'TEST'):
               m = os.path.expanduser("~/." + n.lower())
               with open(m, "w") as f:
-                  print(m, file=f)
+                  print(os.environ[n], file=f)
 
       - name: Tests
         run: |
