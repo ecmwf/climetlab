@@ -20,6 +20,8 @@ jobs:
       - name: Install packages
         run: |
           pip install black
+          pip install sphinx
+          pip install -r docs/requirements.txt
 
       - name: Black
         run: |
