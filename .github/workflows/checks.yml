@@ -33,11 +33,20 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      - name: Tokens
+        env:
+          ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
+          CDSAPIRC: ${{ secrets.CDSAPIRC }}
+          TEST: ${{ secrets.TEST }}
+        run: |
+          import os
+          for n in ('ECMWFAPIRC', 'CDSAPIRC', 'TEST'):
+              m = os.path.expanduser("~/." + n.lower())
+              with open(m, "w") as f:
+                  print(m, file=f)
+
       - name: Tests
         run: |
-          echo '${{ secrets.ECMWFAPIRC }}' > ~/.ecmwfapirc
-          echo '${{ secrets.CDSAPIRC }}' > ~/.cdsapirc
-          echo '${{ secrets.TEST }}' > ~/.test
           echo '========'
           cat ~/.test
           echo '========'
