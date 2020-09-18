@@ -37,7 +37,10 @@ class PandasHelper:
         north, west, south, east = self.bounding_box()
 
         driver.bounding_box(
-            north=north, south=south, west=west, east=east,
+            north=north,
+            south=south,
+            west=west,
+            east=east,
         )
 
         driver.plot_pandas(self.frame, self.lat, self.lon, column)

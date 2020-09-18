@@ -19,10 +19,14 @@ class MeteonetMasks(Meteonet):
     """
 
     def __init__(
-        self, domain="NW",
+        self,
+        domain="NW",
     ):
 
-        url = "{url}/masks/{domain}_masks.grib".format(url=self.URL, domain=domain,)
+        url = "{url}/masks/{domain}_masks.grib".format(
+            url=self.URL,
+            domain=domain,
+        )
         self.source = load_source("url", url, styles=["land-sea-mask", "orography"])
 
 

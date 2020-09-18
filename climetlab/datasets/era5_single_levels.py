@@ -17,7 +17,10 @@ from . import Dataset
 class Era5SingleLevels(Dataset):
     def __init__(self, variable, period, domain=None, time=None, grid=None):
 
-        request = dict(variable=variable, product_type="reanalysis",)
+        request = dict(
+            variable=variable,
+            product_type="reanalysis",
+        )
 
         if domain is not None:
             request["area"] = domain_to_area(domain)

@@ -112,7 +112,13 @@ def get_data_entry(kind, name):
     if kind not in files:
         raise KeyError("No collection named '%s'" % (kind,))
     if name not in files[kind]:
-        raise KeyError("No object '%s' in collection named '%s'" % (name, kind,))
+        raise KeyError(
+            "No object '%s' in collection named '%s'"
+            % (
+                name,
+                kind,
+            )
+        )
 
     return files[kind][name]
 

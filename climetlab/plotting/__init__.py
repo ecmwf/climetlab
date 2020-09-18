@@ -49,8 +49,7 @@ def styles():
 
 
 class Plot:
-    """[summary]
-    """
+    """[summary]"""
 
     def __init__(self, kwargs):
         options = {}
@@ -100,8 +99,8 @@ def new_plot(**kwargs) -> Plot:
 def plot_map(data=None, **kwargs):
     """Plot any data on a map.
 
-        Args:
-            data ([any]): [description]
+    Args:
+        data ([any]): [description]
     """
 
     p = new_plot(**kwargs)

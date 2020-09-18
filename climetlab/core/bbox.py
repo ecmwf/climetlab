@@ -18,7 +18,11 @@ class BoundingBox:
 
         if self.north <= self.south:
             raise ValueError(
-                "North (%s) must be greater than south (%s)" % (self.north, self.south,)
+                "North (%s) must be greater than south (%s)"
+                % (
+                    self.north,
+                    self.south,
+                )
             )
 
         if self.west == self.east:

@@ -40,8 +40,7 @@ class Layer:
 
 
 class Driver:
-    """TODO: Docscting
-    """
+    """TODO: Docscting"""
 
     def __init__(self, options):
 
