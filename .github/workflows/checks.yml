@@ -25,6 +25,7 @@ jobs:
 
       - name: Black
         run: |
+          black --version
           black --check .
 
       - name: Documentation
