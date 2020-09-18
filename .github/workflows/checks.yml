@@ -35,6 +35,8 @@ jobs:
 
       - name: Tests
         run: |
+          echo '${{ secrets.ECMWFAPIRC }}' > ~/.ecmwfapirc
+          echo '${{ secrets.CDSAPIRC }}' > ~/.cdsapirc
           python setup.py develop
           pytest
 
