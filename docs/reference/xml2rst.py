@@ -141,12 +141,12 @@ class Param:
 
     @property
     def values(self):
-        
-         enumerations = {
-            "LineStyle" = ["solid", "dash", "dot", "chain_dash", "chain_dot"], 
-            "ListPolicy" = ["lastone", "cycle"],   
-            "Justification" = ["left", "centre", "right"], 
-            "Position" = ["automatic", "top", "bottom", "left", "right"],
+
+        enumerations = {
+            "LineStyle": ["solid", "dash", "dot", "chain_dash", "chain_dot"],
+            "ListPolicy": ["lastone", "cycle"],
+            "Justification": ["left", "centre", "right"],
+            "Position": ["automatic", "top", "bottom", "left", "right"],
         }
 
         f = self._defs.get("from")
@@ -154,13 +154,16 @@ class Param:
 
         if t == "bool":
             return t
-        
+
         if t in enumerations:
             return ", ".join(enumerations[t])
 
         if "values" in self._defs:
             return ", ".join(
-                [repr(tidy(x)).replace("'", '"') for x in self._defs.get("values").split("/")]
+                [
+                    repr(tidy(x)).replace("'", '"')
+                    for x in self._defs.get("values").split("/")
+                ]
             )
 
         if f == t:
@@ -439,6 +442,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--rst", action="store_true")
 parser.add_argument("--python", action="store_true")
 parser.add_argument("--yaml", action="store_true")
+parser.add_argument("--enums")
 parser.add_argument(
     "xml", metavar="N", nargs="+",
 )

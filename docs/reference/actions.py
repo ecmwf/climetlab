@@ -27,7 +27,7 @@ def mcoast(
     map_coastline: bool = True,
     map_grid: bool = True,
     map_label: bool = True,
-    # [CoastPlotting] 
+    # [CoastPlotting]
     map_coastline_resolution: str = "automatic",
     map_coastline_land_shade: bool = False,
     map_coastline_land_shade_colour: str = "green",
@@ -49,7 +49,7 @@ def mcoast(
     map_coastline_colour: str = "black",
     map_coastline_style: str = "solid",
     map_coastline_thickness: int = 1,
-    # [GridPlotting] 
+    # [GridPlotting]
     map_grid_latitude_reference: float = 0,
     map_grid_latitude_increment: float = 10.0,
     map_grid_longitude_reference: float = 0,
@@ -61,7 +61,7 @@ def mcoast(
     map_grid_frame_line_style: str = "solid",
     map_grid_frame_thickness: int = 1,
     map_grid_frame_colour: str = "black",
-    # [LabelPlotting] 
+    # [LabelPlotting]
     map_label_font: str = "sansserif",
     map_label_font_style: str = "normal",
     map_label_colour: str = "black",
@@ -90,39 +90,39 @@ def mcont(
     contour_metadata_only: bool = False,
     contour_hilo: str = False,
     contour_grid_value_plot: str = False,
-    # [Akima474Method] 
+    # [Akima474Method]
     contour_akima_x_resolution: float = 1.5,
     contour_akima_y_resolution: float = 1.5,
-    # [Akima760Method] 
-    #contour_akima_x_resolution: float = 1.5,
-    #contour_akima_y_resolution: float = 1.5,
-    # [AutomaticContourMethod] 
-    # [CountSelectionType] 
-    contour_max_level: float = 1e+21,
-    contour_min_level: float = -1e+21,
-    contour_shade_max_level: float = 1e+21,
-    contour_shade_min_level: float = -1e+21,
+    # [Akima760Method]
+    # contour_akima_x_resolution: float = 1.5,
+    # contour_akima_y_resolution: float = 1.5,
+    # [AutomaticContourMethod]
+    # [CountSelectionType]
+    contour_max_level: float = 1e21,
+    contour_min_level: float = -1e21,
+    contour_shade_max_level: float = 1e21,
+    contour_shade_min_level: float = -1e21,
     contour_level_count: int = 10,
     contour_level_tolerance: int = 2,
     contour_reference_level: float = 0.0,
-    # [HighHiLo] 
+    # [HighHiLo]
     contour_hilo_type: str = "text",
     contour_hilo_window_size: int = 3,
-    contour_hilo_max_value: float = 1e+21,
-    contour_hilo_min_value: float = -1e+21,
-    contour_hi_max_value: float = 1e+21,
-    contour_hi_min_value: float = -1e+21,
-    contour_lo_max_value: float = 1e+21,
-    contour_lo_min_value: float = -1e+21,
+    contour_hilo_max_value: float = 1e21,
+    contour_hilo_min_value: float = -1e21,
+    contour_hi_max_value: float = 1e21,
+    contour_hi_min_value: float = -1e21,
+    contour_lo_max_value: float = 1e21,
+    contour_lo_min_value: float = -1e21,
     contour_hilo_marker: str = False,
-    # [IntervalSelectionType] 
-    #contour_max_level: float = 1e+21,
-    #contour_min_level: float = -1e+21,
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
-    #contour_reference_level: float = 0.0,
+    # [IntervalSelectionType]
+    # contour_max_level: float = 1e+21,
+    # contour_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
+    # contour_reference_level: float = 0.0,
     contour_interval: float = 8.0,
-    # [IsoLabel] 
+    # [IsoLabel]
     contour_label_type: str = "number",
     contour_label_text: str = "",
     contour_label_height: float = 0.3,
@@ -132,28 +132,28 @@ def mcont(
     contour_label_font_style: str = "normal",
     contour_label_colour: str = "contour_line_colour",
     contour_label_frequency: int = 2,
-    # [IsoShading] 
+    # [IsoShading]
     contour_shade_technique: str = "polygon_shading",
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
     contour_shade_colour_method: str = "calculate",
-    # [LevelListSelectionType] 
-    #contour_max_level: float = 1e+21,
-    #contour_min_level: float = -1e+21,
-    #contour_shade_max_level: float = 1e+21,
-    #contour_shade_min_level: float = -1e+21,
+    # [LevelListSelectionType]
+    # contour_max_level: float = 1e+21,
+    # contour_min_level: float = -1e+21,
+    # contour_shade_max_level: float = 1e+21,
+    # contour_shade_min_level: float = -1e+21,
     contour_level_list: List[float] = [],
-    # [LowHiLo] 
-    #contour_hilo_type: str = "text",
-    #contour_hilo_window_size: int = 3,
-    #contour_hilo_max_value: float = 1e+21,
-    #contour_hilo_min_value: float = -1e+21,
-    #contour_hi_max_value: float = 1e+21,
-    #contour_hi_min_value: float = -1e+21,
-    #contour_lo_max_value: float = 1e+21,
-    #contour_lo_min_value: float = -1e+21,
-    #contour_hilo_marker: str = False,
-    # [NoIsoPlot] 
+    # [LowHiLo]
+    # contour_hilo_type: str = "text",
+    # contour_hilo_window_size: int = 3,
+    # contour_hilo_max_value: float = 1e+21,
+    # contour_hilo_min_value: float = -1e+21,
+    # contour_hi_max_value: float = 1e+21,
+    # contour_hi_min_value: float = -1e+21,
+    # contour_lo_max_value: float = 1e+21,
+    # contour_lo_min_value: float = -1e+21,
+    # contour_hilo_marker: str = False,
+    # [NoIsoPlot]
     contour_line_style: str = "solid",
     contour_line_thickness: int = 1,
     contour_line_colour_rainbow: bool = False,
@@ -173,7 +173,7 @@ def mcont(
     contour_label: bool = True,
     contour_shade: bool = False,
     contour_legend_only: bool = False,
-    # [ValuePlot] 
+    # [ValuePlot]
     contour_grid_value_type: str = "normal",
     contour_grid_value_plot_type: str = "value",
 ):
@@ -182,10 +182,10 @@ def mcont(
 
 def msymb(
     *,
-    # [SymbolAdvancedTableMode] 
+    # [SymbolAdvancedTableMode]
     symbol_advanced_table_selection_type: str = "count",
-    symbol_advanced_table_min_value: float = -1e+21,
-    symbol_advanced_table_max_value: float = 1e+21,
+    symbol_advanced_table_min_value: float = -1e21,
+    symbol_advanced_table_max_value: float = 1e21,
     symbol_advanced_table_level_count: int = 10,
     symbol_advanced_table_level_tolerance: int = 2,
     symbol_advanced_table_interval: float = 8.0,
@@ -213,9 +213,9 @@ def msymb(
     symbol_advanced_table_text_font_colour: str = "automatic",
     symbol_advanced_table_text_display_type: str = "none",
     symbol_advanced_table_outlayer_method: bool = "none",
-    symbol_advanced_table_outlayer_min_value: float = -1e+21,
-    symbol_advanced_table_outlayer_max_value: float = 1e+21,
-    # [SymbolIndividualMode] 
+    symbol_advanced_table_outlayer_min_value: float = -1e21,
+    symbol_advanced_table_outlayer_max_value: float = 1e21,
+    # [SymbolIndividualMode]
     legend_user_text: str = "",
     symbol_colour: str = "blue",
     symbol_height: float = 0.2,
@@ -240,7 +240,7 @@ def msymb(
     symbol_scaling_factor: float = 4.0,
     symbol_type: str = "number",
     symbol_table_mode: str = "OFF",
-    #symbol_marker_mode: str = "index",
+    # symbol_marker_mode: str = "index",
     symbol_format: str = "(automatic)",
     symbol_text_blanking: bool = False,
     symbol_outline: bool = False,
@@ -253,7 +253,7 @@ def msymb(
     symbol_connect_line_thickness: int = 1,
     symbol_connect_line_style: str = "solid",
     symbol_legend_only: bool = False,
-    # [SymbolTableMode] 
+    # [SymbolTableMode]
     symbol_min_table: List[float] = [],
     symbol_max_table: List[float] = [],
     symbol_marker_table: List[int] = [],
