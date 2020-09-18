@@ -1,3 +1,74 @@
+mIcont:
+- default: solid
+  name: contour_line_style
+  type: LineStyle
+- default: 1
+  name: contour_line_thickness
+  type: Int
+- name: contour_line_colour_rainbow
+  type: Bool
+- default: blue
+  name: contour_line_colour
+  type: Colour
+- default: calculate
+  name: contour_line_colour_rainbow_method
+  type: ColourTechnique
+  values:
+  - calculate
+  - list
+- default: blue
+  name: contour_line_colour_rainbow_max_level_colour
+  type: Colour
+- default: red
+  name: contour_line_colour_rainbow_min_level_colour
+  type: Colour
+- default: anti_clockwise
+  name: contour_line_colour_rainbow_direction
+  type: String
+  values:
+  - clockwise
+  - anti_clockwise
+- name: contour_line_colour_rainbow_colour_list
+  type: ColourList
+- default: lastone
+  name: contour_line_colour_rainbow_colour_list_policy
+  type: ListPolicy
+- name: contour_line_thickness_rainbow_list
+  type: IntList
+- default: lastone
+  name: contour_line_thickness_rainbow_list_policy
+  type: ListPolicy
+- name: contour_line_style_rainbow_list
+  type: StringList
+- default: lastone
+  name: contour_line_style_rainbow_list_policy
+  type: ListPolicy
+- default: true
+  name: contour_highlight
+  type: Bool
+  values:
+  - true
+  - false
+- default: count
+  name: contour_level_selection_type
+  type: LevelSelection
+  values:
+  - count
+  - interval
+  - list
+- default: true
+  name: contour_label
+  type: Bool
+  values:
+  - true
+  - false
+- name: contour_shade
+  type: Bool
+  values:
+  - true
+  - false
+- name: contour_legend_only
+  type: Bool
 mcoast:
 - name: map_coastline_general_style
   type: String
@@ -77,12 +148,12 @@ mcoast:
   type: Int
 - name: map_grid_latitude_reference
   type: Float
-- default: 10.0
+- default: 10
   name: map_grid_latitude_increment
   type: Float
 - name: map_grid_longitude_reference
   type: Float
-- default: 20.0
+- default: 20
   name: map_grid_longitude_increment
   type: Float
 - default: solid
@@ -155,10 +226,10 @@ mcont:
   - linear
   - akima474
   - akima760
-- default: -2147483647
+- default: -INT_MAX
   name: contour_interpolation_floor
   type: Float
-- default: 2147483647
+- default: INT_MAX
   name: contour_interpolation_ceiling
   type: Float
 - name: contour_automatic_setting
@@ -193,6 +264,78 @@ mcont:
 - default: 1.5
   name: contour_akima_y_resolution
   type: Float
+- default: -1.0e+21
+  name: contour_grid_value_min
+  type: Float
+- default: 1.0e+21
+  name: contour_grid_value_max
+  type: Float
+- default: 1
+  name: contour_grid_value_lat_frequency
+  type: Int
+- default: 1
+  name: contour_grid_value_lon_frequency
+  type: Int
+- default: 0.25
+  name: contour_grid_value_height
+  type: Float
+- default: blue
+  name: contour_grid_value_colour
+  type: Colour
+- default: (automatic)
+  name: contour_grid_value_format
+  type: String
+- default: 0.25
+  name: contour_grid_value_marker_height
+  type: Float
+- default: red
+  name: contour_grid_value_marker_colour
+  type: Colour
+- default: low
+  name: contour_grid_value_marker_qual
+  type: String
+  values:
+  - high
+  - medium
+  - low
+- default: 3
+  name: contour_grid_value_marker_index
+  type: Int
+- default: top
+  name: contour_grid_value_position
+  type: String
+  values:
+  - right
+  - left
+  - bottom
+  - top
+- default: blue
+  name: contour_shade_max_level_colour
+  type: Colour
+- default: red
+  name: contour_shade_min_level_colour
+  type: Colour
+- default: anti_clockwise
+  name: contour_shade_colour_direction
+  type: String
+  values:
+  - clockwise
+  - anti_clockwise
+- default: 10
+  name: contour_shade_cell_resolution
+  type: Float
+- default: nearest
+  name: contour_shade_cell_method
+  type: String
+  values:
+  - nearest
+  - interpolate
+- default: classic
+  name: contour_shade_cell_resolution_method
+  type: String
+  values:
+  - classic
+  - adaptive
 - default: 1.0e+21
   name: contour_max_level
   type: Float
@@ -213,6 +356,117 @@ mcont:
   type: Int
 - name: contour_reference_level
   type: Float
+- default: 0.02
+  name: contour_shade_dot_size
+  type: Float
+- default: 50.0
+  name: contour_shade_max_level_density
+  type: Float
+- default: 1.0
+  name: contour_shade_min_level_density
+  type: Float
+- name: contour_gradients_colour_list
+  type: ColourList
+- default: both
+  name: contour_gradients_waypoint_method
+  type: String
+  values:
+  - both
+  - ignore
+  - left
+  - right
+- default: rgb
+  name: contour_gradients_technique
+  type: String
+  values:
+  - rgb
+  - hcl
+  - hsl
+- default: clockwise
+  name: contour_gradients_technique_direction
+  type: String
+  values:
+  - clockwise
+  - anti_clockwise
+  - shortest
+  - longest
+- name: contour_gradients_step_list
+  type: IntList
+- default: dot
+  name: contour_shade_method
+  type: PolyShadingMethod
+  values:
+  - area_fill
+  - solid
+  - dash
+  - dot
+- default: middle
+  name: contour_grid_shading_position
+  type: String
+  values:
+  - middle
+  - bottom_left
+- name: contour_shade_hatch_index
+  type: Int
+- default: 1
+  name: contour_shade_hatch_thickness
+  type: Int
+- default: 18.0
+  name: contour_shade_hatch_density
+  type: Float
+- default: 0.4
+  name: contour_hilo_height
+  type: Float
+- default: blue
+  name: contour_hi_colour
+  type: Colour
+- default: blue
+  name: contour_lo_colour
+  type: Colour
+- default: (automatic)
+  name: contour_hilo_format
+  type: String
+- default: 0.1
+  name: contour_hilo_marker_height
+  type: Float
+- default: 3
+  name: contour_hilo_marker_index
+  type: Int
+- default: red
+  name: contour_hilo_marker_colour
+  type: Colour
+- default: 0.4
+  name: contour_hilo_height
+  type: Float
+- default: blue
+  name: contour_hi_colour
+  type: Colour
+- default: blue
+  name: contour_lo_colour
+  type: Colour
+- default: (automatic)
+  name: contour_hilo_format
+  type: String
+- default: 0.4
+  name: contour_hilo_height
+  type: Float
+- default: blue
+  name: contour_hi_colour
+  type: Colour
+- default: blue
+  name: contour_lo_colour
+  type: Colour
+- default: (automatic)
+  name: contour_hilo_format
+  type: String
+- default: H
+  name: contour_hi_text
+  type: String
+- default: L
+  name: contour_lo_text
+  type: String
+- name: contour_hilo_blanking
+  type: Bool
 - default: text
   name: contour_hilo_type
   type: HiLoTechnique
@@ -333,6 +587,8 @@ mcont:
   type: Float
 - name: contour_level_list
   type: FloatList
+- name: contour_shade_colour_list
+  type: ColourList
 - default: text
   name: contour_hilo_type
   type: HiLoTechnique
@@ -366,76 +622,58 @@ mcont:
   values:
   - true
   - false
-- default: solid
-  name: contour_line_style
-  type: LineStyle
-- default: 1
-  name: contour_line_thickness
-  type: Int
-- name: contour_line_colour_rainbow
-  type: Bool
-- default: blue
-  name: contour_line_colour
-  type: Colour
-- default: calculate
-  name: contour_line_colour_rainbow_method
-  type: ColourTechnique
-  values:
-  - calculate
-  - list
-- default: blue
-  name: contour_line_colour_rainbow_max_level_colour
-  type: Colour
-- default: red
-  name: contour_line_colour_rainbow_min_level_colour
-  type: Colour
-- default: anti_clockwise
-  name: contour_line_colour_rainbow_direction
+- name: contour_shade_colour_table
+  type: ColourList
+- name: contour_shade_height_table
+  type: FloatList
+- default: index
+  name: contour_shade_marker_table_type
   type: String
   values:
-  - clockwise
-  - anti_clockwise
-- name: contour_line_colour_rainbow_colour_list
-  type: ColourList
-- default: lastone
-  name: contour_line_colour_rainbow_colour_list_policy
-  type: ListPolicy
-- name: contour_line_thickness_rainbow_list
+  - index
+  - name
+- name: contour_shade_marker_table
   type: IntList
-- default: lastone
-  name: contour_line_thickness_rainbow_list_policy
-  type: ListPolicy
-- name: contour_line_style_rainbow_list
+- name: contour_shade_marker_name_table
   type: StringList
+- default: -1.0e+21
+  name: contour_grid_value_min
+  type: Float
+- default: 1.0e+21
+  name: contour_grid_value_max
+  type: Float
+- default: 1
+  name: contour_grid_value_lat_frequency
+  type: Int
+- default: 1
+  name: contour_grid_value_lon_frequency
+  type: Int
+- default: 0.25
+  name: contour_grid_value_height
+  type: Float
+- default: blue
+  name: contour_grid_value_colour
+  type: Colour
+- default: (automatic)
+  name: contour_grid_value_format
+  type: String
+- default: 0.25
+  name: contour_grid_value_marker_height
+  type: Float
+- default: red
+  name: contour_grid_value_marker_colour
+  type: Colour
+- default: low
+  name: contour_grid_value_marker_qual
+  type: String
+- default: 3
+  name: contour_grid_value_marker_index
+  type: Int
+- name: contour_shade_palette_name
+  type: String
 - default: lastone
-  name: contour_line_style_rainbow_list_policy
+  name: contour_shade_palette_policy
   type: ListPolicy
-- default: true
-  name: contour_highlight
-  type: Bool
-  values:
-  - true
-  - false
-- default: count
-  name: contour_level_selection_type
-  type: LevelSelection
-  values:
-  - count
-  - interval
-  - list
-- default: true
-  name: contour_label
-  type: Bool
-  values:
-  - true
-  - false
-- name: contour_shade
-  type: Bool
-  values:
-  - true
-  - false
-- name: contour_legend_only
-  type: Bool
 - default: normal
   name: contour_grid_value_type
   type: String
@@ -450,6 +688,7 @@ mcont:
   - value
   - marker
   - both
+mcoont: []
 mmap:
 - name: subpage_upper_right_longitude
   type: Float
@@ -589,10 +828,10 @@ msymb:
   - automatic
   - png
   - svg
-- default: -1.0
+- default: -1
   name: symbol_image_width
   type: Float
-- default: -1.0
+- default: -1
   name: symbol_image_height
   type: Float
 - name: symbol_text_list
@@ -617,7 +856,7 @@ msymb:
 - default: automatic
   name: symbol_text_font_colour
   type: Colour
-- default: -1.0
+- default: -1
   name: symbol_legend_height
   type: Float
 - name: legend

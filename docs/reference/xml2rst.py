@@ -20,6 +20,7 @@ import yaml
 yaml.Dumper.ignore_aliases = lambda *args: True
 
 DEFS = OrderedDict()
+TYPES = {}
 
 T = {
     "on": True,
@@ -155,8 +156,14 @@ class Param:
         if t == "bool":
             return t
 
-        if t in enumerations:
-            return ", ".join(enumerations[t])
+        if t in TYPES:
+            return ", ".join(
+                [
+                    repr(tidy(x)).replace("'", '"')
+                    for x in sorted(TYPES[t]["values"].keys())
+                ]
+            )
+
 
         if "values" in self._defs:
             return ", ".join(
@@ -442,7 +449,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--rst", action="store_true")
 parser.add_argument("--python", action="store_true")
 parser.add_argument("--yaml", action="store_true")
-parser.add_argument("--enums")
+parser.add_argument("--types")
 parser.add_argument(
     "xml",
     metavar="N",
@@ -450,6 +457,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+if args.types:
+    with open(args.types) as f:
+        TYPES=yaml.load(f, Loader=yaml.SafeLoader)
 
 for n in args.xml:
     load(n)

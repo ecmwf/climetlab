@@ -4,6 +4,127 @@ Plotting
 ========
 
 
+.. _magics-mIcont:
+
+mIcont
+------
+
+.. ['NoIsoPlot']
+
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 70 20 10
+
+   * - | Name
+     - | Type
+     - | Default
+
+   * - | **contour_line_style**
+       | Style of contour line
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid"
+
+   * - | **contour_line_thickness**
+       | Thickness of contour line
+     - | int
+     - | 1
+
+   * - | **contour_line_colour_rainbow**
+       | if On, rainbow colouring method will be used.
+     - | bool
+     - | False
+
+   * - | **contour_line_colour**
+       | Colour of contour line
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_line_colour_rainbow_method**
+       | Method of generating the colours for isoline
+     - | "calculate", "list"
+     - | "calculate"
+
+   * - | **contour_line_colour_rainbow_max_level_colour**
+       | Colour to be used for the max level
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_line_colour_rainbow_min_level_colour**
+       | Colour to be used for the mainlevel
+     - | Colour(string)
+     - | "red"
+
+   * - | **contour_line_colour_rainbow_direction**
+       | Direction of colour sequencing for colouring
+     - | "clockwise", "anti_clockwise"
+     - | "anti_clockwise"
+
+   * - | **contour_line_colour_rainbow_colour_list**
+       | List of colours to be used in rainbow isolines
+     - | stringarray
+     - | []
+
+   * - | **contour_line_colour_rainbow_colour_list_policy**
+       | What to do if the list of colours is smaller that the list of contour:
+         lastone/cycle
+     - | "cycle", "lastone"
+     - | "lastone"
+
+   * - | **contour_line_thickness_rainbow_list**
+       | List of thickness to used when rainbow method is on
+     - | intarray
+     - | []
+
+   * - | **contour_line_thickness_rainbow_list_policy**
+       | What to do if the list of thickness is smaller that the list of
+         contour: lastone/cycle
+     - | "cycle", "lastone"
+     - | "lastone"
+
+   * - | **contour_line_style_rainbow_list**
+       | List of line style to used when rainbow method is on
+     - | stringarray
+     - | []
+
+   * - | **contour_line_style_rainbow_list_policy**
+       | What to do if the list of line styles is smaller that the list of
+         contour: lastone/cycle
+     - | "cycle", "lastone"
+     - | "lastone"
+
+   * - | **contour_highlight**
+       | Plot contour highlights (ON/OFF)
+     - | True, False
+     - | True
+
+   * - | **contour_level_selection_type**
+       | count: calculate a reasonable contour interval taking into account the
+         min/max and the requested number of isolines. interval:
+         regularly spaced intervals using the reference_level as base.
+         level_list: uses the given list of levels.
+     - | "count", "interval", "list"
+     - | "count"
+
+   * - | **contour_label**
+       | Plot labels on contour lines
+     - | True, False
+     - | True
+
+   * - | **contour_shade**
+       | Turn shading on
+     - | True, False
+     - | False
+
+   * - | **contour_legend_only**
+       | Inform the contour object do generate only the legend and not the
+         plot!
+     - | bool
+     - | False
+
+
+
 .. _magics-mcoast:
 
 mcoast
@@ -93,7 +214,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_rivers_style**
        | Line style for rivers
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **map_rivers_colour**
@@ -123,7 +244,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_user_layer_style**
        | Line style for User Layer
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **map_user_layer_colour**
@@ -143,7 +264,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_style**
        | Line style of coastlines
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **map_coastline_thickness**
@@ -159,7 +280,7 @@ country boundaries, as well as the latitude/longitude grid lines.
    * - | **map_grid_latitude_increment**
        | Interval between latitude grid lines
      - | float
-     - | 10.0
+     - | 10
 
    * - | **map_grid_longitude_reference**
        | Reference Longitude from which all longitude lines are drawn
@@ -169,11 +290,11 @@ country boundaries, as well as the latitude/longitude grid lines.
    * - | **map_grid_longitude_increment**
        | Interval between longitude grid lines
      - | float
-     - | 20.0
+     - | 20
 
    * - | **map_grid_line_style**
        | Line style of map grid lines
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **map_grid_thickness**
@@ -193,7 +314,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_grid_frame_line_style**
        | Line style of map grid lines
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **map_grid_frame_thickness**
@@ -268,7 +389,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 mcont
 -----
 
-.. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'CountSelectionType', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'LowHiLo', 'NoIsoPlot', 'ValuePlot']
+.. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'BothValuePlotMethod', 'CalculateColourTechnique', 'CellShading', 'CountSelectionType', 'DotPolyShadingMethod', 'DumpShading', 'GradientsColourTechnique', 'GridShading', 'HatchPolyShadingMethod', 'HiLoBoth', 'HiLoMarker', 'HiLoNumber', 'HiLoText', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'ListColourTechnique', 'LowHiLo', 'MarkerShadingTechnique', 'MarkerValuePlotMethod', 'NoHiLo', 'NoValuePlot', 'PaletteColourTechnique', 'ValuePlot']
 
 This action controls the plotting of isolines, contour bands and grid
 points. It is used to plot gridded data, such as fields.
@@ -300,14 +421,14 @@ points. It is used to plot gridded data, such as fields.
        | Any value below this floor will be forced to the floor value. avoid
          the bubbles artificially created by the interpolation method
      - | float
-     - | -2147483647
+     - | "-INT_MAX"
 
    * - | **contour_interpolation_ceiling**
        | any value above this ceiling will be forced to the ceiling value.
          avoid the bubbles artificially created by the interpolation
          method
      - | float
-     - | 2147483647
+     - | "INT_MAX"
 
    * - | **contour_automatic_setting**
        | Turn the automatic setting of contouring attributes
@@ -343,6 +464,97 @@ points. It is used to plot gridded data, such as fields.
        | Y resolution of Akima interpolation.
      - | float
      - | 1.5
+
+   * - | **contour_grid_value_min**
+       | The minimum value for which grid point values are to be plotted
+     - | float
+     - | -1e+21
+
+   * - | **contour_grid_value_max**
+       | The maximum value for which grid point values are to be plotted
+     - | float
+     - | 1e+21
+
+   * - | **contour_grid_value_lat_frequency**
+       | The grid point values in every Nth latitude row are plotted
+     - | int
+     - | 1
+
+   * - | **contour_grid_value_lon_frequency**
+       | The grid point values in every Nth longitude column are plotted
+     - | int
+     - | 1
+
+   * - | **contour_grid_value_height**
+       | Height of grid point values
+     - | float
+     - | 0.25
+
+   * - | **contour_grid_value_colour**
+       | Colour of grid point values
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_grid_value_format**
+       | Format of grid point values
+     - | string
+     - | "(automatic)"
+
+   * - | **contour_grid_value_marker_height**
+       | Height of grid point markers
+     - | float
+     - | 0.25
+
+   * - | **contour_grid_value_marker_colour**
+       | Colour of grid point markers
+     - | Colour(string)
+     - | "red"
+
+   * - | **contour_grid_value_marker_qual**
+       | Quality of the grid point marker
+     - | "high", "medium", "low"
+     - | "low"
+
+   * - | **contour_grid_value_marker_index**
+       | Table number of marker index. See Appendix for Plotting Attributes
+     - | int
+     - | 3
+
+   * - | **contour_grid_value_position**
+       | Position of the value
+     - | "right", "left", "bottom", "top"
+     - | "top"
+
+   * - | **contour_shade_max_level_colour**
+       | Highest shading band colour
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_shade_min_level_colour**
+       | Lowest shading band colour
+     - | Colour(string)
+     - | "red"
+
+   * - | **contour_shade_colour_direction**
+       | Direction of colour sequencing for shading
+     - | "clockwise", "anti_clockwise"
+     - | "anti_clockwise"
+
+   * - | **contour_shade_cell_resolution**
+       | Number of cells per cm for CELL shading
+     - | float
+     - | 10
+
+   * - | **contour_shade_cell_method**
+       | NMethod of determining the colour of a cell
+     - | "nearest", "interpolate"
+     - | "nearest"
+
+   * - | **contour_shade_cell_resolution_method**
+       | if adaptive, magics will switch to grid_shading when the data
+         resolution is greater that the requested resolution
+     - | "classic", "adaptive"
+     - | "classic"
 
    * - | **contour_max_level**
        | Highest level for contours to be drawn
@@ -381,6 +593,125 @@ points. It is used to plot gridded data, such as fields.
        | Contour level from which contour interval is calculated
      - | float
      - | 0.0
+
+   * - | **contour_shade_dot_size**
+       | Size of dot in shading pattern
+     - | float
+     - | 0.02
+
+   * - | **contour_shade_max_level_density**
+       | Dots/square centimetre in highest shading band
+     - | float
+     - | 50.0
+
+   * - | **contour_shade_min_level_density**
+       | Dots/square centimetre in lowest shading band
+     - | float
+     - | 1.0
+
+   * - | **contour_gradients_colour_list**
+       | Colour used at the stops : the gradeint will be calculated between 2
+         consecutive ones.
+     - | stringarray
+     - | []
+
+   * - | **contour_gradients_waypoint_method**
+       | waypoints at the left, right, middle of the interval.
+     - | "both", "ignore", "left", "right"
+     - | "both"
+
+   * - | **contour_gradients_technique**
+       | Technique to apply to compute the gradients rgb/hcl/hsl
+     - | "rgb", "hcl", "hsl"
+     - | "rgb"
+
+   * - | **contour_gradients_technique_direction**
+       | Technique to apply to compute the gradients clockwise/anticlockwise
+     - | "clockwise", "anti_clockwise", "shortest", "longest"
+     - | "clockwise"
+
+   * - | **contour_gradients_step_list**
+       | Number of steps to compute for each interval
+     - | intarray
+     - | []
+
+   * - | **contour_shade_method**
+       | Method used for shading
+     - | "area_fill", "solid", "dash", "dot"
+     - | "dot"
+
+   * - | **contour_grid_shading_position**
+       | Middle : the point is in the midlle of the cell, bottom_left : the
+         point is in the bottom left corner
+     - | "middle", "bottom_left"
+     - | "middle"
+
+   * - | **contour_shade_hatch_index**
+       | The hatching pattern(s) to use. 0 Provides an automatic sequence of
+         patterns, other values set a constant pattern across all
+         contour bands.
+     - | int
+     - | 0
+
+   * - | **contour_shade_hatch_thickness**
+       | Thickness of hatch lines
+     - | int
+     - | 1
+
+   * - | **contour_shade_hatch_density**
+       | Number of hatch lines per cm.
+     - | float
+     - | 18.0
+
+   * - | **contour_hilo_height**
+       | Height of local maxima/minima text or numbers
+     - | float
+     - | 0.4
+
+   * - | **contour_hi_colour**
+       | Colour of local maxima text or number
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_lo_colour**
+       | Colour of local minima text or number
+     - | Colour(string)
+     - | "blue"
+
+   * - | **contour_hilo_format**
+       | Format of HILO numbers (MAGICS Format/(AUTOMATIC))
+     - | string
+     - | "(automatic)"
+
+   * - | **contour_hilo_marker_height**
+       | Height of HighLow marker symbol
+     - | float
+     - | 0.1
+
+   * - | **contour_hilo_marker_index**
+       | Index of marker symbol
+     - | int
+     - | 3
+
+   * - | **contour_hilo_marker_colour**
+       | Colour of grid point markers
+     - | Colour(string)
+     - | "red"
+
+   * - | **contour_hi_text**
+       | Text to represent local maxima
+     - | string
+     - | "H"
+
+   * - | **contour_lo_text**
+       | Text to represent local minima
+     - | string
+     - | "L"
+
+   * - | **contour_hilo_blanking**
+       | Blank around highs and lows
+     - | bool
+     - | False
 
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
@@ -493,107 +824,49 @@ points. It is used to plot gridded data, such as fields.
      - | floatarray
      - | []
 
-   * - | **contour_line_style**
-       | Style of contour line
-     - | LineStyle(string)
-     - | "solid"
-
-   * - | **contour_line_thickness**
-       | Thickness of contour line
-     - | int
-     - | 1
-
-   * - | **contour_line_colour_rainbow**
-       | if On, rainbow colouring method will be used.
-     - | bool
-     - | False
-
-   * - | **contour_line_colour**
-       | Colour of contour line
-     - | Colour(string)
-     - | "blue"
-
-   * - | **contour_line_colour_rainbow_method**
-       | Method of generating the colours for isoline
-     - | "calculate", "list"
-     - | "calculate"
-
-   * - | **contour_line_colour_rainbow_max_level_colour**
-       | Colour to be used for the max level
-     - | Colour(string)
-     - | "blue"
-
-   * - | **contour_line_colour_rainbow_min_level_colour**
-       | Colour to be used for the mainlevel
-     - | Colour(string)
-     - | "red"
-
-   * - | **contour_line_colour_rainbow_direction**
-       | Direction of colour sequencing for colouring
-     - | "clockwise", "anti_clockwise"
-     - | "anti_clockwise"
-
-   * - | **contour_line_colour_rainbow_colour_list**
-       | List of colours to be used in rainbow isolines
+   * - | **contour_shade_colour_list**
+       | List of colours to be used in contour shading.
      - | stringarray
      - | []
 
-   * - | **contour_line_colour_rainbow_colour_list_policy**
-       | What to do if the list of colours is smaller that the list of contour:
-         lastone/cycle
-     - | ListPolicy(string)
-     - | "lastone"
+   * - | **contour_shade_colour_table**
+       | Colour table to be used with marker shading technique
+     - | stringarray
+     - | []
 
-   * - | **contour_line_thickness_rainbow_list**
-       | List of thickness to used when rainbow method is on
+   * - | **contour_shade_height_table**
+       | Height table to be used with marker shading technique
+     - | floatarray
+     - | []
+
+   * - | **contour_shade_marker_table_type**
+       | index: using contour_shade_marker_table and defining the markers by
+         index, name: using contour_shade_marker_name_table and
+         defining the symbols by their names
+     - | "index", "name"
+     - | "index"
+
+   * - | **contour_shade_marker_table**
+       | Marker table to be used with marker shading technique
      - | intarray
      - | []
 
-   * - | **contour_line_thickness_rainbow_list_policy**
-       | What to do if the list of thickness is smaller that the list of
-         contour: lastone/cycle
-     - | ListPolicy(string)
-     - | "lastone"
-
-   * - | **contour_line_style_rainbow_list**
-       | List of line style to used when rainbow method is on
+   * - | **contour_shade_marker_name_table**
+       | Marker name table to be used with mareker shading technique
      - | stringarray
      - | []
 
-   * - | **contour_line_style_rainbow_list_policy**
-       | What to do if the list of line styles is smaller that the list of
-         contour: lastone/cycle
-     - | ListPolicy(string)
+   * - | **contour_shade_palette_name**
+       | Colour used at the stops : the gradient will be calculated between 2
+         consecutive ones.
+     - | string
+     - | ""
+
+   * - | **contour_shade_palette_policy**
+       | What to do if the list of colours is smaller that the list of levels:
+         lastone/cycle
+     - | "cycle", "lastone"
      - | "lastone"
-
-   * - | **contour_highlight**
-       | Plot contour highlights (ON/OFF)
-     - | True, False
-     - | True
-
-   * - | **contour_level_selection_type**
-       | count: calculate a reasonable contour interval taking into account the
-         min/max and the requested number of isolines. interval:
-         regularly spaced intervals using the reference_level as base.
-         level_list: uses the given list of levels.
-     - | "count", "interval", "list"
-     - | "count"
-
-   * - | **contour_label**
-       | Plot labels on contour lines
-     - | True, False
-     - | True
-
-   * - | **contour_shade**
-       | Turn shading on
-     - | True, False
-     - | False
-
-   * - | **contour_legend_only**
-       | Inform the contour object do generate only the legend and not the
-         plot!
-     - | bool
-     - | False
 
    * - | **contour_grid_value_type**
        | For Gaussian fields, plot normal (regular) values or reduced grid
@@ -606,6 +879,25 @@ points. It is used to plot gridded data, such as fields.
        | (VALUE/MARKER/BOTH)
      - | "value", "marker", "both"
      - | "value"
+
+
+
+.. _magics-mcoont:
+
+mcoont
+------
+
+.. ['NoHiLoMarker']
+
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 70 20 10
+
+   * - | Name
+     - | Type
+     - | Default
 
 
 
@@ -699,7 +991,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_colour_list_policy**
        | What to do if the list of colours is smaller than the list of
          intervals: lastone/cycle
-     - | ListPolicy(string)
+     - | "cycle", "lastone"
      - | "lastone"
 
    * - | **symbol_advanced_table_marker_list**
@@ -715,7 +1007,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_marker_list_policy**
        | What to do if the list of markers is smaller than the list of
          intervals: lastone/cycle
-     - | ListPolicy(string)
+     - | "cycle", "lastone"
      - | "lastone"
 
    * - | **symbol_advanced_table_height_method**
@@ -741,7 +1033,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_height_list_policy**
        | What to do if the list of heights is smaller than the list of
          intervals: lastone/cycle
-     - | ListPolicy(string)
+     - | "cycle", "lastone"
      - | "lastone"
 
    * - | **symbol_advanced_table_text_list**
@@ -752,7 +1044,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_text_list_policy**
        | What to do if the list of text is smaller that the list of intervals
          lastone: reuse the last one, cycle: return to the fisrt one
-     - | ListPolicy(string)
+     - | "cycle", "lastone"
      - | "cycle"
 
    * - | **symbol_advanced_table_text_font**
@@ -844,12 +1136,12 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_image_width**
        | width of the image
      - | float
-     - | -1.0
+     - | -1
 
    * - | **symbol_image_height**
        | height of the image
      - | float
-     - | -1.0
+     - | -1
 
    * - | **symbol_text_list**
        | list of texts to plot
@@ -884,7 +1176,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_legend_height**
        | If set, the height will be used to plot the symbols in the legend
      - | float
-     - | -1.0
+     - | -1
 
    * - | **legend**
        | Turn legend on or off (ON/OFF) : New Parameter!
@@ -946,7 +1238,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_outline_style**
        | Line Style of outline
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **symbol_connect_line**
@@ -971,7 +1263,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_connect_line_style**
        | Line Style of connecting line
-     - | LineStyle(string)
+     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
      - | "solid"
 
    * - | **symbol_legend_only**
