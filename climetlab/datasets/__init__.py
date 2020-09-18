@@ -10,7 +10,6 @@
 import os
 from importlib import import_module
 
-import numpy as np
 import yaml
 
 import climetlab
@@ -48,6 +47,7 @@ class Dataset:
         return self.source[n]
 
     def to_numpy(self, *args, **kwargs):
+        import numpy as np
         return np.array([s.to_numpy(*args, **kwargs) for s in self.source])
 
     def to_xarray(self, *args, **kwargs):

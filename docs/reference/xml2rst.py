@@ -444,9 +444,7 @@ parser.add_argument("--python", action="store_true")
 parser.add_argument("--yaml", action="store_true")
 parser.add_argument("--enums")
 parser.add_argument(
-    "xml",
-    metavar="N",
-    nargs="+",
+    "xml", metavar="N", nargs="+",
 )
 args = parser.parse_args()
 
