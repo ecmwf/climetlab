@@ -9,12 +9,12 @@ on:
 jobs:
   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install packages
-        run: |
-          pip install black
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: |
+        pip install black
 
-      - name: black
-        run: |
-          black --check .
+    - name: black
+      run: |
+        black --check .
