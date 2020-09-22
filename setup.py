@@ -60,7 +60,6 @@ setuptools.setup(
         "toolz",
         "pyyaml",
         "markdown",
-        "backports-datetime-fromisoformat",
         "entrypoints",
     ],
     zip_safe=True,

@@ -11,14 +11,17 @@ import datetime
 from collections import defaultdict
 
 # datetime.fromisoformat() only available from Python3.7
-from backports.datetime_fromisoformat import MonkeyPatch
+# from backports.datetime_fromisoformat import MonkeyPatch
 from dateutil.parser import parse
 
-MonkeyPatch.patch_fromisoformat()
+# MonkeyPatch.patch_fromisoformat()
 
 
 def parse_date(date):
-    return datetime.datetime.fromisoformat(date)
+    try:
+        return datetime.datetime.fromisoformat(date)
+    except:
+        return parse(date)
 
 
 def to_datetime(dt):
