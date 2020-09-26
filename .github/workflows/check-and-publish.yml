@@ -1,10 +1,13 @@
-name: Checks
+name: Check and publish
 
 on:
   # push:
   #   branches: [ master ]
   pull_request:
     branches: [ master ]
+
+  release:
+    types: [created]
 
 jobs:
   checks:
@@ -58,3 +61,29 @@ jobs:
           make html
           # make linkcheck (don't run yet)
         working-directory: docs
+
+  deploy:
+
+    if: ${{ github.event_name == 'release' }}
+
+    needs: checks
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Build and publish
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        python setup.py sdist
+        twine upload dist/*
