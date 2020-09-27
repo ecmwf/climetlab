@@ -1,0 +1,264 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "legend": {
+            "type": "boolean"
+        },
+        "legend_user_text": {
+            "type": "string"
+        },
+        "symbol_advanced_table_colour_direction": {
+            "type": "string"
+        },
+        "symbol_advanced_table_colour_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_colour_list_policy": {
+            "type": "string"
+        },
+        "symbol_advanced_table_colour_method": {
+            "type": "string"
+        },
+        "symbol_advanced_table_height_list": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_height_list_policy": {
+            "type": "string"
+        },
+        "symbol_advanced_table_height_max_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_height_method": {
+            "type": "string"
+        },
+        "symbol_advanced_table_height_min_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_interval": {
+            "type": "number"
+        },
+        "symbol_advanced_table_level_count": {
+            "type": "integer"
+        },
+        "symbol_advanced_table_level_list": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_level_tolerance": {
+            "type": "integer"
+        },
+        "symbol_advanced_table_marker_list": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_marker_list_policy": {
+            "type": "string"
+        },
+        "symbol_advanced_table_marker_name_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_max_level_colour": {
+            "type": "string"
+        },
+        "symbol_advanced_table_max_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_min_level_colour": {
+            "type": "string"
+        },
+        "symbol_advanced_table_min_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_outlayer_max_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_outlayer_method": {
+            "type": "boolean"
+        },
+        "symbol_advanced_table_outlayer_min_value": {
+            "type": "number"
+        },
+        "symbol_advanced_table_reference_level": {
+            "type": "number"
+        },
+        "symbol_advanced_table_selection_type": {
+            "type": "string"
+        },
+        "symbol_advanced_table_text_display_type": {
+            "type": "string"
+        },
+        "symbol_advanced_table_text_font": {
+            "type": "string"
+        },
+        "symbol_advanced_table_text_font_colour": {
+            "type": "string"
+        },
+        "symbol_advanced_table_text_font_size": {
+            "type": "number"
+        },
+        "symbol_advanced_table_text_font_style": {
+            "type": "string"
+        },
+        "symbol_advanced_table_text_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_advanced_table_text_list_policy": {
+            "type": "string"
+        },
+        "symbol_colour": {
+            "type": "string"
+        },
+        "symbol_colour_table": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_connect_automatic_line_colour": {
+            "type": "boolean"
+        },
+        "symbol_connect_line": {
+            "type": "boolean"
+        },
+        "symbol_connect_line_colour": {
+            "type": "string"
+        },
+        "symbol_connect_line_style": {
+            "type": "string"
+        },
+        "symbol_connect_line_thickness": {
+            "type": "integer"
+        },
+        "symbol_format": {
+            "type": "string"
+        },
+        "symbol_height": {
+            "type": "number"
+        },
+        "symbol_height_table": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "symbol_image_format": {
+            "type": "string"
+        },
+        "symbol_image_height": {
+            "type": "number"
+        },
+        "symbol_image_path": {
+            "type": "string"
+        },
+        "symbol_image_width": {
+            "type": "number"
+        },
+        "symbol_legend_height": {
+            "type": "number"
+        },
+        "symbol_legend_only": {
+            "type": "boolean"
+        },
+        "symbol_marker_index": {
+            "type": "integer"
+        },
+        "symbol_marker_mode": {
+            "type": "string"
+        },
+        "symbol_marker_name": {
+            "type": "string"
+        },
+        "symbol_marker_table": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "symbol_max_table": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "symbol_min_table": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "symbol_name_table": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_outline": {
+            "type": "boolean"
+        },
+        "symbol_outline_colour": {
+            "type": "string"
+        },
+        "symbol_outline_style": {
+            "type": "string"
+        },
+        "symbol_outline_thickness": {
+            "type": "integer"
+        },
+        "symbol_scaling_factor": {
+            "type": "number"
+        },
+        "symbol_scaling_level_0_height": {
+            "type": "number"
+        },
+        "symbol_scaling_method": {
+            "type": "boolean"
+        },
+        "symbol_table_mode": {
+            "type": "string"
+        },
+        "symbol_text_blanking": {
+            "type": "boolean"
+        },
+        "symbol_text_font": {
+            "type": "string"
+        },
+        "symbol_text_font_colour": {
+            "type": "string"
+        },
+        "symbol_text_font_size": {
+            "type": "number"
+        },
+        "symbol_text_font_style": {
+            "type": "string"
+        },
+        "symbol_text_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "symbol_text_position": {
+            "type": "string"
+        },
+        "symbol_type": {
+            "type": "string"
+        }
+    },
+    "type": "object"
+}

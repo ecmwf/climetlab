@@ -1,0 +1,372 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "contour": {
+            "type": "string"
+        },
+        "contour_akima_x_resolution": {
+            "type": "number"
+        },
+        "contour_akima_y_resolution": {
+            "type": "number"
+        },
+        "contour_automatic_setting": {
+            "type": "string"
+        },
+        "contour_gradients_colour_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_gradients_step_list": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "contour_gradients_technique": {
+            "type": "string"
+        },
+        "contour_gradients_technique_direction": {
+            "type": "string"
+        },
+        "contour_gradients_waypoint_method": {
+            "type": "string"
+        },
+        "contour_grid_shading_position": {
+            "type": "string"
+        },
+        "contour_grid_value_colour": {
+            "type": "string"
+        },
+        "contour_grid_value_format": {
+            "type": "string"
+        },
+        "contour_grid_value_height": {
+            "type": "number"
+        },
+        "contour_grid_value_lat_frequency": {
+            "type": "integer"
+        },
+        "contour_grid_value_lon_frequency": {
+            "type": "integer"
+        },
+        "contour_grid_value_marker_colour": {
+            "type": "string"
+        },
+        "contour_grid_value_marker_height": {
+            "type": "number"
+        },
+        "contour_grid_value_marker_index": {
+            "type": "integer"
+        },
+        "contour_grid_value_marker_qual": {
+            "type": "string"
+        },
+        "contour_grid_value_max": {
+            "type": "number"
+        },
+        "contour_grid_value_min": {
+            "type": "number"
+        },
+        "contour_grid_value_plot": {
+            "type": "string"
+        },
+        "contour_grid_value_plot_type": {
+            "type": "string"
+        },
+        "contour_grid_value_position": {
+            "type": "string"
+        },
+        "contour_grid_value_type": {
+            "type": "string"
+        },
+        "contour_hi_colour": {
+            "type": "string"
+        },
+        "contour_hi_max_value": {
+            "type": "number"
+        },
+        "contour_hi_min_value": {
+            "type": "number"
+        },
+        "contour_hi_text": {
+            "type": "string"
+        },
+        "contour_highlight": {
+            "type": "boolean"
+        },
+        "contour_hilo": {
+            "type": "string"
+        },
+        "contour_hilo_blanking": {
+            "type": "boolean"
+        },
+        "contour_hilo_format": {
+            "type": "string"
+        },
+        "contour_hilo_height": {
+            "type": "number"
+        },
+        "contour_hilo_marker": {
+            "type": "string"
+        },
+        "contour_hilo_marker_colour": {
+            "type": "string"
+        },
+        "contour_hilo_marker_height": {
+            "type": "number"
+        },
+        "contour_hilo_marker_index": {
+            "type": "integer"
+        },
+        "contour_hilo_max_value": {
+            "type": "number"
+        },
+        "contour_hilo_min_value": {
+            "type": "number"
+        },
+        "contour_hilo_type": {
+            "type": "string"
+        },
+        "contour_hilo_window_size": {
+            "type": "integer"
+        },
+        "contour_interpolation_ceiling": {
+            "type": "number"
+        },
+        "contour_interpolation_floor": {
+            "type": "number"
+        },
+        "contour_interval": {
+            "type": "number"
+        },
+        "contour_label": {
+            "type": "boolean"
+        },
+        "contour_label_blanking": {
+            "type": "boolean"
+        },
+        "contour_label_colour": {
+            "type": "string"
+        },
+        "contour_label_font": {
+            "type": "string"
+        },
+        "contour_label_font_style": {
+            "type": "string"
+        },
+        "contour_label_format": {
+            "type": "string"
+        },
+        "contour_label_frequency": {
+            "type": "integer"
+        },
+        "contour_label_height": {
+            "type": "number"
+        },
+        "contour_label_text": {
+            "type": "string"
+        },
+        "contour_label_type": {
+            "type": "string"
+        },
+        "contour_legend_only": {
+            "type": "boolean"
+        },
+        "contour_level_count": {
+            "type": "integer"
+        },
+        "contour_level_list": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "contour_level_selection_type": {
+            "type": "string"
+        },
+        "contour_level_tolerance": {
+            "type": "integer"
+        },
+        "contour_line_colour": {
+            "type": "string"
+        },
+        "contour_line_colour_rainbow": {
+            "type": "boolean"
+        },
+        "contour_line_colour_rainbow_colour_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_line_colour_rainbow_colour_list_policy": {
+            "type": "string"
+        },
+        "contour_line_colour_rainbow_direction": {
+            "type": "string"
+        },
+        "contour_line_colour_rainbow_max_level_colour": {
+            "type": "string"
+        },
+        "contour_line_colour_rainbow_method": {
+            "type": "string"
+        },
+        "contour_line_colour_rainbow_min_level_colour": {
+            "type": "string"
+        },
+        "contour_line_style": {
+            "type": "string"
+        },
+        "contour_line_style_rainbow_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_line_style_rainbow_list_policy": {
+            "type": "string"
+        },
+        "contour_line_thickness": {
+            "type": "integer"
+        },
+        "contour_line_thickness_rainbow_list": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "contour_line_thickness_rainbow_list_policy": {
+            "type": "string"
+        },
+        "contour_lo_colour": {
+            "type": "string"
+        },
+        "contour_lo_max_value": {
+            "type": "number"
+        },
+        "contour_lo_min_value": {
+            "type": "number"
+        },
+        "contour_lo_text": {
+            "type": "string"
+        },
+        "contour_max_level": {
+            "type": "number"
+        },
+        "contour_metadata_only": {
+            "type": "boolean"
+        },
+        "contour_method": {
+            "type": "string"
+        },
+        "contour_min_level": {
+            "type": "number"
+        },
+        "contour_reference_level": {
+            "type": "number"
+        },
+        "contour_shade": {
+            "type": "boolean"
+        },
+        "contour_shade_cell_method": {
+            "type": "string"
+        },
+        "contour_shade_cell_resolution": {
+            "type": "number"
+        },
+        "contour_shade_cell_resolution_method": {
+            "type": "string"
+        },
+        "contour_shade_colour_direction": {
+            "type": "string"
+        },
+        "contour_shade_colour_list": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_shade_colour_method": {
+            "type": "string"
+        },
+        "contour_shade_colour_table": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_shade_dot_size": {
+            "type": "number"
+        },
+        "contour_shade_hatch_density": {
+            "type": "number"
+        },
+        "contour_shade_hatch_index": {
+            "type": "integer"
+        },
+        "contour_shade_hatch_thickness": {
+            "type": "integer"
+        },
+        "contour_shade_height_table": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "contour_shade_marker_name_table": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "contour_shade_marker_table": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "contour_shade_marker_table_type": {
+            "type": "string"
+        },
+        "contour_shade_max_level": {
+            "type": "number"
+        },
+        "contour_shade_max_level_colour": {
+            "type": "string"
+        },
+        "contour_shade_max_level_density": {
+            "type": "number"
+        },
+        "contour_shade_method": {
+            "type": "string"
+        },
+        "contour_shade_min_level": {
+            "type": "number"
+        },
+        "contour_shade_min_level_colour": {
+            "type": "string"
+        },
+        "contour_shade_min_level_density": {
+            "type": "number"
+        },
+        "contour_shade_palette_name": {
+            "type": "string"
+        },
+        "contour_shade_palette_policy": {
+            "type": "string"
+        },
+        "contour_shade_technique": {
+            "type": "string"
+        },
+        "contour_style_name": {
+            "type": "string"
+        },
+        "legend": {
+            "type": "boolean"
+        }
+    },
+    "type": "object"
+}

@@ -1,0 +1,147 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "map_boundaries": {
+            "type": "boolean"
+        },
+        "map_cities": {
+            "type": "boolean"
+        },
+        "map_coastline": {
+            "type": "boolean"
+        },
+        "map_coastline_colour": {
+            "type": "string"
+        },
+        "map_coastline_general_style": {
+            "type": "string"
+        },
+        "map_coastline_land_shade": {
+            "type": "boolean"
+        },
+        "map_coastline_land_shade_colour": {
+            "type": "string"
+        },
+        "map_coastline_resolution": {
+            "type": "string"
+        },
+        "map_coastline_sea_shade": {
+            "type": "boolean"
+        },
+        "map_coastline_sea_shade_colour": {
+            "type": "string"
+        },
+        "map_coastline_style": {
+            "type": "string"
+        },
+        "map_coastline_thickness": {
+            "type": "integer"
+        },
+        "map_grid": {
+            "type": "boolean"
+        },
+        "map_grid_colour": {
+            "type": "string"
+        },
+        "map_grid_frame": {
+            "type": "boolean"
+        },
+        "map_grid_frame_colour": {
+            "type": "string"
+        },
+        "map_grid_frame_line_style": {
+            "type": "string"
+        },
+        "map_grid_frame_thickness": {
+            "type": "integer"
+        },
+        "map_grid_latitude_increment": {
+            "type": "number"
+        },
+        "map_grid_latitude_reference": {
+            "type": "number"
+        },
+        "map_grid_line_style": {
+            "type": "string"
+        },
+        "map_grid_longitude_increment": {
+            "type": "number"
+        },
+        "map_grid_longitude_reference": {
+            "type": "number"
+        },
+        "map_grid_thickness": {
+            "type": "integer"
+        },
+        "map_label": {
+            "type": "boolean"
+        },
+        "map_label_blanking": {
+            "type": "boolean"
+        },
+        "map_label_bottom": {
+            "type": "boolean"
+        },
+        "map_label_colour": {
+            "type": "string"
+        },
+        "map_label_font": {
+            "type": "string"
+        },
+        "map_label_font_style": {
+            "type": "string"
+        },
+        "map_label_height": {
+            "type": "number"
+        },
+        "map_label_latitude_frequency": {
+            "type": "integer"
+        },
+        "map_label_left": {
+            "type": "boolean"
+        },
+        "map_label_longitude_frequency": {
+            "type": "integer"
+        },
+        "map_label_right": {
+            "type": "boolean"
+        },
+        "map_label_top": {
+            "type": "boolean"
+        },
+        "map_preview": {
+            "type": "boolean"
+        },
+        "map_rivers": {
+            "type": "string"
+        },
+        "map_rivers_colour": {
+            "type": "string"
+        },
+        "map_rivers_style": {
+            "type": "string"
+        },
+        "map_rivers_thickness": {
+            "type": "integer"
+        },
+        "map_user_layer": {
+            "type": "string"
+        },
+        "map_user_layer_colour": {
+            "type": "string"
+        },
+        "map_user_layer_name": {
+            "type": "string"
+        },
+        "map_user_layer_projection": {
+            "type": "string"
+        },
+        "map_user_layer_style": {
+            "type": "string"
+        },
+        "map_user_layer_thickness": {
+            "type": "integer"
+        }
+    },
+    "type": "object"
+}

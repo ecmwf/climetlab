@@ -16,6 +16,7 @@ from textwrap import fill
 
 import xmltodict
 import yaml
+import json
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -41,6 +42,17 @@ TYPES = {
     "string": "str",
     "stringarray": "List[str]",
     "longintarray": "List[int]",
+}
+
+SCHEMA = {
+    "bool": {"type": "boolean"},
+    "float": {"type": "number"},
+    "floatarray": {"type": "array", "items": {"type": "number"}},
+    "int": {"type": "integer"},
+    "intarray": {"type": "array", "items": {"type": "integer"}},
+    "string": {"type": "string"},
+    "stringarray": {"type": "array", "items": {"type": "string"}},
+    "longintarray": {"type": "array", "items": {"type": "integer"}},
 }
 
 
@@ -197,6 +209,13 @@ class Param:
         if t.startswith("No"):
             return "bool"
         return TYPES.get(t, "str")
+
+    @property
+    def json_schema(self):
+        t = self._defs.get("to")
+        if t.startswith("No"):
+            t = "bool"
+        return SCHEMA.get(t, {"type": "string"})
 
 
 class Klass:
@@ -437,11 +456,41 @@ def produce_yaml():
     print(yaml.dump(m, default_flow_style=False))
 
 
+def produce_schemas(directory):
+
+    for action, klasses in sorted(ACTIONS.items()):
+
+        properties = {}
+
+        for k in sorted(klasses):
+            for p in k.parameters:
+                properties[p.name] = p.json_schema
+
+        schema = {
+            "type": "object",
+            "properties": properties,
+            "additionalProperties": False,
+        }
+
+        path = os.path.join(directory, "{}.json".format(action))
+        with open(path + ".tmp", "w") as f:
+            print(json.dumps(schema, sort_keys=True, indent=4), file=f)
+        os.rename(path + ".tmp", path)
+
+    # m["mmap"] = [
+    #     dict(name="subpage_upper_right_longitude", type="Float"),
+    #     dict(name="subpage_upper_right_latitude", type="Float"),
+    #     dict(name="subpage_lower_left_latitude", type="Float"),
+    #     dict(name="subpage_lower_left_longitude", type="Float"),
+    # ]
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--rst", action="store_true")
 parser.add_argument("--python", action="store_true")
 parser.add_argument("--yaml", action="store_true")
 parser.add_argument("--types")
+parser.add_argument("--schemas")
 parser.add_argument(
     "xml",
     metavar="N",
@@ -477,3 +526,6 @@ if args.python:
 
 if args.yaml:
     produce_yaml()
+
+if args.schemas:
+    produce_schemas(args.schemas)

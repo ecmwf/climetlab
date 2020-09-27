@@ -1,0 +1,21 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "subpage_lower_left_latitude": {
+            "type": "number"
+        },
+        "subpage_lower_left_longitude": {
+            "type": "number"
+        },
+        "subpage_upper_right_latitude": {
+            "type": "number"
+        },
+        "subpage_upper_right_longitude": {
+            "type": "number"
+        },
+        "subpage_map_projection" : {
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
