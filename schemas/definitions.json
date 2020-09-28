@@ -1,0 +1,52 @@
+{
+    "definitions": {
+        "colour": {
+            "type": "string"
+        },
+        "justification": {
+            "enum": [
+                "centre",
+                "left",
+                "right"
+            ],
+            "type": "string"
+        },
+        "latitude": {
+            "maximumValue": 90.0,
+            "minimumValue": -90.0,
+            "type": "number"
+        },
+        "line-style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
+            "type": "string"
+        },
+        "list-policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
+            "type": "string"
+        },
+        "longitude": {
+            "maximumValue": 360.0,
+            "minimumValue": -180.0,
+            "type": "number"
+        },
+        "position": {
+            "enum": [
+                "automatic",
+                "bottom",
+                "left",
+                "right",
+                "top"
+            ],
+            "type": "string"
+        }
+    }
+}
