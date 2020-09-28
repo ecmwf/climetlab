@@ -12,12 +12,12 @@ mcoast:
   type: Bool
 - default: automatic
   name: map_coastline_resolution
-  type: String
+  type: string
   values:
   - automatic
+  - high
   - low
   - medium
-  - high
 - name: map_coastline_land_shade
   type: Bool
 - default: green
@@ -35,13 +35,16 @@ mcoast:
 - name: map_preview
   type: Bool
 - name: map_rivers
-  type: String
-  values:
-  - true
-  - false
+  type: Bool
 - default: solid
   name: map_rivers_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: blue
   name: map_rivers_colour
   type: Colour
@@ -49,17 +52,20 @@ mcoast:
   name: map_rivers_thickness
   type: Int
 - name: map_user_layer
-  type: String
-  values:
-  - true
-  - false
+  type: Bool
 - name: map_user_layer_name
   type: String
 - name: map_user_layer_projection
   type: String
 - default: solid
   name: map_user_layer_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: blue
   name: map_user_layer_colour
   type: Colour
@@ -71,7 +77,13 @@ mcoast:
   type: Colour
 - default: solid
   name: map_coastline_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: 1
   name: map_coastline_thickness
   type: Int
@@ -87,7 +99,13 @@ mcoast:
   type: Float
 - default: solid
   name: map_grid_line_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: 1
   name: map_grid_thickness
   type: Int
@@ -98,7 +116,13 @@ mcoast:
   type: Bool
 - default: solid
   name: map_grid_frame_line_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: 1
   name: map_grid_frame_thickness
   type: Int
@@ -143,44 +167,35 @@ mcont:
   type: Bool
 - default: true
   name: contour
-  type: IsoPlot
-  values:
-  - true
-  - false
+  type: Bool
 - default: automatic
   name: contour_method
-  type: ContourMethod
+  type: string
   values:
-  - automatic
-  - linear
   - akima474
   - akima760
-- default: -2147483647
+  - automatic
+  - linear
+- default: -2147483647.0
   name: contour_interpolation_floor
   type: Float
-- default: 2147483647
+- default: 2147483647.0
   name: contour_interpolation_ceiling
   type: Float
 - name: contour_automatic_setting
-  type: String
+  type: string
   values:
+  - ecmwf
   - false
   - style_name
-  - ecmwf
 - name: contour_style_name
   type: String
 - name: contour_metadata_only
   type: Bool
 - name: contour_hilo
-  type: HiLoBase
-  values:
-  - true
-  - false
+  type: Bool
 - name: contour_grid_value_plot
-  type: ValuePlotBase
-  values:
-  - true
-  - false
+  type: Bool
 - default: 1.5
   name: contour_akima_x_resolution
   type: Float
@@ -222,21 +237,21 @@ mcont:
   type: Colour
 - default: low
   name: contour_grid_value_marker_qual
-  type: String
+  type: string
   values:
   - high
-  - medium
   - low
+  - medium
 - default: 3
   name: contour_grid_value_marker_index
   type: Int
 - default: top
   name: contour_grid_value_position
-  type: String
+  type: string
   values:
-  - right
-  - left
   - bottom
+  - left
+  - right
   - top
 - default: blue
   name: contour_shade_max_level_colour
@@ -246,25 +261,25 @@ mcont:
   type: Colour
 - default: anti_clockwise
   name: contour_shade_colour_direction
-  type: String
+  type: string
   values:
-  - clockwise
   - anti_clockwise
+  - clockwise
 - default: 10.0
   name: contour_shade_cell_resolution
   type: Float
 - default: nearest
   name: contour_shade_cell_method
-  type: String
+  type: string
   values:
-  - nearest
   - interpolate
+  - nearest
 - default: classic
   name: contour_shade_cell_resolution_method
-  type: String
+  type: string
   values:
-  - classic
   - adaptive
+  - classic
 - default: 1.0e+21
   name: contour_max_level
   type: Float
@@ -295,10 +310,10 @@ mcont:
   name: contour_shade_min_level_density
   type: Float
 - name: contour_gradients_colour_list
-  type: ColourList
+  type: StringList
 - default: both
   name: contour_gradients_waypoint_method
-  type: String
+  type: string
   values:
   - both
   - ignore
@@ -306,35 +321,35 @@ mcont:
   - right
 - default: rgb
   name: contour_gradients_technique
-  type: String
+  type: string
   values:
-  - rgb
   - hcl
   - hsl
+  - rgb
 - default: clockwise
   name: contour_gradients_technique_direction
-  type: String
+  type: string
   values:
-  - clockwise
   - anti_clockwise
-  - shortest
+  - clockwise
   - longest
+  - shortest
 - name: contour_gradients_step_list
   type: IntList
 - default: dot
   name: contour_shade_method
-  type: PolyShadingMethod
+  type: string
   values:
   - area_fill
-  - solid
   - dash
   - dot
+  - solid
 - default: middle
   name: contour_grid_shading_position
-  type: String
+  type: string
   values:
-  - middle
   - bottom_left
+  - middle
 - name: contour_shade_hatch_index
   type: Int
 - default: 1
@@ -398,11 +413,11 @@ mcont:
   type: Bool
 - default: text
   name: contour_hilo_type
-  type: HiLoTechnique
+  type: string
   values:
-  - text
-  - number
   - both
+  - number
+  - text
 - default: 3
   name: contour_hilo_window_size
   type: Int
@@ -425,10 +440,7 @@ mcont:
   name: contour_lo_min_value
   type: Float
 - name: contour_hilo_marker
-  type: HiLoMarkerBase
-  values:
-  - true
-  - false
+  type: Bool
 - default: 1.0e+21
   name: contour_max_level
   type: Float
@@ -448,11 +460,11 @@ mcont:
   type: Float
 - default: number
   name: contour_label_type
-  type: String
+  type: string
   values:
-  - text
-  - number
   - both
+  - number
+  - text
 - name: contour_label_text
   type: String
 - default: 0.3
@@ -469,11 +481,11 @@ mcont:
   type: String
 - default: normal
   name: contour_label_font_style
-  type: String
+  type: string
   values:
-  - normal
   - bold
   - italic
+  - normal
 - default: contour_line_colour
   name: contour_label_colour
   type: String
@@ -482,12 +494,12 @@ mcont:
   type: Int
 - default: polygon_shading
   name: contour_shade_technique
-  type: ShadingTechnique
+  type: string
   values:
-  - polygon
-  - grid_shading
   - cell_shading
+  - grid_shading
   - marker
+  - polygon
 - default: 1.0e+21
   name: contour_shade_max_level
   type: Float
@@ -496,11 +508,11 @@ mcont:
   type: Float
 - default: calculate
   name: contour_shade_colour_method
-  type: ColourTechnique
+  type: string
   values:
   - calculate
-  - list
   - gradients
+  - list
   - palette
 - default: 1.0e+21
   name: contour_max_level
@@ -517,14 +529,14 @@ mcont:
 - name: contour_level_list
   type: FloatList
 - name: contour_shade_colour_list
-  type: ColourList
+  type: StringList
 - default: text
   name: contour_hilo_type
-  type: HiLoTechnique
+  type: string
   values:
-  - text
-  - number
   - both
+  - number
+  - text
 - default: 3
   name: contour_hilo_window_size
   type: Int
@@ -547,17 +559,14 @@ mcont:
   name: contour_lo_min_value
   type: Float
 - name: contour_hilo_marker
-  type: HiLoMarkerBase
-  values:
-  - true
-  - false
+  type: Bool
 - name: contour_shade_colour_table
-  type: ColourList
+  type: StringList
 - name: contour_shade_height_table
   type: FloatList
 - default: index
   name: contour_shade_marker_table_type
-  type: String
+  type: string
   values:
   - index
   - name
@@ -600,7 +609,13 @@ mcont:
   type: Int
 - default: solid
   name: contour_line_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - default: 1
   name: contour_line_thickness
   type: Int
@@ -611,7 +626,7 @@ mcont:
   type: Colour
 - default: calculate
   name: contour_line_colour_rainbow_method
-  type: ColourTechnique
+  type: string
   values:
   - calculate
   - list
@@ -623,34 +638,40 @@ mcont:
   type: Colour
 - default: anti_clockwise
   name: contour_line_colour_rainbow_direction
-  type: String
+  type: string
   values:
-  - clockwise
   - anti_clockwise
+  - clockwise
 - name: contour_line_colour_rainbow_colour_list
-  type: ColourList
+  type: StringList
 - default: lastone
   name: contour_line_colour_rainbow_colour_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - name: contour_line_thickness_rainbow_list
   type: IntList
 - default: lastone
   name: contour_line_thickness_rainbow_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - name: contour_line_style_rainbow_list
   type: StringList
 - default: lastone
   name: contour_line_style_rainbow_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - default: true
   name: contour_highlight
   type: Bool
-  values:
-  - true
-  - false
 - default: count
   name: contour_level_selection_type
-  type: LevelSelection
+  type: string
   values:
   - count
   - interval
@@ -658,35 +679,32 @@ mcont:
 - default: true
   name: contour_label
   type: Bool
-  values:
-  - true
-  - false
 - name: contour_shade
   type: Bool
-  values:
-  - true
-  - false
 - name: contour_legend_only
   type: Bool
 - name: contour_shade_palette_name
   type: String
 - default: lastone
   name: contour_shade_palette_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - default: normal
   name: contour_grid_value_type
-  type: String
+  type: string
   values:
+  - akima
   - normal
   - reduced
-  - akima
 - default: value
   name: contour_grid_value_plot_type
-  type: ValuePlotMethod
+  type: string
   values:
-  - value
-  - marker
   - both
+  - marker
+  - value
 mmap:
 - name: subpage_upper_right_longitude
   type: Float
@@ -699,7 +717,7 @@ mmap:
 msymb:
 - default: count
   name: symbol_advanced_table_selection_type
-  type: LevelSelection
+  type: string
   values:
   - count
   - interval
@@ -725,7 +743,7 @@ msymb:
   type: FloatList
 - default: calculate
   name: symbol_advanced_table_colour_method
-  type: ColourTechnique
+  type: String
 - default: blue
   name: symbol_advanced_table_max_level_colour
   type: Colour
@@ -734,25 +752,31 @@ msymb:
   type: Colour
 - default: anti_clockwise
   name: symbol_advanced_table_colour_direction
-  type: String
+  type: string
   values:
-  - clockwise
   - anti-clockwise
+  - clockwise
 - name: symbol_advanced_table_colour_list
-  type: ColourList
+  type: StringList
 - default: lastone
   name: symbol_advanced_table_colour_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - name: symbol_advanced_table_marker_list
   type: IntList
 - name: symbol_advanced_table_marker_name_list
   type: StringList
 - default: lastone
   name: symbol_advanced_table_marker_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - default: list
   name: symbol_advanced_table_height_method
-  type: HeightTechnique
+  type: String
 - default: 0.2
   name: symbol_advanced_table_height_max_value
   type: Float
@@ -763,12 +787,18 @@ msymb:
   type: FloatList
 - default: lastone
   name: symbol_advanced_table_height_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - name: symbol_advanced_table_text_list
   type: StringList
 - default: cycle
   name: symbol_advanced_table_text_list_policy
-  type: ListPolicy
+  type: string
+  values:
+  - cycle
+  - lastone
 - default: sansserif
   name: symbol_advanced_table_text_font
   type: String
@@ -783,14 +813,14 @@ msymb:
   type: Colour
 - default: none
   name: symbol_advanced_table_text_display_type
-  type: String
+  type: string
   values:
+  - bottom
   - centre
+  - left
   - none
   - right
-  - left
   - top
-  - bottom
 - default: none
   name: symbol_advanced_table_outlayer_method
   type: Bool
@@ -821,7 +851,7 @@ msymb:
   type: String
 - default: automatic
   name: symbol_image_format
-  type: String
+  type: string
   values:
   - automatic
   - png
@@ -836,11 +866,11 @@ msymb:
   type: StringList
 - default: right
   name: symbol_text_position
-  type: String
+  type: string
   values:
-  - right
-  - left
   - bottom
+  - left
+  - right
   - top
 - default: sansserif
   name: symbol_text_font
@@ -869,22 +899,22 @@ msymb:
   type: Float
 - default: number
   name: symbol_type
-  type: String
+  type: string
   values:
+  - marker
   - number
   - text
-  - marker
   - wind
 - default: 'OFF'
   name: symbol_table_mode
-  type: SymbolMode
+  type: String
 - default: index
   name: symbol_marker_mode
-  type: String
+  type: string
   values:
+  - image
   - index
   - name
-  - image
 - default: (automatic)
   name: symbol_format
   type: String
@@ -900,7 +930,13 @@ msymb:
   type: Int
 - default: solid
   name: symbol_outline_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - name: symbol_connect_line
   type: Bool
 - default: true
@@ -914,7 +950,13 @@ msymb:
   type: Int
 - default: solid
   name: symbol_connect_line_style
-  type: LineStyle
+  type: string
+  values:
+  - chain_dash
+  - chain_dot
+  - dash
+  - dot
+  - solid
 - name: symbol_legend_only
   type: Bool
 - name: symbol_min_table
@@ -926,7 +968,7 @@ msymb:
 - name: symbol_name_table
   type: StringList
 - name: symbol_colour_table
-  type: ColourList
+  type: StringList
 - name: symbol_height_table
   type: FloatList
 

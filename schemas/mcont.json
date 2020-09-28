@@ -2,7 +2,7 @@
     "additionalProperties": false,
     "properties": {
         "contour": {
-            "type": "string"
+            "type": "boolean"
         },
         "contour_akima_x_resolution": {
             "type": "number"
@@ -11,7 +11,10 @@
             "type": "number"
         },
         "contour_automatic_setting": {
-            "type": "string"
+            "type": [
+                "string",
+                "boolean"
+            ]
         },
         "contour_gradients_colour_list": {
             "items": {
@@ -26,15 +29,36 @@
             "type": "array"
         },
         "contour_gradients_technique": {
+            "enum": [
+                "hcl",
+                "hsl",
+                "rgb"
+            ],
             "type": "string"
         },
         "contour_gradients_technique_direction": {
+            "enum": [
+                "anti_clockwise",
+                "clockwise",
+                "longest",
+                "shortest"
+            ],
             "type": "string"
         },
         "contour_gradients_waypoint_method": {
+            "enum": [
+                "both",
+                "ignore",
+                "left",
+                "right"
+            ],
             "type": "string"
         },
         "contour_grid_shading_position": {
+            "enum": [
+                "bottom_left",
+                "middle"
+            ],
             "type": "string"
         },
         "contour_grid_value_colour": {
@@ -71,15 +95,31 @@
             "type": "number"
         },
         "contour_grid_value_plot": {
-            "type": "string"
+            "type": "boolean"
         },
         "contour_grid_value_plot_type": {
+            "enum": [
+                "both",
+                "marker",
+                "value"
+            ],
             "type": "string"
         },
         "contour_grid_value_position": {
+            "enum": [
+                "bottom",
+                "left",
+                "right",
+                "top"
+            ],
             "type": "string"
         },
         "contour_grid_value_type": {
+            "enum": [
+                "akima",
+                "normal",
+                "reduced"
+            ],
             "type": "string"
         },
         "contour_hi_colour": {
@@ -98,7 +138,7 @@
             "type": "boolean"
         },
         "contour_hilo": {
-            "type": "string"
+            "type": "boolean"
         },
         "contour_hilo_blanking": {
             "type": "boolean"
@@ -110,7 +150,7 @@
             "type": "number"
         },
         "contour_hilo_marker": {
-            "type": "string"
+            "type": "boolean"
         },
         "contour_hilo_marker_colour": {
             "type": "string"
@@ -128,6 +168,11 @@
             "type": "number"
         },
         "contour_hilo_type": {
+            "enum": [
+                "both",
+                "number",
+                "text"
+            ],
             "type": "string"
         },
         "contour_hilo_window_size": {
@@ -155,6 +200,11 @@
             "type": "string"
         },
         "contour_label_font_style": {
+            "enum": [
+                "bold",
+                "italic",
+                "normal"
+            ],
             "type": "string"
         },
         "contour_label_format": {
@@ -170,6 +220,11 @@
             "type": "string"
         },
         "contour_label_type": {
+            "enum": [
+                "both",
+                "number",
+                "text"
+            ],
             "type": "string"
         },
         "contour_legend_only": {
@@ -185,6 +240,11 @@
             "type": "array"
         },
         "contour_level_selection_type": {
+            "enum": [
+                "count",
+                "interval",
+                "list"
+            ],
             "type": "string"
         },
         "contour_level_tolerance": {
@@ -203,21 +263,40 @@
             "type": "array"
         },
         "contour_line_colour_rainbow_colour_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "contour_line_colour_rainbow_direction": {
+            "enum": [
+                "anti_clockwise",
+                "clockwise"
+            ],
             "type": "string"
         },
         "contour_line_colour_rainbow_max_level_colour": {
             "type": "string"
         },
         "contour_line_colour_rainbow_method": {
+            "enum": [
+                "calculate",
+                "list"
+            ],
             "type": "string"
         },
         "contour_line_colour_rainbow_min_level_colour": {
             "type": "string"
         },
         "contour_line_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "contour_line_style_rainbow_list": {
@@ -227,6 +306,10 @@
             "type": "array"
         },
         "contour_line_style_rainbow_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "contour_line_thickness": {
@@ -239,6 +322,10 @@
             "type": "array"
         },
         "contour_line_thickness_rainbow_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "contour_lo_colour": {
@@ -260,6 +347,12 @@
             "type": "boolean"
         },
         "contour_method": {
+            "enum": [
+                "akima474",
+                "akima760",
+                "automatic",
+                "linear"
+            ],
             "type": "string"
         },
         "contour_min_level": {
@@ -272,15 +365,27 @@
             "type": "boolean"
         },
         "contour_shade_cell_method": {
+            "enum": [
+                "interpolate",
+                "nearest"
+            ],
             "type": "string"
         },
         "contour_shade_cell_resolution": {
             "type": "number"
         },
         "contour_shade_cell_resolution_method": {
+            "enum": [
+                "adaptive",
+                "classic"
+            ],
             "type": "string"
         },
         "contour_shade_colour_direction": {
+            "enum": [
+                "anti_clockwise",
+                "clockwise"
+            ],
             "type": "string"
         },
         "contour_shade_colour_list": {
@@ -290,6 +395,12 @@
             "type": "array"
         },
         "contour_shade_colour_method": {
+            "enum": [
+                "calculate",
+                "gradients",
+                "list",
+                "palette"
+            ],
             "type": "string"
         },
         "contour_shade_colour_table": {
@@ -329,6 +440,10 @@
             "type": "array"
         },
         "contour_shade_marker_table_type": {
+            "enum": [
+                "index",
+                "name"
+            ],
             "type": "string"
         },
         "contour_shade_max_level": {
@@ -341,6 +456,12 @@
             "type": "number"
         },
         "contour_shade_method": {
+            "enum": [
+                "area_fill",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "contour_shade_min_level": {
@@ -356,9 +477,19 @@
             "type": "string"
         },
         "contour_shade_palette_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "contour_shade_technique": {
+            "enum": [
+                "cell_shading",
+                "grid_shading",
+                "marker",
+                "polygon"
+            ],
             "type": "string"
         },
         "contour_style_name": {

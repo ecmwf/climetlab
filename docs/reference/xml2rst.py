@@ -27,32 +27,8 @@ T = {
     "on": True,
     "off": False,
     "no": False,
-    "stringarray()": [],
-    "intarray()": [],
-    "floatarray()": [],
-    "longintarray()": [],
-}
-
-TYPES = {
-    "bool": "bool",
-    "float": "float",
-    "floatarray": "List[float]",
-    "int": "int",
-    "intarray": "List[int]",
-    "string": "str",
-    "stringarray": "List[str]",
-    "longintarray": "List[int]",
-}
-
-SCHEMA = {
-    "bool": {"type": "boolean"},
-    "float": {"type": "number"},
-    "floatarray": {"type": "array", "items": {"type": "number"}},
-    "int": {"type": "integer"},
-    "intarray": {"type": "array", "items": {"type": "integer"}},
-    "string": {"type": "string"},
-    "stringarray": {"type": "array", "items": {"type": "string"}},
-    "longintarray": {"type": "array", "items": {"type": "integer"}},
+    "-INT_MAX": -2147483647,
+    "INT_MAX": 2147483647,
 }
 
 
@@ -82,10 +58,6 @@ def tidy(x):
     except Exception:
         pass
 
-    # x = T.get(x, x)
-
-    # if isinstance(x, str):
-
     return T.get(x, x)
 
 
@@ -101,9 +73,167 @@ def cleanup(p):
     return p
 
 
+################################################################
+
+
+class String:
+
+    values = None
+    python_type = "str"
+    yaml_type = "String"
+    json_schema = {"type": "string"}
+
+    def __init__(self, param):
+        self._param = param
+        self.yaml_default = param._defs.get("default")
+        self.python_default = self.yaml_default
+
+
+class Bool:
+
+    values = None
+    python_type = "bool"
+    yaml_type = "Bool"
+    json_schema = {"type": "boolean"}
+
+    def __init__(self, param):
+        self._param = param
+        self.yaml_default = param._defs.get("default")
+        self.python_default = self.yaml_default
+
+
+class Int:
+
+    values = None
+    python_type = "int"
+    yaml_type = "Int"
+    json_schema = {"type": "integer"}
+
+    def __init__(self, param):
+        self._param = param
+        self.yaml_default = param._defs.get("default")
+        if self.yaml_default is not None:
+            self.yaml_default = int(self.yaml_default)
+        self.python_default = self.yaml_default
+
+
+class Float:
+
+    values = None
+    python_type = "float"
+    yaml_type = "Float"
+
+    json_schema = {"type": "number"}
+
+    def __init__(self, param):
+        self._param = param
+        self.yaml_default = param._defs.get("default")
+        if self.yaml_default is not None:
+            self.yaml_default = float(self.yaml_default)
+        self.python_default = self.yaml_default
+
+
+class IntList:
+
+    values = None
+    python_type = "List[int]"
+    yaml_type = "IntList"
+    json_schema = {"type": "array", "items": {"type": "integer"}}
+
+    def __init__(self, param):
+        self._param = param
+        assert param._defs.get("default") == "intarray()", param._defs.get("default")
+        self.yaml_default = []
+        self.python_default = self.yaml_default
+
+
+class FloatList:
+
+    values = None
+    python_type = "List[float]"
+    yaml_type = "FloatList"
+    json_schema = {"type": "array", "items": {"type": "number"}}
+
+    def __init__(self, param):
+        self._param = param
+        assert param._defs.get("default") == "floatarray()", param._defs.get("default")
+        self.yaml_default = []
+        self.python_default = self.yaml_default
+
+
+class StringList:
+
+    values = None
+    python_type = "List[str]"
+    yaml_type = "StringList"
+    json_schema = {"type": "array", "items": {"type": "string"}}
+
+    def __init__(self, param):
+        self._param = param
+        assert param._defs.get("default") == "stringarray()", param._defs.get("default")
+        self.yaml_default = []
+        self.python_default = self.yaml_default
+
+
+class ColourList:
+
+    values = None
+    python_type = "List[str]"
+    json_schema = {"type": "array", "items": {"type": "string"}}
+
+    def __init__(self, param):
+        self._param = param
+
+
+class Colour:
+
+    values = None
+    python_type = "str"
+    yaml_type = "Colour"
+    json_schema = {"type": "string"}
+
+    def __init__(self, param):
+        self._param = param
+        self.yaml_default = param._defs.get("default")
+        self.python_default = self.yaml_default
+
+
+class Enum:
+
+    python_type = "str"
+    yaml_type = "string"
+
+    def __init__(self, param):
+        self._param = param
+
+        if param._defs.get("to") in ENUMS:
+            self.values = ENUMS[param._defs.get("to")]["values"].keys()
+
+        if "values" in param._defs:
+            self.values = param._defs.get("values").split("/")
+
+        self.values = [tidy(x) for x in sorted(self.values)]
+        self.yaml_default = param._defs.get("default")
+        self.python_default = self.yaml_default
+
+    @property
+    def json_schema(self):
+        if False in self.values or True in self.values:
+            if "style_name" in self.values:
+                return  {"type": ["string", "boolean"]}
+            return {"type": ["string", "boolean"], "enum": self.values}
+        return {"type": "string", "enum": self.values}
+
+
+################################################################
+
+
 class Param:
     def __init__(self, defs):
         self._defs = defs
+        self._type = None
+        if self.type.values == [False, True] or self.type.values == [True, False]:
+            self._type = Bool(self)
 
     @property
     def name(self):
@@ -114,108 +244,62 @@ class Param:
         return cleanup(self._defs.get("documentation", ""))
 
     @property
-    def default(self):
-
-        default = self._defs.get("default")
-        if default in (None, False, True):
-            return default
-
-        if self.python_type == "int":
-            return int(default)
-
-        if self.python_type == "float":
-            if default == "-INT_MAX":
-                return -2147483647
-            if default == "INT_MAX":
-                return 2147483647
-            return float(default)
-
-        return repr(default).replace("'", '"')
+    def python_default(self):
+        return repr(self.type.python_default).replace("'", '"')
 
     @property
     def yaml_default(self):
-
-        default = self._defs.get("default")
-
-        if default in (None, False, True):
-            return default
-
-        if self.python_type == "int":
-            return int(default)
-
-        if self.python_type == "float":
-            if default == "-INT_MAX":
-                return -2147483647
-            if default == "INT_MAX":
-                return 2147483647
-            return float(default)
-
-        return default
+        return self.type.yaml_default
 
     @property
-    def values(self):
+    def type(self):
+        if self._type is None:
+            t = self._defs.get("to")
+            if t.startswith("No"):
+                t = "Bool"
 
-        f = self._defs.get("from")
-        t = self._defs.get("to")
+            # if "colour" in self.name and isinstance(self.yaml_default, list):
+            #     t = "Colourarray"
 
-        if t == "bool":
-            return t
+            t = t.replace("array", "List")
 
-        if t in ENUMS:
-            return ", ".join(
-                [
-                    repr(tidy(x)).replace("'", '"')
-                    for x in sorted(ENUMS[t]["values"].keys())
-                ]
-            )
+            t = t[0].upper() + t[1:]
 
-        if "values" in self._defs:
-            return ", ".join(
-                [
-                    repr(tidy(x)).replace("'", '"')
-                    for x in self._defs.get("values").split("/")
-                ]
-            )
+            if "values" in self._defs or t in ENUMS:
+                # print(t, self.name, file=sys.stderr)
+                t = "Enum"
 
-        if f == t:
-            return t
+            if t not in globals():
+                print(t, self.name, file=sys.stderr)
 
-        return "%s(%s)" % (t, f)
+            self._type = globals().get(t, String)(self)
+
+        return self._type
+
+    @property
+    def python_values(self):
+
+        values = self.type.values
+        if values is not None:
+            return ", ".join([repr(x).replace("'", '"') for x in values])
+
+        return self.python_type
 
     @property
     def yaml_values(self):
-
-        if "values" in self._defs:
-            return [tidy(x) for x in self._defs.get("values").split("/")]
-
-        return None
+        return self.type.values
 
     @property
     def yaml_type(self):
-        t = self._defs.get("to")
-        if t.startswith("No"):
-            t = "Bool"
-
-        if "colour" in self.name and isinstance(self.yaml_default, list):
-            t = "Colourarray"
-
-        t = t.replace("array", "List")
-
-        return t[0].upper() + t[1:]
+        return self.type.yaml_type
 
     @property
     def python_type(self):
-        t = self._defs.get("to")
-        if t.startswith("No"):
-            return "bool"
-        return TYPES.get(t, "str")
+        return self.type.python_type
 
     @property
     def json_schema(self):
-        t = self._defs.get("to")
-        if t.startswith("No"):
-            t = "bool"
-        return SCHEMA.get(t, {"type": "string"})
+        return self.type.json_schema
 
 
 class Klass:
@@ -356,8 +440,8 @@ def produce_rst():
 
                 print("   * - |", "**%s**" % p.name)
                 print("       |", fill(p.documentation, subsequent_indent=" " * 9))
-                print("     - |", p.values)
-                print("     - |", p.default)
+                print("     - |", p.python_values)
+                print("     - |", p.python_default)
                 print()
                 # print("     -", p.documentation)
         print()
@@ -414,7 +498,10 @@ def produce_python():
 
                 c = "#" if p.name in seen else ""
 
-                print("   ", "%s%s: %s = %s," % (c, p.name, p.python_type, p.default))
+                print(
+                    "   ",
+                    "%s%s: %s = %s," % (c, p.name, p.python_type, p.python_default),
+                )
                 seen.add(p.name)
                 # print("       |", p.documentation)
                 # print("     - |", p.values)

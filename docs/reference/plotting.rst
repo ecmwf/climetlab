@@ -24,22 +24,22 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_general_style**
        | Use a predefined style depending on the general theme
-     - | string
+     - | str
      - | ""
 
    * - | **map_coastline**
        | Plot coastlines on map (ON/OFF)
-     - | NoCoastPlotting(string)
+     - | bool
      - | True
 
    * - | **map_grid**
        | Plot grid lines on map (On/OFF)
-     - | NoGridPlotting(string)
+     - | bool
      - | True
 
    * - | **map_label**
        | Plot label on map grid lines (On/OFF)
-     - | NoLabelPlotting(string)
+     - | bool
      - | True
 
    * - | **map_coastline_resolution**
@@ -47,7 +47,7 @@ country boundaries, as well as the latitude/longitude grid lines.
          high. When set to AUTOMATIC, a resolution appropriate to the
          scale of the map is chosen in order to balance quality with
          speed.
-     - | "automatic", "low", "medium", "high"
+     - | "automatic", "high", "low", "medium"
      - | "automatic"
 
    * - | **map_coastline_land_shade**
@@ -57,7 +57,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_land_shade_colour**
        | Colour of Shading of land areas
-     - | Colour(string)
+     - | str
      - | "green"
 
    * - | **map_coastline_sea_shade**
@@ -67,17 +67,17 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_sea_shade_colour**
        | Colour of Shading of sea areas
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **map_boundaries**
        | Add the political boundaries
-     - | NoBoundaries(string)
+     - | bool
      - | False
 
    * - | **map_cities**
        | Add the cities (capitals)
-     - | NoCities(string)
+     - | bool
      - | False
 
    * - | **map_preview**
@@ -88,7 +88,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_rivers**
        | Display rivers (on/off)
-     - | True, False
+     - | bool
      - | False
 
    * - | **map_rivers_style**
@@ -98,7 +98,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_rivers_colour**
        | Colour of the rivers
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **map_rivers_thickness**
@@ -108,17 +108,17 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_user_layer**
        | Display user shape file layer
-     - | True, False
+     - | bool
      - | False
 
    * - | **map_user_layer_name**
        | Path + name of the shape file to use
-     - | string
+     - | str
      - | ""
 
    * - | **map_user_layer_projection**
        | Projection used in the shape file
-     - | string
+     - | str
      - | ""
 
    * - | **map_user_layer_style**
@@ -128,7 +128,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_user_layer_colour**
        | Colour of the User Layer
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **map_user_layer_thickness**
@@ -138,7 +138,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_colour**
        | Colour of coastlines
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **map_coastline_style**
@@ -154,7 +154,7 @@ country boundaries, as well as the latitude/longitude grid lines.
    * - | **map_grid_latitude_reference**
        | Reference Latitude from which all latitude lines are drawn
      - | float
-     - | 0
+     - | 0.0
 
    * - | **map_grid_latitude_increment**
        | Interval between latitude grid lines
@@ -164,7 +164,7 @@ country boundaries, as well as the latitude/longitude grid lines.
    * - | **map_grid_longitude_reference**
        | Reference Longitude from which all longitude lines are drawn
      - | float
-     - | 0
+     - | 0.0
 
    * - | **map_grid_longitude_increment**
        | Interval between longitude grid lines
@@ -183,7 +183,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_grid_colour**
        | Colour of map grid lines
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **map_grid_frame**
@@ -203,22 +203,22 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_grid_frame_colour**
        | Colour of map grid lines
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **map_label_font**
        | Font of grid labels
-     - | string
+     - | str
      - | "sansserif"
 
    * - | **map_label_font_style**
        | Font of grid labels
-     - | string
+     - | str
      - | "normal"
 
    * - | **map_label_colour**
        | Colour of map labels
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **map_label_height**
@@ -288,35 +288,35 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour**
        | Turn contouring on or off
-     - | True, False
+     - | bool
      - | True
 
    * - | **contour_method**
        | Contouring method
-     - | "automatic", "linear", "akima474", "akima760"
+     - | "akima474", "akima760", "automatic", "linear"
      - | "automatic"
 
    * - | **contour_interpolation_floor**
        | Any value below this floor will be forced to the floor value. avoid
          the bubbles artificially created by the interpolation method
      - | float
-     - | -2147483647
+     - | -2147483647.0
 
    * - | **contour_interpolation_ceiling**
        | any value above this ceiling will be forced to the ceiling value.
          avoid the bubbles artificially created by the interpolation
          method
      - | float
-     - | 2147483647
+     - | 2147483647.0
 
    * - | **contour_automatic_setting**
        | Turn the automatic setting of contouring attributes
-     - | False, "style_name", "ecmwf"
+     - | "ecmwf", False, "style_name"
      - | False
 
    * - | **contour_style_name**
        | Use of a predeined setting
-     - | string
+     - | str
      - | ""
 
    * - | **contour_metadata_only**
@@ -326,12 +326,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo**
        | Plot local maxima/minima
-     - | True, False
+     - | bool
      - | False
 
    * - | **contour_grid_value_plot**
        | Plot Grid point values
-     - | True, False
+     - | bool
      - | False
 
    * - | **contour_akima_x_resolution**
@@ -371,12 +371,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_grid_value_colour**
        | Colour of grid point values
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_grid_value_format**
        | Format of grid point values
-     - | string
+     - | str
      - | "(automatic)"
 
    * - | **contour_grid_value_marker_height**
@@ -386,12 +386,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_grid_value_marker_colour**
        | Colour of grid point markers
-     - | Colour(string)
+     - | str
      - | "red"
 
    * - | **contour_grid_value_marker_qual**
        | Quality of the grid point marker
-     - | "high", "medium", "low"
+     - | "high", "low", "medium"
      - | "low"
 
    * - | **contour_grid_value_marker_index**
@@ -401,22 +401,22 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_grid_value_position**
        | Position of the value
-     - | "right", "left", "bottom", "top"
+     - | "bottom", "left", "right", "top"
      - | "top"
 
    * - | **contour_shade_max_level_colour**
        | Highest shading band colour
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_shade_min_level_colour**
        | Lowest shading band colour
-     - | Colour(string)
+     - | str
      - | "red"
 
    * - | **contour_shade_colour_direction**
        | Direction of colour sequencing for shading
-     - | "clockwise", "anti_clockwise"
+     - | "anti_clockwise", "clockwise"
      - | "anti_clockwise"
 
    * - | **contour_shade_cell_resolution**
@@ -426,13 +426,13 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_cell_method**
        | NMethod of determining the colour of a cell
-     - | "nearest", "interpolate"
+     - | "interpolate", "nearest"
      - | "nearest"
 
    * - | **contour_shade_cell_resolution_method**
        | if adaptive, magics will switch to grid_shading when the data
          resolution is greater that the requested resolution
-     - | "classic", "adaptive"
+     - | "adaptive", "classic"
      - | "classic"
 
    * - | **contour_max_level**
@@ -491,7 +491,7 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_gradients_colour_list**
        | Colour used at the stops : the gradeint will be calculated between 2
          consecutive ones.
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_gradients_waypoint_method**
@@ -501,28 +501,28 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_gradients_technique**
        | Technique to apply to compute the gradients rgb/hcl/hsl
-     - | "rgb", "hcl", "hsl"
+     - | "hcl", "hsl", "rgb"
      - | "rgb"
 
    * - | **contour_gradients_technique_direction**
        | Technique to apply to compute the gradients clockwise/anticlockwise
-     - | "clockwise", "anti_clockwise", "shortest", "longest"
+     - | "anti_clockwise", "clockwise", "longest", "shortest"
      - | "clockwise"
 
    * - | **contour_gradients_step_list**
        | Number of steps to compute for each interval
-     - | intarray
+     - | List[int]
      - | []
 
    * - | **contour_shade_method**
        | Method used for shading
-     - | "area_fill", "solid", "dash", "dot"
+     - | "area_fill", "dash", "dot", "solid"
      - | "dot"
 
    * - | **contour_grid_shading_position**
        | Middle : the point is in the midlle of the cell, bottom_left : the
          point is in the bottom left corner
-     - | "middle", "bottom_left"
+     - | "bottom_left", "middle"
      - | "middle"
 
    * - | **contour_shade_hatch_index**
@@ -549,17 +549,17 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hi_colour**
        | Colour of local maxima text or number
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_lo_colour**
        | Colour of local minima text or number
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_hilo_format**
        | Format of HILO numbers (MAGICS Format/(AUTOMATIC))
-     - | string
+     - | str
      - | "(automatic)"
 
    * - | **contour_hilo_marker_height**
@@ -574,17 +574,17 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo_marker_colour**
        | Colour of grid point markers
-     - | Colour(string)
+     - | str
      - | "red"
 
    * - | **contour_hi_text**
        | Text to represent local maxima
-     - | string
+     - | str
      - | "H"
 
    * - | **contour_lo_text**
        | Text to represent local minima
-     - | string
+     - | str
      - | "L"
 
    * - | **contour_hilo_blanking**
@@ -594,7 +594,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
-     - | "text", "number", "both"
+     - | "both", "number", "text"
      - | "text"
 
    * - | **contour_hilo_window_size**
@@ -634,7 +634,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo_marker**
        | Plot hilo marker (ON/OFF)
-     - | True, False
+     - | bool
      - | False
 
    * - | **contour_interval**
@@ -644,12 +644,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_type**
        | Type of label (text/number/both
-     - | "text", "number", "both"
+     - | "both", "number", "text"
      - | "number"
 
    * - | **contour_label_text**
        | Text for labels
-     - | string
+     - | str
      - | ""
 
    * - | **contour_label_height**
@@ -659,7 +659,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_format**
        | Format of contour labels (MAGICS Format/(AUTOMATIC))
-     - | string
+     - | str
      - | "(automatic)"
 
    * - | **contour_label_blanking**
@@ -669,17 +669,17 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_font**
        | Name of the font
-     - | string
+     - | str
      - | "sansserif"
 
    * - | **contour_label_font_style**
        | Style of the font normal/bold/italic
-     - | "normal", "bold", "italic"
+     - | "bold", "italic", "normal"
      - | "normal"
 
    * - | **contour_label_colour**
        | Colour of contour labels
-     - | string
+     - | str
      - | "contour_line_colour"
 
    * - | **contour_label_frequency**
@@ -689,33 +689,33 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_technique**
        | Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
-     - | "polygon", "grid_shading", "cell_shading", "marker"
+     - | "cell_shading", "grid_shading", "marker", "polygon"
      - | "polygon_shading"
 
    * - | **contour_shade_colour_method**
        | Method of generating the colours of the bands in contour shading
          (list/calculate/advanced)
-     - | "calculate", "list", "gradients", "palette"
+     - | "calculate", "gradients", "list", "palette"
      - | "calculate"
 
    * - | **contour_level_list**
        | List of contour levels to be plotted
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **contour_shade_colour_list**
        | List of colours to be used in contour shading.
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_shade_colour_table**
        | Colour table to be used with marker shading technique
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_shade_height_table**
        | Height table to be used with marker shading technique
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **contour_shade_marker_table_type**
@@ -727,12 +727,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_marker_table**
        | Marker table to be used with marker shading technique
-     - | intarray
+     - | List[int]
      - | []
 
    * - | **contour_shade_marker_name_table**
        | Marker name table to be used with mareker shading technique
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_line_style**
@@ -752,7 +752,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_colour**
        | Colour of contour line
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_line_colour_rainbow_method**
@@ -762,22 +762,22 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_colour_rainbow_max_level_colour**
        | Colour to be used for the max level
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **contour_line_colour_rainbow_min_level_colour**
        | Colour to be used for the mainlevel
-     - | Colour(string)
+     - | str
      - | "red"
 
    * - | **contour_line_colour_rainbow_direction**
        | Direction of colour sequencing for colouring
-     - | "clockwise", "anti_clockwise"
+     - | "anti_clockwise", "clockwise"
      - | "anti_clockwise"
 
    * - | **contour_line_colour_rainbow_colour_list**
        | List of colours to be used in rainbow isolines
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_line_colour_rainbow_colour_list_policy**
@@ -788,7 +788,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_thickness_rainbow_list**
        | List of thickness to used when rainbow method is on
-     - | intarray
+     - | List[int]
      - | []
 
    * - | **contour_line_thickness_rainbow_list_policy**
@@ -799,7 +799,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_style_rainbow_list**
        | List of line style to used when rainbow method is on
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **contour_line_style_rainbow_list_policy**
@@ -810,7 +810,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_highlight**
        | Plot contour highlights (ON/OFF)
-     - | True, False
+     - | bool
      - | True
 
    * - | **contour_level_selection_type**
@@ -823,12 +823,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label**
        | Plot labels on contour lines
-     - | True, False
+     - | bool
      - | True
 
    * - | **contour_shade**
        | Turn shading on
-     - | True, False
+     - | bool
      - | False
 
    * - | **contour_legend_only**
@@ -840,7 +840,7 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_shade_palette_name**
        | Colour used at the stops : the gradient will be calculated between 2
          consecutive ones.
-     - | string
+     - | str
      - | ""
 
    * - | **contour_shade_palette_policy**
@@ -853,12 +853,12 @@ points. It is used to plot gridded data, such as fields.
        | For Gaussian fields, plot normal (regular) values or reduced grid
          values. (NORMAL/REDUCED/akima). If akima, the akima grid
          values will be plotted
-     - | "normal", "reduced", "akima"
+     - | "akima", "normal", "reduced"
      - | "normal"
 
    * - | **contour_grid_value_plot_type**
        | (VALUE/MARKER/BOTH)
-     - | "value", "marker", "both"
+     - | "both", "marker", "value"
      - | "value"
 
 
@@ -921,33 +921,33 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_level_list**
        | List of shading band levels to be plotted
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **symbol_advanced_table_colour_method**
        | Method of generating the colours of the bands in polygon shading
-     - | ColourTechnique(string)
+     - | str
      - | "calculate"
 
    * - | **symbol_advanced_table_max_level_colour**
        | Highest shading band colour
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **symbol_advanced_table_min_level_colour**
        | Lowest shading band colour
-     - | Colour(string)
+     - | str
      - | "red"
 
    * - | **symbol_advanced_table_colour_direction**
        | Direction of colour sequencing for plotting (CLOCKWISE/
          ANTI_CLOCKWISE)
-     - | "clockwise", "anti-clockwise"
+     - | "anti-clockwise", "clockwise"
      - | "anti_clockwise"
 
    * - | **symbol_advanced_table_colour_list**
        | List of colours to be used in symbol plotting
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_advanced_table_colour_list_policy**
@@ -958,12 +958,12 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_marker_list**
        | List of markers to be used in symbol plotting
-     - | intarray
+     - | List[int]
      - | []
 
    * - | **symbol_advanced_table_marker_name_list**
        | List of markers to be used in symbol plotting symbol
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_advanced_table_marker_list_policy**
@@ -974,7 +974,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_height_method**
        | Method of generating the height
-     - | HeightTechnique(string)
+     - | str
      - | "list"
 
    * - | **symbol_advanced_table_height_max_value**
@@ -989,7 +989,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_height_list**
        | List of heights to be used
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **symbol_advanced_table_height_list_policy**
@@ -1000,7 +1000,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_text_list**
        | Text to display
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_advanced_table_text_list_policy**
@@ -1011,7 +1011,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_text_font**
        | Font to use for text plotting.
-     - | string
+     - | str
      - | "sansserif"
 
    * - | **symbol_advanced_table_text_font_size**
@@ -1021,12 +1021,12 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_text_font_style**
        | Font Style
-     - | string
+     - | str
      - | "normal"
 
    * - | **symbol_advanced_table_text_font_colour**
        | Symbol Colour
-     - | Colour(string)
+     - | str
      - | "automatic"
 
    * - | **symbol_advanced_table_text_display_type**
@@ -1034,12 +1034,12 @@ symbols. It is used to plot point data, such as observations.
          of the symbol, right : attached it to the right of the
          symbol, top : attached it to the top of the symbol, bottom:
          attached it to the bottom of the symbol,
-     - | "centre", "none", "right", "left", "top", "bottom"
+     - | "bottom", "centre", "left", "none", "right", "top"
      - | "none"
 
    * - | **symbol_advanced_table_outlayer_method**
        | outlayer method
-     - | NoOutLayerTechnique(string)
+     - | bool
      - | "none"
 
    * - | **symbol_advanced_table_outlayer_min_value**
@@ -1054,12 +1054,12 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **legend_user_text**
        | if set, the text to be shown for the symbol group in the legend
-     - | string
+     - | str
      - | ""
 
    * - | **symbol_colour**
        | Colour of symbols.
-     - | Colour(string)
+     - | str
      - | "blue"
 
    * - | **symbol_height**
@@ -1070,7 +1070,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_marker_mode**
        | Method to select a marker : by name, by index, by image : in that
          case, Magics will use an external image as marker.
-     - | string
+     - | str
      - | "index"
 
    * - | **symbol_marker_index**
@@ -1081,12 +1081,12 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_marker_name**
        | Symbol name. Choose in a list of available markers dot/circle/ww_00
          ...
-     - | string
+     - | str
      - | "dot"
 
    * - | **symbol_image_path**
        | Path to the image
-     - | string
+     - | str
      - | ""
 
    * - | **symbol_image_format**
@@ -1107,17 +1107,17 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_text_list**
        | list of texts to plot
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_text_position**
        | Position of the text
-     - | "right", "left", "bottom", "top"
+     - | "bottom", "left", "right", "top"
      - | "right"
 
    * - | **symbol_text_font**
        | Font to use
-     - | string
+     - | str
      - | "sansserif"
 
    * - | **symbol_text_font_size**
@@ -1127,12 +1127,12 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_text_font_style**
        | Font style
-     - | string
+     - | str
      - | "normal"
 
    * - | **symbol_text_font_colour**
        | Font colour.
-     - | Colour(string)
+     - | str
      - | "automatic"
 
    * - | **symbol_legend_height**
@@ -1162,7 +1162,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_type**
        | Defines the type of symbol plotting required
-     - | "number", "text", "marker", "wind"
+     - | "marker", "number", "text", "wind"
      - | "number"
 
    * - | **symbol_table_mode**
@@ -1170,12 +1170,12 @@ symbols. It is used to plot point data, such as observations.
          mode (off). Note: The simple table mode is not recommended
          anymore, try to use the advanced mode instead, this should
          give you easier control of the plot.
-     - | SymbolMode(string)
+     - | str
      - | "OFF"
 
    * - | **symbol_format**
        | Format used to plot values (MAGICS Format/(AUTOMATIC))
-     - | string
+     - | str
      - | "(automatic)"
 
    * - | **symbol_text_blanking**
@@ -1190,7 +1190,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_outline_colour**
        | Colour of the outline
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **symbol_outline_thickness**
@@ -1215,7 +1215,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_connect_line_colour**
        | Colour of the connecting line
-     - | Colour(string)
+     - | str
      - | "black"
 
    * - | **symbol_connect_line_thickness**
@@ -1237,37 +1237,37 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_min_table**
        | Table of minimum values. The table is used in conjunction with
          SYMBOL_MAX_TABLE
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **symbol_max_table**
        | Table of maximum values. The table is used in conjunction with
          SYMBOL_MIN_TABLE
-     - | floatarray
+     - | List[float]
      - | []
 
    * - | **symbol_marker_table**
        | Table of MARKER indices. The table is to be used in conjunction with
          SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
-     - | intarray
+     - | List[int]
      - | []
 
    * - | **symbol_name_table**
        | Table of Symbol names. The table is to be used in conjunction with
          SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_colour_table**
        | Table of SYMBOL colours. T The table is to be used in conjunction with
          SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
-     - | stringarray
+     - | List[str]
      - | []
 
    * - | **symbol_height_table**
        | Table of SYMBOL heights. The table is to be used in conjunction with
          SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
-     - | floatarray
+     - | List[float]
      - | []
 
 

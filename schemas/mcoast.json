@@ -23,6 +23,12 @@
             "type": "string"
         },
         "map_coastline_resolution": {
+            "enum": [
+                "automatic",
+                "high",
+                "low",
+                "medium"
+            ],
             "type": "string"
         },
         "map_coastline_sea_shade": {
@@ -32,6 +38,13 @@
             "type": "string"
         },
         "map_coastline_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "map_coastline_thickness": {
@@ -50,6 +63,13 @@
             "type": "string"
         },
         "map_grid_frame_line_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "map_grid_frame_thickness": {
@@ -62,6 +82,13 @@
             "type": "number"
         },
         "map_grid_line_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "map_grid_longitude_increment": {
@@ -113,19 +140,26 @@
             "type": "boolean"
         },
         "map_rivers": {
-            "type": "string"
+            "type": "boolean"
         },
         "map_rivers_colour": {
             "type": "string"
         },
         "map_rivers_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "map_rivers_thickness": {
             "type": "integer"
         },
         "map_user_layer": {
-            "type": "string"
+            "type": "boolean"
         },
         "map_user_layer_colour": {
             "type": "string"
@@ -137,6 +171,13 @@
             "type": "string"
         },
         "map_user_layer_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "map_user_layer_thickness": {

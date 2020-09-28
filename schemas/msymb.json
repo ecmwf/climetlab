@@ -8,6 +8,10 @@
             "type": "string"
         },
         "symbol_advanced_table_colour_direction": {
+            "enum": [
+                "anti-clockwise",
+                "clockwise"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_colour_list": {
@@ -17,6 +21,10 @@
             "type": "array"
         },
         "symbol_advanced_table_colour_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_colour_method": {
@@ -29,6 +37,10 @@
             "type": "array"
         },
         "symbol_advanced_table_height_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_height_max_value": {
@@ -62,6 +74,10 @@
             "type": "array"
         },
         "symbol_advanced_table_marker_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_marker_name_list": {
@@ -95,9 +111,22 @@
             "type": "number"
         },
         "symbol_advanced_table_selection_type": {
+            "enum": [
+                "count",
+                "interval",
+                "list"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_text_display_type": {
+            "enum": [
+                "bottom",
+                "centre",
+                "left",
+                "none",
+                "right",
+                "top"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_text_font": {
@@ -119,6 +148,10 @@
             "type": "array"
         },
         "symbol_advanced_table_text_list_policy": {
+            "enum": [
+                "cycle",
+                "lastone"
+            ],
             "type": "string"
         },
         "symbol_colour": {
@@ -140,6 +173,13 @@
             "type": "string"
         },
         "symbol_connect_line_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "symbol_connect_line_thickness": {
@@ -158,6 +198,11 @@
             "type": "array"
         },
         "symbol_image_format": {
+            "enum": [
+                "automatic",
+                "png",
+                "svg"
+            ],
             "type": "string"
         },
         "symbol_image_height": {
@@ -179,6 +224,11 @@
             "type": "integer"
         },
         "symbol_marker_mode": {
+            "enum": [
+                "image",
+                "index",
+                "name"
+            ],
             "type": "string"
         },
         "symbol_marker_name": {
@@ -215,6 +265,13 @@
             "type": "string"
         },
         "symbol_outline_style": {
+            "enum": [
+                "chain_dash",
+                "chain_dot",
+                "dash",
+                "dot",
+                "solid"
+            ],
             "type": "string"
         },
         "symbol_outline_thickness": {
@@ -254,9 +311,21 @@
             "type": "array"
         },
         "symbol_text_position": {
+            "enum": [
+                "bottom",
+                "left",
+                "right",
+                "top"
+            ],
             "type": "string"
         },
         "symbol_type": {
+            "enum": [
+                "marker",
+                "number",
+                "text",
+                "wind"
+            ],
             "type": "string"
         }
     },
