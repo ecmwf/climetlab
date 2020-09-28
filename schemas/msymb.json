@@ -21,11 +21,7 @@
             "type": "array"
         },
         "symbol_advanced_table_colour_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "symbol_advanced_table_colour_method": {
             "type": "string"
@@ -37,11 +33,7 @@
             "type": "array"
         },
         "symbol_advanced_table_height_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "symbol_advanced_table_height_max_value": {
             "type": "number"
@@ -74,11 +66,7 @@
             "type": "array"
         },
         "symbol_advanced_table_marker_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "symbol_advanced_table_marker_name_list": {
             "items": {
@@ -87,13 +75,13 @@
             "type": "array"
         },
         "symbol_advanced_table_max_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_advanced_table_max_value": {
             "type": "number"
         },
         "symbol_advanced_table_min_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_advanced_table_min_value": {
             "type": "number"
@@ -133,7 +121,7 @@
             "type": "string"
         },
         "symbol_advanced_table_text_font_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_advanced_table_text_font_size": {
             "type": "number"
@@ -148,14 +136,10 @@
             "type": "array"
         },
         "symbol_advanced_table_text_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "symbol_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_colour_table": {
             "items": {
@@ -170,17 +154,10 @@
             "type": "boolean"
         },
         "symbol_connect_line_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_connect_line_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "symbol_connect_line_thickness": {
             "type": "integer"
@@ -262,17 +239,10 @@
             "type": "boolean"
         },
         "symbol_outline_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_outline_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "symbol_outline_thickness": {
             "type": "integer"
@@ -296,7 +266,7 @@
             "type": "string"
         },
         "symbol_text_font_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "symbol_text_font_size": {
             "type": "number"

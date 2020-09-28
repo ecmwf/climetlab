@@ -10,10 +10,18 @@
       "minProperties": 1,
       "maxProperties": 1,
       "properties": {
-        "mcoast": { "$ref": "mcoast.json" },
-        "mmap": { "$ref": "mmap.json" },
-        "mcont": { "$ref": "mcont.json" },
-        "msymb": { "$ref": "msymb.json" }
+        "mcoast": {
+          "$ref": "mcoast.json"
+        },
+        "mmap": {
+          "$ref": "mmap.json"
+        },
+        "mcont": {
+          "$ref": "mcont.json"
+        },
+        "msymb": {
+          "$ref": "msymb.json"
+        }
       },
       "additionalProperties": false
     }

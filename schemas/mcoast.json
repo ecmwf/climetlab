@@ -11,7 +11,7 @@
             "type": "boolean"
         },
         "map_coastline_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_coastline_general_style": {
             "type": "string"
@@ -20,7 +20,7 @@
             "type": "boolean"
         },
         "map_coastline_land_shade_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_coastline_resolution": {
             "enum": [
@@ -35,17 +35,10 @@
             "type": "boolean"
         },
         "map_coastline_sea_shade_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_coastline_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "map_coastline_thickness": {
             "type": "integer"
@@ -54,48 +47,34 @@
             "type": "boolean"
         },
         "map_grid_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_grid_frame": {
             "type": "boolean"
         },
         "map_grid_frame_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_grid_frame_line_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "map_grid_frame_thickness": {
             "type": "integer"
         },
         "map_grid_latitude_increment": {
-            "type": "number"
+            "$ref": "definitions.json#/definitions/latitude"
         },
         "map_grid_latitude_reference": {
-            "type": "number"
+            "$ref": "definitions.json#/definitions/latitude"
         },
         "map_grid_line_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "map_grid_longitude_increment": {
-            "type": "number"
+            "$ref": "definitions.json#/definitions/longitude"
         },
         "map_grid_longitude_reference": {
-            "type": "number"
+            "$ref": "definitions.json#/definitions/longitude"
         },
         "map_grid_thickness": {
             "type": "integer"
@@ -110,7 +89,7 @@
             "type": "boolean"
         },
         "map_label_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_label_font": {
             "type": "string"
@@ -122,13 +101,13 @@
             "type": "number"
         },
         "map_label_latitude_frequency": {
-            "type": "integer"
+            "$ref": "definitions.json#/definitions/latitude"
         },
         "map_label_left": {
             "type": "boolean"
         },
         "map_label_longitude_frequency": {
-            "type": "integer"
+            "$ref": "definitions.json#/definitions/longitude"
         },
         "map_label_right": {
             "type": "boolean"
@@ -143,17 +122,10 @@
             "type": "boolean"
         },
         "map_rivers_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_rivers_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "map_rivers_thickness": {
             "type": "integer"
@@ -162,7 +134,7 @@
             "type": "boolean"
         },
         "map_user_layer_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "map_user_layer_name": {
             "type": "string"
@@ -171,14 +143,7 @@
             "type": "string"
         },
         "map_user_layer_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "map_user_layer_thickness": {
             "type": "integer"

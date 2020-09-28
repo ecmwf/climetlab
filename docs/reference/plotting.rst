@@ -233,13 +233,13 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_label_latitude_frequency**
        | Evry Nth latitue grid is labelled
-     - | int
-     - | 1
+     - | float
+     - | 1.0
 
    * - | **map_label_longitude_frequency**
        | Evry Nth longitude grid is labelled
-     - | int
-     - | 1
+     - | float
+     - | 1.0
 
    * - | **map_label_left**
        | Enable the labels on the left of the map

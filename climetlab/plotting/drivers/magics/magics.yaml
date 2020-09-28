@@ -144,12 +144,12 @@ mcoast:
 - default: true
   name: map_label_blanking
   type: Bool
-- default: 1
+- default: 1.0
   name: map_label_latitude_frequency
-  type: Int
-- default: 1
+  type: Float
+- default: 1.0
   name: map_label_longitude_frequency
-  type: Int
+  type: Float
 - default: true
   name: map_label_left
   type: Bool

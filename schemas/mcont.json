@@ -62,7 +62,7 @@
             "type": "string"
         },
         "contour_grid_value_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_grid_value_format": {
             "type": "string"
@@ -77,7 +77,7 @@
             "type": "integer"
         },
         "contour_grid_value_marker_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_grid_value_marker_height": {
             "type": "number"
@@ -123,7 +123,7 @@
             "type": "string"
         },
         "contour_hi_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_hi_max_value": {
             "type": "number"
@@ -153,7 +153,7 @@
             "type": "boolean"
         },
         "contour_hilo_marker_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_hilo_marker_height": {
             "type": "number"
@@ -251,7 +251,7 @@
             "type": "integer"
         },
         "contour_line_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_line_colour_rainbow": {
             "type": "boolean"
@@ -263,11 +263,7 @@
             "type": "array"
         },
         "contour_line_colour_rainbow_colour_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "contour_line_colour_rainbow_direction": {
             "enum": [
@@ -277,7 +273,7 @@
             "type": "string"
         },
         "contour_line_colour_rainbow_max_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_line_colour_rainbow_method": {
             "enum": [
@@ -287,17 +283,10 @@
             "type": "string"
         },
         "contour_line_colour_rainbow_min_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_line_style": {
-            "enum": [
-                "chain_dash",
-                "chain_dot",
-                "dash",
-                "dot",
-                "solid"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/line-style"
         },
         "contour_line_style_rainbow_list": {
             "items": {
@@ -306,11 +295,7 @@
             "type": "array"
         },
         "contour_line_style_rainbow_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "contour_line_thickness": {
             "type": "integer"
@@ -322,14 +307,10 @@
             "type": "array"
         },
         "contour_line_thickness_rainbow_list_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "contour_lo_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_lo_max_value": {
             "type": "number"
@@ -450,7 +431,7 @@
             "type": "number"
         },
         "contour_shade_max_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_shade_max_level_density": {
             "type": "number"
@@ -468,7 +449,7 @@
             "type": "number"
         },
         "contour_shade_min_level_colour": {
-            "type": "string"
+            "$ref": "definitions.json#/definitions/colour"
         },
         "contour_shade_min_level_density": {
             "type": "number"
@@ -477,11 +458,7 @@
             "type": "string"
         },
         "contour_shade_palette_policy": {
-            "enum": [
-                "cycle",
-                "lastone"
-            ],
-            "type": "string"
+            "$ref": "definitions.json#/definitions/list-policy"
         },
         "contour_shade_technique": {
             "enum": [

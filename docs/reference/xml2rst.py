@@ -11,6 +11,8 @@
 import argparse
 import os
 import sys
+import re
+
 from collections import OrderedDict, defaultdict
 from textwrap import fill
 
@@ -30,6 +32,14 @@ T = {
     "-INT_MAX": -2147483647,
     "INT_MAX": 2147483647,
 }
+
+
+def _snake_case(m):
+    return m.group(1).lower() + "-" + m.group(2).lower()
+
+
+def to_snake_case(k):
+    return re.sub(r"(.+?)([A-Z])", _snake_case, k, 0).lower()
 
 
 def tidy(x):
@@ -133,6 +143,14 @@ class Float:
         self.python_default = self.yaml_default
 
 
+class Latitude(Float):
+    json_schema = {"$ref": "definitions.json#/definitions/latitude"}
+
+
+class Longitude(Float):
+    json_schema = {"$ref": "definitions.json#/definitions/longitude"}
+
+
 class IntList:
 
     values = None
@@ -190,7 +208,7 @@ class Colour:
     values = None
     python_type = "str"
     yaml_type = "Colour"
-    json_schema = {"type": "string"}
+    json_schema = {"$ref": "definitions.json#/definitions/colour"}
 
     def __init__(self, param):
         self._param = param
@@ -220,8 +238,16 @@ class Enum:
     def json_schema(self):
         if False in self.values or True in self.values:
             if "style_name" in self.values:
-                return  {"type": ["string", "boolean"]}
+                return {"type": ["string", "boolean"]}
             return {"type": ["string", "boolean"], "enum": self.values}
+
+        if self._param._defs.get("to") in ENUMS:
+            return {
+                "$ref": "definitions.json#/definitions/{}".format(
+                    to_snake_case(self._param._defs.get("to"))
+                )
+            }
+
         return {"type": "string", "enum": self.values}
 
 
@@ -266,8 +292,13 @@ class Param:
             t = t[0].upper() + t[1:]
 
             if "values" in self._defs or t in ENUMS:
-                # print(t, self.name, file=sys.stderr)
                 t = "Enum"
+
+            if "latitude" in self.name:
+                t = "Latitude"
+
+            if "longitude" in self.name:
+                t = "Longitude"
 
             if t not in globals():
                 print(t, self.name, file=sys.stderr)
@@ -544,6 +575,20 @@ def produce_yaml():
 
 
 def produce_schemas(directory):
+
+    path = os.path.join(directory, "definitions.json")
+    with open(path) as f:
+        definitions = json.load(f)["definitions"]
+
+    for k, v in ENUMS.items():
+        name = to_snake_case(k)
+        definitions[name] = {"type": "string", "enum": sorted(v["values"].keys())}
+
+    with open(path + ".tmp", "w") as f:
+        print(
+            json.dumps({"definitions": definitions}, sort_keys=True, indent=4), file=f
+        )
+    os.rename(path + ".tmp", path)
 
     for action, klasses in sorted(ACTIONS.items()):
 
