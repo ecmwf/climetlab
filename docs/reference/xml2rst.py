@@ -33,7 +33,6 @@ T = {
     "INT_MAX": 2147483647,
 }
 
-
 def _snake_case(m):
     return m.group(1).lower() + "-" + m.group(2).lower()
 
