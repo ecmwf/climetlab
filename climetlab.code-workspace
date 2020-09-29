@@ -54,6 +54,8 @@
 		"code-runner.fileDirectoryAsCwd": true,
 		"code-runner.showRunCommandInEditorContextMenu": false,
 		"liveServer.settings.multiRootWorkspaceName": "climetlab",
-
+		"yaml.schemas": {
+			"./schemas/magics.json": ["*.yaml"]
+		},
 	}
 }

@@ -29,7 +29,7 @@ magics:
     contour_shade: on
     contour_shade_colour_list:
     - silver
-    - transparent
+    - none
     - darkslateblue
     - mediumblue
     - dodgerblue

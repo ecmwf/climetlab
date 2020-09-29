@@ -24,6 +24,44 @@
         }
       },
       "additionalProperties": false
+    },
+    "plot_map": {
+      "type": "object",
+      "properties": {
+        "margin": {
+          "type": "number"
+        }
+      }
+    },
+    "gallery": {
+      "type": "object",
+      "properties": {
+        "sample": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "dataset": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": ["name"]
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": ["name"]
+            }
+          }
+        }
+      }
     }
   }
 }
