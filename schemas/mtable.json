@@ -1,0 +1,74 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "table_binning": {
+            "type": "boolean"
+        },
+        "table_combine_delimiters": {
+            "type": "boolean"
+        },
+        "table_data_row_offset": {
+            "type": "integer"
+        },
+        "table_delimiter": {
+            "type": "string"
+        },
+        "table_filename": {
+            "type": "string"
+        },
+        "table_header_row": {
+            "type": "integer"
+        },
+        "table_latitude_variable": {
+            "$ref": "definitions.json#/definitions/latitude"
+        },
+        "table_longitude_variable": {
+            "$ref": "definitions.json#/definitions/longitude"
+        },
+        "table_meta_data_rows": {
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
+        "table_value_variable": {
+            "type": "string"
+        },
+        "table_variable_identifier_type": {
+            "type": "string"
+        },
+        "table_x_component_variable": {
+            "type": "string"
+        },
+        "table_x_missing_value": {
+            "type": "number"
+        },
+        "table_x_type": {
+            "enum": [
+                "date",
+                "number"
+            ],
+            "type": "string"
+        },
+        "table_x_variable": {
+            "type": "string"
+        },
+        "table_y_component_variable": {
+            "type": "string"
+        },
+        "table_y_missing_value": {
+            "type": "number"
+        },
+        "table_y_type": {
+            "enum": [
+                "date",
+                "number"
+            ],
+            "type": "string"
+        },
+        "table_y_variable": {
+            "type": "string"
+        }
+    },
+    "type": "object"
+}

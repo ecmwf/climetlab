@@ -1,20 +1,207 @@
 {
     "additionalProperties": false,
     "properties": {
-        "subpage_lower_left_latitude": {
+        "subpage_align_horizontal": {
+            "enum": [
+                "left",
+                "right"
+            ],
+            "type": "string"
+        },
+        "subpage_align_vertical": {
+            "enum": [
+                "bottom",
+                "top"
+            ],
+            "type": "string"
+        },
+        "subpage_background_colour": {
+            "$ref": "definitions.json#/definitions/colour"
+        },
+        "subpage_clipping": {
+            "type": "boolean"
+        },
+        "subpage_frame": {
+            "type": "boolean"
+        },
+        "subpage_frame_colour": {
+            "$ref": "definitions.json#/definitions/colour"
+        },
+        "subpage_frame_line_style": {
+            "$ref": "definitions.json#/definitions/line-style"
+        },
+        "subpage_frame_thickness": {
+            "type": "integer"
+        },
+        "subpage_horizontal_axis_height": {
             "type": "number"
+        },
+        "subpage_lower_left_latitude": {
+            "$ref": "definitions.json#/definitions/latitude"
         },
         "subpage_lower_left_longitude": {
+            "$ref": "definitions.json#/definitions/longitude"
+        },
+        "subpage_map_area_definition": {
+            "enum": [
+                "corners",
+                "full"
+            ],
+            "type": "string"
+        },
+        "subpage_map_area_definition_polar": {
+            "enum": [
+                "centre",
+                "corners",
+                "full"
+            ],
+            "type": "string"
+        },
+        "subpage_map_area_name": {
+            "type": "string"
+        },
+        "subpage_map_centre_latitude": {
+            "$ref": "definitions.json#/definitions/latitude"
+        },
+        "subpage_map_centre_longitude": {
+            "$ref": "definitions.json#/definitions/longitude"
+        },
+        "subpage_map_geos_sweep": {
             "type": "number"
+        },
+        "subpage_map_hemisphere": {
+            "type": "string"
+        },
+        "subpage_map_library_area": {
+            "type": "boolean"
+        },
+        "subpage_map_projection": {
+            "enum": [
+                "EPSG:32661",
+                "EPSG:32761",
+                "EPSG:3857",
+                "EPSG:4326",
+                "EPSG:900913",
+                "automatic",
+                "bonne",
+                "cartesian",
+                "collignon",
+                "cylindrical",
+                "efas",
+                "emagram",
+                "geos",
+                "goes_east",
+                "goode",
+                "google",
+                "lambert",
+                "lambert_north_atlantic",
+                "mercator",
+                "meteosat",
+                "meteosat_57E",
+                "mollweide",
+                "polar_north",
+                "polar_south",
+                "polar_stereographic",
+                "robinson",
+                "skewt",
+                "taylor",
+                "tephigram",
+                "tpers"
+            ],
+            "type": "string"
+        },
+        "subpage_map_projection_azimuth": {
+            "type": "number"
+        },
+        "subpage_map_projection_height": {
+            "type": "number"
+        },
+        "subpage_map_projection_tilt": {
+            "type": "number"
+        },
+        "subpage_map_projection_view_latitude": {
+            "$ref": "definitions.json#/definitions/latitude"
+        },
+        "subpage_map_projection_view_longitude": {
+            "$ref": "definitions.json#/definitions/longitude"
+        },
+        "subpage_map_scale": {
+            "type": "number"
+        },
+        "subpage_map_true_scale_north": {
+            "type": "number"
+        },
+        "subpage_map_true_scale_south": {
+            "type": "number"
+        },
+        "subpage_map_vertical_longitude": {
+            "$ref": "definitions.json#/definitions/longitude"
         },
         "subpage_upper_right_latitude": {
-            "type": "number"
+            "$ref": "definitions.json#/definitions/latitude"
         },
         "subpage_upper_right_longitude": {
+            "$ref": "definitions.json#/definitions/longitude"
+        },
+        "subpage_vertical_axis_width": {
             "type": "number"
         },
-        "subpage_map_projection" : {
+        "subpage_x_automatic": {
+            "type": "boolean"
+        },
+        "subpage_x_axis_type": {
+            "enum": [
+                "date",
+                "geoline",
+                "logarithmic",
+                "regular"
+            ],
             "type": "string"
+        },
+        "subpage_x_length": {
+            "type": "number"
+        },
+        "subpage_x_position": {
+            "type": "number"
+        },
+        "subpage_y_automatic": {
+            "type": "boolean"
+        },
+        "subpage_y_axis_type": {
+            "enum": [
+                "date",
+                "geoline",
+                "logarithmic",
+                "regular"
+            ],
+            "type": "string"
+        },
+        "subpage_y_length": {
+            "type": "number"
+        },
+        "subpage_y_position": {
+            "type": "number"
+        },
+        "taylor_standard_deviation_max": {
+            "type": "number"
+        },
+        "taylor_standard_deviation_min": {
+            "type": "number"
+        },
+        "thermo_annotation_width": {
+            "type": "number"
+        },
+        "x_max": {
+            "type": "number"
+        },
+        "x_min": {
+            "type": "number"
+        },
+        "y_max": {
+            "type": "number"
+        },
+        "y_min": {
+            "type": "number"
         }
     },
     "type": "object"

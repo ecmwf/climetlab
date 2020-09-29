@@ -15,9 +15,9 @@ mcoast:
   type: string
   values:
   - automatic
-  - high
   - low
   - medium
+  - high
 - name: map_coastline_land_shade
   type: Bool
 - default: green
@@ -32,19 +32,17 @@ mcoast:
   type: Bool
 - name: map_cities
   type: Bool
-- name: map_preview
-  type: Bool
 - name: map_rivers
   type: Bool
 - default: solid
   name: map_rivers_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: blue
   name: map_rivers_colour
   type: Colour
@@ -61,11 +59,11 @@ mcoast:
   name: map_user_layer_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: blue
   name: map_user_layer_colour
   type: Colour
@@ -79,11 +77,11 @@ mcoast:
   name: map_coastline_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: 1
   name: map_coastline_thickness
   type: Int
@@ -101,11 +99,11 @@ mcoast:
   name: map_grid_line_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: 1
   name: map_grid_thickness
   type: Int
@@ -118,11 +116,11 @@ mcoast:
   name: map_grid_frame_line_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: 1
   name: map_grid_frame_thickness
   type: Int
@@ -172,10 +170,10 @@ mcont:
   name: contour_method
   type: string
   values:
-  - akima474
-  - akima760
   - automatic
   - linear
+  - akima760
+  - akima474
 - default: -2147483647.0
   name: contour_interpolation_floor
   type: Float
@@ -185,15 +183,20 @@ mcont:
 - name: contour_automatic_setting
   type: string
   values:
-  - ecmwf
   - false
   - style_name
+  - ecmwf
 - name: contour_style_name
   type: String
 - name: contour_metadata_only
   type: Bool
 - name: contour_hilo
-  type: Bool
+  type: string
+  values:
+  - 1
+  - 0
+  - hi
+  - lo
 - name: contour_grid_value_plot
   type: Bool
 - default: 1.5
@@ -240,8 +243,8 @@ mcont:
   type: string
   values:
   - high
-  - low
   - medium
+  - low
 - default: 3
   name: contour_grid_value_marker_index
   type: Int
@@ -249,9 +252,9 @@ mcont:
   name: contour_grid_value_position
   type: string
   values:
-  - bottom
-  - left
   - right
+  - left
+  - bottom
   - top
 - default: blue
   name: contour_shade_max_level_colour
@@ -263,8 +266,8 @@ mcont:
   name: contour_shade_colour_direction
   type: string
   values:
-  - anti_clockwise
   - clockwise
+  - anti_clockwise
 - default: 10.0
   name: contour_shade_cell_resolution
   type: Float
@@ -272,14 +275,14 @@ mcont:
   name: contour_shade_cell_method
   type: string
   values:
-  - interpolate
   - nearest
+  - interpolate
 - default: classic
   name: contour_shade_cell_resolution_method
   type: string
   values:
-  - adaptive
   - classic
+  - adaptive
 - default: 1.0e+21
   name: contour_max_level
   type: Float
@@ -323,17 +326,17 @@ mcont:
   name: contour_gradients_technique
   type: string
   values:
+  - rgb
   - hcl
   - hsl
-  - rgb
 - default: clockwise
   name: contour_gradients_technique_direction
   type: string
   values:
-  - anti_clockwise
   - clockwise
-  - longest
+  - anti_clockwise
   - shortest
+  - longest
 - name: contour_gradients_step_list
   type: IntList
 - default: dot
@@ -341,15 +344,15 @@ mcont:
   type: string
   values:
   - area_fill
-  - dash
-  - dot
   - solid
+  - dot
+  - hatch
 - default: middle
   name: contour_grid_shading_position
   type: string
   values:
-  - bottom_left
   - middle
+  - bottom_left
 - name: contour_shade_hatch_index
   type: Int
 - default: 1
@@ -415,9 +418,9 @@ mcont:
   name: contour_hilo_type
   type: string
   values:
-  - both
-  - number
   - text
+  - number
+  - both
 - default: 3
   name: contour_hilo_window_size
   type: Int
@@ -458,13 +461,33 @@ mcont:
 - default: 8.0
   name: contour_interval
   type: Float
+- default: solid
+  name: contour_highlight_style
+  type: string
+  values:
+  - solid
+  - dash
+  - dot
+  - chain_dash
+  - chain_dot
+- name: contour_reference_level
+  type: Float
+- default: blue
+  name: contour_highlight_colour
+  type: Colour
+- default: 3
+  name: contour_highlight_thickness
+  type: Int
+- default: 4
+  name: contour_highlight_frequency
+  type: Int
 - default: number
   name: contour_label_type
   type: string
   values:
-  - both
-  - number
   - text
+  - number
+  - both
 - name: contour_label_text
   type: String
 - default: 0.3
@@ -483,9 +506,9 @@ mcont:
   name: contour_label_font_style
   type: string
   values:
+  - normal
   - bold
   - italic
-  - normal
 - default: contour_line_colour
   name: contour_label_colour
   type: String
@@ -496,10 +519,11 @@ mcont:
   name: contour_shade_technique
   type: string
   values:
-  - cell_shading
+  - polygon_shading
   - grid_shading
+  - cell_shading
+  - dump_shading
   - marker
-  - polygon
 - default: 1.0e+21
   name: contour_shade_max_level
   type: Float
@@ -511,8 +535,8 @@ mcont:
   type: string
   values:
   - calculate
-  - gradients
   - list
+  - gradients
   - palette
 - default: 1.0e+21
   name: contour_max_level
@@ -534,9 +558,9 @@ mcont:
   name: contour_hilo_type
   type: string
   values:
-  - both
-  - number
   - text
+  - number
+  - both
 - default: 3
   name: contour_hilo_window_size
   type: Int
@@ -611,11 +635,11 @@ mcont:
   name: contour_line_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - default: 1
   name: contour_line_thickness
   type: Int
@@ -640,32 +664,32 @@ mcont:
   name: contour_line_colour_rainbow_direction
   type: string
   values:
-  - anti_clockwise
   - clockwise
+  - anti_clockwise
 - name: contour_line_colour_rainbow_colour_list
   type: StringList
 - default: lastone
   name: contour_line_colour_rainbow_colour_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - name: contour_line_thickness_rainbow_list
   type: IntList
 - default: lastone
   name: contour_line_thickness_rainbow_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - name: contour_line_style_rainbow_list
   type: StringList
 - default: lastone
   name: contour_line_style_rainbow_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - default: true
   name: contour_highlight
   type: Bool
@@ -675,7 +699,7 @@ mcont:
   values:
   - count
   - interval
-  - list
+  - level_list
 - default: true
   name: contour_label
   type: Bool
@@ -689,30 +713,1279 @@ mcont:
   name: contour_shade_palette_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - default: normal
   name: contour_grid_value_type
   type: string
   values:
-  - akima
   - normal
   - reduced
+  - akima
 - default: value
   name: contour_grid_value_plot_type
   type: string
   values:
-  - both
-  - marker
   - value
+  - marker
+  - both
 mmap:
-- name: subpage_upper_right_longitude
+- default: regular
+  name: subpage_x_axis_type
+  type: string
+  values:
+  - regular
+  - date
+  - geoline
+  - logarithmic
+- default: regular
+  name: subpage_y_axis_type
+  type: string
+  values:
+  - regular
+  - date
+  - geoline
+  - logarithmic
+- name: x_min
   type: Float
-- name: subpage_upper_right_latitude
+- name: subpage_x_automatic
+  type: Bool
+- name: subpage_y_automatic
+  type: Bool
+- default: 100.0
+  name: x_max
   type: Float
-- name: subpage_lower_left_latitude
+- name: y_min
   type: Float
-- name: subpage_lower_left_longitude
+- default: 100.0
+  name: y_max
+  type: Float
+- default: 25.0
+  name: thermo_annotation_width
+  type: Float
+- default: -1.0
+  name: subpage_x_position
+  type: Float
+- default: -1.0
+  name: subpage_y_position
+  type: Float
+- default: -1.0
+  name: subpage_x_length
+  type: Float
+- default: -1.0
+  name: subpage_y_length
+  type: Float
+- name: subpage_map_library_area
+  type: Bool
+- name: subpage_map_area_name
+  type: String
+- default: cylindrical
+  name: subpage_map_projection
+  type: string
+  values:
+  - cylindrical
+  - polar_stereographic
+  - polar_north
+  - polar_south
+  - geos
+  - meteosat
+  - meteosat_57E
+  - goes_east
+  - lambert
+  - EPSG:3857
+  - EPSG:900913
+  - EPSG:32661
+  - EPSG:32761
+  - EPSG:4326
+  - goode
+  - collignon
+  - mollweide
+  - robinson
+  - bonne
+  - google
+  - efas
+  - tpers
+  - automatic
+  - lambert_north_atlantic
+  - mercator
+  - cartesian
+  - taylor
+  - tephigram
+  - skewt
+  - emagram
+- name: subpage_clipping
+  type: Bool
+- default: none
+  name: subpage_background_colour
+  type: Colour
+- default: true
+  name: subpage_frame
+  type: Bool
+- default: charcoal
+  name: subpage_frame_colour
+  type: Colour
+- default: solid
+  name: subpage_frame_line_style
+  type: string
+  values:
+  - solid
+  - dash
+  - dot
+  - chain_dash
+  - chain_dot
+- default: 2
+  name: subpage_frame_thickness
+  type: Int
+- default: 1.0
+  name: subpage_vertical_axis_width
+  type: Float
+- default: 0.5
+  name: subpage_horizontal_axis_height
+  type: Float
+- default: left
+  name: subpage_align_horizontal
+  type: string
+  values:
+  - left
+  - right
+- default: bottom
+  name: subpage_align_vertical
+  type: string
+  values:
+  - bottom
+  - top
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- default: corners
+  name: subpage_map_area_definition_polar
+  type: string
+  values:
+  - full
+  - corners
+  - centre
+- default: north
+  name: subpage_map_hemisphere
+  type: String
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 90.0
+  name: subpage_map_centre_latitude
+  type: Float
+- name: subpage_map_centre_longitude
+  type: Float
+- default: 50000000.0
+  name: subpage_map_scale
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- default: full
+  name: subpage_map_area_definition
+  type: string
+  values:
+  - corners
+  - full
+- default: -90.0
+  name: subpage_lower_left_latitude
+  type: Float
+- default: -180.0
+  name: subpage_lower_left_longitude
+  type: Float
+- default: 90.0
+  name: subpage_upper_right_latitude
+  type: Float
+- default: 180.0
+  name: subpage_upper_right_longitude
+  type: Float
+- name: subpage_map_vertical_longitude
+  type: Float
+- default: 6.0
+  name: subpage_map_true_scale_north
+  type: Float
+- default: -60.0
+  name: subpage_map_true_scale_south
+  type: Float
+- default: 42164000.0
+  name: subpage_map_projection_height
+  type: Float
+- name: subpage_map_projection_tilt
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_azimuth
+  type: Float
+- default: 20.0
+  name: subpage_map_projection_view_latitude
+  type: Float
+- default: -60.0
+  name: subpage_map_projection_view_longitude
+  type: Float
+- name: subpage_map_geos_sweep
+  type: Float
+- name: x_min
+  type: Float
+- name: subpage_x_automatic
+  type: Bool
+- name: subpage_y_automatic
+  type: Bool
+- default: 100.0
+  name: x_max
+  type: Float
+- name: y_min
+  type: Float
+- default: 100.0
+  name: y_max
+  type: Float
+- default: 25.0
+  name: thermo_annotation_width
+  type: Float
+- name: taylor_standard_deviation_min
+  type: Float
+- default: 1.0
+  name: taylor_standard_deviation_max
+  type: Float
+- name: x_min
+  type: Float
+- name: subpage_x_automatic
+  type: Bool
+- name: subpage_y_automatic
+  type: Bool
+- default: 100.0
+  name: x_max
+  type: Float
+- name: y_min
+  type: Float
+- default: 100.0
+  name: y_max
+  type: Float
+- default: 25.0
+  name: thermo_annotation_width
   type: Float
 msymb:
 - default: count
@@ -743,7 +2016,10 @@ msymb:
   type: FloatList
 - default: calculate
   name: symbol_advanced_table_colour_method
-  type: String
+  type: string
+  values:
+  - calculate
+  - list
 - default: blue
   name: symbol_advanced_table_max_level_colour
   type: Colour
@@ -754,16 +2030,16 @@ msymb:
   name: symbol_advanced_table_colour_direction
   type: string
   values:
-  - anti-clockwise
   - clockwise
+  - anti-clockwise
 - name: symbol_advanced_table_colour_list
   type: StringList
 - default: lastone
   name: symbol_advanced_table_colour_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - name: symbol_advanced_table_marker_list
   type: IntList
 - name: symbol_advanced_table_marker_name_list
@@ -772,11 +2048,14 @@ msymb:
   name: symbol_advanced_table_marker_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - default: list
   name: symbol_advanced_table_height_method
-  type: String
+  type: string
+  values:
+  - calculate
+  - list
 - default: 0.2
   name: symbol_advanced_table_height_max_value
   type: Float
@@ -789,16 +2068,16 @@ msymb:
   name: symbol_advanced_table_height_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - name: symbol_advanced_table_text_list
   type: StringList
 - default: cycle
   name: symbol_advanced_table_text_list_policy
   type: string
   values:
-  - cycle
   - lastone
+  - cycle
 - default: sansserif
   name: symbol_advanced_table_text_font
   type: String
@@ -815,21 +2094,18 @@ msymb:
   name: symbol_advanced_table_text_display_type
   type: string
   values:
-  - bottom
   - centre
-  - left
   - none
   - right
+  - left
   - top
+  - bottom
 - default: none
   name: symbol_advanced_table_outlayer_method
-  type: Bool
-- default: -1.0e+21
-  name: symbol_advanced_table_outlayer_min_value
-  type: Float
-- default: 1.0e+21
-  name: symbol_advanced_table_outlayer_max_value
-  type: Float
+  type: string
+  values:
+  - none
+  - simple
 - name: legend_user_text
   type: String
 - default: blue
@@ -868,9 +2144,9 @@ msymb:
   name: symbol_text_position
   type: string
   values:
-  - bottom
-  - left
   - right
+  - left
+  - bottom
   - top
 - default: sansserif
   name: symbol_text_font
@@ -901,20 +2177,24 @@ msymb:
   name: symbol_type
   type: string
   values:
-  - marker
   - number
   - text
+  - marker
   - wind
 - default: 'OFF'
   name: symbol_table_mode
-  type: String
+  type: string
+  values:
+  - 0
+  - advanced
+  - 1
 - default: index
   name: symbol_marker_mode
   type: string
   values:
-  - image
   - index
   - name
+  - image
 - default: (automatic)
   name: symbol_format
   type: String
@@ -932,11 +2212,11 @@ msymb:
   name: symbol_outline_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
+  - chain_dash
+  - chain_dot
 - name: symbol_connect_line
   type: Bool
 - default: true
@@ -952,13 +2232,11 @@ msymb:
   name: symbol_connect_line_style
   type: string
   values:
-  - chain_dash
-  - chain_dot
+  - solid
   - dash
   - dot
-  - solid
-- name: symbol_legend_only
-  type: Bool
+  - chain_dash
+  - chain_dot
 - name: symbol_min_table
   type: FloatList
 - name: symbol_max_table
@@ -971,4 +2249,65 @@ msymb:
   type: StringList
 - name: symbol_height_table
   type: FloatList
+mtable:
+- name: table_filename
+  type: String
+- default: ','
+  name: table_delimiter
+  type: String
+- name: table_combine_delimiters
+  type: Bool
+- default: 1
+  name: table_header_row
+  type: Int
+- default: 1
+  name: table_data_row_offset
+  type: Int
+- name: table_meta_data_rows
+  type: IntList
+- default: number
+  name: table_x_type
+  type: string
+  values:
+  - number
+  - date
+- default: number
+  name: table_y_type
+  type: string
+  values:
+  - number
+  - date
+- default: index
+  name: table_variable_identifier_type
+  type: String
+- default: 1
+  name: table_x_variable
+  type: String
+- default: 2
+  name: table_y_variable
+  type: String
+- default: -1
+  name: table_value_variable
+  type: String
+- default: 2.0
+  name: table_latitude_variable
+  type: Float
+- default: 1.0
+  name: table_longitude_variable
+  type: Float
+- default: -1
+  name: table_x_component_variable
+  type: String
+- default: -1
+  name: table_y_component_variable
+  type: String
+- default: -21000000.0
+  name: table_x_missing_value
+  type: Float
+- default: -21000000.0
+  name: table_y_missing_value
+  type: Float
+- default: true
+  name: table_binning
+  type: Bool
 

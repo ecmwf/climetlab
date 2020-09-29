@@ -31,7 +31,9 @@ T = {
     "no": False,
     "-INT_MAX": -2147483647,
     "INT_MAX": 2147483647,
+    "metview": False, # Visible=metview => false
 }
+
 
 def _snake_case(m):
     return m.group(1).lower() + "-" + m.group(2).lower()
@@ -196,11 +198,14 @@ class ColourList:
 
     values = None
     python_type = "List[str]"
-    json_schema = {"type": "array", "items": {"type": "string"}}
+    yaml_type = "StringList"
+    json_schema = {"type": "array", "items": {"$ref": "definitions.json#/definitions/colour"}}
 
     def __init__(self, param):
         self._param = param
-
+        assert param._defs.get("default") == "stringarray()", param._defs.get("default")
+        self.yaml_default = []
+        self.python_default = self.yaml_default
 
 class Colour:
 
@@ -229,16 +234,29 @@ class Enum:
         if "values" in param._defs:
             self.values = param._defs.get("values").split("/")
 
-        self.values = [tidy(x) for x in sorted(self.values)]
+        if self._param._defs.get("option"):
+            self.values = []
+            for o in self._param._defs.get("option"):
+                self.values.append(o["fortran"])
+
+        self.values = [tidy(x) for x in self.values]
+
         self.yaml_default = param._defs.get("default")
         self.python_default = self.yaml_default
 
     @property
     def json_schema(self):
+        def _(x):
+            if x == 0:
+                return False
+            if x == 1:
+                return True
+            return x
+
         if False in self.values or True in self.values:
             if "style_name" in self.values:
                 return {"type": ["string", "boolean"]}
-            return {"type": ["string", "boolean"], "enum": self.values}
+            return {"type": ["string", "boolean"], "enum": [_(x) for x in self.values]}
 
         if self._param._defs.get("to") in ENUMS:
             return {
@@ -247,7 +265,7 @@ class Enum:
                 )
             }
 
-        return {"type": "string", "enum": self.values}
+        return {"type": "string", "enum": sorted(self.values)}
 
 
 ################################################################
@@ -283,14 +301,17 @@ class Param:
             if t.startswith("No"):
                 t = "Bool"
 
-            # if "colour" in self.name and isinstance(self.yaml_default, list):
-            #     t = "Colourarray"
+            if "colour" in self.name and t == "stringarray":
+                t = "ColourList"
 
             t = t.replace("array", "List")
 
             t = t[0].upper() + t[1:]
 
             if "values" in self._defs or t in ENUMS:
+                t = "Enum"
+
+            if self._defs.get("option"):
                 t = "Enum"
 
             if "latitude" in self.name:
@@ -384,7 +405,7 @@ class Klass:
                 parms = [parms]
 
             for p in parms:
-                if p.get("python", True):
+                if p.get("python", True) and p.get("visible", True):
                     self._parameters.append(Param(p))
         return self._parameters
 
@@ -512,14 +533,6 @@ def produce_python():
         print("def %s(" % action)
         print("    *,")
 
-        # documentation = []
-        # print(".. %s" % [k.name for k in klasses])
-        # print()
-        # for k in klasses:
-        #     documentation.append(k.documentation)
-        # print(cleanup(" ".join(documentation)))
-        # print()
-
         seen = set()
 
         for k in sorted(klasses):
@@ -559,17 +572,6 @@ def produce_yaml():
                     d["values"] = p.yaml_values
                 m[action].append(d)
 
-    m["mmap"] = [
-        dict(name="subpage_upper_right_longitude", type="Float"),
-        dict(name="subpage_upper_right_latitude", type="Float"),
-        dict(name="subpage_lower_left_latitude", type="Float"),
-        dict(name="subpage_lower_left_longitude", type="Float"),
-    ]
-
-    # m["mcont"] = [
-    #     dict(name="contour_shade_colour_list", type="ColourList"),
-    # ]
-
     print(yaml.dump(m, default_flow_style=False))
 
 
@@ -607,13 +609,6 @@ def produce_schemas(directory):
         with open(path + ".tmp", "w") as f:
             print(json.dumps(schema, sort_keys=True, indent=4), file=f)
         os.rename(path + ".tmp", path)
-
-    # m["mmap"] = [
-    #     dict(name="subpage_upper_right_longitude", type="Float"),
-    #     dict(name="subpage_upper_right_latitude", type="Float"),
-    #     dict(name="subpage_lower_left_latitude", type="Float"),
-    #     dict(name="subpage_lower_left_longitude", type="Float"),
-    # ]
 
 
 parser = argparse.ArgumentParser()

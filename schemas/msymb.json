@@ -16,7 +16,7 @@
         },
         "symbol_advanced_table_colour_list": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -24,6 +24,10 @@
             "$ref": "definitions.json#/definitions/list-policy"
         },
         "symbol_advanced_table_colour_method": {
+            "enum": [
+                "calculate",
+                "list"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_height_list": {
@@ -39,6 +43,10 @@
             "type": "number"
         },
         "symbol_advanced_table_height_method": {
+            "enum": [
+                "calculate",
+                "list"
+            ],
             "type": "string"
         },
         "symbol_advanced_table_height_min_value": {
@@ -86,14 +94,12 @@
         "symbol_advanced_table_min_value": {
             "type": "number"
         },
-        "symbol_advanced_table_outlayer_max_value": {
-            "type": "number"
-        },
         "symbol_advanced_table_outlayer_method": {
-            "type": "boolean"
-        },
-        "symbol_advanced_table_outlayer_min_value": {
-            "type": "number"
+            "enum": [
+                "none",
+                "simple"
+            ],
+            "type": "string"
         },
         "symbol_advanced_table_reference_level": {
             "type": "number"
@@ -143,7 +149,7 @@
         },
         "symbol_colour_table": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -193,9 +199,6 @@
         },
         "symbol_legend_height": {
             "type": "number"
-        },
-        "symbol_legend_only": {
-            "type": "boolean"
         },
         "symbol_marker_index": {
             "type": "integer"
@@ -257,7 +260,15 @@
             "type": "boolean"
         },
         "symbol_table_mode": {
-            "type": "string"
+            "enum": [
+                false,
+                "advanced",
+                true
+            ],
+            "type": [
+                "string",
+                "boolean"
+            ]
         },
         "symbol_text_blanking": {
             "type": "boolean"

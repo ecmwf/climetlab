@@ -115,9 +115,6 @@
         "map_label_top": {
             "type": "boolean"
         },
-        "map_preview": {
-            "type": "boolean"
-        },
         "map_rivers": {
             "type": "boolean"
         },

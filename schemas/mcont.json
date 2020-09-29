@@ -18,7 +18,7 @@
         },
         "contour_gradients_colour_list": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -137,8 +137,29 @@
         "contour_highlight": {
             "type": "boolean"
         },
+        "contour_highlight_colour": {
+            "$ref": "definitions.json#/definitions/colour"
+        },
+        "contour_highlight_frequency": {
+            "type": "integer"
+        },
+        "contour_highlight_style": {
+            "$ref": "definitions.json#/definitions/line-style"
+        },
+        "contour_highlight_thickness": {
+            "type": "integer"
+        },
         "contour_hilo": {
-            "type": "boolean"
+            "enum": [
+                true,
+                false,
+                "hi",
+                "lo"
+            ],
+            "type": [
+                "string",
+                "boolean"
+            ]
         },
         "contour_hilo_blanking": {
             "type": "boolean"
@@ -243,7 +264,7 @@
             "enum": [
                 "count",
                 "interval",
-                "list"
+                "level_list"
             ],
             "type": "string"
         },
@@ -258,7 +279,7 @@
         },
         "contour_line_colour_rainbow_colour_list": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -371,7 +392,7 @@
         },
         "contour_shade_colour_list": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -386,7 +407,7 @@
         },
         "contour_shade_colour_table": {
             "items": {
-                "type": "string"
+                "$ref": "definitions.json#/definitions/colour"
             },
             "type": "array"
         },
@@ -439,8 +460,8 @@
         "contour_shade_method": {
             "enum": [
                 "area_fill",
-                "dash",
                 "dot",
+                "hatch",
                 "solid"
             ],
             "type": "string"
@@ -463,9 +484,10 @@
         "contour_shade_technique": {
             "enum": [
                 "cell_shading",
+                "dump_shading",
                 "grid_shading",
                 "marker",
-                "polygon"
+                "polygon_shading"
             ],
             "type": "string"
         },

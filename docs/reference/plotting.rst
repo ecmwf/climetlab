@@ -47,7 +47,7 @@ country boundaries, as well as the latitude/longitude grid lines.
          high. When set to AUTOMATIC, a resolution appropriate to the
          scale of the map is chosen in order to balance quality with
          speed.
-     - | "automatic", "high", "low", "medium"
+     - | "automatic", "low", "medium", "high"
      - | "automatic"
 
    * - | **map_coastline_land_shade**
@@ -80,12 +80,6 @@ country boundaries, as well as the latitude/longitude grid lines.
      - | bool
      - | False
 
-   * - | **map_preview**
-       | OrderedDict([('for_docs', False), ('#text', 'Add a preview : only for
-         metview')])
-     - | bool
-     - | False
-
    * - | **map_rivers**
        | Display rivers (on/off)
      - | bool
@@ -93,7 +87,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_rivers_style**
        | Line style for rivers
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **map_rivers_colour**
@@ -123,7 +117,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_user_layer_style**
        | Line style for User Layer
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **map_user_layer_colour**
@@ -143,7 +137,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_coastline_style**
        | Line style of coastlines
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **map_coastline_thickness**
@@ -173,7 +167,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_grid_line_style**
        | Line style of map grid lines
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **map_grid_thickness**
@@ -193,7 +187,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 
    * - | **map_grid_frame_line_style**
        | Line style of map grid lines
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **map_grid_frame_thickness**
@@ -268,7 +262,7 @@ country boundaries, as well as the latitude/longitude grid lines.
 mcont
 -----
 
-.. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'BothValuePlotMethod', 'CalculateColourTechnique', 'CellShading', 'CountSelectionType', 'DotPolyShadingMethod', 'DumpShading', 'GradientsColourTechnique', 'GridShading', 'HatchPolyShadingMethod', 'HiLoBoth', 'HiLoMarker', 'HiLoNumber', 'HiLoText', 'HighHiLo', 'IntervalSelectionType', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'ListColourTechnique', 'LowHiLo', 'MarkerShadingTechnique', 'MarkerValuePlotMethod', 'NoHiLo', 'NoHiLoMarker', 'NoIsoPlot', 'NoValuePlot', 'PaletteColourTechnique', 'ValuePlot']
+.. ['Contour', 'Akima474Method', 'Akima760Method', 'AutomaticContourMethod', 'BothValuePlotMethod', 'CalculateColourTechnique', 'CellShading', 'CountSelectionType', 'DotPolyShadingMethod', 'DumpShading', 'GradientsColourTechnique', 'GridShading', 'HatchPolyShadingMethod', 'HiLoBoth', 'HiLoMarker', 'HiLoNumber', 'HiLoText', 'HighHiLo', 'IntervalSelectionType', 'IsoHighlight', 'IsoLabel', 'IsoShading', 'LevelListSelectionType', 'ListColourTechnique', 'LowHiLo', 'MarkerShadingTechnique', 'MarkerValuePlotMethod', 'NoHiLo', 'NoHiLoMarker', 'NoIsoPlot', 'NoValuePlot', 'PaletteColourTechnique', 'ValuePlot']
 
 This action controls the plotting of isolines, contour bands and grid
 points. It is used to plot gridded data, such as fields.
@@ -293,7 +287,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_method**
        | Contouring method
-     - | "akima474", "akima760", "automatic", "linear"
+     - | "automatic", "linear", "akima760", "akima474"
      - | "automatic"
 
    * - | **contour_interpolation_floor**
@@ -311,7 +305,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_automatic_setting**
        | Turn the automatic setting of contouring attributes
-     - | "ecmwf", False, "style_name"
+     - | False, "style_name", "ecmwf"
      - | False
 
    * - | **contour_style_name**
@@ -326,7 +320,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo**
        | Plot local maxima/minima
-     - | bool
+     - | 1, 0, "hi", "lo"
      - | False
 
    * - | **contour_grid_value_plot**
@@ -391,7 +385,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_grid_value_marker_qual**
        | Quality of the grid point marker
-     - | "high", "low", "medium"
+     - | "high", "medium", "low"
      - | "low"
 
    * - | **contour_grid_value_marker_index**
@@ -401,7 +395,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_grid_value_position**
        | Position of the value
-     - | "bottom", "left", "right", "top"
+     - | "right", "left", "bottom", "top"
      - | "top"
 
    * - | **contour_shade_max_level_colour**
@@ -416,7 +410,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_colour_direction**
        | Direction of colour sequencing for shading
-     - | "anti_clockwise", "clockwise"
+     - | "clockwise", "anti_clockwise"
      - | "anti_clockwise"
 
    * - | **contour_shade_cell_resolution**
@@ -426,13 +420,13 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_cell_method**
        | NMethod of determining the colour of a cell
-     - | "interpolate", "nearest"
+     - | "nearest", "interpolate"
      - | "nearest"
 
    * - | **contour_shade_cell_resolution_method**
        | if adaptive, magics will switch to grid_shading when the data
          resolution is greater that the requested resolution
-     - | "adaptive", "classic"
+     - | "classic", "adaptive"
      - | "classic"
 
    * - | **contour_max_level**
@@ -501,12 +495,12 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_gradients_technique**
        | Technique to apply to compute the gradients rgb/hcl/hsl
-     - | "hcl", "hsl", "rgb"
+     - | "rgb", "hcl", "hsl"
      - | "rgb"
 
    * - | **contour_gradients_technique_direction**
        | Technique to apply to compute the gradients clockwise/anticlockwise
-     - | "anti_clockwise", "clockwise", "longest", "shortest"
+     - | "clockwise", "anti_clockwise", "shortest", "longest"
      - | "clockwise"
 
    * - | **contour_gradients_step_list**
@@ -516,13 +510,13 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_method**
        | Method used for shading
-     - | "area_fill", "dash", "dot", "solid"
+     - | "area_fill", "solid", "dot", "hatch"
      - | "dot"
 
    * - | **contour_grid_shading_position**
        | Middle : the point is in the midlle of the cell, bottom_left : the
          point is in the bottom left corner
-     - | "bottom_left", "middle"
+     - | "middle", "bottom_left"
      - | "middle"
 
    * - | **contour_shade_hatch_index**
@@ -594,7 +588,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_hilo_type**
        | Type of high/low (TEXT/NUMBER/BOTH)
-     - | "both", "number", "text"
+     - | "text", "number", "both"
      - | "text"
 
    * - | **contour_hilo_window_size**
@@ -642,9 +636,29 @@ points. It is used to plot gridded data, such as fields.
      - | float
      - | 8.0
 
+   * - | **contour_highlight_style**
+       | Style of highlighting (SOLID/ DASH/ DOT/ CHAIN_DASH/ CHAIN_DOT)
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
+     - | "solid"
+
+   * - | **contour_highlight_colour**
+       | Colour of highlight line
+     - | str
+     - | "blue"
+
+   * - | **contour_highlight_thickness**
+       | Thickness of highlight line
+     - | int
+     - | 3
+
+   * - | **contour_highlight_frequency**
+       | Frequency of highlight line
+     - | int
+     - | 4
+
    * - | **contour_label_type**
        | Type of label (text/number/both
-     - | "both", "number", "text"
+     - | "text", "number", "both"
      - | "number"
 
    * - | **contour_label_text**
@@ -674,7 +688,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_label_font_style**
        | Style of the font normal/bold/italic
-     - | "bold", "italic", "normal"
+     - | "normal", "bold", "italic"
      - | "normal"
 
    * - | **contour_label_colour**
@@ -689,13 +703,13 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_shade_technique**
        | Technique used for shading (POLYGON_SHADING/ CELL_SHADING/ MARKER)
-     - | "cell_shading", "grid_shading", "marker", "polygon"
+     - | "polygon_shading", "grid_shading", "cell_shading", "dump_shading", "marker"
      - | "polygon_shading"
 
    * - | **contour_shade_colour_method**
        | Method of generating the colours of the bands in contour shading
          (list/calculate/advanced)
-     - | "calculate", "gradients", "list", "palette"
+     - | "calculate", "list", "gradients", "palette"
      - | "calculate"
 
    * - | **contour_level_list**
@@ -737,7 +751,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_style**
        | Style of contour line
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **contour_line_thickness**
@@ -772,7 +786,7 @@ points. It is used to plot gridded data, such as fields.
 
    * - | **contour_line_colour_rainbow_direction**
        | Direction of colour sequencing for colouring
-     - | "anti_clockwise", "clockwise"
+     - | "clockwise", "anti_clockwise"
      - | "anti_clockwise"
 
    * - | **contour_line_colour_rainbow_colour_list**
@@ -783,7 +797,7 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_line_colour_rainbow_colour_list_policy**
        | What to do if the list of colours is smaller that the list of contour:
          lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **contour_line_thickness_rainbow_list**
@@ -794,7 +808,7 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_line_thickness_rainbow_list_policy**
        | What to do if the list of thickness is smaller that the list of
          contour: lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **contour_line_style_rainbow_list**
@@ -805,7 +819,7 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_line_style_rainbow_list_policy**
        | What to do if the list of line styles is smaller that the list of
          contour: lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **contour_highlight**
@@ -818,7 +832,7 @@ points. It is used to plot gridded data, such as fields.
          min/max and the requested number of isolines. interval:
          regularly spaced intervals using the reference_level as base.
          level_list: uses the given list of levels.
-     - | "count", "interval", "list"
+     - | "count", "interval", "level_list"
      - | "count"
 
    * - | **contour_label**
@@ -846,20 +860,284 @@ points. It is used to plot gridded data, such as fields.
    * - | **contour_shade_palette_policy**
        | What to do if the list of colours is smaller that the list of levels:
          lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **contour_grid_value_type**
        | For Gaussian fields, plot normal (regular) values or reduced grid
          values. (NORMAL/REDUCED/akima). If akima, the akima grid
          values will be plotted
-     - | "akima", "normal", "reduced"
+     - | "normal", "reduced", "akima"
      - | "normal"
 
    * - | **contour_grid_value_plot_type**
        | (VALUE/MARKER/BOTH)
-     - | "both", "marker", "value"
+     - | "value", "marker", "both"
      - | "value"
+
+
+
+.. _magics-mmap:
+
+mmap
+----
+
+.. ['CartesianTransformation', 'Emagram', 'FortranViewNode', 'MercatorProjection', 'PolarStereographicProjection', 'Proj4Automatic', 'Proj4Bonne', 'Proj4Collignon', 'Proj4EPSG32661', 'Proj4EPSG32761', 'Proj4EPSG3857', 'Proj4EPSG4326', 'Proj4EPSG900913', 'Proj4Efas', 'Proj4Geos', 'Proj4Geose', 'Proj4Geosw', 'Proj4Goode', 'Proj4Google', 'Proj4Lambert', 'Proj4LambertNorthAtlantic', 'Proj4Mercator', 'Proj4Meteosat0', 'Proj4Meteosat145', 'Proj4Meteosat57', 'Proj4Mollweide', 'Proj4PolarNorth', 'Proj4PolarSouth', 'Proj4Robinson', 'Proj4TPers', 'Skewt', 'TaylorProjection', 'Tephigram']
+
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 70 20 10
+
+   * - | Name
+     - | Type
+     - | Default
+
+   * - | **subpage_x_axis_type**
+       | 
+     - | "regular", "date", "geoline", "logarithmic"
+     - | "regular"
+
+   * - | **subpage_y_axis_type**
+       | 
+     - | "regular", "date", "geoline", "logarithmic"
+     - | "regular"
+
+   * - | **x_min**
+       | 
+     - | float
+     - | 0.0
+
+   * - | **subpage_x_automatic**
+       | 
+     - | bool
+     - | False
+
+   * - | **subpage_y_automatic**
+       | 
+     - | bool
+     - | False
+
+   * - | **x_max**
+       | 
+     - | float
+     - | 100.0
+
+   * - | **y_min**
+       | 
+     - | float
+     - | 0.0
+
+   * - | **y_max**
+       | 
+     - | float
+     - | 100.0
+
+   * - | **thermo_annotation_width**
+       | Percentage of the width used to display the annotation on the right
+         side .
+     - | float
+     - | 25.0
+
+   * - | **subpage_x_position**
+       | Y-Coordinate of lower left hand corner of subpage in cm. -1 is the
+         default: 7.5% of the parent page
+     - | float
+     - | -1.0
+
+   * - | **subpage_y_position**
+       | X-Coordinate of lower left hand corner of subpage in cm. -1 is the
+         default: 5% of the parent page
+     - | float
+     - | -1.0
+
+   * - | **subpage_x_length**
+       | Length of subpage in horizontal direction in cm. -1 is the default:
+         85% of the parent page
+     - | float
+     - | -1.0
+
+   * - | **subpage_y_length**
+       | Length of subpage in vertical direction in cm. -1 is the default: 85%
+         of the parent page
+     - | float
+     - | -1.0
+
+   * - | **subpage_map_library_area**
+       | if On, pickup a predefined geographical area
+     - | bool
+     - | False
+
+   * - | **subpage_map_area_name**
+       | Name of the predefined area
+     - | str
+     - | False
+
+   * - | **subpage_map_projection**
+       | Projection to set in the drawing area
+     - | "cylindrical", "polar_stereographic", "polar_north", "polar_south", "geos", "meteosat", "meteosat_57E", "goes_east", "lambert", "EPSG:3857", "EPSG:900913", "EPSG:32661", "EPSG:32761", "EPSG:4326", "goode", "collignon", "mollweide", "robinson", "bonne", "google", "efas", "tpers", "automatic", "lambert_north_atlantic", "mercator", "cartesian", "taylor", "tephigram", "skewt", "emagram"
+     - | "cylindrical"
+
+   * - | **subpage_clipping**
+       | Apply a clipping to the subpage to avoid any symbol, flag or arrow to
+         go outside of the plotting area
+     - | bool
+     - | False
+
+   * - | **subpage_background_colour**
+       | Colour of the subpage background
+     - | str
+     - | "none"
+
+   * - | **subpage_frame**
+       | Plot frame around subpage (ON/OFF)
+     - | bool
+     - | True
+
+   * - | **subpage_frame_colour**
+       | Colour of subpage frame (Full choice of colours)
+     - | str
+     - | "charcoal"
+
+   * - | **subpage_frame_line_style**
+       | Style of subpage frame (SOLID/DASH/DOT/CHAIN_DASH/CHAIN_DOT)
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
+     - | "solid"
+
+   * - | **subpage_frame_thickness**
+       | Thickness of subpage frame
+     - | int
+     - | 2
+
+   * - | **subpage_vertical_axis_width**
+       | width of the vertical axis in cm
+     - | float
+     - | 1.0
+
+   * - | **subpage_horizontal_axis_height**
+       | height of the horizontal axis in cm
+     - | float
+     - | 0.5
+
+   * - | **subpage_align_horizontal**
+       | Used in automatic layout to setup the horizontal alignment of the
+         drawing area in the subpage
+     - | "left", "right"
+     - | "left"
+
+   * - | **subpage_align_vertical**
+       | Used in automatic layout to setup the vertical alignment of the
+         drawing area in the subpage
+     - | "bottom", "top"
+     - | "bottom"
+
+   * - | **subpage_lower_left_latitude**
+       | Latitude of lower left corner of map.
+     - | float
+     - | -90.0
+
+   * - | **subpage_lower_left_longitude**
+       | Longitude of lower left corner of map
+     - | float
+     - | -180.0
+
+   * - | **subpage_upper_right_latitude**
+       | Latitude of upper right corner of map
+     - | float
+     - | 90.0
+
+   * - | **subpage_upper_right_longitude**
+       | Longitude of upper right corner of map
+     - | float
+     - | 180.0
+
+   * - | **subpage_map_area_definition_polar**
+       | Method of defining a polar stereographic map
+     - | "full", "corners", "centre"
+     - | "corners"
+
+   * - | **subpage_map_hemisphere**
+       | Hemisphere required for polar stereographic map(NORTH/SOUTH)
+     - | str
+     - | "north"
+
+   * - | **subpage_map_vertical_longitude**
+       | Vertical longitude of polar stereographic or Aitoff map
+     - | float
+     - | 0.0
+
+   * - | **subpage_map_centre_latitude**
+       | Latitude of centre of polar stereographic map defined by 'CENTRE' or
+         centre latitude of Lambert/satellite subarea projections
+     - | float
+     - | 90.0
+
+   * - | **subpage_map_centre_longitude**
+       | Longitude of centre of polar stereographic map defined by 'CENTRE' or
+         centre longitude of Lambert/satellite subarea projections
+     - | float
+     - | 0.0
+
+   * - | **subpage_map_scale**
+       | Scale of polar stereographic or Aitoff map
+     - | float
+     - | 50000000.0
+
+   * - | **subpage_map_area_definition**
+       | method used to define the geographical area.
+     - | "corners", "full"
+     - | "full"
+
+   * - | **subpage_map_true_scale_north**
+       | Developement in progress
+     - | float
+     - | 6.0
+
+   * - | **subpage_map_true_scale_south**
+       | Developement in progress
+     - | float
+     - | -60.0
+
+   * - | **subpage_map_projection_height**
+       | height (in meters) above the surface
+     - | float
+     - | 42164000.0
+
+   * - | **subpage_map_projection_tilt**
+       | angle (in degrees) away from nadir
+     - | float
+     - | 0.0
+
+   * - | **subpage_map_projection_azimuth**
+       | bearing (in degrees) from due north
+     - | float
+     - | 20.0
+
+   * - | **subpage_map_projection_view_latitude**
+       | latitude (in degrees) of the view position
+     - | float
+     - | 20.0
+
+   * - | **subpage_map_projection_view_longitude**
+       | longitude (in degrees) of the view position
+     - | float
+     - | -60.0
+
+   * - | **subpage_map_geos_sweep**
+       | the sweep angle axis of the viewing instrument
+     - | float
+     - | 0.0
+
+   * - | **taylor_standard_deviation_min**
+       | Min of the Standard deviation axis.
+     - | float
+     - | 0.0
+
+   * - | **taylor_standard_deviation_max**
+       | Max of the Standard deviation axis.
+     - | float
+     - | 1.0
 
 
 
@@ -926,7 +1204,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_advanced_table_colour_method**
        | Method of generating the colours of the bands in polygon shading
-     - | str
+     - | "calculate", "list"
      - | "calculate"
 
    * - | **symbol_advanced_table_max_level_colour**
@@ -942,7 +1220,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_colour_direction**
        | Direction of colour sequencing for plotting (CLOCKWISE/
          ANTI_CLOCKWISE)
-     - | "anti-clockwise", "clockwise"
+     - | "clockwise", "anti-clockwise"
      - | "anti_clockwise"
 
    * - | **symbol_advanced_table_colour_list**
@@ -953,7 +1231,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_colour_list_policy**
        | What to do if the list of colours is smaller than the list of
          intervals: lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **symbol_advanced_table_marker_list**
@@ -969,12 +1247,12 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_marker_list_policy**
        | What to do if the list of markers is smaller than the list of
          intervals: lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **symbol_advanced_table_height_method**
        | Method of generating the height
-     - | str
+     - | "calculate", "list"
      - | "list"
 
    * - | **symbol_advanced_table_height_max_value**
@@ -995,7 +1273,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_height_list_policy**
        | What to do if the list of heights is smaller than the list of
          intervals: lastone/cycle
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "lastone"
 
    * - | **symbol_advanced_table_text_list**
@@ -1006,7 +1284,7 @@ symbols. It is used to plot point data, such as observations.
    * - | **symbol_advanced_table_text_list_policy**
        | What to do if the list of text is smaller that the list of intervals
          lastone: reuse the last one, cycle: return to the fisrt one
-     - | "cycle", "lastone"
+     - | "lastone", "cycle"
      - | "cycle"
 
    * - | **symbol_advanced_table_text_font**
@@ -1034,23 +1312,13 @@ symbols. It is used to plot point data, such as observations.
          of the symbol, right : attached it to the right of the
          symbol, top : attached it to the top of the symbol, bottom:
          attached it to the bottom of the symbol,
-     - | "bottom", "centre", "left", "none", "right", "top"
+     - | "centre", "none", "right", "left", "top", "bottom"
      - | "none"
 
    * - | **symbol_advanced_table_outlayer_method**
        | outlayer method
-     - | bool
+     - | "none", "simple"
      - | "none"
-
-   * - | **symbol_advanced_table_outlayer_min_value**
-       | outlayer min value
-     - | float
-     - | -1e+21
-
-   * - | **symbol_advanced_table_outlayer_max_value**
-       | outlayer max value
-     - | float
-     - | 1e+21
 
    * - | **legend_user_text**
        | if set, the text to be shown for the symbol group in the legend
@@ -1112,7 +1380,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_text_position**
        | Position of the text
-     - | "bottom", "left", "right", "top"
+     - | "right", "left", "bottom", "top"
      - | "right"
 
    * - | **symbol_text_font**
@@ -1162,7 +1430,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_type**
        | Defines the type of symbol plotting required
-     - | "marker", "number", "text", "wind"
+     - | "number", "text", "marker", "wind"
      - | "number"
 
    * - | **symbol_table_mode**
@@ -1170,7 +1438,7 @@ symbols. It is used to plot point data, such as observations.
          mode (off). Note: The simple table mode is not recommended
          anymore, try to use the advanced mode instead, this should
          give you easier control of the plot.
-     - | str
+     - | 0, "advanced", 1
      - | "OFF"
 
    * - | **symbol_format**
@@ -1200,7 +1468,7 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_outline_style**
        | Line Style of outline
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
 
    * - | **symbol_connect_line**
@@ -1225,14 +1493,8 @@ symbols. It is used to plot point data, such as observations.
 
    * - | **symbol_connect_line_style**
        | Line Style of connecting line
-     - | "chain_dash", "chain_dot", "dash", "dot", "solid"
+     - | "solid", "dash", "dot", "chain_dash", "chain_dot"
      - | "solid"
-
-   * - | **symbol_legend_only**
-       | Inform the contour object do generate only the legend and not the plot
-         .. [Web sdpecific]
-     - | bool
-     - | False
 
    * - | **symbol_min_table**
        | Table of minimum values. The table is used in conjunction with
@@ -1269,5 +1531,120 @@ symbols. It is used to plot point data, such as observations.
          SYMBOL_MIN_TABLE and SYMBOL_MAX_TABLE
      - | List[float]
      - | []
+
+
+
+.. _magics-mtable:
+
+mtable
+------
+
+.. ['TableDecoder']
+
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 70 20 10
+
+   * - | Name
+     - | Type
+     - | Default
+
+   * - | **table_filename**
+       | Path to the table data
+     - | str
+     - | ""
+
+   * - | **table_delimiter**
+       | Used delimiter
+     - | str
+     - | ","
+
+   * - | **table_combine_delimiters**
+       | Consecutive delimiters will be considered as one
+     - | bool
+     - | False
+
+   * - | **table_header_row**
+       | Which row (first is 1) is the header line on?
+     - | int
+     - | 1
+
+   * - | **table_data_row_offset**
+       | How many rows after the header row does the data start? 1 if no header
+         row.
+     - | int
+     - | 1
+
+   * - | **table_meta_data_rows**
+       | List of row indexes containing meta-data of the form P1=V1 P2=V2.
+     - | List[int]
+     - | []
+
+   * - | **table_x_type**
+       | Type used for X variable_index: number or date
+     - | "number", "date"
+     - | "number"
+
+   * - | **table_y_type**
+       | Type used for Y variable_index: number or date
+     - | "number", "date"
+     - | "number"
+
+   * - | **table_variable_identifier_type**
+       | are we refering to the columns by names or index (index/name)
+     - | str
+     - | "index"
+
+   * - | **table_x_variable**
+       | X variable_index or name
+     - | str
+     - | 1
+
+   * - | **table_y_variable**
+       | Y variable_index or name
+     - | str
+     - | 2
+
+   * - | **table_value_variable**
+       | variable_index or name
+     - | str
+     - | -1
+
+   * - | **table_latitude_variable**
+       | Latitudes index or name
+     - | float
+     - | 2.0
+
+   * - | **table_longitude_variable**
+       | longitudes index or name
+     - | float
+     - | 1.0
+
+   * - | **table_x_component_variable**
+       | u components index or name for vectors
+     - | str
+     - | -1
+
+   * - | **table_y_component_variable**
+       | v components index or name for vectors
+     - | str
+     - | -1
+
+   * - | **table_x_missing_value**
+       | mssing value for x
+     - | float
+     - | -21000000.0
+
+   * - | **table_y_missing_value**
+       | missing value for x
+     - | float
+     - | -21000000.0
+
+   * - | **table_binning**
+       | Binning information
+     - | bool
+     - | True
 
 
