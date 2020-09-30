@@ -31,7 +31,7 @@ T = {
     "no": False,
     "-INT_MAX": -2147483647,
     "INT_MAX": 2147483647,
-    "metview": False, # Visible=metview => false
+    "metview": False,  # Visible=metview => false
 }
 
 
@@ -199,13 +199,17 @@ class ColourList:
     values = None
     python_type = "List[str]"
     yaml_type = "StringList"
-    json_schema = {"type": "array", "items": {"$ref": "definitions.json#/definitions/colour"}}
+    json_schema = {
+        "type": "array",
+        "items": {"$ref": "definitions.json#/definitions/colour"},
+    }
 
     def __init__(self, param):
         self._param = param
         assert param._defs.get("default") == "stringarray()", param._defs.get("default")
         self.yaml_default = []
         self.python_default = self.yaml_default
+
 
 class Colour:
 
