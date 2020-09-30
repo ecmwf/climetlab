@@ -13,6 +13,7 @@ import os
 from typing import Callable
 
 import yaml
+import tempfile
 
 from climetlab.utils.html import css
 
@@ -22,7 +23,7 @@ DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
 SETTINGS_AND_HELP = {
     "cache-directory": (
-        "/var/tmp/climetlab-%s" % (getpass.getuser(),),
+        os.path.join(tempfile.gettempdir(), "climetlab-%s" % (getpass.getuser(),)),
         """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
         See :ref:`caching` for more information.""",
     ),
