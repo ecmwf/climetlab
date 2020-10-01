@@ -34,8 +34,10 @@ if lib is None:
             break
 
 dll = ctypes.CDLL(lib)
-libc = ctypes.CDLL(ctypes.util.find_library("c"))
-
+try:
+    libc = ctypes.CDLL(ctypes.util.find_library("c"))
+except Exception:
+    libc = ctypes.cdll.msvcrt
 
 class FILE(ctypes.Structure):
     pass

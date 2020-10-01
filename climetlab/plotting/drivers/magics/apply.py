@@ -8,10 +8,8 @@
 #
 
 import logging
-import os
 from collections import defaultdict
 
-import yaml
 
 from climetlab.core.data import get_data_entry
 

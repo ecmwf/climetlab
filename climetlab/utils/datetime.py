@@ -20,7 +20,7 @@ from dateutil.parser import parse
 def parse_date(date):
     try:
         return datetime.datetime.fromisoformat(date)
-    except:
+    except Exception:
         return parse(date)
 
 

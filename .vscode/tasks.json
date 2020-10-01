@@ -8,12 +8,8 @@
             "type": "shell",
             "command": "pytest",
             "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "group": "build"
         },
-
         {
             "label": "black",
             "type": "shell",
@@ -24,11 +20,20 @@
                 "isDefault": true
             }
         },
-
         {
             "label": "isort",
             "type": "shell",
             "command": "isort -y",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "flake8",
+            "type": "shell",
+            "command": " flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
