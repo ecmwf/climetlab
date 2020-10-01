@@ -39,6 +39,7 @@ try:
 except Exception:
     libc = ctypes.cdll.msvcrt
 
+
 class FILE(ctypes.Structure):
     pass
 
