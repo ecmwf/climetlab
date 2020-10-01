@@ -10,27 +10,60 @@
 import datetime
 import logging
 
+import eccodes
+
 from . import Reader
 
 LOG = logging.getLogger(__name__)
 
-try:
-    from climetlab.grib_bindings import GribFile
+# return eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
 
-    class GReader(GribFile):
-        pass
 
-    LOG.info("Using eccodes C bindings to decode GRIB data")
+class CodesHandle:
+    def __init__(self, handle, path, offset):
+        self.handle = handle
+        self.path = path
+        self.offset = offset
 
-except AttributeError:  # eccodes not installed
-    import pyeccodes
+    def __del__(self):
+        eccodes.codes_release(self.handle)
 
-    class GReader(pyeccodes.Reader):
-        def at_offset(self, offset):
-            self.seek(offset)
-            return next(self)
+    def get(self, name):
+        return eccodes.codes_get(self.handle, name)
+        # try:
+        #     if name == "values":
+        #         return grib_values(self.handle)
+        #     return eccodes.codes_get(self.handle, name)
+        # except GribError as e:
+        #     if e.err == -10:  # Key not found
+        #         return None
+        #     raise
 
-    LOG.info("Using pyeccodes to decode GRIB data")
+
+class CodesReader:
+    def __init__(self, path):
+        self.path = path
+        self.file = open(self.path, "rb")
+
+    def __del__(self):
+        try:
+            self.file.close()
+        except Exception:
+            pass
+
+    def at_offset(self, offset):
+        self.file.seek(offset, 0)
+        return self.__next__()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        offset = self.file.tell()
+        handle = eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
+        if not handle:
+            raise StopIteration()
+        return CodesHandle(handle, self.path, offset)
 
 
 class GribField:
@@ -98,7 +131,7 @@ class GribField:
 class GRIBIterator:
     def __init__(self, path):
         self.path = path
-        self.reader = GReader(path)
+        self.reader = CodesReader(path)
 
     def __repr__(self):
         return "GRIBIterator(%s)" % (self.path,)
@@ -128,7 +161,7 @@ class GRIBReader(Reader):
 
     def __getitem__(self, n):
         if self._reader is None:
-            self._reader = GReader(self.path)
+            self._reader = CodesReader(self.path)
         return GribField(self._reader.at_offset(self._items()[n]), self.path)
 
     def __len__(self):

@@ -10,7 +10,6 @@
 import logging
 from collections import defaultdict
 
-
 from climetlab.core.data import get_data_entry
 
 from . import magics_keys_to_actions

@@ -10,10 +10,10 @@
 import getpass
 import logging
 import os
+import tempfile
 from typing import Callable
 
 import yaml
-import tempfile
 
 from climetlab.utils.html import css
 

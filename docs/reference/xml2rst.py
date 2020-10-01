@@ -9,16 +9,15 @@
 #
 
 import argparse
+import json
 import os
-import sys
 import re
-
+import sys
 from collections import OrderedDict, defaultdict
 from textwrap import fill
 
 import xmltodict
 import yaml
-import json
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
