@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import climetlab as cml
-from climetlab.core.bbox import BoundingBox
+from climetlab import load_source, plot_map
 
-bbox = BoundingBox(north=90, west=0, east=360, south=-90)
 
-cml.plot_map(bounding_box=bbox, projection="polar-north", path="x.png")
+s = load_source("file", "docs/examples/test.grib")
+plot_map(s[0])
+plot_map(s[1])
+# plot_map(s)
