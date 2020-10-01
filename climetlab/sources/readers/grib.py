@@ -29,15 +29,12 @@ class CodesHandle:
         eccodes.codes_release(self.handle)
 
     def get(self, name):
-        return eccodes.codes_get(self.handle, name)
-        # try:
-        #     if name == "values":
-        #         return grib_values(self.handle)
-        #     return eccodes.codes_get(self.handle, name)
-        # except GribError as e:
-        #     if e.err == -10:  # Key not found
-        #         return None
-        #     raise
+        try:
+            if name == "values":
+                return eccodes.codes_get_values(self.handle)
+            return eccodes.codes_get(self.handle, name)
+        except eccodes.KeyValueNotFoundError:
+            return None
 
 
 class CodesReader:
