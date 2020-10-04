@@ -20,6 +20,7 @@ def plot():
     bbox = BoundingBox(north=90, west=0, east=360, south=-90)
     cml.plot_map(bounding_box=bbox, projection="polar-north")
 
+
 def test_exception():
     with pytest.raises(MagicsError):
         plot()
