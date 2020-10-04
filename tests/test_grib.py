@@ -9,11 +9,5 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_source, plot_map
 
 
-def test_grib():
-    s = load_source("file", "docs/examples/test.grib")
-    plot_map(s[0])
-    plot_map(s[1])
-    # plot_map(s)

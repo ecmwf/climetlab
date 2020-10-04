@@ -16,9 +16,14 @@ from climetlab.core.bbox import BoundingBox
 from Magics.Magics import MagicsError
 
 
-def test_settings():
-
+def plot():
     bbox = BoundingBox(north=90, west=0, east=360, south=-90)
+    cml.plot_map(bounding_box=bbox, projection="polar-north")
 
+def test_exception():
     with pytest.raises(MagicsError):
-        cml.plot_map(bounding_box=bbox, projection="polar-north")
+        plot()
+
+
+if __name__ == "__main__":
+    plot()
