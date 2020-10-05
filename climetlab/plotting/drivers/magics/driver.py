@@ -338,7 +338,7 @@ class Driver:
 
         args = [page] + self.macro()
 
-        if int(os.environ("CLIMETLAB_DEBUG", "0")):
+        if int(os.environ.get("CLIMETLAB_DEBUG", "0")):
             print(args)
 
         try:
