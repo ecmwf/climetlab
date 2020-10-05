@@ -338,7 +338,8 @@ class Driver:
 
         args = [page] + self.macro()
 
-        # print(args)
+        if int(os.environ("CLIMETLAB_DEBUG", "0")):
+            print(args)
 
         try:
             plot(*args)

@@ -61,6 +61,8 @@ jobs:
         run: |
           python setup.py develop
           pytest
+        env:
+          CLIMETLAB_DEBUG=1
 
       - name: Documentation
         if: false
