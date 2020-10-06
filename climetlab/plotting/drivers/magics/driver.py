@@ -9,6 +9,7 @@
 
 import logging
 import os
+import yaml
 
 from climetlab.core.bbox import BoundingBox
 from climetlab.core.caching import temp_file
@@ -78,6 +79,10 @@ class Driver:
         :return: Temporary file name.
         :rtype: str
         """
+
+        if self._options("dump_yaml", False):
+            return temp_file(extension).path
+
         self._tmp.append(temp_file(extension))
         return self._tmp[-1].path
 
@@ -334,12 +339,15 @@ class Driver:
         self._options("update", False)
         self._options("update_foreground", False)
 
-        self._options.check_unused()
-
         args = [page] + self.macro()
 
-        if int(os.environ.get("CLIMETLAB_DEBUG", "0")):
+        if self._options("dump_python", False):
             print(args)
+
+        if self._options("dump_yaml", False):
+            print(yaml.dump(dict(plot=[a.to_yaml() for a in args]), default_flow_style=False))
+
+        self._options.check_unused()
 
         try:
             plot(*args)

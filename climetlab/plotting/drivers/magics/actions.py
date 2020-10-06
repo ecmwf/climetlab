@@ -40,6 +40,9 @@ class Action:
         x.append("\n    )")
         return "".join(x)
 
+    def to_yaml(self):
+        return {self.action: self.kwargs}
+
     @property
     def action(self):
         return self.__class__.__name__
