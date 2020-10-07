@@ -2289,12 +2289,12 @@ mtable:
 - default: -1
   name: table_value_variable
   type: String
-- default: 2.0
+- default: 2
   name: table_latitude_variable
-  type: Float
-- default: 1.0
+  type: String
+- default: 1
   name: table_longitude_variable
-  type: Float
+  type: String
 - default: -1
   name: table_x_component_variable
   type: String

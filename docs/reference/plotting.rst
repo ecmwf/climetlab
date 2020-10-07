@@ -1614,13 +1614,13 @@ mtable
 
    * - | **table_latitude_variable**
        | Latitudes index or name
-     - | float
-     - | 2.0
+     - | str
+     - | 2
 
    * - | **table_longitude_variable**
        | longitudes index or name
-     - | float
-     - | 1.0
+     - | str
+     - | 1
 
    * - | **table_x_component_variable**
        | u components index or name for vectors

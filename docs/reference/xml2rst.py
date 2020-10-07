@@ -317,10 +317,10 @@ class Param:
             if self._defs.get("option"):
                 t = "Enum"
 
-            if "latitude" in self.name:
+            if "latitude" in self.name and t != "String":
                 t = "Latitude"
 
-            if "longitude" in self.name:
+            if "longitude" in self.name and t != "String":
                 t = "Longitude"
 
             if t not in globals():
