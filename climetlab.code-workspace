@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../magics"
-		},
-		{
-			"path": "../magics-python-b8raoult"
 		}
 	],
 	"settings": {
