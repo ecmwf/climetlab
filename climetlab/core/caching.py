@@ -27,7 +27,7 @@ def connection():
     if _connection is None:
         cache_dir = SETTINGS.get("cache-directory")
         if not os.path.exists(cache_dir):
-            os.mkdir(cache_dir)
+            os.makedirs(cache_dir, exist_ok=True)
         cache_db = os.path.join(cache_dir, "cache.db")
         _connection = sqlite3.connect(cache_db)
         # So we can use rows as dictionaries
