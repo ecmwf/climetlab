@@ -197,7 +197,7 @@ class ColourList:
 
     values = None
     python_type = "List[str]"
-    yaml_type = "StringList"
+    yaml_type = "ColourList"
     json_schema = {
         "type": "array",
         "items": {"$ref": "definitions.json#/definitions/colour"},

@@ -313,7 +313,7 @@ mcont:
   name: contour_shade_min_level_density
   type: Float
 - name: contour_gradients_colour_list
-  type: StringList
+  type: ColourList
 - default: both
   name: contour_gradients_waypoint_method
   type: string
@@ -553,7 +553,7 @@ mcont:
 - name: contour_level_list
   type: FloatList
 - name: contour_shade_colour_list
-  type: StringList
+  type: ColourList
 - default: text
   name: contour_hilo_type
   type: string
@@ -585,7 +585,7 @@ mcont:
 - name: contour_hilo_marker
   type: Bool
 - name: contour_shade_colour_table
-  type: StringList
+  type: ColourList
 - name: contour_shade_height_table
   type: FloatList
 - default: index
@@ -667,7 +667,7 @@ mcont:
   - clockwise
   - anti_clockwise
 - name: contour_line_colour_rainbow_colour_list
-  type: StringList
+  type: ColourList
 - default: lastone
   name: contour_line_colour_rainbow_colour_list_policy
   type: string
@@ -2033,7 +2033,7 @@ msymb:
   - clockwise
   - anti-clockwise
 - name: symbol_advanced_table_colour_list
-  type: StringList
+  type: ColourList
 - default: lastone
   name: symbol_advanced_table_colour_list_policy
   type: string
@@ -2246,7 +2246,7 @@ msymb:
 - name: symbol_name_table
   type: StringList
 - name: symbol_colour_table
-  type: StringList
+  type: ColourList
 - name: symbol_height_table
   type: FloatList
 mtable:

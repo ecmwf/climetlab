@@ -84,7 +84,7 @@ class mmap(Action):  # noqa: N801
 
 
 class FieldAction(Action):
-    default_style = mcont(contour_automatic_setting="ecmwf", legend=False)
+    default_style = mcont(contour_automatic_setting="climetlab", legend=False)
 
 
 class mgrib(FieldAction):  # noqa: N801

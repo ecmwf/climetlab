@@ -24,7 +24,7 @@ from .sources import load as load_source
 
 # import logging
 
-__version__ = "0.0.98"
+__version__ = "0.0.99"
 
 
 # if ipython_active:
