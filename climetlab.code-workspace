@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../magics"
-		},
-		{
-			"path": "../magics-python-b8raoult"
 		}
 	],
 	"settings": {
@@ -60,5 +54,7 @@
 		"yaml.schemas": {
 			"./schemas/magics.json": ["*.yaml"]
 		},
+		"python.dataScience.jupyterServerURI": "local",
+		"python.pythonPath": "/usr/local/bin/python3",
 	}
 }
