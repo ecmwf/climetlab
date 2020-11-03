@@ -68,6 +68,13 @@ class GribField:
         self.handle = handle
         self.path = path
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is not None:
+            raise exc_type(exc_val)  # raise on non-empty traceback
+
     @property
     def values(self):
         return self.handle.get("values")
