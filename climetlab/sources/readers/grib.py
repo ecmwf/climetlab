@@ -72,8 +72,8 @@ class GribField:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_tb is not None:
-            raise exc_type(exc_val)  # raise on non-empty traceback
+        # Place to suppress exceptions (don't reraise the passed-in exception, it is the caller's responsibility)
+        pass
 
     @property
     def values(self):
