@@ -16,6 +16,9 @@ def test_grib():
     for s in load_source("file", "docs/examples/test.grib"):
         plot_map(s)
 
+        # test.grib fields endStep is 0, so datetime == valid_datetime
+        assert s.datetime() == s.valid_datetime()
+
 
 if __name__ == "__main__":
     test_grib()
