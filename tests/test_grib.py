@@ -19,6 +19,9 @@ def test_grib():
         # test.grib fields endStep is 0, so datetime == valid_datetime
         assert s.datetime() == s.valid_datetime()
 
+        # test shape
+        assert s.shape == (11, 19)
+
 
 if __name__ == "__main__":
     test_grib()

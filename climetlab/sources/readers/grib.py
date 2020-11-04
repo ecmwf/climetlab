@@ -72,6 +72,14 @@ class GribField:
     def values(self):
         return self.handle.get("values")
 
+    @property
+    def offset(self):
+        return int(self.handle.get("offset"))
+
+    @property
+    def shape(self):
+        return self.handle.get("Nj"), self.handle.get("Ni")
+
     def plot_map(self, driver):
         driver.bounding_box(
             north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
@@ -82,11 +90,7 @@ class GribField:
         driver.plot_grib(self.path, self.handle.get("offset"))
 
     def to_numpy(self):
-        return self.values.reshape((self.handle.get("Nj"), self.handle.get("Ni")))
-
-    @property
-    def offset(self):
-        return int(self.handle.get("offset"))
+        return self.values.reshape(self.shape)
 
     def __repr__(self):
         return "GribField(%s,%s,%s,%s,%s,%s)" % (
