@@ -8,3 +8,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
+from climetlab import load_source, plot_map
+
+
+def test_grib():
+    for s in load_source("file", "docs/examples/test.grib"):
+        plot_map(s)
+
+
+if __name__ == "__main__":
+    test_grib()
