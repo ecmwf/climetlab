@@ -22,8 +22,8 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 
-MARS = ("04-source-mars.ipynb", "04-source-mars.ipynb", "08-mars-odb.ipynb")
-CDS = ("03-source-cds.ipynb", "06-era5-temperature.ipynb", "05-high-lows.ipynb")
+MARS = ("04-source-mars.ipynb", "04-source-mars.ipynb", "08-mars-odb.ipynb", "11-icoads.ipynb")
+CDS = ("03-source-cds.ipynb", "06-era5-temperature.ipynb", "05-high-lows.ipynb", "14-gruan.ipynb")
 
 
 def notebooks_list():
