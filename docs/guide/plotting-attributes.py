@@ -1,5 +1,7 @@
 import climetlab as cml
 
+# cml.settings.set("plotting-options", {'dump_yaml': True})
+
 dataset = cml.load_dataset("example-dataset")
 data = dataset[0]
 

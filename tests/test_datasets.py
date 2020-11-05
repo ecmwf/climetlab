@@ -11,6 +11,8 @@
 
 import climetlab as cml
 from climetlab import dataset, load_dataset
+import os
+import pytest
 
 
 def test_dataset():
@@ -19,6 +21,9 @@ def test_dataset():
 
 
 def test_datetime():
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+
     data = cml.load_dataset(
         "era5-temperature", domain="france", period=(1980,), time=12
     )

@@ -22,8 +22,9 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 
-MARS = (None,)
-CDS = (None,)
+MARS = ("04-source-mars.ipynb", "04-source-mars.ipynb", "08-mars-odb.ipynb")
+CDS = ("03-source-cds.ipynb", "06-era5-temperature.ipynb", "05-high-lows.ipynb")
+
 
 def notebooks_list():
 
@@ -31,15 +32,6 @@ def notebooks_list():
     for path in os.listdir(EXAMPLES):
         if re.match(r"^\d\d-.*\.ipynb$", path):
             if "Copy" not in path:
-
-                if path in MARS:
-                    if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
-                        continue
-
-                if path in CDS:
-                    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-                        continue
-
                 notebooks.append(path)
 
     return sorted(notebooks)
@@ -50,6 +42,14 @@ def notebooks_list():
 )
 @pytest.mark.parametrize("path", notebooks_list())
 def test_notebook(path):
+
+    if path in MARS:
+        if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
+            pytest.skip("No ~/.ecmwfapirc")
+
+    if path in CDS:
+        if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+            pytest.skip("No ~/.cdsapirc")
 
     with open(os.path.join(EXAMPLES, path)) as f:
         nb = nbformat.read(f, as_version=4)
