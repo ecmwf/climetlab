@@ -12,10 +12,17 @@
 from climetlab import load_source, plot_map
 
 
-def test_netcdf():
+def test_grib():
     for s in load_source("file", "docs/examples/test.grib"):
         plot_map(s)
 
+        # test.grib fields endStep is 0, so datetime == valid_datetime
+        assert s.datetime() == s.valid_datetime()
+
+        # test shape
+        assert s.shape == (11, 19)
+
 
 if __name__ == "__main__":
-    test_netcdf()
+    test_grib()
+
