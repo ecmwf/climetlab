@@ -22,6 +22,8 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 
+MARS = (None,)
+CDS = (None,)
 
 def notebooks_list():
 
@@ -29,6 +31,15 @@ def notebooks_list():
     for path in os.listdir(EXAMPLES):
         if re.match(r"^\d\d-.*\.ipynb$", path):
             if "Copy" not in path:
+
+                if path in MARS:
+                    if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
+                        continue
+
+                if path in CDS:
+                    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+                        continue
+
                 notebooks.append(path)
 
     return sorted(notebooks)
