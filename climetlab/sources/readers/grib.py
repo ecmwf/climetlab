@@ -68,6 +68,13 @@ class GribField:
         self.handle = handle
         self.path = path
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Place to suppress exceptions (don't reraise the passed-in exception, it is the caller's responsibility)
+        pass
+
     @property
     def values(self):
         return self.handle.get("values")

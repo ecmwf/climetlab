@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.8' # netcdf fails on 3.9
 
       - name: Install packages
         run: |
@@ -48,14 +48,14 @@ jobs:
         env:
           ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
           CDSAPIRC: ${{ secrets.CDSAPIRC }}
-          TEST: ${{ secrets.TEST }}
+
         run: |
           import os
           for n in ('ECMWFAPIRC', 'CDSAPIRC'):
               m = os.path.expanduser("~/." + n.lower())
-              assert os.environ[n], n
-              with open(m, "w") as f:
-                  print(os.environ[n], file=f)
+              if os.environ[n]:
+                  with open(m, "w") as f:
+                      print(os.environ[n], file=f)
 
       - name: Tests
         run: |
@@ -85,7 +85,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.8'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
