@@ -18,6 +18,7 @@ def test_bytes():
     assert bytes_to_string(1024) == "1 KiB"
     assert bytes_to_string(1024 * 1024) == "1 MiB"
 
+
 def test_bbox():
 
     for i in range(-365, 365):
@@ -61,6 +62,6 @@ def test_bbox():
         bbox = bbox2.merge(bbox1)
         assert bbox.width == 60, (bbox1, bbox2, bbox)
 
+
 def test_parse_date():
     dt.parse_date("1851-06-25Z00:00")
-
