@@ -17,4 +17,4 @@ gallery:
   plot_map:
     background: false
 plot_map:
-  margins: 1
+  margins: 0.01

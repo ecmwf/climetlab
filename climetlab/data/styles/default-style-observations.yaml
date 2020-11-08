@@ -7,4 +7,4 @@ magics:
     symbol_height: 0.08
     symbol_marker_index: 15  # Circle
 plot_map:
-  margins: 1
+  margins: 0.01

@@ -10,7 +10,7 @@ magics:
     symbol_connect_line: on
 
 plot_map:
-  margins: 1
+  margins: 0.01
 gallery:
   sample:
     dataset:
