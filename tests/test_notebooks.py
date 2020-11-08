@@ -28,11 +28,13 @@ MARS = (
     "08-mars-odb.ipynb",
     "11-icoads.ipynb",
 )
+
 CDS = (
     "03-source-cds.ipynb",
     "06-era5-temperature.ipynb",
     "05-high-lows.ipynb",
     "14-gruan.ipynb",
+    "11-hurricane-database.ipynb",
 )
 
 
