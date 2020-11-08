@@ -13,6 +13,7 @@ from collections import defaultdict
 # datetime.fromisoformat() only available from Python3.7
 # from backports.datetime_fromisoformat import MonkeyPatch
 from dateutil.parser import parse
+from re import sub
 
 # MonkeyPatch.patch_fromisoformat()
 
@@ -21,6 +22,7 @@ def parse_date(date):
     try:
         return datetime.datetime.fromisoformat(date)
     except Exception:
+        date = sub(r"Z.*", "", date)
         return parse(date)
 
 
