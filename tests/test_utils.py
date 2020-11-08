@@ -10,7 +10,7 @@
 #
 
 from climetlab.core.bbox import BoundingBox
-from climetlab.utils import bytes_to_string
+from climetlab.utils import bytes_to_string, datetime as dt
 
 
 def test_bytes():
@@ -61,3 +61,7 @@ def test_bbox():
 
         bbox = bbox2.merge(bbox1)
         assert bbox.width == 60, (bbox1, bbox2, bbox)
+
+
+def test_parse_date():
+    dt.parse_date("1851-06-25Z00:00")
