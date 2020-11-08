@@ -344,12 +344,23 @@ class Driver:
         if self._options("dump_python", False):
             print(args)
 
-        if self._options("dump_yaml", False):
-            print(
-                yaml.dump(
-                    dict(plot=[a.to_yaml() for a in args]), default_flow_style=False
+        dump = self._options("dump_yaml", False)
+        if dump:
+            if isinstance(dump, str):
+                with open(dump, "w") as f:
+                    print(
+                        yaml.dump(
+                            dict(plot=[a.to_yaml() for a in args]),
+                            default_flow_style=False,
+                        ),
+                        file=f,
+                    )
+            else:
+                print(
+                    yaml.dump(
+                        dict(plot=[a.to_yaml() for a in args]), default_flow_style=False
+                    )
                 )
-            )
 
         self._options.check_unused()
 

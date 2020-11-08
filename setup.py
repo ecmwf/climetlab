@@ -53,7 +53,7 @@ setuptools.setup(
         "requests",
         "eccodes>=0.9.9",
         "magics>=1.5.0",
-        "ecmwflibs",
+        "ecmwflibs>=0.0.87",
         "pdbufr",
         "pyodc",
         "dask",

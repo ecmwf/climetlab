@@ -36,7 +36,7 @@ jobs:
       - name: Black
         run: |
           black --version
-          black --check climetlab
+          black --check .
 
       - name: Flake8
         run: |
