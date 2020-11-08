@@ -121,11 +121,10 @@ class GribField:
 
     def metadata(self):
         m = {}
-        for n in ("shortName", "units"):
+        for n in ("shortName", "units", "paramId"):
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
-
         return m
 
     def datetime(self):

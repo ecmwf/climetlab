@@ -317,10 +317,8 @@ class Driver:
                     # text_colour='charcoal'
                 )
 
-        base, fmt = os.path.splitext(path)
         page = output(
-            output_formats=[fmt[1:]],
-            output_name_first_page_number=False,
+            output_file=path,
             page_x_length=self._width_cm,
             page_y_length=self._height_cm * self._page_ratio,
             super_page_x_length=self._width_cm,
@@ -332,7 +330,6 @@ class Driver:
             output_width=width,
             page_frame=frame,
             page_id_line=False,
-            output_name=base,
         )
 
         # TODO
@@ -370,7 +367,7 @@ class Driver:
             LOG.error("Error executing: %r", args, exc_info=True)
             raise
 
-        if fmt == ".svg":
+        if path.endswith(".svg"):
             Display = SVG  # noqa: N806
         else:
             Display = Image  # noqa: N806

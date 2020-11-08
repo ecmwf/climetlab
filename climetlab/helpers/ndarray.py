@@ -14,7 +14,14 @@ class NumpyArrayHelper:
 
     def plot_map(self, driver):
         field = driver.option("field")
-        grid = field.grid_definition()
+        grid = driver.option("grid")
+        metadata = driver.option("metadata")
+
+        if metadata is None and field is not None:
+            metadata = field.metadata()
+
+        if grid is None and field is not None:
+            grid = field.grid_definition()
 
         driver.bounding_box(
             north=grid["north"],
@@ -29,7 +36,7 @@ class NumpyArrayHelper:
             west=grid["west"],
             south_north_increment=grid["south_north_increment"],
             west_east_increment=grid["west_east_increment"],
-            metadata=field.metadata(),
+            metadata=metadata,
         )
 
 
