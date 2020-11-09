@@ -8,9 +8,13 @@ TODO
 
 Always run the notebooks twice before committing changes so that they do not show the data downloads.
 
-## Inline example plots
+## Python examples
 
 TODO
+
+## Inline example plots
+
+To regenerate the plots from the examples, run `docs/generate-examples-maps.py`.
 
 ## Checking links
 
