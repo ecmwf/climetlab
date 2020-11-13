@@ -11,6 +11,7 @@ magics:
 
 plot_map:
   margins: 0.01
+
 gallery:
   sample:
     dataset:

@@ -36,7 +36,7 @@ on plotting below).
 .. literalinclude:: datasource-example.py
 
 
-.. image:: _static/uma.svg
+.. image:: _static/datasource-example.svg
   :width: 100%
 
 
@@ -94,7 +94,7 @@ then,
 
 will plot:
 
-.. image:: _static/irma.svg
+.. image:: _static/dataset-example.svg
   :width: 100%
 
 Compare that with the `data source example`_.
