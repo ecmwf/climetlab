@@ -38,7 +38,8 @@ def get_data(how, name, to_pandas=None, **kwargs):
 
     try:
         return data[0]
-    except Exception:
+    except Exception as e:
+        print("Exection", e)
         return data
 
 
@@ -54,6 +55,7 @@ def plot_style(name, path):
     print("plot_style", name, file=sys.stderr)
     yaml = climetlab.plotting.style(name).data
 
+    data = None
     gallery = yaml.get("gallery", {})
 
     if "sample" in gallery:
