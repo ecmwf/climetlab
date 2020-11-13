@@ -10,6 +10,7 @@
 import os
 import subprocess
 from shlex import split
+import traceback
 
 from docutils import statemachine
 from docutils.parsers.rst import Directive
@@ -46,7 +47,8 @@ class CommandOutput(Directive):
             self.state_machine.insert_input(rst_lines, current_rst_file)
 
         except Exception as e:
-            rst_lines = statemachine.string2lines(str(e))
+            # rst_lines = statemachine.string2lines(str(e))
+            rst_lines = statemachine.string2lines(traceback.format_exc())
             self.state_machine.insert_input(rst_lines, current_rst_file)
 
         finally:
