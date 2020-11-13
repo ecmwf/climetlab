@@ -10,6 +10,7 @@
 
 import os
 import sys
+import traceback
 
 import climetlab
 import climetlab.plotting
@@ -104,10 +105,11 @@ def output(title, collection, plotter):
                 os.makedirs(os.path.dirname(path))
             except FileExistsError:
                 pass
-            # try:
-            plotter(p, path)
-            # except Exception as e:
-            #     print(e)
+            try:
+                plotter(p, path)
+            except Exception as e:
+                print(path)
+                print(traceback.format_exc())
 
         print()
         print(".. image::", "/" + image)
