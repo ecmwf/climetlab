@@ -12,18 +12,21 @@ from collections import defaultdict
 
 # datetime.fromisoformat() only available from Python3.7
 # from backports.datetime_fromisoformat import MonkeyPatch
-from dateutil.parser import parse
-from re import sub
+from dateutil.parser import isoparse, parse
 
 # MonkeyPatch.patch_fromisoformat()
 
 
-def parse_date(date):
+def parse_date(dt_str):
     try:
-        return datetime.datetime.fromisoformat(date)
+        return datetime.datetime.fromisoformat(dt_str)
     except Exception:
-        date = sub(r"Z.*", "", date)
-        return parse(date)
+        pass
+
+    try:
+        return isoparse(dt_str)
+    except ValueError:
+        return parse(dt_str)
 
 
 def to_datetime(dt):
@@ -31,7 +34,7 @@ def to_datetime(dt):
         return dt
 
     if isinstance(dt, str):
-        return parse(dt)
+        return parse_date(dt)
 
     raise Exception("Unsupported date/time object %s (%s)" % (dt, type(dt)))
 
