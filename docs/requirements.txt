@@ -6,3 +6,5 @@ pyyaml
 Pygments>=2.6.1
 tqdm
 markdown
+eccodes
+magics
