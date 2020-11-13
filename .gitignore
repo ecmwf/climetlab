@@ -142,3 +142,4 @@ bar.*
 *.tmp
 *.old
 *.save
+climetlab/datasets/meteonetf/

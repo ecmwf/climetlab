@@ -5,3 +5,4 @@ sphinx_rtd_theme
 pyyaml
 Pygments>=2.6.1
 tqdm
+markdown
