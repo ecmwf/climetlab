@@ -65,3 +65,10 @@ def test_bbox():
 
 def test_parse_date():
     dt.parse_date("1851-06-25Z00:00")
+    dt.parse_date("1851-06-25Z06:00")
+
+
+def test_dates():
+    assert dt.datetimes_to_dates_and_times("1/3/99", as_request=True) == [
+        (("1999-01-03",), ("00:00",))
+    ]

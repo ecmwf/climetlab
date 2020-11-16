@@ -13,7 +13,7 @@ import os
 me = os.path.basename(__file__)
 here = os.path.dirname(__file__)
 
-CODE="""
+CODE = """
 import climetlab as cml
 cml.plotting_options(path="{}")
 {}
@@ -26,10 +26,10 @@ for root, _, files in os.walk(here):
             with open(full) as f:
                 code = f.read()
                 if "plot_map" in code:
-                    path = os.path.join(here, "_static", full[len(here)+1:])
+                    path = os.path.join(here, "_static", full[len(here) + 1 :])
                     path = path.replace(".py", ".svg")
                     if not os.path.exists(os.path.dirname(path)):
                         os.makedirs(os.path.dirname(path))
-                    print('PATH', path)
+                    print("PATH", path)
                     code = CODE.format(path, code)
                     exec(code, {}, {})
