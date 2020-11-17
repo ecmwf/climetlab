@@ -11,10 +11,12 @@
 
 import climetlab as cml
 from climetlab import dataset, load_dataset
+import sys
 import os
 import pytest
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), "Version 3.7 or greater needed")
 def test_dataset():
     load_dataset("sample-bufr-data")
     dataset.sample_bufr_data()

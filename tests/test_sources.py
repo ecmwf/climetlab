@@ -9,9 +9,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import sys
 from climetlab import load_source, source
+import pytest
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), "Version 3.7 or greater needed")
 def test_source():
     load_source("file", "docs/examples/test.grib")
     source.file("docs/examples/test.grib")
