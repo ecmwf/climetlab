@@ -43,7 +43,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "pandas",
-        "cython", # Needed by pandas on 3.9
+        "cython",  # Needed by pandas on 3.9
         "numpy",
         "xarray",
         "netcdf4",
