@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-IGNORE = ["conf.py", "xml2rst.py", "actions.py"]
+IGNORE = ["conf.py", "xml2rst.py", "actions.py", "generate-examples-maps.py"]
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
 
 
