@@ -32,4 +32,4 @@ for root, _, files in os.walk(here):
                         os.makedirs(os.path.dirname(path))
                     print("PATH", path)
                     code = CODE.format(path, code)
-                    exec(code, {}, {})
+                    exec(code, dict(__file__=full), {})

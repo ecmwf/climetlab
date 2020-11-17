@@ -35,5 +35,6 @@ def example_list():
 @pytest.mark.parametrize("path", example_list())
 def test_example(path):
 
-    with open(os.path.join(EXAMPLES, path)) as f:
-        exec(f.read(), {}, {})
+    full = os.path.join(EXAMPLES, path)
+    with open(full) as f:
+        exec(f.read(), dict(__file__=full), {})
