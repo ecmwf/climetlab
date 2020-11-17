@@ -18,6 +18,6 @@ def test_source_1():
     load_source("file", "docs/examples/test.grib")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), "Version 3.7 or greater needed")
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
 def test_source_2():
     source.file("docs/examples/test.grib")
