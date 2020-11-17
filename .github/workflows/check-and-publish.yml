@@ -10,6 +10,12 @@ on:
   release:
     types: [created]
 
+  repository_dispatch:
+    types:
+      - cdsapi-updated
+      - magics-python-updated
+      - ecmwf-api-client-updated
+
 jobs:
   checks:
     strategy:
