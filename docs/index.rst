@@ -30,6 +30,7 @@ Documentation
 **Getting Started**
 
 * :doc:`overview`
+* :doc:`installing`
 * :doc:`firststeps`
 * :doc:`examples`
 
@@ -39,6 +40,7 @@ Documentation
    :caption: Getting Started
 
    overview
+   installing
    firststeps
    examples
 
