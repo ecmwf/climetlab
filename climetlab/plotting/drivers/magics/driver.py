@@ -8,7 +8,6 @@
 #
 
 import logging
-import os
 import yaml
 
 from climetlab.core.bbox import BoundingBox

@@ -142,4 +142,11 @@ Use `doc8` instead of `rstcheck`
 
 ** Doc
 - Check external links https://sublime-and-sphinx-guide.readthedocs.io/en/latest/references.html
-- 
+-
+
+
+Check
+https://snakemake.readthedocs.io/en/stable/tutorial/basics.html
+
+Jupyter
+paperspace.com

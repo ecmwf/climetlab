@@ -12,6 +12,7 @@
 # N806 = variables should be lower case
 
 import logging
+import sys
 
 from .convertions import convert
 
@@ -19,9 +20,15 @@ from .convertions import convert
 
 try:
     from Magics import macro
-except Exception:
+except Exception as e:
+    print(e, file=sys.stderr)
     macro = None
 
+try:
+    import Magics
+    Magics.strict_mode()
+except Exception as e:
+    print(e, file=sys.stderr)
 
 LOG = logging.getLogger(__name__)
 
