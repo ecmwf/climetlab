@@ -14,7 +14,7 @@ To install climetlab, simply run the following command:
 
 If the installation fails with the following error:
 
-.. code-block::
+.. code-block:: html
 
   Collecting ecmwflibs>=x.x.x (from climetlab)
     Could not find a version that satisfies the requirement ecmwflibs>=0.0.90 (from climetlab) (from versions: )
@@ -29,7 +29,7 @@ you will need to make sure that you are using the latest version of ``pip``:
 
 If the installation fails with the following error:
 
-.. code-block::
+.. code-block:: html
 
   AttributeError: module 'enum' has no attribute 'IntFlag'
 
