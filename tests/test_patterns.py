@@ -23,9 +23,14 @@ def test_patterns():
 
     p = Pattern("{variable:enum(2t,tp)}.{type:enum(rt,hc)}.{date:date(%Y%m%d)}.grib")
     assert (
-        p.substitute(dict(date="2000-01-01", variable="tp", type='rt'))
+        p.substitute(dict(date="2000-01-01", variable="tp", type="rt"))
         == "tp.rt.20000101.grib"
     )
+
+    assert p.substitute(dict(date="2000-01-01", variable=["tp", "2t"], type="rt")) == [
+        "tp.rt.20000101.grib",
+        "2t.rt.20000101.grib",
+    ]
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@
 #
 
 import re
+import itertools
 from .datetime import to_datetime
 
 RE1 = re.compile(r"{([^}]*)}")
@@ -137,6 +138,13 @@ class Pattern:
             params.update(a)
         params.update(kwargs)
 
+        for k, v in params.items():
+            if isinstance(v, list):
+                return self._substitute_many(params)
+
+        return self._substitute_one(params)
+
+    def _substitute_one(self, params):
         used = set(params.keys())
         result = []
         for p in self.pattern:
@@ -146,3 +154,21 @@ class Pattern:
             raise ValueError("Unused parameter(s): {}".format(used))
 
         return "".join([str(x) for x in result])
+
+    def _substitute_many(self, params):
+
+        for k, v in list(params.items()):
+            if not isinstance(v, list):
+                params[k] = [v]
+
+        seen = set()
+        result = []
+        for n in list(
+            dict(zip(params, x)) for x in itertools.product(*params.values())
+        ):
+            m = self.substitute(n)
+            if m not in seen:
+                seen.add(m)
+                result.append(m)
+
+        return result
