@@ -17,7 +17,14 @@ def test_patterns():
     assert p.names == ["date", "level", "param"], p.names
 
     assert (
-        p.substitute(dict(date="2000-01-01", param="2t", level=12)) == "20000101-2t-12-012"
+        p.substitute(dict(date="2000-01-01", param="2t", level=12))
+        == "20000101-2t-12-012"
+    )
+
+    p = Pattern("{variable:enum(2t,tp)}.{type:enum(rt,hc)}.{date:date(%Y%m%d)}.grib")
+    assert (
+        p.substitute(dict(date="2000-01-01", variable="tp", type='rt'))
+        == "tp.rt.20000101.grib"
     )
 
 

@@ -15,7 +15,21 @@ RE2 = re.compile(r"\(([^}]*)\)")
 
 
 class Any:
-    def substitute(self, value):
+    def substitute(self, value, name):
+        return value
+
+
+class Enum:
+    def __init__(self, enum=""):
+        self.enum = set(enum.split(","))
+
+    def substitute(self, value, name):
+        if self.enum and value not in self.enum:
+            raise ValueError(
+                "Invalid value '{}' for parameter '{}', expected one of {}".format(
+                    value, name, self.enum
+                )
+            )
         return value
 
 
@@ -23,8 +37,13 @@ class Int:
     def __init__(self, format="%d"):
         self.format = format
 
-    def substitute(self, value):
-        assert isinstance(value, int)
+    def substitute(self, value, name):
+        if not isinstance(value, int):
+            raise ValueError(
+                "Invalid value '{}' for parameter '{}', expected an integer".format(
+                    value, name
+                )
+            )
         return self.format % value
 
 
@@ -32,8 +51,14 @@ class Float:
     def __init__(self, format="%g"):
         self.format = format
 
-    def substitute(self, value):
-        assert isinstance(value, (int, float))
+    def substitute(self, value, name):
+        if not isinstance(value, (int, float)):
+            raise ValueError(
+                "Invalid value '{}' for parameter '{}', expected a float".format(
+                    value, name
+                )
+            )
+
         return self.format % value
 
 
@@ -41,7 +66,7 @@ class Datetime:
     def __init__(self, format):
         self.format = format
 
-    def substitute(self, value):
+    def substitute(self, value, name):
         return to_datetime(value).strftime(self.format)
 
 
@@ -49,12 +74,17 @@ class Str:
     def __init__(self, format="%s"):
         self.format = format
 
-    def substitute(self, value):
-        assert isinstance(value, str)
+    def substitute(self, value, name):
+        if not isinstance(value, str):
+            raise ValueError(
+                "Invalid value '{}' for parameter '{}', expected a string".format(
+                    value, name
+                )
+            )
         return self.format % value
 
 
-TYPES = {"": Any, "int": Int, "float": Float, "date": Datetime}
+TYPES = {"": Any, "int": Int, "float": Float, "date": Datetime, "enum": Enum}
 
 
 class Constant:
@@ -79,7 +109,9 @@ class Variable:
             self.kind = TYPES[kind[0]](kind[1])
 
     def substitute(self, params):
-        return self.kind.substitute(params[self.name])
+        if self.name not in params:
+            raise ValueError("Missing parameter '{}'".format(self.name))
+        return self.kind.substitute(params[self.name], self.name)
 
 
 class Pattern:
@@ -111,6 +143,6 @@ class Pattern:
             used.discard(p.name)
             result.append(p.substitute(params))
         if used:
-            raise ValueError("Unused parameters: {}".format(used))
+            raise ValueError("Unused parameter(s): {}".format(used))
 
         return "".join([str(x) for x in result])
