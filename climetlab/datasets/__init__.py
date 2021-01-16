@@ -40,6 +40,10 @@ class Dataset:
         self._source = source
         source.dataset = self
 
+    def __call__(self, *args, **kwargs):
+        self._load(*args, **kwargs)
+        return self
+
     def __len__(self):
         return len(self.source)
 
@@ -74,25 +78,30 @@ def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset
 
 
+class YamlDefinedDataset(Dataset):
+    def __init__(self, path, dataset):
+        self._path = path
+        for k, v in dataset.get("metadata", {}).items():
+            setattr(self, k, v)
+        self._src = dataset["source"]
+        self._args = dataset.get("args", {})
+
+    def _load(self, *args, **kwargs):
+        self.source = climetlab.load_source(self._src, **self._args)
+
+    def __repr__(self):
+        return f"YAML[{self._path}]"
+
+
 class DatasetLoader:
 
     kind = "dataset"
 
     def load_yaml(self, path):
         with open(path) as f:
-            dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
-
-        class Wrapped(Dataset):
-            def __init__(self, *args, **kwargs):
-
-                for k, v in dataset.get("metadata", {}).items():
-                    setattr(self, k, v)
-
-                self.source = climetlab.load_source(
-                    dataset["source"], **dataset.get("args", {})
-                )
-
-        return Wrapped
+            return YamlDefinedDataset(
+                path, yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
+            )
 
     def load_module(self, module):
         return import_module(module, package=__name__).dataset
@@ -101,10 +110,27 @@ class DatasetLoader:
         return entry.load().dataset
 
 
-def load(name, *args, **kwargs):
-    loader = DatasetLoader()
-    dataset = find_plugin(os.path.dirname(__file__), name, loader)
-    dataset = dataset(*args, **kwargs)
-    if getattr(dataset, "name", None) is None:
-        dataset.name = name
-    return dataset
+class DatasetMaker:
+    def __call__(self, name, *args, **kwargs):
+        loader = DatasetLoader()
+        klass = find_plugin(os.path.dirname(__file__), name, loader)
+        dataset = klass(*args, **kwargs)
+        if getattr(dataset, "name", None) is None:
+            dataset.name = name
+        return dataset
+
+    def __getattr__(self, name):
+        return self(name.replace("_", "-"))
+
+
+dataset = DatasetMaker()
+
+
+def load_dataset(name, *args, **kwargs):
+    try:
+        ds = dataset(name)
+        ds._load(*args, **kwargs)
+        return ds
+    except Exception:
+        # Backwards compatibility
+        return dataset(name, *args, **kwargs)

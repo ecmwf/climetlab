@@ -74,7 +74,10 @@ class HurricaneDatabase(Dataset):
 
     home_page = "https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html"
 
-    def __init__(self, bassin="atlantic", url=None):
+    def __init__(self):
+        pass
+
+    def _load(self, bassin="atlantic", url=None):
 
         if url is None:
             url = URLS[bassin.lower()]

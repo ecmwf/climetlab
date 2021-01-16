@@ -28,7 +28,10 @@ class WeatherBench(Dataset):
 }
 """
 
-    def __init__(self, parameter="geopotential_500", resolution=5.625):
+    def __init__(self):
+        pass
+
+    def _load(self, parameter="geopotential_500", resolution=5.625):
 
         self.check_parameter(
             "parameter",
@@ -36,8 +39,9 @@ class WeatherBench(Dataset):
             "10m_u_component_of_wind",
             "10m_v_component_of_wind",
             "2m_temperature",
-            "constants",
-            "geopotential" "geopotential_500",
+            # "constants",
+            "geopotential",
+            "geopotential_500",
             "potential_vorticity",
             "relative_humidity",
             "specific_humidity",

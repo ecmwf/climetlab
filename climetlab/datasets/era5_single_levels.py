@@ -15,10 +15,13 @@ from . import Dataset
 
 
 class Era5SingleLevels(Dataset):
-    def __init__(self, variable, period, domain=None, time=None, grid=None):
+    def __init__(self, variable):
+        self.variable = variable
+
+    def _load(self, period, domain=None, time=None, grid=None):
 
         request = dict(
-            variable=variable,
+            variable=self.variable,
             product_type="reanalysis",
         )
 

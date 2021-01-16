@@ -13,7 +13,8 @@ from climetlab.sources import DataSource
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
-from .datasets import load as load_dataset
+from .datasets import dataset, load_dataset
+
 from .plotting import new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
@@ -24,7 +25,7 @@ from .sources import load as load_source
 
 # import logging
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
 # if ipython_active:
@@ -34,6 +35,7 @@ __version__ = "0.1.3"
 __all__ = [
     "load_source",
     "load_dataset",
+    "dataset",
     "plot_map",
     "new_plot",
     "settings",

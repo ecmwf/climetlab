@@ -26,6 +26,7 @@ except Exception as e:
 
 try:
     import Magics
+
     Magics.strict_mode()
 except Exception as e:
     print(e, file=sys.stderr)
