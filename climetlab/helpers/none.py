@@ -15,5 +15,8 @@ class NoneHelper:
     def plot_map(self, driver):
         pass
 
+    def field_metadata(self):
+        return {}
+
 
 helper = NoneHelper

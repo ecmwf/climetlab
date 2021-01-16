@@ -128,14 +128,26 @@ class Driver:
     def plot_numpy(
         self,
         data,
-        north: float,
-        west: float,
-        south_north_increment: float,
-        west_east_increment: float,
         metadata: dict = None,
     ):
         if metadata is None:
             metadata = {}
+
+        # TODO: issue warnings
+        north = metadata.get("north", 90)
+        west = metadata.get("west", 0)
+        south_north_increment = metadata.get("south_north_increment")
+        west_east_increment = metadata.get("west_east_increment")
+
+        if south_north_increment is None:
+            south_north_increment = (north - metadata.get("south", -90)) / (
+                data.shape[-2] - 1
+            )
+
+        if west_east_increment is None:
+            west_east_increment = (metadata.get("east", 360) - west) / (
+                data.shape[-1] - 1
+            )
 
         self._push_layer(
             minput(

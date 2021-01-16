@@ -25,6 +25,9 @@ def helper(data, *args, **kwargs):
     to support
     """
 
+    if hasattr(data, "helper"):
+        return data.helper(*args, **kwargs)
+
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 
     name = HELPERS.get(fullname)

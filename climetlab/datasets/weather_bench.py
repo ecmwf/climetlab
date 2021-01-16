@@ -29,6 +29,30 @@ class WeatherBench(Dataset):
 """
 
     def __init__(self, parameter="geopotential_500", resolution=5.625):
+
+        self.check_parameter(
+            "parameter",
+            parameter,
+            "10m_u_component_of_wind",
+            "10m_v_component_of_wind",
+            "2m_temperature",
+            "constants",
+            "geopotential" "geopotential_500",
+            "potential_vorticity",
+            "relative_humidity",
+            "specific_humidity",
+            "temperature",
+            "temperature_850",
+            "toa_incident_solar_radiation",
+            "total_cloud_cover",
+            "total_precipitation",
+            "u_component_of_wind",
+            "v_component_of_wind",
+            "vorticity",
+        )
+
+        self.check_parameter("resolution", resolution, 1.40625, 2.8125, 5.625)
+
         url = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(
             resolution=resolution, parameter=parameter
         )

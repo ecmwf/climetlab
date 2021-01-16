@@ -66,6 +66,9 @@ class Dataset:
     def annotate(self, data, **kargs):
         return annotate(data, self, **kargs)
 
+    def check_parameter(self, name, value, *values):
+        pass
+
 
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset

@@ -44,6 +44,17 @@ class XArrayHelper:
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
 
+    def field_metadata(self):
+        return dict(
+            north=self.north,
+            south=self.south,
+            east=self.east,
+            west=self.west,
+            # # TODO:
+            # south_north_increment=None,
+            # west_east_increment=None,
+        )
+
 
 def helper(data, *args, **kwargs):
     import xarray as xr

@@ -109,7 +109,7 @@ class GribField:
             self.handle.get("number"),
         )
 
-    def grid_definition(self):
+    def _grid_definition(self):
         return dict(
             north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
             south=self.handle.get("latitudeOfLastGridPointInDegrees"),
@@ -119,13 +119,16 @@ class GribField:
             west_east_increment=self.handle.get("iDirectionIncrementInDegrees"),
         )
 
-    def metadata(self):
-        m = {}
+    def field_metadata(self):
+        m = self._grid_definition()
         for n in ("shortName", "units", "paramId"):
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
         return m
+
+    def helper(self):
+        return self
 
     def datetime(self):
         date = self.handle.get("date")

@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+from climetlab.helpers import helper as get_helper
 
 
 class NumpyArrayHelper:
@@ -13,29 +14,20 @@ class NumpyArrayHelper:
         self.data = data
 
     def plot_map(self, driver):
-        field = driver.option("field")
-        grid = driver.option("grid")
-        metadata = driver.option("metadata")
-
-        if metadata is None and field is not None:
-            metadata = field.metadata()
-
-        if grid is None and field is not None:
-            grid = field.grid_definition()
+        # field = driver.option("field")
+        # grid = driver.option("grid")
+        metadata = get_helper(driver.option("metadata"))
+        metadata = metadata.field_metadata()
 
         driver.bounding_box(
-            north=grid["north"],
-            south=grid["south"],
-            west=grid["west"],
-            east=grid["east"],
+            north=metadata.get("north", 90),
+            south=metadata.get("south", -90),
+            west=metadata.get("west", 0),
+            east=metadata.get("east", 360),
         )
 
         driver.plot_numpy(
             self.data,
-            north=grid["north"],
-            west=grid["west"],
-            south_north_increment=grid["south_north_increment"],
-            west_east_increment=grid["west_east_increment"],
             metadata=metadata,
         )
 
