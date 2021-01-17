@@ -38,9 +38,7 @@ CDS = (
 )
 
 
-TENSORFLOW = (
-    "05-high-lows.ipynb",
-)
+TENSORFLOW = ("05-high-lows.ipynb",)
 
 
 def notebooks_list():

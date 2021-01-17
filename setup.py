@@ -41,7 +41,7 @@ install_requires += [
     "cython",  # Needed by pandas
     "numpy",
     "xarray",
-    "cftime", # Needed on by netcdf on windows
+    "cftime",  # Needed on by netcdf on windows
     "netcdf4",
     "cfgrib>=0.9.8.4",
     "cdsapi",
