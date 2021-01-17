@@ -36,12 +36,12 @@ if sys.version_info < (3, 7):
 else:
     install_requires += ["cython", "pandas"]
 
+if sys.platform.startswith("win"):
+    install_requires += ["cftime==1.1.0"]
 
 install_requires += [
-    "cython",  # Needed by pandas
     "numpy",
     "xarray",
-    "cftime",  # Needed on by netcdf on windows
     "netcdf4",
     "cfgrib>=0.9.8.4",
     "cdsapi",
