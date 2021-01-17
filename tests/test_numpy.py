@@ -11,11 +11,13 @@
 
 import climetlab as cml
 
+# TODO: choose a smaller dataset
+
 
 def test_numpy_1():
     ds = cml.load_dataset("weather-bench")
     z500 = ds.to_xarray()
-    z = z500.sel({'time': '1979-01-01'}).z.values
+    z = z500.sel({"time": "1979-01-01"}).z.values
     cml.plot_map(z[0], metadata=z500.z)
 
 
