@@ -21,8 +21,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-latest, ubuntu-latest, macos-latest]
-        python-version: ["3.6", "3.7", "3.8"] #, "3.9"]
+        platform: ["ubuntu-latest"] [windows-latest, ubuntu-latest, macos-latest]
+        python-version: ["3.8"] #["3.6", "3.7", "3.8"] #, "3.9"]
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
