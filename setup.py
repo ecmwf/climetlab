@@ -32,7 +32,10 @@ assert version
 install_requires = []
 
 if sys.platform == "win32":
-    install_requires += ["cftime==1.1.0"]
+    if sys.version_info < (3, 9):
+        install_requires += ["cftime==1.1.0"]
+    else:
+        install_requires += ["cftime==1.0.0"]
 
 if sys.version_info < (3, 7):
     install_requires += ["cython", "pandas==1.1.5"]
