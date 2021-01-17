@@ -29,7 +29,15 @@ for line in read("climetlab/__init__.py").split("\n"):
 
 assert version
 
-install_requires = [
+install_requires = []
+
+if sys.version_info < (3, 7):
+    install_requires += ["cython", "pandas==1.1.5"]
+else:
+    install_requires += ["cython", "pandas"]
+
+
+install_requires += [
     "cython",  # Needed by pandas
     "numpy",
     "xarray",
@@ -50,11 +58,6 @@ install_requires = [
     "markdown",
     "entrypoints",
 ]
-
-if sys.version_info < (3, 7):
-    install_requires.append("pandas==1.1.5")
-else:
-    install_requires.append("pandas")
 
 
 setuptools.setup(
