@@ -43,7 +43,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "cython",  # Needed by pandas on 3.9
-        "pandas",
+        "pandas==1.0.5",  # Magics xarray does not work with pandas 1.1.0
         "numpy",
         "xarray",
         "netcdf4",
