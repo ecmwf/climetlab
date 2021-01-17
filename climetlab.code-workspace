@@ -54,7 +54,6 @@
 		"yaml.schemas": {
 			"./schemas/magics.json": ["*.yaml"]
 		},
-		"python.dataScience.jupyterServerURI": "local",
-		"python.pythonPath": "/usr/local/bin/python3",
+		"python.dataScience.jupyterServerURI": "local"
 	}
 }
