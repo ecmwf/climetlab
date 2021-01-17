@@ -12,7 +12,7 @@
 
 import io
 import os.path
-
+import sys
 import setuptools
 
 
@@ -29,6 +29,34 @@ for line in read("climetlab/__init__.py").split("\n"):
 
 assert version
 
+install_requires = [
+    "cython",  # Needed by pandas
+    "numpy",
+    "xarray",
+    "netcdf4",
+    "cfgrib>=0.9.8.4",
+    "cdsapi",
+    "ecmwf-api-client>=1.6.1",
+    "tqdm",
+    "requests",
+    "eccodes>=0.9.9",
+    "magics>=1.5.4",
+    "ecmwflibs>=0.0.91",
+    "pdbufr",
+    "pyodc",
+    "dask",
+    "toolz",
+    "pyyaml",
+    "markdown",
+    "entrypoints",
+]
+
+if sys.version_info < (3, 7):
+    install_requires.append("pandas==1.1.5")
+else:
+    install_requires.append("pandas")
+
+
 setuptools.setup(
     name="climetlab",
     version=version,
@@ -41,29 +69,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=[
-        "cython",  # Needed by pandas on 3.9
-        # "pandas==1.0.5",  # Magics xarray does not work with pandas 1.1.0
-        "pandas",
-        "numpy",
-        "xarray",
-        "netcdf4",
-        "cfgrib>=0.9.8.4",
-        "cdsapi",
-        "ecmwf-api-client>=1.6.1",
-        "tqdm",
-        "requests",
-        "eccodes>=0.9.9",
-        "magics>=1.5.4",
-        "ecmwflibs>=0.0.91",
-        "pdbufr",
-        "pyodc",
-        "dask",
-        "toolz",
-        "pyyaml",
-        "markdown",
-        "entrypoints",
-    ],
+    install_requires=install_requires,
     zip_safe=True,
     classifiers=[
         "Development Status :: 3 - Alpha",
