@@ -35,14 +35,14 @@ install_requires = []
 print("PLATFORM", sys.platform)
 print("VERSION", sys.version_info)
 
-if sys.platform.startswith("win"):
-    install_requires += ["pandas==1.1.5", "cftime==1.1.0"]
+# if sys.platform.startswith("win"):
+#     install_requires += ["pandas==1.1.5", "cftime==1.1.0"]
 
-else:
-    if sys.version_info < (3, 7):
-        install_requires += ["cython", "pandas==1.1.5"]
-    else:
-        install_requires += ["cython", "pandas"]
+# else:
+#     if sys.version_info < (3, 7):
+#         install_requires += ["cython", "pandas==1.1.5"]
+#     else:
+#         install_requires += ["cython", "pandas"]
 
 
 

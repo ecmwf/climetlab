@@ -67,6 +67,7 @@ jobs:
       - name: Tests
         run: |
           python setup.py develop
+          pip freeze
           pytest
         env:
           CLIMETLAB_DEBUG: 1
