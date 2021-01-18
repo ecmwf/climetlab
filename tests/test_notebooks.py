@@ -53,7 +53,7 @@ def notebooks_list():
 
 
 @pytest.mark.skipif(
-    sys.platform.startswith("win"), reason="Cannot execute notebookds on Windows"
+    sys.platform == "win32", reason="Cannot execute notebookds on Windows"
 )
 @pytest.mark.parametrize("path", notebooks_list())
 def test_notebook(path):
