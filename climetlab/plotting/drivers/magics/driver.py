@@ -388,6 +388,8 @@ class Driver:
 
         if path.endswith(".svg"):
             Display = SVG  # noqa: N806
+        elif path.endswith(".pdf"):
+            return path
         else:
             Display = Image  # noqa: N806
 
