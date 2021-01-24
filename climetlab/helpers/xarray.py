@@ -45,7 +45,8 @@ class XArrayHelper:
         driver.plot_xarray(self.data, self.name, dimension_settings)
 
     def field_metadata(self):
-        result = dict(shape=self.var.shape)
+        shape = self.var.shape
+        result = dict(shape=(shape[-2], shape[-1]))
         result.update(self.var.attrs)
         result.update(
             dict(
