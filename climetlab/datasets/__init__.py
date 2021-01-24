@@ -128,9 +128,11 @@ dataset = DatasetMaker()
 
 def load_dataset(name, *args, **kwargs):
     try:
+        # Backwards compatibility
+        ds = dataset(name, *args, **kwargs)
+        assert getattr(ds, "_load", None) is None
+        return ds
+    except Exception:
         ds = dataset(name)
         ds._load(*args, **kwargs)
         return ds
-    except Exception:
-        # Backwards compatibility
-        return dataset(name, *args, **kwargs)

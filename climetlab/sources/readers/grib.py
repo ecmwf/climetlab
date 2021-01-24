@@ -125,6 +125,7 @@ class GribField:
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
+        m["shape"] = self.shape
         return m
 
     def helper(self):

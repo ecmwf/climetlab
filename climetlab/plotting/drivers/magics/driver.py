@@ -149,6 +149,14 @@ class Driver:
                 data.shape[-1] - 1
             )
 
+        # TODO: remove me when Magics supports full json
+        def tidy(x):
+            r = {}
+            for k, v in x.items():
+                if v is None or isinstance(v, (int, float, str, bool)):
+                    r[k] = v
+            return r
+
         self._push_layer(
             minput(
                 input_field=data,
@@ -156,7 +164,7 @@ class Driver:
                 input_field_latitude_step=-float(south_north_increment),
                 input_field_initial_longitude=float(west),
                 input_field_longitude_step=float(west_east_increment),
-                input_metadata=metadata,
+                input_metadata=tidy(metadata),
             )
         )
 

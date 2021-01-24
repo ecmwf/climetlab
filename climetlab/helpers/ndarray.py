@@ -27,7 +27,7 @@ class NumpyArrayHelper:
         )
 
         driver.plot_numpy(
-            self.data,
+            self.data.reshape(metadata.get("shape", self.data.shape)),
             metadata=metadata,
         )
 
