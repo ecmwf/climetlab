@@ -55,6 +55,7 @@ class DataSource:
     home_page = "-"
     licence = "-"
     documentation = "-"
+    citation = "-"
 
     _dataset = None
 

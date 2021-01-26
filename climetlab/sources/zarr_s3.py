@@ -8,17 +8,16 @@
 #
 
 import logging
-import os
 import xarray as xr
 import s3fs
 
 
-from .base import Source
+from . import DataSource
 
 LOG = logging.getLogger(__name__)
 
 
-class ZarrS3(Source):
+class ZarrS3(DataSource):
     def __init__(self, url, root, **kwargs):
 
         super().__init__(**kwargs)
