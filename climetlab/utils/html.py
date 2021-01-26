@@ -25,6 +25,7 @@ def table(obj):
 
     style = css("table")
 
+
     table = """
 <h4>{name}</h4>
 <table class="climetlab">
