@@ -24,7 +24,7 @@ class ZarrS3(DataSource):
         print(url)
         fs = s3fs.S3FileSystem(anon=True, client_kwargs={"endpoint_url": url})
 
-        if not isinstance(root,list):
+        if not isinstance(root, list):
             rootlist = [root]
         else:
             rootlist = root
