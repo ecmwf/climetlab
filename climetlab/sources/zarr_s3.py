@@ -38,10 +38,10 @@ class ZarrS3(DataSource):
                 check=False,
             )
             ds = xr.open_zarr(store)
-            if '-rt-' in root:
-                print('hacky fix')
-                ds = ds.expand_dims({'time':1})
-                ds['valid_time'] = ds['valid_time'].expand_dims({'time':1})
+            if "-rt-" in root:
+                print("hacky fix")
+                ds = ds.expand_dims({"time": 1})
+                ds["valid_time"] = ds["valid_time"].expand_dims({"time": 1})
 
             dslist.append(ds)
         ds = xr.merge(dslist)
