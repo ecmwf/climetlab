@@ -8,6 +8,7 @@
 #
 
 import itertools
+from collections import defaultdict
 
 from . import DataSource
 
@@ -45,8 +46,33 @@ class MultiSource(DataSource):
     def to_xarray(self):
         import xarray as xr
 
+        arrays = [s.to_xarray() for s in self.sources]
+
+        # Get values of scalar coordinates
+        values = defaultdict(set)
+        for a in arrays:
+            for v in a.coords:
+                if len(a[v].shape) == 0:
+                    vals = a[v].values
+                    # assert len(vals) == 1, (v, vals)
+                    values[v].add(float(vals))
+
+        # for a in arrays:
+        #     print("++++ ======")
+        #     for v in a.variables:
+        #         print(v, [x for x in a[v].dims])
+        #     print("++++ ======")
+        #     print()
+
+        # Promote scalar coordinates
+        promote = [name for name, count in values.items() if len(count) > 1]
+
+        if promote:
+            dims = dict(zip(promote, [1] * len(promote)))
+            arrays = [a.expand_dims(dims) for a in arrays]
+
         # return xr.concat(s.to_xarray() for s in self.sources)
-        return xr.merge(s.to_xarray() for s in self.sources)
+        return xr.merge(arrays)
 
 
 source = MultiSource

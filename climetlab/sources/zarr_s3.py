@@ -1,4 +1,4 @@
-# (C) Copyright 2020 ECMWF.
+# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -10,43 +10,49 @@
 import logging
 import xarray as xr
 import s3fs
-
-
 from . import DataSource
 
 LOG = logging.getLogger(__name__)
 
 
-class ZarrS3(DataSource):
-    def __init__(self, url, root, **kwargs):
+class Cache:
+    def __init__(self, store):
+        self._store = store
 
+    def __contains__(self, key):
+        # print("Cache.__contains__", key)
+        return key in self._store
+
+    def __getitem__(self, key):
+        # print("Cache.__getitem__", key)
+        data = self._store[key]
+        # print(len(data))
+        return data
+
+    def keys(self):
+        return self._store.keys()
+
+
+class ZarrS3(DataSource):
+    def __init__(self, url, **kwargs):
         super().__init__(**kwargs)
-        print(url)
+
+        bits = url.split("/")
+
+        url = "/".join(bits[:3])
+        root = "/".join(bits[3:])
+
         fs = s3fs.S3FileSystem(anon=True, client_kwargs={"endpoint_url": url})
 
-        if not isinstance(root, list):
-            rootlist = [root]
-        else:
-            rootlist = root
+        store = s3fs.S3Map(
+            root=root,
+            s3=fs,
+            check=False,
+        )
 
-        dslist = []
-        for root in rootlist:
-            print(root)
-            store = s3fs.S3Map(
-                root=root,
-                s3=fs,
-                check=False,
-            )
-            ds = xr.open_zarr(store)
-            if "-rt-" in root:
-                print("hacky fix")
-                ds = ds.expand_dims({"time": 1})
-                ds["valid_time"] = ds["valid_time"].expand_dims({"time": 1})
+        cache = Cache(store)
 
-            dslist.append(ds)
-        ds = xr.merge(dslist)
-
-        self._ds = ds
+        self._ds = xr.open_zarr(cache)
 
     def to_xarray(self):
         return self._ds

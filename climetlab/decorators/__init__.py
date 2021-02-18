@@ -35,10 +35,9 @@ class parameters:
     def normalise(self, request):
         result = dict(**request)
 
-        print("normalise", request)
-
         for k, v in self.types.items():
-            result[k] = v.normalise(request.get(k))
+            n = v.normalise(request.get(k))
+            if n is not None:
+                result[k] = n
 
-        print("normalise", result)
         return result

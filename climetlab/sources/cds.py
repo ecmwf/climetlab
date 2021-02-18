@@ -11,7 +11,7 @@ import os
 
 import cdsapi
 
-from climetlab.helpers import helper
+from climetlab.decorators import parameters
 
 from .base import APIKeyPrompt, FileSource
 
@@ -66,14 +66,8 @@ class CDSRetriever(FileSource):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
+    @parameters(date=("date-list", "%Y-%m-%d"), area=("bounding-box", "list"))
     def request(self, **kwargs):
-        based_on = kwargs.pop("based_on", None)
-        if based_on is not None:
-            data = based_on.pop("data")
-            data = helper(data, **based_on)
-            kwargs["area"] = data.bounding_box()
-            kwargs["date"] = data.dates()
-
         return kwargs
 
     def read_csv_options(self):

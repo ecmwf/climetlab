@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.dates import to_datetimes_list
+from climetlab.utils.dates import to_date_list
 
 
 class DateListNormaliser:
@@ -15,7 +15,7 @@ class DateListNormaliser:
         self.format = format
 
     def normalise(self, dates):
-        dates = to_datetimes_list(dates)
+        dates = to_date_list(dates)
         if self.format is not None:
             dates = [d.strftime(self.format) for d in dates]
         return dates

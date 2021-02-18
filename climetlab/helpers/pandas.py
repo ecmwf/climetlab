@@ -25,6 +25,8 @@ class PandasHelper:
         self.lat = "cannot-find-latitude-column"
         self.lon = "cannot-find-longitude-column"
 
+        self.time = "time"
+
         for lat, lon in LATLON:
             if lat in self.frame:
                 self.lat, self.lon = lat, lon
@@ -65,8 +67,11 @@ class PandasHelper:
 
         return [north, west, south, east]
 
-    def dates(self):
-        return sorted(set(str(x).split("T")[0] for x in self.frame["time"].values))
+    def to_datetime_list(self):
+        return sorted(set(self.frame[self.time].values))
+
+    def to_bounding_box(self):
+        return self.bounding_box()
 
 
 helper = PandasHelper

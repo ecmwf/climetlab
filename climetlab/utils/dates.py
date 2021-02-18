@@ -8,7 +8,9 @@
 #
 
 import datetime
-from collections import defaultdict
+# from collections import defaultdict
+from climetlab.helpers import helper
+import numpy as np
 
 # datetime.fromisoformat() only available from Python3.7
 # from backports.datetime_fromisoformat import MonkeyPatch
@@ -33,56 +35,49 @@ def to_datetime(dt):
     if isinstance(dt, datetime.datetime):
         return dt
 
+    if isinstance(dt, np.datetime64):
+        return datetime.datetime.utcfromtimestamp(dt.astype(int) * 1e-9)
+
     if isinstance(dt, str):
         return parse_date(dt)
 
-    raise Exception("Unsupported date/time object %s (%s)" % (dt, type(dt)))
+    if getattr(dt, "to_datetime", None) is None:
+        dt = helper(dt)
+
+    return dt.to_datetime()
 
 
 def to_datetimes_list(datetimes):
-    if isinstance(datetimes, (datetime.datetime, str)):
+    if isinstance(datetimes, (datetime.datetime, np.datetime64, str)):
         return to_datetimes_list([datetimes])
 
     if isinstance(datetimes, (list, tuple)):
         return [to_datetime(x) for x in datetimes]
 
-    return datetimes
+    if getattr(datetimes, "to_datetime_list", None) is None:
+        datetimes = helper(datetimes)
+
+    return to_datetimes_list(datetimes.to_datetime_list())
 
 
-def _date_as_request(date):
-    return "%d-%02d-%02d" % (date.year, date.month, date.day)
+def to_dates_and_times(datetimes_list):
+    assert False, datetimes_list
+    # result = []
+    # datetimes = defaultdict(set)
+
+    # for dt in to_datetimes_list(datetimes_list):
+    #     datetimes[dt.date())].add(dt.time())
+
+    # timedates = defaultdict(set)
+    # for date, times in sorted(datetimes.items()):
+    #     times = tuple(sorted(times))
+    #     timedates[times].add(date)
+
+    # for times, dates in timedates.items():
+    #     result.append((tuple(sorted(dates)), times))
+
+    # return sorted(result)
 
 
-def _time_as_request(time):
-    assert time.second == 0
-    return "%02d:%02d" % (time.hour, time.minute)
-
-
-def _indentity(x):
-    return x
-
-
-def datetimes_to_dates_and_times(datetimes_list, as_request=False):
-
-    result = []
-    datetimes = defaultdict(set)
-
-    if as_request:
-        _d = _date_as_request
-        _t = _time_as_request
-    else:
-        _d = _indentity
-        _t = _indentity
-
-    for dt in to_datetimes_list(datetimes_list):
-        datetimes[_d(dt.date())].add(_t(dt.time()))
-
-    timedates = defaultdict(set)
-    for date, times in sorted(datetimes.items()):
-        times = tuple(sorted(times))
-        timedates[times].add(date)
-
-    for times, dates in timedates.items():
-        result.append((tuple(sorted(dates)), times))
-
-    return sorted(result)
+def to_date_list(obj):
+    return sorted(set(to_datetimes_list(obj)))

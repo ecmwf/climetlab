@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core.bbox import BoundingBox
+from climetlab.core.bbox import to_bounding_box
 
 
 class BoundingBoxNormaliser:
@@ -16,5 +16,5 @@ class BoundingBoxNormaliser:
         assert self.format == "list", format
 
     def normalise(self, bbox):
-        assert isinstance(bbox, (list, tuple)), bbox
-        return bbox
+        bbox = to_bounding_box(bbox)
+        return bbox.as_list()
