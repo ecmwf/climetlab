@@ -8,7 +8,7 @@
 #
 
 from climetlab import load_source
-from climetlab.utils.datetime import to_datetime
+from climetlab.utils.dates import to_datetime
 from climetlab.utils.domains import domain_to_area
 
 from . import Dataset

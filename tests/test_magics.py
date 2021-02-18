@@ -12,7 +12,7 @@
 import pytest
 
 import climetlab as cml
-from climetlab.core.bbox import BoundingBox
+from climetlab.utils.bbox import BoundingBox
 from Magics.Magics import MagicsError
 
 

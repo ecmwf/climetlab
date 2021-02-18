@@ -143,3 +143,4 @@ bar.*
 *.old
 *.save
 climetlab/datasets/meteonetf/
+all.code-workspace

@@ -7,14 +7,20 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core.bbox import to_bounding_box
+from climetlab.utils.bbox import to_bounding_box, BoundingBox
+
+CONVERT = {
+    list: lambda x: x.as_list(),
+    tuple: lambda x: x.as_tuple(),
+    dict: lambda x: x.as_dict(),
+    BoundingBox: lambda x: x,
+}
 
 
 class BoundingBoxNormaliser:
-    def __init__(self, format=None):
+    def __init__(self, format=BoundingBox):
         self.format = format
-        assert self.format == "list", format
 
     def normalise(self, bbox):
         bbox = to_bounding_box(bbox)
-        return bbox.as_list()
+        return CONVERT[self.format](bbox)

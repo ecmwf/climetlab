@@ -51,6 +51,11 @@ class BoundingBox:
             self.east,
         )
 
+    def __eq__(self, other):
+        if self.__class__ is not other.__class__:
+            return False
+        return self.as_tuple() == other.as_tuple()
+
     @property
     def width(self):
         return self.east - self.west
@@ -107,6 +112,12 @@ class BoundingBox:
 
     def as_list(self):
         return [self.north, self.west, self.south, self.east]
+
+    def as_tuple(self):
+        return (self.north, self.west, self.south, self.east)
+
+    def as_dict(self):
+        return dict(north=self.north, west=self.west, south=self.south, east=self.east)
 
 
 def to_bounding_box(obj):

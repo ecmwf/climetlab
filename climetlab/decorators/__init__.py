@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-
+import inspect
 from climetlab.normalisers import NORMALISERS
 
 
@@ -24,9 +24,16 @@ class parameters:
                 self.types[k] = NORMALISERS[v[0]](*v[1:])
 
     def __call__(self, func):
+
+        params = inspect.getfullargspec(func).args
+
         def wrapped(*args, **kwargs):
-            kwargs = self.normalise(kwargs)
-            return func(*args, **kwargs)
+            request = kwargs
+            for p, a in zip(params, args):
+                request[p] = a
+
+            request = self.normalise(request)
+            return func(**request)
 
         wrapped.__name__ = func.__name__
 

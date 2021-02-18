@@ -10,7 +10,7 @@
 import logging
 import yaml
 
-from climetlab.core.bbox import BoundingBox
+from climetlab.utils.bbox import BoundingBox
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.metadata import annotation

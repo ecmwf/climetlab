@@ -142,6 +142,9 @@ class GribField:
         step = self.handle.get("endStep")
         return self.datetime() + datetime.timedelta(hours=step)
 
+    def to_datetime_list(self):
+        return [self.valid_datetime()]
+
 
 class GRIBIterator:
     def __init__(self, path):

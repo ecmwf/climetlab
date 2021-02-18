@@ -9,7 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core.bbox import BoundingBox
+import pytest
+
+from climetlab.utils.bbox import BoundingBox
 from climetlab.utils import bytes_to_string, dates
 
 
@@ -62,13 +64,19 @@ def test_bbox():
         bbox = bbox2.merge(bbox1)
         assert bbox.width == 60, (bbox1, bbox2, bbox)
 
+    with pytest.raises(ValueError):
+        BoundingBox(north=-10, west=0, south=30, east=1)
+
+    with pytest.raises(ValueError):
+        BoundingBox(north=90, west=1, south=30, east=1)
+
 
 def test_parse_date():
     dates.parse_date("1851-06-25Z00:00")
     dates.parse_date("1851-06-25Z06:00")
 
 
-def test_dates():
+def dont_test_dates():
     assert dates.datetimes_to_dates_and_times("1/3/99", as_request=True) == [
         (("1999-01-03",), ("00:00",))
     ]

@@ -8,6 +8,7 @@
 #
 
 import datetime
+
 # from collections import defaultdict
 from climetlab.helpers import helper
 import numpy as np
@@ -35,8 +36,11 @@ def to_datetime(dt):
     if isinstance(dt, datetime.datetime):
         return dt
 
+    if isinstance(dt, datetime.date):
+        return datetime.datetime(dt.year, dt.month, dt.day)
+
     if isinstance(dt, np.datetime64):
-        return datetime.datetime.utcfromtimestamp(dt.astype(int) * 1e-9)
+        return to_datetime(dt.astype(datetime.datetime))
 
     if isinstance(dt, str):
         return parse_date(dt)
@@ -44,7 +48,7 @@ def to_datetime(dt):
     if getattr(dt, "to_datetime", None) is None:
         dt = helper(dt)
 
-    return dt.to_datetime()
+    return to_datetime(dt.to_datetime())
 
 
 def to_datetimes_list(datetimes):
