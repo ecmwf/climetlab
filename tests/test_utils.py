@@ -10,7 +10,7 @@
 #
 
 from climetlab.core.bbox import BoundingBox
-from climetlab.utils import bytes_to_string, datetime as dt
+from climetlab.utils import bytes_to_string, dates
 
 
 def test_bytes():
@@ -64,11 +64,11 @@ def test_bbox():
 
 
 def test_parse_date():
-    dt.parse_date("1851-06-25Z00:00")
-    dt.parse_date("1851-06-25Z06:00")
+    dates.parse_date("1851-06-25Z00:00")
+    dates.parse_date("1851-06-25Z06:00")
 
 
 def test_dates():
-    assert dt.datetimes_to_dates_and_times("1/3/99", as_request=True) == [
+    assert dates.datetimes_to_dates_and_times("1/3/99", as_request=True) == [
         (("1999-01-03",), ("00:00",))
     ]

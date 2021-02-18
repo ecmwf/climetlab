@@ -9,7 +9,7 @@
 
 import re
 import itertools
-from .datetime import to_datetime
+from .dates import to_datetime
 
 RE1 = re.compile(r"{([^}]*)}")
 RE2 = re.compile(r"\(([^}]*)\)")

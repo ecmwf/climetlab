@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from climetlab.utils import download_and_cache
-from climetlab.utils.datetime import parse_date
+from climetlab.utils.dates import parse_date
 
 from . import Dataset
 

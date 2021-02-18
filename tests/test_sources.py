@@ -21,3 +21,10 @@ def test_source_1():
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
 def test_source_2():
     source.file("docs/examples/test.grib")
+
+
+def test_source_3():
+    load_source(
+        "zarr-s3",
+        "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/zarr/2t.zarr",
+    )
