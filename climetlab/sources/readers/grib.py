@@ -13,6 +13,7 @@ import logging
 import eccodes
 
 from . import Reader
+from climetlab.utils.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)
 
@@ -144,6 +145,14 @@ class GribField:
 
     def to_datetime_list(self):
         return [self.valid_datetime()]
+
+    def to_bounding_box(self):
+        return BoundingBox(
+            north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
+            south=self.handle.get("latitudeOfLastGridPointInDegrees"),
+            west=self.handle.get("longitudeOfFirstGridPointInDegrees"),
+            east=self.handle.get("longitudeOfLastGridPointInDegrees"),
+        )
 
 
 class GRIBIterator:

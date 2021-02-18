@@ -25,11 +25,14 @@ class parameters:
 
     def __call__(self, func):
 
-        params = inspect.getfullargspec(func).args
+        spec = inspect.getfullargspec(func)
 
         def wrapped(*args, **kwargs):
-            request = kwargs
-            for p, a in zip(params, args):
+
+            request = dict()
+            request.update(kwargs)
+
+            for p, a in zip(spec.args, args):
                 request[p] = a
 
             request = self.normalise(request)

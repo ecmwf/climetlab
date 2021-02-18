@@ -12,6 +12,7 @@
 import datetime
 from contextlib import closing
 from itertools import product
+from climetlab.utils.bbox import BoundingBox
 
 import numpy as np
 import xarray as xr
@@ -143,6 +144,14 @@ class NetCDFField:
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
+
+    def to_datetime_list(self):
+        raise NotImplementedError
+
+    def to_bounding_box(self):
+        return BoundingBox(
+            north=self.north, south=self.south, east=self.east, west=self.west
+        )
 
 
 class NetCDFReader(Reader):
