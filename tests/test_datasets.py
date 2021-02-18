@@ -39,3 +39,7 @@ def test_pandas_filter():
     data = cml.load_dataset("hurricane-database", "atlantic")
     irma = data.to_pandas(name="irma", year=2017)
     assert len(irma) == 66
+
+
+if __name__ == "__main__":
+    test_datetime()
