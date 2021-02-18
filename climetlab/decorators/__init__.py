@@ -43,8 +43,9 @@ class parameters:
         result = dict(**request)
 
         for k, v in self.types.items():
-            n = v.normalise(request.get(k))
-            if n is not None:
-                result[k] = n
+            if k in request:
+                n = v.normalise(request[k])
+                if n is not None:
+                    result[k] = n
 
         return result

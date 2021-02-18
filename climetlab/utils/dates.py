@@ -40,7 +40,19 @@ def to_datetime(dt):
         return datetime.datetime(dt.year, dt.month, dt.day)
 
     if isinstance(dt, np.datetime64):
-        return to_datetime(dt.astype(datetime.datetime))
+        # Looks like numpy dates conversion vary
+        dt = dt.astype(datetime.datetime)
+
+        if isinstance(dt, datetime.datetime):
+            return dt
+
+        if isinstance(dt, datetime.date):
+            return to_datetime(dt)
+
+        if isinstance(dt, int):
+            return datetime.datetime.utcfromtimestamp(dt * 1e-9)
+
+        raise ValueError("Failed to convert numpy datetime {}".format((dt, type(dt))))
 
     if isinstance(dt, str):
         return parse_date(dt)
