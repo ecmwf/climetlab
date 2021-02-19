@@ -62,6 +62,8 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
+    "s3fs",
+    "zarr",
 ]
 
 

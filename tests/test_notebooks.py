@@ -67,7 +67,7 @@ def test_notebook(path):
             pytest.skip("No ~/.cdsapirc")
 
     if path in TENSORFLOW:
-        if sys.version_info > (3, 8):
+        if sys.version_info >= (3, 9):
             pytest.skip("Tensorflow not yet ready on 3.9")
 
     with open(os.path.join(EXAMPLES, path)) as f:

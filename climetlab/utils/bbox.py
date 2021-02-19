@@ -92,9 +92,11 @@ class BoundingBox:
 
     def add_margins(self, margins):
 
-        margins = max(
-            (self.north - self.south) * margins, (self.east - self.west) * margins
-        )
+        if isinstance(margins, str) and margins[-1] == "%":
+            margins = int(margins[:-1]) / 100.0
+            margins = max(
+                (self.north - self.south) * margins, (self.east - self.west) * margins
+            )
 
         # TODO:check east/west
         margins_lat = margins
