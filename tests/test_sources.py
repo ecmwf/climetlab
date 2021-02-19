@@ -14,27 +14,29 @@ from climetlab import load_source, source
 import pytest
 
 
-def test_source_1():
+def test_file_source_1():
     load_source("file", "docs/examples/test.grib")
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
-def test_source_2():
+def test_file_source_2():
     source.file("docs/examples/test.grib")
 
 
-def check_zarr():
+def zarr_not_installed():
     try:
-        import zarr, s3fs
+        import zarr
+        import s3fs
 
-        return True
-    except ImportError:
         return False
+    except ImportError:
+        return True
 
 
-@pytest.mark.skipif(check_zarr, reason="Zarr or S3FS not installed")
-def test_source_3():
-    load_source(
+@pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
+def test_zarr_source():
+    source = load_source(
         "zarr-s3",
         "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/zarr/2t.zarr",
     )
+    source.to_xarray()
