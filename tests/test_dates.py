@@ -76,6 +76,8 @@ def test_to_datetimes_list():
         datetime.datetime(2000, 1, 10),
     ]
 
+    assert len(to_datetimes_list((-10, "to", -1))) == 10
+
 
 def test_to_datetimes_list_grib():
     source = load_source("file", "docs/examples/test.grib")
