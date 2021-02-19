@@ -16,6 +16,7 @@ HELPERS = {
     "numpy.ndarray": "ndarray",
     "pandas.core.frame.DataFrame": "pandas",
     "builtins.NoneType": "none",
+    "builtins.int": "integer",
 }
 
 

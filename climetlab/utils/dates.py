@@ -24,25 +24,25 @@ import re
 VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
 
 
-def parse_date(dt_str):
+def parse_date(dt):
 
-    if isinstance(dt_str,int):
-        return parse_date(str(dt_str))
+    if not isinstance(dt, str):
+        return to_datetime(dt)
 
-    if not VALID_DATE.match(dt_str):
-        raise ValueError(f"Invalid datetime '{dt_str}'")
+    if not VALID_DATE.match(dt):
+        raise ValueError(f"Invalid datetime '{dt}'")
 
     try:
-        return datetime.datetime.fromisoformat(dt_str)
+        return datetime.datetime.fromisoformat(dt)
     except Exception:
         pass
 
     try:
-        return isoparse(dt_str)
+        return isoparse(dt)
     except ValueError:
         pass
 
-    return parse(dt_str)
+    return parse(dt)
 
 
 def to_datetime(dt):
@@ -68,7 +68,6 @@ def to_datetime(dt):
         raise ValueError("Failed to convert numpy datetime {}".format((dt, type(dt))))
 
     if isinstance(dt, str):
-
         return parse_date(dt)
 
     if getattr(dt, "to_datetime", None) is None:
@@ -107,6 +106,18 @@ def to_datetimes_list(datetimes):
         return to_datetimes_list([datetimes])
 
     if isinstance(datetimes, (list, tuple)):
+        if len(datetimes) == 3 and datetimes[1].lower() == "to":
+            return _mars_list(to_datetime(datetimes[0]), to_datetime(datetimes[2]), 1)
+
+        if (
+            len(datetimes) == 5
+            and datetimes[1].lower() == "to"
+            and datetimes[3].lower() == "by"
+        ):
+            return _mars_list(
+                to_datetime(datetimes[0]), to_datetime(datetimes[2]), int(datetimes[4])
+            )
+
         return [to_datetime(x) for x in datetimes]
 
     if getattr(datetimes, "to_datetime_list", None) is None:

@@ -39,7 +39,11 @@ def test_parse_date():
 
     assert parse_date("1851-06-25 06:00:00") == datetime.datetime(1851, 6, 25, 6)
     assert parse_date("1851-06-25T06:00:00") == datetime.datetime(1851, 6, 25, 6)
-    assert parse_date("1851-06-25T06:00:00Z") == datetime.datetime(1851, 6, 25, 6, tzinfo=datetime.timezone.utc)
+    assert parse_date("1851-06-25T06:00:00Z") == datetime.datetime(
+        1851, 6, 25, 6, tzinfo=datetime.timezone.utc
+    )
+
+    assert parse_date(-2) == parse_date(0) - datetime.timedelta(days=2)
 
 
 def test_to_datetimes_list():
@@ -54,6 +58,18 @@ def test_to_datetimes_list():
         datetime.datetime(2000, 1, 3),
     ]
     assert to_datetimes_list("2000-01-01/to/2000-01-10/by/3") == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 4),
+        datetime.datetime(2000, 1, 7),
+        datetime.datetime(2000, 1, 10),
+    ]
+    assert to_datetimes_list((20000101, "to", 20000103)) == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 2),
+        datetime.datetime(2000, 1, 3),
+    ]
+
+    assert to_datetimes_list(("2000-01-01", "to", "2000-01-10", "by", "3")) == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 4),
         datetime.datetime(2000, 1, 7),
