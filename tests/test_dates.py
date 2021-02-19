@@ -9,7 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.dates import to_datetimes_list, to_datetime
+from climetlab.utils.dates import to_datetimes_list, to_datetime, parse_date
 import numpy as np
 import datetime
 from climetlab import load_source
@@ -27,6 +27,38 @@ def test_to_datetime():
     assert to_datetime("2016-01-01") == pydate
 
     assert to_datetime("2016-01-01T00:00:00") == pydate
+
+
+def test_parse_date():
+    assert parse_date("1851-06-25T00:00") == datetime.datetime(1851, 6, 25)
+    assert parse_date("1851-06-25T06:00") == datetime.datetime(1851, 6, 25, 6)
+    assert parse_date("1851-06-25") == datetime.datetime(1851, 6, 25)
+
+    assert parse_date("18510625") == datetime.datetime(1851, 6, 25)
+    assert parse_date(18510625) == datetime.datetime(1851, 6, 25)
+
+    assert parse_date("1851-06-25 06:00:00") == datetime.datetime(1851, 6, 25, 6)
+    assert parse_date("1851-06-25T06:00:00") == datetime.datetime(1851, 6, 25, 6)
+    assert parse_date("1851-06-25T06:00:00Z") == datetime.datetime(1851, 6, 25, 6, tzinfo=datetime.timezone.utc)
+
+
+def test_to_datetimes_list():
+    assert to_datetimes_list("20000101/to/20000103") == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 2),
+        datetime.datetime(2000, 1, 3),
+    ]
+    assert to_datetimes_list("2000-01-01/to/2000-01-03") == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 2),
+        datetime.datetime(2000, 1, 3),
+    ]
+    assert to_datetimes_list("2000-01-01/to/2000-01-10/by/3") == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 4),
+        datetime.datetime(2000, 1, 7),
+        datetime.datetime(2000, 1, 10),
+    ]
 
 
 def test_to_datetimes_list_grib():
