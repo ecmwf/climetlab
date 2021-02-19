@@ -23,6 +23,16 @@ def test_source_2():
     source.file("docs/examples/test.grib")
 
 
+def check_zarr():
+    try:
+        import zarr, s3fs
+
+        return True
+    except ImportError:
+        return False
+
+
+@pytest.mark.skipif(check_zarr, reason="Zarr or S3FS not installed")
 def test_source_3():
     load_source(
         "zarr-s3",

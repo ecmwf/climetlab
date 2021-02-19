@@ -63,7 +63,7 @@ install_requires += [
     "markdown",
     "entrypoints",
     # "s3fs",
-    "zarr",
+    # "zarr",
 ]
 
 
