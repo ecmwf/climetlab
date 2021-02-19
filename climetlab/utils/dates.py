@@ -19,8 +19,19 @@ from dateutil.parser import isoparse, parse
 
 # MonkeyPatch.patch_fromisoformat()
 
+import re
+
+VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
+
 
 def parse_date(dt_str):
+
+    if isinstance(dt_str,int):
+        return parse_date(str(dt_str))
+
+    if not VALID_DATE.match(dt_str):
+        raise ValueError(f"Invalid datetime '{dt_str}'")
+
     try:
         return datetime.datetime.fromisoformat(dt_str)
     except Exception:
@@ -29,7 +40,9 @@ def parse_date(dt_str):
     try:
         return isoparse(dt_str)
     except ValueError:
-        return parse(dt_str)
+        pass
+
+    return parse(dt_str)
 
 
 def to_datetime(dt):
@@ -55,6 +68,7 @@ def to_datetime(dt):
         raise ValueError("Failed to convert numpy datetime {}".format((dt, type(dt))))
 
     if isinstance(dt, str):
+
         return parse_date(dt)
 
     if getattr(dt, "to_datetime", None) is None:
@@ -63,7 +77,32 @@ def to_datetime(dt):
     return to_datetime(dt.to_datetime())
 
 
+def _mars_list(start, end, by):
+    assert by > 0, by
+    assert end >= start
+    result = []
+    while start <= end:
+        result.append(start)
+        start = start + datetime.timedelta(days=by)
+    return result
+
+
 def to_datetimes_list(datetimes):
+
+    if isinstance(datetimes, str):
+        # MARS style lists
+        bits = datetimes.split("/")
+        if len(bits) == 3 and bits[1].lower() == "to":
+            return _mars_list(to_datetime(bits[0]), to_datetime(bits[2]), 1)
+
+        if len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+            return _mars_list(to_datetime(bits[0]), to_datetime(bits[2]), int(bits[4]))
+
+        try:
+            return to_datetimes_list(bits)
+        except Exception:
+            pass
+
     if isinstance(datetimes, (datetime.datetime, np.datetime64, str)):
         return to_datetimes_list([datetimes])
 

@@ -13,6 +13,7 @@ import os
 import ecmwfapi
 
 from .base import APIKeyPrompt, FileSource
+from climetlab.decorators import parameters
 
 
 class MARSAPI(APIKeyPrompt):
@@ -74,11 +75,16 @@ def service(name):
 
 
 class MARSRetriever(FileSource):
-    def __init__(self, **req):
-        self.path = self.cache_file(req)
+    def __init__(self, **kwargs):
+        request = self.request(**kwargs)
+        self.path = self.cache_file(request)
         if not os.path.exists(self.path):
-            service("mars").execute(req, self.path + ".tmp")
+            service("mars").execute(request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
+
+    @parameters(date=("date-list", "%Y-%m-%d"), area=("bounding-box", list))
+    def request(self, **kwargs):
+        return kwargs
 
     def read_csv_options(self):
         return dict(
