@@ -22,6 +22,8 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 
+SKIP = ("11-icoads.ipynb",)
+
 MARS = (
     "04-source-mars.ipynb",
     "04-source-mars.ipynb",
@@ -57,6 +59,9 @@ def notebooks_list():
 )
 @pytest.mark.parametrize("path", notebooks_list())
 def test_notebook(path):
+
+    if path in SKIP:
+        pytest.skip("Notebook marked as 'skip'")
 
     if path in MARS:
         if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
