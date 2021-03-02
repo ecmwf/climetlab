@@ -1,4 +1,4 @@
-name: Check and publish
+name: Check
 
 on:
   push:
