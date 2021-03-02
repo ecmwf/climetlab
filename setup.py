@@ -45,7 +45,7 @@ else:
 
 install_requires += [
     "numpy",
-    "xarray",
+    "xarray>=0.17.0",
     "netcdf4",
     "cfgrib>=0.9.8.4",
     "cdsapi",
@@ -62,8 +62,8 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
-    # "s3fs",
-    # "zarr",
+    "s3fs",
+    "zarr",
 ]
 
 
