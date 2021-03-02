@@ -58,10 +58,29 @@ class ZarrS3(DataSource):
 
             return store
 
-        stores = [url_to_store(url) for url in urls]
+        # adding a new dimension take a lot of memory
+        # dslist = [xr.open_dataset(url_to_store(url), engine="zarr") for url in urls]
+        # self._ds = xr.concat(dslist, dim = 'head_time')
+        # return self._ds
 
-        #        self._ds = xr.open_zarr(cache)
-        self._ds = xr.open_mfdataset(stores, engine="zarr")
+        self.dataset._key_to_sort = 'forecast_time' # move this into the plugin
+
+        key_to_sort = self.dataset._key_to_sort
+        dsdict = {}
+        for url in urls:
+            #print(url)
+            store = url_to_store(url)
+            ds = xr.open_dataset(store, engine="zarr")
+            for value in ds[key_to_sort].values:
+                #print(value)
+                dsdict[value] = ds.sel(**{key_to_sort : value})
+        values_sorted = sorted(dsdict.keys())
+        dslist_sorted = [dsdict[d] for d in values_sorted]
+
+        #print('concatenating now...')
+        for i in dslist_sorted:
+            print(i.forecast_time.values)
+        self._ds = xr.concat(dslist_sorted, dim = key_to_sort)
         # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):
