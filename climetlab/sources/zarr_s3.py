@@ -34,25 +34,34 @@ class Cache:
 
 
 class ZarrS3(DataSource):
-    def __init__(self, url, **kwargs):
+    def __init__(self, urls, **kwargs):
         super().__init__(**kwargs)
 
-        bits = url.split("/")
+        if not isinstance(urls, list):
+            urls = [urls]
 
-        url = "/".join(bits[:3])
-        root = "/".join(bits[3:])
+        def url_to_store(url):
+            bits = url.split("/")
 
-        fs = s3fs.S3FileSystem(anon=True, client_kwargs={"endpoint_url": url})
+            url = "/".join(bits[:3])
+            root = "/".join(bits[3:])
 
-        store = s3fs.S3Map(
-            root=root,
-            s3=fs,
-            check=False,
-        )
+            fs = s3fs.S3FileSystem(anon=True, client_kwargs={"endpoint_url": url})
 
-        cache = Cache(store)
+            store = s3fs.S3Map(
+                root=root,
+                s3=fs,
+                check=False,
+            )
 
-        self._ds = xr.open_zarr(cache)
+            store = Cache(store)
+
+            return store
+
+        stores = [url_to_store(url) for url in urls]
+
+        #        self._ds = xr.open_zarr(cache)
+        self._ds = xr.open_mfdataset(stores, engine="zarr")
 
     def to_xarray(self):
         return self._ds
