@@ -62,6 +62,7 @@ class ZarrS3(DataSource):
 
         #        self._ds = xr.open_zarr(cache)
         self._ds = xr.open_mfdataset(stores, engine="zarr")
+        # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):
         return self._ds
