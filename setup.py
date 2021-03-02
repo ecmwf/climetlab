@@ -45,7 +45,7 @@ else:
 
 install_requires += [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
-    "chardet==3.0.4",
+    "chardet<4>=3.0",
     "numpy",
     "xarray>=0.17.0",
     "netcdf4",
