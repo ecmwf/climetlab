@@ -48,7 +48,6 @@ install_requires += [
     # "chardet>=3.0,<4.0",
     # "aiohttp==3.7.2",
     "s3fs",
-
     "numpy",
     "xarray>=0.17.0",
     "netcdf4",
@@ -67,7 +66,6 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
-
     "zarr",
 ]
 
