@@ -62,6 +62,8 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
+    # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
+    "chardet=3.0.4",
     "s3fs",
     "zarr",
 ]
