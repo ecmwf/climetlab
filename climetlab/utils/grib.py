@@ -22,6 +22,7 @@ def post_xarray_open_dataset_hook(ds):
         ds = ds.drop("surface")
     return ds
 
+
 def open_dataset_params(time_convention="withstep"):
     params = {}
     if time_convention == "withstep":
