@@ -28,6 +28,7 @@ class Dataset:
     licence = "-"
     documentation = "-"
     citation = "-"
+    terms_of_use = None
 
     _source = None
 
@@ -134,6 +135,8 @@ class DatasetMaker:
 
 dataset = DatasetMaker()
 
+TERMS_OF_USE_SHOWN = set()
+
 
 def load_dataset(name, *args, **kwargs):
     try:
@@ -143,5 +146,12 @@ def load_dataset(name, *args, **kwargs):
         return ds
     except Exception:
         ds = dataset(name)
+
+        if name not in TERMS_OF_USE_SHOWN:
+            if ds.terms_of_use is not None:
+                print(ds.terms_of_use)
+            TERMS_OF_USE_SHOWN.add(name)
+
         ds._load(*args, **kwargs)
+
         return ds
