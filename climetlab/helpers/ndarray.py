@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 from climetlab.helpers import helper as get_helper
+import datetime
 
 
 class NumpyArrayHelper:
@@ -30,6 +31,9 @@ class NumpyArrayHelper:
             self.data.reshape(metadata.get("shape", self.data.shape)),
             metadata=metadata,
         )
+
+    def to_datetime_list(self):
+        return [datetime.datetime.fromtimestamp(x * 1e-9) for x in self.data.tolist()]
 
 
 helper = NumpyArrayHelper

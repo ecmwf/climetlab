@@ -9,7 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.dates import to_datetimes_list, to_datetime, parse_date
+from climetlab.utils.dates import to_datetime_list, to_datetime, parse_date
 import numpy as np
 import datetime
 from climetlab import load_source
@@ -47,44 +47,44 @@ def test_parse_date():
 
 
 def test_to_datetimes_list():
-    assert to_datetimes_list("20000101/to/20000103") == [
+    assert to_datetime_list("20000101/to/20000103") == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 2),
         datetime.datetime(2000, 1, 3),
     ]
-    assert to_datetimes_list("2000-01-01/to/2000-01-03") == [
+    assert to_datetime_list("2000-01-01/to/2000-01-03") == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 2),
         datetime.datetime(2000, 1, 3),
     ]
-    assert to_datetimes_list("2000-01-01/to/2000-01-10/by/3") == [
+    assert to_datetime_list("2000-01-01/to/2000-01-10/by/3") == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 4),
         datetime.datetime(2000, 1, 7),
         datetime.datetime(2000, 1, 10),
     ]
-    assert to_datetimes_list((20000101, "to", 20000103)) == [
+    assert to_datetime_list((20000101, "to", 20000103)) == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 2),
         datetime.datetime(2000, 1, 3),
     ]
 
-    assert to_datetimes_list(("2000-01-01", "to", "2000-01-10", "by", "3")) == [
+    assert to_datetime_list(("2000-01-01", "to", "2000-01-10", "by", "3")) == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 4),
         datetime.datetime(2000, 1, 7),
         datetime.datetime(2000, 1, 10),
     ]
 
-    assert len(to_datetimes_list((-10, "to", -1))) == 10
+    assert len(to_datetime_list((-10, "to", -1))) == 10
 
 
 def test_to_datetimes_list_grib():
     source = load_source("file", "docs/examples/test.grib")
     for s in source:
-        assert to_datetimes_list(s) == [datetime.datetime(2020, 5, 13, 12, 0)]
+        assert to_datetime_list(s) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
 if __name__ == "__main__":
     # test_to_datetime()
-    to_datetimes_list()
+    to_datetime_list()

@@ -8,9 +8,10 @@
 #
 
 import numpy as np
+from climetlab.utils.dates import to_datetime_list
 
 
-class XArrayHelper:
+class XArrayDatasetHelper:
     def __init__(self, data):
 
         # data.climetlab.foo(42)
@@ -62,10 +63,21 @@ class XArrayHelper:
         return result
 
 
+class XArrayDataArrayHelper:
+    def __init__(self, data):
+        self.data = data
+
+    def to_datetime_list(self):
+        return to_datetime_list(self.data.values)
+
+
 def helper(data, *args, **kwargs):
     import xarray as xr
 
     if isinstance(data, xr.Dataset):
-        return XArrayHelper(data, *args, **kwargs)
+        return XArrayDatasetHelper(data, *args, **kwargs)
 
-    return XArrayHelper(data.to_dataset(), *args, **kwargs)
+    try:
+        return XArrayDatasetHelper(data.to_dataset(), *args, **kwargs)
+    except ValueError:
+        return XArrayDataArrayHelper(data, *args, **kwargs)

@@ -70,20 +70,17 @@ class Dataset:
     def annotate(self, data, **kargs):
         return annotate(data, self, **kargs)
 
-    def check_parameter(self, name, value, *values):
-        pass
-
-    def read_csv_options(self):
+    def read_csv_options(self, *args, **kwargs):
         return {}
 
-    def read_zarr_options(self):
+    def read_zarr_options(self, *args, **kwargs):
         return {}
 
-    def read_grib_options(self):
+    def cfgrib_options(self, *args, **kwargs):
         return {}
 
-    def read_grib_options(self):
-        return {}
+    def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
+        return ds
 
 
 def _module_callback(plugin):

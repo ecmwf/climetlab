@@ -11,15 +11,25 @@
 
 import climetlab as cml
 
-# TODO: choose a smaller dataset
+"""
+Test if a numpy array can be plotted using another field as metadata,
+i.e. for bounding box, style, etc.
+"""
 
 
-def test_numpy_1():
-    ds = cml.load_dataset("weather-bench")
-    z500 = ds.to_xarray()
-    z = z500.sel({"time": "1979-01-01"}).z.values
-    cml.plot_map(z[0], metadata=z500.z)
+# def test_numpy_grib():
+#     s = cml.load_source("file", "docs/examples/test.grib")
+#     x = s.to_xarray()
+#     cml.plot_map(x.msl.values, metadata=s[1])
 
 
-if __name__ == "__main__":
-    test_numpy_1()
+# def test_numpy_netcdf():
+#     s = cml.load_source("file", "docs/examples/test.nc")
+#     x = s.to_xarray()
+#     cml.plot_map(x.msl.values, metadata=s[1])
+
+
+def test_numpy_xarray():
+    s = cml.load_source("file", "docs/examples/test.nc")
+    x = s.to_xarray()
+    cml.plot_map(x.msl.values, metadata=x.msl)

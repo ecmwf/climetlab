@@ -83,19 +83,22 @@ class DataSource:
     def _repr_html_(self):
         return table(self)
 
-    def read_csv_options(self):
+    def read_csv_options(self, *args, **kwargs):
         if self.dataset is None:
             return {}
-        return self.dataset.read_csv_options()
+        return self.dataset.read_csv_options(*args, **kwargs)
 
-    def read_zarr_options(self):
+    def read_zarr_options(self, *args, **kwargs):
         if self.dataset is None:
             return {}
-        return self.dataset.read_zarr_options()
+        return self.dataset.read_zarr_options(*args, **kwargs)
 
-    _xarray_cache = None
+    def cfgrib_options(self, *args, **kwargs):
+        if self.dataset is None:
+            return {}
+        return self.dataset.cfgrib_options(*args, **kwargs)
 
-    def to_xarray(self, **kwargs):
-        if self._xarray_cache is None:
-            self._xarray_cache = self._to_xarray(**kwargs)
-        return self._xarray_cache
+    def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
+        if self.dataset is None:
+            return ds
+        return self.dataset.post_xarray_open_dataset_hook(ds, *args, **kwargs)
