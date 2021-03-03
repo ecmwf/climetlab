@@ -130,7 +130,8 @@ class Settings:
         """Reset setting(s) to default values.
 
         Args:
-            name (str, optional): The name of the setting to reset to default. If the setting does not have a default, it is removed. If `None` is passed, all settings are reset to their default values. Defaults to None.
+            name (str, optional): The name of the setting to reset to default. If the setting does not have a default,
+            it is removed. If `None` is passed, all settings are reset to their default values. Defaults to None.
         """
         if name is None:
             self._settings = dict(**DEFAULTS)
