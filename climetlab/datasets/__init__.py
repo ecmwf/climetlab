@@ -85,6 +85,7 @@ class Dataset:
     def read_grib_options(self):
         return {}
 
+
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset
 

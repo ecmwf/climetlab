@@ -65,7 +65,7 @@ class ZarrS3(DataSource):
 
         options = self.read_zarr_options()
 
-        concat_dim = options.get('concat_dim', 'forecast_time')
+        concat_dim = options.get("concat_dim", "forecast_time")
 
         stores = [url_to_store(url) for url in urls]
         dslist = [xr.open_dataset(store, engine="zarr") for store in stores]
@@ -73,15 +73,15 @@ class ZarrS3(DataSource):
         dsdict = {}
         for ds in dslist:
             for value in ds[concat_dim].values:
-                #print(value)
-                dsdict[value] = ds.sel(**{concat_dim : value})
+                # print(value)
+                dsdict[value] = ds.sel(**{concat_dim: value})
             values_sorted = sorted(dsdict.keys())
             dslist = [dsdict[d] for d in values_sorted]
-        #print('concatenating now...')
+        # print('concatenating now...')
         for i in dslist:
             print(i.forecast_time.values)
 
-        self._ds = xr.concat(dslist, dim = concat_dim)
+        self._ds = xr.concat(dslist, dim=concat_dim)
         # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):
