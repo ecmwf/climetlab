@@ -28,6 +28,7 @@ class Dataset:
     licence = "-"
     documentation = "-"
     citation = "-"
+    terms_of_use = None
 
     _source = None
 
@@ -70,20 +71,17 @@ class Dataset:
     def annotate(self, data, **kargs):
         return annotate(data, self, **kargs)
 
-    def check_parameter(self, name, value, *values):
-        pass
-
-    def read_csv_options(self):
+    def read_csv_options(self, *args, **kwargs):
         return {}
 
-    def read_zarr_options(self):
+    def read_zarr_options(self, *args, **kwargs):
         return {}
 
-    def read_grib_options(self):
+    def cfgrib_options(self, *args, **kwargs):
         return {}
 
-    def read_grib_options(self):
-        return {}
+    def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
+        return ds
 
 
 def _module_callback(plugin):
@@ -137,6 +135,8 @@ class DatasetMaker:
 
 dataset = DatasetMaker()
 
+TERMS_OF_USE_SHOWN = set()
+
 
 def load_dataset(name, *args, **kwargs):
     try:
@@ -146,5 +146,12 @@ def load_dataset(name, *args, **kwargs):
         return ds
     except Exception:
         ds = dataset(name)
+
+        if name not in TERMS_OF_USE_SHOWN:
+            if ds.terms_of_use is not None:
+                print(ds.terms_of_use)
+            TERMS_OF_USE_SHOWN.add(name)
+
         ds._load(*args, **kwargs)
+
         return ds

@@ -86,7 +86,7 @@ def _mars_list(start, end, by):
     return result
 
 
-def to_datetimes_list(datetimes):
+def to_datetime_list(datetimes):
 
     if isinstance(datetimes, str):
         # MARS style lists
@@ -98,12 +98,12 @@ def to_datetimes_list(datetimes):
             return _mars_list(to_datetime(bits[0]), to_datetime(bits[2]), int(bits[4]))
 
         try:
-            return to_datetimes_list(bits)
+            return to_datetime_list(bits)
         except Exception:
             pass
 
     if isinstance(datetimes, (datetime.datetime, np.datetime64, str)):
-        return to_datetimes_list([datetimes])
+        return to_datetime_list([datetimes])
 
     if isinstance(datetimes, (list, tuple)):
         if len(datetimes) == 3 and datetimes[1].lower() == "to":
@@ -123,7 +123,7 @@ def to_datetimes_list(datetimes):
     if getattr(datetimes, "to_datetime_list", None) is None:
         datetimes = helper(datetimes)
 
-    return to_datetimes_list(datetimes.to_datetime_list())
+    return to_datetime_list(datetimes.to_datetime_list())
 
 
 def to_dates_and_times(datetimes_list):
@@ -131,7 +131,7 @@ def to_dates_and_times(datetimes_list):
     # result = []
     # datetimes = defaultdict(set)
 
-    # for dt in to_datetimes_list(datetimes_list):
+    # for dt in to_datetime_list(datetimes_list):
     #     datetimes[dt.date())].add(dt.time())
 
     # timedates = defaultdict(set)
@@ -146,4 +146,4 @@ def to_dates_and_times(datetimes_list):
 
 
 def to_date_list(obj):
-    return sorted(set(to_datetimes_list(obj)))
+    return sorted(set(to_datetime_list(obj)))
