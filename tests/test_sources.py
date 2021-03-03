@@ -14,13 +14,20 @@ from climetlab import load_source, source
 import pytest
 
 
-def test_file_source_1():
-    load_source("file", "docs/examples/test.grib")
+def test_file_source_grib():
+    s = load_source("file", "docs/examples/test.grib")
+    assert len(s) == 2
+
+
+def test_file_source_netcdf():
+    s = load_source("file", "docs/examples/test.nc")
+    assert len(s) == 2
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
-def test_file_source_2():
-    source.file("docs/examples/test.grib")
+def test_file_source_shortcut():
+    s = source.file("docs/examples/test.grib")
+    assert len(s) == 2
 
 
 def zarr_not_installed():
@@ -33,7 +40,6 @@ def zarr_not_installed():
         return True
 
 
-S3_URL = "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/reference-set/0.1.20/zarr"
 S3_URL = "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/fixtures"
 
 
@@ -56,8 +62,6 @@ def test_zarr_source_2():
     source = load_source(
         "zarr-s3",
         [
-            # f"{S3_URL}/rt-20200109.zarr",
-            # f"{S3_URL}/rt-20200102.zarr",
             f"{S3_URL}/0.1.20/zarr/mini-rt-20200109.zarr",
             f"{S3_URL}/0.1.20/zarr/mini-rt-20200102.zarr",
         ],

@@ -55,6 +55,10 @@ def notebooks_list():
 
 
 @pytest.mark.skipif(
+    int(os.environ.get("CLIMETLAB_SKIP_NOTEBOOKS_TESTS", 0)),
+    reason="CLIMETLAB_SKIP_NOTEBOOKS_TESTS not zero",
+)
+@pytest.mark.skipif(
     sys.platform == "win32", reason="Cannot execute notebookds on Windows"
 )
 @pytest.mark.parametrize("path", notebooks_list())
