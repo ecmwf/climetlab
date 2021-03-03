@@ -63,24 +63,25 @@ class ZarrS3(DataSource):
         # self._ds = xr.concat(dslist, dim = 'head_time')
         # return self._ds
 
-        self.dataset._key_to_sort = 'forecast_time' # move this into the plugin
+        options = self.read_zarr_options()
 
-        key_to_sort = self.dataset._key_to_sort
+        concat_dim = options.get('concat_dim', 'forecast_time')
+
+        stores = [url_to_store(url) for url in urls]
+        dslist = [xr.open_dataset(store, engine="zarr") for store in stores]
+
         dsdict = {}
-        for url in urls:
-            #print(url)
-            store = url_to_store(url)
-            ds = xr.open_dataset(store, engine="zarr")
-            for value in ds[key_to_sort].values:
+        for ds in dslist:
+            for value in ds[concat_dim].values:
                 #print(value)
-                dsdict[value] = ds.sel(**{key_to_sort : value})
-        values_sorted = sorted(dsdict.keys())
-        dslist_sorted = [dsdict[d] for d in values_sorted]
-
+                dsdict[value] = ds.sel(**{concat_dim : value})
+            values_sorted = sorted(dsdict.keys())
+            dslist = [dsdict[d] for d in values_sorted]
         #print('concatenating now...')
-        for i in dslist_sorted:
+        for i in dslist:
             print(i.forecast_time.values)
-        self._ds = xr.concat(dslist_sorted, dim = key_to_sort)
+
+        self._ds = xr.concat(dslist, dim = concat_dim)
         # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):

@@ -198,6 +198,6 @@ class GRIBReader(Reader):
     def to_xarray(self):
         import xarray as xr
 
-        params = open_dataset_params()
+        params = self.source.cfgrib_options()
         ds = xr.open_dataset(self.path, engine="cfgrib", **params)
-        return post_xarray_open_dataset_hook(ds)
+        return self.source.post_xarray_open_dataset_hook(ds)

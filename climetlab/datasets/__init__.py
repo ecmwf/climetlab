@@ -73,6 +73,17 @@ class Dataset:
     def check_parameter(self, name, value, *values):
         pass
 
+    def read_csv_options(self):
+        return {}
+
+    def read_zarr_options(self):
+        return {}
+
+    def read_grib_options(self):
+        return {}
+
+    def read_grib_options(self):
+        return {}
 
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset

@@ -34,9 +34,29 @@ def zarr_not_installed():
 
 
 @pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
-def test_zarr_source():
+def test_zarr_source_1():
     source = load_source(
         "zarr-s3",
-        "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/zarr/2t.zarr",
+        "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/reference-set/0.1.20/zarr/rt-20200102.zarr",
     )
-    source.to_xarray()
+    ds = source.to_xarray()
+    assert len(ds.forecast_time) == 1
+
+@pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
+def test_zarr_source_2():
+    import numpy as np
+    from climetlab.utils.dates import to_datetimes_list
+    import datetime
+    source = load_source(
+        "zarr-s3",
+        ["https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/reference-set/0.1.20/zarr/rt-20200109.zarr",
+        "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/reference-set/0.1.20/zarr/rt-20200102.zarr"],
+    )
+    ds = source.to_xarray()
+    assert len(ds.forecast_time) == 2
+    dates = ds.forecast_time.values #.tolist()
+    dates = to_datetimes_list([dates[0], dates[1]])
+    assert dates[0] == datetime.datetime(2020,1,2)
+    assert dates[1] == datetime.datetime(2020,1,9)
+#    assert str(dates[0]) == datetime.datetime(2020,1,2)
+#    assert str(dates[1]) == datetime.datetime(2020,1,9)

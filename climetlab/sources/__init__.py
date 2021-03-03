@@ -87,3 +87,15 @@ class DataSource:
         if self.dataset is None:
             return {}
         return self.dataset.read_csv_options()
+
+    def read_zarr_options(self):
+        if self.dataset is None:
+            return {}
+        return self.dataset.read_zarr_options()
+    
+    _xarray_cache = None
+    def to_xarray(self, **kwargs):
+        if self._xarray_cache is None:
+           self._xarray_cache = self._to_xarray(**kwargs)
+        return self._xarray_cache
+    
