@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../climetlab-s2s-ai-competition"
 		}
 	],
 	"settings": {
