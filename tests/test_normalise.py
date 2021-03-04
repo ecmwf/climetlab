@@ -19,17 +19,28 @@ from climetlab.utils.bbox import BoundingBox
 from climetlab import load_source
 
 
-@parameters(parameter=("parameter-list", ["tp"]))
-def values_1(parameter):
+@parameters(parameter=("parameter-list", "mars"))
+def values_mars(parameter):
     return parameter
 
 
-def test_param():
-    assert values_1(parameter="tp") == "tp"
-    assert values_1(parameter="2t") == "2t"
-    # assert values_1(parameter='2t') == 't2m'
-    with pytest.raises(NotImplementedError):
-        values_1(parameter="some not existent parameter lkqsdjfmlkjdf")
+@parameters(parameter=("parameter-list", "cf"))
+def values_cf(parameter):
+    return parameter
+
+
+def test_param_convention_mars():
+    assert values_mars(parameter="tp") == "tp"
+    assert values_mars(parameter="2t") == "2t"
+    assert values_mars(parameter="t2m") == "2t"
+    assert values_mars(parameter=["t2m", "tp"]) == ["2t", "tp"]
+    assert values_mars(parameter="whatever") == "whatever"
+
+
+def test_param_convention_cf():
+    assert values_cf(parameter="tp") == "tp"
+    assert values_cf(parameter="2t") == "t2m"
+    assert values_cf(parameter="t2m") == "t2m"
 
 
 @parameters(date="date-list")
@@ -103,4 +114,5 @@ def test_bbox():
 if __name__ == "__main__":
     test_dates()
     test_bbox()
-    test_param()
+    test_param_convention_cf()
+    test_param_convention_mars()
