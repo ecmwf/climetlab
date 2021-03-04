@@ -19,6 +19,19 @@ from climetlab.utils.bbox import BoundingBox
 from climetlab import load_source
 
 
+@parameters(parameter=("parameter-list", ["tp"]))
+def values_1(parameter):
+    return parameter
+
+
+def test_param():
+    assert values_1(parameter="tp") == "tp"
+    assert values_1(parameter="2t") == "2t"
+    # assert values_1(parameter='2t') == 't2m'
+    with pytest.raises(NotImplementedError):
+        values_1(parameter="some not existent parameter lkqsdjfmlkjdf")
+
+
 @parameters(date="date-list")
 def dates_1(date):
     return date
@@ -90,3 +103,4 @@ def test_bbox():
 if __name__ == "__main__":
     test_dates()
     test_bbox()
+    test_param()

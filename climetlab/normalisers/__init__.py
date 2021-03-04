@@ -9,5 +9,10 @@
 
 from .date import DateListNormaliser
 from .bbox import BoundingBoxNormaliser
+from .parameter import ParameterNormaliser
 
-NORMALISERS = {"date-list": DateListNormaliser, "bounding-box": BoundingBoxNormaliser}
+NORMALISERS = {
+    "date-list": DateListNormaliser,
+    "parameter-list": ParameterNormaliser,
+    "bounding-box": BoundingBoxNormaliser,
+}
