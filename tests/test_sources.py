@@ -11,6 +11,7 @@
 
 import sys
 from climetlab import load_source, source
+from .utils import zarr_not_installed
 import pytest
 
 
@@ -28,16 +29,6 @@ def test_file_source_netcdf():
 def test_file_source_shortcut():
     s = source.file("docs/examples/test.grib")
     assert len(s) == 2
-
-
-def zarr_not_installed():
-    try:
-        import zarr
-        import s3fs
-
-        return False
-    except ImportError:
-        return True
 
 
 S3_URL = "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/fixtures"
