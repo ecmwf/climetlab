@@ -22,6 +22,5 @@ def test_grib():
         # test shape
         assert s.shape == (11, 19)
 
-
 if __name__ == "__main__":
     test_grib()

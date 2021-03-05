@@ -10,6 +10,7 @@
 #
 
 import sys
+import os
 from climetlab import load_source, source
 import pytest
 
@@ -30,6 +31,73 @@ def test_file_source_shortcut():
     assert len(s) == 2
 
 
+def test_file_source_mars():
+
+    if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
+        pytest.skip("No ~/.ecmwfapirc")
+
+    s = load_source(
+        "mars",
+        param=["2t", "msl"],
+        levtype="sfc",
+        area=[50, -50, 20, 50],
+        grid=[1, 1],
+        date="2012-12-13",
+    )
+    assert len(s) == 2
+
+
+def test_file_source_cds_grib():
+
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+    )
+    assert len(s) == 2
+
+
+def test_file_source_cds_netcdf():
+
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+        format="netcdf",
+    )
+    assert len(s) == 2
+
+
+def test_ulr_source_1():
+    load_source("url", "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr")
+
+
+def test_ulr_source_2():
+    load_source(
+        "url", "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib"
+    )
+
+
+def test_ulr_source_3():
+    load_source(
+        "url", "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.nc"
+    )
+
+
 def zarr_not_installed():
     try:
         import zarr
@@ -47,7 +115,6 @@ S3_URL = "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/fi
 def test_zarr_source_1():
     source = load_source(
         "zarr-s3",
-        # f"{S3_URL}/rt-20200102.zarr",
         f"{S3_URL}/0.1.20/zarr/mini-rt-20200102.zarr",
     )
     ds = source.to_xarray()
