@@ -68,7 +68,16 @@ class ZarrS3(DataSource):
         concat_dim = options.get("concat_dim", "forecast_time")
 
         stores = [url_to_store(url) for url in urls]
-        dslist = [xr.open_dataset(store, engine="zarr") for store in stores]
+
+        dslist = []
+        import zarr
+
+        for store, url in zip(stores, urls):
+            try:
+                dslist.append(xr.open_dataset(store, engine="zarr"))
+            except zarr.errors.GroupNotFoundError as e:
+                print(f"ERROR : Cannot find data at url = {url}")
+                reraise(e)
 
         dsdict = {}
         for ds in dslist:

@@ -82,7 +82,11 @@ class MARSRetriever(FileSource):
             service("mars").execute(request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    @parameters(date=("date-list", "%Y-%m-%d"), area=("bounding-box", list))
+    @parameters(
+        param=("parameter-list", "mars"),
+        date=("date-list", "%Y-%m-%d"),
+        area=("bounding-box", list),
+    )
     def request(self, **kwargs):
         return kwargs
 
