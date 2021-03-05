@@ -7,11 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-import yaml
-import re
-import logging
-
 from climetlab.utils.conventions import normalise_string
 
 
