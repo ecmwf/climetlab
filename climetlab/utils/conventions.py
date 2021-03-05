@@ -26,7 +26,7 @@ def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
         return ALIASES, CONVENTIONS
 
     with open(yaml_file) as f:
-        mappings = yaml.load(f.read(), Loader=yaml.SafeLoader)
+        mappings = yaml.load(f.read(), Loader=yaml.SafeLoader)["parameter_name"]
 
     def split_mapping(key):
 
