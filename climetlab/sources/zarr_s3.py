@@ -77,7 +77,7 @@ class ZarrS3(DataSource):
                 dslist.append(xr.open_dataset(store, engine="zarr"))
             except zarr.errors.GroupNotFoundError as e:
                 print(f"ERROR : Cannot find data at url = {url}")
-                reraise(e)
+                raise (e)
 
         dsdict = {}
         for ds in dslist:
