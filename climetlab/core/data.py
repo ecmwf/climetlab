@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 YAML_FILES = None
 
-IGNORE = ["magics.yaml", "colours.yaml"]
+IGNORE = ["magics.yaml", "colours.yaml", "conventions.yaml"]
 
 
 def _guess(data, path):
