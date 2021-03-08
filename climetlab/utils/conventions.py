@@ -15,7 +15,7 @@ import logging
 ALIASES = None
 CONVENTIONS = None
 DEFAULT_YAML_FILE = os.path.join(os.path.dirname(__file__), "conventions.yaml")
-SEP = ":"
+SEP = "@"
 
 
 def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
