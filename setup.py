@@ -48,6 +48,7 @@ install_requires += [
     # "chardet>=3.0,<4.0",
     # "aiohttp>=3.7.2",
     # --
+    "urllib3<1.27,>=1.25.4",
     "zarr",
     "s3fs",
     "numpy",
