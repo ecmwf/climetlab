@@ -45,9 +45,11 @@ else:
 
 install_requires += [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
-    "chardet>=3.0,<4.0",
-    "aiohttp==3.7.2",
+    # "chardet>=3.0,<4.0",
+    # "aiohttp>=3.7.2",
     # --
+    "zarr",
+    "s3fs",
     "numpy",
     "xarray>=0.17.0",
     "netcdf4",
@@ -66,8 +68,6 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
-    "s3fs",
-    "zarr",
 ]
 
 
