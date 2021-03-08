@@ -42,6 +42,9 @@ class FileSource(DataSource):
     def __getitem__(self, n):
         return self._reader[n]
 
+    def sel(self, *args, **kwargs):
+        return self._reader.sel(*args, **kwargs)
+
     def to_xarray(self, *args, **kwargs):
         return self._reader.to_xarray(*args, **kwargs)
 

@@ -24,6 +24,9 @@ class Reader:
         # Give a chance to `directory` or `zip` to change the reader
         return self
 
+    def sel(self, *args, **kwargs):
+        raise NotImplementedError()
+
 
 def grib_reader(source, path):
     from .grib import GRIBReader
