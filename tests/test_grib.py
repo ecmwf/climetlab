@@ -12,7 +12,7 @@
 from climetlab import load_source, plot_map
 
 
-def test_grib():
+def test_plot():
     for s in load_source("file", "docs/examples/test.grib"):
         plot_map(s)
 
@@ -22,5 +22,12 @@ def test_grib():
         # test shape
         assert s.shape == (11, 19)
 
+
+def test_sel():
+    s = load_source("file", "docs/examples/test.grib")
+
+    s.sel(param="2t")
+
+
 if __name__ == "__main__":
-    test_grib()
+    test_plot()
