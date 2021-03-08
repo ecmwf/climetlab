@@ -14,7 +14,6 @@ import eccodes
 
 from . import Reader
 from climetlab.utils.bbox import BoundingBox
-from climetlab.utils.grib import post_xarray_open_dataset_hook, open_dataset_params
 
 LOG = logging.getLogger(__name__)
 

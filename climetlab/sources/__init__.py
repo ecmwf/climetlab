@@ -78,7 +78,10 @@ class DataSource:
 
     @dataset.setter
     def dataset(self, dataset):
-        self._dataset = weakref.ref(dataset)
+        self._set_dataset(weakref.ref(dataset))
+
+    def _set_dataset(self, dataset):
+        self._dataset = dataset
 
     def _repr_html_(self):
         return table(self)
@@ -100,5 +103,6 @@ class DataSource:
 
     def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
         if self.dataset is None:
+            # print(f'from {self} no self.dataset {self.dataset}, no hook')
             return ds
         return self.dataset.post_xarray_open_dataset_hook(ds, *args, **kwargs)
