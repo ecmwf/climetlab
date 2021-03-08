@@ -26,8 +26,8 @@ def test_plot():
 def test_sel():
     s = load_source("file", "docs/examples/test.grib")
 
-    s.sel(param="2t")
+    s.sel(shortName="2t")
 
 
 if __name__ == "__main__":
-    test_plot()
+    test_sel()

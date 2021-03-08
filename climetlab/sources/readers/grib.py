@@ -14,6 +14,7 @@ import eccodes
 
 from . import Reader
 from climetlab.utils.bbox import BoundingBox
+from climetlab.decorators import dict_args
 
 LOG = logging.getLogger(__name__)
 
@@ -167,6 +168,18 @@ class GRIBIterator:
         return GribField(next(self.reader), self.path)
 
 
+class GRIBFilter:
+    def __init__(self, reader, filter):
+        self._reader = reader
+        self._filter = dict(**filter)
+
+    def __repr__(self):
+        return "GRIBFilter(%s, %s)" % (self._reader, self._filter)
+
+    def __iter__(self):
+        return GRIBIterator(self.path)
+
+
 class GRIBReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
@@ -201,5 +214,6 @@ class GRIBReader(Reader):
         ds = xr.open_dataset(self.path, engine="cfgrib", **params)
         return self.source.post_xarray_open_dataset_hook(ds)
 
-    def sel(self, *args, **kwargs):
-        assert False, (args, kwargs)
+    @dict_args
+    def sel(self, **kwargs):
+        return GRIBFilter(self, kwargs)

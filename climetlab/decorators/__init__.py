@@ -52,3 +52,20 @@ class parameters:
                     result[k] = n
 
         return result
+
+
+def dict_args(func):
+    def wrapped(*args, **kwargs):
+        m = []
+        p = {}
+        for q in args:
+            if isinstance(q, dict):
+                p.update(q)
+            else:
+                m.append(q)
+        p.update(kwargs)
+        return func(*m, **p)
+
+    wrapped.__name__ = func.__name__
+
+    return wrapped
