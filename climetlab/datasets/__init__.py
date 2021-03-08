@@ -51,6 +51,9 @@ class Dataset:
     def __getitem__(self, n):
         return self.source[n]
 
+    def sel(self, *args, **kwargs):
+        return self.source.sel(*args, **kwargs)
+
     def to_numpy(self, *args, **kwargs):
         import numpy as np
 

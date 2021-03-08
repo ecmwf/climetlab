@@ -200,3 +200,6 @@ class GRIBReader(Reader):
         params = self.source.cfgrib_options()
         ds = xr.open_dataset(self.path, engine="cfgrib", **params)
         return self.source.post_xarray_open_dataset_hook(ds)
+
+    def sel(self, *args, **kwargs):
+        assert False, (args, kwargs)

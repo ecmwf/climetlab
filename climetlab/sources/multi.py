@@ -21,6 +21,11 @@ class MultiSource(DataSource):
         self.sources = sources
         self._lengths = [None] * len(sources)
 
+    def _set_dataset(self, dataset):
+        super()._set_dataset(dataset)
+        for s in self.sources:
+            s._set_dataset(dataset)
+
     def __iter__(self):
         return itertools.chain(*self.sources)
 
@@ -34,6 +39,15 @@ class MultiSource(DataSource):
             n -= self._length(i)
             i += 1
         return self.sources[i][n]
+
+    def sel(self, *args, **kwargs):
+        raise NotImplementedError
+        # new_sources = []
+        # for s in self.sources:
+        #     new = s.sel(*args, **kwargs)
+        #     return new_sources.append(new)
+        # merged = self.__class__(self, sources=new_sources)
+        # return merged
 
     def __len__(self):
         return sum(self._length(i) for i, _ in enumerate(self.sources))
