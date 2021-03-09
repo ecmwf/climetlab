@@ -48,9 +48,9 @@ install_requires += [
     # "chardet>=3.0,<4.0",
     # "aiohttp>=3.7.2",
     # --
-    "requests>=2.25",
-    "zarr",
-    "s3fs",
+    "requests",
+    # "zarr",
+    # "s3fs",
     "numpy",
     "xarray>=0.17.0",
     "netcdf4",
