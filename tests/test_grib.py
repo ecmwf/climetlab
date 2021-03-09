@@ -29,5 +29,31 @@ def test_sel():
     s.sel(shortName="2t")
 
 
+def test_multi():
+    s1 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-01",
+    )
+    s2 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-02",
+    )
+    source = load_source("multi", s1, s2)
+    for s in source:
+        print(s)
+
+    source.to_xarray()
+
+    import xarray as xr
+
+    xr.open_mfdataset([s1.path, s2.path], engine="cfgrib")
+
+
 if __name__ == "__main__":
-    test_sel()
+    test_multi()
