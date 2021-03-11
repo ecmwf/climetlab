@@ -10,6 +10,7 @@
 #
 
 from climetlab import load_source, plot_map
+import pytest
 
 
 def test_plot():
@@ -29,6 +30,7 @@ def test_sel():
     s.sel(shortName="2t")
 
 
+@pytest.mark.skipif(True, "not today")
 def test_multi():
     s1 = load_source(
         "cds",
@@ -44,6 +46,13 @@ def test_multi():
         param="2t",
         date="2021-03-02",
     )
+    s3 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date=["2021-03-01", "2021-03-02"],
+    )
     source = load_source("multi", s1, s2)
     for s in source:
         print(s)
@@ -51,6 +60,15 @@ def test_multi():
     source.to_xarray()
 
     import xarray as xr
+
+    print(s1)
+    print(s1.path)
+    print(s2.path)
+    print(s3.path)
+
+    print("--------------")
+    s3.to_xarray()
+    print("--------------")
 
     xr.open_mfdataset([s1.path, s2.path], engine="cfgrib")
 
