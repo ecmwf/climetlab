@@ -97,7 +97,7 @@ def start_wms():
                 print(status, e)
                 break
             except requests.exceptions.ConnectionError as e:
-                print(status,e)
+                print(status, e)
                 time.sleep(1)
                 n += 1
 
