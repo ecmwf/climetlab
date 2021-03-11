@@ -30,7 +30,7 @@ def test_sel():
     s.sel(shortName="2t")
 
 
-@pytest.mark.skipif(True, "not today")
+@pytest.mark.skipif(True, reason="not today")
 def test_multi():
     s1 = load_source(
         "cds",
