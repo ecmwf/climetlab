@@ -11,6 +11,7 @@
 
 from climetlab import load_source, plot_map
 import pytest
+import os
 
 
 def test_plot():
