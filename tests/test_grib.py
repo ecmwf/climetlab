@@ -10,6 +10,7 @@
 #
 
 from climetlab import load_source, plot_map
+import pytest
 
 
 def test_plot():
@@ -29,59 +30,28 @@ def test_sel():
     s.sel(shortName="2t")
 
 
-def test_iter():
-    for s in load_source("file", "docs/examples/test.grib"):
-        print(s)
-
-
-def test_item():
-    s = load_source("file", "docs/examples/test.grib")
-    for i in range(len(s)):
-        print(s[i])
-
-
-def test_big():
-    source = load_source(
-        "mars",
-        param="all",
-        grid="5/5",
-        levtype="sfc",
-        step="all",
-        type="fc",
-        date="2021-03-01",
-    )
-
-    for s in source:
-        print(s)
-
-
-def test_xarray():
-    s = load_source("file", "docs/examples/test.grib")
-    s.to_xarray()
-
-
+@pytest.mark.skipif(True, reason="not today")
 def test_multi():
-    s1 = load_source("file", "docs/examples/test.grib")
-    s2 = load_source("file", "docs/examples/test.grib")
-    source = load_source("multi", s1, s2)
-    for s in source:
-        print(s)
-
-
-def test_multi_2():
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
-        product_type= "reanalysis",
+        product_type="reanalysis",
         param="2t",
         date="2021-03-01",
     )
     s2 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
-        product_type= "reanalysis",
+        product_type="reanalysis",
         param="2t",
         date="2021-03-02",
+    )
+    s3 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date=["2021-03-01", "2021-03-02"],
     )
     source = load_source("multi", s1, s2)
     for s in source:
@@ -89,8 +59,19 @@ def test_multi_2():
 
     source.to_xarray()
 
+    import xarray as xr
+
+    print(s1)
+    print(s1.path)
+    print(s2.path)
+    print(s3.path)
+
+    print("--------------")
+    s3.to_xarray()
+    print("--------------")
+
+    xr.open_mfdataset([s1.path, s2.path], engine="cfgrib")
+
 
 if __name__ == "__main__":
-    # test_iter()
-    # test_item()
-    test_multi_2()
+    test_multi()
