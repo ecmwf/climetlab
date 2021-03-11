@@ -57,6 +57,13 @@ class FileSource(DataSource):
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 
+    def multi_merge(sources):
+        f = FileSource()
+        t = type(sources[0]._reader)
+        assert all(type(s._reader) == t for s in sources)
+        f._reader_ = t.multi_merge(f, [a._reader for a in sources])
+        return f
+
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd
 HTML_MESSAGE = """

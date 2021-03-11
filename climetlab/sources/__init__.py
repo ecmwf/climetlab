@@ -21,7 +21,7 @@ def lookup(name):
 
 
 def load(name, *args, **kwargs):
-    source = lookup(name)(*args, **kwargs)
+    source = lookup(name)(*args, **kwargs).mutate()
     if source.name is None:
         source.name = name
     return source
@@ -61,6 +61,10 @@ class DataSource:
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+
+    def mutate(self):
+        # Give a chance to `multi` to change source
+        return self
 
     def cache_file(self, *args, extension=".cache"):
         owner = self.name

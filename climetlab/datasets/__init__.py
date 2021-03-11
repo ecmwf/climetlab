@@ -32,6 +32,10 @@ class Dataset:
 
     _source = None
 
+    def mutate(self):
+        # Give a chance to a subclass to change
+        return self
+
     @property
     def source(self):
         return self._source
@@ -146,7 +150,7 @@ def load_dataset(name, *args, **kwargs):
         # Backwards compatibility
         ds = dataset(name, *args, **kwargs)
         assert getattr(ds, "_load", None) is None
-        return ds
+        return ds.mutate()
     except Exception:
         ds = dataset(name)
 
@@ -157,4 +161,4 @@ def load_dataset(name, *args, **kwargs):
 
         ds._load(*args, **kwargs)
 
-        return ds
+        return ds.mutate()

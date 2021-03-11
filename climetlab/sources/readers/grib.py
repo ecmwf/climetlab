@@ -11,6 +11,7 @@ import datetime
 import logging
 
 import eccodes
+import weakref
 
 from . import Reader
 from climetlab.utils.bbox import BoundingBox
@@ -19,6 +20,8 @@ from climetlab.decorators import dict_args
 LOG = logging.getLogger(__name__)
 
 # return eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
+
+# See https://pymotw.com/2/weakref/
 
 
 class CodesHandle:
@@ -64,18 +67,38 @@ class CodesReader:
             raise StopIteration()
         return CodesHandle(handle, self.path, offset)
 
+    @property
+    def offset(self):
+        return self.file.tell()
+
+
+def cb(r):
+    print("Delete", r)
+
 
 class GribField:
-    def __init__(self, handle, path):
-        self.handle = handle
-        self.path = path
+    def __init__(self, *, handle=None, reader=None, offset=None):
+        self._handle = handle
+        self._reader = reader
+        self._offset = offset
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Place to suppress exceptions (don't reraise the passed-in exception, it is the caller's responsibility)
         pass
+
+    @property
+    def path(self):
+        return self.handle.path
+
+    @property
+    def handle(self):
+        if self._handle is None:
+            assert self._offset is not None
+            assert self._reader is not None
+            self._handle = self._reader.at_offset(self._offset)
+        return self._handle
 
     @property
     def values(self):
@@ -83,7 +106,9 @@ class GribField:
 
     @property
     def offset(self):
-        return int(self.handle.get("offset"))
+        if self._offset is None:
+            self._offset = int(self.handle.get("offset"))
+        return self._offset
 
     @property
     def shape(self):
@@ -165,7 +190,12 @@ class GRIBIterator:
         return "GRIBIterator(%s)" % (self.path,)
 
     def __next__(self):
-        return GribField(next(self.reader), self.path)
+        offset = self.reader.offset
+        handle = next(self.reader)
+        return GribField(handle=handle, reader=self.reader, offset=offset)
+
+    def __iter__(self):
+        return self
 
 
 class GRIBFilter:
@@ -180,7 +210,12 @@ class GRIBFilter:
         return GRIBIterator(self.path)
 
 
-class GRIBReader(Reader):
+class GRIBMultiFileReader(Reader):
+    def __init__(self, source, readers):
+        super().__init__(source, "/-multi-")
+
+
+class OLDGRIBReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
         self._fields = None
@@ -202,7 +237,7 @@ class GRIBReader(Reader):
     def __getitem__(self, n):
         if self._reader is None:
             self._reader = CodesReader(self.path)
-        return GribField(self._reader.at_offset(self._items()[n]), self.path)
+        return GribField(reader=self._reader, offset=self._items()[n])
 
     def __len__(self):
         return len(self._items())
@@ -217,3 +252,56 @@ class GRIBReader(Reader):
     @dict_args
     def sel(self, **kwargs):
         return GRIBFilter(self, kwargs)
+
+    def multi_merge(source, readers):
+        return GRIBMultiFileReader(source, readers)
+
+
+class GRIBReader(Reader):
+    def __init__(self, source, paths=None, fields=[], filter=None, unfiltetered=True):
+        super().__init__(source, paths)
+        self._fields = [f for f in fields]
+        self._unfiltetered = unfiltetered
+
+        if paths is not None:
+            if not isinstance(paths, (list, tuple)):
+                paths = [paths]
+            for path in paths:
+                for f in GRIBIterator(path):
+                    self._fields.append(f)
+
+    def __getitem__(self, n):
+        return self._fields[n]
+
+    def __len__(self):
+        return len(self._fields)
+
+    def multi_merge(source, readers):
+        fields = []
+        paths = []
+        for r in readers:
+            fields += r._fields
+            if isinstance(r.path, (list, tuple)):
+                paths += list(r.path)
+            else:
+                paths.append(r.path)
+
+        return GRIBReader(
+            source,
+            paths=paths,
+            # fields=fields,
+            unfiltetered=all(r._unfiltetered for r in readers),
+        )
+
+    def to_xarray(self):
+        assert self._unfiltetered
+        assert self.path
+
+        import xarray as xr
+
+        params = self.source.cfgrib_options()
+        if isinstance(self.path, (list, tuple)):
+            ds = xr.open_mfdataset(self.path, engine="cfgrib", **params)
+        else:
+            ds = xr.open_dataset(self.path, engine="cfgrib", **params)
+        return self.source.post_xarray_open_dataset_hook(ds)
