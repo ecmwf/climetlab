@@ -2,6 +2,7 @@ import jinja2
 import os
 import time
 import requests
+import traceback
 
 from skinnywms.data.fs import Availability
 from skinnywms.plot.magics import Plotter
@@ -29,19 +30,23 @@ loader = jinja2.ChoiceLoader(
 application.jinja_loader = loader
 
 
-svr = WMSServer(Availability("./docs/examples/test.grib"), Plotter(), Styler())
+@application.route("/wms/<int:entry>", methods=["GET"])
+def wms(entry):
 
+    try:
 
-@application.route("/wms", methods=["GET"])
-def wms():
+        svr = WMSServer(Availability(PATHS[entry]), Plotter(), Styler())
 
-    return svr.process(
-        request,
-        Response=Response,
-        send_file=send_file,
-        render_template=render_template,
-        reraise=True,
-    )
+        return svr.process(
+            request,
+            Response=Response,
+            send_file=send_file,
+            render_template=render_template,
+            reraise=True,
+        )
+
+    except Exception:
+        return Response(traceback.format_exc(), mimetype="text/plain", status=500)
 
 
 @application.route("/status", methods=["GET"])
@@ -102,3 +107,21 @@ def start_wms():
                 n += 1
 
     assert False, "Cannot allocate a port"
+
+
+PATHS = []
+
+
+def interactive_map(path, **kwargs):
+    from ipyleaflet import Map, WMSLayer
+
+    PATHS.append(path)
+    url = "{}/{}".format(start_wms(), len(PATHS) - 1)
+
+    print("URL", url)
+
+    wms = WMSLayer(url=url, format="image/png", transparent=True, **kwargs)
+
+    m = Map(zoom=2, center=(50, 0))
+    m.add_layer(wms)
+    return m
