@@ -8,6 +8,7 @@
 #
 
 import inspect
+import threading
 
 from climetlab.normalisers import NORMALISERS
 
@@ -66,6 +67,19 @@ def dict_args(func):
                 m.append(q)
         p.update(kwargs)
         return func(*m, **p)
+
+    wrapped.__name__ = func.__name__
+
+    return wrapped
+
+
+LOCK = threading.RLock()
+
+
+def locked(func):
+    def wrapped(*args, **kwargs):
+        with LOCK:
+            return func(*args, **kwargs)
 
     wrapped.__name__ = func.__name__
 

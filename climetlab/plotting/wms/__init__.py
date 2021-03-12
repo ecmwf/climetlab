@@ -1,3 +1,4 @@
+import logging
 import os
 import socket
 import sys
@@ -19,9 +20,11 @@ from climetlab import new_plot
 from climetlab.core.ipython import display
 
 jobs = bg.BackgroundJobManager()
+
 application = Flask(__name__)
 
-# sys.stdout = open("output.log", "w")
+# Be quiet
+logging.getLogger("werkzeug").setLevel(logging.CRITICAL)
 
 loader = jinja2.ChoiceLoader(
     [
@@ -103,9 +106,7 @@ def wms(uid):
 
     try:
 
-        svr = CliMetLabWMSServer(
-            CliMetLabAvailability(OBJECTS[uid]), CliMetLabPlotter(), CliMetLabStyler()
-        )
+        svr = SERVERS[uid]
 
         reply = svr.process(
             request,
@@ -132,8 +133,11 @@ def status():
 
 def _task(port):
     # print("Start task", port)
+    os.environ["WERKZEUG_RUN_MAIN"] = "true"  # Get rid of any banner
     try:
-        application.run(host="localhost", port=port, threaded=4)
+        application.run(
+            host="localhost", port=port, load_dotenv=False, debug=False, threaded=4
+        )
     except Exception as e:
         print("WMS server crashed:", e)
     # print("End task", port)
@@ -166,7 +170,8 @@ def start_wms():
             time.sleep(0.1)
 
         n = 0
-        while n < 3:
+        max_tries = 5
+        while n < max_tries:
             status = f"http://localhost:{port}/status"
             try:
                 r = requests.get(status)
@@ -180,7 +185,8 @@ def start_wms():
                 print("WMS status at", status, e)
                 break
             except requests.exceptions.ConnectionError as e:
-                print("WMS status at", status, e)
+                if n + 1 == max_tries:
+                    print("WMS status at", status, e)
                 time.sleep(1)
                 n += 1
 
@@ -189,7 +195,7 @@ def start_wms():
     raise Exception("Cannot start WMS server")
 
 
-OBJECTS = {}
+SERVERS = {}
 
 
 def interactive_map(obj, **kwargs):
@@ -197,7 +203,9 @@ def interactive_map(obj, **kwargs):
 
     uid = str(uuid.uuid1())
     # TODO: use weak ref
-    OBJECTS[uid] = obj
+    SERVERS[uid] = CliMetLabWMSServer(
+        CliMetLabAvailability(obj), CliMetLabPlotter(), CliMetLabStyler()
+    )
     url = "{}/{}".format(start_wms(), uid)
 
     wms = WMSLayer(url=url, format="image/png", transparent=True, **kwargs)

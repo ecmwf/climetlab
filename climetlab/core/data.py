@@ -14,6 +14,7 @@ from collections import defaultdict
 import yaml
 
 from climetlab.core.plugins import directories
+from climetlab.decorators import locked
 from climetlab.utils.html import css
 
 LOG = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class Entry:
         return "".join(html)
 
 
+@locked
 def _load_yaml_files():
     global YAML_FILES
     if YAML_FILES is not None:
@@ -109,8 +111,10 @@ def _load_yaml_files():
 
 def get_data_entry(kind, name):
     files = _load_yaml_files()
+
     if kind not in files:
         raise KeyError("No collection named '%s'" % (kind,))
+
     if name not in files[kind]:
         raise KeyError(
             "No object '%s' in collection named '%s'"
@@ -135,6 +139,7 @@ def data_entries(kind=None):
                 yield entry
 
 
+@locked
 def clear_cache():
     global YAML_FILES
     YAML_FILES = None

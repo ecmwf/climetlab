@@ -11,12 +11,15 @@ from collections import defaultdict
 
 import yaml
 
+from climetlab.decorators import locked
+
 MAGICS_KEYS = None
 MAGICS_DEF = None
 MAGICS_PARAMS = None
 _inited = False
 
 
+@locked
 def init():
     global _inited, MAGICS_KEYS, MAGICS_DEF, MAGICS_PARAMS
 

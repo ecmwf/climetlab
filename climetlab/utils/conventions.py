@@ -13,12 +13,16 @@ import re
 
 import yaml
 
+# FIXME:
+# from climetlab.decorators import locked
+
 ALIASES = None
 CONVENTIONS = None
 DEFAULT_YAML_FILE = os.path.join(os.path.dirname(__file__), "conventions.yaml")
 SEP = "@"
 
 
+# @locked
 def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
     """ fill the global variable from the relevant yaml file """
     global ALIASES

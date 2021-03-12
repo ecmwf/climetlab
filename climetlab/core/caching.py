@@ -14,6 +14,7 @@ import os
 import sqlite3
 import tempfile
 
+from climetlab.decorators import locked
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
 
@@ -22,6 +23,7 @@ from .settings import SETTINGS
 _connection = None
 
 
+@locked
 def connection():
     global _connection
     if _connection is None:
@@ -55,6 +57,7 @@ def connection():
     return _connection
 
 
+@locked
 def settings_changed():
     global _connection
     if _connection is not None:
@@ -65,6 +68,7 @@ def settings_changed():
 SETTINGS.on_change(settings_changed)
 
 
+@locked
 def update_cache():
 
     with connection() as db:
@@ -90,6 +94,7 @@ def update_cache():
             db.commit()
 
 
+@locked
 def register_cache_file(path, owner, args):
 
     db = connection()
@@ -143,6 +148,7 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
+@locked
 def cache_file(owner: str, *args, extension: str = ".cache"):
 
     m = hashlib.sha256()
@@ -169,6 +175,7 @@ class TmpFile:
         os.unlink(self.path)
 
 
+@locked
 def temp_file(extension=".tmp"):
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)

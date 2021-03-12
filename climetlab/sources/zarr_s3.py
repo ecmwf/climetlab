@@ -8,8 +8,10 @@
 #
 
 import logging
-import xarray as xr
+
 import s3fs
+import xarray as xr
+
 from . import DataSource
 
 LOG = logging.getLogger(__name__)
