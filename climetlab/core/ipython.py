@@ -46,7 +46,7 @@ def _identity(x, **kwargs):
 
 
 if ipython_active:
-    from IPython.display import display, Image, SVG, HTML, Markdown
+    from IPython.display import HTML, SVG, Image, Markdown, display
 
     # enable_ipython_login()
 else:

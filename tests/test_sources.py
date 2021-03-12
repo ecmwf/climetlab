@@ -9,10 +9,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-import sys
 import os
-from climetlab import load_source, source
+import sys
+
 import pytest
+
+from climetlab import load_source, source
 
 
 def test_file_source_grib():
@@ -100,8 +102,8 @@ def test_ulr_source_3():
 
 def zarr_not_installed():
     try:
-        import zarr
         import s3fs
+        import zarr
 
         return False
     except ImportError:
@@ -123,8 +125,9 @@ def test_zarr_source_1():
 
 @pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
 def test_zarr_source_2():
-    from climetlab.utils.dates import to_datetime_list
     import datetime
+
+    from climetlab.utils.dates import to_datetime_list
 
     source = load_source(
         "zarr-s3",
@@ -148,9 +151,11 @@ def test_zarr_source_2():
 
 @pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
 def test_zarr_source_3():
-    import numpy as np
-    from climetlab.utils.dates import to_datetime_list
     import datetime
+
+    import numpy as np
+
+    from climetlab.utils.dates import to_datetime_list
 
     source = load_source(
         "zarr-s3",

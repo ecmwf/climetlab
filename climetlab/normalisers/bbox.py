@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.bbox import to_bounding_box, BoundingBox
+from climetlab.utils.bbox import BoundingBox, to_bounding_box
 
 CONVERT = {
     list: lambda x: x.as_list(),

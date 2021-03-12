@@ -11,8 +11,8 @@
 
 import pytest
 
-from climetlab.utils.bbox import BoundingBox
 from climetlab.utils import bytes_to_string
+from climetlab.utils.bbox import BoundingBox
 
 
 def test_bytes():

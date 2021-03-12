@@ -7,8 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from . import MultiSource, File
 from climetlab.utils.pattern import Pattern
+
+from . import File, MultiSource
 
 
 class FilePattern(MultiSource):

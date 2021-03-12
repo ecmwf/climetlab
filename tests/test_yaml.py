@@ -9,8 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import yaml
 import os
+
+import yaml
 
 
 def test_yaml():

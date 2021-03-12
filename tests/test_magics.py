@@ -10,10 +10,10 @@
 #
 
 import pytest
+from Magics.Magics import MagicsError
 
 import climetlab as cml
 from climetlab.utils.bbox import BoundingBox
-from Magics.Magics import MagicsError
 
 
 def plot():

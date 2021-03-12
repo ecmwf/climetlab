@@ -8,6 +8,7 @@
 #
 
 import numpy as np
+
 from climetlab.utils.dates import to_datetime_list
 
 

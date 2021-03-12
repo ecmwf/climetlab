@@ -7,8 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import re
 import itertools
+import re
+
 from .dates import to_datetime
 
 RE1 = re.compile(r"{([^}]*)}")

@@ -9,13 +9,14 @@
 
 import datetime
 import logging
-
-import eccodes
 import weakref
 
-from . import Reader
-from climetlab.utils.bbox import BoundingBox
+import eccodes
+
 from climetlab.decorators import dict_args
+from climetlab.utils.bbox import BoundingBox
+
+from . import Reader
 
 LOG = logging.getLogger(__name__)
 
@@ -37,6 +38,8 @@ class CodesHandle:
         try:
             if name == "values":
                 return eccodes.codes_get_values(self.handle)
+            if name in ("distinctLatitudes", "distinctLongitudes"):
+                return eccodes.codes_get_double_array(self.handle, name)
             return eccodes.codes_get(self.handle, name)
         except eccodes.KeyValueNotFoundError:
             return None
@@ -180,6 +183,12 @@ class GribField:
             east=self.handle.get("longitudeOfLastGridPointInDegrees"),
         )
 
+    def _attributes(self, names):
+        result = {}
+        for name in names:
+            result[name] = self.handle.get(name)
+        return result
+
 
 class GRIBIterator:
     def __init__(self, path):
@@ -276,6 +285,12 @@ class GRIBReader(Reader):
     def __len__(self):
         return len(self._fields)
 
+    def _attributes(self, names):
+        result = []
+        for field in self:
+            result.append(field._attributes(names))
+        return result
+
     def multi_merge(source, readers):
         fields = []
         paths = []
@@ -305,3 +320,95 @@ class GRIBReader(Reader):
         else:
             ds = xr.open_dataset(self.path, engine="cfgrib", **params)
         return self.source.post_xarray_open_dataset_hook(ds)
+
+
+class Field:
+    def __init__(self, field):
+        self.field = field
+
+    def __getitem__(self, key):
+        print("field", key)
+        v = self.field.handle.get(key)
+        return v
+
+
+class FieldSetIndex:
+    def __init__(
+        self,
+        source,
+        *,
+        filter_by_keys={},
+        grib_errors="warn",
+        index_keys=[],
+        read_keys=[],
+        items=None,
+    ):
+        self.source = source
+        self.filter_by_keys = filter_by_keys
+        self.grib_errors = grib_errors
+        self.index_keys = index_keys
+        self.read_keys = read_keys
+        self.items = items
+
+    def __call__(self, *, grib_errors, index_keys, read_keys, **kwargs):
+        return FieldSetIndex(
+            source=self.source,
+            filter_by_keys=self.filter_by_keys,
+            grib_errors=grib_errors,
+            index_keys=index_keys,
+            read_keys=read_keys,
+            items=self.items,
+        )
+
+    def subindex(self, filter_by_keys={}, **kwargs):
+        query = dict(**self.filter_by_keys)
+        query.update(filter_by_keys)
+        query.update(kwargs)
+        return FieldSetIndex(
+            source=self.source,
+            filter_by_keys=query,
+            grib_errors=self.grib_errors,
+            index_keys=self.index_keys,
+            read_keys=self.read_keys,
+            items=self.items,
+        )
+
+    def _valid(self, item):
+        for k, v in self.filter_by_keys.items():
+            if item.get(k) != v:
+                return False
+        return True
+
+    def _valid_items(self):
+        if self.items is None:
+            self.items = self.source._attributes(self.index_keys)
+
+        return [i for i in self.items if self._valid(i)]
+
+    def __getitem__(self, key):
+
+        x = [i[key] for i in self._valid_items()]
+        if None in x:
+            return []
+
+        print("GET", key, x)
+        return list(set(x))
+
+    def getone(self, key):
+        return self[key][0]
+
+    @property
+    def offsets(self):
+        for i, item in enumerate(self._valid_items()):
+            yield item, i
+
+    @property
+    def filestream(self):
+        return self
+
+    @property
+    def path(self):
+        return None
+
+    def first(self):
+        return Field(self.source[0])

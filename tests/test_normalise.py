@@ -9,14 +9,14 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
+
+import numpy as np
 import pytest
 
-
-from climetlab.decorators import parameters
-import numpy as np
-import datetime
-from climetlab.utils.bbox import BoundingBox
 from climetlab import load_source
+from climetlab.decorators import parameters
+from climetlab.utils.bbox import BoundingBox
 
 
 @parameters(parameter=("parameter-list", "mars"))

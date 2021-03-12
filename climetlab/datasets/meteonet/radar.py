@@ -14,7 +14,6 @@ from climetlab.utils import download_and_cache
 
 from . import Meteonet
 
-
 """
 rainfall_diff_quality-code
 rainfall_mean_quality-code

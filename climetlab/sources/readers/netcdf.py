@@ -12,10 +12,11 @@
 import datetime
 from contextlib import closing
 from itertools import product
-from climetlab.utils.bbox import BoundingBox
 
 import numpy as np
 import xarray as xr
+
+from climetlab.utils.bbox import BoundingBox
 
 from . import Reader
 

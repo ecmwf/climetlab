@@ -62,7 +62,10 @@ class FileSource(DataSource):
         t = type(sources[0]._reader)
         assert all(type(s._reader) == t for s in sources)
         f._reader_ = t.multi_merge(f, [a._reader for a in sources])
-        return f
+        return os.fspath
+
+    def _attributes(self, names):
+        return self._reader._attributes(names)
 
 
 # See https://medium.com/analytics-vidhya/the-ultimate-markdown-guide-for-jupyter-notebook-d5e5abf728fd

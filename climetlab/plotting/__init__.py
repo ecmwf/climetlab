@@ -79,6 +79,9 @@ class Plot:
         self.driver.apply_options(options)
         options.check_unused()
 
+    def wms_layers(self):
+        return self.driver.wms_layers()
+
     def show(self):
         return display(self.driver.show())
 
@@ -109,3 +112,9 @@ def plot_map(data=None, **kwargs):
 
 
 Plot.plot_map.__doc__ = plot_map.__doc__
+
+
+def interactive_map(data=None, **kwargs):
+    from climetlab.plotting.wms import interactive_map as wms_map
+
+    return wms_map(data, **kwargs)

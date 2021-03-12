@@ -6,8 +6,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from climetlab.helpers import helper as get_helper
 import datetime
+
+from climetlab.helpers import helper as get_helper
 
 
 class NumpyArrayHelper:

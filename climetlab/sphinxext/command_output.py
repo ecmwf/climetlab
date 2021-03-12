@@ -9,8 +9,8 @@
 
 import os
 import subprocess
-from shlex import split
 import traceback
+from shlex import split
 
 from docutils import statemachine
 from docutils.parsers.rst import Directive

@@ -12,8 +12,9 @@ import os
 
 import ecmwfapi
 
-from .base import APIKeyPrompt, FileSource
 from climetlab.decorators import parameters
+
+from .base import APIKeyPrompt, FileSource
 
 
 class MARSAPI(APIKeyPrompt):

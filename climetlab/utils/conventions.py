@@ -7,10 +7,11 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-import yaml
-import re
 import logging
+import os
+import re
+
+import yaml
 
 ALIASES = None
 CONVENTIONS = None

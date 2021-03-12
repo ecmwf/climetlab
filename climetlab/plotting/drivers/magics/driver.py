@@ -8,12 +8,13 @@
 #
 
 import logging
+
 import yaml
 
-from climetlab.utils.bbox import BoundingBox
 from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.metadata import annotation
+from climetlab.utils.bbox import BoundingBox
 
 from .actions import mcoast, mgrib, minput, mmap, mnetcdf, mtable, mtext, output, plot
 from .apply import apply
@@ -256,8 +257,7 @@ class Driver:
     def option(self, name, default=None):
         return self._options(name, default)
 
-    def show(self):
-
+    def finalise(self):
         self.apply_options(self._options)
 
         if self._options.provided("background"):
@@ -289,6 +289,11 @@ class Driver:
             self._cities = mcoast(
                 map_cities=True, map_label=False, map_grid=False, map_coastline=False
             )
+
+    def show(self):
+
+        self.finalise()
+
         title = self._options("title", None)
         width = self._options("width", 680)
         frame = self._options("frame", False)
@@ -413,5 +418,41 @@ class Driver:
             self._grid,
             self._legend,
             self._title,
+        ]
+        return [x for x in m if x is not None]
+
+    def macro(self):
+        """[summary]
+
+        :return: A list of plotting directives
+        :rtype: list
+        """
+        m = [self._projection, self._background]
+        for r in self._layers:
+            r.add_action(m)
+        m += [
+            self._rivers,
+            self._borders,
+            self._cities,
+            self._foreground,
+            self._grid,
+            self._legend,
+            self._title,
+        ]
+        return [x for x in m if x is not None]
+
+    def wms_layers(self):
+
+        self.finalise()
+
+        m = [self._background]
+        for r in self._layers:
+            r.add_action(m)
+        m += [
+            self._rivers,
+            self._borders,
+            self._cities,
+            self._foreground,
+            self._grid,
         ]
         return [x for x in m if x is not None]

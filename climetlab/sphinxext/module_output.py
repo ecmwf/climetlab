@@ -8,9 +8,9 @@
 #
 
 import sys
+import traceback
 from importlib import import_module
 from io import StringIO
-import traceback
 
 from docutils import statemachine
 from docutils.parsers.rst import Directive

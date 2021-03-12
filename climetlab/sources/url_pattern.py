@@ -7,9 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+from climetlab.utils.patterns import Pattern
+
 from .multi import MultiSource
 from .url import Url
-from climetlab.utils.patterns import Pattern
 
 
 class UrlPattern(MultiSource):

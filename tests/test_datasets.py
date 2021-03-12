@@ -9,11 +9,13 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import sys
+
+import pytest
+
 import climetlab as cml
 from climetlab import dataset, load_dataset
-import sys
-import os
-import pytest
 
 
 def test_dataset_1():

@@ -7,8 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .date import DateListNormaliser
 from .bbox import BoundingBoxNormaliser
+from .date import DateListNormaliser
 from .parameter import ParameterNormaliser
 
 NORMALISERS = {

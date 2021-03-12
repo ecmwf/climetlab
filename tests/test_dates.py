@@ -9,10 +9,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.dates import to_datetime_list, to_datetime, parse_date
-import numpy as np
 import datetime
+
+import numpy as np
+
 from climetlab import load_source
+from climetlab.utils.dates import parse_date, to_datetime, to_datetime_list
 
 
 def test_to_datetime():

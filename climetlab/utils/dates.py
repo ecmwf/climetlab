@@ -8,18 +8,19 @@
 #
 
 import datetime
+import re
 
-# from collections import defaultdict
-from climetlab.helpers import helper
 import numpy as np
 
 # datetime.fromisoformat() only available from Python3.7
 # from backports.datetime_fromisoformat import MonkeyPatch
 from dateutil.parser import isoparse, parse
 
+# from collections import defaultdict
+from climetlab.helpers import helper
+
 # MonkeyPatch.patch_fromisoformat()
 
-import re
 
 VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
 
