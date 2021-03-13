@@ -195,8 +195,8 @@ def start_wms():
 SERVERS = {}
 
 
-def cb(*args, **kwargs):
-    print(args, kwargs)
+# def gone(*args, **kwargs):
+#     print('gone', args, kwargs)
 
 
 def interactive_map(obj, **kwargs):
@@ -232,5 +232,8 @@ def interactive_map(obj, **kwargs):
 
     if bbox is not None:
         m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
+
+    # import weakref
+    # availability.map = weakref.ref(m, gone)
 
     return display(m)
