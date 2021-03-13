@@ -47,7 +47,7 @@ def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
         for conv_key in m:
             convention, key = split_mapping(conv_key)
             if convention:
-                if not convention in CONVENTIONS:
+                if convention not in CONVENTIONS:
                     CONVENTIONS[convention] = {}
                 CONVENTIONS[convention][i] = key
             ALIASES[key] = i

@@ -40,6 +40,13 @@ class Layer:
         return self._style.update(action, value)
 
 
+class WMSLayer:
+    def __init__(self, actions, bounding_box, temp_files):
+        self.actions = actions
+        self.bounding_box = bounding_box
+        self.temp_files = temp_files
+
+
 class Driver:
     """TODO: Docscting"""
 
@@ -421,26 +428,6 @@ class Driver:
         ]
         return [x for x in m if x is not None]
 
-    def macro(self):
-        """[summary]
-
-        :return: A list of plotting directives
-        :rtype: list
-        """
-        m = [self._projection, self._background]
-        for r in self._layers:
-            r.add_action(m)
-        m += [
-            self._rivers,
-            self._borders,
-            self._cities,
-            self._foreground,
-            self._grid,
-            self._legend,
-            self._title,
-        ]
-        return [x for x in m if x is not None]
-
     def wms_layers(self):
 
         self.finalise()
@@ -455,4 +442,6 @@ class Driver:
             self._foreground,
             self._grid,
         ]
-        return [x for x in m if x is not None]
+
+        actions = [x for x in m if x is not None]
+        return WMSLayer(actions, self._bounding_box, self._tmp)

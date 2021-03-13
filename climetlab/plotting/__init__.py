@@ -79,6 +79,8 @@ class Plot:
         self.driver.apply_options(options)
         options.check_unused()
 
+        return self
+
     def wms_layers(self):
         return self.driver.wms_layers()
 

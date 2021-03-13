@@ -38,14 +38,10 @@ loader = jinja2.ChoiceLoader(
 application.jinja_loader = loader
 
 
-class CliMetLabPlotter(Plotter):
-    pass
-
-
 class CliMetLabField(Field):
     def __init__(self, obj):
         self.obj = obj
-        self._layers = None
+        self._plot = new_plot().plot_map(self.obj).wms_layers()
 
     @property
     def name(self):
@@ -70,16 +66,18 @@ class CliMetLabField(Field):
         return ["default"]
 
     def render(self, context, driver, style):
-        if self._layers is None:
-            self.plot = new_plot()
-            self.plot.plot_map(self.obj)
-            self._layers = self.plot.wms_layers()
-        return self._layers
+        return self._plot.actions
+
+    def bounding_box(self):
+        return self._plot.bounding_box
 
 
 class CliMetLabLayer(DataLayer):
     def __init__(self, obj):
         super().__init__(CliMetLabField(obj))
+
+    def bounding_box(self):
+        return self._first.bounding_box()
 
 
 class CliMetLabAvailability(Availability):
@@ -87,9 +85,8 @@ class CliMetLabAvailability(Availability):
         super().__init__()
         self._layers[""] = CliMetLabLayer(obj)
 
-
-class CliMetLabStyler(Styler):
-    pass
+    def bounding_box(self):
+        return self._layers[""].bounding_box()
 
 
 class CliMetLabWMSServer(WMSServer):
@@ -198,18 +195,42 @@ def start_wms():
 SERVERS = {}
 
 
+def cb(*args, **kwargs):
+    print(args, kwargs)
+
+
 def interactive_map(obj, **kwargs):
-    from ipyleaflet import Map, WMSLayer
+    from ipyleaflet import Map, WMSLayer, projections, FullScreenControl
 
     uid = str(uuid.uuid1())
     # TODO: use weak ref
-    SERVERS[uid] = CliMetLabWMSServer(
-        CliMetLabAvailability(obj), CliMetLabPlotter(), CliMetLabStyler()
-    )
+
+    availability = CliMetLabAvailability(obj)
+    SERVERS[uid] = CliMetLabWMSServer(availability, Plotter(), Styler())
     url = "{}/{}".format(start_wms(), uid)
 
     wms = WMSLayer(url=url, format="image/png", transparent=True, **kwargs)
 
-    m = Map(zoom=2, center=(50, 0))
+    bbox = availability.bounding_box()
+    center = (0, 0)
+    zoom = 1
+
+    if bbox is not None:
+        center = (bbox.north + bbox.south) / 2, (bbox.east + bbox.west) / 2
+        zoom = 1 / max((bbox.north - bbox.south) / 180, (bbox.east - bbox.west) / 360)
+        # print("zoom", zoom)
+        zoom = (2 * zoom + 88) / 27
+        # print("zoom", zoom)
+
+    # 10 => 4
+    # 37 => 6
+
+    m = Map(zoom=zoom, center=center)  # , crs=projections.Base)  # basemap={},
     m.add_layer(wms)
+    m.add_control(FullScreenControl())
+    # m.on_interaction(cb)
+
+    if bbox is not None:
+        m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
+
     return display(m)
