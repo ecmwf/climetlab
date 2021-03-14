@@ -209,8 +209,9 @@ def interactive_map(obj, **kwargs):
     from jinja2 import Template
 
     class NoScrollZoom(MacroElement):
-        _name = 'NoScrollZoom'
-        _template = Template("""
+        _name = "NoScrollZoom"
+        _template = Template(
+            """
             {% macro header(this,kwargs) %}
             {% endmacro %}
             {% macro html(this,kwargs) %}
@@ -218,9 +219,8 @@ def interactive_map(obj, **kwargs):
             {% macro script(this,kwargs) %}
             {{ this._parent.get_name() }}.scrollWheelZoom.disable();
             {% endmacro %}
-        """)
-
-
+        """
+        )
 
     uid = str(uuid.uuid1())
     # TODO: use weak ref
@@ -251,7 +251,7 @@ def interactive_map(obj, **kwargs):
         url=url, layers=["climetlab"], transparent=True, fmt="image/png", **kwargs
     ).add_to(m)
 
-# https://github.com/python-visualization/folium/blob/master/examples/Plugins.ipynb
+    # https://github.com/python-visualization/folium/blob/master/examples/Plugins.ipynb
 
     folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
     NoScrollZoom().add_to(m)
