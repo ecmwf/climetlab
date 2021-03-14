@@ -72,15 +72,15 @@ install_requires += [
     "entrypoints",
 ]
 
-extra_requires = {"interactive": ["skinnywms", "folium"]}
+extra_require = {"interactive": ["skinnywms", "folium"]}
 
 
 full = []
-for k, v in extra_requires.items():
+for k, v in extra_require.items():
     full += v
 full += install_requires
 
-extra_requires["full"] = full
+extra_require["full"] = full
 
 
 setuptools.setup(
@@ -96,7 +96,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=install_requires,
-    extra_requires=extra_requires,
+    extra_require=extra_require,
     zip_safe=True,
     classifiers=[
         "Development Status :: 3 - Alpha",
