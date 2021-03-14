@@ -2,16 +2,6 @@
 # coding: utf-8
 
 # In[73]:
+import climetlab as cml
 
-
-import cfgrib
-import xarray as xr
-
-from climetlab import load_source
-from climetlab.sources.readers.grib import FieldSetIndex
-
-source = load_source("file", "docs/examples/test.grib")
-
-store = xr.backends.CfGribDataStore(FieldSetIndex(source))
-
-d = xr.open_dataset(store, engine="cfgrib")
+ds = cml.load_dataset("era5-temperature", period=(1979, 1982), domain="France", time=12)
