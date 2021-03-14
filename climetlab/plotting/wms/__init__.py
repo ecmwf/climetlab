@@ -200,8 +200,8 @@ SERVERS = {}
 
 
 def interactive_map(obj, **kwargs):
-    from ipyleaflet import Map, WMSLayer, projections, FullScreenControl
-
+    # from ipyleaflet import Map, WMSLayer, projections, FullScreenControl
+    import folium
     uid = str(uuid.uuid1())
     # TODO: use weak ref
 
@@ -209,7 +209,6 @@ def interactive_map(obj, **kwargs):
     SERVERS[uid] = CliMetLabWMSServer(availability, Plotter(), Styler())
     url = "{}/{}".format(start_wms(), uid)
 
-    wms = WMSLayer(url=url, format="image/png", transparent=True, **kwargs)
 
     bbox = availability.bounding_box()
     center = (0, 0)
@@ -225,9 +224,17 @@ def interactive_map(obj, **kwargs):
     # 10 => 4
     # 37 => 6
 
-    m = Map(zoom=zoom, center=center)  # , crs=projections.Base)  # basemap={},
-    m.add_layer(wms)
-    m.add_control(FullScreenControl())
+    m = folium.Map(zoom_start=zoom, location=center)  # , crs=projections.Base)  # basemap={},
+
+
+    folium.raster_layers.WmsTileLayer(url=url,
+                                      layers=[""],
+                                      transparent=True,
+                                      fmt="image/png",
+                                      **kwargs).add_to(m)
+
+
+    # m.add_control(FullScreenControl())
     # m.on_interaction(cb)
 
     if bbox is not None:
