@@ -24,7 +24,7 @@ jobs = bg.BackgroundJobManager()
 application = Flask(__name__)
 
 # Be quiet
-logging.getLogger("werkzeug").setLevel(logging.CRITICAL)
+# logging.getLogger("werkzeug").setLevel(logging.CRITICAL)
 
 loader = jinja2.ChoiceLoader(
     [
@@ -129,15 +129,14 @@ def status():
 
 
 def _task(port):
-    # print("Start task", port)
-    os.environ["WERKZEUG_RUN_MAIN"] = "true"  # Get rid of any banner
+    # Get rid of any banner
+    # os.environ["WERKZEUG_RUN_MAIN"] = "true"
     try:
         application.run(
             host="localhost", port=port, load_dotenv=False, debug=False, threaded=4
         )
     except Exception as e:
         print("WMS server crashed:", e)
-    # print("End task", port)
 
 
 class State:
@@ -195,9 +194,6 @@ def start_wms():
 SERVERS = {}
 
 
-# def gone(*args, **kwargs):
-#     print('gone', args, kwargs)
-
 
 def interactive_map(obj, **kwargs):
     # Prefer `folium` to `ipyleafet` as it does not
@@ -236,22 +232,18 @@ def interactive_map(obj, **kwargs):
     if bbox is not None:
         center = (bbox.north + bbox.south) / 2, (bbox.east + bbox.west) / 2
         zoom = 1 / max((bbox.north - bbox.south) / 180, (bbox.east - bbox.west) / 360)
-        # print("zoom", zoom)
         zoom = (2 * zoom + 88) / 27
-        # print("zoom", zoom)
-
-    # 10 => 4
-    # 37 => 6
 
     m = folium.Map(
         zoom_start=zoom, location=center
-    )  # , crs=projections.Base)  # basemap={},
+    )
 
     folium.raster_layers.WmsTileLayer(
         url=url, layers=["climetlab"], transparent=True, fmt="image/png", **kwargs
     ).add_to(m)
 
     # https://github.com/python-visualization/folium/blob/master/examples/Plugins.ipynb
+    # https://deepnote.com/publish/9ad481b5-5756-4710-a839-2e129e0d9d94
 
     folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
     NoScrollZoom().add_to(m)
@@ -259,8 +251,4 @@ def interactive_map(obj, **kwargs):
     if bbox is not None:
         m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
 
-    # import weakref
-    # availability.map = weakref.ref(m, gone)
-
-    # return m
     return display(m)
