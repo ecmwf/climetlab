@@ -61,8 +61,7 @@ install_requires += [
     "tqdm",
     "requests",
     "eccodes>=0.9.9",
-    # "magics>=1.5.6",
-    "magics>=1.5",
+    "magics>=1.5.6",
     "ecmwflibs>=0.0.91",
     "pdbufr",
     "pyodc",
@@ -72,6 +71,16 @@ install_requires += [
     "markdown",
     "entrypoints",
 ]
+
+extra_requires = {"interactive": ["skinnywms", "ipyleaflet"]}
+
+
+full = []
+for k, v in extra_requires.items():
+    full += v
+full += install_requires
+
+extra_requires["full"] = full
 
 
 setuptools.setup(
@@ -87,6 +96,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=install_requires,
+    extra_requires=extra_requires,
     zip_safe=True,
     classifiers=[
         "Development Status :: 3 - Alpha",
