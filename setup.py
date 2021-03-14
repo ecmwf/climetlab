@@ -72,7 +72,7 @@ install_requires += [
     "entrypoints",
 ]
 
-extra_requires = {"interactive": ["skinnywms", "ipyleaflet"]}
+extra_requires = {"interactive": ["skinnywms", "folium"]}
 
 
 full = []

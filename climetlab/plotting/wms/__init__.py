@@ -83,10 +83,10 @@ class CliMetLabLayer(DataLayer):
 class CliMetLabAvailability(Availability):
     def __init__(self, obj):
         super().__init__()
-        self._layers[""] = CliMetLabLayer(obj)
+        self._layers["climetlab"] = CliMetLabLayer(obj)
 
     def bounding_box(self):
-        return self._layers[""].bounding_box()
+        return self._layers["climetlab"].bounding_box()
 
 
 class CliMetLabWMSServer(WMSServer):
@@ -200,8 +200,27 @@ SERVERS = {}
 
 
 def interactive_map(obj, **kwargs):
+    # Prefer `folium` to `ipyleafet` as it does not
+    # rely on ipywidgets, that are not always available
     # from ipyleaflet import Map, WMSLayer, projections, FullScreenControl
     import folium
+    import folium.plugins
+    from branca.element import MacroElement
+    from jinja2 import Template
+
+    class NoScrollZoom(MacroElement):
+        _name = 'NoScrollZoom'
+        _template = Template("""
+            {% macro header(this,kwargs) %}
+            {% endmacro %}
+            {% macro html(this,kwargs) %}
+            {% endmacro %}
+            {% macro script(this,kwargs) %}
+            {{ this._parent.get_name() }}.scrollWheelZoom.disable();
+            {% endmacro %}
+        """)
+
+
 
     uid = str(uuid.uuid1())
     # TODO: use weak ref
@@ -229,11 +248,13 @@ def interactive_map(obj, **kwargs):
     )  # , crs=projections.Base)  # basemap={},
 
     folium.raster_layers.WmsTileLayer(
-        url=url, layers=[""], transparent=True, fmt="image/png", **kwargs
+        url=url, layers=["climetlab"], transparent=True, fmt="image/png", **kwargs
     ).add_to(m)
 
-    # m.add_control(FullScreenControl())
-    # m.on_interaction(cb)
+# https://github.com/python-visualization/folium/blob/master/examples/Plugins.ipynb
+
+    folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
+    NoScrollZoom().add_to(m)
 
     if bbox is not None:
         m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
@@ -241,4 +262,5 @@ def interactive_map(obj, **kwargs):
     # import weakref
     # availability.map = weakref.ref(m, gone)
 
+    # return m
     return display(m)
