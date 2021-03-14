@@ -27,6 +27,15 @@ def test_dataset_2():
     dataset.sample_bufr_data()
 
 
+def test_era5_temperature():
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+
+    ds = cml.load_dataset(
+        "era5-temperature", period=(1979, 1982), domain="France", time=12
+    )
+
+
 def test_datetime():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
