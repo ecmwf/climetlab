@@ -194,7 +194,6 @@ def start_wms():
 SERVERS = {}
 
 
-
 def interactive_map(obj, **kwargs):
     # Prefer `folium` to `ipyleafet` as it does not
     # rely on ipywidgets, that are not always available
@@ -234,9 +233,7 @@ def interactive_map(obj, **kwargs):
         zoom = 1 / max((bbox.north - bbox.south) / 180, (bbox.east - bbox.west) / 360)
         zoom = (2 * zoom + 88) / 27
 
-    m = folium.Map(
-        zoom_start=zoom, location=center
-    )
+    m = folium.Map(zoom_start=zoom, location=center)
 
     folium.raster_layers.WmsTileLayer(
         url=url, layers=["climetlab"], transparent=True, fmt="image/png", **kwargs
