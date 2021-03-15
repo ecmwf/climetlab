@@ -1,0 +1,36 @@
+{% macro script(this, kwargs) %}
+
+// https://leafletjs.com/examples/extending/extending-2-layers.html
+
+if(!L.DirectWMS) {
+
+
+    L.DirectWMS = L.TileLayer.WMS.extend({
+
+        createTile: function (coords, done) {
+            var tile = document.createElement('img');
+
+            var event = new CustomEvent('direct-wms', {
+                'detail': {
+                    'tile': tile,
+                    'url': this.getTileUrl(coords),
+                    'done': done
+                 } });
+
+            window.parent.document.dispatchEvent(event);
+
+            return tile;
+        }
+
+    });
+
+}
+
+
+
+var {{ this.get_name() }} = new L.DirectWMS(
+    {{ this.url|tojson }},
+    {{ this.options|tojson }}
+).addTo({{ this._parent.get_name() }});
+
+{% endmacro %}

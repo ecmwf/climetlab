@@ -17,7 +17,7 @@ from skinnywms.plot.magics import Plotter, Styler
 from skinnywms.server import WMSServer
 
 from climetlab import new_plot
-from climetlab.core.ipython import display
+from ._folium import make_map
 
 jobs = bg.BackgroundJobManager()
 
@@ -195,57 +195,18 @@ SERVERS = {}
 
 
 def interactive_map(obj, **kwargs):
-    # Prefer `folium` to `ipyleafet` as it does not
-    # rely on ipywidgets, that are not always available
-    # from ipyleaflet import Map, WMSLayer, projections, FullScreenControl
-    import folium
-    import folium.plugins
-    from branca.element import MacroElement
-    from jinja2 import Template
-
-    class NoScrollZoom(MacroElement):
-        _name = "NoScrollZoom"
-        _template = Template(
-            """
-            {% macro header(this,kwargs) %}
-            {% endmacro %}
-            {% macro html(this,kwargs) %}
-            {% endmacro %}
-            {% macro script(this,kwargs) %}
-            {{ this._parent.get_name() }}.scrollWheelZoom.disable();
-            {% endmacro %}
-        """
-        )
 
     uid = str(uuid.uuid1())
-    # TODO: use weak ref
 
     availability = CliMetLabAvailability(obj)
     SERVERS[uid] = CliMetLabWMSServer(availability, Plotter(), Styler())
-    url = "{}/{}".format(start_wms(), uid)
+    # url = "{}/{}".format(start_wms(), uid)
 
+    url = f"http://localhost/{uid}"
     bbox = availability.bounding_box()
-    center = (0, 0)
-    zoom = 1
 
-    if bbox is not None:
-        center = (bbox.north + bbox.south) / 2, (bbox.east + bbox.west) / 2
-        zoom = 1 / max((bbox.north - bbox.south) / 180, (bbox.east - bbox.west) / 360)
-        zoom = (2 * zoom + 88) / 27
+    return make_map(url, bbox)
 
-    m = folium.Map(zoom_start=zoom, location=center)
 
-    folium.raster_layers.WmsTileLayer(
-        url=url, layers=["climetlab"], transparent=True, fmt="image/png", **kwargs
-    ).add_to(m)
-
-    # https://github.com/python-visualization/folium/blob/master/examples/Plugins.ipynb
-    # https://deepnote.com/publish/9ad481b5-5756-4710-a839-2e129e0d9d94
-
-    folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
-    NoScrollZoom().add_to(m)
-
-    if bbox is not None:
-        m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
-
-    return display(m)
+def direct_wms(url):
+    print("https://placekitten.com/256/256?image=0")
