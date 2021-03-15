@@ -76,24 +76,25 @@ class ZarrS3(DataSource):
 
         for store, url in zip(stores, urls):
             try:
-                dslist.append(xr.open_dataset(store, engine="zarr"))
+                dslist.append(xr.open_dataset(store, engine="zarr", chunks="auto"))
             except zarr.errors.GroupNotFoundError as e:
                 print(f"ERROR : Cannot find data at url = {url}")
                 raise (e)
 
-        dsdict = {}
-        for ds in dslist:
-            for value in ds[concat_dim].values:
-                # print(value)
-                dsdict[value] = ds.sel(**{concat_dim: value})
-            values_sorted = sorted(dsdict.keys())
-            dslist = [dsdict[d] for d in values_sorted]
-        # print('concatenating now...')
-        # for i in dslist:
-        #    print(i.forecast_time.values)
+        assert len(dslist) > 0
 
-        self._ds = xr.concat(dslist, dim=concat_dim)
-        # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
+        if len(dslist) == 1:
+            self._ds = dslist[0]
+        else:
+            dsdict = {}
+            for ds in dslist:
+                for value in ds[concat_dim].values:
+                    dsdict[value] = ds.sel(**{concat_dim: value})
+                values_sorted = sorted(dsdict.keys())
+                dslist = [dsdict[d] for d in values_sorted]
+
+            self._ds = xr.concat(dslist, dim=concat_dim)
+            # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):
         return self._ds
