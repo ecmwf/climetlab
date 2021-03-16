@@ -7,7 +7,7 @@ from ._folium import make_map
 def interactive_map(obj, **kwargs):
 
     tmp = temp_file(".svg")
-    p = new_plot(projection="web-mercator", width=1024*4)
+    p = new_plot(projection="web-mercator", width=1024 * 4)
     p.plot_map(obj)
     bbox = p.save(tmp.path)
 
