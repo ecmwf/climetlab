@@ -3,7 +3,7 @@ import folium.plugins
 from branca.element import MacroElement
 from folium.map import Layer
 from jinja2 import Template
-from climetlab.core.ipython import HTML
+from climetlab.core.ipython import HTML, guess_which_ipython
 
 
 class SVGOverlay(Layer):
@@ -94,11 +94,12 @@ def make_map(path, bbox, **kwargs):
         m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
 
     html = m._repr_html_()
-    # For deepnote
-    html = html.replace("width: 100%;height: 100%", "width: 100%").replace(
-        "height: 100.0%;", "height: 609px;"
-    )
 
-    print(html)
+    if guess_which_ipython()[0] == "deepnote":
+
+        # For deepnote
+        html = html.replace("width: 100%;height: 100%", "width: 100%").replace(
+            "height: 100.0%;", "height: 609px;"
+        )
 
     return HTML(html)

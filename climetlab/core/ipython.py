@@ -22,6 +22,48 @@ try:
 except Exception:
     pass
 
+"""
+Run that code in a cell:
+
+import IPython
+k = IPython.get_ipython()
+for n in dir(k):
+    if not callable(getattr(k, n)) and not n.startswith('__'):
+        print(n, getattr(k, n))
+        print()
+"""
+
+
+def guess_which_ipython():
+    if ipython_active is None:
+        return (None, None)
+
+    if ipython_active.ipython_dir == "/deepnote-config/ipython":
+        return ("deepnote", None)
+
+    if ipython_active.ipython_dir == "/home/jovyan/.ipython":
+        return ("jupyter-lab", None)
+
+    if "google.colab" in repr(ipython_active.inspector):
+        return ("colab", None)
+
+    if "IPython.terminal" in repr(ipython_active.parent):
+        return ("ipython", None)
+
+    return ("unknown", None)
+
+
+def ipython_environment():
+    import json
+    import IPython
+
+    r = {}
+    k = IPython.get_ipython()
+    for n in dir(k):
+        if not callable(getattr(k, n)):
+            r[n] = repr(getattr(k, n))
+    print(json.dumps(r, sort_keys=True, indent=4))
+
 
 def enable_ipython_login(level=logging.INFO):
     class Filter(logging.Filter):
