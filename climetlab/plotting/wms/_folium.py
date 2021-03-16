@@ -83,7 +83,7 @@ def make_map(path, bbox, **kwargs):
         path=path,
         # bounds=[[85.051129, -180],[-85.051129, 180]],
         bounds=[[90, -180], [-90, 180]],
-        options=dict(opacity=0.6, autoZIndex=True),
+        # options=dict(opacity=0.6, autoZIndex=True),
     ).add_to(m)
 
     folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
