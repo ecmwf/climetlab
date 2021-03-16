@@ -6,6 +6,7 @@ import time
 import traceback
 import uuid
 from contextlib import closing
+from climetlab.utils.bbox import BoundingBox
 
 import jinja2
 import requests
@@ -15,8 +16,9 @@ from IPython.lib import backgroundjobs as bg
 from skinnywms.datatypes import Availability, DataLayer, Field
 from skinnywms.plot.magics import Plotter, Styler
 from skinnywms.server import WMSServer
+from climetlab.core.caching import temp_file
 
-from climetlab import new_plot
+from climetlab import new_plot, plot_map
 from ._folium import make_map
 
 jobs = bg.BackgroundJobManager()
@@ -196,16 +198,20 @@ SERVERS = {}
 
 def interactive_map(obj, **kwargs):
 
-    uid = str(uuid.uuid1())
+    # uid = str(uuid.uuid1())
 
-    availability = CliMetLabAvailability(obj)
-    SERVERS[uid] = CliMetLabWMSServer(availability, Plotter(), Styler())
-    # url = "{}/{}".format(start_wms(), uid)
+    # availability = CliMetLabAvailability(obj)
+    # SERVERS[uid] = CliMetLabWMSServer(availability, Plotter(), Styler())
+    # # url = "{}/{}".format(start_wms(), uid)
 
-    url = f"http://localhost/{uid}"
-    bbox = availability.bounding_box()
+    # url = f"http://localhost/{uid}"
+    # bbox = availability.bounding_box()
+    tmp = temp_file(".svg")
+    p = new_plot(projection="web-mercator")
+    p.plot_map(obj)
+    bbox = p.save(tmp.path)
 
-    return make_map(url, bbox)
+    return make_map(tmp.path, bbox)
 
 
 def direct_wms(url):

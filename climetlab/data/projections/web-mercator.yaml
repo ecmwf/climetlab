@@ -1,0 +1,9 @@
+---
+magics:
+  mmap:
+    subpage_map_projection: "EPSG:3857"
+    subpage_lower_left_latitude: -20048966.10
+    subpage_lower_left_longitude: -20026376.39
+    subpage_upper_right_latitude: 20048966.10
+    subpage_upper_right_longitude: 20026376.39
+    subpage_coordinates_system: projection

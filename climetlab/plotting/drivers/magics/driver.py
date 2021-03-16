@@ -298,16 +298,30 @@ class Driver:
             )
 
     def show(self):
+        width = self._options("width", 680)
+
+        path = self._options(
+            "path", self.temporary_file("." + self._options("format", "png"))
+        )
+
+        self.save(path)
+
+        if path.endswith(".svg"):
+            Display = SVG  # noqa: N806
+        elif path.endswith(".pdf"):
+            return path
+        else:
+            Display = Image  # noqa: N806
+
+        return Display(path, metadata=dict(width=width))
+
+    def save(self, path):
 
         self.finalise()
 
         title = self._options("title", None)
         width = self._options("width", 680)
         frame = self._options("frame", False)
-
-        path = self._options(
-            "path", self.temporary_file("." + self._options("format", "png"))
-        )
 
         if self._projection is None:
             # TODO: select best projection based on bbox
@@ -399,14 +413,7 @@ class Driver:
             LOG.error("Error executing: %r", args, exc_info=True)
             raise
 
-        if path.endswith(".svg"):
-            Display = SVG  # noqa: N806
-        elif path.endswith(".pdf"):
-            return path
-        else:
-            Display = Image  # noqa: N806
-
-        return Display(path, metadata=dict(width=width))
+        return self._bounding_box
 
     def macro(self):
         """[summary]

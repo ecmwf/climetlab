@@ -90,6 +90,9 @@ class Plot:
     def macro(self) -> list:
         return self.driver.macro()
 
+    def save(self, path):
+        return self.driver.save(path)
+
 
 def new_plot(**kwargs) -> Plot:
     """[summary]
