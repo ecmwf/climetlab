@@ -23,14 +23,12 @@ except Exception:
     pass
 
 """
+
 Run that code in a cell:
 
-import IPython
-k = IPython.get_ipython()
-for n in dir(k):
-    if not callable(getattr(k, n)) and not n.startswith('__'):
-        print(n, getattr(k, n))
-        print()
+from climetlab.core.ipython import ipython_environment
+ipython_environment()
+
 """
 
 
