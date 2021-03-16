@@ -70,6 +70,7 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
+    "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
     "folium",
 ]
 
