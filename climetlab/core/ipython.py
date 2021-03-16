@@ -53,6 +53,27 @@ def guess_which_ipython():
     return ("unknown", None)
 
 
+def tidy(x):
+    if x is None:
+        return x
+
+    if isinstance(x, (list, tuple)):
+        return [tidy(y) for y in x]
+
+    if isinstance(x, dict):
+        r = {}
+        for k, v in x.items():
+            r[str(k)] = tidy(v)
+        return r
+
+    if isinstance(x, (int, float, str)):
+        return x
+
+    import re
+
+    return re.sub(r" object at x\w+", repr(x), "")
+
+
 def ipython_environment():
     import json
     import IPython
@@ -60,9 +81,9 @@ def ipython_environment():
     r = {}
     k = IPython.get_ipython()
     for n in dir(k):
-        if not callable(getattr(k, n)):
-            r[n] = repr(getattr(k, n))
-    print(json.dumps(r, sort_keys=True, indent=4))
+        if not callable(getattr(k, n)) and not n.startswith("__"):
+            r[n] = getattr(k, n)
+    print(json.dumps(tidy(r), sort_keys=True, indent=4))
 
 
 def enable_ipython_login(level=logging.INFO):
