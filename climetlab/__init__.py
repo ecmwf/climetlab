@@ -19,16 +19,7 @@ from .plotting import options as plotting_options
 from .plotting import plot_map
 from .sources import load as load_source
 
-# from climetlab.core.ipython import ipython_active
-
-
-# import logging
-
-__version__ = "0.3.7"
-
-
-# if ipython_active:
-#     logging.
+__version__ = "0.3.8"
 
 
 __all__ = [
