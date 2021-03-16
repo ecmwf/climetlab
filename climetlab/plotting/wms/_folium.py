@@ -99,4 +99,6 @@ def make_map(path, bbox, **kwargs):
         "height: 100.0%;", "height: 609px;"
     )
 
+    print(html)
+
     return HTML(html)

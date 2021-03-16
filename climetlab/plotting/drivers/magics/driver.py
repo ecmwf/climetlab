@@ -375,6 +375,8 @@ class Driver:
             subpage_y_position=0.0,
             output_width=width,
             page_frame=frame,
+            super_page_frame=False,
+            subpage_frame=False,
             page_id_line=False,
         )
 
