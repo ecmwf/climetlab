@@ -70,6 +70,7 @@ install_requires += [
     "pyyaml",
     "markdown",
     "entrypoints",
+    "folium",
 ]
 
 extras_require = {"interactive": ["skinnywms", "folium"]}
