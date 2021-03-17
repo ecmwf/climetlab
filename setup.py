@@ -71,7 +71,7 @@ install_requires += [
     "markdown",
     "entrypoints",
     "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
-    "folium",
+    "folium>=0.12.1",
 ]
 
 extras_require = {"interactive": ["skinnywms", "folium"]}
