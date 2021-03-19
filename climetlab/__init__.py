@@ -7,6 +7,20 @@
 # nor does it submit to any jurisdiction.
 #
 
+import sys
+
+try:
+    import ecmwflibs
+# TODO: update when the version of Magics on conda is compatible with climetlab
+# except ModuleNotFoundError:
+#    # we rely on the library (libMagPlus) installed otherwise
+#    pass
+except Exception as e:
+    print(
+        f"Error importing ecmwflibs. Magics and/or eccodes may not be fonctionning? {e}",
+        file=sys.stderr,
+    )
+
 from climetlab.datasets import Dataset
 from climetlab.sources import DataSource
 
@@ -19,7 +33,7 @@ from .plotting import options as plotting_options
 from .plotting import plot_map
 from .sources import load as load_source
 
-__version__ = "0.3.16"
+__version__ = "0.3.17"
 
 
 __all__ = [
