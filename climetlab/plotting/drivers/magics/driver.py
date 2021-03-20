@@ -61,7 +61,6 @@ class Driver:
         self._layers = []
         self._width_cm = 10.0
         self._height_cm = 10.0
-
         self._page_ratio = 1.0
 
         self.background(True)
@@ -322,6 +321,9 @@ class Driver:
         title = self._options("title", None)
         width = self._options("width", 680)
         frame = self._options("frame", False)
+
+        self._width_cm = self._options("width_cm", 10)
+        self._height_cm = self._options("height_cm", 10)
 
         if self._projection is None:
             # TODO: select best projection based on bbox
