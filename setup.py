@@ -62,7 +62,7 @@ install_requires += [
     "requests",
     "eccodes>=0.9.9",
     "magics>=1.5.6",
-    "ecmwflibs>=0.0.91",
+    "ecmwflibs>=0.1.1",
     "pdbufr",
     "pyodc",
     "dask",
