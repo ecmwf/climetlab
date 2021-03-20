@@ -62,7 +62,7 @@ install_requires += [
     "requests",
     "eccodes>=0.9.9",
     "magics>=1.5.6",
-    "ecmwflibs>=0.1.1",
+    "ecmwflibs>=0.1.2",
     "pdbufr",
     "pyodc",
     "dask",
@@ -74,7 +74,7 @@ install_requires += [
     "folium>=0.12.1",
 ]
 
-extras_require = {"interactive": ["skinnywms", "folium"]}
+extras_require = {}  # {"interactive": ["skinnywms", "folium"]}
 
 
 full = []
