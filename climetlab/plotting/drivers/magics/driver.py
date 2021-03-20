@@ -386,8 +386,14 @@ class Driver:
 
         args = [page] + self.macro()
 
-        if self._options("dump_python", False):
-            print(args)
+        dump = self._options("dump_python", False)
+        if dump:
+            m = "from Magics import macro\nmacro.plot({})".format(args)
+            if isinstance(dump, str):
+                with open(dump, "w") as f:
+                    print(m, file=f)
+            else:
+                print(m)
 
         dump = self._options("dump_yaml", False)
         if dump:
