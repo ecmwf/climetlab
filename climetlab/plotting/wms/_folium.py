@@ -83,19 +83,19 @@ def make_map(path, bbox, **kwargs):
     m = folium.Map(
         zoom_start=zoom,
         location=center,
-        tiles=None,
-        # tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        # attr='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        # tiles=None,
+        tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attr='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     )  # tiles=None
 
-    folium.raster_layers.WmsTileLayer(
-        url="https://apps.ecmwf.int/wms/?token=public",
-        layers="background",
-        fmt=fmt,
-        # styles="cream_sky_background",
-        # transparent=True,
-        overlay=False,
-    ).add_to(m)
+    # folium.raster_layers.WmsTileLayer(
+    #     url="https://apps.ecmwf.int/wms/?token=public",
+    #     layers="background",
+    #     fmt=fmt,
+    #     # styles="cream_sky_background",
+    #     # transparent=True,
+    #     overlay=False,
+    # ).add_to(m)
     # folium.raster_layers.WmsTileLayer(
     #     url="https://apps.ecmwf.int/wms/?token=public",
     #     layers="background",
