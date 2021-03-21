@@ -72,23 +72,65 @@ def make_map(path, bbox, **kwargs):
 
     center = (0, 0)
     zoom = 1
+    # fmt = "image/svg+xml"
+    fmt = "image/png"
 
     if bbox is not None:
         center = (bbox.north + bbox.south) / 2, (bbox.east + bbox.west) / 2
         zoom = 1 / max((bbox.north - bbox.south) / 180, (bbox.east - bbox.west) / 360)
         zoom = (2 * zoom + 88) / 27
 
-    m = folium.Map(zoom_start=zoom, location=center)
+    m = folium.Map(
+        zoom_start=zoom,
+        location=center,
+        tiles=None,
+        # tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        # attr='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    )  # tiles=None
 
+    folium.raster_layers.WmsTileLayer(
+        url="https://apps.ecmwf.int/wms/?token=public",
+        layers="background",
+        fmt=fmt,
+        # styles="cream_sky_background",
+        # transparent=True,
+        overlay=False,
+    ).add_to(m)
+    # folium.raster_layers.WmsTileLayer(
+    #     url="https://apps.ecmwf.int/wms/?token=public",
+    #     layers="background",
+    #     fmt=fmt,
+    #     styles="black_admin_boundaries",
+    #     transparent=True,
+    #     # overlay=False,
+    # ).add_to(m)
     SVGOverlay(
         path=path,
         # bounds=[[85.051129, -180],[-85.051129, 180]],
         bounds=[[90, -180], [-90, 180]],
         # options=dict(opacity=0.6, autoZIndex=True),
+        options=dict(attribution="CliMetLab"),
     ).add_to(m)
 
     folium.plugins.Fullscreen(force_separate_button=True).add_to(m)
     NoScrollZoom().add_to(m)
+
+    # folium.raster_layers.WmsTileLayer(
+    #     url="https://apps.ecmwf.int/wms/?token=public",
+    #     layers="foreground",
+    #     fmt=fmt,
+    #     transparent=True,
+    #     styles="medium_res_foreground",
+    #     # overlay=False,
+    # ).add_to(m)
+
+    # folium.raster_layers.WmsTileLayer(
+    #     url="https://apps.ecmwf.int/wms/?token=public",
+    #     layers="grid",
+    #     fmt=fmt,
+    #     transparent=True,
+    #     # overlay=False,
+    # ).add_to(m)
 
     if bbox is not None:
         m.fit_bounds([[bbox.south, bbox.east], [bbox.north, bbox.west]])
