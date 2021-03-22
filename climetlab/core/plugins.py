@@ -60,7 +60,10 @@ def find_plugin(directory, name, loader):
                 if p[1:].replace("/", "-").replace("_", "-") == name:
                     return loader.load_module(p.replace("/", "."))
 
-    raise Exception("Cannot find %s '%s'" % (loader.kind, name))
+    plugins_str = ",".join(["'" + str(p) + "'" for p in plugins.keys()])
+    raise Exception(
+        "Cannot find %s '%s' (valid values are %s)" % (loader.kind, name, plugins_str)
+    )
 
 
 def directories():
