@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import inspect
 import os
 from importlib import import_module
 
@@ -131,10 +132,15 @@ class DatasetMaker:
     def __call__(self, name, *args, **kwargs):
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
+        # Consume args
+        spec = inspect.getfullargspec(klass)
+        print(spec)
+        for arg in spec.args:
+            kwargs.pop(arg, None)
         dataset = klass(*args, **kwargs)
         if getattr(dataset, "name", None) is None:
             dataset.name = name
-        return dataset
+        return dataset, args, kwargs
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))
@@ -146,19 +152,13 @@ TERMS_OF_USE_SHOWN = set()
 
 
 def load_dataset(name, *args, **kwargs):
-    try:
-        # Backwards compatibility
-        ds = dataset(name, *args, **kwargs)
-        assert getattr(ds, "_load", None) is None
-        return ds.mutate()
-    except Exception:
-        ds = dataset(name)
+    ds, args, kwargs = dataset(name, *args, **kwargs)
 
-        if name not in TERMS_OF_USE_SHOWN:
-            if ds.terms_of_use is not None:
-                print(ds.terms_of_use)
-            TERMS_OF_USE_SHOWN.add(name)
+    if name not in TERMS_OF_USE_SHOWN:
+        if ds.terms_of_use is not None:
+            print(ds.terms_of_use)
+        TERMS_OF_USE_SHOWN.add(name)
 
-        ds._load(*args, **kwargs)
+    ds._load(*args, **kwargs)
 
-        return ds.mutate()
+    return ds.mutate()

@@ -74,6 +74,7 @@ def tidy(x):
 
 def ipython_environment():
     import json
+
     import IPython
 
     r = {}

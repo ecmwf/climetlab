@@ -21,9 +21,10 @@ class MultiSource(DataSource):
         self.sources = sources
         self._lengths = [None] * len(sources)
 
-    # def not_yet_mutate(self):
-    #     if len(self.sources) == 1:
-    #         return self.sources[0].mutate()
+    def mutate(self):
+        if len(self.sources) == 1:
+            return self.sources[0].mutate()
+        return self
 
     #     t = type(self.sources[0])
     #     if all(type(s) == t for s in self.sources):

@@ -3,6 +3,7 @@ import folium.plugins
 from branca.element import MacroElement
 from folium.map import Layer
 from jinja2 import Template
+
 from climetlab.core.ipython import HTML, guess_which_ipython
 
 
