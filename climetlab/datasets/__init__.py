@@ -33,6 +33,9 @@ class Dataset:
 
     _source = None
 
+    def __init__(self, *args, **kwargs):
+        pass
+
     def mutate(self):
         # Give a chance to a subclass to change
         return self
@@ -134,16 +137,19 @@ class DatasetMaker:
         klass = find_plugin(os.path.dirname(__file__), name, loader)
         # Consume args
         spec = inspect.getfullargspec(klass)
-        print(spec)
+        # print(spec)
+        # print(klass)
+        r = {}
         for arg in spec.args:
-            kwargs.pop(arg, None)
-        dataset = klass(*args, **kwargs)
+            if arg in kwargs:
+                r[arg] = kwargs.pop(arg)
+        dataset = klass(**r)
         if getattr(dataset, "name", None) is None:
             dataset.name = name
         return dataset, args, kwargs
 
     def __getattr__(self, name):
-        return self(name.replace("_", "-"))
+        return self(name.replace("_", "-"))[0]
 
 
 dataset = DatasetMaker()
