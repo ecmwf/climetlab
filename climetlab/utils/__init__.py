@@ -53,5 +53,5 @@ def consume_args(func, *args, **kwargs):
         if a in kwargs:
             kwargs_1[a] = kwargs.pop(a)
 
-    print(args_1, kwargs_1, args, kwargs)
+    # print(args_1, kwargs_1, args, kwargs)
     return args_1, kwargs_1, args, kwargs
