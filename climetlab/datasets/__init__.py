@@ -17,6 +17,7 @@ import climetlab
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin
 from climetlab.utils.html import table
+from climetlab.utils import consume_args
 
 
 class Dataset:
@@ -135,18 +136,13 @@ class DatasetMaker:
     def __call__(self, name, *args, **kwargs):
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
-        # Consume args
-        spec = inspect.getfullargspec(klass)
-        # print(spec)
-        # print(klass)
-        r = {}
-        for arg in spec.args:
-            if arg in kwargs:
-                r[arg] = kwargs.pop(arg)
-        dataset = klass(**r)
+
+        args_1, kwargs_1, args_2, kwargs_2 = consume_args(klass, *args, **kwargs)
+        dataset = klass(*args_1, **kwargs_1)
+
         if getattr(dataset, "name", None) is None:
             dataset.name = name
-        return dataset, args, kwargs
+        return dataset, args_2, kwargs_2
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))[0]
