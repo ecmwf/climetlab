@@ -91,7 +91,7 @@ def _load_yaml_files():
                         name, _ = os.path.splitext(os.path.basename(path))
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
-                        if name in collection:
+                        if name in collection and path != collection[name].path:
                             LOG.warning(
                                 "Duplicate entry for %s %s (using %s, ignoring %s)",
                                 kind,

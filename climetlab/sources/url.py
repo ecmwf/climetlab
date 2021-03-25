@@ -69,6 +69,7 @@ class Url(FileSource):
             unit="B",
             disable=False,
             leave=False,
+            desc=os.path.basename(url),
         ) as pbar:
             pbar.update(total)
             with open(download, mode) as f:

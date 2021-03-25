@@ -22,5 +22,8 @@ class IntHelper:
                 self.data // 10000, self.data % 10000 // 100, self.data % 100
             )
 
+    def to_datetime_list(self):
+        return [self.to_datetime()]
+
 
 helper = IntHelper
