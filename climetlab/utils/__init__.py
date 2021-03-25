@@ -39,7 +39,7 @@ def consume_args(func, *args, **kwargs):
 
     args = list(args)
 
-    spec_args = [a for a in spec.args if a != 'self']
+    spec_args = [a for a in spec.args if a != "self"]
 
     for a in spec_args:
         if a in kwargs:

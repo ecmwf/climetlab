@@ -33,7 +33,7 @@ from .plotting import options as plotting_options
 from .plotting import plot_map
 from .sources import load as load_source
 
-__version__ = "0.3.22"
+__version__ = "0.3.23"
 
 
 __all__ = [
