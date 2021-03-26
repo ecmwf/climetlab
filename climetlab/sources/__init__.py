@@ -12,19 +12,42 @@ import weakref
 from importlib import import_module
 
 from climetlab.core.caching import cache_file
+from climetlab.core.plugins import find_plugin
 from climetlab.utils.html import table
 
 
-def lookup(name):
-    source = import_module(".%s" % (name.replace("-", "_"),), package=__name__)
-    return source.source
+class SourceLoader:
+
+    kind = "source"
+
+    def load_module(self, module):
+        return import_module(module, package=__name__).source
+
+    def load_entry(self, entry):
+        return entry.load().source
+
+
+class SourceMaker:
+    def __call__(self, name, *args, **kwargs):
+        loader = SourceLoader()
+        klass = find_plugin(os.path.dirname(__file__), name, loader)
+
+        source = klass(*args, **kwargs)
+
+        if getattr(source, "name", None) is None:
+            source.name = name
+
+        return source
+
+    def __getattr__(self, name):
+        return self(name.replace("_", "-"))
+
+
+source = SourceMaker()
 
 
 def load(name, *args, **kwargs):
-    source = lookup(name)(*args, **kwargs).mutate()
-    if source.name is None:
-        source.name = name
-    return source
+    return source(name, *args, **kwargs).mutate()
 
 
 def list_entries():

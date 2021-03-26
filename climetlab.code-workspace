@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../climetlab-demo-dataset"
+		},
+		{
+			"path": "../climetlab-demo-source"
 		}
 	],
 	"settings": {

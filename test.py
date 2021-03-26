@@ -1,7 +1,2 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[73]:
-import climetlab as cml
-
-ds = cml.load_dataset("s2s-ai-competition", format="zarr")
+import climetlab as  cml
+s = cml.load_source("demo-source", "sqlite:///test.db", "select * from data;", parse_dates=["time"])
