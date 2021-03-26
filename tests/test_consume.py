@@ -45,86 +45,31 @@ def g_y(y=2, *, b=9):
     return 2 * y + b
 
 
-def test_consume_1():
+def test_consume():
     assert consume(f_void, f_void) == (0, 0)
-
-
-def test_consume_2():
     assert consume(f_void, f_x, 1) == (0, -1)
-
-
-def test_consume_3():
     assert consume(f_x, f_void, 1) == (-1, 0)
-
-
-def test_consume_4():
-
     assert consume(f_void, f_x, x=1) == (0, -1)
-
-
-def test_consume_5():
     assert consume(f_x, f_void, x=1) == (-1, 0)
-
-
-def test_consume_6():
     assert consume(f_x, f_y, 1, 2) == (-1, 4)
-
-
-def test_consume_7():
     assert consume(f_y, f_x, 2, 1) == (4, -1)
-
-
-def test_consume_8():
     assert consume(f_x, f_y, 1, y=2) == (-1, 4)
-
-
-def test_consume_9():
     assert consume(f_x, f_y, x=1, y=2) == (-1, 4)
-
-
-def test_consume_10():
     assert consume(f_y, f_x, x=1, y=2) == (4, -1)
-
-
-def test_consume_11():
     assert consume(g_y, g_x, 2, 1) == (13, 8)
-
-
-def test_consume_12():
     assert consume(g_y, g_x, 2, 1, a=5) == (13, 4)
-
-
-def test_consume_13():
     assert consume(g_y, g_x, 2, 1, b=5) == (9, 8)
-
-
-def test_consume_14():
     assert consume(g_y, g_x) == (13, 8)
-
-
-def test_consume_15():
     assert consume(g_y, g_x, b=5) == (9, 8)
-
-
-def test_consume_16():
     assert consume(g_y, g_x, y=2) == (13, 8)
-
-
-def test_consume_17():
     assert consume(g_y, g_x, y=2, a=6) == (13, 5)
-
-
-def test_consume_18():
     assert consume(g_y, g_x, x=1, a=6) == (13, 5)
-
-
-def test_consume_19():
     assert consume(g_y, g_x, x=1, b=4) == (8, 8)
-
-
-def test_consume_20():
     assert consume(g_y, g_x, y=2, b=4) == (8, 8)
+
+    # assert consume(f_y, g_y, y=2) == (4,13)
+    assert consume(g_y, f_y, 2, y=2) == (-1, 0)
 
 
 if __name__ == "__main__":
-    test_consume_11()
+    test_consume()
