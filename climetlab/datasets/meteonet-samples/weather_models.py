@@ -18,10 +18,7 @@ class MeteonetWeatherModels(Meteonet):
     See https://github.com/meteofrance/meteonet
     """
 
-    def __init__(self):
-        pass
-
-    def _load(
+    def __init__(
         self, model="arome", variable="2m", domain="NW", date="20180501", time="0000"
     ):
 

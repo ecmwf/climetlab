@@ -17,7 +17,6 @@ import climetlab
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin
 from climetlab.utils.html import table
-from climetlab.utils import consume_args
 
 
 class Dataset:
@@ -49,10 +48,6 @@ class Dataset:
     def source(self, source):
         self._source = source
         source.dataset = self
-
-    def __call__(self, *args, **kwargs):
-        self._load(*args, **kwargs)
-        return self
 
     def __len__(self):
         return len(self.source)
@@ -105,11 +100,9 @@ class YamlDefinedDataset(Dataset):
         self._path = path
         for k, v in dataset.get("metadata", {}).items():
             setattr(self, k, v)
-        self._src = dataset["source"]
-        self._args = dataset.get("args", {})
-
-    def _load(self, *args, **kwargs):
-        self.source = climetlab.load_source(self._src, **self._args)
+        src = dataset["source"]
+        args = dataset.get("args", {})
+        self.source = climetlab.load_source(src, **args)
 
     def __repr__(self):
         return f"YAML[{self._path}]"
@@ -137,15 +130,14 @@ class DatasetMaker:
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 
-        args_1, kwargs_1, args_2, kwargs_2 = consume_args(klass, *args, **kwargs)
-        dataset = klass(*args_1, **kwargs_1)
+        dataset = klass(*args, **kwargs)
 
         if getattr(dataset, "name", None) is None:
             dataset.name = name
-        return dataset, args_2, kwargs_2
+        return dataset
 
     def __getattr__(self, name):
-        return self(name.replace("_", "-"))[0]
+        return self(name.replace("_", "-"))
 
 
 dataset = DatasetMaker()
@@ -154,13 +146,11 @@ TERMS_OF_USE_SHOWN = set()
 
 
 def load_dataset(name, *args, **kwargs):
-    ds, args, kwargs = dataset(name, *args, **kwargs)
+    ds = dataset(name, *args, **kwargs)
 
     if name not in TERMS_OF_USE_SHOWN:
         if ds.terms_of_use is not None:
             print(ds.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
-
-    ds._load(*args, **kwargs)
 
     return ds.mutate()
