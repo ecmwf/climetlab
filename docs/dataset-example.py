@@ -1,6 +1,6 @@
 import climetlab as cml
 
-data = cml.load_dataset("hurricane-database", "atlantic")
+data = cml.load_dataset("hurricane-database", bassin="atlantic")
 print(data.home_page)
 
 

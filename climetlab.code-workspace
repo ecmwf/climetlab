@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "../climetlab-meteonet"
+		},
+		{
+			"path": "../climetlab-demo-dataset"
 		}
 	],
 	"settings": {

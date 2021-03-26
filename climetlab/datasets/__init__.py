@@ -100,9 +100,12 @@ class YamlDefinedDataset(Dataset):
         self._path = path
         for k, v in dataset.get("metadata", {}).items():
             setattr(self, k, v)
-        src = dataset["source"]
-        args = dataset.get("args", {})
-        self.source = climetlab.load_source(src, **args)
+        self._src = dataset["source"]
+        self._args = dataset.get("args", {})
+
+    def __call__(self):
+        self.source = climetlab.load_source(self._src, **self._args)
+        return self
 
     def __repr__(self):
         return f"YAML[{self._path}]"
@@ -134,6 +137,7 @@ class DatasetMaker:
 
         if getattr(dataset, "name", None) is None:
             dataset.name = name
+
         return dataset
 
     def __getattr__(self, name):
