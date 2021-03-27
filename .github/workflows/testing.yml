@@ -18,7 +18,7 @@ jobs:
       - name:
         run: |
           python -m pip install --upgrade pip
-          import os; os.environ["CLIMETLAB_SKIP_NOTEBOOKS_TESTS"] = 1
+          import os; os.environ["CLIMETLAB_SKIP_NOTEBOOKS_TESTS"] = "1"
           pip install nbformat nbconvert # or move to requirements or define testing env
           
           pip install -e .
