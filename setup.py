@@ -38,38 +38,6 @@ else:
     install_requires += ["cython", "pandas"]
 
 
-ECMWFLIBS_TAGS = {
-    "cp36-cp36m-macosx_10_14_x86_64",
-    "cp36-cp36m-manylinux2014_x86_64",
-    "cp36-cp36m-win32",
-    "cp36-cp36m-win_amd64",
-    "cp37-cp37m-macosx_10_14_x86_64",
-    "cp37-cp37m-manylinux2014_x86_64",
-    "cp37-cp37m-win32",
-    "cp37-cp37m-win_amd64",
-    "cp38-cp38-macosx_10_14_x86_64",
-    "cp38-cp38-manylinux2014_x86_64",
-    "cp38-cp38-win32",
-    "cp38-cp38-win_amd64",
-    "cp39-cp39-macosx_10_14_x86_64",
-    "cp39-cp39-manylinux2014_x86_64",
-    "cp39-cp39-win32",
-    "cp39-cp39-win_amd64",
-}
-
-
-ecmwflibs = True
-try:
-    from pip._vendor.packaging.tags import cpython_tags
-
-    tags = set(str(t) for t in cpython_tags())
-    ecmwflibs = len(tags.intersection(ECMWFLIBS_TAGS)) > 0
-except Exception:
-    pass
-
-if ecmwflibs:
-    install_requires += ["ecmwflibs>=0.1.2"]
-
 install_requires += [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
     # "chardet>=3.0,<4.0",
@@ -88,6 +56,7 @@ install_requires += [
     "requests",
     "eccodes>=0.9.9",
     "magics>=1.5.6",
+    "ecmwflibs>=0.1.2",
     "pdbufr",
     "pyodc",
     "dask",
