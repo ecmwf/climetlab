@@ -22,7 +22,10 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
 
-SKIP = ("11-icoads.ipynb",)
+SKIP = (
+    "11-icoads.ipynb",
+    "12-external-plugins.ipynb",
+)
 
 MARS = (
     "04-source-mars.ipynb",
