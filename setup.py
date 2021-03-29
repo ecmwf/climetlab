@@ -107,6 +107,13 @@ setuptools.setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Operating System :: OS Independent",
     ],
-    tests_require=["pytest", "nbconvert", "jupyter", "pytest-cov"],
+    tests_require=[
+        "pytest",
+        "nbconvert",
+        "jupyter",
+        "pytest-cov",
+        "climetlab-demo-dataset",
+        "climetlab-demo-source",
+    ],
     test_suite="tests",
 )
