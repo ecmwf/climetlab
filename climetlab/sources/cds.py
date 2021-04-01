@@ -66,7 +66,7 @@ class CDSRetriever(FileSource):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    @normalize_args(date=("date-list(%Y-%m-%d)"), area="bounding-box(list)")
+    @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
     def request(self, **kwargs):
         return kwargs
 
