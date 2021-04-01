@@ -19,12 +19,12 @@ from climetlab.normalize import normalize_args
 from climetlab.utils.bbox import BoundingBox
 
 
-@normalize_args(parameter=("parameter-list", "mars"))
+@normalize_args(parameter=("parameter-list(mars)"))
 def values_mars(parameter):
     return parameter
 
 
-@normalize_args(parameter=("parameter-list", "cf"))
+@normalize_args(parameter=("parameter-list(cf)"))
 def values_cf(parameter):
     return parameter
 
@@ -67,22 +67,22 @@ def bbox_list(ignore, area):
     return area
 
 
-@normalize_args(area=("bounding-box", tuple))
+@normalize_args(area="bounding-box(tuple)")
 def bbox_tuple(area, ignore=None):
     return area
 
 
-@normalize_args(area=("bounding-box", list))
+@normalize_args(area="bounding-box(list)")
 def bbox_bbox(area):
     return area
 
 
-@normalize_args(area=("bounding-box", dict))
+@normalize_args(area="bounding-box(dict)")
 def bbox_dict(area):
     return area
 
 
-@normalize_args(area=("bounding-box"))
+@normalize_args(area="bounding-box")
 def bbox_defaults(area=None):
     return area
 
