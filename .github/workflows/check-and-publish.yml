@@ -70,7 +70,7 @@ jobs:
           CLIMETLAB_DEBUG: 1
 
       - name: Documentation
-        if: false
+        if: 'false'
         run: |
           make clean
           make html
