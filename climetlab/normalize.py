@@ -15,6 +15,9 @@ from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
 
+def _identity(x):
+    return x
+
 
 class ParameterNormaliser:
     def __init__(self, convention=None):
@@ -31,11 +34,11 @@ CONVERT = {
     list: lambda x: x.as_list(),
     tuple: lambda x: x.as_tuple(),
     dict: lambda x: x.as_dict(),
-    BoundingBox: lambda x: x,
+    BoundingBox: _identity,
     "list": lambda x: x.as_list(),
     "tuple": lambda x: x.as_tuple(),
     "dict": lambda x: x.as_dict(),
-    "BoundingBox": lambda x: x,
+    "BoundingBox": _identity,
 }
 
 
@@ -86,7 +89,7 @@ def _normalizer(v):
         return EnumNormaliser(v)
 
     assert isinstance(v, str), v
-    m = re.match(r"(.*)\(([^}]*)\)", v)
+    m = re.match(r"(.+)\(.+)\)", v)
     if m:
         args = m.group(2).split(",")
         name = m.group(1)
@@ -94,9 +97,6 @@ def _normalizer(v):
     else:
         return NORMALISERS[v]()
 
-
-def _identity(x):
-    return x
 
 
 def normalize_args(**kwargs):
@@ -114,12 +114,11 @@ def normalize_args(**kwargs):
                 assert param.kind is not param.VAR_POSITIONAL
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
-            # print("BEFORE", provided)
+
             normalized = {}
             for arg, value in provided.items():
                 normalizer = normalizers.get(arg, _identity)
                 normalized[arg] = normalizer(value)
-            # print("AFTER", normalized)
             return func(**normalized)
 
         return inner
