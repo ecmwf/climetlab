@@ -49,7 +49,7 @@ class BoundingBoxNormaliser:
 
 
 class DateListNormaliser:
-    def __init__(self, list=False, format=None):
+    def __init__(self, format=None):
         self.format = format
 
     def __call__(self, dates):
@@ -60,7 +60,7 @@ class DateListNormaliser:
 
 
 class EnumNormaliser:
-    def __init__(self, values=tuple()):
+    def __init__(self, values):
         self.values = values
 
     def __call__(self, value):
@@ -83,7 +83,7 @@ def _normalizer(v):
         return v
 
     if isinstance(v, list):
-        return EnumNormaliser(*v)
+        return EnumNormaliser(v)
 
     assert isinstance(v, str), v
     m = re.match(r"(.*)\(([^}]*)\)", v)
