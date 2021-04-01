@@ -97,6 +97,7 @@ class ZarrS3(DataSource):
             # self._ds = xr.open_mfdataset(stores, engine="zarr", combine='nested')
 
     def to_xarray(self):
+        self._ds = self.post_xarray_open_dataset_hook(self._ds)
         return self._ds
 
 
