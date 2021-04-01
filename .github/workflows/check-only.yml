@@ -23,7 +23,7 @@ jobs:
 
       - name: Install packages
         run: |
-          pip install black sphinx pytest pytest-cov flake8
+          pip install black sphinx pytest pytest-cov flake8 isort
           pip install -r docs/requirements.txt
 
       - name: Code QA
