@@ -90,7 +90,7 @@ def _normalizer(v):
         return EnumNormaliser(v)
 
     assert isinstance(v, str), v
-    m = re.match(r"(.+)\(.+)\)", v)
+    m = re.match(r"(.+)\((.+)\)", v)
     if m:
         args = m.group(2).split(",")
         name = m.group(1)
