@@ -9,7 +9,6 @@
 
 import datetime
 import logging
-import weakref
 
 import eccodes
 

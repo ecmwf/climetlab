@@ -31,9 +31,7 @@ def test_era5_temperature():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
 
-    ds = cml.load_dataset(
-        "era5-temperature", period=(1979, 1982), domain="France", time=12
-    )
+    cml.load_dataset("era5-temperature", period=(1979, 1982), domain="France", time=12)
 
 
 def test_datetime():
@@ -56,6 +54,3 @@ def test_pandas_filter():
 
 if __name__ == "__main__":
     test_datetime()
-
-if __name__ == "__main__":
-    test_dataset_1()

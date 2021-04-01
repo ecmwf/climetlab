@@ -7,18 +7,24 @@
 # nor does it submit to any jurisdiction.
 #
 
+import functools
+import inspect
+
+from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
+from climetlab.utils.dates import to_date_list
 
 
 class ParameterNormaliser:
     def __init__(self, convention=None):
         self.convention = convention
 
-    def normalise(self, parameter):
+    def __call__(self, parameter):
         if isinstance(parameter, (list, tuple)):
             return [normalise_string(p, convention=self.convention) for p in parameter]
         else:
             return normalise_string(parameter, convention=self.convention)
+
 
 CONVERT = {
     list: lambda x: x.as_list(),
@@ -32,21 +38,31 @@ class BoundingBoxNormaliser:
     def __init__(self, format=BoundingBox):
         self.format = format
 
-    def normalise(self, bbox):
+    def __call__(self, bbox):
         bbox = to_bounding_box(bbox)
         return CONVERT[self.format](bbox)
-from climetlab.utils.dates import to_date_list
 
 
 class DateListNormaliser:
     def __init__(self, list=False, format=None):
         self.format = format
 
-    def normalise(self, dates):
+    def __call__(self, dates):
         dates = to_date_list(dates)
         if self.format is not None:
             dates = [d.strftime(self.format) for d in dates]
         return dates
+
+
+class EnumNormaliser:
+    def __init__(self, values=tuple()):
+        self.values = values
+
+    def __call__(self, value):
+        for n in self.values:
+            if value.lower() == n.lower():
+                return n
+        raise ValueError(value)
 
 
 NORMALISERS = {
@@ -55,44 +71,26 @@ NORMALISERS = {
     "bounding-box": BoundingBoxNormaliser,
 }
 
-import functools
-import inspect
-
 
 def _normalizer(v):
+
+    if callable(v):
+        return v
+
+    if isinstance(v, list):
+        return EnumNormaliser(*v)
+
     if isinstance(v, str):
         v = v.split(":")
-    if hasattr(v, "normalise"):
-        return v
-    elif hasattr(v[0], "normalise"):
-        assert len(v) == 1, v
-        return v[0]
-    else:
-        return NORMALISERS[v[0]](*v[1:])
 
+    # if hasattr(v, "normalise"):
+    #     return v
+    # elif hasattr(v[0], "normalise"):
+    #     assert len(v) == 1, v
+    #     return v[0]
+    # else:
+    return NORMALISERS[v[0]](*v[1:])
 
-class EnumNormaliser:
-    def __init__(self, values=tuple()):
-        self.values = values
-
-    def normalise(self, value):
-        for n in self.values:
-            if value.lower() == n.lower():
-                return n
-        raise ValueError(value)
-
-from climetlab.utils.conventions import normalise_string
-
-
-class ParameterNormaliser:
-    def __init__(self, convention=None):
-        self.convention = convention
-
-    def normalise(self, parameter):
-        if isinstance(parameter, (list, tuple)):
-            return [normalise_string(p, convention=self.convention) for p in parameter]
-        else:
-            return normalise_string(parameter, convention=self.convention)
 
 def _identity(x):
     return x

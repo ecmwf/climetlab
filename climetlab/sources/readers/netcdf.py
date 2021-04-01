@@ -185,7 +185,7 @@ class NetCDFReader(Reader):
         ) as ds:  # or nested
             return self._get_fields(ds)
 
-    def _get_fields(self, ds):
+    def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
 
         fields = []

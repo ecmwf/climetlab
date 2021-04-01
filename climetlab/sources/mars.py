@@ -12,7 +12,7 @@ import os
 
 import ecmwfapi
 
-from climetlab.decorators import parameters
+from climetlab.normalize import normalize_args
 
 from .base import APIKeyPrompt, FileSource
 
@@ -83,7 +83,7 @@ class MARSRetriever(FileSource):
             service("mars").execute(request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    @parameters(
+    @normalize_args(
         param=("parameter-list", "mars"),
         date=("date-list", "%Y-%m-%d"),
         area=("bounding-box", list),

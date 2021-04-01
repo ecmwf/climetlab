@@ -109,7 +109,7 @@ def output(title, collection, plotter):
                 pass
             try:
                 plotter(p, path)
-            except Exception as e:
+            except Exception:
                 print(path)
                 print(traceback.format_exc())
 

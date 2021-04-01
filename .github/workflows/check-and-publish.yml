@@ -40,15 +40,12 @@ jobs:
           pip install -r docs/requirements.txt
       # sudo apt-get install pandoc
 
-      - name: Black
+      - name: Code QA
         run: |
           black --version
+          isort --profile=black .
           black --check .
-
-      - name: Flake8
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 .
 
       - name: Tokens
         shell: python

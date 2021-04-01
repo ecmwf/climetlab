@@ -26,7 +26,8 @@ for root, _, files in os.walk(here):
             with open(full) as f:
                 code = f.read()
                 if "plot_map" in code:
-                    path = os.path.join(here, "_static", full[len(here) + 1 :])
+                    n = len(here) + 1
+                    path = os.path.join(here, "_static", full[n:])
                     path = path.replace(".py", ".svg")
                     if not os.path.exists(os.path.dirname(path)):
                         os.makedirs(os.path.dirname(path))

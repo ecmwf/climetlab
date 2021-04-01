@@ -4,18 +4,6 @@
 			"path": "."
 		},
 		{
-			"path": "../climetlab-s2s-ai-competition"
-		},
-		{
-			"path": "../cfgrib"
-		},
-		{
-			"path": "../magics-python"
-		},
-		{
-			"path": "../magics-test"
-		},
-		{
 			"path": "../climetlab-meteonet"
 		},
 		{
@@ -23,6 +11,9 @@
 		},
 		{
 			"path": "../climetlab-demo-source"
+		},
+		{
+			"path": "../climetlab-s2s-ai-competition"
 		}
 	],
 	"settings": {

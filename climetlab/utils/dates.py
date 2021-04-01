@@ -87,7 +87,7 @@ def _mars_list(start, end, by):
     return result
 
 
-def to_datetime_list(datetimes):
+def to_datetime_list(datetimes):  # noqa C901
 
     if isinstance(datetimes, str):
         # MARS style lists

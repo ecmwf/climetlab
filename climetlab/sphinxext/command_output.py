@@ -46,7 +46,7 @@ class CommandOutput(Directive):
             # Insert in place
             self.state_machine.insert_input(rst_lines, current_rst_file)
 
-        except Exception as e:
+        except Exception:
             # rst_lines = statemachine.string2lines(str(e))
             rst_lines = statemachine.string2lines(traceback.format_exc())
             self.state_machine.insert_input(rst_lines, current_rst_file)

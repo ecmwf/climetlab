@@ -102,8 +102,8 @@ def test_ulr_source_3():
 
 def zarr_not_installed():
     try:
-        import s3fs
-        import zarr
+        import s3fs  # noqa
+        import zarr  # noqa
 
         return False
     except ImportError:
@@ -152,8 +152,6 @@ def test_zarr_source_2():
 @pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
 def test_zarr_source_3():
     import datetime
-
-    import numpy as np
 
     from climetlab.utils.dates import to_datetime_list
 

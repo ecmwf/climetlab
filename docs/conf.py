@@ -110,7 +110,7 @@ You can run this notebook in |Binder|, in |Colab|, in |Deepnote| or in |Kaggle|.
    :alt: Kaggle
    :class: badge
 
-"""
+"""  # noqa
 
 todo_include_todos = True
 

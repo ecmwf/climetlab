@@ -11,7 +11,7 @@ import os
 
 import cdsapi
 
-from climetlab.decorators import parameters
+from climetlab.normalize import normalize_args
 
 from .base import APIKeyPrompt, FileSource
 
@@ -66,7 +66,7 @@ class CDSRetriever(FileSource):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    @parameters(date=("date-list", "%Y-%m-%d"), area=("bounding-box", list))
+    @normalize_args(date=("date-list", "%Y-%m-%d"), area=("bounding-box", list))
     def request(self, **kwargs):
         return kwargs
 

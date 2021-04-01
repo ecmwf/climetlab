@@ -55,7 +55,7 @@ def _find_action(value, action):
     return action, special
 
 
-def _apply_dict(*, value, collection, action, default, target, options):
+def _apply_dict(*, value, collection, action, default, target, options):  # noqa C901
 
     if "update" in value:
         newvalue = {}

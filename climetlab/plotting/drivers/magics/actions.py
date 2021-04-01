@@ -12,24 +12,30 @@
 # N806 = variables should be lower case
 
 import logging
-import sys
+import warnings
 
 from .convertions import convert
 
-# This is needed when running Sphinx on ReadTheDoc
 
-try:
-    from Magics import macro
-except Exception as e:
-    print(e, file=sys.stderr)
-    macro = None
+class NoMagics:
+    def plot(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Magics was not loaded successfully, plotting is not supported."
+        )
+
 
 try:
     import Magics
+    from Magics import macro
 
-    Magics.strict_mode()
+    try:
+        Magics.strict_mode()
+    except Exception as e:
+        warnings.warn(e)
 except Exception as e:
-    print(e, file=sys.stderr)
+    warnings.warn(e)
+    macro = NoMagics()
+
 
 LOG = logging.getLogger(__name__)
 

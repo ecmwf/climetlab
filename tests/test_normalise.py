@@ -15,16 +15,16 @@ import numpy as np
 import pytest
 
 from climetlab import load_source
-from climetlab.decorators import parameters
+from climetlab.normalize import normalize_args
 from climetlab.utils.bbox import BoundingBox
 
 
-@parameters(parameter=("parameter-list", "mars"))
+@normalize_args(parameter=("parameter-list", "mars"))
 def values_mars(parameter):
     return parameter
 
 
-@parameters(parameter=("parameter-list", "cf"))
+@normalize_args(parameter=("parameter-list", "cf"))
 def values_cf(parameter):
     return parameter
 
@@ -43,7 +43,7 @@ def test_param_convention_cf():
     assert values_cf(parameter="t2m") == "t2m"
 
 
-@parameters(date="date-list")
+@normalize_args(date="date-list")
 def dates_1(date):
     return date
 
@@ -62,27 +62,27 @@ def test_dates():
         assert dates_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
-@parameters(area="bounding-box")
+@normalize_args(area="bounding-box")
 def bbox_list(ignore, area):
     return area
 
 
-@parameters(area=("bounding-box", tuple))
+@normalize_args(area=("bounding-box", tuple))
 def bbox_tuple(area, ignore=None):
     return area
 
 
-@parameters(area=("bounding-box", list))
+@normalize_args(area=("bounding-box", list))
 def bbox_bbox(area):
     return area
 
 
-@parameters(area=("bounding-box", dict))
+@normalize_args(area=("bounding-box", dict))
 def bbox_dict(area):
     return area
 
 
-@parameters(area=("bounding-box"))
+@normalize_args(area=("bounding-box"))
 def bbox_defaults(area=None):
     return area
 

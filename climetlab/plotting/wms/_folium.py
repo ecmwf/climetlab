@@ -74,7 +74,7 @@ def make_map(path, bbox, **kwargs):
     center = (0, 0)
     zoom = 1
     # fmt = "image/svg+xml"
-    fmt = "image/png"
+    # fmt = "image/png"
 
     if bbox is not None:
         center = (bbox.north + bbox.south) / 2, (bbox.east + bbox.west) / 2

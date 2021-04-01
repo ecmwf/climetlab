@@ -16,13 +16,15 @@ class WeatherBench(Dataset):
     """
     This is an attempt to reproduce this research: https://arxiv.org/abs/2002.00469.
     See https://raspstephan.github.io/blog/weatherbench/
-    There is a notebook available at: https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb
+    There is a notebook available at:
+    https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb
     """
 
     home_page = "https://raspstephan.github.io/blog/weatherbench/"
     citation = """@article{rasp2020weatherbench,
   title={WeatherBench: A benchmark dataset for data-driven weather forecasting},
-  author={Rasp, Stephan and Dueben, Peter D and Scher, Sebastian and Weyn, Jonathan A and Mouatadid, Soukayna and Thuerey, Nils},
+  author={Rasp, Stephan and Dueben, Peter D and Scher, Sebastian and Weyn,
+  Jonathan A and Mouatadid, Soukayna and Thuerey, Nils},
   journal={arXiv preprint arXiv:2002.00469},
   year={2020}
 }
@@ -54,9 +56,10 @@ class WeatherBench(Dataset):
 
         # self.check_parameter("resolution", resolution, 1.40625, 2.8125, 5.625)
 
-        url = "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip".format(
-            resolution=resolution, parameter=parameter
-        )
+        url = (
+            "https://dataserv.ub.tum.de/s/m1524895"
+            "/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip"
+        ).format(resolution=resolution, parameter=parameter)
         self.source = load_source("url", url, unpack=True)
 
 
