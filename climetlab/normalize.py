@@ -15,6 +15,7 @@ from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
 
+
 def _identity(x):
     return x
 
@@ -96,7 +97,6 @@ def _normalizer(v):
         return NORMALISERS[name](*args)
     else:
         return NORMALISERS[v]()
-
 
 
 def normalize_args(**kwargs):
