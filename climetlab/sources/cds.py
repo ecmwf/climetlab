@@ -8,6 +8,7 @@
 #
 
 import os
+import re
 
 import cdsapi
 
@@ -44,7 +45,7 @@ class CDSAPI(APIKeyPrompt):
 
 def client():
     try:
-        return cdsapi.Client()
+        return cdsapi.Client(debug=True)
     except Exception as e:
         if ".cdsapirc" in str(e):
             CDSAPI().ask_user_and_save()
@@ -66,7 +67,7 @@ class CDSRetriever(FileSource):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
 
-    @normalize_args(date=("date-list", "%Y-%m-%d"), area=("bounding-box", list))
+    @normalize_args(date=("date-list(%Y-%m-%d)"), area="bounding-box(list)")
     def request(self, **kwargs):
         return kwargs
 

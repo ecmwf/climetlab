@@ -9,6 +9,7 @@
 
 import threading
 
+
 def dict_args(func):
     def wrapped(*args, **kwargs):
         m = []

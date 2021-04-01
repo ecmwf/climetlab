@@ -9,6 +9,7 @@
 
 import functools
 import inspect
+import re
 
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
@@ -31,6 +32,10 @@ CONVERT = {
     tuple: lambda x: x.as_tuple(),
     dict: lambda x: x.as_dict(),
     BoundingBox: lambda x: x,
+    "list": lambda x: x.as_list(),
+    "tuple": lambda x: x.as_tuple(),
+    "dict": lambda x: x.as_dict(),
+    "BoundingBox": lambda x: x,
 }
 
 
@@ -80,16 +85,14 @@ def _normalizer(v):
     if isinstance(v, list):
         return EnumNormaliser(*v)
 
-    if isinstance(v, str):
-        v = v.split(":")
-
-    # if hasattr(v, "normalise"):
-    #     return v
-    # elif hasattr(v[0], "normalise"):
-    #     assert len(v) == 1, v
-    #     return v[0]
-    # else:
-    return NORMALISERS[v[0]](*v[1:])
+    assert isinstance(v, str), v
+    m = re.match(r"(.*)\(([^}]*)\)", v)
+    if m:
+        args = m.group(2).split(",")
+        name = m.group(1)
+        return NORMALISERS[name](*args)
+    else:
+        return NORMALISERS[v]()
 
 
 def _identity(x):
@@ -105,10 +108,18 @@ def normalize_args(**kwargs):
     def outer(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
+            provided = inspect.getcallargs(func, *args, **kwargs)
+            for name, param in inspect.signature(func).parameters.items():
+                # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
+                assert param.kind is not param.VAR_POSITIONAL
+                if param.kind is param.VAR_KEYWORD:
+                    provided.update(provided.pop(name, {}))
+            # print("BEFORE", provided)
             normalized = {}
-            for arg, value in inspect.getcallargs(func, *args, **kwargs).items():
+            for arg, value in provided.items():
                 normalizer = normalizers.get(arg, _identity)
                 normalized[arg] = normalizer(value)
+            # print("AFTER", normalized)
             return func(**normalized)
 
         return inner
