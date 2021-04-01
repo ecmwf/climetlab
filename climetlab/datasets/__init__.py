@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import inspect
 import os
 from importlib import import_module
 

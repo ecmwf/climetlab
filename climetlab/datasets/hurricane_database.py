@@ -40,7 +40,10 @@ STATUS = {
     "EX": "Extratropical cyclone (of any intensity)",
     "SD": "Subtropical cyclone of subtropical depression intensity (< 34 knots)",
     "SS": "Subtropical cyclone of subtropical storm intensity (> 34 knots)",
-    "LO": "A low that is neither a tropical cyclone, a subtropical cyclone, nor an extratropical cyclone (of any intensity)",
+    "LO": (
+        "A low that is neither a tropical cyclone, a subtropical cyclone,"
+        " nor an extratropical cyclone (of any intensity)"
+    ),
     "WV": "Tropical Wave (of any intensity)",
     "DB": "Disturbance (of any intensity)",
 }
