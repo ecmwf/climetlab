@@ -45,7 +45,7 @@ class CDSAPI(APIKeyPrompt):
 
 def client():
     try:
-        return cdsapi.Client(debug=True)
+        return cdsapi.Client()
     except Exception as e:
         if ".cdsapirc" in str(e):
             CDSAPI().ask_user_and_save()
