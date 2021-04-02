@@ -34,9 +34,9 @@ install_requires = ["numpy"]
 if sys.version_info < (3, 7):
     install_requires = ["numpy<1.20"]
 
-#if sys.version_info < (3, 7):
+# if sys.version_info < (3, 7):
 #    install_requires += ["cython", "pandas==1.1.5"]
-#else:
+# else:
 #    install_requires += ["cython", "pandas"]
 install_requires += ["pandas"]
 
