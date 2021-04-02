@@ -34,11 +34,11 @@ install_requires = ["numpy"]
 if sys.version_info < (3, 7):
     install_requires = ["numpy<1.20"]
 
-# if sys.version_info < (3, 7):
-#    install_requires += ["cython", "pandas==1.1.5"]
-# else:
-#    install_requires += ["cython", "pandas"]
-install_requires += ["pandas"]
+if sys.version_info < (3, 7):
+   install_requires += ["cython", "pandas==1.1.5"]
+else:
+   install_requires += ["cython", "pandas"]
+# install_requires += ["pandas"]
 
 
 install_requires += [
@@ -49,7 +49,6 @@ install_requires += [
     "requests",
     # "zarr",
     # "s3fs",
-    "numpy",
     "xarray>=0.17.0",
     "netcdf4",
     "cfgrib>=0.9.8.4",
