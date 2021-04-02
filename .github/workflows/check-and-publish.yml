@@ -40,7 +40,7 @@ jobs:
         run: |
           pip install black sphinx pytest pytest-cov flake8 isort
           pip install -r docs/requirements.txt
-      # sudo apt-get install pandoc
+          # sudo apt-get install pandoc
 
       - name: Code QA
         run: |

@@ -2,9 +2,19 @@ name: Check only
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
+  quality:
+    name: Code QA
+    runs-on: ubuntu-latest
+    steps:
+      - run: pip install black flake8 isort
+      - run: black --version
+      - run: isort --check --profile=black .
+      - run: black --check .
+      - run: flake8 .
+
   checks:
     strategy:
       matrix:
@@ -13,6 +23,7 @@ jobs:
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
+    needs: quality
 
     steps:
       - uses: actions/checkout@v2
@@ -20,23 +31,6 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install packages
-        run: |
-          pip install black sphinx pytest pytest-cov flake8 isort
-          pip install -r docs/requirements.txt
-
-      - name: Code QA
-        run: |
-          black --version
-          isort --check --profile=black .
-          black --check .
-          flake8 .
-
-      - name: Flake8
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Tokens
         shell: python
