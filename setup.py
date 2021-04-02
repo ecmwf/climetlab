@@ -34,36 +34,36 @@ numpy = "numpy"
 pandas = "pandas"
 dask = "dask"
 
-
+install_requires = []
 if sys.version_info < (3, 7):
-    numpy = "numpy<1.20"
-    pandas = "pandas==1.1.5"
-    dask = "dask<2021.4.0"
+    install_requires += [
+        "numpy<1.20",
+        "pandas==1.1.5",
+        "dataclasses",  # Needed by dask
+    ]
+else:
+    install_requires += ["numpy", "pandas"]
 
-
-install_requires = [
+install_requires += [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
     # "chardet>=3.0,<4.0",
     # "aiohttp>=3.7.2",
     # --
-    numpy,
-    pandas,
     "requests",
     # "zarr",
     # "s3fs",
     "xarray>=0.17.0",
+    "dask",
     "netcdf4",
     "cfgrib>=0.9.8.4",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "tqdm",
-    "requests",
     "eccodes>=0.9.9",
     "magics>=1.5.6",
     "ecmwflibs>=0.1.2",
     "pdbufr",
     "pyodc",
-    dask,
     "toolz",
     "pyyaml",
     "markdown",
