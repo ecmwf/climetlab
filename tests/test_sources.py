@@ -27,7 +27,9 @@ def test_file_source_netcdf():
     assert len(s) == 2
 
 
-@pytest.mark.skipif(True or sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
+@pytest.mark.skipif(
+    True or sys.version_info < (3, 7), reason="Version 3.7 or greater needed"
+)
 def test_file_source_shortcut():
     s = source.file("docs/examples/test.grib")
     assert len(s) == 2

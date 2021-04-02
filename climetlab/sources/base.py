@@ -16,8 +16,8 @@ import markdown
 
 from climetlab.core.ipython import HTML, display, ipython_active
 
-from . import Source
 from ..readers import reader
+from . import Source
 
 LOG = logging.getLogger(__name__)
 
