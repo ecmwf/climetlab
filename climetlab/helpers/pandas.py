@@ -79,8 +79,6 @@ class DatetimeIndexHelper:
         self.index = index
 
     def to_datetime_list(self):
-        import pandas as pd
-
         return [d.to_pydatetime() for d in self.index]
 
 
