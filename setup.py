@@ -30,19 +30,24 @@ for line in read("climetlab/__init__.py").split("\n"):
 
 assert version
 
-install_requires = []
+numpy = "numpy"
+pandas = "pandas"
+dask = "dask"
+
 
 if sys.version_info < (3, 7):
-    install_requires += ["numpy<1.20", "cython", "pandas==1.1.5"]
-else:
-    install_requires += ["numpy", "cython", "pandas"]
+    numpy = "numpy<1.20"
+    pandas = "pandas==1.1.5"
+    dask = "dask<2021.4.0"
 
 
-install_requires += [
+install_requires = [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
     # "chardet>=3.0,<4.0",
     # "aiohttp>=3.7.2",
     # --
+    numpy,
+    pandas,
     "requests",
     # "zarr",
     # "s3fs",
@@ -58,7 +63,7 @@ install_requires += [
     "ecmwflibs>=0.1.2",
     "pdbufr",
     "pyodc",
-    "dask",
+    dask,
     "toolz",
     "pyyaml",
     "markdown",
