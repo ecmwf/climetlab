@@ -9,6 +9,8 @@
 
 import os
 import weakref
+import warnings
+from importlib import import_module
 
 
 class Reader:
@@ -28,76 +30,39 @@ class Reader:
         raise NotImplementedError()
 
 
-def grib_reader(source, path):
-    from .grib import GRIBReader
-
-    return GRIBReader(source, path)
+_READERS = {}
 
 
-def bufr_reader(source, path):
-    from .bufr import BUFRReader
-
-    return BUFRReader(source, path)
-
-
-def netcdf_reader(source, path):
-    from .netcdf import NetCDFReader
-
-    return NetCDFReader(source, path)
-
-
-def odb_reader(source, path):
-    from .odb import ODBReader
-
-    return ODBReader(source, path)
-
-
-def csv_reader(source, path):
-    from .csv import CSVReader
-
-    return CSVReader(source, path)
-
-
-def zip_reader(source, path):
-    from .zip import ZIPReader
-
-    return ZIPReader(source, path)
-
-
-def directory_reader(source, path):
-    from .directory import DirectoryReader
-
-    return DirectoryReader(source, path)
-
-
-READERS = {
-    b"GRIB": grib_reader,
-    b"BUFR": bufr_reader,
-    b"\x89HDF": netcdf_reader,
-    b"CDF\x01": netcdf_reader,
-    b"CDF\x02": netcdf_reader,
-    b"\xff\xffOD": odb_reader,
-    b"PK\x03\x04": zip_reader,
-    ".csv": csv_reader,
-    ".d": directory_reader,
-}
+# TODO: Add plugins
+# TODO: Add lock
+def _readers():
+    if not _READERS:
+        here = os.path.dirname(__file__)
+        for path in os.listdir(here):
+            if path.endswith(".py") and path[0] not in ("_", "."):
+                name, _ = os.path.splitext(path)
+                try:
+                    _READERS[name] = import_module(f".{name}", package=__name__).reader
+                except Exception as e:
+                    warnings.warn(f"Error loading helper {name}: {e}")
+    return _READERS
 
 
 def reader(source, path):
 
-    _, extension = os.path.splitext(path)
-    if extension in READERS:
-        return READERS[extension](source, path).mutate()
-
     if os.path.isdir(path):
-        return directory_reader(source, path).mutate()
+        from .directory import DirectoryReader
+        return DirectoryReader(source, path)
 
     with open(path, "rb") as f:
-        header = f.read(4)
+        magic = f.read(8)
 
-    if header in READERS:
-        return READERS[header](source, path).mutate()
+    for name, r in _readers().items():
+        try:
+            reader = r(source, path, magic)
+            if reader is not None:
+                return reader.mutate()
+        except Exception as e:
+            warnings.warn(f"Error calling reader '{name}': {e}")
 
-    raise ValueError(
-        "Unsupported file {} (header={}, extension={})".format(path, header, extension)
-    )
+    raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic})")

@@ -36,3 +36,8 @@ class ZIPReader(Reader):
         options.update(kwargs)
 
         return pandas.read_csv(self.path, **options)
+
+
+def reader(source, path, magic):
+    if magic[:4] == b"PK\x03\x04":
+        return ZIPReader(source, path)

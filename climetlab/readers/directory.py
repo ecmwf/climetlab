@@ -34,3 +34,8 @@ class DirectoryReader(Reader):
         import xarray as xr
 
         return xr.open_mfdataset(self._content, combine="by_coords")
+
+
+def reader(source, path, magic):
+    if os.path.isdir(path):
+        return DirectoryReader(source, path)

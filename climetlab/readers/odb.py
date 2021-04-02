@@ -25,3 +25,8 @@ except Exception:
 class ODBReader(Reader):
     def to_pandas(self):
         return odc.read_odb(self.path, single=True)
+
+
+def reader(source, path, magic):
+    if magic[:5] == b"\xff\xffODA":
+        return ODBReader(source, path)

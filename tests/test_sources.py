@@ -181,4 +181,5 @@ def test_zarr_source_3():
 
 
 if __name__ == "__main__":
-    test_file_source_cds_netcdf()
+    test_file_source_grib()
+    test_file_source_netcdf()

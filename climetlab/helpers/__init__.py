@@ -30,7 +30,7 @@ def _helpers():
                 try:
                     _HELPERS[name] = import_module(f".{name}", package=__name__).helper
                 except Exception as e:
-                    warnings.warn(f"Error loading helper {name}: {e}")
+                    warnings.warn(f"Error loading helper '{name}': {e}")
     return _HELPERS
 
 
@@ -49,7 +49,7 @@ def helper(data, *args, **kwargs):
             if helper is not None:
                 return helper
         except Exception as e:
-            warnings.warn(f"Error calling helper {name}: {e}")
+            warnings.warn(f"Error calling helper '{name}': {e}")
 
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 

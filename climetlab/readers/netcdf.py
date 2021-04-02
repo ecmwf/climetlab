@@ -272,3 +272,8 @@ class NetCDFReader(Reader):
 
     def to_xarray(self):
         return xr.open_dataset(self.path)
+
+
+def reader(source, path, magic):
+    if magic[:4] in (b"\x89HDF", b"CDF\x01", b"CDF\x02"):
+        return NetCDFReader(source, path)

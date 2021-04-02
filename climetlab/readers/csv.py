@@ -19,3 +19,8 @@ class CSVReader(Reader):
         options.update(kwargs)
 
         return pandas.read_csv(self.path, **options)
+
+
+def reader(source, path, magic):
+    if path.endswith(".csv"):
+        return CSVReader(source, path)
