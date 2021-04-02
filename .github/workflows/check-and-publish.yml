@@ -19,6 +19,17 @@ on:
       - ecmwf-api-client-updated
 
 jobs:
+  quality:
+    name: Code QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: pip install black flake8 isort
+      - run: black --version
+      - run: isort --check --profile=black .
+      - run: black --check .
+      - run: flake8 .
+
   checks:
     strategy:
       fail-fast: false
@@ -28,6 +39,7 @@ jobs:
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
+    needs: quality
 
     steps:
       - uses: actions/checkout@v2
@@ -38,16 +50,9 @@ jobs:
 
       - name: Install packages
         run: |
-          pip install black sphinx pytest pytest-cov flake8 isort
+          pip install sphinx pytest pytest-cov
           pip install -r docs/requirements.txt
           # sudo apt-get install pandoc
-
-      - name: Code QA
-        run: |
-          black --version
-          isort --check --profile=black .
-          black --check .
-          flake8 .
 
       - name: Tokens
         shell: python
