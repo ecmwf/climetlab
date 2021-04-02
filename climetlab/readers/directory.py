@@ -9,7 +9,8 @@
 
 import os
 
-from . import Reader, reader
+from . import Reader
+from . import reader as find_reader
 
 
 class DirectoryReader(Reader):
@@ -26,7 +27,7 @@ class DirectoryReader(Reader):
         # If there is only one file, let's mutate to the proper reader
 
         if len(self._content) == 1:
-            return reader(self.source, self._content[0])
+            return find_reader(self.source, self._content[0])
 
         return self
 

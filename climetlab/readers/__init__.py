@@ -8,9 +8,11 @@
 #
 
 import os
-import weakref
 import warnings
+import weakref
 from importlib import import_module
+
+from climetlab.decorators import locked
 
 
 class Reader:
@@ -34,7 +36,7 @@ _READERS = {}
 
 
 # TODO: Add plugins
-# TODO: Add lock
+@locked
 def _readers():
     if not _READERS:
         here = os.path.dirname(__file__)
@@ -52,6 +54,7 @@ def reader(source, path):
 
     if os.path.isdir(path):
         from .directory import DirectoryReader
+
         return DirectoryReader(source, path)
 
     with open(path, "rb") as f:

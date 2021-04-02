@@ -11,16 +11,19 @@ import os
 import warnings
 from importlib import import_module
 
+from climetlab.decorators import locked
+
 
 class Helper:
-    pass
+    def __init__(self, *args, **kwargs):
+        pass
 
 
 _HELPERS = {}
 
 
 # TODO: Add plugins
-# TODO: Add lock
+@locked
 def _helpers():
     if not _HELPERS:
         here = os.path.dirname(__file__)
