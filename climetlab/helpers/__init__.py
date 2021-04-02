@@ -11,7 +11,12 @@ import os
 import warnings
 from importlib import import_module
 
+
+class Helper:
+    pass
+
 _HELPERS = {}
+
 
 # TODO: Add plugins
 # TODO: Add lock

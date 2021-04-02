@@ -46,7 +46,7 @@ class SourceMaker:
 source = SourceMaker()
 
 
-def load(name, *args, **kwargs):
+def load_source(name, *args, **kwargs):
     return source(name, *args, **kwargs).mutate()
 
 
@@ -69,7 +69,7 @@ def list_entries():
     return result
 
 
-class DataSource:
+class Source:
     """
     Doc
     """

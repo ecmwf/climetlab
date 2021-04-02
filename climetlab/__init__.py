@@ -8,8 +8,10 @@
 #
 
 
-from climetlab.datasets import Dataset
-from climetlab.sources import DataSource
+from .datasets import Dataset
+from .sources import Source
+from .readers import Reader
+from .helpers import Helper
 
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
@@ -18,23 +20,26 @@ from .datasets import dataset, load_dataset
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
-from .sources import load as load_source
+from .sources import source, load_source
 
-__version__ = "0.4.8"
+__version__ = "0.4.9"
 
 
 __all__ = [
-    "load_source",
-    "load_dataset",
-    "dataset",
-    "plot_map",
-    "interactive_map",
-    "new_plot",
-    "settings",
     "cache",
+    "dataset",
     "Dataset",
-    "DataSource",
+    "Helper",
+    "interactive_map",
+    "load_dataset",
+    "load_source",
+    "new_plot",
+    "plot_map",
     "plotting_options",
+    "Reader",
+    "settings",
+    "source",
+    "Source",
 ]
 
 init_metadata()

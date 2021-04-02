@@ -12,7 +12,7 @@ import logging
 import s3fs
 import xarray as xr
 
-from . import DataSource
+from . import Source
 
 LOG = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class Cache:
         return self._store.keys()
 
 
-class ZarrS3(DataSource):
+class ZarrS3(Source):
     def __init__(self, urls, **kwargs):
         super().__init__(**kwargs)
 

@@ -16,13 +16,13 @@ import markdown
 
 from climetlab.core.ipython import HTML, display, ipython_active
 
-from . import DataSource
-from .readers import reader
+from . import Source
+from ..readers import reader
 
 LOG = logging.getLogger(__name__)
 
 
-class FileSource(DataSource):
+class FileSource(Source):
 
     _reader_ = None
     path = None

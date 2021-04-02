@@ -10,10 +10,10 @@
 import itertools
 from collections import defaultdict
 
-from . import DataSource
+from . import Source
 
 
-class MultiSource(DataSource):
+class MultiSource(Source):
     def __init__(self, *sources):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
