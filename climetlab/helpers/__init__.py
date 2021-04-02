@@ -7,17 +7,25 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
 import sys
+import warnings
 from importlib import import_module
 
-HELPERS = {
-    "xarray.core.dataset.Dataset": "xarray",
-    "xarray.core.dataarray.DataArray": "xarray",
-    "numpy.ndarray": "ndarray",
-    "pandas.core.frame.DataFrame": "pandas",
-    "builtins.NoneType": "none",
-    "builtins.int": "integer",
-}
+_HELPERS = {}
+
+# TODO: Add lock
+def _helpers():
+    if not _HELPERS:
+        here = os.path.dirname(__file__)
+        for path in os.listdir(here):
+            if path.endswith(".py") and path[0] not in ("_", "."):
+                name, _ = os.path.splitext(path)
+                try:
+                    _HELPERS[name] = import_module(f".{name}", package=__name__).helper
+                except Exception as e:
+                    warnings.warn(f"Error loading helper {name}: {e}")
+    return _HELPERS
 
 
 def helper(data, *args, **kwargs):
@@ -29,16 +37,14 @@ def helper(data, *args, **kwargs):
     if hasattr(data, "helper"):
         return data.helper(*args, **kwargs)
 
+    for name, h in _helpers().items():
+        try:
+            helper = h(data, *args, **kwargs)
+            if helper is not None:
+                return helper
+        except Exception as e:
+            warnings.warn(f"Error calling helper {name}: {e}")
+
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 
-    name = HELPERS.get(fullname)
-
-    if name is not None:
-        helper = import_module(".%s" % (name,), package=__name__)
-        try:
-            return helper.helper(data, *args, **kwargs)
-        except Exception:
-            print(helper, file=sys.stderr)
-            raise
-
-    raise ValueError("Cannot find a helper for class %s" % (fullname,))
+    raise ValueError(f"Cannot find a helper for class {fullname}")

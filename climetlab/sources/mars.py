@@ -84,7 +84,7 @@ class MARSRetriever(FileSource):
             os.rename(self.path + ".tmp", self.path)
 
     @normalize_args(
-        param="parameter-list(mars)",
+        param="variable-list(mars)",
         date="date-list(%Y-%m-%d)",
         area="bounding-box(list)",
     )

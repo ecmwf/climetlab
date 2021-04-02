@@ -33,3 +33,7 @@ def test_numpy_xarray():
     s = cml.load_source("file", "docs/examples/test.nc")
     x = s.to_xarray()
     cml.plot_map(x.msl.values, metadata=x.msl)
+
+
+if __name__ == "__main__":
+    test_numpy_xarray()

@@ -20,7 +20,7 @@ def _identity(x):
     return x
 
 
-class ParameterNormaliser:
+class VariableNormaliser:
     def __init__(self, convention=None):
         self.convention = convention
 
@@ -63,6 +63,18 @@ class DateListNormaliser:
         return dates
 
 
+class DateNormaliser:
+    def __init__(self, format=None):
+        self.format = format
+
+    def __call__(self, dates):
+        dates = to_date_list(dates)
+        if self.format is not None:
+            dates = [d.strftime(self.format) for d in dates]
+        assert len(dates) == 1
+        return dates[0]
+
+
 class EnumNormaliser:
     def __init__(self, values):
         self.values = values
@@ -76,8 +88,10 @@ class EnumNormaliser:
 
 NORMALISERS = {
     "date-list": DateListNormaliser,
-    "parameter-list": ParameterNormaliser,
+    "date": DateNormaliser,
+    "variable-list": VariableNormaliser,
     "bounding-box": BoundingBoxNormaliser,
+    "bbox": BoundingBoxNormaliser,
 }
 
 

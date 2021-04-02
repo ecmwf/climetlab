@@ -19,4 +19,7 @@ class NoneHelper:
         return {}
 
 
-helper = NoneHelper
+def helper(data, *args, **kwargs):
+    if data is None:
+        return NoneHelper(data)
+    return None

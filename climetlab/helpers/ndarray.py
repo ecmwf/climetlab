@@ -12,12 +12,11 @@ from climetlab.helpers import helper as get_helper
 
 
 class NumpyArrayHelper:
-    def __init__(self, data):
+    def __init__(self, data, *args, **kwargs):
         self.data = data
 
     def plot_map(self, driver):
-        # field = driver.option("field")
-        # grid = driver.option("grid")
+
         metadata = get_helper(driver.option("metadata"))
         metadata = metadata.field_metadata()
 
@@ -37,4 +36,9 @@ class NumpyArrayHelper:
         return [datetime.datetime.fromtimestamp(x * 1e-9) for x in self.data.tolist()]
 
 
-helper = NumpyArrayHelper
+def helper(data, *args, **kwargs):
+    import numpy as np
+
+    if isinstance(data, np.ndarray):
+        return NumpyArrayHelper(data, *args, **kwargs)
+    return None

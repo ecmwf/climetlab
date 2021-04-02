@@ -87,6 +87,18 @@ def test_to_datetimes_list_grib():
         assert to_datetime_list(s) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
+def test_pandas_dates():
+    import pandas as pd
+
+    assert to_datetime_list(
+        pd.date_range(start="2020-01-02", end="2020-01-16", freq="w-thu")
+    ) == [
+        datetime.datetime(2020, 1, 2),
+        datetime.datetime(2020, 1, 9),
+        datetime.datetime(2020, 1, 16),
+    ]
+
+
 if __name__ == "__main__":
     # test_to_datetime()
-    to_datetime_list()
+    test_pandas_dates()

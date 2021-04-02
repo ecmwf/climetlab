@@ -19,12 +19,12 @@ from climetlab.normalize import normalize_args
 from climetlab.utils.bbox import BoundingBox
 
 
-@normalize_args(parameter=("parameter-list(mars)"))
+@normalize_args(parameter=("variable-list(mars)"))
 def values_mars(parameter):
     return parameter
 
 
-@normalize_args(parameter=("parameter-list(cf)"))
+@normalize_args(parameter=("variable-list(cf)"))
 def values_cf(parameter):
     return parameter
 

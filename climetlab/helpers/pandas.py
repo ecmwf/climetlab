@@ -17,7 +17,7 @@ LATLON = (
 )
 
 
-class PandasHelper:
+class PandasFrameHelper:
     def __init__(self, frame, **kwargs):
 
         self.frame = frame
@@ -74,4 +74,23 @@ class PandasHelper:
         return self.bounding_box()
 
 
-helper = PandasHelper
+class DatetimeIndexHelper:
+    def __init__(self, index, **kwargs):
+        self.index = index
+
+    def to_datetime_list(self):
+        import pandas as pd
+
+        return [d.to_pydatetime() for d in self.index]
+
+
+def helper(data, *args, **kwargs):
+    import pandas as pd
+
+    if isinstance(data, pd.DatetimeIndex):
+        return DatetimeIndexHelper(data, *args, **kwargs)
+
+    if isinstance(data, pd.DataFrame):
+        return PandasFrameHelper(data, *args, **kwargs)
+
+    return None

@@ -78,7 +78,10 @@ def helper(data, *args, **kwargs):
     if isinstance(data, xr.Dataset):
         return XArrayDatasetHelper(data, *args, **kwargs)
 
-    try:
-        return XArrayDatasetHelper(data.to_dataset(), *args, **kwargs)
-    except ValueError:
-        return XArrayDataArrayHelper(data, *args, **kwargs)
+    if isinstance(data, xr.DataArray):
+        try:
+            return XArrayDatasetHelper(data.to_dataset(), *args, **kwargs)
+        except ValueError:
+            return XArrayDataArrayHelper(data, *args, **kwargs)
+
+    return None

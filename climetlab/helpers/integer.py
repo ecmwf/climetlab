@@ -26,4 +26,7 @@ class IntHelper:
         return [self.to_datetime()]
 
 
-helper = IntHelper
+def helper(data, *args, **kwargs):
+    if isinstance(data, int):
+        return IntHelper(data)
+    return None
