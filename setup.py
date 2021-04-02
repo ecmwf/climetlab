@@ -30,15 +30,12 @@ for line in read("climetlab/__init__.py").split("\n"):
 
 assert version
 
-install_requires = ["numpy"]
-if sys.version_info < (3, 7):
-    install_requires = ["numpy<1.20"]
+install_requires = []
 
 if sys.version_info < (3, 7):
-   install_requires += ["cython", "pandas==1.1.5"]
+    install_requires += ["numpy<1.20", "cython", "pandas==1.1.5"]
 else:
-   install_requires += ["cython", "pandas"]
-# install_requires += ["pandas"]
+    install_requires += ["numpy", "cython", "pandas"]
 
 
 install_requires += [
