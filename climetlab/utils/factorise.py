@@ -146,8 +146,8 @@ def _as_interval(interval):
 
 
 class Tree:
-    def __init__(self):
-        self._values = {}
+    def __init__(self, values=None):
+        self._values = {} if values is None else values
         self._children = []
         self._unique_values = None
         self._flatten = None
@@ -212,6 +212,53 @@ class Tree:
         html.append("</ul>")
 
         return "".join(html)
+
+    def select(self, **kwargs):
+        request = {}
+        for k, v in kwargs.items():
+            request[k] = _as_tuple(v)
+        return self._select(request)
+
+    def _select(self, request):
+        ok, matches = self._match(request)
+        if not ok:
+            return None
+
+        r = dict(**self._values)
+        for name, values in [(n, v) for (n, v) in matches.items() if n in self._values]:
+            r[name] = _as_tuple(values)
+        result = Tree(r)
+
+        if not self._children:
+            return result
+
+        count = 0
+        for c in self._children:
+            s = c._select(request)
+            if s is not None:
+                count += 1
+                result._add_child(s)
+
+        if count == 0:
+            return None
+
+        return result
+
+    def _match(self, request):
+        matches = {}
+        for name, values in [(n, v) for (n, v) in request.items() if n in self._values]:
+            common = set(values).intersection(set(self._values[name]))
+            if len(common) == 0:
+                return False, None
+
+            if False:  # If we want an exact match
+                if len(common) != len(values):
+                    return False, None
+
+            matches[name] = common
+
+        return True, matches
+
 
 class Compressor:
 

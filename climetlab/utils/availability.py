@@ -3,18 +3,23 @@ import inspect
 import json
 import os
 
-from climetlab.utils.factorise import factorise
+from climetlab.utils.factorise import Tree, factorise
 
 
 class Availability:
     def __init__(self, avail):
-        if isinstance(avail, str):
-            with open(avail) as f:
-                avail = json.loads(f.read())
-        self._avail = factorise(avail)
+        if not isinstance(avail, Tree):
+            if isinstance(avail, str):
+                with open(avail) as f:
+                    avail = json.loads(f.read())
+            avail = factorise(avail)
+        self._tree = avail
 
     def _repr_html_(self):
-        return self._avail._repr_html_()
+        return self._tree._repr_html_()
+
+    def select(self, *args, **kwargs):
+        return self._tree.select(*args, **kwargs)
 
 
 def availability(avail):
