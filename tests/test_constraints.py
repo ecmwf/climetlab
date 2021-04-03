@@ -54,6 +54,7 @@ def test_factorise_1():
 
 def test_factorise_2():
     assert _(factorise(C1).to_list()) == _(C1)
+    assert _(factorise(C1 + C0).to_list()) == _(C1)
 
 
 def test_factorise_3():
