@@ -11,6 +11,7 @@
 
 
 import datetime
+import itertools
 from collections import defaultdict
 from copy import copy, deepcopy
 from functools import cmp_to_key
@@ -22,11 +23,15 @@ class Interval(object):
     def __init__(self, start, end):
         self.start = start
         self.end = end
-        if isinstance(start, datetime.datetime):
+        if not isinstance(start, datetime.date) and not isinstance(end, datetime.date):
             self.one = datetime.timedelta(hours=1)
+            raise NotImplementedError("Interval with time not yet supported")
         else:
             self.one = datetime.timedelta(days=1)
         assert start <= end
+
+    def count(self):
+        return (self.end - self.start).days + 1
 
     def split(self, dates):
         result = []
@@ -47,6 +52,7 @@ class Interval(object):
         return result
 
     def overlaps(self, other):
+        """Returns the union of two intervals if they overlap, else None"""
         s1, e1 = self.start, self.end + self.one
         s2, e2 = other.start, other.end + self.one
         s = max(s1, s2)
@@ -55,6 +61,34 @@ class Interval(object):
             return self.__class__(min(s1, s2), max(e1, e2) - self.one)
         else:
             return None
+
+    def intersects(self, other):
+        """Returns the intersection of two intervals if they overlap, else None"""
+        s1, e1 = self.start, self.end + self.one
+        s2, e2 = other.start, other.end + self.one
+        s = max(s1, s2)
+        e = min(e1, e2)
+        if s <= e:
+            return self.__class__(max(s1, s2), min(e1, e2) - self.one)
+        else:
+            return None
+
+    @classmethod
+    def expand(cls, lst):
+        for i in lst:
+            d = i.start
+            while d <= i.end:
+                yield d.date()
+                d = d + datetime.timedelta(days=1)
+
+    @classmethod
+    def intersection(cls, list1, list2):
+        result = []
+        for i1 in list1:
+            for i2 in list2:
+                result.append(i1.intersects(i2))
+
+        return Interval.join([r for r in result if r is not None])
 
     @classmethod
     def join(cls, intervals):
@@ -74,7 +108,7 @@ class Interval(object):
                                     result[j] = None
                                     more = True
 
-        return [r for r in result if r is not None]
+        return tuple(r for r in result if r is not None)
 
     def __repr__(self):
         if isinstance(self.start, datetime.date):
@@ -138,7 +172,13 @@ def _as_interval(interval):
         interval = [interval]
     result = []
     for t in interval:
-        start, end = t.split("/")
+        bits = t.split("/")
+        assert len(bits) in (1, 2)
+        if len(bits) == 1:
+            start = end = bits[0]
+        else:
+            start = bits[0]
+            end = bits[1]
         start = parse_dates(start)
         end = parse_dates(end)
         result.append(Interval(start, end))
@@ -146,11 +186,12 @@ def _as_interval(interval):
 
 
 class Tree:
-    def __init__(self, values=None):
+    def __init__(self, values=None, intervals=None):
         self._values = {} if values is None else values
         self._children = []
         self._unique_values = None
         self._flatten = None
+        self._intervals = set() if intervals is None else intervals
 
     def _add_child(self, child):
         self._children.append(child)
@@ -159,6 +200,8 @@ class Tree:
         self._values[name] = value
 
     def _join_intervals(self, name):
+        self._intervals.add(name)
+
         for c in self._children:
             c._join_intervals(name)
 
@@ -213,11 +256,55 @@ class Tree:
 
         return "".join(html)
 
+    def count(self, **kwargs):
+        request = {}
+        for k, v in kwargs.items():
+            if k in self._intervals:
+                request[k] = _as_interval(v)
+            else:
+                request[k] = _as_tuple(v)
+        return self._count(request)
+
+    def _count(self, request):
+
+        if not self._values and not self._children:
+            return 0
+
+        ok, matches = self._match(request)
+        if not ok:
+            return 0
+
+        r = dict(**self._values)
+        for name, values in [(n, v) for (n, v) in matches.items() if n in self._values]:
+            r[name] = _as_tuple(values)
+
+        count = 1
+        for name, values in r.items():
+            if name in self._intervals:
+                count *= sum(i.count() for i in values)
+            else:
+                count *= len(values)
+
+        if not self._children:
+            return count
+
+        total = 0
+        for c in self._children:
+            total += count * c._count(request)
+
+        return total
+
     def select(self, **kwargs):
         request = {}
         for k, v in kwargs.items():
-            request[k] = _as_tuple(v)
-        return self._select(request)
+            if k in self._intervals:
+                request[k] = _as_interval(v)
+            else:
+                request[k] = _as_tuple(v)
+        result = self._select(request)
+        if result is None:
+            return Tree()
+        return result
 
     def _select(self, request):
         ok, matches = self._match(request)
@@ -227,19 +314,19 @@ class Tree:
         r = dict(**self._values)
         for name, values in [(n, v) for (n, v) in matches.items() if n in self._values]:
             r[name] = _as_tuple(values)
-        result = Tree(r)
+        result = Tree(r, self._intervals)
 
         if not self._children:
             return result
 
-        count = 0
+        cnt = 0
         for c in self._children:
             s = c._select(request)
             if s is not None:
-                count += 1
+                cnt += 1
                 result._add_child(s)
 
-        if count == 0:
+        if cnt == 0:
             return None
 
         return result
@@ -247,7 +334,12 @@ class Tree:
     def _match(self, request):
         matches = {}
         for name, values in [(n, v) for (n, v) in request.items() if n in self._values]:
-            common = set(values).intersection(set(self._values[name]))
+
+            if name in self._intervals:
+                common = Interval.intersection(values, self._values[name])
+            else:
+                common = set(values).intersection(set(self._values[name]))
+
             if len(common) == 0:
                 return False, None
 
@@ -258,6 +350,19 @@ class Tree:
             matches[name] = common
 
         return True, matches
+
+    def iterate(self, expand=False):
+        for r in self._flatten_tree():
+            if expand:
+                for name in self._intervals:
+                    r[name] = Interval.expand(r[name])
+                for s in (
+                    dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
+                ):
+                    yield s
+
+            else:
+                yield r
 
 
 class Compressor:
@@ -567,11 +672,17 @@ def _as_requests(r):
     return s
 
 
-def factorise(req, compress=False, intervals=[]):
+def factorise(req, *, compress=False, intervals=None):
     return _factorise(deepcopy(req), compress, intervals)
 
 
-def _factorise(req, compress=True, intervals=[]):
+def _factorise(req, compress, intervals):
+
+    if intervals is None:
+        intervals = []
+
+    if not isinstance(intervals, (list, tuple)):
+        intervals = [intervals]
 
     if compress:
         compress = Compressor()
