@@ -8,10 +8,13 @@ from climetlab.utils.factorise import factorise
 
 class Availability:
     def __init__(self, avail):
+        if isinstance(avail, str):
+            with open(avail) as f:
+                avail = json.loads(f.read())
         self._avail = factorise(avail)
 
-    def __repr__(self):
-        return repr(self._avail.to_list())
+    def _repr_html_(self):
+        return self._avail._repr_html_()
 
 
 def availability(avail):
@@ -20,9 +23,6 @@ def availability(avail):
         if not os.path.isabs(avail):
             caller = os.path.dirname(inspect.stack()[1].filename)
             avail = os.path.join(caller, avail)
-
-        with open(avail) as f:
-            avail = json.loads(f.read())
 
     avail = Availability(avail)
 

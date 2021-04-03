@@ -11,7 +11,6 @@
 
 
 import datetime
-import sys
 from collections import defaultdict
 from copy import copy, deepcopy
 from functools import cmp_to_key
@@ -145,6 +144,74 @@ def _as_interval(interval):
         result.append(Interval(start, end))
     return result
 
+
+class Tree:
+    def __init__(self):
+        self._values = {}
+        self._children = []
+        self._unique_values = None
+        self._flatten = None
+
+    def _add_child(self, child):
+        self._children.append(child)
+
+    def _set_value(self, name, value):
+        self._values[name] = value
+
+    def _join_intervals(self, name):
+        for c in self._children:
+            c._join_intervals(name)
+
+        if name in self._values:
+            self._values[name] = Interval.join(self._values[name])
+
+    @property
+    def unique_values(self):
+        if self._unique_values is None:
+            u = self._unique_values = {}
+
+            for r in self.flatten:
+                for k, v in r.items():
+                    u.setdefault(k, set())
+                    for x in v:
+                        u[k].add(x)
+
+        return self._unique_values
+
+    @property
+    def flatten(self):
+        if self._flatten is None:
+            self._flatten = list(self._flatten_tree())
+        return self._flatten
+
+    def _flatten_tree(self):
+        if not self._children:
+            yield self._values
+        else:
+            for c in self._children:
+                for t in c._flatten_tree():
+                    r = dict(**self._values)
+                    r.update(t)
+                    yield r
+
+    def to_list(self):
+        result = []
+        for r in _cleanup(self.flatten):
+            s = {}
+            for k, v in sorted(r.items()):
+                s[k] = sorted(v)
+            result.append(s)
+
+        return sorted(result, key=lambda a: sorted(a.items()))
+
+    def _repr_html_(self):
+        html = [repr(self._values)]
+        html.append("<ul>")
+        for c in self._children:
+            html.append(c._repr_html_())
+        html.append("</ul>")
+
+        return "".join(html)
 
 class Compressor:
 
@@ -281,7 +348,7 @@ class Column(object):
 class Table(object):
     def __init__(self, other=None, a=None, b=None):
 
-        self.tree = {"_kids": []}
+        self.tree = Tree()
 
         if other is not None:
             self.depth = other.depth + 1
@@ -380,7 +447,7 @@ class Table(object):
         ok = False
         while len(self.colidx) > 0 and self.cols[self.colidx[0]].diff == 1:
             s = _as_tuple(self.get_elem(0, 0))
-            self.tree[self.cols[self.colidx[0]].title] = s
+            self.tree._set_value(self.cols[self.colidx[0]].title, s)
             del self.colidx[0]
             ok = True
 
@@ -400,13 +467,13 @@ class Table(object):
             e = self.get_elem(0, i)
             if prev != e:
                 table = Table(self, j, i)
-                self.tree["_kids"].append(table.process())
+                self.tree._add_child(table.process())
                 j = i
                 prev = e
 
         if j > 0:
             table = Table(self, j, len(self.rowidx))
-            self.tree["_kids"].append(table.process())
+            self.tree._add_child(table.process())
             self.rowidx = []
 
     def process(self):
@@ -453,15 +520,6 @@ def _as_requests(r):
     return s
 
 
-def _join_intervals(what, req):
-    for r in req:
-        if "_kids" in r:
-            _join_intervals(what, r["_kids"])
-
-        if what in r:
-            r[what] = Interval.join(r[what])
-
-
 def factorise(req, compress=False, intervals=[]):
     return _factorise(deepcopy(req), compress, intervals)
 
@@ -493,8 +551,8 @@ def _factorise(req, compress=True, intervals=[]):
                     splits.extend(interval.split(dates))
                 r[i] = splits
 
-    if compress:
-        compress.encode_requests(req)
+    # if compress:
+    #     compress.encode_requests(req)
 
     req = [_as_requests(r) for r in req]
 
@@ -511,101 +569,12 @@ def _factorise(req, compress=True, intervals=[]):
         # print(n, len(c))
         table.column(n, c)
 
-    r = table.process()
+    tree = table.process()
 
-    if compress:
-        compress.decode_tree([r])
+    # if compress:
+    #     compress.decode_tree([r])
 
     for i in intervals:
-        _join_intervals(i, [r])
+        tree._join_intervals(i)
 
-    return Tree(r)
-
-
-def _flatten_tree(r):
-    """Used with the output of the factoriser to flatten the tree it produces
-    into linear requests.
-
-    Example:
-
-    >>> _flatten_tree({'a': 1, '_kids': [{'b': 2}, {'b': 3}]})
-    [{'a': 1, 'b': 2} , {'a': 1, 'b': 3}]
-    """
-    if "_kids" not in r:
-        return [r]
-
-    kids = r["_kids"]
-
-    if kids:
-        t = []
-        for k in kids:
-            for n in _flatten_tree(k):
-                s = {}
-                for k, v in r.items():
-                    s[k] = v
-                del s["_kids"]
-                s.update(n)
-                t.append(s)
-        return t
-    else:
-        s = {}
-        for k, v in r.items():
-            s[k] = v
-        del s["_kids"]
-        return [s]
-
-
-def _put_tree(r, depth=0, file=sys.stdout):
-    n = 0
-    t = []
-    for k, v in r.items():
-        if k != "_kids":
-            t.append("%s=%s" % (k, "/".join([str(x) for x in v])))
-    if len(t):
-        spc = " " * depth
-        file.write("%s%s" % (spc, ",".join(t)) + "\n")
-        n = 3
-
-    if "_kids" in r:
-        for k in r["_kids"]:
-            _put_tree(k, depth + n, file)
-
-
-class Tree:
-    def __init__(self, tree):
-        self.tree = tree
-        self._unique_values = None
-        self._flatten = None
-
-    @property
-    def unique_values(self):
-        if self._unique_values is None:
-            u = self._unique_values = {}
-
-            for r in self.flatten:
-                for k, v in r.items():
-                    u.setdefault(k, set())
-                    for x in v:
-                        u[k].add(x)
-
-        return self._unique_values
-
-    @property
-    def flatten(self):
-        if self._flatten is None:
-            self._flatten = _flatten_tree(self.tree)
-        return self._flatten
-
-    def to_list(self):
-
-        result = []
-        for r in _cleanup(self.flatten):
-            s = {}
-            for k, v in sorted(r.items()):
-                s[k] = sorted(v)
-            result.append(s)
-
-        return sorted(result, key=lambda a: sorted(a.items()))
-
-    def dump(self, file=sys.stdout):
-        _put_tree(self.tree, file=file)
+    return tree
