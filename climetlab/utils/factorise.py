@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# (C) Copyright 2012-2013 ECMWF.
+# (C) Copyright 2012- ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -134,72 +134,107 @@ def _as_tuple(t):
     return (t,)
 
 
-CODE = {}
-DECODE = []
+def _as_interval(interval):
+    if not isinstance(interval, (list, tuple)):
+        interval = [interval]
+    result = []
+    for t in interval:
+        start, end = t.split("/")
+        start = parse_dates(start)
+        end = parse_dates(end)
+        result.append(Interval(start, end))
+    return result
 
 
-def encode(x):
+class Compressor:
 
-    x = _as_tuple(x)
+    _value2code = {}
+    _code2value = []
 
-    y = CODE.get(x)
-    if y is not None:
-        return y
+    def encode_requests(self, req):
+        if not isinstance(req, list):
+            req = [req]
 
-    c = len(DECODE)
-    CODE[x] = c
-    DECODE.append(x)
-    return c
+        for r in req:
+            for k, v in r.items():
+                if not isinstance(v, (list, set, tuple)):
+                    r[k] = [v]
 
+        for name in self.all_keys(req):
+            p = self.all_values(req, name)
+            for r, l in zip(req, self.compress_lists(p)):
+                r[name] = l
 
-def decode(x):
-    return DECODE[x]
+    def encode(self, x):
 
+        x = _as_tuple(x)
 
-def compress_lists(lst):
-    """
-    Find common groups in list and transform them in element
+        y = self._value2code.get(x)
+        if y is not None:
+            return y
 
-    => [ [1, 2, 3, 4, 5], [2, 3, 8, 9, 4], [3, 4, 5, 9, 2, 8, 1] ]
-    <= [{(1, 5), (2, 3, 4)}, {(8, 9), (2, 3, 4)}, {(8, 9), (1, 5), (2, 3, 4)}]
+        c = len(self._code2value)
+        self._value2code[x] = c
+        self._code2value.append(x)
+        return c
 
+    def decode(self, x):
+        return self._code2value[x]
 
-    """
+    def compress_lists(self, lst):
+        """
+        Find common groups in list and transform them in element
 
-    assert isinstance(lst, list)
-    for x in lst:
-        assert isinstance(x, list)
-
-    lst = [set(x) for x in lst]
-
-    r = list([set() for x in lst])
-
-    more = True
-    while more:
-        more = False
-        for i in range(0, len(lst)):
-            if len(lst[i]):
-                g = set(lst[i]).intersection(*lst[i + 1 :])
-                if len(g):
-                    for i, s in enumerate(lst):
-
-                        if len(s) and g <= s:
-                            r[i].add(encode(g))
-                            lst[i] = s - g
-                            more = True
-                else:
-                    r[i].add(encode(lst[i]))
-                    lst[i] = []
-
-    return [tuple(x) for x in r]
+        => [ [1, 2, 3, 4, 5], [2, 3, 8, 9, 4], [3, 4, 5, 9, 2, 8, 1] ]
+        <= [{(1, 5), (2, 3, 4)}, {(8, 9), (2, 3, 4)}, {(8, 9), (1, 5), (2, 3, 4)}]
 
 
-def all_keys(requests):
-    return set().union(*[r.keys() for r in requests])
+        """
 
+        assert isinstance(lst, list)
+        for x in lst:
+            assert isinstance(x, list)
 
-def all_values(requests, name):
-    return [r.get(name, ["-"]) for r in requests]
+        lst = [set(x) for x in lst]
+
+        r = list([set() for x in lst])
+
+        more = True
+        while more:
+            more = False
+            for i in range(0, len(lst)):
+                if len(lst[i]):
+                    g = set(lst[i]).intersection(*lst[i + 1 :])
+                    if len(g):
+                        for i, s in enumerate(lst):
+
+                            if len(s) and g <= s:
+                                r[i].add(self.encode(g))
+                                lst[i] = s - g
+                                more = True
+                    else:
+                        r[i].add(self.encode(lst[i]))
+                        lst[i] = []
+
+        return [tuple(x) for x in r]
+
+    def all_keys(self, requests):
+        return set().union(*[r.keys() for r in requests])
+
+    def all_values(self, requests, name):
+        return [r.get(name, ["-"]) for r in requests]
+
+    def decode_tree(self, req):
+        for r in req:
+            if "_kids" in r:
+                self.decode_tree(r["_kids"])
+
+            for k, v in r.items():
+                if k != "_kids":
+                    newv = []
+                    for x in v:
+                        newv.extend(self.decode(x))
+                    r[k] = newv
 
 
 class Column(object):
@@ -381,14 +416,14 @@ class Table(object):
         return self.tree
 
 
-def scan(r, cols, name, rest):
+def _scan(r, cols, name, rest):
     """Generate all possible combinations of values. Each set of values is
     stored in a list and each value is repeated as many times so that if taking
     one row in all value lists, I will get one unique combination of values
     between all input keys.
 
     @param r    request as a dict
-    @param cols actual result of the scan
+    @param cols actual result of the _scan
     @param name current request key we are processing
     @param rest remaining request keys to process
     """
@@ -398,7 +433,7 @@ def scan(r, cols, name, rest):
     for value in r.get(name, ["-"]):
         m = 1
         if rest:
-            m = scan(r, cols, rest[0], rest[1:])
+            m = _scan(r, cols, rest[0], rest[1:])
         for _ in range(0, m):
             c.append(value)
         n += m
@@ -406,7 +441,7 @@ def scan(r, cols, name, rest):
     return n
 
 
-def as_requests(r):
+def _as_requests(r):
 
     s = {}
     for k, v in r.items():
@@ -418,21 +453,6 @@ def as_requests(r):
     return s
 
 
-def encode_requests(req):
-    if not isinstance(req, list):
-        req = [req]
-
-    for r in req:
-        for k, v in r.items():
-            if not isinstance(v, (list, set, tuple)):
-                r[k] = [v]
-
-    for name in all_keys(req):
-        p = all_values(req, name)
-        for r, l in zip(req, compress_lists(p)):
-            r[name] = l
-
-
 def _join_intervals(what, req):
     for r in req:
         if "_kids" in r:
@@ -442,32 +462,20 @@ def _join_intervals(what, req):
             r[what] = Interval.join(r[what])
 
 
-def decode_tree(req):
-    for r in req:
-        if "_kids" in r:
-            decode_tree(r["_kids"])
-
-        for k, v in r.items():
-            if k != "_kids":
-                newv = []
-                for x in v:
-                    newv.extend(decode(x))
-                r[k] = newv
-
-
 def factorise(req, compress=False, intervals=[]):
     return _factorise(deepcopy(req), compress, intervals)
 
 
-def _factorise(req, compress=False, intervals=[]):
+def _factorise(req, compress=True, intervals=[]):
 
-    # print("factorise compress %s %s %s" % (compress, len(req), intervals))
+    if compress:
+        compress = Compressor()
 
     if intervals:
         for r in req:
             for i in intervals:
                 if i in r:
-                    r[i] = _to_interval(r[i])
+                    r[i] = _as_interval(r[i])
 
     for i in intervals:
         # Collect all dates
@@ -486,9 +494,9 @@ def _factorise(req, compress=False, intervals=[]):
                 r[i] = splits
 
     if compress:
-        encode_requests(req)
+        compress.encode_requests(req)
 
-    req = [as_requests(r) for r in req]
+    req = [_as_requests(r) for r in req]
 
     names = list(set(name for r in req for name in r.keys()))
     # print(names)
@@ -496,7 +504,7 @@ def _factorise(req, compress=False, intervals=[]):
     cols = defaultdict(list)
     if names:
         for r in req:
-            scan(r, cols, names[0], names[1:])
+            _scan(r, cols, names[0], names[1:])
 
     table = Table()
     for n, c in cols.items():
@@ -506,7 +514,7 @@ def _factorise(req, compress=False, intervals=[]):
     r = table.process()
 
     if compress:
-        decode_tree([r])
+        compress.decode_tree([r])
 
     for i in intervals:
         _join_intervals(i, [r])
@@ -601,15 +609,3 @@ class Tree:
 
     def dump(self, file=sys.stdout):
         _put_tree(self.tree, file=file)
-
-
-def _to_interval(interval):
-    if not isinstance(interval, (list, tuple)):
-        interval = [interval]
-    result = []
-    for t in interval:
-        start, end = t.split("/")
-        start = parse_dates(start)
-        end = parse_dates(end)
-        result.append(Interval(start, end))
-    return result
