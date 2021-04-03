@@ -14,7 +14,7 @@ import inspect
 import json
 import os
 
-from climetlab.utils.factorise import Tree, factorise
+from climetlab.utils.factorise import Interval, Tree, factorise
 
 
 class Availability:
@@ -27,10 +27,47 @@ class Availability:
         self._tree = avail
 
     def _repr_html_(self):
-        return self._tree._repr_html_()
 
-    def __getattr__(self, name):
-        return getattr(self._tree, name)
+        html = ["<hr><pre>"]
+        indent = {}
+
+        def V(request, depth):
+            if request:
+                if depth not in indent:
+                    indent[depth] = len(indent) * 3
+                html.append(" " * indent[depth])
+                sep = ""
+                for k, v in sorted(request.items()):
+                    html.append(sep)
+                    html.append(k)
+                    html.append("=")
+
+                    if isinstance(v[0], Interval):
+                        v = [str(x) for x in v]
+
+                    if len(v) == 1:
+                        html.append(v[0])
+                    else:
+                        html.append("[")
+                        html.append(", ".join(sorted(str(x) for x in v)))
+                        html.append("]")
+                    sep = ", "
+                html.append("\n")
+
+        self._tree.visit(V)
+
+        html.append("</pre><hr>")
+
+        return "".join(x for x in html)
+
+    def select(self, *args, **kwargs):
+        return Availability(self._tree.select(*args, **kwargs))
+
+    def count(self, *args, **kwargs):
+        return self._tree.count(*args, **kwargs)
+
+    def iterate(self, *args, **kwargs):
+        return self._tree.iterate(*args, **kwargs)
 
 
 def availability(avail):

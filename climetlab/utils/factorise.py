@@ -112,10 +112,17 @@ class Interval(object):
 
     def __repr__(self):
         if isinstance(self.start, datetime.date):
+
+            if self.start == self.end:
+                return self.start.strftime("%Y-%m-%d")
+
             return "%s/%s" % (
                 self.start.strftime("%Y-%m-%d"),
                 self.end.strftime("%Y-%m-%d"),
             )
+
+        if self.start == self.end:
+            return self.start.isoformat()
         return "%s/%s" % (self.start.isoformat(), self.end.isoformat())
 
     def __lt__(self, other):
@@ -194,7 +201,7 @@ class Tree:
         self._intervals = set() if intervals is None else intervals
 
     def _add_child(self, child):
-        self._children.append(child)
+        self._children.append(child.compact())
 
     def _set_value(self, name, value):
         self._values[name] = value
@@ -247,14 +254,10 @@ class Tree:
 
         return sorted(result, key=lambda a: sorted(a.items()))
 
-    def _repr_html_(self):
-        html = [repr(self._values)]
-        html.append("<ul>")
+    def visit(self, visitor, depth=0):
+        visitor(self._values, depth)
         for c in self._children:
-            html.append(c._repr_html_())
-        html.append("</ul>")
-
-        return "".join(html)
+            c.visit(visitor, depth + 1)
 
     def count(self, **kwargs):
         request = {}
@@ -304,7 +307,7 @@ class Tree:
         result = self._select(request)
         if result is None:
             return Tree()
-        return result
+        return result.compact()
 
     def _select(self, request):
         ok, matches = self._match(request)
@@ -363,6 +366,11 @@ class Tree:
 
             else:
                 yield r
+
+    def compact(self):
+        if not self._values and len(self._children) == 1:
+            return self._children[0]
+        return self
 
 
 class Compressor:
@@ -735,4 +743,4 @@ def _factorise(req, compress, intervals):
     for i in intervals:
         tree._join_intervals(i)
 
-    return tree
+    return tree.compact()
