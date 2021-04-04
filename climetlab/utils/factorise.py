@@ -167,6 +167,16 @@ def _cleanup(x):
     return str(repr(x))
 
 
+def _to_hashable(x):
+    assert isinstance(x, dict)
+    return tuple((k, v) for k, v in sorted(x.items()))
+
+
+def _from_hashable(x):
+    assert isinstance(x, tuple)
+    return dict((k, v) for k, v in x)
+
+
 def _as_tuple(t):
     if isinstance(t, tuple):
         return t
@@ -184,17 +194,22 @@ def _as_interval(interval):
     for t in interval:
         if isinstance(t, Interval):
             result.append(t)
+            continue
+
+        if isinstance(t, datetime.date):
+            result.append(Interval(t, t))
+            continue
+
+        bits = t.split("/")
+        assert len(bits) in (1, 2)
+        if len(bits) == 1:
+            t = end = bits[0]
         else:
-            bits = t.split("/")
-            assert len(bits) in (1, 2)
-            if len(bits) == 1:
-                start = end = bits[0]
-            else:
-                start = bits[0]
-                end = bits[1]
-            start = parse_dates(start)
-            end = parse_dates(end)
-            result.append(Interval(start, end))
+            start = bits[0]
+            end = bits[1]
+        start = parse_dates(start)
+        end = parse_dates(end)
+        result.append(Interval(start, end))
     return result
 
 
@@ -265,14 +280,17 @@ class Tree:
         for c in self._children:
             c.visit(visitor, depth + 1)
 
-    def count(self, **kwargs):
+    def _kwargs_to_request(self, **kwargs):
         request = {}
         for k, v in kwargs.items():
             if k in self._intervals:
                 request[k] = _as_interval(v)
             else:
                 request[k] = _as_tuple(v)
-        return self._count(request)
+        return request
+
+    def count(self, **kwargs):
+        return self._count(self._kwargs_to_request(**kwargs))
 
     def _count(self, request):
 
@@ -300,13 +318,7 @@ class Tree:
         return sum(count * c._count(request) for c in self._children)
 
     def select(self, **kwargs):
-        request = {}
-        for k, v in kwargs.items():
-            if k in self._intervals:
-                request[k] = _as_interval(v)
-            else:
-                request[k] = _as_tuple(v)
-        result = self._select(request)
+        result = self._select(self._kwargs_to_request(**kwargs))
         if result is None:
             return Tree()
         return result.factorise()
@@ -336,6 +348,15 @@ class Tree:
 
         return result
 
+    def missing(self, **kwargs):
+        request = self._kwargs_to_request(**kwargs)
+        user = set(_to_hashable(x) for x in self._iterate_request(request))
+        tree = set(_to_hashable(x) for x in self.iterate(True))
+
+        s = [_from_hashable(x) for x in user.difference(user.intersection(tree))]
+
+        return _factorise(s, intervals=self._intervals, compress=False)
+
     def _match(self, request):
         matches = {}
         for name, values in [(n, v) for (n, v) in request.items() if n in self._values]:
@@ -359,14 +380,14 @@ class Tree:
     def iterate(self, expand=False):
         for r in self._flatten_tree():
             if expand:
-                for name in self._intervals:
-                    r[name] = Interval.expand(r[name])
-                yield from (
-                    dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
-                )
-
+                yield from self._iterate_request(r)
             else:
                 yield r
+
+    def _iterate_request(self, r):
+        for name in self._intervals:
+            r[name] = Interval.expand(r[name])
+        yield from (dict(zip(r.keys(), x)) for x in itertools.product(*r.values()))
 
     def compact(self):
         if not self._values and len(self._children) == 1:

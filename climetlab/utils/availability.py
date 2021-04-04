@@ -72,6 +72,9 @@ class Availability:
     def select(self, *args, **kwargs):
         return Availability(self._tree.select(*args, **kwargs))
 
+    def missing(self, *args, **kwargs):
+        return Availability(self._tree.missing(*args, **kwargs))
+
     def count(self, *args, **kwargs):
         return self._tree.count(*args, **kwargs)
 
