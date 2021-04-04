@@ -141,9 +141,7 @@ def test_factorise_4():
     assert c.select(date="1990-01-01").select(param="Z").count() == 1
 
     assert _(c.select(date="1990-01-01").to_list()) == _(
-        [
-            {'date': ['1990-01-01'], 'param': ['T', 'Z']}
-        ]
+        [{"date": ["1990-01-01"], "param": ["T", "Z"]}]
     )
 
     assert _(c.select(date="1990-01-02/1990-01-05").to_list()) == _(
@@ -167,7 +165,9 @@ def test_factorise_4():
     for r, e in zip(c.select(date="1990-01-02/1990-01-04").iterate(True), E):
         assert r == e
 
-    assert _(c.missing(param="T", date="1990-01-01/1990-01-15").to_list()) == _([{'date': ['1990-01-03'], 'param': ['T']}])
+    assert _(c.missing(param="T", date="1990-01-01/1990-01-15").to_list()) == _(
+        [{"date": ["1990-01-03"], "param": ["T"]}]
+    )
 
 
 if __name__ == "__main__":
