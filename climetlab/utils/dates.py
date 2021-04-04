@@ -152,3 +152,4 @@ def to_dates_and_times(datetimes_list):
 
 def to_date_list(obj):
     return sorted(set(to_datetime_list(obj)))
+

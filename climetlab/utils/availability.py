@@ -26,9 +26,9 @@ class Availability:
             avail = factorise(avail, intervals=intervals)
         self._tree = avail
 
-    def _repr_html_(self):
+    def tree(self):
 
-        html = ["<hr><pre>"]
+        text = []
         indent = {}
         order = {}
 
@@ -39,7 +39,7 @@ class Availability:
             if depth not in indent:
                 indent[depth] = len(indent) * 3
 
-            html.append(" " * indent[depth])
+            text.append(" " * indent[depth])
 
             for k in sorted(request.keys()):
                 if k not in order:
@@ -47,27 +47,29 @@ class Availability:
 
             sep = ""
             for k, v in sorted(request.items(), key=lambda x: order[x[0]]):
-                html.append(sep)
-                html.append(k)
-                html.append("=")
+                text.append(sep)
+                text.append(k)
+                text.append("=")
 
                 if isinstance(v[0], Interval):
                     v = [str(x) for x in v]
 
                 if len(v) == 1:
-                    html.append(v[0])
+                    text.append(v[0])
                 else:
-                    html.append("[")
-                    html.append(", ".join(sorted(str(x) for x in v)))
-                    html.append("]")
+                    text.append("[")
+                    text.append(", ".join(sorted(str(x) for x in v)))
+                    text.append("]")
                 sep = ", "
-            html.append("\n")
+            text.append("\n")
 
         self._tree.visit(V)
 
-        html.append("</pre><hr>")
 
-        return "".join(x for x in html)
+        return "".join(x for x in text)
+
+    def _repr_html_(self):
+        return "<hr><pre>{}</pre><hr>".format(self.tree())
 
     def select(self, *args, **kwargs):
         return Availability(self._tree.select(*args, **kwargs))
