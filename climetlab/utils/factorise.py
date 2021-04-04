@@ -29,6 +29,8 @@ class Interval(object):
         else:
             self.one = datetime.timedelta(days=1)
         assert start <= end
+        assert isinstance(start, datetime.date)
+        assert isinstance(end, datetime.date)
 
     def count(self):
         return (self.end - self.start).days + 1
@@ -37,9 +39,8 @@ class Interval(object):
         result = []
 
         bounds = set(dates)
-
-        bounds.remove(self.start)
-        bounds.remove(self.end)
+        bounds.discard(self.start)
+        bounds.discard(self.end)
 
         s = self.start
         e = self.end
@@ -179,16 +180,19 @@ def _as_interval(interval):
         interval = [interval]
     result = []
     for t in interval:
-        bits = t.split("/")
-        assert len(bits) in (1, 2)
-        if len(bits) == 1:
-            start = end = bits[0]
+        if isinstance(t, Interval):
+            result.append(t)
         else:
-            start = bits[0]
-            end = bits[1]
-        start = parse_dates(start)
-        end = parse_dates(end)
-        result.append(Interval(start, end))
+            bits = t.split("/")
+            assert len(bits) in (1, 2)
+            if len(bits) == 1:
+                start = end = bits[0]
+            else:
+                start = bits[0]
+                end = bits[1]
+            start = parse_dates(start)
+            end = parse_dates(end)
+            result.append(Interval(start, end))
     return result
 
 
@@ -307,7 +311,7 @@ class Tree:
         result = self._select(request)
         if result is None:
             return Tree()
-        return result.compact()
+        return result.factorise()
 
     def _select(self, request):
         ok, matches = self._match(request)
@@ -371,6 +375,11 @@ class Tree:
         if not self._values and len(self._children) == 1:
             return self._children[0]
         return self
+
+    def factorise(self):
+        return factorise(
+            list(self._flatten_tree()), intervals=self._intervals, compress=False
+        )
 
 
 class Compressor:
@@ -689,7 +698,7 @@ def _factorise(req, compress, intervals):
     if intervals is None:
         intervals = []
 
-    if not isinstance(intervals, (list, tuple)):
+    if not isinstance(intervals, (list, tuple, set)):
         intervals = [intervals]
 
     if compress:
