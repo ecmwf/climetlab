@@ -430,12 +430,12 @@ class Compressor:
 
         lst = [set(x) for x in lst]
 
-        r = list([set() for x in lst])
+        r = list(set() for x in lst)
 
         more = True
         while more:
             more = False
-            for i in range(0, len(lst)):
+            for i in range(len(lst)):
                 if len(lst[i]):
                     g = set(lst[i]).intersection(*lst[i + 1 :])
                     if len(g):
@@ -559,7 +559,7 @@ class Table(object):
         remap = defaultdict(list)
         gone = []
 
-        for i in range(0, len(self.rowidx)):
+        for i in range(len(self.rowidx)):
             v = self.one_less(i, n)
             s = remap[_as_tuple(v)]
             if len(s) != 0:
@@ -571,7 +571,7 @@ class Table(object):
         for g in reversed(gone):
             del self.rowidx[g]
 
-        for i in range(0, len(self.rowidx)):
+        for i in range(len(self.rowidx)):
             v = self.one_less(i, n)
             s = remap[_as_tuple(v)]
             self.set_elem(n, i, _as_tuple(s))
