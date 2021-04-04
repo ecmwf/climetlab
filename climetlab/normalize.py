@@ -105,12 +105,13 @@ def _normalizer(v):
 
     assert isinstance(v, str), v
     m = re.match(r"(.+)\((.+)\)", v)
-    if m:
-        args = m.group(2).split(",")
-        name = m.group(1)
-        return NORMALISERS[name](*args)
-    else:
+
+    if not m:
         return NORMALISERS[v]()
+
+    args = m.group(2).split(",")
+    name = m.group(1)
+    return NORMALISERS[name](*args)
 
 
 def normalize_args(**kwargs):

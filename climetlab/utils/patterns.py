@@ -131,7 +131,7 @@ class Pattern:
 
     @property
     def names(self):
-        return sorted(set(v.name for v in self.variables))
+        return sorted({v.name for v in self.variables})
 
     def substitute(self, *args, **kwargs):
         params = {}
@@ -154,7 +154,7 @@ class Pattern:
         if used:
             raise ValueError("Unused parameter(s): {}".format(used))
 
-        return "".join([str(x) for x in result])
+        return "".join(str(x) for x in result)
 
     def _substitute_many(self, params):
 
@@ -164,8 +164,8 @@ class Pattern:
 
         seen = set()
         result = []
-        for n in list(
-            dict(zip(params, x)) for x in itertools.product(*params.values())
+        for n in (
+            dict(zip(params.keys(), x)) for x in itertools.product(*params.values())
         ):
             m = self.substitute(n)
             if m not in seen:

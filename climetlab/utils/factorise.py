@@ -156,10 +156,7 @@ def _cleanup(x):
         return [_cleanup(a) for a in x]
 
     if isinstance(x, dict):
-        r = {}
-        for k, v in x.items():
-            r[_cleanup(k)] = _cleanup(v)
-        return r
+        return {_cleanup(k): _cleanup(v) for k, v in x.items()}
 
     if isinstance(x, (str, int, float)):
         return x
@@ -174,7 +171,7 @@ def _to_hashable(x):
 
 def _from_hashable(x):
     assert isinstance(x, tuple)
-    return dict((k, v) for k, v in x)
+    return {k: v for k, v in x}
 
 
 def _as_tuple(t):
@@ -268,9 +265,7 @@ class Tree:
     def to_list(self):
         result = []
         for r in _cleanup(self.flatten):
-            s = {}
-            for k, v in sorted(r.items()):
-                s[k] = sorted(v)
+            s = {k: sorted(v) for k, v in sorted(r.items())}
             result.append(s)
 
         return sorted(result, key=lambda a: sorted(a.items()))
@@ -350,8 +345,8 @@ class Tree:
 
     def missing(self, **kwargs):
         request = self._kwargs_to_request(**kwargs)
-        user = set(_to_hashable(x) for x in self._iterate_request(request))
-        tree = set(_to_hashable(x) for x in self.iterate(True))
+        user = {_to_hashable(x) for x in self._iterate_request(request)}
+        tree = {_to_hashable(x) for x in self.iterate(True)}
 
         s = [_from_hashable(x) for x in user.difference(user.intersection(tree))]
 
@@ -451,7 +446,7 @@ class Compressor:
 
         lst = [set(x) for x in lst]
 
-        r = list(set() for x in lst)
+        r = [set() for x in lst]
 
         more = True
         while more:
@@ -749,7 +744,7 @@ def _factorise(req, compress, intervals):
 
     req = [_as_requests(r) for r in req]
 
-    names = list(set(name for r in req for name in r.keys()))
+    names = list({name for r in req for name in r.keys()})
 
     cols = defaultdict(list)
     if names:

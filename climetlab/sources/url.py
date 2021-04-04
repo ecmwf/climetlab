@@ -60,7 +60,6 @@ class Url(FileSource):
             size = None
         r = requests.get(url, stream=True)
         r.raise_for_status()
-        total = 0
         mode = "wb"
         with tqdm(
             total=size,
@@ -71,6 +70,7 @@ class Url(FileSource):
             leave=False,
             desc=os.path.basename(url),
         ) as pbar:
+            total = 0
             pbar.update(total)
             with open(download, mode) as f:
                 for chunk in r.iter_content(chunk_size=1024):

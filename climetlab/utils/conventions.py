@@ -10,45 +10,38 @@
 import logging
 import os
 import re
+from collections import defaultdict
 
 import yaml
 
-# FIXME:
-# from climetlab.decorators import locked
+from climetlab.decorators import locked
 
-ALIASES = None
-CONVENTIONS = None
-DEFAULT_YAML_FILE = os.path.join(os.path.dirname(__file__), "conventions.yaml")
+ALIASES = {}
+CONVENTIONS = defaultdict(dict)
 SEP = "@"
 
 
-# @locked
-def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
+@locked
+def get_alias_and_conventions():
     """ fill the global variable from the relevant yaml file """
-    global ALIASES
-    global CONVENTIONS
-    if ALIASES is not None and CONVENTIONS is not None:
+
+    if ALIASES:
         return ALIASES, CONVENTIONS
 
-    with open(yaml_file) as f:
+    path = os.path.join(os.path.dirname(__file__), "conventions.yaml")
+    with open(path) as f:
         mappings = yaml.load(f.read(), Loader=yaml.SafeLoader)["parameter_name"]
 
     def split_mapping(key):
-
-        if SEP in key:
-            convention, rest = re.match(f"([^{SEP}]*){SEP}(.*)", key).groups()
-            return convention, rest
-        else:
+        m = re.match(f"([^{SEP}]*){SEP}(.*)", key)
+        if not m:
             return None, key
+        return m.groups()
 
-    CONVENTIONS = dict()
-    ALIASES = dict()
     for i, m in enumerate(mappings):
         for conv_key in m:
             convention, key = split_mapping(conv_key)
             if convention:
-                if convention not in CONVENTIONS:
-                    CONVENTIONS[convention] = {}
                 CONVENTIONS[convention][i] = key
             ALIASES[key] = i
 
@@ -56,9 +49,9 @@ def get_alias_and_conventions(yaml_file=DEFAULT_YAML_FILE):
 
 
 def normalise_string(key, convention="cf"):
-    ALIASES, CONVENTIONS = get_alias_and_conventions()
-    i = ALIASES.get(key, key)
-    c = CONVENTIONS[convention]
+    aliases, conventions = get_alias_and_conventions()
+    i = aliases.get(key, key)
+    c = conventions[convention]
     new = c.get(i, key)
     logging.debug(f"Normalising '{key}' into '{new}' ({c} convention)")
     return new
