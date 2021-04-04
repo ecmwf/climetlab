@@ -203,7 +203,7 @@ def _as_interval(interval):
         bits = t.split("/")
         assert len(bits) in (1, 2)
         if len(bits) == 1:
-            t = end = bits[0]
+            start = end = bits[0]
         else:
             start = bits[0]
             end = bits[1]

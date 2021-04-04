@@ -142,15 +142,14 @@ def test_factorise_4():
 
     assert _(c.select(date="1990-01-01").to_list()) == _(
         [
-            {"date": ["1990-01-01/1990-01-01"], "param": ["T"]},
-            {"date": ["1990-01-01/1990-01-01"], "param": ["Z"]},
+            {'date': ['1990-01-01'], 'param': ['T', 'Z']}
         ]
     )
 
     assert _(c.select(date="1990-01-02/1990-01-05").to_list()) == _(
         [
             {
-                "date": ["1990-01-02/1990-01-02", "1990-01-04/1990-01-05"],
+                "date": ["1990-01-02", "1990-01-04/1990-01-05"],
                 "param": ["T"],
             },
             {"date": ["1990-01-02/1990-01-05"], "param": ["Z"]},
@@ -158,15 +157,17 @@ def test_factorise_4():
     )
 
     E = [
+        {"date": datetime.date(1990, 1, 2), "param": "T"},
+        {"date": datetime.date(1990, 1, 4), "param": "T"},
         {"date": datetime.date(1990, 1, 2), "param": "Z"},
         {"date": datetime.date(1990, 1, 3), "param": "Z"},
         {"date": datetime.date(1990, 1, 4), "param": "Z"},
-        {"date": datetime.date(1990, 1, 2), "param": "T"},
-        {"date": datetime.date(1990, 1, 4), "param": "T"},
     ]
 
     for r, e in zip(c.select(date="1990-01-02/1990-01-04").iterate(True), E):
         assert r == e
+
+    assert _(c.missing(param="T", date="1990-01-01/1990-01-15").to_list()) == _([{'date': ['1990-01-03'], 'param': ['T']}])
 
 
 if __name__ == "__main__":
