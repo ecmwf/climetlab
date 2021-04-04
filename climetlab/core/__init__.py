@@ -6,7 +6,3 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-
-from .docstring import docstring
-
-__all__ = ["docstring"]

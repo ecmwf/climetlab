@@ -99,15 +99,17 @@ class Interval(object):
         while more:
             more = False
 
-            for i in range(0, len(result)):
+            for i in range(len(result)):
                 if result[i] is not None:
-                    for j in range(0, len(result)):
-                        if result[j] is not None:
-                            if i != j:
-                                if result[i].overlaps(result[j]):
-                                    result[i] = result[i].overlaps(result[j])
-                                    result[j] = None
-                                    more = True
+                    for j in range(len(result)):
+                        if (
+                            result[j] is not None
+                            and i != j
+                            and result[i].overlaps(result[j])
+                        ):
+                            result[i] = result[i].overlaps(result[j])
+                            result[j] = None
+                            more = True
 
         return tuple(r for r in result if r is not None)
 
@@ -295,11 +297,7 @@ class Tree:
         if not self._children:
             return count
 
-        total = 0
-        for c in self._children:
-            total += count * c._count(request)
-
-        return total
+        return sum(count * c._count(request) for c in self._children)
 
     def select(self, **kwargs):
         request = {}
@@ -363,10 +361,9 @@ class Tree:
             if expand:
                 for name in self._intervals:
                     r[name] = Interval.expand(r[name])
-                for s in (
+                yield from (
                     dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
-                ):
-                    yield s
+                )
 
             else:
                 yield r
@@ -377,7 +374,7 @@ class Tree:
         return self
 
     def factorise(self):
-        return factorise(
+        return _factorise(
             list(self._flatten_tree()), intervals=self._intervals, compress=False
         )
 
@@ -546,7 +543,7 @@ class Table(object):
         self.colidx.append(len(self.colidx))
 
         if len(col) > len(self.rowidx):
-            self.rowidx = [i for i in range(0, len(col))]
+            self.rowidx = [i for i in range(len(col))]
 
     def one_less(self, r, n):
         return [self.get_elem(i, r) for i in range(len(self.colidx)) if i != n]
@@ -555,7 +552,7 @@ class Table(object):
         self.pop_singles()
         self.sort_rows()
 
-        for i in range(0, len(self.colidx)):
+        for i in range(len(self.colidx)):
             self.factorise2(len(self.colidx) - i - 1)
 
     def factorise2(self, n):
@@ -670,7 +667,7 @@ def _scan(r, cols, name, rest):
         m = 1
         if rest:
             m = _scan(r, cols, rest[0], rest[1:])
-        for _ in range(0, m):
+        for _ in range(m):
             c.append(value)
         n += m
 
@@ -732,7 +729,6 @@ def _factorise(req, compress, intervals):
     req = [_as_requests(r) for r in req]
 
     names = list(set(name for r in req for name in r.keys()))
-    # print(names)
 
     cols = defaultdict(list)
     if names:

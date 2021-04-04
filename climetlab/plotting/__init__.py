@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.core import docstring
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
@@ -103,7 +102,6 @@ def new_plot(**kwargs) -> Plot:
     return Plot(kwargs)
 
 
-@docstring()
 def plot_map(data=None, **kwargs):
     """Plot any data on a map.
 

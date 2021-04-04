@@ -30,14 +30,18 @@ class Availability:
 
         html = ["<hr><pre>"]
         indent = {}
+        order = {}
 
         def V(request, depth):
             if request:
                 if depth not in indent:
                     indent[depth] = len(indent) * 3
                 html.append(" " * indent[depth])
+                for k in sorted(request.keys()):
+                    if k not in order:
+                        order[k] = len(order)
                 sep = ""
-                for k, v in sorted(request.items()):
+                for k, v in sorted(request.items(), key=lambda x: order[x[0]]):
                     html.append(sep)
                     html.append(k)
                     html.append("=")
