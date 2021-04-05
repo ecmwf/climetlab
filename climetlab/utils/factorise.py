@@ -102,8 +102,9 @@ class Interval(object):
             for i in range(len(result)):
                 if result[i] is not None:
                     for j in range(i + 1, len(result)):
-                        if result[i].overlaps(result[j]):
-                            result[i] = result[i].overlaps(result[j])
+                        o = result[i].overlaps(result[j])
+                        if o is not None:
+                            result[i] = o
                             result[j] = None
                             more = True
 
