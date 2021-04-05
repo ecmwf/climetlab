@@ -137,7 +137,7 @@ class DatasetMaker:
         if getattr(dataset, "name", None) is None:
             dataset.name = name
 
-        return dataset
+        return dataset.mutate()
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))
@@ -156,4 +156,10 @@ def load_dataset(name, *args, **kwargs):
             print(ds.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
 
-    return ds.mutate()
+    return ds
+
+
+def dataset_(name):
+    loader = DatasetLoader()
+    klass = find_plugin(os.path.dirname(__file__), name, loader)
+    return klass.__new__(klass)

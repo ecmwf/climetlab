@@ -8,9 +8,11 @@
 #
 
 import threading
+from functools import wraps
 
 
 def dict_args(func):
+    @wraps(func)
     def wrapped(*args, **kwargs):
         m = []
         p = {}
@@ -22,8 +24,6 @@ def dict_args(func):
         p.update(kwargs)
         return func(*m, **p)
 
-    wrapped.__name__ = func.__name__
-
     return wrapped
 
 
@@ -31,10 +31,9 @@ LOCK = threading.RLock()
 
 
 def locked(func):
+    @wraps(func)
     def wrapped(*args, **kwargs):
         with LOCK:
             return func(*args, **kwargs)
-
-    wrapped.__name__ = func.__name__
 
     return wrapped
