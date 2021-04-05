@@ -144,3 +144,5 @@ bar.*
 *.save
 all.code-workspace
 *.swp
+list.*
+climetlab/tools/

@@ -67,6 +67,6 @@
 			"./schemas/magics.json": ["*.yaml"]
 		},
 		"python.dataScience.jupyterServerURI": "local",
-		"python.pythonPath": "/usr/local/Cellar/python@3.9/3.9.2_4/Frameworks/Python.framework/Versions/3.9/bin/python3.9"
+		"python.pythonPath": "/usr/local/bin/python3"
 	}
 }

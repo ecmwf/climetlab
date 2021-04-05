@@ -23,6 +23,8 @@ class DirectoryReader(Reader):
             for file in files:
                 self._content.append(os.path.join(root, file))
 
+        assert self._content, path
+
     def mutate(self):
         # If there is only one file, let's mutate to the proper reader
 

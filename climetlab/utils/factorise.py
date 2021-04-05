@@ -13,7 +13,7 @@
 import datetime
 import itertools
 from collections import defaultdict
-from copy import copy, deepcopy
+from copy import copy
 from functools import cmp_to_key
 
 from dateutil.parser import parse as parse_dates
@@ -93,7 +93,7 @@ class Interval(object):
 
     @classmethod
     def join(cls, intervals):
-        result = list(intervals)
+        result = sorted(intervals)
 
         more = True
         while more:
@@ -101,17 +101,15 @@ class Interval(object):
 
             for i in range(len(result)):
                 if result[i] is not None:
-                    for j in range(len(result)):
-                        if (
-                            result[j] is not None
-                            and i != j
-                            and result[i].overlaps(result[j])
-                        ):
+                    for j in range(i + 1, len(result)):
+                        if result[i].overlaps(result[j]):
                             result[i] = result[i].overlaps(result[j])
                             result[j] = None
                             more = True
 
-        return tuple(r for r in result if r is not None)
+            result = [r for r in result if r is not None]
+
+        return tuple(result)
 
     def __repr__(self):
         if isinstance(self.start, datetime.date):
@@ -233,23 +231,27 @@ class Tree:
         if name in self._values:
             self._values[name] = Interval.join(self._values[name])
 
-    @property
     def unique_values(self):
         if self._unique_values is None:
             u = self._unique_values = {}
 
-            for r in self.flatten:
+            for r in self.flatten():
                 for k, v in r.items():
                     u.setdefault(k, set())
                     for x in v:
                         u[k].add(x)
 
-        return self._unique_values
+            for i in self._intervals:
+                u[i] = Interval.join(u[i])
 
-    @property
+            for k in u.keys():
+                u[k] = tuple(sorted(u[k]))
+
+        return dict(**self._unique_values)
+
     def flatten(self):
         if self._flatten is None:
-            self._flatten = list(self._flatten_tree())
+            self._flatten = tuple(self._flatten_tree())
         return self._flatten
 
     def _flatten_tree(self):
@@ -264,7 +266,7 @@ class Tree:
 
     def to_list(self):
         result = []
-        for r in _cleanup(self.flatten):
+        for r in _cleanup(self.flatten()):
             s = {k: sorted(v) for k, v in sorted(r.items())}
             result.append(s)
 
@@ -350,7 +352,7 @@ class Tree:
 
         s = [_from_hashable(x) for x in user.difference(user.intersection(tree))]
 
-        return _factorise(s, intervals=self._intervals, compress=False)
+        return _factorise(s, intervals=self._intervals)
 
     def _match(self, request):
         matches = {}
@@ -390,100 +392,48 @@ class Tree:
         return self
 
     def factorise(self):
-        return _factorise(
-            list(self._flatten_tree()), intervals=self._intervals, compress=False
-        )
+        return _factorise(list(self._flatten_tree()), intervals=self._intervals)
 
+    def tree(self):
 
-class Compressor:
+        text = []
+        indent = {}
+        order = {}
 
-    _value2code = {}
-    _code2value = []
+        def V(request, depth):
+            if not request:
+                return
 
-    def encode_requests(self, req):
-        if not isinstance(req, list):
-            req = [req]
+            if depth not in indent:
+                indent[depth] = len(indent) * 3
 
-        for r in req:
-            for k, v in r.items():
-                if not isinstance(v, (list, set, tuple)):
-                    r[k] = [v]
+            text.append(" " * indent[depth])
 
-        for name in self.all_keys(req):
-            p = self.all_values(req, name)
-            for r, l in zip(req, self.compress_lists(p)):
-                r[name] = l
+            for k in sorted(request.keys()):
+                if k not in order:
+                    order[k] = len(order)
 
-    def encode(self, x):
+            sep = ""
+            for k, v in sorted(request.items(), key=lambda x: order[x[0]]):
+                text.append(sep)
+                text.append(k)
+                text.append("=")
 
-        x = _as_tuple(x)
+                if isinstance(v[0], Interval):
+                    v = [str(x) for x in v]
 
-        y = self._value2code.get(x)
-        if y is not None:
-            return y
+                if len(v) == 1:
+                    text.append(v[0])
+                else:
+                    text.append("[")
+                    text.append(", ".join(sorted(str(x) for x in v)))
+                    text.append("]")
+                sep = ", "
+            text.append("\n")
 
-        c = len(self._code2value)
-        self._value2code[x] = c
-        self._code2value.append(x)
-        return c
+        self.visit(V)
 
-    def decode(self, x):
-        return self._code2value[x]
-
-    def compress_lists(self, lst):
-        """
-        Find common groups in list and transform them in element
-
-        => [ [1, 2, 3, 4, 5], [2, 3, 8, 9, 4], [3, 4, 5, 9, 2, 8, 1] ]
-        <= [{(1, 5), (2, 3, 4)}, {(8, 9), (2, 3, 4)}, {(8, 9), (1, 5), (2, 3, 4)}]
-
-
-        """
-
-        assert isinstance(lst, list)
-        for x in lst:
-            assert isinstance(x, list)
-
-        lst = [set(x) for x in lst]
-
-        r = [set() for x in lst]
-
-        more = True
-        while more:
-            more = False
-            for i in range(len(lst)):
-                if len(lst[i]):
-                    g = set(lst[i]).intersection(*lst[i + 1 :])
-                    if len(g):
-                        for i, s in enumerate(lst):
-
-                            if len(s) and g <= s:
-                                r[i].add(self.encode(g))
-                                lst[i] = s - g
-                                more = True
-                    else:
-                        r[i].add(self.encode(lst[i]))
-                        lst[i] = []
-
-        return [tuple(x) for x in r]
-
-    def all_keys(self, requests):
-        return set().union(*[r.keys() for r in requests])
-
-    def all_values(self, requests, name):
-        return [r.get(name, ["-"]) for r in requests]
-
-    def decode_tree(self, req):
-        for r in req:
-            if "_kids" in r:
-                self.decode_tree(r["_kids"])
-
-            for k, v in r.items():
-                if k != "_kids":
-                    newv = []
-                    for x in v:
-                        newv.extend(self.decode(x))
-                    r[k] = newv
+        return "".join(x for x in text)
 
 
 class Column(object):
@@ -702,20 +652,19 @@ def _as_requests(r):
     return s
 
 
-def factorise(req, *, compress=False, intervals=None):
-    return _factorise(deepcopy(req), compress, intervals)
+def factorise(req, *, intervals=None):
+    # Make a copy so we don't modify the original
+    safe = [dict(**r) for r in req]
+    return _factorise(safe, intervals=intervals)
 
 
-def _factorise(req, compress, intervals):
+def _factorise(req, intervals=None):
 
     if intervals is None:
         intervals = []
 
     if not isinstance(intervals, (list, tuple, set)):
         intervals = [intervals]
-
-    if compress:
-        compress = Compressor()
 
     if intervals:
         for r in req:
@@ -739,9 +688,6 @@ def _factorise(req, compress, intervals):
                     splits.extend(interval.split(dates))
                 r[i] = splits
 
-    # if compress:
-    #     compress.encode_requests(req)
-
     req = [_as_requests(r) for r in req]
 
     names = list({name for r in req for name in r.keys()})
@@ -753,13 +699,9 @@ def _factorise(req, compress, intervals):
 
     table = Table()
     for n, c in cols.items():
-        # print(n, len(c))
         table.column(n, c)
 
     tree = table.process()
-
-    # if compress:
-    #     compress.decode_tree([r])
 
     for i in intervals:
         tree._join_intervals(i)

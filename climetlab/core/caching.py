@@ -194,10 +194,7 @@ class Cache:
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
                 for k in [x for x in n.keys() if x != "path"]:
-                    if k == "size":
-                        v = bytes_to_string(n[k])
-                    else:
-                        v = n[k]
+                    v = bytes_to_string(n[k]) if k == "size" else n[k]
                     html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
                 html.append("</table>")
                 html.append("<br>")

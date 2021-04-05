@@ -1,6 +1,7 @@
-import pandas as pd
+# import pandas as pd
+import isodate
 
-from climetlab.normalize import normalize_args
+# from climetlab.normalize import normalize_args
 
 dates = "2020-01-02/2020-12-31/P7D"
 # r = pd.date_range(start="2020-01-02", end="2020-12-31", freq="w-thu")
@@ -14,6 +15,7 @@ dates = "2020-01-02/2020-12-31/P7D"
 # print(foo(r))
 
 
-bits = dates.split('/')
-import isodate
+bits = dates.split("/")
+
+
 print(isodate.parse_duration(bits[2]))
