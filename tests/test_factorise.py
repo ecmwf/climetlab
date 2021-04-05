@@ -47,10 +47,10 @@ def test_factorise_1():
     c = factorise(C0)
     assert _(c.to_list()) == _(C1)
 
-    assert c.unique_values == {
-        "param": {"Z", "T"},
-        "level": {"500", "850", "1000"},
-        "step": {"36", "48", "24"},
+    assert c.unique_values() == {
+        "level": ("1000", "500", "850"),
+        "param": ("T", "Z"),
+        "step": ("24", "36", "48"),
     }
 
     assert sum(1 for x in c.iterate(False)) == 3
@@ -171,4 +171,4 @@ def test_factorise_4():
 
 
 if __name__ == "__main__":
-    test_factorise_4()
+    test_factorise_1()
