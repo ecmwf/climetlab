@@ -1,3 +1,8 @@
-from climetlab.datasets import dataset_
+from climetlab.datasets import dataset_, load_dataset
 
-print(dataset_("weather-bench"))
+p = "sample-grib-data"
+
+
+print(dir(dataset_(p)))
+print(dataset_(p).source)
+print(load_dataset(p).source)

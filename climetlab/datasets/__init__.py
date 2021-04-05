@@ -94,20 +94,13 @@ def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset
 
 
+def camel(name):
+    return "".join(x[0].upper() + x[1:].lower() for x in name.split("-"))
+
+
 class YamlDefinedDataset(Dataset):
-    def __init__(self, path, dataset):
-        self._path = path
-        for k, v in dataset.get("metadata", {}).items():
-            setattr(self, k, v)
-        self._src = dataset["source"]
-        self._args = dataset.get("args", {})
-
-    def __call__(self):
+    def __init__(self):
         self.source = climetlab.load_source(self._src, **self._args)
-        return self
-
-    def __repr__(self):
-        return f"YAML[{self._path}]"
 
 
 class DatasetLoader:
@@ -115,10 +108,14 @@ class DatasetLoader:
     kind = "dataset"
 
     def load_yaml(self, path):
+        name, _ = os.path.splitext(os.path.basename(path))
         with open(path) as f:
-            return YamlDefinedDataset(
-                path, yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
+            dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
+            attributes = dataset.get("metadata", {})
+            attributes.update(
+                dict(_path=path, _src=dataset["source"], _args=dataset.get("args", {}))
             )
+            return type(camel(name), (YamlDefinedDataset,), attributes)
 
     def load_module(self, module):
         return import_module(module, package=__name__).dataset
