@@ -150,3 +150,89 @@ https://snakemake.readthedocs.io/en/stable/tutorial/basics.html
 
 Jupyter
 paperspace.com
+
+
+# API discussion (working document)
+
+xr.open_dataset('climetlab:s2s-ai-competition/training', date=. , origin=.)
+pd.open_climetlab('climetlab:s2s-ai-competition/training', date=. , origin=.)
+
+ds = cml.open_dataset(name='s2s-ai-competition/training', origin=.)
+ds.to_xarray()
+
+cml.open_dataset(name='s2s-ai-competition/training', date=. , origin=., as_type=pd.DataFrame, format=., select_kwargs={})
+is a shortcut for 
+cml.Dataset('s2s-ai-competition','training', format=.).select_or(date=. , origin=.).to_pandas()
+
+cml.Dataset('s2s-ai-competition','training', format='grib', debug=True).select_or(format='%02d', debug=True, date=. , origin=.).to_pandas()
+
+ in_init = ['format']
+ def __init__(self, format, **kwargs):
+ in_select(self, date, origin, **kwargs):
+
+--------------
+## Defining the dataset : cml.Dataset
+
+ds1 = cml.Dataset('s2s-ai-competition', 'training', format='grib')
+ds2 = cml.Dataset('s2s-ai-competition', 'training', format='netcdf')
+ds3 = cml.Dataset('s2s-ai-competition', 'training', format='netcdf', mirror='s3://my-renku-s3/')
+ ds1 and ds2 and ds3 refer to the same data, but different format/location. ds.to_xarray() will provide the same thing.
+ The first string "s2s-ai-competion" is from the plugin name : "climetlab-s2s-ai-competition" : you know which plugin you need to install.
+ The second string defines the actual dataset name.
+
+? ds = cml.Dataset('s2s-ai-competition/training', format='grib')
+Not documented : cml.dataset('s2s-ai-competition', subset='training')
+
+ds = cml.Dataset('s2s-ai-competition', 'training') default format='grib', default location.
+ds = cml.Dataset('s2s-ai-competition')  # default format='grib', default location + default dataset (training-ecmwf) OR # Exception missing parameter "datasetname".
+
+? cml.s2s_ai_competition('training-cwao')
+? climetlab_s2s_ai_competition.dataset('training-cwao')
+
+No http request in __init__ to get anything (data or metadata).
+
+? Change format/location ?
+? ds.reset_dataset(format='grib')
+
+--------------
+## Metadata/info/availability/citation/homepage : attributes of Dataset() object.
+
+ list all dataset provided but the plugin (in the family)
+ds = cml.Dataset('s2s-ai-competition', '*')
+ds.info
+
+ds = cml.Dataset('meteonet')
+ds.info
+ -> list all datasets 
+ -> citation, homepage, etc for meteonet
+
+ds = cml.Dataset('meteonet', 'radar')
+ds.info
+ -> availability
+ -> citation, homepage, etc for meteonet-radar data
+ds.availability
+ds.citation
+ds.homepage
+
+--------------
+## Filter/select the data : ds.find_a_name(...)
+
+ds.load(date=., origin=.) 
+ds.select_or(date=., origin=.)
+ds.select_and(date=., origin=.)
+
+--------------
+## Get the data as xarray or panda or grib, lazily if possible.
+
+ds.to_xarray()
+Zarr : lazzily get the data.
+Grib : create a lazzy xarray from the .availability ?
+ds.to_pandas()
+Do not use ds.astype
+
+
+## other ideas 
+ds = cml.Dataset('meteonet', plugin='climetlab-meteonet')
+ds = cml.Dataset('meteonet', plugin='intake-meteonet')
+
+
