@@ -22,7 +22,6 @@ def test_dataset_1():
     load_dataset("sample-bufr-data")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="Version 3.7 or greater needed")
 def test_dataset_2():
     dataset.sample_bufr_data()
 
@@ -53,4 +52,4 @@ def test_pandas_filter():
 
 
 if __name__ == "__main__":
-    test_datetime()
+    test_dataset_2()

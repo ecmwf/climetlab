@@ -102,6 +102,9 @@ class YamlDefinedDataset(Dataset):
     def __init__(self):
         self.source = climetlab.load_source(self._src, **self._args)
 
+    def __call__(self):
+        return self
+
 
 class DatasetLoader:
 
