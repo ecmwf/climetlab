@@ -103,3 +103,10 @@ def test_xarray_annotations():
     # xr3 = xr1.to_dataset(name="test")
     # a3 = annotation(xr3)
     # assert a3.get("foo") == 42
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

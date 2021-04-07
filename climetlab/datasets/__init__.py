@@ -127,10 +127,21 @@ class DatasetLoader:
         return entry.load().dataset
 
 
+REGISTERED = {}
+
+
+def register_dataset(module):
+    REGISTERED[module.__name__.replace("_", "-")] = module
+
+
 class DatasetMaker:
     def __call__(self, name, *args, **kwargs):
-        loader = DatasetLoader()
-        klass = find_plugin(os.path.dirname(__file__), name, loader)
+
+        if name in REGISTERED:
+            klass = REGISTERED[name].dataset
+        else:
+            loader = DatasetLoader()
+            klass = find_plugin(os.path.dirname(__file__), name, loader)
 
         dataset = klass(*args, **kwargs)
 

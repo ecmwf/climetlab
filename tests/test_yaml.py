@@ -21,3 +21,10 @@ def test_yaml():
     with open(yfile) as f:
         s = yaml.load(f.read(), Loader=yaml.SafeLoader)
         print(s)
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

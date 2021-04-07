@@ -84,3 +84,10 @@ def test_notebook(path):
 
     proc = ExecutePreprocessor(timeout=60 * 60, kernel_name="python3")
     proc.preprocess(nb, {"metadata": {"path": EXAMPLES}})
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

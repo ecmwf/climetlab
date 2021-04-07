@@ -49,4 +49,7 @@ def test_availability_3():
 
 
 if __name__ == "__main__":
-    test_availability_3()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

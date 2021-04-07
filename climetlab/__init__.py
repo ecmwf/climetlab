@@ -11,7 +11,7 @@
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
-from .datasets import Dataset, dataset, load_dataset
+from .datasets import Dataset, dataset, load_dataset, register_dataset
 from .helpers import Helper
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
@@ -37,6 +37,7 @@ __all__ = [
     "settings",
     "source",
     "Source",
+    "register_dataset",
 ]
 
 init_metadata()

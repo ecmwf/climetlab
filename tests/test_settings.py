@@ -138,3 +138,10 @@ def test_settings():
         settings.get("test")
 
     settings.reset()
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

@@ -112,7 +112,7 @@ def test_bbox():
 
 
 if __name__ == "__main__":
-    test_dates()
-    test_bbox()
-    test_param_convention_cf()
-    test_param_convention_mars()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

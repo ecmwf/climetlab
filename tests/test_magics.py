@@ -27,4 +27,7 @@ def test_exception():
 
 
 if __name__ == "__main__":
-    plot()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

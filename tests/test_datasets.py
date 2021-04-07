@@ -51,4 +51,7 @@ def test_pandas_filter():
 
 
 if __name__ == "__main__":
-    test_dataset_2()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

@@ -181,5 +181,7 @@ def test_zarr_source_3():
 
 
 if __name__ == "__main__":
-    test_file_source_grib()
-    test_file_source_netcdf()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

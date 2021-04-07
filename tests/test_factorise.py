@@ -171,4 +171,7 @@ def test_factorise_4():
 
 
 if __name__ == "__main__":
-    test_factorise_1()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

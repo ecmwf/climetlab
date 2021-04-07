@@ -69,3 +69,10 @@ def test_bbox():
 
     with pytest.raises(ValueError):
         BoundingBox(north=90, west=1, south=30, east=1)
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

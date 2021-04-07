@@ -100,5 +100,7 @@ def test_pandas_dates():
 
 
 if __name__ == "__main__":
-    # test_to_datetime()
-    test_pandas_dates()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

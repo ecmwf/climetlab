@@ -36,4 +36,7 @@ def test_numpy_xarray():
 
 
 if __name__ == "__main__":
-    test_numpy_xarray()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()
