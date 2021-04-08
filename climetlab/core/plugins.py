@@ -9,6 +9,7 @@
 
 import logging
 import os
+from collections import defaultdict
 from importlib import import_module
 
 import entrypoints
@@ -22,6 +23,18 @@ LOG = logging.getLogger(__name__)
 CACHE = {}
 
 PLUGINS = {}
+
+REGISTERED = defaultdict(dict)
+
+
+def register(kind, name_or_module, module_or_none=None):
+    if isinstance(name_or_module, str):
+        name = name_or_module
+        module = module_or_none
+    else:
+        module = name_or_module
+        name = module.__name__.replace("_", "-")
+    REGISTERED[kind][name] = module
 
 
 def _load_plugins(kind):
@@ -38,6 +51,12 @@ def load_plugins(kind):
 
 
 def find_plugin(directory, name, loader):
+    candidates = set()
+
+    if name in REGISTERED[loader.kind]:
+        return loader.load_module(REGISTERED[loader.kind][name])
+
+    candidates.update(REGISTERED[loader.kind].keys())
 
     plugins = load_plugins(loader.kind)
 
@@ -45,7 +64,7 @@ def find_plugin(directory, name, loader):
         plugin = plugins[name]
         return loader.load_entry(plugin)
 
-    candidates = set(plugins.keys())
+    candidates.update(plugins.keys())
 
     n = len(directory)
     for path, _, files in os.walk(directory):

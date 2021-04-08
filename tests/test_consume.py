@@ -8,15 +8,16 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import pytest
 
 from climetlab.utils import consume_args
 
 
 def consume(func1, func2, *args, **kwargs):
-    args_1, kwargs_1, args_2, kwargs_2 = consume_args(func1, *args, **kwargs)
+    args1, kwargs1, args2, kwargs2 = consume_args(func1, func2, *args, **kwargs)
 
-    r1 = func1(*args_1, **kwargs_1)
-    r2 = func2(*args_2, **kwargs_2)
+    r1 = func1(*args1, **kwargs1)
+    r2 = func2(*args2, **kwargs2)
 
     return r1, r2
 
@@ -67,9 +68,12 @@ def test_consume():
     assert consume(g_y, g_x, x=1, b=4) == (8, 8)
     assert consume(g_y, g_x, y=2, b=4) == (8, 8)
 
-    # Ambiguous use may not work as expected.
-    # assert consume(f_y, g_y, y=2) == (4,13)
-    # assert consume(g_y, f_y, 2, y=2) == (-1, 0)
+
+def test_ambiguous():
+    with pytest.raises(NotImplementedError):
+        consume(f_y, g_y, y=2) == (4, 13)
+    with pytest.raises(NotImplementedError):
+        consume(g_y, f_y, 2, y=2) == (-1, 0)
 
 
 if __name__ == "__main__":

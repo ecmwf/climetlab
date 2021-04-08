@@ -19,7 +19,7 @@ from .plotting import plot_map
 from .readers import Reader
 from .sources import Source, load_source, source
 
-__version__ = "0.4.9"
+__version__ = "0.5.0"
 
 
 __all__ = [

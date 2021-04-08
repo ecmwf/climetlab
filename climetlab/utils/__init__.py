@@ -31,8 +31,33 @@ def bytes_to_string(n):
     return "%g%s" % (int(n * 10 + 0.5) / 10.0, u[i])
 
 
-def consume_args(func, *args, **kwargs):
-    spec = inspect.getfullargspec(func)
+def consume_args(func1, func2, *args, **kwargs):
+
+    if func2 is None:
+        return (args, kwargs, [], {})
+
+    if func1 is None:
+        return ([], {}, args, kwargs)
+
+    args1 = set()
+    sig1 = inspect.signature(func1)
+    for name, param in sig1.parameters.items():
+        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+            args1.add(name)
+
+    args2 = set()
+    sig2 = inspect.signature(func2)
+    for name, param in sig2.parameters.items():
+        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+            args2.add(name)
+
+    common = args1.intersection(args2)
+    if common:
+        raise NotImplementedError(
+            f"{func1.__name__}{sig1} and {func2.__name__}{sig2} cannot share the same parameter(s): {common}"
+        )
+
+    spec = inspect.getfullargspec(func1)
 
     args_1 = []
     kwargs_1 = {}

@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: pip install black flake8 isort
       - run: black --version
-      - run: isort --check --profile=black .
+      - run: isort --check .
       - run: black --check .
       - run: flake8 .
 

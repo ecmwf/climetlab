@@ -14,7 +14,8 @@ import yaml
 
 import climetlab
 from climetlab.core.metadata import annotate
-from climetlab.core.plugins import find_plugin
+from climetlab.core.plugins import find_plugin, register
+from climetlab.utils import consume_args
 from climetlab.utils.html import table
 
 
@@ -127,28 +128,27 @@ class DatasetLoader:
         return entry.load().dataset
 
 
-REGISTERED = {}
-
-
 def register_dataset(module):
-    REGISTERED[module.__name__.replace("_", "-")] = module
+    register("dataset", module)
 
 
 class DatasetMaker:
     def __call__(self, name, *args, **kwargs):
 
-        if name in REGISTERED:
-            klass = REGISTERED[name].dataset
-        else:
-            loader = DatasetLoader()
-            klass = find_plugin(os.path.dirname(__file__), name, loader)
+        loader = DatasetLoader()
+        klass = find_plugin(os.path.dirname(__file__), name, loader)
 
-        dataset = klass(*args, **kwargs)
+        (args1, kwargs1, args2, kwargs2) = consume_args(
+            getattr(klass, "__init__", None),
+            getattr(klass, "_load", None),
+        )
+
+        dataset = klass(*args1, **kwargs1)
 
         if getattr(dataset, "name", None) is None:
             dataset.name = name
 
-        return dataset.mutate()
+        return dataset.mutate(), args2, kwargs2
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))
@@ -160,17 +160,15 @@ TERMS_OF_USE_SHOWN = set()
 
 
 def load_dataset(name, *args, **kwargs):
-    ds = dataset(name, *args, **kwargs)
+
+    ds, args, kwargs = dataset(name, *args, **kwargs)
 
     if name not in TERMS_OF_USE_SHOWN:
         if ds.terms_of_use is not None:
             print(ds.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
 
-    return ds
+    if getattr(ds, "_load"):
+        ds._load(*args, **kwargs)
 
-
-def dataset_(name):
-    loader = DatasetLoader()
-    klass = find_plugin(os.path.dirname(__file__), name, loader)
-    return klass.__new__(klass)
+    return ds.mutate()
