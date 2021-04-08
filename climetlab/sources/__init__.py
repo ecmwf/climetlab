@@ -12,7 +12,7 @@ import weakref
 from importlib import import_module
 
 from climetlab.core.caching import cache_file
-from climetlab.core.plugins import find_plugin
+from climetlab.core.plugins import find_plugin, register
 from climetlab.utils.html import table
 
 
@@ -44,6 +44,10 @@ class SourceMaker:
 
 
 source = SourceMaker()
+
+
+def register_source(module):
+    register("source", module)
 
 
 def load_source(name, *args, **kwargs):

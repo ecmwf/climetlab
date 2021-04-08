@@ -54,7 +54,7 @@ def find_plugin(directory, name, loader):
     candidates = set()
 
     if name in REGISTERED[loader.kind]:
-        return loader.load_module(REGISTERED[loader.kind][name])
+        return getattr(REGISTERED[loader.kind][name], loader.kind)
 
     candidates.update(REGISTERED[loader.kind].keys())
 

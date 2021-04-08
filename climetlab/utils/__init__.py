@@ -31,13 +31,19 @@ def bytes_to_string(n):
     return "%g%s" % (int(n * 10 + 0.5) / 10.0, u[i])
 
 
+def _dummy(**kwargs):
+    pass
+
+
 def consume_args(func1, func2, *args, **kwargs):
 
-    if func2 is None:
-        return (args, kwargs, [], {})
+    # print("=====>", args, kwargs)
 
     if func1 is None:
-        return ([], {}, args, kwargs)
+        func1 = _dummy
+
+    if func2 is None:
+        func2 = _dummy
 
     args1 = set()
     sig1 = inspect.signature(func1)
@@ -45,13 +51,19 @@ def consume_args(func1, func2, *args, **kwargs):
         if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
             args1.add(name)
 
+    # print(f"{func1.__name__}{sig1}")
+
     args2 = set()
     sig2 = inspect.signature(func2)
     for name, param in sig2.parameters.items():
         if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
             args2.add(name)
 
+    # print(f"{func2.__name__}{sig2}")
+
     common = args1.intersection(args2)
+    common.discard("self")
+
     if common:
         raise NotImplementedError(
             f"{func1.__name__}{sig1} and {func2.__name__}{sig2} cannot share the same parameter(s): {common}"
@@ -78,5 +90,5 @@ def consume_args(func1, func2, *args, **kwargs):
         if a in kwargs:
             kwargs_1[a] = kwargs.pop(a)
 
-    # print(args_1, kwargs_1, args, kwargs)
+    # print('<=====', args_1, kwargs_1, args, kwargs)
     return args_1, kwargs_1, args, kwargs

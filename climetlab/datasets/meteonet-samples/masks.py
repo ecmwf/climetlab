@@ -18,7 +18,7 @@ class MeteonetMasks(Meteonet):
     See https://github.com/meteofrance/meteonet
     """
 
-    def __init__(
+    def _load(
         self,
         domain="NW",
     ):

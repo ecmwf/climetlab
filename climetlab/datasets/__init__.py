@@ -133,14 +133,16 @@ def register_dataset(module):
 
 
 class DatasetMaker:
-    def __call__(self, name, *args, **kwargs):
+    def lookup(self, name, *args, **kwargs):
 
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 
         (args1, kwargs1, args2, kwargs2) = consume_args(
-            getattr(klass, "__init__", None),
+            klass,
             getattr(klass, "_load", None),
+            *args,
+            **kwargs,
         )
 
         dataset = klass(*args1, **kwargs1)
@@ -149,6 +151,9 @@ class DatasetMaker:
             dataset.name = name
 
         return dataset.mutate(), args2, kwargs2
+
+    def __call__(self, name, *args, **kwargs):
+        return self.lookup(name, *args, **kwargs)[0]
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))
@@ -161,14 +166,14 @@ TERMS_OF_USE_SHOWN = set()
 
 def load_dataset(name, *args, **kwargs):
 
-    ds, args, kwargs = dataset(name, *args, **kwargs)
+    ds, args, kwargs = dataset.lookup(name, *args, **kwargs)
 
     if name not in TERMS_OF_USE_SHOWN:
         if ds.terms_of_use is not None:
             print(ds.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
 
-    if getattr(ds, "_load"):
+    if getattr(ds, "_load", None):
         ds._load(*args, **kwargs)
 
     return ds.mutate()

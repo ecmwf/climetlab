@@ -414,6 +414,5 @@ class FieldSetIndex:
 
 
 def reader(source, path, magic):
-    print(magic[:4])
     if magic[:4] == b"GRIB":
         return GRIBReader(source, path)

@@ -15,7 +15,7 @@ from . import Dataset
 
 
 class Era5SingleLevels(Dataset):
-    def __init__(self, variable, period, domain=None, time=None, grid=None):
+    def _load(self, variable, period, domain=None, time=None, grid=None):
         self.variable = variable
 
         request = dict(

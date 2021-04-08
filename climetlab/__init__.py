@@ -17,7 +17,7 @@ from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
 from .readers import Reader
-from .sources import Source, load_source, source
+from .sources import Source, load_source, register_source, source
 
 __version__ = "0.5.0"
 
@@ -38,6 +38,7 @@ __all__ = [
     "source",
     "Source",
     "register_dataset",
+    "register_source",
 ]
 
 init_metadata()

@@ -62,7 +62,7 @@ SAMPLES = [
 
 
 class HighLow(Dataset):
-    def __init__(self, **req):
+    def _load(self, **req):
         self._fields = []
         for date, area, label in SAMPLES:
 
