@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-
+import climetlab.core
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
