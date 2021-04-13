@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import climetlab.core
 from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
@@ -19,7 +18,7 @@ from .plotting import plot_map
 from .readers import Reader
 from .sources import Source, load_source, register_source, source
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 
 __all__ = [
