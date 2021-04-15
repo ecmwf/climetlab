@@ -6,4 +6,5 @@
 # nor does it submit to any jurisdiction.
 #
 
-# This empty __init__.py is there to help find_packages() (in setup.py) to include this folder in the tar uploaded at pip
+# This empty __init__.py is there to help find_packages() (in setup.py)
+# to include this folder in the tar uploaded at pip
