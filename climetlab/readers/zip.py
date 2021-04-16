@@ -11,6 +11,7 @@ import os
 from zipfile import ZipFile
 
 from . import Reader
+from . import reader as find_reader
 
 
 class ZIPReader(Reader):
@@ -20,8 +21,24 @@ class ZIPReader(Reader):
         with ZipFile(path, "r") as z:
             self._content = z.namelist()
 
-        if len(self._content) != 1:
-            raise NotImplementedError("Multi-file zip not yet supported")
+        if len(self._content) == 1:
+            _, ext = os.path.splitext(self._content[0])
+            if ext in (".csv", ".txt"):
+                return  # Pandas can read zipped files directly
+
+        extract_path = self.source.cache_file(path, extension=".d")
+        if not os.path.exists(extract_path):
+            tmp = extract_path + ".tmp"
+            with ZipFile(path, "r") as z:
+                z.extractall(tmp)
+            os.rename(tmp, extract_path)
+
+        self.path = extract_path
+
+    def mutate(self):
+        if os.path.isdir(self.path):
+            return find_reader(self.source, self.path)
+        return self
 
     def to_pandas(self, **kwargs):
 

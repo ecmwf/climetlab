@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import itertools
+
 import numpy as np
 
 from climetlab.utils.dates import to_datetime_list
@@ -17,22 +19,43 @@ class XArrayDatasetHelper:
 
         # data.climetlab.foo(42)
 
+        latitude = None
+        longitude = None
+
+        for name, var in itertools.chain(data.coords.items(), data.data_vars.items()):
+            if var.attrs.get("standard_name") == "latitude":
+                assert latitude is None
+                latitude = var
+
+            if var.attrs.get("standard_name") == "longitude":
+                assert longitude is None
+                longitude = var
+
         self.data = data
+        dims = 0
         for name, var in data.data_vars.items():
-            self.name = name
-            self.var = var
-            self.extra_dims = var.dims[:-2]
-            break
 
-        lat, lon = self.var.dims[-2], self.var.dims[-1]
+            if len(var.dims) > dims:
+                self.name = name
+                self.var = var
+                self.extra_dims = var.dims[:-2]
+                dims = len(var.dims)
 
-        data[lat].attrs["standard_name"] = "latitude"
-        data[lon].attrs["standard_name"] = "longitude"
+        if latitude is None or longitude is None:
+            assert latitude is None and longitude is None
 
-        self.north = np.amax(data[lat].data)
-        self.south = np.amin(data[lat].data)
-        self.east = np.amax(data[lon].data)
-        self.west = np.amin(data[lon].data)
+            lat, lon = self.var.dims[-2], self.var.dims[-1]
+            latitude = data[lat]
+            longitude = data[lon]
+
+            # For Magics
+            latitude.attrs["standard_name"] = "latitude"
+            longitude.attrs["standard_name"] = "longitude"
+
+        self.north = np.amax(latitude.data)
+        self.south = np.amin(latitude.data)
+        self.east = np.amax(longitude.data)
+        self.west = np.amin(longitude.data)
 
     def plot_map(self, driver):
         driver.bounding_box(

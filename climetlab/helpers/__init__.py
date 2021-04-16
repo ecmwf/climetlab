@@ -47,12 +47,9 @@ def helper(data, *args, **kwargs):
         return data.helper(*args, **kwargs)
 
     for name, h in _helpers().items():
-        try:
-            helper = h(data, *args, **kwargs)
-            if helper is not None:
-                return helper
-        except Exception as e:
-            warnings.warn(f"Error calling helper '{name}': {e}")
+        helper = h(data, *args, **kwargs)
+        if helper is not None:
+            return helper
 
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 

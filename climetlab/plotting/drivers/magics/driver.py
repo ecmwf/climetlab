@@ -178,7 +178,14 @@ class Driver:
     def plot_xarray(self, ds, variable: str, dimensions: dict = None):
         tmp = self.temporary_file(".nc")
         field = ds[variable].isel({} if dimensions is None else dimensions)
-        field.to_netcdf(tmp)
+        dataset = field.to_dataset()
+
+        # Copy auxiliary variables
+        for aux in ("crs",):
+            if aux in field.attrs:
+                dataset = dataset.assign(aux=ds[aux].data)
+
+        dataset.to_netcdf(tmp)
         self.plot_netcdf(tmp, variable, {} if dimensions is None else dimensions)
 
     def plot_csv(self, path: str, variable: str):
