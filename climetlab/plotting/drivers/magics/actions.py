@@ -31,9 +31,9 @@ try:
     try:
         Magics.strict_mode()
     except Exception as e:
-        warnings.warn(e)
+        warnings.warn(str(e))
 except Exception as e:
-    warnings.warn(e)
+    warnings.warn(str(e))
     macro = NoMagics()
 
 
