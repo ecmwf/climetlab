@@ -7,8 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import logging
+import inspect
 import os
+import warnings
 from collections import defaultdict
 
 import yaml
@@ -17,12 +18,9 @@ from climetlab.core.plugins import directories
 from climetlab.decorators import locked
 from climetlab.utils.html import css
 
-LOG = logging.getLogger(__name__)
-
-
 YAML_FILES = None
 
-IGNORE = ["magics.yaml", "colours.yaml", "conventions.yaml"]
+IGNORE = ["magics.yaml", "colours.yaml", "conventions.yaml", "config.yaml"]
 
 
 def _guess(data, path):
@@ -43,17 +41,19 @@ def _guess(data, path):
         if "mmap" in data["magics"]:
             return "projections"
 
-    LOG.warning("Cannot guess collection for %s", path)
+        warnings.warn("Cannot guess collection for %s", path)
     return "unknown"
 
 
 class Entry:
-    def __init__(self, name, kind, path, data):
+    def __init__(self, name, kind, root, path, data, owner):
         self.name = name
+        self.root = root
         self.kind = kind
         self.path = path
         self.data = data
         self.hidden = data.get("hidden", False)
+        self.owner = owner
 
     def _repr_html_(self):
         html = [
@@ -79,7 +79,7 @@ def _load_yaml_files():
         return YAML_FILES
 
     YAML_FILES = defaultdict(dict)
-    for directory in directories():
+    for owner, directory in directories():
         for root, _, files in os.walk(directory):
             for file in [f for f in files if f.endswith(".yaml")]:
                 if file in IGNORE:
@@ -91,19 +91,13 @@ def _load_yaml_files():
                         name, _ = os.path.splitext(os.path.basename(path))
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
-                        if name in collection and path != collection[name].path:
-                            LOG.warning(
-                                "Duplicate entry for %s %s (using %s, ignoring %s)",
-                                kind,
-                                name,
-                                collection[name].path,
-                                path,
-                            )
-                        else:
-                            collection[name] = Entry(name, kind, path, data)
+                        collection.setdefault(name, {})
+                        collection[name][owner] = Entry(
+                            name, kind, directory, path, data, owner
+                        )
 
-                except Exception:
-                    LOG.error("Cannot process YAML file %s", path, exc_info=True)
+                except Exception as e:
+                    warnings.warn(f"Cannot process YAML file {path} {owner} ({e})")
                     raise
 
     return YAML_FILES
@@ -124,7 +118,26 @@ def get_data_entry(kind, name):
             )
         )
 
-    return files[kind][name]
+    choices = files[kind][name]
+
+    if len(choices) == 1:
+        return list(choices.values())[0]
+
+    # Priority to user settings
+    if "user-settings" in choices:
+        return choices["user-settings"]
+
+    # Check if called from a plugin
+
+    frame = inspect.currentframe()
+    caller = inspect.getouterframes(frame, 0)
+    for c in caller:
+        for o, e in choices.items():
+            if c.filename.startswith(e.root):
+                return e
+
+    # Default to climetlab
+    return choices["climetlab"]
 
 
 def data_entries(kind=None):

@@ -97,16 +97,16 @@ def directories():
     for conf in ("styles-directories", "projections-directories", "layers-directories"):
         for d in SETTINGS.get(conf):
             if os.path.exists(d) and os.path.isdir(d):
-                result.append(d)
+                result.append(("user-settings", d))
 
     for kind in ("dataset", "source"):
-        for _, v in load_plugins(kind).items():
+        for name, v in load_plugins(kind).items():
             try:
                 module = import_module(v.module_name)
-                result.append(os.path.dirname(module.__file__))
+                result.append((name, os.path.dirname(module.__file__)))
             except Exception:
                 LOG.error("Cannot load module %s", v.module_name, exc_info=True)
 
-    result.append(os.path.dirname(climetlab.__file__))
+    result.append(("climetlab", os.path.dirname(climetlab.__file__)))
 
     return result

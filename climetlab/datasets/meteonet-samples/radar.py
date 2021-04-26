@@ -92,7 +92,7 @@ class MeteonetRadar(Meteonet):
         dimensions = {"time": 0}
 
         driver.plot_xarray(self._xarray, self.variable, dimensions)
-        driver.style("meteonet-samples-radar-{}".format(self.variable))
+        driver.style("meteonet-radar-{}".format(self.variable))
 
 
 dataset = MeteonetRadar
