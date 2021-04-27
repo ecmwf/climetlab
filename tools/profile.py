@@ -8,18 +8,17 @@
 # nor does it submit to any jurisdiction.
 #
 
-import random
+import argparse
 import logging
 import os
+import random
 import shutil
 import time
-from tqdm import tqdm
-
 from queue import Queue
-from threading import Thread, Lock
-import requests
+from threading import Lock, Thread
 
-import argparse
+import requests
+from tqdm import tqdm
 
 # from tqdm import tqdm
 
