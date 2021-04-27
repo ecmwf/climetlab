@@ -79,7 +79,7 @@ def _load_yaml_files():
         return YAML_FILES
 
     YAML_FILES = defaultdict(dict)
-    for owner, directory in directories():
+    for owner, directory in directories(owner=True):
         for root, _, files in os.walk(directory):
             for file in [f for f in files if f.endswith(".yaml")]:
                 if file in IGNORE:

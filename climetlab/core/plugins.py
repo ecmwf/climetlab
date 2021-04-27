@@ -91,7 +91,7 @@ def find_plugin(directory, name, loader):
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")
 
 
-def directories():
+def directories(owner=False):
 
     result = []
     for conf in ("styles-directories", "projections-directories", "layers-directories"):
@@ -109,4 +109,7 @@ def directories():
 
     result.append(("climetlab", os.path.dirname(climetlab.__file__)))
 
-    return result
+    if owner:
+        return result
+
+    return [x[1] for x in result]
