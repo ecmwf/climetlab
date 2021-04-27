@@ -73,7 +73,7 @@ class Url(FileSource):
             total = 0
             pbar.update(total)
             with open(download, mode) as f:
-                for chunk in r.iter_content(chunk_size=1024):
+                for chunk in r.iter_content(chunk_size=1024 * 1024):
                     if chunk:
                         f.write(chunk)
                         total += len(chunk)
