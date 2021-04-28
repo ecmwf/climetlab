@@ -32,7 +32,7 @@ parser.add_argument(
 )
 parser.add_argument("-t", "--threads", default=4, type=int)
 parser.add_argument("-o", "--output", default="out.data", help="output file")
-parser.add_argument("-b", "--buffer-size", type=int, default=1024)
+parser.add_argument("-b", "--buffer-size", type=int, default=1024 * 1024)
 parser.add_argument("-c", "--chunk-size", type=int, default=1024 * 1024 * 20)
 
 args = parser.parse_args()
@@ -61,11 +61,15 @@ class Part:
         # print(f"downloading {headers} in {self.f}")
         r = requests.get(self.url, stream=True, headers=headers)  # , verify=False)
         r.raise_for_status()
-        with self.write_lock:
-            self.f.seek(self.start)
-            for chunk in r.iter_content(chunk_size=args.buffer_size):
-                if chunk:
+
+        start = self.start
+
+        for chunk in r.iter_content(chunk_size=args.buffer_size):
+            if chunk:
+                with self.write_lock:
+                    self.f.seek(start)
                     self.f.write(chunk)
+                    start += len(chunk)
 
 
 queue = Queue()
@@ -124,11 +128,19 @@ def download(url, target):
 
 
 if __name__ == "__main__":
-    print(os.getpid())
     now = time.time()
     size = download(args.url, args.output)
     print(
-        f"{size} downloaded at {size/(time.time() - now)/1024/1024}MB/s ({(time.time() - now)} sec)"
+        ",".join(
+            str(x)
+            for x in [
+                args.threads,
+                args.chunk_size,
+                args.buffer_size,
+                size,
+                time.time() - now,
+            ]
+        )
     )
 
 # download(  'https://releases.ubuntu.com/20.04.2.0/ubuntu-20.04.2.0-desktop-amd64.iso', 'file.zip')
