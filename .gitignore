@@ -147,3 +147,4 @@ all.code-workspace
 list.*
 climetlab/tools/
 *.db
+*.data

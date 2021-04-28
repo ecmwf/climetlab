@@ -54,6 +54,7 @@ class Entry:
         self.data = data
         self.hidden = data.get("hidden", False)
         self.owner = owner
+        self.next = None
 
     def _repr_html_(self):
         html = [
@@ -70,6 +71,12 @@ class Entry:
         )
         html.append("</table>")
         return "".join(html)
+
+    def choices(self):
+        result = {self.owner: self}
+        if self.next:
+            result.update(self.next.choices())
+        return result
 
 
 @locked
@@ -91,10 +98,11 @@ def _load_yaml_files():
                         name, _ = os.path.splitext(os.path.basename(path))
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
-                        collection.setdefault(name, {})
-                        collection[name][owner] = Entry(
-                            name, kind, directory, path, data, owner
-                        )
+                        e = Entry(name, kind, directory, path, data, owner)
+                        if name is collection:
+                            collection[name].append(e)
+                        else:
+                            collection[name] = e
 
                 except Exception as e:
                     warnings.warn(f"Cannot process YAML file {path} {owner} ({e})")
@@ -118,7 +126,7 @@ def get_data_entry(kind, name):
             )
         )
 
-    choices = files[kind][name]
+    choices = files[kind][name].choices()
 
     if len(choices) == 1:
         return list(choices.values())[0]
