@@ -10,7 +10,6 @@
 
 import argparse
 import logging
-import os
 import time
 from queue import Queue
 from threading import Lock, Thread
