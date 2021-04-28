@@ -8,18 +8,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import random
+import argparse
 import logging
 import os
-import shutil
 import time
-from tqdm import tqdm
-
 from queue import Queue
-from threading import Thread, Lock
-import requests
+from threading import Lock, Thread
 
-import argparse
+import requests
 
 # from tqdm import tqdm
 
@@ -28,7 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-u",
     "--url",
-    default="https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/training-input/ecmwf-hindcast/0.2.5/netcdf/ecmwf-hindcast-q-20200102.nc",
+    default="https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/training-input/ecmwf-hindcast/0.2.5/netcdf/ecmwf-hindcast-q-20200102.nc",  # noqa: E501
 )
 parser.add_argument("-t", "--threads", default=4, type=int)
 parser.add_argument("-o", "--output", default="out.data", help="output file")
@@ -144,9 +140,10 @@ if __name__ == "__main__":
     )
 
 # download(  'https://releases.ubuntu.com/20.04.2.0/ubuntu-20.04.2.0-desktop-amd64.iso', 'file.zip')
-# download(  'https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/forecast-input-dev/ecmwf-forecast/0.2.5/netcdf/ecmwf-forecast-q-20200102.nc', 'file.zip')
+# download(  'https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/forecast-input-dev/ecmwf-forecast/0.2.5/netcdf/ecmwf-forecast-q-20200102.nc', 'file.zip')  # noqa: E501
 # download(
 #    "https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/forecast-input/ecmwf-forecast/0.2.5/netcdf/ecmwf-forecast-ttr-20200102.nc",
 #    "file.zip",
 # )
-# download( 'https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg%2F2m_temperature&files=2m_temperature_5.625deg.zip', 'file.zip')
+#
+# download( 'https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg%2F2m_temperature&files=2m_temperature_5.625deg.zip', 'file.zip')  # noqa: E501

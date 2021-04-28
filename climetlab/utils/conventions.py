@@ -23,7 +23,7 @@ SEP = "@"
 
 @locked
 def get_alias_and_conventions():
-    """ fill the global variable from the relevant yaml file """
+    """fill the global variable from the relevant yaml file"""
 
     if ALIASES:
         return ALIASES, CONVENTIONS

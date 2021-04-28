@@ -34,7 +34,7 @@ C1 = [
 
 
 def _(x):
-    """ Make list of dicts comparable """
+    """Make list of dicts comparable"""
 
     def __(r):
         for k, v in sorted(r.items()):

@@ -125,7 +125,10 @@ class DatasetLoader:
         return import_module(module, package=__name__).dataset
 
     def load_entry(self, entry):
-        return entry.load().dataset
+        entry = entry.load()
+        if callable(entry):
+            return entry
+        return entry.dataset
 
 
 def register_dataset(module):
