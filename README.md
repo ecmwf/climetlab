@@ -5,3 +5,7 @@ technical issues such as data access and data formats. It is mostly intended to 
 data analytic packages, such as Numpy, Pandas, Xarray, SciPy, Matplotlib, etc. and well as machine learning frameworks, such as Tensorflow, Keras or PyTorch.
 
 The documentation can be found at <https://climetlab.readthedocs.io/>.
+
+### Plugins
+
+- [climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge) : [![climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge/actions/workflows/check-and-publish.yml/badge.svg)]
