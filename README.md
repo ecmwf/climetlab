@@ -8,4 +8,4 @@ The documentation can be found at <https://climetlab.readthedocs.io/>.
 
 ### Plugins
 
-- [climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge) : ![climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge/actions/workflows/check-and-publish.yml/badge.svg)
+- [climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge) 
