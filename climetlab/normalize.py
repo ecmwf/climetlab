@@ -81,9 +81,9 @@ class EnumNormaliser:
 
     def __call__(self, value):
         for n in self.values:
-            if value.lower() == n.lower():
+            if value == n:
                 return n
-        raise ValueError(value)
+        raise ValueError(f'Invalid value "{value}", possible values are {self.values}')
 
 
 NORMALISERS = {

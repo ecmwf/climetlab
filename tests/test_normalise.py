@@ -87,6 +87,27 @@ def bbox_defaults(area=None):
     return area
 
 
+@normalize_args(name=["a", "b", "c"])
+def enum_1(name="a"):
+    return name
+
+
+@normalize_args(name=[1, 0.5, 3])
+def enum_2(name=1):
+    return name
+
+
+def test_enum():
+    assert enum_1("a") == "a"
+    assert enum_1("b") == "b"
+    with pytest.raises(ValueError):
+        enum_1("z")
+    with pytest.raises(ValueError):
+        enum_1(["a", "b"])
+    with pytest.raises(ValueError):
+        enum_1(1)
+
+
 def test_bbox():
 
     area = [30.0, 2.0, 3.0, 4.0]
