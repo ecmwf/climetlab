@@ -112,14 +112,14 @@ def zarr_not_installed():
         return True
 
 
-S3_URL = "https://storage.ecmwf.europeanweather.cloud/s2s-ai-competition/data/fixtures"
+S3_URL = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
 
 
 @pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
 def test_zarr_source_1():
     source = load_source(
         "zarr-s3",
-        f"{S3_URL}/0.1.20/zarr/mini-rt-20200102.zarr",
+        f"{S3_URL}/zarr/mini-rt-20200102.zarr",
     )
     ds = source.to_xarray()
     assert len(ds.forecast_time) == 1
@@ -134,8 +134,8 @@ def test_zarr_source_2():
     source = load_source(
         "zarr-s3",
         [
-            f"{S3_URL}/0.1.20/zarr/mini-rt-20200109.zarr",
-            f"{S3_URL}/0.1.20/zarr/mini-rt-20200102.zarr",
+            f"{S3_URL}/zarr/mini-rt-20200109.zarr",
+            f"{S3_URL}/zarr/mini-rt-20200102.zarr",
         ],
     )
 
@@ -160,8 +160,8 @@ def test_zarr_source_3():
     source = load_source(
         "zarr-s3",
         [
-            f"{S3_URL}/0.1.20/zarr/mini-hc-20200109.zarr",
-            f"{S3_URL}/0.1.20/zarr/mini-hc-20200102.zarr",
+            f"{S3_URL}/zarr/mini-hc-20200109.zarr",
+            f"{S3_URL}/zarr/mini-hc-20200102.zarr",
         ],
     )
     ds = source.to_xarray()
