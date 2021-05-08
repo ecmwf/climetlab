@@ -1,19 +1,39 @@
 digraph delegation {
-    graph [fontname = "helvetica"];
+    graph [fontname = "helvetica";
+    // splines=ortho;
+    // splines=curved;
+    // splines=none;
+    ];
     node [fontname = "helvetica"];
-    edge [fontname = "helvetica"];
+    edge [fontname = "helvetica";];
 
-    node [shape=record]
+    node [shape=box]
     // graph [newrank=true];
     edge [arrowtail=empty]
 
+    Dataset;
+    FileSource;
+    SomeDataset
+    SomeReader;
+    SomeSource;
+    Reader;
+    Source;
+
+    // SomeDataset -> SomeSource ;
+
+
     // Inheritance
-    "MyDataset"  -> "Dataset";
-    "MySource"   -> "FileSource";
-    // "FileSource" -> "Source";
+    SomeDataset  -> Dataset;
+    SomeSource   -> FileSource;
+    FileSource -> Source;
+    SomeReader   -> Reader;
 
     // Delegation
-    // "MyDataset"  -> "MySource";
-    "Dataset" -> "MySource";
-    "FileSource"  -> "Reader";
+    // "SomeDataset"  -> "SomeSource";
+    Dataset     -> SomeSource [label=<<I>   source   </I>>; style=dashed;];
+    FileSource  -> SomeReader [label=<<I>   reader   </I>>; style=dashed;];
+
+    {rank=same; FileSource; SomeReader;}
+    {rank=same; Dataset; SomeSource;}
+
 }
