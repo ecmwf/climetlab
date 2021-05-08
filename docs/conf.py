@@ -130,3 +130,6 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 
 html_context = {"css_files": ["_static/style.css"]}
+
+# See https://www.sphinx-doc.org/en/master/usage/extensions/graphviz.html
+graphviz_output_format = "svg"
