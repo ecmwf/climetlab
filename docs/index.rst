@@ -63,6 +63,7 @@ Documentation
 
 **Reference (TODO)**
 
+* :doc:`reference/architecture`
 * :doc:`reference/datasets`
 * :doc:`reference/sources`
 * :doc:`reference/api`
@@ -76,6 +77,7 @@ Documentation
    :hidden:
    :caption: Reference
 
+   reference/architecture
    reference/datasets
    reference/sources
    reference/api
