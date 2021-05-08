@@ -1,0 +1,19 @@
+digraph delegation {
+    graph [fontname = "helvetica"];
+    node [fontname = "helvetica"];
+    edge [fontname = "helvetica"];
+
+    node [shape=record]
+    // graph [newrank=true];
+    edge [arrowtail=empty]
+
+    // Inheritance
+    "MyDataset"  -> "Dataset";
+    "MySource"   -> "FileSource";
+    // "FileSource" -> "Source";
+
+    // Delegation
+    // "MyDataset"  -> "MySource";
+    "Dataset" -> "MySource";
+    "FileSource"  -> "Reader";
+}

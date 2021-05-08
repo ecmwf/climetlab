@@ -2,6 +2,6 @@ Architecture
 ============
 
 
-.. digraph:: delegation
+.. graphviz:: delegation.dot
 
-    "Dataset" -> "Source" -> "Reader";
+   
