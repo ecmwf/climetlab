@@ -24,7 +24,10 @@ class SourceLoader:
         return import_module(module, package=__name__).source
 
     def load_entry(self, entry):
-        return entry.load().source
+        entry = entry.load()
+        if callable(entry):
+            return entry
+        return entry.source
 
 
 class SourceMaker:
