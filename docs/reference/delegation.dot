@@ -1,15 +1,10 @@
 digraph delegation {
-    graph [fontname = "helvetica";
-    // splines=ortho;
-    // splines=curved;
-    // splines=none;
-    ];
-    node [fontname = "helvetica"];
+    graph [fontname = "helvetica";];
+    node [fontname = "helvetica";];
     edge [fontname = "helvetica";];
 
     node [shape=box]
-    // graph [newrank=true];
-    edge [arrowtail=empty]
+
 
     Dataset;
     FileSource;

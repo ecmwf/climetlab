@@ -1,0 +1,13 @@
+digraph legend {
+    rankdir=LR;
+    graph [fontname = "helvetica"];
+    node [fontname = "helvetica"];
+    edge [fontname = "helvetica";];
+
+    node [shape=point; height=0]
+
+    A  -> B [label=<<I>   sub-class   </I>>;];
+
+    B -> C [style=invis];
+    C -> D [label=<<I>   delegate   </I>>; style=dashed;];
+}
