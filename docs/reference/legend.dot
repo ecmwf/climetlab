@@ -6,8 +6,8 @@ digraph legend {
 
     node [shape=point; height=0]
 
-    A  -> B [label=<<I>   sub-class   </I>>;];
+    A  -> B [label=<<I>   inherits from   </I>>;];
 
     B -> C [style=invis];
-    C -> D [label=<<I>   delegate   </I>>; style=dashed;];
+    C -> D [label=<<I>   delegate to   </I>>; style=dashed;];
 }
