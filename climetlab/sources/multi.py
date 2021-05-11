@@ -56,12 +56,12 @@ class MultiSource(Source):
             self._lengths[i] = len(self.sources[i])
         return self._lengths[i]
 
-    def to_xarray(self):
+    def to_xarray(self, **kwargs):
         import xarray as xr
 
-        merged = self.sources[0]._multi_merge(self.sources[1:])
+        merged = self.sources[0].multi_merge(self.sources)
         if merged is not None:
-            return merged.to_xarray()
+            return merged.to_xarray(**kwargs)
 
         arrays = [s.to_xarray() for s in self.sources]
 

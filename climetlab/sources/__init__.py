@@ -141,5 +141,6 @@ class Source:
             return ds
         return self.dataset.post_xarray_open_dataset_hook(ds, *args, **kwargs)
 
-    def _multi_merge(self, others):
+    @classmethod
+    def multi_merge(cls, sources):
         return None

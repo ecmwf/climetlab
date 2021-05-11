@@ -57,12 +57,12 @@ class FileSource(Source):
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 
-    def _multi_merge(self, others):
-        for s in others:
-            if not isinstance(s, FileSource):
-                return None
-        readers = [s._reader for s in others]
-        return self._reader._multi_merge(readers)
+    @classmethod
+    def multi_merge(cls, sources):
+        if not all(isinstance(s, FileSource) for s in sources):
+            return None
+        readers = [s._reader for s in sources]
+        return readers[0].multi_merge(readers)
 
     def _attributes(self, names):
         return self._reader._attributes(names)

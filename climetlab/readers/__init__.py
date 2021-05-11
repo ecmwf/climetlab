@@ -38,14 +38,31 @@ class Reader:
 
 class MultiReaders:
     def __init__(self, readers):
-        self.reader = readers
+        self.readers = readers
 
-    def to_xarray(self, options={}):
+    def to_xarray(self, **kwargs):
         import xarray as xr
 
+        readers = {r.path: r for r in self.readers}
+
+        def preprocess(ds):
+            r = readers[ds.encoding["source"]]
+            return r.source.post_xarray_open_dataset_hook(ds)
+
+        options = None
+        for r in self.readers:
+            opts = r.source.cfgrib_options()
+            if options is None:
+                options = opts
+            else:
+                assert options == opts, f"{options} != {opts}"
+
+        options.update(kwargs)
+
         return xr.open_mfdataset(
-            [r.paths for r in self.readers],
+            [r.path for r in self.readers],
             engine=self.engine,
+            preprocess=preprocess,
             **options,
         )
 

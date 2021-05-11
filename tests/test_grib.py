@@ -50,31 +50,14 @@ def test_multi():
         param="2t",
         date="2021-03-02",
     )
-    s3 = load_source(
-        "cds",
-        "reanalysis-era5-single-levels",
-        product_type="reanalysis",
-        param="2t",
-        date=["2021-03-01", "2021-03-02"],
-    )
+
     source = load_source("multi", s1, s2)
     for s in source:
         print(s)
 
     source.to_xarray()
 
-    import xarray as xr
 
-    print(s1)
-    print(s1.path)
-    print(s2.path)
-    print(s3.path)
-
-    print("--------------")
-    s3.to_xarray()
-    print("--------------")
-
-    xr.open_mfdataset([s1.path, s2.path], engine="cfgrib")
 
 
 if __name__ == "__main__":

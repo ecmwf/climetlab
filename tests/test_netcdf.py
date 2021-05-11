@@ -16,6 +16,29 @@ def test_netcdf():
     for s in load_source("file", "docs/examples/test.nc"):
         plot_map(s)
 
+def test_multi():
+    s1 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-01",
+        format="netcdf",
+    )
+    s2 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-02",
+        format="netcdf",
+    )
+
+    source = load_source("multi", s1, s2)
+    for s in source:
+        print(s)
+
+    print(source.to_xarray())
 
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):
