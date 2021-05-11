@@ -59,7 +59,7 @@ class Coordinate:
         if variable.values.ndim == 0:
             self.values = [self.convert(variable.values)]
         else:
-            self.values = [self.convert(t) for t in variable.values][:10]
+            self.values = [self.convert(t) for t in variable.values.flatten()]
 
     def make_slice(self, value):
         return self.slice_class(
@@ -98,18 +98,53 @@ class OtherCoordinate(Coordinate):
     convert = as_level
 
 
+class DataSet:
+    def __init__(self, ds):
+        self._ds = ds
+        self._bbox = {}
+        self._cache = {}
+
+    @property
+    def data_vars(self):
+        return self._ds.data_vars
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            print("---", key)
+            self._cache[key] = self._ds[key]
+        return self._cache[key]
+
+    def bbox(self, variable):
+
+        data_array = self[variable]
+        dims = data_array.dims
+
+        lat = dims[-2]
+        lon = dims[-1]
+
+        if (lat, lon) not in self._bbox:
+
+            dims = data_array.dims
+
+            latitude = data_array[lat]
+            longitude = data_array[lon]
+
+            self._bbox[(lat, lon)] = (
+                np.amax(latitude.data),
+                np.amin(longitude.data),
+                np.amin(latitude.data),
+                np.amax(longitude.data),
+            )
+
+        return self._bbox[(lat, lon)]
+
+
 class NetCDFField:
     def __init__(self, path, ds, variable, slices):
 
-        dims = ds[variable].dims
+        data_array = ds[variable]
 
-        latitude = ds[variable][dims[-2]]
-        longitude = ds[variable][dims[-1]]
-
-        self.north = np.amax(latitude.data)
-        self.south = np.amin(latitude.data)
-        self.east = np.amax(longitude.data)
-        self.west = np.amin(longitude.data)
+        self.north, self.west, self.south, self.east = ds.bbox(variable)
 
         self.path = path
         self.variable = variable
@@ -118,9 +153,9 @@ class NetCDFField:
         self.name = self.variable
 
         self.title = getattr(
-            ds[self.variable],
+            data_array,
             "long_name",
-            getattr(ds[self.variable], "standard_name", self.variable),
+            getattr(data_array, "standard_name", self.variable),
         )
 
         self.time = None
@@ -191,7 +226,7 @@ class NetCDFReader(Reader):
         with closing(
             xr.open_mfdataset(self.path, combine="by_coords")
         ) as ds:  # or nested
-            return self._get_fields(ds)
+            return self._get_fields(DataSet(ds))
 
     def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
@@ -219,6 +254,10 @@ class NetCDFReader(Reader):
             info = [value for value in v.coords if value not in v.dims]
 
             for coord in v.coords:
+
+                if coord not in v.dims:
+                    continue
+
                 c = ds[coord]
 
                 # self.log.info("COORD %s %s %s %s", coord, type(coord), hasattr(c, 'calendar'), c)
