@@ -16,6 +16,7 @@ def test_netcdf():
     for s in load_source("file", "docs/examples/test.nc"):
         plot_map(s)
 
+
 def test_multi():
     s1 = load_source(
         "cds",
@@ -39,6 +40,7 @@ def test_multi():
         print(s)
 
     print(source.to_xarray())
+
 
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):

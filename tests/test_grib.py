@@ -58,8 +58,6 @@ def test_multi():
     source.to_xarray()
 
 
-
-
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):
         if k.startswith("test_") and callable(f):
