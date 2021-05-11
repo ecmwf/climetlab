@@ -26,12 +26,6 @@ class MultiSource(Source):
             return self.sources[0].mutate()
         return self
 
-    #     t = type(self.sources[0])
-    #     if all(type(s) == t for s in self.sources):
-    #         return t.multi_merge(self.sources).mutate()
-
-    #     return self
-
     def _set_dataset(self, dataset):
         super()._set_dataset(dataset)
         for s in self.sources:

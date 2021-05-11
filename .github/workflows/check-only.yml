@@ -26,6 +26,7 @@ jobs:
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     needs: quality
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v2

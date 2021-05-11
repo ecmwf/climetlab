@@ -75,9 +75,9 @@ def test_notebook(path):
         if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
             pytest.skip("No ~/.cdsapirc")
 
-    if path in TENSORFLOW:
-        if sys.version_info >= (3, 9):
-            pytest.skip("Tensorflow not yet ready on 3.9")
+    # if path in TENSORFLOW:
+    #     if sys.version_info >= (3, 9):
+    #         pytest.skip("Tensorflow not yet ready on 3.9")
 
     with open(os.path.join(EXAMPLES, path)) as f:
         nb = nbformat.read(f, as_version=4)

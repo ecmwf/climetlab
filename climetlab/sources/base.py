@@ -57,13 +57,6 @@ class FileSource(Source):
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 
-    def multi_merge(sources):
-        f = FileSource()
-        t = type(sources[0]._reader)
-        assert all(type(s._reader) == t for s in sources)
-        f._reader_ = t.multi_merge(f, [a._reader for a in sources])
-        return os.fspath
-
     def _multi_merge(self, others):
         for s in others:
             if not isinstance(s, FileSource):

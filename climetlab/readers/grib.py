@@ -223,7 +223,7 @@ class GRIBMultiFileReader(Reader):
         super().__init__(source, "/-multi-")
 
 
-class OLDGRIBReader(Reader):
+class GRIBReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
         self._fields = None
@@ -261,156 +261,134 @@ class OLDGRIBReader(Reader):
     def sel(self, **kwargs):
         return GRIBFilter(self, kwargs)
 
-    def multi_merge(source, readers):
-        return GRIBMultiFileReader(source, readers)
 
 
-class GRIBReader(Reader):
-    def __init__(self, source, paths=None, fields=[], filter=None, unfiltetered=True):
-        super().__init__(source, paths)
-        self._fields = [f for f in fields]
-        self._unfiltetered = unfiltetered
-
-        if paths is not None:
-            if not isinstance(paths, (list, tuple)):
-                paths = [paths]
-            for path in paths:
-                for f in GRIBIterator(path):
-                    self._fields.append(f)
-
-    def __getitem__(self, n):
-        return self._fields[n]
-
-    def __len__(self):
-        return len(self._fields)
-
-    def _attributes(self, names):
-        result = []
-        for field in self:
-            result.append(field._attributes(names))
-        return result
-
-    def multi_merge(source, readers):
-        fields = []
-        paths = []
-        for r in readers:
-            fields += r._fields
-            if isinstance(r.path, (list, tuple)):
-                paths += list(r.path)
-            else:
-                paths.append(r.path)
-
-        return GRIBReader(
-            source,
-            paths=paths,
-            # fields=fields,
-            unfiltetered=all(r._unfiltetered for r in readers),
-        )
-
-    def to_xarray(self):
-        assert self._unfiltetered
-        assert self.path
-
-        import xarray as xr
-
-        params = self.source.cfgrib_options()
-        if isinstance(self.path, (list, tuple)):
-            ds = xr.open_mfdataset(self.path, engine="cfgrib", **params)
-        else:
-            ds = xr.open_dataset(self.path, engine="cfgrib", **params)
-        return self.source.post_xarray_open_dataset_hook(ds)
+# class GRIBReader(Reader):
+#     def __init__(self, source, path, fields=[], filter=None, unfiltetered=True):
+#         super().__init__(source, path)
+#         self._fields = [f for f in fields]
+#         self._unfiltetered = unfiltetered
 
 
-class Field:
-    def __init__(self, field):
-        self.field = field
+#         for f in GRIBIterator(path):
+#             self._fields.append(f)
 
-    def __getitem__(self, key):
-        print("field", key)
-        v = self.field.handle.get(key)
-        return v
+#     def __getitem__(self, n):
+#         return self._fields[n]
+
+#     def __len__(self):
+#         return len(self._fields)
+
+#     def _attributes(self, names):
+#         result = []
+#         for field in self:
+#             result.append(field._attributes(names))
+#         return result
+
+#     def to_xarray(self):
+#         assert self._unfiltetered
+#         assert self.path
+
+#         import xarray as xr
+
+#         params = self.source.cfgrib_options()
+#         if isinstance(self.path, (list, tuple)):
+#             ds = xr.open_mfdataset(self.path, engine="cfgrib", **params)
+#         else:
+#             ds = xr.open_dataset(self.path, engine="cfgrib", **params)
+#         return self.source.post_xarray_open_dataset_hook(ds)
 
 
-class FieldSetIndex:
-    def __init__(
-        self,
-        source,
-        *,
-        filter_by_keys={},
-        grib_errors="warn",
-        index_keys=[],
-        read_keys=[],
-        items=None,
-    ):
-        self.source = source
-        self.filter_by_keys = filter_by_keys
-        self.grib_errors = grib_errors
-        self.index_keys = index_keys
-        self.read_keys = read_keys
-        self.items = items
+# class Field:
+#     def __init__(self, field):
+#         self.field = field
 
-    def __call__(self, *, grib_errors, index_keys, read_keys, **kwargs):
-        return FieldSetIndex(
-            source=self.source,
-            filter_by_keys=self.filter_by_keys,
-            grib_errors=grib_errors,
-            index_keys=index_keys,
-            read_keys=read_keys,
-            items=self.items,
-        )
+#     def __getitem__(self, key):
+#         print("field", key)
+#         v = self.field.handle.get(key)
+#         return v
 
-    def subindex(self, filter_by_keys={}, **kwargs):
-        query = dict(**self.filter_by_keys)
-        query.update(filter_by_keys)
-        query.update(kwargs)
-        return FieldSetIndex(
-            source=self.source,
-            filter_by_keys=query,
-            grib_errors=self.grib_errors,
-            index_keys=self.index_keys,
-            read_keys=self.read_keys,
-            items=self.items,
-        )
 
-    def _valid(self, item):
-        for k, v in self.filter_by_keys.items():
-            if item.get(k) != v:
-                return False
-        return True
+# class FieldSetIndex:
+#     def __init__(
+#         self,
+#         source,
+#         *,
+#         filter_by_keys={},
+#         grib_errors="warn",
+#         index_keys=[],
+#         read_keys=[],
+#         items=None,
+#     ):
+#         self.source = source
+#         self.filter_by_keys = filter_by_keys
+#         self.grib_errors = grib_errors
+#         self.index_keys = index_keys
+#         self.read_keys = read_keys
+#         self.items = items
 
-    def _valid_items(self):
-        if self.items is None:
-            self.items = self.source._attributes(self.index_keys)
+#     def __call__(self, *, grib_errors, index_keys, read_keys, **kwargs):
+#         return FieldSetIndex(
+#             source=self.source,
+#             filter_by_keys=self.filter_by_keys,
+#             grib_errors=grib_errors,
+#             index_keys=index_keys,
+#             read_keys=read_keys,
+#             items=self.items,
+#         )
 
-        return [i for i in self.items if self._valid(i)]
+#     def subindex(self, filter_by_keys={}, **kwargs):
+#         query = dict(**self.filter_by_keys)
+#         query.update(filter_by_keys)
+#         query.update(kwargs)
+#         return FieldSetIndex(
+#             source=self.source,
+#             filter_by_keys=query,
+#             grib_errors=self.grib_errors,
+#             index_keys=self.index_keys,
+#             read_keys=self.read_keys,
+#             items=self.items,
+#         )
 
-    def __getitem__(self, key):
+#     def _valid(self, item):
+#         for k, v in self.filter_by_keys.items():
+#             if item.get(k) != v:
+#                 return False
+#         return True
 
-        x = [i[key] for i in self._valid_items()]
-        if None in x:
-            return []
+#     def _valid_items(self):
+#         if self.items is None:
+#             self.items = self.source._attributes(self.index_keys)
 
-        print("GET", key, x)
-        return list(set(x))
+#         return [i for i in self.items if self._valid(i)]
 
-    def getone(self, key):
-        return self[key][0]
+#     def __getitem__(self, key):
 
-    @property
-    def offsets(self):
-        for i, item in enumerate(self._valid_items()):
-            yield item, i
+#         x = [i[key] for i in self._valid_items()]
+#         if None in x:
+#             return []
 
-    @property
-    def filestream(self):
-        return self
+#         print("GET", key, x)
+#         return list(set(x))
 
-    @property
-    def path(self):
-        return None
+#     def getone(self, key):
+#         return self[key][0]
 
-    def first(self):
-        return Field(self.source[0])
+#     @property
+#     def offsets(self):
+#         for i, item in enumerate(self._valid_items()):
+#             yield item, i
+
+#     @property
+#     def filestream(self):
+#         return self
+
+#     @property
+#     def path(self):
+#         return None
+
+#     def first(self):
+#         return Field(self.source[0])
 
 
 def reader(source, path, magic):

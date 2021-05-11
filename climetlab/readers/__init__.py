@@ -31,6 +31,9 @@ class Reader:
     def sel(self, *args, **kwargs):
         raise NotImplementedError()
 
+    def _multi_merge(self, others):
+        return None
+
 
 _READERS = {}
 
