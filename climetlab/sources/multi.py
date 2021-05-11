@@ -47,12 +47,6 @@ class MultiSource(Source):
 
     def sel(self, *args, **kwargs):
         raise NotImplementedError
-        # new_sources = []
-        # for s in self.sources:
-        #     new = s.sel(*args, **kwargs)
-        #     return new_sources.append(new)
-        # merged = self.__class__(self, sources=new_sources)
-        # return merged
 
     def __len__(self):
         return sum(self._length(i) for i, _ in enumerate(self.sources))

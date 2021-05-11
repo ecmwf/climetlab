@@ -15,7 +15,7 @@ import eccodes
 from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
-from . import Reader
+from . import MultiReaders, Reader
 
 LOG = logging.getLogger(__name__)
 
@@ -218,9 +218,8 @@ class GRIBFilter:
         return GRIBIterator(self.path)
 
 
-class GRIBMultiFileReader(Reader):
-    def __init__(self, source, readers):
-        super().__init__(source, "/-multi-")
+class MultiGribReaders(MultiReaders):
+    engine = "cfgrib"
 
 
 class GRIBReader(Reader):
@@ -260,6 +259,11 @@ class GRIBReader(Reader):
     @dict_args
     def sel(self, **kwargs):
         return GRIBFilter(self, kwargs)
+
+    @classmethod
+    def multi_merge(cls, readers):
+        assert all(isinstance(r, GRIBReader) for r in readers)
+        return MultiGribReaders(readers)
 
 
 # class GRIBReader(Reader):

@@ -18,7 +18,7 @@ import xarray as xr
 
 from climetlab.utils.bbox import BoundingBox
 
-from . import Reader
+from . import MultiReaders, Reader
 
 
 def as_datetime(self, time):
@@ -189,14 +189,8 @@ class NetCDFField:
         )
 
 
-class MultiNetcdf:
-    def __init__(self, paths):
-        self.paths = paths
-
-    def to_xarray(self, options={}):
-        return xr.open_mfdataset(
-            self.paths, engine="netcdf4", **options
-        )  # combine = 'nested'
+class MultiNetcdfReaders(MultiReaders):
+    engine = "netcdf4"
 
 
 class NetCDFReader(Reader):
@@ -321,8 +315,10 @@ class NetCDFReader(Reader):
     def to_xarray(self):
         return xr.open_dataset(self.path, engine="netcdf4")
 
-    def _multi_merge(self, others):
-        return MultiNetcdf([self.path] + [o.path for o in others])
+    @classmethod
+    def multi_merge(cls, readers):
+        assert all(isinstance(r, NetCDFReader) for r in readers)
+        return MultiNetcdfReaders(readers)
 
 
 def reader(source, path, magic):

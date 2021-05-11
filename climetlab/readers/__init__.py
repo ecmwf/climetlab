@@ -31,8 +31,23 @@ class Reader:
     def sel(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def _multi_merge(self, others):
+    @classmethod
+    def multi_merge(cls, readers):
         return None
+
+
+class MultiReaders:
+    def __init__(self, readers):
+        self.reader = readers
+
+    def to_xarray(self, options={}):
+        import xarray as xr
+
+        return xr.open_mfdataset(
+            [r.paths for r in self.readers],
+            engine=self.engine,
+            **options,
+        )
 
 
 _READERS = {}
@@ -72,6 +87,3 @@ def reader(source, path):
             warnings.warn(f"Error calling reader '{name}': {e}")
 
     raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic})")
-
-    def _multi_merge(self, others):
-        return None
