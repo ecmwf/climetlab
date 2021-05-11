@@ -140,3 +140,6 @@ class Source:
             # print(f'from {self} no self.dataset {self.dataset}, no hook')
             return ds
         return self.dataset.post_xarray_open_dataset_hook(ds, *args, **kwargs)
+
+    def _multi_merge(self, others):
+        return None

@@ -106,7 +106,6 @@ def _load_yaml_files():
 
                 except Exception as e:
                     warnings.warn(f"Cannot process YAML file {path} {owner} ({e})")
-                    raise
 
     return YAML_FILES
 

@@ -155,6 +155,14 @@ class NetCDFField:
         )
 
 
+class MultiNetcdf:
+    def __init__(self, paths):
+        self.paths = paths
+
+    def to_xarray(self, options={}):
+        return xr.open_mfdataset(self.paths, **options)  # combine = 'nested'
+
+
 class NetCDFReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
@@ -272,6 +280,9 @@ class NetCDFReader(Reader):
 
     def to_xarray(self):
         return xr.open_dataset(self.path)
+
+    def _multi_merge(self, others):
+        return MultiNetcdf([self.path] + [o.path for o in others])
 
 
 def reader(source, path, magic):

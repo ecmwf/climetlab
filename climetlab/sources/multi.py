@@ -71,6 +71,10 @@ class MultiSource(Source):
     def to_xarray(self):
         import xarray as xr
 
+        merged = self.sources[0]._multi_merge(self.sources[1:])
+        if merged is not None:
+            return merged.to_xarray()
+
         arrays = [s.to_xarray() for s in self.sources]
 
         # Get values of scalar coordinates

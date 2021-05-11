@@ -64,6 +64,13 @@ class FileSource(Source):
         f._reader_ = t.multi_merge(f, [a._reader for a in sources])
         return os.fspath
 
+    def _multi_merge(self, others):
+        for s in others:
+            if not isinstance(s, FileSource):
+                return None
+        readers = [s._reader for s in others]
+        return self._reader._multi_merge(readers)
+
     def _attributes(self, names):
         return self._reader._attributes(names)
 

@@ -69,3 +69,6 @@ def reader(source, path):
             warnings.warn(f"Error calling reader '{name}': {e}")
 
     raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic})")
+
+    def _multi_merge(self, others):
+        return None
