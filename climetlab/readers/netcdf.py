@@ -110,7 +110,6 @@ class DataSet:
 
     def __getitem__(self, key):
         if key not in self._cache:
-            print("---", key)
             self._cache[key] = self._ds[key]
         return self._cache[key]
 
@@ -195,7 +194,9 @@ class MultiNetcdf:
         self.paths = paths
 
     def to_xarray(self, options={}):
-        return xr.open_mfdataset(self.paths, **options)  # combine = 'nested'
+        return xr.open_mfdataset(
+            self.paths, engine="netcdf4", **options
+        )  # combine = 'nested'
 
 
 class NetCDFReader(Reader):
@@ -224,7 +225,7 @@ class NetCDFReader(Reader):
 
     def get_fields(self):
         with closing(
-            xr.open_mfdataset(self.path, combine="by_coords")
+            xr.open_mfdataset(self.path, combine="by_coords", engine="netcdf4")
         ) as ds:  # or nested
             return self._get_fields(DataSet(ds))
 
@@ -318,7 +319,7 @@ class NetCDFReader(Reader):
         return fields
 
     def to_xarray(self):
-        return xr.open_dataset(self.path)
+        return xr.open_dataset(self.path, engine="netcdf4")
 
     def _multi_merge(self, others):
         return MultiNetcdf([self.path] + [o.path for o in others])

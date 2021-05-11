@@ -35,7 +35,7 @@ See https://github.com/ecmwf/climetlab-demo-dataset
         description="Example climetlab external dataset plugin",
 
         entry_points={"climetlab.datasets":
-                ["demo-dataset = climetlab_demo_dataset"]
+                ["demo-dataset = climetlab_demo_dataset:DemoDataset"]
         },
 
     )

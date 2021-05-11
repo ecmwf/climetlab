@@ -53,6 +53,9 @@ def client():
         raise
 
 
+EXTENSIONS = {"grib": ".grib", "netcdf": ".nc"}
+
+
 class CDSRetriever(FileSource):
 
     sphinxdoc = """
@@ -61,7 +64,10 @@ class CDSRetriever(FileSource):
 
     def __init__(self, dataset, **kwargs):
         request = self.request(**kwargs)
-        self.path = self.cache_file(request)
+        self.path = self.cache_file(
+            request,
+            extension=EXTENSIONS.get(request.get("format"), ".cache"),
+        )
         if not os.path.exists(self.path):
             client().retrieve(dataset, request, self.path + ".tmp")
             os.rename(self.path + ".tmp", self.path)
