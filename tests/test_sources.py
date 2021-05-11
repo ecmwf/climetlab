@@ -68,22 +68,22 @@ def test_file_source_cds_grib():
     assert len(s) == 2
 
 
-def test_file_source_cds_netcdf():
-
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
-
-    s = load_source(
-        "cds",
-        "reanalysis-era5-single-levels",
-        variable=["2t", "msl"],
-        product_type="reanalysis",
-        area=[50, -50, 20, 50],
-        date="2012-12-12",
-        time="12:00",
-        format="netcdf",
-    )
-    assert len(s) == 2
+# def test_file_source_cds_netcdf():
+#
+#    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+#        pytest.skip("No ~/.cdsapirc")
+#
+#    s = load_source(
+#        "cds",
+#        "reanalysis-era5-single-levels",
+#        variable=["2t", "msl"],
+#        product_type="reanalysis",
+#        area=[50, -50, 20, 50],
+#        date="2012-12-12",
+#        time="12:00",
+#        format="netcdf",
+#    )
+#    assert len(s) == 2
 
 
 def test_ulr_source_1():
