@@ -262,7 +262,6 @@ class GRIBReader(Reader):
         return GRIBFilter(self, kwargs)
 
 
-
 # class GRIBReader(Reader):
 #     def __init__(self, source, path, fields=[], filter=None, unfiltetered=True):
 #         super().__init__(source, path)
