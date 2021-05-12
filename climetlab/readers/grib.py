@@ -12,7 +12,7 @@ import logging
 
 import eccodes
 
-from climetlab.decorators import dict_args
+# from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
 from . import MultiReaders, Reader
