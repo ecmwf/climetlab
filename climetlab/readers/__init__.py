@@ -37,6 +37,8 @@ class Reader:
 
 
 class MultiReaders:
+    backend_kwargs = {}
+
     def __init__(self, readers):
         self.readers = readers
 
@@ -58,6 +60,8 @@ class MultiReaders:
                 assert options == opts, f"{options} != {opts}"
 
         options.update(kwargs)
+        options.setdefault("backend_kwargs", {})
+        options["backend_kwargs"].update(self.backend_kwargs)
 
         return xr.open_mfdataset(
             [r.path for r in self.readers],

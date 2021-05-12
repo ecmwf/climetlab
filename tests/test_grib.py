@@ -34,7 +34,7 @@ def test_sel():
     s.sel(shortName="2t")
 
 
-@pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
+# @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
 def test_multi():
     s1 = load_source(
         "cds",

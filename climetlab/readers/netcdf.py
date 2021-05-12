@@ -312,8 +312,10 @@ class NetCDFReader(Reader):
 
         return fields
 
-    def to_xarray(self):
-        return xr.open_dataset(self.path, engine="netcdf4")
+    def to_xarray(self, **kwargs):
+        # So we use the same code
+        return MultiNetcdfReaders([self]).to_xarray(**kwargs)
+        # return xr.open_dataset(self.path, engine="netcdf4")
 
     @classmethod
     def multi_merge(cls, readers):
