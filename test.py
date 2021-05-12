@@ -1,18 +1,19 @@
 def colourize(colour):
 
-    r = dict(n=0)
+    n = 0
 
     def f(txt):
+        nonlocal n
 
-        r['n'] = r['n'] + 1
-        return f"<font colour={colour}>{txt}{r['n']}</font>"
+        n += 1
+        return f"<font colour={colour}>{txt}{n}</font>"
 
     return f
 
 
-red = colourize('red')
-blue = colourize('blue')
+red = colourize("red")
+blue = colourize("blue")
 
 
-print(blue('hello'), red('world'))
-print(red('hello'), red('world'))
+print(blue("hello"), red("world"))
+print(red("hello"), red("world"))
