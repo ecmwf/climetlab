@@ -48,7 +48,12 @@ class MultiReaders:
         readers = {r.path: r for r in self.readers}
 
         def preprocess(ds):
-            r = readers[ds.encoding["source"]]
+            if (
+                len(readers) == 1
+            ):  # encoding["source"] is not defined if there is only one file
+                r = self.readers[0]
+            else:
+                r = readers[ds.encoding["source"]]
             return r.source.post_xarray_open_dataset_hook(ds)
 
         options = None

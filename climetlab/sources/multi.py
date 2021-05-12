@@ -74,13 +74,6 @@ class MultiSource(Source):
                     # assert len(vals) == 1, (v, vals)
                     values[v].add(float(vals))
 
-        # for a in arrays:
-        #     print("++++ ======")
-        #     for v in a.variables:
-        #         print(v, [x for x in a[v].dims])
-        #     print("++++ ======")
-        #     print()
-
         # Promote scalar coordinates
         promote = [name for name, count in values.items() if len(count) > 1]
 
@@ -88,7 +81,6 @@ class MultiSource(Source):
             dims = dict(zip(promote, [1] * len(promote)))
             arrays = [a.expand_dims(dims) for a in arrays]
 
-        # return xr.concat(s.to_xarray() for s in self.sources)
         return xr.merge(arrays)
 
 

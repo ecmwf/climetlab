@@ -83,7 +83,7 @@ class MeteonetRadar(Meteonet):
 
         self._xarray = ds
 
-    def to_xarray(self):
+    def to_xarray(self, *args, **kwargs):
         return self._xarray
 
     def plot_map(self, driver):

@@ -1,14 +1,18 @@
-class A:
-    @classmethod
-    def foo(*args):
-        print(args)
+def colourize(colour):
+
+    r = dict(n=0)
+
+    def f(txt):
+
+        r['n'] = r['n'] + 1
+        return f"<font colour={colour}>{txt}{r['n']}</font>"
+
+    return f
 
 
-class B(A):
-    pass
+red = colourize('red')
+blue = colourize('blue')
 
 
-A.foo(1)
-B.foo(2)
-
-B().foo(3)
+print(blue('hello'), red('world'))
+print(red('hello'), red('world'))

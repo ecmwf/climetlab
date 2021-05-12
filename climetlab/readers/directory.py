@@ -9,8 +9,9 @@
 
 import os
 
+from climetlab import load_source
+
 from . import Reader
-from . import reader as find_reader
 
 
 class DirectoryReader(Reader):
@@ -26,17 +27,8 @@ class DirectoryReader(Reader):
         assert self._content, path
 
     def mutate(self):
-        # If there is only one file, let's mutate to the proper reader
-
-        if len(self._content) == 1:
-            return find_reader(self.source, self._content[0])
-
-        return self
-
-    def to_xarray(self):
-        import xarray as xr
-
-        return xr.open_mfdataset(self._content, combine="by_coords")
+        sources = [load_source("file", path) for path in self._content]
+        return load_source("multi", sources).mutate()
 
 
 def reader(source, path, magic):
