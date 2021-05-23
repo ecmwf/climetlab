@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+from climetlab.helpers import helper
+
 from . import Reader
 
 
@@ -19,6 +21,9 @@ class CSVReader(Reader):
         options.update(kwargs)
 
         return pandas.read_csv(self.path, **options)
+
+    def plot_map(self, driver):
+        helper(self.to_pandas()).plot_map(driver)
 
 
 def reader(source, path, magic):

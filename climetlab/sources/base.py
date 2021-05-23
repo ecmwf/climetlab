@@ -45,6 +45,9 @@ class FileSource(Source):
     def sel(self, *args, **kwargs):
         return self._reader.sel(*args, **kwargs)
 
+    def plot_map(self, *args, **kwargs):
+        return self._reader.plot_map(*args, **kwargs)
+
     def to_xarray(self, *args, **kwargs):
         return self._reader.to_xarray(*args, **kwargs)
 
