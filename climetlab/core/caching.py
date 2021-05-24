@@ -13,6 +13,7 @@ import json
 import os
 import sqlite3
 import tempfile
+import threading
 
 from climetlab.decorators import locked
 from climetlab.utils import bytes_to_string
@@ -20,22 +21,22 @@ from climetlab.utils.html import css
 
 from .settings import SETTINGS
 
-_connection = None
+_connection = threading.local()
 
 
 @locked
 def connection():
     global _connection
-    if _connection is None:
+    if not hasattr(_connection, "db") or _connection.db is None:
         cache_dir = SETTINGS.get("cache-directory")
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
         cache_db = os.path.join(cache_dir, "cache.db")
-        _connection = sqlite3.connect(cache_db)
+        _connection.db = sqlite3.connect(cache_db)
         # So we can use rows as dictionaries
-        _connection.row_factory = sqlite3.Row
+        _connection.db.row_factory = sqlite3.Row
 
-        _connection.execute(
+        _connection.db.execute(
             """
             CREATE TABLE IF NOT EXISTS cache (
                     path          TEXT PRIMARY KEY,
@@ -54,15 +55,15 @@ def connection():
                     size          INTEGER);"""
         )
 
-    return _connection
+    return _connection.db
 
 
 @locked
 def settings_changed():
     global _connection
-    if _connection is not None:
-        _connection.close()
-    _connection = None
+    if _connection.db is not None:
+        _connection.db.close()
+    _connection.db = None
 
 
 SETTINGS.on_change(settings_changed)

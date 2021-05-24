@@ -52,6 +52,10 @@ SETTINGS_AND_HELP = {
         """Dictionary of default plotting options.
            See :ref:`plotting` for more information.""",
     ),
+    "number-of-download-threads": (
+        5,
+        """Number of threads used to download data.""",
+    ),
 }
 
 DEFAULTS = {}
