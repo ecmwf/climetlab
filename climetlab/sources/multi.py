@@ -20,12 +20,11 @@ class MultiSource(Source):
         self.merger = merger
         self.sources = sources
         self._lengths = [None] * len(sources)
-        assert self.merger
 
-    def mutate(self):
-        if len(self.sources) == 1:
-            return self.sources[0].mutate()
-        return self
+    # def mutate(self):
+    #     if len(self.sources) == 1:
+    #         return self.sources[0].mutate()
+    #     return self
 
     def _set_dataset(self, dataset):
         super()._set_dataset(dataset)
@@ -59,8 +58,6 @@ class MultiSource(Source):
 
     def to_xarray(self, **kwargs):
         import xarray as xr
-
-        assert self.merger
 
         merged = self.sources[0].multi_merge(self.sources)
         if merged is not None:

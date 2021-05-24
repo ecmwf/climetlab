@@ -69,7 +69,8 @@ class Plot:
             data = [data]
 
         for d in data:
-            d = helper(d)
+            if not hasattr(d, "plot_map"):
+                d = helper(d)
 
             d.plot_map(self.driver)
 

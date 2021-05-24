@@ -21,7 +21,6 @@ class UrlPattern(MultiSource):
 
         sources = [Url(url) for url in urls]
         super().__init__(sources, merger=merger)
-        assert merger
 
 
 source = UrlPattern

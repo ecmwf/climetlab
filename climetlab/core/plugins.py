@@ -50,7 +50,7 @@ def load_plugins(kind):
     return PLUGINS[kind]
 
 
-def find_plugin(directory, name, loader):
+def find_plugin(directories, name, loader):
     candidates = set()
 
     if name in REGISTERED[loader.kind]:
@@ -66,26 +66,30 @@ def find_plugin(directory, name, loader):
 
     candidates.update(plugins.keys())
 
-    n = len(directory)
-    for path, _, files in os.walk(directory):
-        path = path[n:]
-        for f in files:
-            base, ext = os.path.splitext(f)
-            if ext == ".yaml":
-                candidates.add(base)
-                if base == name:
-                    full = os.path.join(directory, path, f)
-                    return loader.load_yaml(full)
+    if not isinstance(directories, (tuple, list)):
+        directories = [directories]
 
-            if ext == ".py" and base[0] != "_":
+    for directory in directories:
+        n = len(directory)
+        for path, _, files in os.walk(directory):
+            path = path[n:]
+            for f in files:
+                base, ext = os.path.splitext(f)
+                if ext == ".yaml":
+                    candidates.add(base)
+                    if base == name:
+                        full = os.path.join(directory, path, f)
+                        return loader.load_yaml(full)
 
-                full = os.path.join(path, base)
-                if full[0] != "/":
-                    full = "/" + full
-                p = full[1:].replace("/", "-").replace("_", "-")
-                candidates.add(p)
-                if p == name:
-                    return loader.load_module(full.replace("/", "."))
+                if ext == ".py" and base[0] != "_":
+
+                    full = os.path.join(path, base)
+                    if full[0] != "/":
+                        full = "/" + full
+                    p = full[1:].replace("/", "-").replace("_", "-")
+                    candidates.add(p)
+                    if p == name:
+                        return loader.load_module(full.replace("/", "."))
 
     candidates = ", ".join(sorted(c for c in candidates if "-" in c))
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")
@@ -94,7 +98,12 @@ def find_plugin(directory, name, loader):
 def directories(owner=False):
 
     result = []
-    for conf in ("styles-directories", "projections-directories", "layers-directories"):
+    for conf in (
+        "styles-directories",
+        "projections-directories",
+        "layers-directories",
+        "datasets-directories",
+    ):
         for d in SETTINGS.get(conf):
             if os.path.exists(d) and os.path.isdir(d):
                 result.append(("user-settings", d))

@@ -42,6 +42,11 @@ SETTINGS_AND_HELP = {
         """List of directories where to search for layers definitions.
         See :ref:`layers` for more information.""",
     ),
+    "datasets-directories": (
+        [os.path.join(DOT_CLIMETLAB, "datasets")],
+        """List of directories where to search for datasets definitions.
+        See :ref:`datasets` for more information.""",
+    ),
     "plotting-options": (
         {},
         """Dictionary of default plotting options.

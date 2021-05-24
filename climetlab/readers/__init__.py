@@ -37,8 +37,20 @@ class Reader:
 
 
 class DefaultMerger:
-    def merge(self, paths):
-        raise NotImplementedError()
+    def __init__(self, engine, backend_kwargs):
+        self.engine = engine
+        self.backend_kwargs = backend_kwargs
+
+    def merge(self, paths, **kwargs):
+        import xarray as xr
+
+        options = dict(backend_kwargs=self.backend_kwargs)
+        options.update(kwargs)
+        return xr.open_mfdataset(
+            paths,
+            engine=self.engine,
+            **options,
+        )
 
 
 class MultiReaders:
@@ -49,8 +61,8 @@ class MultiReaders:
 
     def to_xarray(self, merger=None, **kwargs):
         if merger is None:
-            merger = DefaultMerger()
-        return merger.merge([r.path for r in self.readers])
+            merger = DefaultMerger(self.engine, self.backend_kwargs)
+        return merger.merge([r.path for r in self.readers], **kwargs)
 
 
 _READERS = {}
