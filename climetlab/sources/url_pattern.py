@@ -14,13 +14,14 @@ from .url import Url
 
 
 class UrlPattern(MultiSource):
-    def __init__(self, pattern, *args, **kwargs):
+    def __init__(self, pattern, *args, merger=None, **kwargs):
         urls = Pattern(pattern).substitute(*args, **kwargs)
         if not isinstance(urls, list):
             urls = [urls]
 
         sources = [Url(url) for url in urls]
-        super().__init__(sources)
+        super().__init__(sources, merger=merger)
+        assert merger
 
 
 source = UrlPattern

@@ -36,44 +36,21 @@ class Reader:
         return None
 
 
+class DefaultMerger:
+    def merge(self, paths):
+        raise NotImplementedError()
+
+
 class MultiReaders:
     backend_kwargs = {}
 
     def __init__(self, readers):
         self.readers = readers
 
-    def to_xarray(self, **kwargs):
-        import xarray as xr
-
-        readers = {r.path: r for r in self.readers}
-
-        def preprocess(ds):
-            if (
-                len(readers) == 1
-            ):  # encoding["source"] is not defined if there is only one file
-                r = self.readers[0]
-            else:
-                r = readers[ds.encoding["source"]]
-            return r.source.post_xarray_open_dataset_hook(ds)
-
-        options = None
-        for r in self.readers:
-            opts = r.source.cfgrib_options()
-            if options is None:
-                options = opts
-            else:
-                assert options == opts, f"{options} != {opts}"
-
-        options.update(kwargs)
-        options.setdefault("backend_kwargs", {})
-        options["backend_kwargs"].update(self.backend_kwargs)
-
-        return xr.open_mfdataset(
-            [r.path for r in self.readers],
-            engine=self.engine,
-            preprocess=preprocess,
-            **options,
-        )
+    def to_xarray(self, merger=None, **kwargs):
+        if merger is None:
+            merger = DefaultMerger()
+        return merger.merge([r.path for r in self.readers])
 
 
 _READERS = {}

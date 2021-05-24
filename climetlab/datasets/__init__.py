@@ -84,12 +84,6 @@ class Dataset:
     def read_zarr_options(self, *args, **kwargs):
         return {}
 
-    def cfgrib_options(self, *args, **kwargs):
-        return {}
-
-    def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
-        return ds
-
 
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset

@@ -14,12 +14,13 @@ from . import Source
 
 
 class MultiSource(Source):
-    def __init__(self, *sources):
+    def __init__(self, *sources, merger=None):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
-
+        self.merger = merger
         self.sources = sources
         self._lengths = [None] * len(sources)
+        assert self.merger
 
     def mutate(self):
         if len(self.sources) == 1:
@@ -59,9 +60,11 @@ class MultiSource(Source):
     def to_xarray(self, **kwargs):
         import xarray as xr
 
+        assert self.merger
+
         merged = self.sources[0].multi_merge(self.sources)
         if merged is not None:
-            return merged.to_xarray(**kwargs)
+            return merged.to_xarray(merger=self.merger, **kwargs)
 
         arrays = [s.to_xarray() for s in self.sources]
 

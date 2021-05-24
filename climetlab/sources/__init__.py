@@ -130,17 +130,6 @@ class Source:
             return {}
         return self.dataset.read_zarr_options(*args, **kwargs)
 
-    def cfgrib_options(self, *args, **kwargs):
-        if self.dataset is None:
-            return {}
-        return self.dataset.cfgrib_options(*args, **kwargs)
-
-    def post_xarray_open_dataset_hook(self, ds, *args, **kwargs):
-        if self.dataset is None:
-            # print(f'from {self} no self.dataset {self.dataset}, no hook')
-            return ds
-        return self.dataset.post_xarray_open_dataset_hook(ds, *args, **kwargs)
-
     @classmethod
     def multi_merge(cls, sources):
         return None

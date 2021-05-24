@@ -253,15 +253,6 @@ class GRIBReader(Reader):
     def to_xarray(self, **kwargs):
         # So we use the same code
         return MultiGribReaders([self]).to_xarray(**kwargs)
-        # import xarray as xr
-
-        # params = self.source.cfgrib_options()
-        # ds = xr.open_dataset(self.path, engine="cfgrib", **params)
-        # return self.source.post_xarray_open_dataset_hook(ds)
-
-    # @dict_args
-    # def sel(self, **kwargs):
-    #     return GRIBFilter(self, kwargs)
 
     @classmethod
     def multi_merge(cls, readers):
