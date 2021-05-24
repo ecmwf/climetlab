@@ -1,3 +1,4 @@
 parameter_name:
 - [mars@2t, cf@t2m, temperature at 2m]
 - [mars@tp, cf@tp, total precipitation]
+- [mars@ci, cf@siconc, sea ice concentration]
