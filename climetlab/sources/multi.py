@@ -21,10 +21,10 @@ class MultiSource(Source):
         self.sources = sources
         self._lengths = [None] * len(sources)
 
-    # def mutate(self):
-    #     if len(self.sources) == 1:
-    #         return self.sources[0].mutate()
-    #     return self
+    def mutate(self):
+        if len(self.sources) == 1 and self.merger is None:
+            return self.sources[0].mutate()
+        return self
 
     def _set_dataset(self, dataset):
         super()._set_dataset(dataset)
