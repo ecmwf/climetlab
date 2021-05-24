@@ -102,6 +102,15 @@ def test_ulr_source_3():
     )
 
 
+def test_url_pattern_source_3():
+    load_source(
+        "url-pattern",
+        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.{format}",
+        {"format": ["nc", "grib"]},
+    )
+    # source.to_xarray()
+
+
 def zarr_not_installed():
     try:
         import s3fs  # noqa

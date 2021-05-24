@@ -9,7 +9,6 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from climetlab.core.settings import SETTINGS
 from climetlab.utils.patterns import Pattern
 
 from .multi import MultiSource
@@ -26,7 +25,7 @@ class UrlPattern(MultiSource):
             return Url(url)
 
         with ThreadPoolExecutor(
-            max_workers=SETTINGS.get("number-of-download-threads")
+            max_workers=self.settings("number-of-download-threads")
         ) as executor:
             futures = [executor.submit(url_to_source, url) for url in urls]
             sources = [f.result() for f in futures]

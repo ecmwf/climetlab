@@ -13,6 +13,7 @@ from importlib import import_module
 
 from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin, register
+from climetlab.core.settings import SETTINGS
 from climetlab.utils.html import table
 
 
@@ -91,6 +92,9 @@ class Source:
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+
+    def settings(self, name):
+        return SETTINGS.get(name)
 
     def mutate(self):
         # Give a chance to `multi` to change source
