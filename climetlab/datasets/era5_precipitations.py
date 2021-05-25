@@ -11,8 +11,8 @@ from .era5_single_levels import Era5SingleLevels
 
 
 class Era5Precipitations(Era5SingleLevels):
-    def _load(self, *args, **kwargs):
-        super()._load("tp", *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__("tp", *args, **kwargs)
 
 
 dataset = Era5Precipitations

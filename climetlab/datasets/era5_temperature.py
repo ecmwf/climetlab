@@ -11,8 +11,8 @@ from .era5_single_levels import Era5SingleLevels
 
 
 class Era5Temperature(Era5SingleLevels):
-    def _load(self, *args, **kwargs):
-        super()._load("2t", *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__("2t", *args, **kwargs)
 
 
 dataset = Era5Temperature

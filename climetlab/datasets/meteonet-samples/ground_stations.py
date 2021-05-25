@@ -19,7 +19,7 @@ class MeteonetGroundStations(Meteonet):
     See https://github.com/meteofrance/meteonet
     """
 
-    def _load(self, domain="NW", date="20160101"):
+    def __init__(self, domain="NW", date="20160101"):
 
         url = "{url}/ground_stations/{domain}_{date}.csv".format(
             url=self.URL, domain=domain, date=date

@@ -15,7 +15,6 @@ import yaml
 import climetlab
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin, register
-from climetlab.utils import consume_args
 from climetlab.utils.html import table
 
 
@@ -130,27 +129,15 @@ def register_dataset(module):
 
 
 class DatasetMaker:
-    def lookup(self, name, *args, **kwargs):
+    def lookup(self, name):
 
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 
-        (args1, kwargs1, args2, kwargs2) = consume_args(
-            klass,
-            getattr(klass, "_load", None),
-            *args,
-            **kwargs,
-        )
-
-        dataset = klass(*args1, **kwargs1)
-
-        if getattr(dataset, "name", None) is None:
-            dataset.name = name
-
-        return dataset.mutate(), args2, kwargs2
+        return klass
 
     def __call__(self, name, *args, **kwargs):
-        return self.lookup(name, *args, **kwargs)[0]
+        return self.lookup(name, *args, **kwargs)
 
     def __getattr__(self, name):
         return self(name.replace("_", "-"))
@@ -163,14 +150,14 @@ TERMS_OF_USE_SHOWN = set()
 
 def load_dataset(name, *args, **kwargs):
 
-    ds, args, kwargs = dataset.lookup(name, *args, **kwargs)
+    klass = dataset.lookup(name)
 
     if name not in TERMS_OF_USE_SHOWN:
-        if ds.terms_of_use is not None:
-            print(ds.terms_of_use)
+        if klass.terms_of_use is not None:
+            print(klass.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
 
-    if getattr(ds, "_load", None):
-        ds._load(*args, **kwargs)
-
-    return ds.mutate()
+    ds = klass(*args, **kwargs).mutate()
+    if getattr(ds, "name", None) is None:
+        ds.name = name
+    return ds
