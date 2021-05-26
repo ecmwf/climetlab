@@ -11,12 +11,12 @@ import os
 import warnings
 from importlib import import_module
 
+from climetlab.core import Base
 from climetlab.decorators import locked
 
 
-class Helper:
-    def __init__(self, *args, **kwargs):
-        pass
+class Helper(Base):
+    pass
 
 
 _HELPERS = {}
@@ -37,14 +37,14 @@ def _helpers():
     return _HELPERS
 
 
-def helper(data, *args, **kwargs):
+def get_helper(data, *args, **kwargs):
     """
     Returns an object that wraps classes from other packages
     to support
     """
 
-    if hasattr(data, "helper"):
-        return data.helper(*args, **kwargs)
+    if isinstance(data, Base):
+        return data
 
     for name, h in _helpers().items():
         helper = h(data, *args, **kwargs)

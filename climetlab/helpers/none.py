@@ -6,9 +6,10 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+from climetlab.helpers import Helper
 
 
-class NoneHelper:
+class NoneHelper(Helper):
     def __init__(self, data):
         pass
 

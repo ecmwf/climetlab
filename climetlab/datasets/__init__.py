@@ -13,12 +13,13 @@ from importlib import import_module
 import yaml
 
 import climetlab
+from climetlab.core import Base
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin, register
 from climetlab.utils.html import table
 
 
-class Dataset:
+class Dataset(Base):
     """
     Doc string for Dataset
     """

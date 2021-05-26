@@ -12,6 +12,8 @@ import logging
 
 import eccodes
 
+from climetlab.core import Base
+
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
@@ -78,7 +80,7 @@ def cb(r):
     print("Delete", r)
 
 
-class GribField:
+class GribField(Base):
     def __init__(self, *, handle=None, reader=None, offset=None):
         self._handle = handle
         self._reader = reader
@@ -156,9 +158,6 @@ class GribField:
                 m[n] = str(p)
         m["shape"] = self.shape
         return m
-
-    def helper(self):
-        return self
 
     def datetime(self):
         date = self.handle.get("date")

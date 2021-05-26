@@ -61,7 +61,7 @@ def connection():
 @locked
 def settings_changed():
     global _connection
-    if _connection.db is not None:
+    if hasattr(_connection, "db") and _connection.db is not None:
         _connection.db.close()
     _connection.db = None
 

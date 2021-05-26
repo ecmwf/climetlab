@@ -8,8 +8,10 @@
 #
 import datetime
 
+from climetlab.helpers import Helper
 
-class IntHelper:
+
+class IntHelper(Helper):
     def __init__(self, data):
         self.data = data
 

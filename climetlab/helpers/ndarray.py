@@ -8,10 +8,10 @@
 #
 import datetime
 
-from climetlab.helpers import helper as get_helper
+from climetlab.helpers import Helper, get_helper
 
 
-class NumpyArrayHelper:
+class NumpyArrayHelper(Helper):
     def __init__(self, data, *args, **kwargs):
         self.data = data
 
@@ -21,10 +21,10 @@ class NumpyArrayHelper:
         metadata = metadata.field_metadata()
 
         driver.bounding_box(
-            north=metadata.get("north", 90),
-            south=metadata.get("south", -90),
-            west=metadata.get("west", 0),
-            east=metadata.get("east", 360),
+            north=metadata["north"],
+            south=metadata["south"],
+            west=metadata["west"],
+            east=metadata["east"],
         )
 
         driver.plot_numpy(

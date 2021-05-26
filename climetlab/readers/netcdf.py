@@ -16,6 +16,7 @@ from itertools import product
 import numpy as np
 import xarray as xr
 
+from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 
 from . import MultiReaders, Reader
@@ -138,7 +139,7 @@ class DataSet:
         return self._bbox[(lat, lon)]
 
 
-class NetCDFField:
+class NetCDFField(Base):
     def __init__(self, path, ds, variable, slices):
 
         data_array = ds[variable]

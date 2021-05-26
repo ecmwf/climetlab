@@ -12,10 +12,11 @@ import warnings
 import weakref
 from importlib import import_module
 
+from climetlab.core import Base
 from climetlab.decorators import locked
 
 
-class Reader:
+class Reader(Base):
     def __init__(self, source, path):
         self._source = weakref.ref(source)
         self.path = path
@@ -53,7 +54,7 @@ class DefaultMerger:
         )
 
 
-class MultiReaders:
+class MultiReaders(Base):
     backend_kwargs = {}
 
     def __init__(self, readers):

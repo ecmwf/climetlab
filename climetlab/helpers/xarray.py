@@ -11,10 +11,11 @@ import itertools
 
 import numpy as np
 
+from climetlab.helpers import Helper
 from climetlab.utils.dates import to_datetime_list
 
 
-class XArrayDatasetHelper:
+class XArrayDatasetHelper(Helper):
     def __init__(self, data):
 
         # data.climetlab.foo(42)
@@ -87,7 +88,7 @@ class XArrayDatasetHelper:
         return result
 
 
-class XArrayDataArrayHelper:
+class XArrayDataArrayHelper(Helper):
     def __init__(self, data):
         self.data = data
 

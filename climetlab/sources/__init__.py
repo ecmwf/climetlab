@@ -11,10 +11,73 @@ import os
 import weakref
 from importlib import import_module
 
+from climetlab.core import Base
 from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin, register
 from climetlab.core.settings import SETTINGS
 from climetlab.utils.html import table
+
+
+class Source(Base):
+    """
+    Doc
+    """
+
+    name = None
+    home_page = "-"
+    licence = "-"
+    documentation = "-"
+    citation = "-"
+
+    _dataset = None
+
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
+
+    def settings(self, name):
+        return SETTINGS.get(name)
+
+    def mutate(self):
+        # Give a chance to `multi` to change source
+        return self
+
+    def cache_file(self, *args, extension=".cache"):
+        owner = self.name
+        if self.dataset:
+            owner = self.dataset.name
+        if owner is None:
+            owner = self.__class__.__name__.lower()
+        return cache_file(owner, *args, extension=extension)
+
+    @property
+    def dataset(self):
+        if self._dataset is None:
+            return None
+        return self._dataset()
+
+    @dataset.setter
+    def dataset(self, dataset):
+        self._set_dataset(weakref.ref(dataset))
+
+    def _set_dataset(self, dataset):
+        self._dataset = dataset
+
+    def _repr_html_(self):
+        return table(self)
+
+    def read_csv_options(self, *args, **kwargs):
+        if self.dataset is None:
+            return {}
+        return self.dataset.read_csv_options(*args, **kwargs)
+
+    def read_zarr_options(self, *args, **kwargs):
+        if self.dataset is None:
+            return {}
+        return self.dataset.read_zarr_options(*args, **kwargs)
+
+    @classmethod
+    def multi_merge(cls, sources):
+        return None
 
 
 class SourceLoader:
@@ -75,65 +138,3 @@ def list_entries():
         result.append(n[:-3])
 
     return result
-
-
-class Source:
-    """
-    Doc
-    """
-
-    name = None
-    home_page = "-"
-    licence = "-"
-    documentation = "-"
-    citation = "-"
-
-    _dataset = None
-
-    def __init__(self, **kwargs):
-        self._kwargs = kwargs
-
-    def settings(self, name):
-        return SETTINGS.get(name)
-
-    def mutate(self):
-        # Give a chance to `multi` to change source
-        return self
-
-    def cache_file(self, *args, extension=".cache"):
-        owner = self.name
-        if self.dataset:
-            owner = self.dataset.name
-        if owner is None:
-            owner = self.__class__.__name__.lower()
-        return cache_file(owner, *args, extension=extension)
-
-    @property
-    def dataset(self):
-        if self._dataset is None:
-            return None
-        return self._dataset()
-
-    @dataset.setter
-    def dataset(self, dataset):
-        self._set_dataset(weakref.ref(dataset))
-
-    def _set_dataset(self, dataset):
-        self._dataset = dataset
-
-    def _repr_html_(self):
-        return table(self)
-
-    def read_csv_options(self, *args, **kwargs):
-        if self.dataset is None:
-            return {}
-        return self.dataset.read_csv_options(*args, **kwargs)
-
-    def read_zarr_options(self, *args, **kwargs):
-        if self.dataset is None:
-            return {}
-        return self.dataset.read_zarr_options(*args, **kwargs)
-
-    @classmethod
-    def multi_merge(cls, sources):
-        return None
