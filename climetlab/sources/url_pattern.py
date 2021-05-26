@@ -9,6 +9,8 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
+from tqdm.autonotebook import tqdm
+
 from climetlab.utils.patterns import Pattern
 
 from .multi import MultiSource
@@ -27,8 +29,8 @@ class UrlPattern(MultiSource):
         with ThreadPoolExecutor(
             max_workers=self.settings("number-of-download-threads")
         ) as executor:
-            futures = [executor.submit(url_to_source, url) for url in urls]
-            sources = [f.result() for f in futures]
+            futures = executor.map(url_to_source, urls)
+            sources = list(tqdm(futures, leave=True, total=len(urls)))
 
         super().__init__(sources, merger=merger)
 

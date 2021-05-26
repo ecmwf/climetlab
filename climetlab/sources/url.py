@@ -12,7 +12,7 @@ import os
 import shutil
 
 import requests
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from .base import FileSource
 
@@ -78,6 +78,7 @@ class Url(FileSource):
                         f.write(chunk)
                         total += len(chunk)
                         pbar.update(len(chunk))
+            pbar.close()
 
         os.rename(download, target)
 
