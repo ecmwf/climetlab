@@ -9,25 +9,30 @@
 # This empty __init__.py is there to help find_packages() (in setup.py)
 # to include this folder in the tar uploaded at pip
 
+"""
+Find me
+
+.. autosummary::
+    climetlab.core.Base
+
+"""
 
 class Base:
 
     # Convertors
-    def to_numpy(self, *args, **kwargs):
+    def to_numpy(self, **kwargs):
         raise NotImplementedError()
 
-    def to_xarray(self, *args, **kwargs):
+    def to_xarray(self, **kwargs):
         raise NotImplementedError()
 
-    def to_pandas(self, *args, **kwargs):
+    def to_pandas(self, **kwargs):
         raise NotImplementedError()
 
-    def to_metview(self, *args, **kwargs):
+    def to_metview(self, **kwargs):
         raise NotImplementedError()
 
-    #
-
-    #
+    # Used when plotting
     def plot_map(self, driver):
         raise NotImplementedError()
 

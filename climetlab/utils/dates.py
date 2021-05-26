@@ -77,6 +77,22 @@ def to_datetime(dt):
 
 
 def _mars_list(start, end, by):
+    """Return a list of datetime objects from start to end .
+
+    Parameters
+    ----------
+    start : [type]
+        [description]
+    end : [type]
+        [description]
+    by : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     assert by > 0, by
     assert end >= start
     result = []

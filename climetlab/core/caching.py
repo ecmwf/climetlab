@@ -26,6 +26,12 @@ _connection = threading.local()
 
 @locked
 def connection():
+    """Get a connection to the cache .
+
+    Returns:
+        [type]: [description]
+    """
+
     global _connection
     if not hasattr(_connection, "db") or _connection.db is None:
         cache_dir = SETTINGS.get("cache-directory")
@@ -71,7 +77,7 @@ SETTINGS.on_change(settings_changed)
 
 @locked
 def update_cache():
-
+    """Update cache size and size of each file in the database ."""
     with connection() as db:
         update = []
         for n in db.execute("SELECT path FROM cache WHERE size IS NULL"):
@@ -177,7 +183,8 @@ class TmpFile:
 
 
 @locked
-def temp_file(extension=".tmp"):
+def temp_file(extension=".tmp") -> TmpFile:
+
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)
     return TmpFile(path)

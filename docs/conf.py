@@ -63,6 +63,7 @@ extensions = [
     # "sphinx.ext.extlinks",
     # "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
     "sphinx.ext.todo",
     "nbsphinx",
     "IPython.sphinxext.ipython_directive",
