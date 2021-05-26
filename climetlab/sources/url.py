@@ -12,7 +12,7 @@ import os
 import shutil
 
 import requests
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from .base import FileSource
 

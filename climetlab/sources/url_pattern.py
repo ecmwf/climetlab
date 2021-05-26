@@ -9,7 +9,7 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from climetlab.utils.patterns import Pattern
 
