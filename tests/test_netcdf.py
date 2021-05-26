@@ -26,7 +26,7 @@ def test_multi():
         date="2021-03-01",
         format="netcdf",
     )
-    print(s1.to_xarray())
+    s1.to_xarray()
     s2 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
@@ -35,13 +35,13 @@ def test_multi():
         date="2021-03-02",
         format="netcdf",
     )
-    print(s2.to_xarray())
+    s2.to_xarray()
 
     source = load_source("multi", s1, s2)
     for s in source:
         print(s)
 
-    print(source.to_xarray())
+    source.to_xarray()
 
 
 if __name__ == "__main__":
