@@ -67,6 +67,7 @@ Documentation
 * :doc:`contributing/datasets`
 * :doc:`contributing/sources`
 * :doc:`contributing/plotting`
+* :doc:`contributing/todolist`
 
 .. toctree::
    :maxdepth: 1
@@ -77,6 +78,7 @@ Documentation
    contributing/datasets
    contributing/sources
    contributing/plotting
+   contributing/todolist
 
 
 **Reference (TODO)**

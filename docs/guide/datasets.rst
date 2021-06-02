@@ -3,16 +3,12 @@
 Datasets
 ========
 
-.. todo::
-
-    Explain better what Datasets are.
-
 A :ref:`Dataset <reference/datasets>` is Python class that provide a curated set of data with specific helper functions.
 
 When working on data, we are often writing code to transform, preprocess, adapt the data to our needs.
 While it may be very nice to understand deeply to deep magic hunder the hood, this process could very time consuming.
 Once somebody did the hard work of massaging the data for a given purpose, their code can be integrated into a dataset plugin and 
-made available to others through climetlab. 
+made available to others through a climetlab plugin. 
 
 Climetlab has build-in datasets (as examples) and most of the datasets are availables as plugins.
 
@@ -47,9 +43,11 @@ When sharing a python notebook, it is a good practice to add `!pip install clime
 It is also possible to add `import climetlab_...` in order to make clear which packages are needed to run the notebook,
 especially if the plugin name does not match the dataset name.
 
+Xarray for gridded data
+-----------------------
 
-Xarray for fields data
-----------------------
+Gridded data typically is field data such as temperature, wind from climate or weather models or satellite images.
+
     .. code-block:: python
 
         dsc = climetlab.load_dataset("dataset-name", **options)
@@ -58,7 +56,36 @@ Xarray for fields data
 
 Pandas for non-gridded data
 ---------------------------
+
+None-gridded data typically is tabular non-structured data sucha as observations.
+It often includ a column for the latitude and longitude of the data.
+
     .. code-block:: python
 
         dsc = climetlab.load_dataset("dataset-name", **options)
         dsc.to_pandas()
+
+
+Additionnal options
+-------------------
+
+Some arguments in the ``options`` dictionary are always included in ``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()``  or ``climetlab.Dataset.to_pandas()`` (see :ref:`reference/dataset-options`).
+
+.. todo::
+    Currently no options are added by climetlab.
+
+Other arguments are defined by the plugin maintainer, and should be documented in the plugin documentation.
+
+The plugin documentation url is provided by the plugin with :
+
+    .. code-block:: python
+
+        dsc = climetlab.load_dataset("dataset-name")
+        # dsc = climetlab.dataset("dataset-name")
+        # dsc = climetlab.Dataset("dataset-name")
+        # dsc = climetlab.info_dataset("dataset-name")
+        dsc.documentation
+
+.. todo::
+    Choose one solution above and implement it.
+    

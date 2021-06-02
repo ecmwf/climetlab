@@ -3,6 +3,8 @@
 Plotting
 ========
 
+See also : https://confluence.ecmwf.int/display/MAGP/Reference+guide
+
 .. todo:
 
     Introduce advance plotting options
