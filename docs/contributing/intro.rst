@@ -36,3 +36,7 @@ How else can I to contribute ?
 ------------------------------
 - Submit bug reports, propose enhancements, on github. 
 - You can also contribute to the core code by forking and submitting a pull request.
+
+Python documentation on plugins_.
+
+.. _plugins: https://packaging.python.org/guides/creating-and-discovering-plugins/

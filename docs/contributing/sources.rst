@@ -1,9 +1,12 @@
 Data sources
 ============
 
-A :ref:`Data source <data-sources>` is a Python class that reads data from a
+A :ref:`Data source <data-sources>` is a Python class that accesses data from a
 given location. Climetlab has build-in sources (the most common being the "url"
 source) and a plugin can add more sources capabilities.
+A Source provides access to data, the code performing the actual reading can either be
+located in the Source itself or delegated to a Reader class.
+See details in :ref:`Source class <reference/source>'.
 
 
 Adding a new source as a plugin
@@ -12,8 +15,8 @@ Adding a new source as a plugin
 See https://github.com/ecmwf/climetlab-demo-source
 
 The plugin mechanism of climetlab as follows :
- - The plugin is a python package (the pipy package name should preferably
-starts with "climetlab-"). The python package to import should starts with "climetlab\_".
+ - The plugin is a python package (the pipy package name should preferably starts with "climetlab-"). The python package to import should starts with "climetlab\_".
+
  - When installed, the plugin register itself thanks to the entry_points in the setup.py.
 
 
