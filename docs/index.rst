@@ -61,6 +61,24 @@ Documentation
    guide/sources
    guide/plotting
 
+**Contributing (TODO)**
+
+* :doc:`contributing/intro`
+* :doc:`contributing/datasets`
+* :doc:`contributing/sources`
+* :doc:`contributing/plotting`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Contributing
+
+   contributing/intro
+   contributing/datasets
+   contributing/sources
+   contributing/plotting
+
+
 **Reference (TODO)**
 
 * :doc:`reference/architecture`
@@ -85,22 +103,6 @@ Documentation
    reference/caching
    reference/plotting
    reference/gallery
-
-**Contributing (TODO)**
-
-* :doc:`contributing/datasets`
-* :doc:`contributing/sources`
-* :doc:`contributing/plotting`
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Contributing
-
-   contributing/datasets
-   contributing/sources
-   contributing/plotting
-
 
 License
 -------
