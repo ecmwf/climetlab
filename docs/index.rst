@@ -66,6 +66,7 @@ Documentation
 * :doc:`contributing/intro`
 * :doc:`contributing/datasets`
 * :doc:`contributing/sources`
+* :doc:`contributing/readers`
 * :doc:`contributing/plotting`
 * :doc:`contributing/todolist`
 
@@ -77,6 +78,7 @@ Documentation
    contributing/intro
    contributing/datasets
    contributing/sources
+   contributing/readers
    contributing/plotting
    contributing/todolist
 

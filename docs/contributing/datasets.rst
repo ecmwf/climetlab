@@ -1,5 +1,5 @@
-Datasets
-========
+Datasets Plugins
+================
 
 A :ref:`Dataset <datasets>` is a Python class that provide a curated
 set of data with specific helper functions. Climetlab has build-in example datasets for demo purposes.
