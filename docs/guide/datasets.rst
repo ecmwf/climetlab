@@ -46,7 +46,7 @@ especially if the plugin name does not match the dataset name.
 Xarray for gridded data
 -----------------------
 
-Gridded data typically is field data such as temperature, wind from climate or weather models or satellite images.
+Gridded data typically are field data such as temperature or wind from climate or weather models or satellite images.
 
     .. code-block:: python
 

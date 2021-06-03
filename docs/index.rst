@@ -49,6 +49,7 @@ Documentation
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
+* :doc:`guide/mltools`
 * :doc:`guide/plotting`
 
 .. toctree::
@@ -59,6 +60,7 @@ Documentation
    guide/howtos
    guide/datasets
    guide/sources
+   guide/mltools
    guide/plotting
 
 **Contributing (TODO)**
