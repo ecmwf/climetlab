@@ -38,7 +38,7 @@ Note that the plugin name does not have to match the dataset name, as the same p
     `climetlab.load_dataset("sun-flare")` and `climetlab.load_dataset("sun-storm")
 
 There is **currently** (this may change) no need to import the plugin package, i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.
-(see how the :ref:`dataset plugins <contributing/dataset>` work to know more).
+(see how the :ref:`dataset plugins <contributing/datasets>` work to know more).
 When sharing a python notebook, it is a good practice to add `!pip install climetlab-...` at the top of the notebook.
 It is also possible to add `import climetlab_...` in order to make clear which packages are needed to run the notebook,
 especially if the plugin name does not match the dataset name.
