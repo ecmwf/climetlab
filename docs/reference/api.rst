@@ -18,9 +18,9 @@ Public
 Module
 ------
 
-.. automodule:: climetlab
-    :members:
 
+.. automodule:: climetlab.core
+    :members:
 
 Function
 --------

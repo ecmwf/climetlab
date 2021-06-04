@@ -3,6 +3,8 @@
 Datasets
 ========
 
+a :py:class:Dataset is ok.
+
 A :ref:`Dataset <reference/datasets>` is Python class that provide a curated set of data with specific helper functions.
 
 When working on data, we are often writing code to transform, preprocess, adapt the data to our needs.
