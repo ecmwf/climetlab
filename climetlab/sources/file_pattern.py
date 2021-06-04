@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.utils.pattern import Pattern
+from climetlab.utils.patterns import Pattern
 
 from . import File, MultiSource
 
