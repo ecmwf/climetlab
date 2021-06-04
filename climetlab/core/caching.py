@@ -26,10 +26,10 @@ _connection = threading.local()
 
 @locked
 def connection():
-    """Get a connection to the cache .
+    """Get a connection to the sqlite cache database.
 
     Returns:
-        [type]: [description]
+        _connection.db
     """
 
     global _connection
@@ -101,8 +101,23 @@ def update_cache():
             db.commit()
 
 
-@locked
 def register_cache_file(path, owner, args):
+    """Register a file in the cache
+
+    Parameters
+    ----------
+    path : str
+        Cache file to register
+    owner : str
+        Owner of the cache file (generally a source or a dataset)
+    args : dict
+        Dictionary to save with the file in the database, as json string.
+
+    Returns
+    -------
+    changes :
+        None or False if database does not need to be updated. TODO: clarify.
+    """
 
     db = connection()
 
@@ -157,6 +172,21 @@ def update(m, x):
 
 @locked
 def cache_file(owner: str, *args, extension: str = ".cache"):
+    """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
+    Uses :py:func:`register_cache_file()`
+
+    Parameters
+    ----------
+    owner : str
+        The owner of the cache file is generally the name of the source that generated the cache.
+    extension : str, optional
+        Extension filename (such as ".nc" for NetCDF, etc.), by default ".cache"
+
+    Returns
+    -------
+    path : str
+        Full path to the cache file.
+    """
 
     m = hashlib.sha256()
     update(m, owner)
@@ -175,6 +205,8 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
 
 
 class TmpFile:
+    """TmpFile to be used in a temporary file ."""
+
     def __init__(self, path):
         self.path = path
 

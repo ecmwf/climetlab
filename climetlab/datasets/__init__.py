@@ -20,28 +20,69 @@ from climetlab.utils.html import table
 
 
 class Dataset(Base):
-    """
-    Doc string for Dataset
-    """
+    """Mother class to create a dataset object."""
 
     name = None
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    The name of the dataset.
+    """
+
     home_page = "-"
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    Contains a link to the home page related to the dataset.
+    """
+
     licence = "-"
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    Contains a link to the licence of the dataset.
+    """
+
     documentation = "-"
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    Contains a link to the documentation related to the dataset.
+    """
+
     citation = "-"
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    Contains the citation related to the dataset.
+    """
+
     terms_of_use = None
+    """ str : To be overrided by the class inherithing from Dataset.
+
+    Contains the Terms of Use of the dataset.
+    It will be shown to the user when they download the dataset for the first time.
+
+    Uses :py:const:`TERMS_OF_USE_SHOWN`
+    """
 
     _source = None
 
     def __init__(self, *args, **kwargs):
+        """Do nothing. To be overridden by the inherithing class."""
         pass
 
     def mutate(self):
-        # Give a chance to a subclass to change
+        """Give a chance to a subclass to change itself to another class after creation time.
+
+        Returns
+        -------
+        self
+        """
         return self
 
     @property
     def source(self):
+        """Most methods are delegated to the ``source`` of the dataset.
+        Returns
+        -------
+        :py:class:`Source`
+        """
         return self._source
 
     @source.setter
@@ -94,6 +135,13 @@ def camel(name):
 
 
 class YamlDefinedDataset(Dataset):
+    """Dataset class to defined datasets from a YAML file.
+
+    When inheriting, self._src and self._args must be defined before calling __init__.
+    This is performed in :py:class:`DatasetLoader`.
+
+    """
+
     def __init__(self):
         self.source = climetlab.load_source(self._src, **self._args)
 
