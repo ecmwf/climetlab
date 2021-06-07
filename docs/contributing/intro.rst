@@ -34,10 +34,10 @@ Depending on what your code does, it can be integrated in CliMetLab differently 
 
 - A new :doc:`reader <contributing/readers>`  plugin is more relevant when you are sharing code to read data on a given format, using specific conventions, or requiring conversions. Readers will be available to the code written for the sources.
 
-- A new :doc:`plotting driver <contributing/plotting>` (TODO graphicdriver?) plugin can be added, when you are sharing code plotting data. Users will use .plot_map() and seamlessly use your code.
+- A new :doc:`helper <contributing/plotting>` plugin can be added. This is the plugin you are likely to use when you are sharing code related to plotting data.  Users will use .plot_map() and seamlessly use your code depending on the data they are plotting.
 
 The actual integrating your code as a CliMetLab plugin is achieved by creating a pip package. To make it easier, there is a `template for a Dataset plugin using cookiecutter <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset>`_.
-Additionaly, for a simple dataset, you can also use yaml file and rely only on the code provided by CliMetLab or other plugins.
+In addition, for a simple dataset, you can also use yaml file and rely only on the code provided by CliMetLab or other plugins.
 
 How else can I to contribute ?
 ------------------------------
