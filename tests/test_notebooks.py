@@ -25,8 +25,6 @@ EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "exa
 SKIP = (
     "11-icoads.ipynb",
     "09-weatherbench.ipynb",
-    "10-meteonet.ipynb",
-    "11-hurricane-database.ipynb",
 )
 
 MARS = (
