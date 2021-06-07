@@ -8,11 +8,11 @@ a :py:class:Dataset is ok.
 A :ref:`Dataset <reference/datasets>` is Python class that provide a curated set of data with specific helper functions.
 
 When working on data, we are often writing code to transform, preprocess, adapt the data to our needs.
-While it may be very nice to understand deeply to deep magic hunder the hood, this process could very time consuming.
+While it may be very nice to understand deeply to deep magic under the hood, this process could very time consuming.
 Once somebody did the hard work of massaging the data for a given purpose, their code can be integrated into a dataset plugin and 
-made available to others through a climetlab plugin. 
+made available to others through a CliMetLab plugin. 
 
-Climetlab has build-in datasets (as examples) and most of the datasets are availables as plugins.
+CliMetLab has build-in datasets (as examples) and most of the datasets are available as plugins.
 
 Accessing data in a dataset
 ---------------------------
@@ -24,7 +24,7 @@ Once the relevant plugin has been installed, the dataset can be loaded with:
         climetlab.load_dataset("dataset-name", **options)
 
 The relevant plugin package must be installed to access the dataset, with pip (such as `pip install climetlab-demo-dataset`).
-If the package is not installed, climetlab will fail with a NameError exception.
+If the package is not installed, CliMetLab will fail with a NameError exception.
 
     .. code-block:: python
 
@@ -74,7 +74,7 @@ Additionnal options
 Some arguments in the ``options`` dictionary are always included in ``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()``  or ``climetlab.Dataset.to_pandas()`` (see :ref:`reference/dataset-options`).
 
 .. todo::
-    Currently no options are added by climetlab.
+    Currently no options are added by CliMetLab.
 
 Other arguments are defined by the plugin maintainer, and should be documented in the plugin documentation.
 

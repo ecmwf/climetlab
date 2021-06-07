@@ -10,7 +10,7 @@ Installing
 Pip install
 -----------
 
-To install climetlab, simply run the following command:
+To install CliMetLab, simply run the following command:
 
 .. code-block:: bash
 
@@ -21,7 +21,7 @@ Conda install
 
 No conda package has been created yet, pip install can be used in a conda environment.
 
-TODO : Create a conda package for climetlab.
+TODO : Create a conda package for CliMetLab.
 
 
 Troubleshooting

@@ -46,6 +46,7 @@ Documentation
 
 **User Guide (TODO)**
 
+* :doc:`guide/overview`
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
@@ -57,13 +58,14 @@ Documentation
    :hidden:
    :caption: User Guide
 
+   guide/overview
    guide/howtos
    guide/datasets
    guide/sources
    guide/mltools
    guide/plotting
 
-**Contributing (TODO)**
+**Contributor Guide**
 
 * :doc:`contributing/intro`
 * :doc:`contributing/datasets`
@@ -75,7 +77,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Contributing
+   :caption: Contributor Guide
 
    contributing/intro
    contributing/datasets
@@ -85,7 +87,7 @@ Documentation
    contributing/todolist
 
 
-**Reference (TODO)**
+**CliMetLab Developer Guide**
 
 * :doc:`reference/architecture`
 * :doc:`reference/datasets`
@@ -99,7 +101,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Reference
+   :caption: CliMetLab Developer Guide
 
    reference/architecture
    reference/datasets
