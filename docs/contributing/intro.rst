@@ -17,11 +17,10 @@ please refer to the **Reference** part of this documentation, which is targeting
 
 How do I share my code ?
 ------------------------
-Depending on what you code does, it can be integrated in climetlab differently either as a dataset or a source or a reader or a driver (TODO driver or plotdriver?).
+Depending on what your code does, it can be integrated in climetlab differently either as a dataset or a source or a reader or a driver (TODO driver or plotdriver?).
 
 
 - A new :doc:`dataset <contributing/datasets>`  is the most common case, where you share code to access a curated set data with specific helper functions and you want to help other people to access it with 
-
 
     .. code-block:: python
 
