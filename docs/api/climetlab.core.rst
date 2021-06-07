@@ -8,6 +8,7 @@ climetlab.core.caching module
 -----------------------------
 
 .. automodule:: climetlab.core.caching
+   :noindex:
    :members:
    :undoc-members:
    :show-inheritance:
@@ -40,6 +41,7 @@ climetlab.core.plugins module
 -----------------------------
 
 .. automodule:: climetlab.core.plugins
+   :noindex:
    :members:
    :undoc-members:
    :show-inheritance:

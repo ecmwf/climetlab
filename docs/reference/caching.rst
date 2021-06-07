@@ -3,6 +3,7 @@
 Caching
 =======
 
-.. todo::
 
-    Explain how caching works and how to control it.
+.. automodule:: climetlab.core.caching
+   :members:
+   :show-inheritance:
