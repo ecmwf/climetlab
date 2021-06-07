@@ -1,5 +1,5 @@
-Contributor Guide
-=================
+Overview
+========
 
 *"CliMetLab provides a common place to share code used in the Weather and Climate community to do preprocess data, plot it, and include additional tools, especially for machine leaning purposes."*
 
