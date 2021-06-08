@@ -16,9 +16,7 @@ from climetlab.core.caching import cache_file, connection
 
 def get_cache_cursor():
     # db = sqlite3.connect(filename)
-    db = connection()
-    cur = db.cursor()
-    return cur
+    return connection.db
 
 
 def test_cache():
