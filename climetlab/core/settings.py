@@ -57,7 +57,7 @@ SETTINGS_AND_HELP = {
         """Number of threads used to download data.""",
     ),
     "cache-minimum-disk-space": (
-        "10%",
+        "1G",
         """Minimum space that must be left on the filesystem containing the cache directory.""",
     ),
     "cache-maximum-size": (
