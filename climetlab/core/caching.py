@@ -8,7 +8,6 @@
 #
 
 """
-
 CliMetLab cache is managed by the module `climetlab.core.cache`, it relies on a sqlite database. The :py:func:`cache_file` function provide a unique path for a given couple (`owner`, `args`). The calling code is responsible for checking if the file exists and decide to read it or create it.
 
 .. todo::

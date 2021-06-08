@@ -33,7 +33,11 @@ If the package is not installed, CliMetLab will fail with a NameError exception.
         climetlab.load_dataset("demo-dataset", **options)
         NameError: Cannot find dataset 'demo-dataset' (values are ...),
 
-
+There is **currently** (this may change) no need to import the plugin package, i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.
+(see how the :ref:`dataset plugins <contributing/datasets>` work to know more).
+When sharing a python notebook, it is a good practice to add `!pip install climetlab-...` at the top of the notebook.
+It is also possible to add `import climetlab_...` in order to make clear which packages are needed to run the notebook,
+especially if the plugin name does not match the dataset name.
 
 Note that the plugin name does not have to match the dataset name, and the same plugin may provide several datasets.
 
@@ -42,13 +46,6 @@ Note that the plugin name does not have to match the dataset name, and the same 
     For instance, the plugin `climetlab_weather_on_sun` could provide the datasets `sun-flare` and `sun-storm`.
     `pip install climetlab_weather_on_sun` allows to do 
     `climetlab.load_dataset("sun-flare")` and `climetlab.load_dataset("sun-storm")
-
-There is **currently** (this may change) no need to import the plugin package, i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.
-(see how the :ref:`dataset plugins <contributing/datasets>` work to know more).
-When sharing a python notebook, it is a good practice to add `!pip install climetlab-...` at the top of the notebook.
-It is also possible to add `import climetlab_...` in order to make clear which packages are needed to run the notebook,
-especially if the plugin name does not match the dataset name.
-
 Xarray for gridded data
 -----------------------
 
