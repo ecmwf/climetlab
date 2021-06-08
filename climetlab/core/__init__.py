@@ -22,30 +22,39 @@ class Base:
 
     # Convertors
     def to_numpy(self, **kwargs):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def to_xarray(self, **kwargs):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def to_pandas(self, **kwargs):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def to_metview(self, **kwargs):
-        raise NotImplementedError()
+        self._not_implemented()
 
     # Used when plotting
     def plot_map(self, driver):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def field_metadata(self):
-        raise NotImplementedError()
+        self._not_implemented()
 
     # Used by normalisers
     def to_datetime(self):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def to_datetime_list(self):
-        raise NotImplementedError()
+        self._not_implemented()
 
     def to_bounding_box(self):
-        raise NotImplementedError()
+        self._not_implemented()
+
+    #
+    def _not_implemented(self):
+        import inspect
+
+        func = inspect.stack()[1][3]
+        module = self.__class__.__module__
+        name = self.__class__.__name__
+        raise NotImplementedError(f"{module}.{name}.{func}()")

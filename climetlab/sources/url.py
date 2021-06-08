@@ -20,9 +20,11 @@ LOG = logging.getLogger(__name__)
 
 
 class Url(FileSource):
-    def __init__(self, url, unpack=None, **kwargs):
+    def __init__(self, url, /, unpack=None, verify=True, **kwargs):
 
         super().__init__(**kwargs)
+
+        self.verify = verify
 
         base, ext = os.path.splitext(url)
         _, tar = os.path.splitext(base)
@@ -52,13 +54,14 @@ class Url(FileSource):
 
         LOG.info("Downloading %s", url)
         download = target + ".download"
-        r = requests.head(url)
+
+        r = requests.head(url, verify=self.verify)
         r.raise_for_status()
         try:
             size = int(r.headers["content-length"])
         except Exception:
             size = None
-        r = requests.get(url, stream=True)
+        r = requests.get(url, stream=True, verify=self.verify)
         r.raise_for_status()
         mode = "wb"
         with tqdm(

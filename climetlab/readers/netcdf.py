@@ -181,9 +181,6 @@ class NetCDFField(Base):
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
 
-    def to_datetime_list(self):
-        raise NotImplementedError
-
     def to_bounding_box(self):
         return BoundingBox(
             north=self.north, south=self.south, east=self.east, west=self.west

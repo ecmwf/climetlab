@@ -89,7 +89,7 @@ def reader(source, path):
     if os.path.isdir(path):
         from .directory import DirectoryReader
 
-        return DirectoryReader(source, path)
+        return DirectoryReader(source, path).mutate()
 
     with open(path, "rb") as f:
         magic = f.read(8)

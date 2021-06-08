@@ -98,6 +98,7 @@ def update_cache():
     """Update cache size and size of each file in the database ."""
     with connection as db:
         update = []
+        commit = False
         for n in db.execute("SELECT path FROM cache WHERE size IS NULL"):
             try:
                 path = n[0]
@@ -112,10 +113,13 @@ def update_cache():
                     size = os.path.getsize(path)
                 update.append((size, kind, path))
             except Exception:
-                pass
+                db.execute("DELETE from cache WHERE path=?", (path,))
+                commit = True
 
         if update:
             db.executemany("UPDATE cache SET size=?, type=? WHERE path=?", update)
+
+        if update or commit:
             db.commit()
 
 
@@ -281,7 +285,7 @@ class Cache:
         update_cache()
 
         html = [css("table")]
-        with connection() as db:
+        with connection as db:
             for n in db.execute("SELECT * FROM cache"):
                 html.append("<table class='climetlab'>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))

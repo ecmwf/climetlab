@@ -60,7 +60,7 @@ class WeatherBench(Dataset):
             "https://dataserv.ub.tum.de/s/m1524895"
             "/download?path=%2F{resolution}deg%2F{parameter}&files={parameter}_{resolution}deg.zip"
         ).format(resolution=resolution, parameter=parameter)
-        self.source = load_source("url", url, unpack=True)
+        self.source = load_source("url", url, unpack=True, verify=False)
 
 
 dataset = WeatherBench

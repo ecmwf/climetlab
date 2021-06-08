@@ -56,12 +56,8 @@ SETTINGS_AND_HELP = {
         5,
         """Number of threads used to download data.""",
     ),
-    "cache-policy": (
-        "default",
-        """Caching policy.""",
-    ),
-    "cache-size-percent": (
-        80,
+    "cache-size": (
+        "10GB",
         """Caching size in percentage of filesystem.""",
     ),
 }
