@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.helpers import get_helper
+from climetlab.wrappers import get_wrapper
 
 from . import Reader
 
@@ -23,7 +23,7 @@ class CSVReader(Reader):
         return pandas.read_csv(self.path, **options)
 
     def plot_map(self, driver):
-        get_helper(self.to_pandas()).plot_map(driver)
+        get_wrapper(self.to_pandas()).plot_map(driver)
 
 
 def reader(source, path, magic):

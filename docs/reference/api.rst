@@ -1,44 +1,54 @@
 API reference
 =============
 
-.. todo::
+High level functions
+--------------------
 
-   Explain how extend the code (write data sources and datasets).
-
-Public
-------
-
-.. autosummary::
-
-   climetlab.load_dataset
-   climetlab.load_source
-   climetlab.plot_map
-   climetlab.new_plot
-
-Module
-------
-
-.. automodule:: climetlab
-    :members:
-
-
-Function
---------
-
+.. autofunction:: climetlab.load_dataset
+.. autofunction:: climetlab.load_source
 .. autofunction:: climetlab.plot_map
 
 
-Plotting
---------
+.. Public
+.. ------
 
-.. autoclass:: climetlab.plotting.Driver
-   :members:
+.. .. autosummary::
+
+..    climetlab.load_dataset
+..    climetlab.load_source
+..    climetlab.plot_map
+..    climetlab.new_plot
+
+.. Module
+.. ------
+
+.. .. automodule:: climetlab
+..     :members:
 
 
-Other
------
+.. Function
+.. --------
 
-.. autosummary::
+.. .. autofunction:: climetlab.plot_map
 
-   climetlab.Dataset
-   climetlab.DataSource
+
+.. Plotting
+.. --------
+
+.. .. autoclass:: climetlab.plotting.Driver
+..    :members:
+
+
+.. Other
+.. -----
+
+.. .. autosummary::
+
+..    climetlab.Dataset
+..    climetlab.Source
+
+Classes
+-------
+
+.. class:: climetlab.Source
+.. class:: climetlab.Dataset

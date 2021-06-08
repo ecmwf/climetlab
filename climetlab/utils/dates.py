@@ -17,7 +17,7 @@ import numpy as np
 from dateutil.parser import isoparse, parse
 
 # from collections import defaultdict
-from climetlab.helpers import get_helper
+from climetlab.wrappers import get_wrapper
 
 # MonkeyPatch.patch_fromisoformat()
 
@@ -71,7 +71,7 @@ def to_datetime(dt):
     if isinstance(dt, str):
         return parse_date(dt)
 
-    dt = get_helper(dt)
+    dt = get_wrapper(dt)
 
     return to_datetime(dt.to_datetime())
 
@@ -140,7 +140,7 @@ def to_datetime_list(datetimes):  # noqa C901
 
         return [to_datetime(x) for x in datetimes]
 
-    datetimes = get_helper(datetimes)
+    datetimes = get_wrapper(datetimes)
 
     return to_datetime_list(datetimes.to_datetime_list())
 

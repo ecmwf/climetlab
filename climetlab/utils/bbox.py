@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from climetlab.helpers import get_helper
+from climetlab.wrappers import get_wrapper
 
 
 class BoundingBox:
@@ -130,6 +130,6 @@ def to_bounding_box(obj):
     if isinstance(obj, (list, tuple)):
         return BoundingBox(north=obj[0], west=obj[1], south=obj[2], east=obj[3])
 
-    obj = get_helper(obj)
+    obj = get_wrapper(obj)
 
     return to_bounding_box(obj.to_bounding_box())

@@ -11,11 +11,11 @@ import itertools
 
 import numpy as np
 
-from climetlab.helpers import Helper
+from climetlab.wrappers import Wrapper
 from climetlab.utils.dates import to_datetime_list
 
 
-class XArrayDatasetHelper(Helper):
+class XArrayDatasetWrapper(Wrapper):
     def __init__(self, data):
 
         # data.climetlab.foo(42)
@@ -35,7 +35,7 @@ class XArrayDatasetHelper(Helper):
         self.data = data
         dims = 0
         for name, var in data.data_vars.items():
-
+            # Choose variable with the most dimensions
             if len(var.dims) > dims:
                 self.name = name
                 self.var = var
@@ -87,8 +87,10 @@ class XArrayDatasetHelper(Helper):
         )
         return result
 
+    def to_xarray(self):
+        return self.data
 
-class XArrayDataArrayHelper(Helper):
+class XArrayDataArrayWrapper(Wrapper):
     def __init__(self, data):
         self.data = data
 
@@ -96,16 +98,16 @@ class XArrayDataArrayHelper(Helper):
         return to_datetime_list(self.data.values)
 
 
-def helper(data, *args, **kwargs):
+def wrapper(data, *args, **kwargs):
     import xarray as xr
 
     if isinstance(data, xr.Dataset):
-        return XArrayDatasetHelper(data, *args, **kwargs)
+        return XArrayDatasetWrapper(data, *args, **kwargs)
 
     if isinstance(data, xr.DataArray):
         try:
-            return XArrayDatasetHelper(data.to_dataset(), *args, **kwargs)
+            return XArrayDatasetWrapper(data.to_dataset(), *args, **kwargs)
         except ValueError:
-            return XArrayDataArrayHelper(data, *args, **kwargs)
+            return XArrayDataArrayWrapper(data, *args, **kwargs)
 
     return None

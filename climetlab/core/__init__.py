@@ -9,24 +9,19 @@
 # This empty __init__.py is there to help find_packages() (in setup.py)
 # to include this folder in the tar uploaded at pip
 
-"""
-Find me
-
-.. autosummary::
-    climetlab.core.Base
-
-"""
-
 class Base:
 
     # Convertors
     def to_numpy(self, **kwargs):
+        """Return a numpy array."""
         raise NotImplementedError()
 
     def to_xarray(self, **kwargs):
+        """Return an xarray dataset."""
         raise NotImplementedError()
 
     def to_pandas(self, **kwargs):
+        """Return a Pandas frame."""
         raise NotImplementedError()
 
     def to_metview(self, **kwargs):

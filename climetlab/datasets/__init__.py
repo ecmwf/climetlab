@@ -149,8 +149,19 @@ dataset = DatasetMaker()
 TERMS_OF_USE_SHOWN = set()
 
 
-def load_dataset(name, *args, **kwargs):
+def load_dataset(name: str, *args, **kwargs) -> Dataset:
+    """Loads a dataset.
 
+    Parameters
+    ----------
+    name : str
+        Name of the dataset to be loaded.
+
+    Returns
+    -------
+    Dataset
+        The loaded dataset.
+    """
     klass = dataset.lookup(name)
 
     if name not in TERMS_OF_USE_SHOWN:

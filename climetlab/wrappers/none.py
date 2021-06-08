@@ -6,10 +6,10 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from climetlab.helpers import Helper
+from climetlab.wrappers import Wrapper
 
 
-class NoneHelper(Helper):
+class NoneWrapper(Wrapper):
     def __init__(self, data):
         pass
 
@@ -20,7 +20,7 @@ class NoneHelper(Helper):
         return {}
 
 
-def helper(data, *args, **kwargs):
+def wrapper(data, *args, **kwargs):
     if data is None:
-        return NoneHelper(data)
+        return NoneWrapper(data)
     return None

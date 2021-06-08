@@ -15,7 +15,7 @@ from climetlab.core import Base
 from climetlab.decorators import locked
 
 
-class Helper(Base):
+class Wrapper(Base):
     pass
 
 
@@ -24,20 +24,20 @@ _HELPERS = {}
 
 # TODO: Add plugins
 @locked
-def _helpers():
+def _wrappers():
     if not _HELPERS:
         here = os.path.dirname(__file__)
         for path in os.listdir(here):
             if path.endswith(".py") and path[0] not in ("_", "."):
                 name, _ = os.path.splitext(path)
                 try:
-                    _HELPERS[name] = import_module(f".{name}", package=__name__).helper
+                    _HELPERS[name] = import_module(f".{name}", package=__name__).wrapper
                 except Exception as e:
-                    warnings.warn(f"Error loading helper '{name}': {e}")
+                    warnings.warn(f"Error loading wrapper '{name}': {e}")
     return _HELPERS
 
 
-def get_helper(data, *args, **kwargs):
+def get_wrapper(data, *args, **kwargs):
     """
     Returns an object that wraps classes from other packages
     to support
@@ -46,11 +46,11 @@ def get_helper(data, *args, **kwargs):
     if isinstance(data, Base):
         return data
 
-    for name, h in _helpers().items():
-        helper = h(data, *args, **kwargs)
-        if helper is not None:
-            return helper
+    for name, h in _wrappers().items():
+        wrapper = h(data, *args, **kwargs)
+        if wrapper is not None:
+            return wrapper
 
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 
-    raise ValueError(f"Cannot find a helper for class {fullname}")
+    raise ValueError(f"Cannot find a wrapper for class {fullname}")

@@ -80,7 +80,7 @@ def _readers():
                 try:
                     _READERS[name] = import_module(f".{name}", package=__name__).reader
                 except Exception as e:
-                    warnings.warn(f"Error loading helper {name}: {e}")
+                    warnings.warn(f"Error loading wrapper {name}: {e}")
     return _READERS
 
 

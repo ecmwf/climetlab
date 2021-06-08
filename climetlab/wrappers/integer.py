@@ -8,10 +8,10 @@
 #
 import datetime
 
-from climetlab.helpers import Helper
+from climetlab.wrappers import Wrapper
 
 
-class IntHelper(Helper):
+class IntWrapper(Wrapper):
     def __init__(self, data):
         self.data = data
 
@@ -28,7 +28,7 @@ class IntHelper(Helper):
         return [self.to_datetime()]
 
 
-def helper(data, *args, **kwargs):
+def wrapper(data, *args, **kwargs):
     if isinstance(data, int):
-        return IntHelper(data)
+        return IntWrapper(data)
     return None

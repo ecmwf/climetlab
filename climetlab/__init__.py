@@ -11,7 +11,7 @@ from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
 from .datasets import Dataset, dataset, load_dataset, register_dataset
-from .helpers import Helper
+from .wrappers import Wrapper
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
@@ -25,7 +25,7 @@ __all__ = [
     "cache",
     "dataset",
     "Dataset",
-    "Helper",
+    "Wrapper",
     "interactive_map",
     "load_dataset",
     "load_source",

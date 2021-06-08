@@ -8,16 +8,16 @@
 #
 import datetime
 
-from climetlab.helpers import Helper, get_helper
+from climetlab.wrappers import Wrapper, get_wrapper
 
 
-class NumpyArrayHelper(Helper):
+class NumpyArrayWrapper(Wrapper):
     def __init__(self, data, *args, **kwargs):
         self.data = data
 
     def plot_map(self, driver):
 
-        metadata = get_helper(driver.option("metadata"))
+        metadata = get_wrapper(driver.option("metadata"))
         metadata = metadata.field_metadata()
 
         driver.bounding_box(
@@ -36,9 +36,9 @@ class NumpyArrayHelper(Helper):
         return [datetime.datetime.fromtimestamp(x * 1e-9) for x in self.data.tolist()]
 
 
-def helper(data, *args, **kwargs):
+def wrapper(data, *args, **kwargs):
     import numpy as np
 
     if isinstance(data, np.ndarray):
-        return NumpyArrayHelper(data, *args, **kwargs)
+        return NumpyArrayWrapper(data, *args, **kwargs)
     return None

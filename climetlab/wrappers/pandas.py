@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.helpers import Helper
+from climetlab.wrappers import Wrapper
 
 LATLON = (
     ("lat@hdr", "lon@hdr"),
@@ -18,7 +18,7 @@ LATLON = (
 )
 
 
-class PandasFrameHelper(Helper):
+class PandasFrameWrapper(Wrapper):
     def __init__(self, frame, **kwargs):
 
         self.frame = frame
@@ -75,7 +75,7 @@ class PandasFrameHelper(Helper):
         return self.bounding_box()
 
 
-class DatetimeIndexHelper(Helper):
+class DatetimeIndexWrapper(Wrapper):
     def __init__(self, index, **kwargs):
         self.index = index
 
@@ -83,13 +83,13 @@ class DatetimeIndexHelper(Helper):
         return [d.to_pydatetime() for d in self.index]
 
 
-def helper(data, *args, **kwargs):
+def wrapper(data, *args, **kwargs):
     import pandas as pd
 
     if isinstance(data, pd.DatetimeIndex):
-        return DatetimeIndexHelper(data, *args, **kwargs)
+        return DatetimeIndexWrapper(data, *args, **kwargs)
 
     if isinstance(data, pd.DataFrame):
-        return PandasFrameHelper(data, *args, **kwargs)
+        return PandasFrameWrapper(data, *args, **kwargs)
 
     return None

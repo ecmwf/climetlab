@@ -184,7 +184,18 @@ class TmpFile:
 
 @locked
 def temp_file(extension=".tmp") -> TmpFile:
+    """Create a temporary file with the given extension .
 
+    Parameters
+    ----------
+    extension : str, optional
+        [description], by default ".tmp"
+
+    Returns
+    -------
+    TmpFile
+        [description]
+    """
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)
     return TmpFile(path)
