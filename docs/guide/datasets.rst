@@ -3,40 +3,44 @@
 Datasets
 ========
 
-a :py:class:Dataset is ok.
-
-A :ref:`Dataset <reference/datasets>` is Python class that provide a curated set of data with specific helper functions.
+A ``Dataset`` is a Python class providing a curated set of data with specific helper functions.
 
 When working on data, we are often writing code to transform, preprocess, adapt the data to our needs.
 While it may be very nice to understand deeply to deep magic under the hood, this process could very time consuming.
-Once somebody did the hard work of massaging the data for a given purpose, their code can be integrated into a dataset plugin and 
-made available to others through a CliMetLab plugin. 
+Once somebody else did the hard work of preparing the data for a given purpose and designing relevant functions to process it,
+their code can be integrated into a dataset plugin and made available to others through a CliMetLab plugin. 
 
 CliMetLab has build-in datasets (as examples) and most of the datasets are available as plugins.
 
 Accessing data in a dataset
 ---------------------------
 
-Once the relevant plugin has been installed, the dataset can be loaded with:
+Once the relevant plugin has been installed, the dataset can be loaded with :py:func:`climetlab.load_dataset`.
 
     .. code-block:: python
 
-        climetlab.load_dataset("dataset-name", **options)
+        !pip install --quiet climetlab-demo-dataset
+        import climetlab as cml
+        options = {}
+        ds = cml.load_dataset("demo-dataset", **options)
+        ds.to_xarray()
 
-The relevant plugin package must be installed to access the dataset, with pip (such as `pip install climetlab-demo-dataset`).
+The relevant plugin package **must be installed** to access the dataset, with pip (such as `pip install climetlab-demo-dataset`).
 If the package is not installed, CliMetLab will fail with a NameError exception.
 
     .. code-block:: python
 
-        climetlab.load_dataset("unknown-dataset")
-        NameError: Cannot find dataset 'unknown-dataset' (values are ...),
+        climetlab.load_dataset("demo-dataset", **options)
+        NameError: Cannot find dataset 'demo-dataset' (values are ...),
 
-Note that the plugin name does not have to match the dataset name, as the same plugin may provide several datasets.
+
+
+Note that the plugin name does not have to match the dataset name, and the same plugin may provide several datasets.
 
 .. For example::
 
-    For instance, the plugin `climetlab_sunny_weather` could provide the datasets `sun-flare` and `sun-storm`.
-    `pip install climetlab_weather_on_mars` allows to do 
+    For instance, the plugin `climetlab_weather_on_sun` could provide the datasets `sun-flare` and `sun-storm`.
+    `pip install climetlab_weather_on_sun` allows to do 
     `climetlab.load_dataset("sun-flare")` and `climetlab.load_dataset("sun-storm")
 
 There is **currently** (this may change) no need to import the plugin package, i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.

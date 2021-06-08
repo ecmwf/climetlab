@@ -87,7 +87,7 @@ Documentation
    contributing/todolist
 
 
-**CliMetLab Developer Guide**
+**Developer Guide**
 
 * :doc:`reference/overview`
 * :doc:`reference/architecture`
@@ -103,7 +103,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: CliMetLab Developer Guide
+   :caption: Developer Guide
 
    reference/overview
    reference/architecture

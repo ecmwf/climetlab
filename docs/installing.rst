@@ -19,9 +19,13 @@ To install CliMetLab, simply run the following command:
 Conda install
 -------------
 
-No conda package has been created yet, pip install can be used in a conda environment.
+No conda package has been created yet. `pip install climetlab` can be used in a conda environment.
 
-TODO : Create a conda package for CliMetLab.
+Mixing ``pip`` and ``conda`` could create some dependencies issues, we recommend installing as many dependencies as possible with conda, then install CliMetLab with ``pip``, `as recommended by the anaconda team <https://www.anaconda.com/blog/using-pip-in-a-conda-environment>`_.
+
+.. todo::
+
+  Create a conda package for CliMetLab on conda-forge, with clean dependencies.
 
 
 Troubleshooting
