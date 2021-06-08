@@ -117,7 +117,7 @@ def register_source(module):
     register("source", module)
 
 
-def load_source(name:str, *args, **kwargs) -> Source:
+def load_source(name: str, *args, **kwargs) -> Source:
     """Loads a data source.
 
     Parameters

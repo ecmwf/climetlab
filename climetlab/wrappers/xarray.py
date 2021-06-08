@@ -11,8 +11,8 @@ import itertools
 
 import numpy as np
 
-from climetlab.wrappers import Wrapper
 from climetlab.utils.dates import to_datetime_list
+from climetlab.wrappers import Wrapper
 
 
 class XArrayDatasetWrapper(Wrapper):
@@ -89,6 +89,7 @@ class XArrayDatasetWrapper(Wrapper):
 
     def to_xarray(self):
         return self.data
+
 
 class XArrayDataArrayWrapper(Wrapper):
     def __init__(self, data):

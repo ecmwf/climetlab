@@ -31,58 +31,64 @@ from climetlab.utils.html import css
 
 from .settings import SETTINGS
 
-_connection = threading.local()
+
+class Connection(threading.local):
+    def __init__(self):
+        pass
+
+    @property
+    def db(self):
+        if not hasattr(self, "_db"):
+            self._db = None
+        return self._db
+
+    @db.setter
+    def db(self, db):
+        self._db = db
+
+    def __enter__(self):
+        if self.db is None:
+            cache_dir = SETTINGS.get("cache-directory")
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir, exist_ok=True)
+            cache_db = os.path.join(cache_dir, "cache.db")
+            self.db = sqlite3.connect(cache_db)
+            # So we can use rows as dictionaries
+            self.db.row_factory = sqlite3.Row
+
+            self.db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS cache (
+                        path          TEXT PRIMARY KEY,
+                        owner         TEXT NOT NULL,
+                        args          TEXT NOT NULL,
+                        creation_date TEXT NOT NULL,
+                        flags         INTEGER DEFAULT 0,
+                        remote_date   TEXT, -- TODO expire URLs
+                        remote_tag    TEXT, -- TODO expire URLs
+                        last_access   TEXT,
+                        type          TEXT,
+                        parent        TEXT,
+                        extra         TEXT,
+                        expires       INTEGER,
+                        accesses      INTEGER,
+                        size          INTEGER);"""
+            )
+        return self.db.__enter__()
+
+    def __exit__(self, *args, **kwargs):
+        return self.db.__exit__(*args, **kwargs)
 
 
-@locked
-def connection():
-    """Get a connection to the sqlite cache database. The database is accessible through the "db" member.
-
-    Returns:
-    -------
-    connection: obj
-        Connection object, has a db member : _connection.db.
-    """
-
-    global _connection
-    if not hasattr(_connection, "db") or _connection.db is None:
-        cache_dir = SETTINGS.get("cache-directory")
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir, exist_ok=True)
-        cache_db = os.path.join(cache_dir, "cache.db")
-        _connection.db = sqlite3.connect(cache_db)
-        # So we can use rows as dictionaries
-        _connection.db.row_factory = sqlite3.Row
-
-        _connection.db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS cache (
-                    path          TEXT PRIMARY KEY,
-                    owner         TEXT NOT NULL,
-                    args          TEXT NOT NULL,
-                    creation_date TEXT NOT NULL,
-                    flags         INTEGER DEFAULT 0,
-                    remote_date   TEXT, -- TODO expire URLs
-                    remote_tag    TEXT, -- TODO expire URLs
-                    last_access   TEXT,
-                    type          TEXT,
-                    parent        TEXT,
-                    extra         TEXT,
-                    expires       INTEGER,
-                    accesses      INTEGER,
-                    size          INTEGER);"""
-        )
-
-    return _connection.db
+connection = Connection()
 
 
 @locked
 def settings_changed():
     """Need to be called when the settings has been changed to update the connection to the cache database."""
-    global _connection
-    if hasattr(_connection, "db") and _connection.db is not None:
-        _connection.db.close()
-    _connection.db = None
+    if connection.db is not None:
+        connection.db.close()
+    connection.db = None
 
 
 SETTINGS.on_change(settings_changed)
@@ -91,7 +97,7 @@ SETTINGS.on_change(settings_changed)
 @locked
 def update_cache():
     """Update cache size and size of each file in the database ."""
-    with connection() as db:
+    with connection as db:
         update = []
         for n in db.execute("SELECT path FROM cache WHERE size IS NULL"):
             try:
@@ -132,39 +138,39 @@ def register_cache_file(path, owner, args):
         None or False if database does not need to be updated. TODO: clarify.
     """
 
-    db = connection()
+    with connection as db:
 
-    now = datetime.datetime.utcnow()
+        now = datetime.datetime.utcnow()
 
-    args = json.dumps(args, indent=4)
-
-    db.execute(
-        """
-        UPDATE cache
-        SET accesses    = accesses + 1,
-            last_access = ?
-        WHERE path=?""",
-        (now, path),
-    )
-
-    changes = db.execute("SELECT changes()").fetchone()[0]
-
-    if not changes:
+        args = json.dumps(args, indent=4)
 
         db.execute(
             """
-            INSERT INTO cache(
-                            path,
-                            owner,
-                            args,
-                            creation_date,
-                            last_access,
-                            accesses)
-            VALUES(?,?,?,?,?,?)""",
-            (path, owner, args, now, now, 1),
+            UPDATE cache
+            SET accesses    = accesses + 1,
+                last_access = ?
+            WHERE path=?""",
+            (now, path),
         )
 
-    db.commit()
+        changes = db.execute("SELECT changes()").fetchone()[0]
+
+        if not changes:
+
+            db.execute(
+                """
+                INSERT INTO cache(
+                                path,
+                                owner,
+                                args,
+                                creation_date,
+                                last_access,
+                                accesses)
+                VALUES(?,?,?,?,?,?)""",
+                (path, owner, args, now, now, 1),
+            )
+
+        db.commit()
     return not changes
 
 
