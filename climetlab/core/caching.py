@@ -17,6 +17,10 @@ This cache location does not matter when you are using a unique disk (this is th
 Linux system are different, the default location is assigned by the system for temporary files. If this default location is ``/tmp`` and if ``/tmp`` is mounted separately, it may have size to small for the data you intent to download.
 Changing the cache location is detailed in the :doc:`settings` documentation.
 
+.. todo::
+
+    Implement cache invalidation, and checking if there is enough space on disk.
+
 The **cache-minimum-disk-space** option ensures that CliMetLab does not fill your disk.
 Its values sets the minimum disk space that must be left on the filesystem.
 When the disk space goes below this limit, CliMetLab triggers its cache cleaning mechanism before downloading additional data.
@@ -57,17 +61,12 @@ Caching options (TODO : restrict to 'cach.*' options)
         "Maximum disk space used by the CliMetLab cache.",
     ),
 
-.. todo::
-
-    Implement cache invalidation, and checking if there is enough space on disk.
 
 Internals
 ---------
 
 Internally, CliMetLab cache is managed by the module `climetlab.core.cache`, it relies on a sqlite database. The :py:func:`cache_file` function provide a unique path for a given couple (`owner`, `args`). The calling code is responsible for checking if the file exists and decide to read it or create it.
 
-This goes to the user guide
-===========================
 """  # noqa: E501
 
 import datetime
