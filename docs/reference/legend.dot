@@ -9,5 +9,5 @@ digraph legend {
     A  -> B [label=<<I>   inherits from   </I>>;];
 
     B -> C [style=invis];
-    C -> D [label=<<I>   delegate to   </I>>; style=dashed;];
+    C -> D [label=<<I>   delegates to   </I>>; style=dashed;];
 }

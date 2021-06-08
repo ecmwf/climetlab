@@ -7,6 +7,16 @@
 # nor does it submit to any jurisdiction.
 #
 
+"""
+
+CliMetLab cache is managed by the module `climetlab.core.cache`, it relies on a sqlite database. The :py:func:`cache_file` function provide a unique path for a given couple (`owner`, `args`). The calling code is responsible for checking if the file exists and decide to read it or create it.
+
+.. todo::
+
+    Implement cache invalidation, and checking if there is enough space on disk.
+
+"""  # noqa: E501
+
 import datetime
 import hashlib
 import json
@@ -26,10 +36,12 @@ _connection = threading.local()
 
 @locked
 def connection():
-    """Get a connection to the cache .
+    """Get a connection to the sqlite cache database. The database is accessible through the "db" member.
 
     Returns:
-        [type]: [description]
+    -------
+    connection: obj
+        Connection object, has a db member : _connection.db.
     """
 
     global _connection
@@ -66,6 +78,7 @@ def connection():
 
 @locked
 def settings_changed():
+    """Need to be called when the settings has been changed to update the connection to the cache database."""
     global _connection
     if hasattr(_connection, "db") and _connection.db is not None:
         _connection.db.close()
@@ -101,8 +114,23 @@ def update_cache():
             db.commit()
 
 
-@locked
 def register_cache_file(path, owner, args):
+    """Register a file in the cache
+
+    Parameters
+    ----------
+    path : str
+        Cache file to register
+    owner : str
+        Owner of the cache file (generally a source or a dataset)
+    args : dict
+        Dictionary to save with the file in the database, as json string.
+
+    Returns
+    -------
+    changes :
+        None or False if database does not need to be updated. TODO: clarify.
+    """
 
     db = connection()
 
@@ -141,6 +169,15 @@ def register_cache_file(path, owner, args):
 
 
 def update(m, x):
+    """Recursively call the update() on `m` with the values (and keys) given in `x`.
+
+    Parameters
+    ----------
+    m : dict
+        Object with a update method.
+    x : list or dict or any
+        values to send as parameter to m.update()
+    """
     if isinstance(x, (list, tuple)):
         for y in x:
             update(m, y)
@@ -157,6 +194,21 @@ def update(m, x):
 
 @locked
 def cache_file(owner: str, *args, extension: str = ".cache"):
+    """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
+    Uses :py:func:`register_cache_file()`
+
+    Parameters
+    ----------
+    owner : str
+        The owner of the cache file is generally the name of the source that generated the cache.
+    extension : str, optional
+        Extension filename (such as ".nc" for NetCDF, etc.), by default ".cache"
+
+    Returns
+    -------
+    path : str
+        Full path to the cache file.
+    """
 
     m = hashlib.sha256()
     update(m, owner)
@@ -175,7 +227,15 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
 
 
 class TmpFile:
-    def __init__(self, path):
+    """The TmpFile objets are designed to be used for temporary files. It ensures that the file is unlinked when the object is out-of-scope (with __del__).
+
+    Parameters
+    ----------
+    path : str
+        Actual path of the file.
+    """  # noqa: E501
+
+    def __init__(self, path: str):
         self.path = path
 
     def __del__(self):
@@ -189,20 +249,29 @@ def temp_file(extension=".tmp") -> TmpFile:
     Parameters
     ----------
     extension : str, optional
-        [description], by default ".tmp"
+        By default ".tmp"
 
     Returns
     -------
     TmpFile
-        [description]
     """
+
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)
     return TmpFile(path)
 
 
 class Cache:
+    """Cache object providing a nice representation of the cache state."""
+
     def _repr_html_(self):
+        """Return a html representation of the cache .
+
+        Returns
+        -------
+        str
+            HTML status of the cache.
+        """
 
         update_cache()
 

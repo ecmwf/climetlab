@@ -1,14 +1,21 @@
-Datasets
-========
+.. _datasets:
 
-A :ref:`Dataset <datasets>` is a Python class that ... TODO
+Datasets Plugins
+================
 
-Simple datasets
----------------
+
+A :ref:`Dataset <datasets>` is a Python class that provide a curated
+set of data with specific helper functions. CliMetLab has build-in example datasets for demo purposes.
+See usage details in :ref:`Dataset (User guide) <guide/datasets>' and implementation in :ref:`Dataset class <reference/dataset>'.
+Dataset are added with pip plugin or yaml files.
+
+Simple datasets using yaml files
+--------------------------------
 
 Simple datasets are datasets that rely on existing built-in :ref:`data
 source <data-sources>`, and cannot be parametrised by users. This
 can be for example a single file downloadable from a URL.
+
 
 .. code-block:: yaml
 
@@ -21,8 +28,8 @@ can be for example a single file downloadable from a URL.
     metadata:
       documentation: Sample BUFR file containing TEMP messages
 
-Complex datasets
-----------------
+Complex datasets using pip plugin
+---------------------------------
 
 See https://github.com/ecmwf/climetlab-demo-dataset
 

@@ -46,9 +46,11 @@ Documentation
 
 **User Guide (TODO)**
 
+* :doc:`guide/overview`
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
+* :doc:`guide/mltools`
 * :doc:`guide/plotting`
 
 .. toctree::
@@ -56,13 +58,38 @@ Documentation
    :hidden:
    :caption: User Guide
 
+   guide/overview
    guide/howtos
    guide/datasets
    guide/sources
+   guide/mltools
    guide/plotting
 
-**Reference (TODO)**
+**Contributor Guide**
 
+* :doc:`contributing/overview`
+* :doc:`contributing/datasets`
+* :doc:`contributing/sources`
+* :doc:`contributing/readers`
+* :doc:`contributing/plotting`
+* :doc:`contributing/todolist`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Contributor Guide
+
+   contributing/overview
+   contributing/datasets
+   contributing/sources
+   contributing/readers
+   contributing/plotting
+   contributing/todolist
+
+
+**CliMetLab Developer Guide**
+
+* :doc:`reference/overview`
 * :doc:`reference/architecture`
 * :doc:`reference/datasets`
 * :doc:`reference/sources`
@@ -71,12 +98,14 @@ Documentation
 * :doc:`reference/caching`
 * :doc:`reference/plotting`
 * :doc:`reference/gallery`
+* :doc:`reference/plugins`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Reference
+   :caption: CliMetLab Developer Guide
 
+   reference/overview
    reference/architecture
    reference/datasets
    reference/sources
@@ -85,21 +114,7 @@ Documentation
    reference/caching
    reference/plotting
    reference/gallery
-
-**Contributing (TODO)**
-
-* :doc:`contributing/datasets`
-* :doc:`contributing/sources`
-* :doc:`contributing/plotting`
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Contributing
-
-   contributing/datasets
-   contributing/sources
-   contributing/plotting
+   reference/plugins
 
 
 License
