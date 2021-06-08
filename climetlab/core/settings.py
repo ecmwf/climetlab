@@ -56,13 +56,13 @@ SETTINGS_AND_HELP = {
         5,
         """Number of threads used to download data.""",
     ),
-    "cache-policy": (
-        "default",
-        """Caching policy.""",
+    "cache-minimum-disk-space": (
+        "10%",
+        """Minimum space that must be left on the filesystem containing the cache directory.""",
     ),
-    "cache-size-percent": (
-        80,
-        """Caching size in percentage of filesystem.""",
+    "cache-maximum-size": (
+        "90%",
+        """Maximum disk space used by the CliMetLab cache.""",
     ),
 }
 

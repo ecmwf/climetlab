@@ -8,7 +8,46 @@
 #
 
 """
+
 CliMetLab cache is managed by the module `climetlab.core.cache`, it relies on a sqlite database. The :py:func:`cache_file` function provide a unique path for a given couple (`owner`, `args`). The calling code is responsible for checking if the file exists and decide to read it or create it.
+
+This goes to the user guide
+===========================
+
+CliMetLab cache configuration is managed through the CliMetLab :doc:`settings`.
+
+The **cache location** is defined by `cache‑directory`.
+This cache location does not matter when you are using a unique disk (this is the case for most laptops).
+On linux system on the contrary, the default location is assigned by the system for temporary files. If it is ``/tmp`` and if ``/tmp`` is mounted separately, it may have size to small for the data you intent to download.
+Changing the cache location is detailed in the :doc:`settings` documentation.
+
+The **cache-minimum-disk-space** option ensures that CliMetLab does not fill your disk.
+Its values sets the minimum disk space that must be left on the filesystem.
+When the disk space goes below this limit, CliMetLab triggers its cache cleaning mechanism before downloading additional data.
+The value of **cache-minimum-disk-space** can be absolute (such as "10G", "10M", "1K") or relative (such as "10%").
+
+The **cache-maximum-size** option ensures that CliMetLab does not use to much disk space.
+Its value sets the maximum disk space used by CliMetLab cache.
+When CliMetLab cache disk usage goes above this limit, CliMetLab triggers its cache cleaning mechanism  before downloading additional data.
+The value of **cache-maximum-size** can be absolute (such as "10G", "10M", "1K") or relative (such as "10%").
+
+Notice how the cache options interact: setting ``cache-minimum-disk-space=10%`` implies ``cache-maximum-size=90%``. But setting ``cache-maximum-size`` does not constrain ``cache-minimum-disk-space``.
+
+
+Caching options (TODO : restrict to 'cach.*' options)
+-----------------------------------------------------
+
+.. module-output:: generate_settings_rst
+
+
+    "cache-minimum-disk-space": (
+        "10%"
+        "Minimum space that must be left on the filesystem containing the cache directory.",
+    ),
+    "cache-maximum-size": (
+        "80%",
+        "Maximum disk space used by the CliMetLab cache..",
+    ),
 
 .. todo::
 
