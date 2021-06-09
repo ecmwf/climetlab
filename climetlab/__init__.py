@@ -18,7 +18,7 @@ from .readers import Reader
 from .sources import Source, load_source, register_source, source
 from .wrappers import Wrapper
 
-__version__ = "0.7.3"
+__version__ = "0.7.4"
 
 
 __all__ = [
