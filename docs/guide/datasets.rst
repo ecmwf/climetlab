@@ -17,13 +17,13 @@ Accessing data in a dataset
 
 Once the relevant plugin has been installed, the dataset can be loaded with :py:func:`load_dataset()` as follows:
 
+
     .. code-block:: python
 
         !pip install --quiet climetlab-demo-dataset
         import climetlab as cml
-        options = {}
-        ds = cml.load_dataset("demo-dataset", **options)
-        ds.to_xarray()
+
+        ds = cml.load_dataset("demo-dataset").to_xarray()
 
 The relevant plugin package **must be installed** to access the dataset, with pip (such as ``pip install climetlab-demo-dataset``).
 If the package is not installed, CliMetLab will fail with a NameError exception.
