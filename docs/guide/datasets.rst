@@ -72,7 +72,7 @@ It often includ a column for the latitude and longitude of the data.
 Additionnal options
 -------------------
 
-Some arguments in the ``options`` dictionary are always included in ``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()``  or ``climetlab.Dataset.to_pandas()`` (see :ref:`reference/dataset-options`).
+Some arguments in the ``options`` dictionary are always included in ``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()``  or ``climetlab.Dataset.to_pandas()`` (see :ref:`developer/dataset-options`).
 
 .. todo::
     Currently no options are added by CliMetLab.

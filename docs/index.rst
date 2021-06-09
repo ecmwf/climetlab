@@ -52,6 +52,7 @@ Documentation
 * :doc:`guide/sources`
 * :doc:`guide/mltools`
 * :doc:`guide/plotting`
+* :doc:`guide/settings`
 
 .. toctree::
    :maxdepth: 1
@@ -64,6 +65,7 @@ Documentation
    guide/sources
    guide/mltools
    guide/plotting
+   guide/settings
 
 **Contributor Guide**
 
@@ -87,34 +89,44 @@ Documentation
    contributing/todolist
 
 
+
 **Developer Guide**
 
-* :doc:`reference/overview`
-* :doc:`reference/architecture`
-* :doc:`reference/datasets`
-* :doc:`reference/sources`
-* :doc:`reference/api`
-* :doc:`reference/settings`
-* :doc:`reference/caching`
-* :doc:`reference/plotting`
-* :doc:`reference/gallery`
-* :doc:`reference/plugins`
+* :doc:`developer/overview`
+* :doc:`developer/architecture`
+* :doc:`developer/datasets`
+* :doc:`developer/sources`
+* :doc:`developer/api`
+* :doc:`developer/caching`
+* :doc:`developer/plotting`
+* :doc:`developer/gallery`
+* :doc:`developer/plugins`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Developer Guide
 
-   reference/overview
-   reference/architecture
-   reference/datasets
-   reference/sources
-   reference/api
-   reference/settings
-   reference/caching
-   reference/plotting
-   reference/gallery
-   reference/plugins
+   developer/overview
+   developer/architecture
+   developer/datasets
+   developer/sources
+   developer/api
+   developer/caching
+   developer/plotting
+   developer/gallery
+   developer/plugins
+
+**Reference**
+
+* :doc:`developer/api`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Reference
+
+   developer/api
 
 
 License
