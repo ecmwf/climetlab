@@ -39,7 +39,7 @@ def tidy(x):
     return x
 
 
-def execute():
+def execute(*args):
 
     print()
     print(".. list-table::")
@@ -51,6 +51,8 @@ def execute():
     print("     - | Description")
     print()
     for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
+        if len(args) and not k.startswith(args[0]):
+            continue
         print("   * - |", k.replace("-", "\u2011"))  # Non-breaking hyphen
         print("     - |", repr(v[0]).replace("-", "\u2011"))
         print("     - |", v[1])
