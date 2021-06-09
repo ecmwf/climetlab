@@ -11,15 +11,13 @@
 
 import os
 
-from climetlab.core.caching import cache_file, connection
-
-
-def get_cache_cursor():
-    # db = sqlite3.connect(filename)
-    return connection.db
+from climetlab.core.caching import cache_file, get_cached_files, purge_cache
 
 
 def test_cache():
+
+    purge_cache(owner="test_cache")
+
     path1 = cache_file("test_cache", {"foo": 1}, extension=".test")
     path2 = cache_file("test_cache", {"foo": 2}, extension=".test")
 
@@ -27,12 +25,13 @@ def test_cache():
     assert not os.path.exists(path2), f"Path already exists: {path2}"
     assert path1 != path2, f"{path1} == {path2}"
 
-    cur = get_cache_cursor()
-    entries = cur.execute(
-        "SELECT owner,args FROM cache WHERE owner='test_cache'"
-    ).fetchall()
-    assert len(entries) == 2
+    cnt = 0
+    for f in get_cached_files():
+        if f["owner"] == "test_cache":
+            cnt += 1
+
+    assert cnt == 2
 
 
 if __name__ == "__main__":
-    pass
+    test_cache()

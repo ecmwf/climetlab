@@ -77,7 +77,6 @@ import sqlite3
 import tempfile
 import threading
 
-from climetlab.decorators import locked
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
 
@@ -135,7 +134,6 @@ class Connection(threading.local):
 connection = Connection()
 
 
-@locked
 def settings_changed():
     """Need to be called when the settings has been changed to update the connection to the cache database."""
     if connection.db is not None:
@@ -146,8 +144,21 @@ def settings_changed():
 SETTINGS.on_change(settings_changed)
 
 
-@locked
-def update_cache():
+def purge_cache(owner):
+    with connection as db:
+        db.execute("DELETE FROM cache WHERE owner=?", (owner,))
+        db.commit()
+
+
+def get_cached_files():
+    with connection as db:
+        for n in db.execute("SELECT * FROM cache").fetchall():
+            n = dict(n)
+            n["args"] = json.loads(n["args"])
+            yield n
+
+
+def update_cache(clean=False):
     """Update cache size and size of each file in the database ."""
     with connection as db:
         update = []
@@ -166,8 +177,9 @@ def update_cache():
                     size = os.path.getsize(path)
                 update.append((size, kind, path))
             except Exception:
-                db.execute("DELETE from cache WHERE path=?", (path,))
-                commit = True
+                if clean:
+                    db.execute("DELETE from cache WHERE path=?", (path,))
+                    commit = True
 
         if update:
             db.executemany("UPDATE cache SET size=?, type=? WHERE path=?", update)
@@ -254,7 +266,6 @@ def update(m, x):
     m.update(str(x).encode("utf-8"))
 
 
-@locked
 def cache_file(owner: str, *args, extension: str = ".cache"):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`register_cache_file()`
@@ -304,7 +315,6 @@ class TmpFile:
         os.unlink(self.path)
 
 
-@locked
 def temp_file(extension=".tmp") -> TmpFile:
     """Create a temporary file with the given extension .
 
@@ -335,7 +345,7 @@ class Cache:
             HTML status of the cache.
         """
 
-        update_cache()
+        update_cache(True)
 
         html = [css("table")]
         with connection as db:
