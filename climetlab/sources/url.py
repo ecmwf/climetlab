@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Url(FileSource):
-    def __init__(self, url, /, unpack=None, verify=True, **kwargs):
+    def __init__(self, url, unpack=None, verify=True, **kwargs):
 
         super().__init__(**kwargs)
 
