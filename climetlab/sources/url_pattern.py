@@ -9,7 +9,11 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from tqdm.auto import tqdm
+try:
+    import ipywidgets  # noqa
+    from tqdm.auto import tqdm
+except ImportError:
+    from tqdm import tqdm
 
 from climetlab.utils.patterns import Pattern
 
