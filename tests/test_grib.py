@@ -36,6 +36,8 @@ def test_sel():
 
 # @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
 def test_multi():
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",

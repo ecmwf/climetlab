@@ -9,6 +9,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+
+import pytest
+
 from climetlab import load_source, plot_map
 
 
@@ -18,6 +22,8 @@ def test_netcdf():
 
 
 def test_multi():
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
