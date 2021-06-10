@@ -10,11 +10,10 @@
 #
 
 import os
-import sys
 
 import pytest
 
-from climetlab import load_source, source
+from climetlab import load_source
 
 
 def test_file_source_grib():
@@ -27,12 +26,13 @@ def test_file_source_netcdf():
     assert len(s) == 2
 
 
-@pytest.mark.skipif(
-    True or sys.version_info < (3, 7), reason="Version 3.7 or greater needed"
-)
-def test_file_source_shortcut():
-    s = source.file("docs/examples/test.grib")
-    assert len(s) == 2
+# obsolete
+# @pytest.mark.skipif(
+#     True or sys.version_info < (3, 7), reason="Version 3.7 or greater needed"
+# )
+# def test_file_source_shortcut():
+#     s = source.file("docs/examples/test.grib")
+#     assert len(s) == 2
 
 
 def test_file_source_mars():
