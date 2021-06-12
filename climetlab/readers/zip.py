@@ -26,14 +26,15 @@ class ZIPReader(Reader):
             if ext in (".csv", ".txt"):
                 return  # Pandas can read zipped files directly
 
-        extract_path = self.source.cache_file(path, extension=".d")
-        if not os.path.exists(extract_path):
-            tmp = extract_path + ".tmp"
+        def unzip(target):
             with ZipFile(path, "r") as z:
-                z.extractall(tmp)
-            os.rename(tmp, extract_path)
+                z.extractall(target)
 
-        self.path = extract_path
+        self.path = self.cache_file(
+            unzip,
+            path,
+            extension=".d",
+        )
 
     def mutate(self):
         if os.path.isdir(self.path):

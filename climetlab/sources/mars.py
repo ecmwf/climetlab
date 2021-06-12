@@ -8,7 +8,6 @@
 #
 
 import json
-import os
 
 import ecmwfapi
 
@@ -78,10 +77,14 @@ def service(name):
 class MARSRetriever(FileSource):
     def __init__(self, **kwargs):
         request = self.request(**kwargs)
-        self.path = self.cache_file(request)
-        if not os.path.exists(self.path):
-            service("mars").execute(request, self.path + ".tmp")
-            os.rename(self.path + ".tmp", self.path)
+
+        def retrieve(target, request):
+            service("mars").execute(request, target)
+
+        self.path = self.cache_file(
+            retrieve,
+            request,
+        )
 
     @normalize_args(
         param="variable-list(mars)",

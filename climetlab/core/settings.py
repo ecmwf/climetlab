@@ -56,12 +56,8 @@ SETTINGS_AND_HELP = {
         5,
         """Number of threads used to download data.""",
     ),
-    "cache-minimum-disk-space": (
-        "1G",
-        """Minimum space that must be left on the filesystem containing the cache directory.""",
-    ),
-    "cache-maximum-size": (
-        "90%",
+    "maximum-cache-size": (
+        "10GB",
         """Maximum disk space used by the CliMetLab cache.""",
     ),
 }
@@ -192,16 +188,33 @@ class Settings:
                 exc_info=True,
             )
 
+    def as_bytes(self, name):
+        value = str(self.get(name))
+        v = 0
+        while len(value) and str.isdigit(value[0]):
+            v *= 10
+            v += int(value[0])
+            value = value[1:]
+        # bytes = {"%": 0.01}
+        bytes = {}
+        n = 1
+        for u in "KMGTP":
+            n *= 1024
+            bytes[u] = n
+        if len(value):
+            v *= bytes[value[0].upper()]
+        return v
+
+
+save = False
+settings_yaml = os.path.expanduser("~/.climetlab/settings.yaml")
 
 try:
     if not os.path.exists(DOT_CLIMETLAB):
         os.mkdir(DOT_CLIMETLAB, 0o700)
-
-    settings_yaml = os.path.expanduser("~/.climetlab/settings.yaml")
     if not os.path.exists(settings_yaml):
         with open(settings_yaml, "w") as f:
             yaml.dump(DEFAULTS, f, default_flow_style=False)
-
 except Exception:
     LOG.error(
         "Cannot create CliMetLab settings directory, using defaults (%s)",
@@ -209,12 +222,14 @@ except Exception:
         exc_info=True,
     )
 
-
 settings = dict(**DEFAULTS)
 try:
     with open(settings_yaml) as f:
         s = yaml.load(f, Loader=yaml.SafeLoader)
         settings.update(s)
+
+    if s != settings:
+        save = True
 
 except Exception:
     LOG.error(
@@ -224,3 +239,5 @@ except Exception:
     )
 
 SETTINGS = Settings(settings_yaml, settings)
+if save:
+    SETTINGS._save()

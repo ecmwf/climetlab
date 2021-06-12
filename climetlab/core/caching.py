@@ -16,7 +16,9 @@ Internally, CliMetLab cache is managed by the module `climetlab.core.cache`, it 
 import datetime
 import hashlib
 import json
+import logging
 import os
+import shutil
 import sqlite3
 import tempfile
 import threading
@@ -25,6 +27,14 @@ from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
 
 from .settings import SETTINGS
+
+VERSION = 1
+CACHE_DB = f"cache-{VERSION}.db"
+
+LOG = logging.getLogger(__name__)
+
+
+LOCK = threading.Lock()
 
 
 class Connection(threading.local):
@@ -46,11 +56,12 @@ class Connection(threading.local):
             cache_dir = SETTINGS.get("cache-directory")
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir, exist_ok=True)
-            cache_db = os.path.join(cache_dir, "cache.db")
+            cache_db = os.path.join(cache_dir, CACHE_DB)
             self.db = sqlite3.connect(cache_db)
             # So we can use rows as dictionaries
             self.db.row_factory = sqlite3.Row
 
+            # If you change the schema, change VERSION above
             self.db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS cache (
@@ -78,14 +89,29 @@ class Connection(threading.local):
 connection = Connection()
 
 
-def settings_changed():
+def _settings_changed():
     """Need to be called when the settings has been changed to update the connection to the cache database."""
     if connection.db is not None:
         connection.db.close()
     connection.db = None
+    _check_cache_size()
 
 
-SETTINGS.on_change(settings_changed)
+SETTINGS.on_change(_settings_changed)
+
+
+def latest_date():
+    """Returns the latest date to be used when purging the cache.
+    So we do not purge files being downloaded."""
+    with connection as db:
+        latest = db.execute(
+            "SELECT MIN(creation_date) FROM cache WHERE size IS NULL"
+        ).fetchone()[0]
+        if latest is None:
+            latest = db.execute("SELECT MAX(creation_date) FROM cache").fetchone()[0]
+        if latest is None:
+            latest = datetime.datetime.utcnow()
+        return latest
 
 
 def purge_cache(owner):
@@ -95,6 +121,7 @@ def purge_cache(owner):
 
 
 def get_cached_files():
+    _update_cache(True)
     with connection as db:
         for n in db.execute("SELECT * FROM cache").fetchall():
             n = dict(n)
@@ -102,7 +129,7 @@ def get_cached_files():
             yield n
 
 
-def update_cache(clean=False):
+def _update_cache(clean=False):
     """Update cache size and size of each file in the database ."""
     with connection as db:
         update = []
@@ -132,7 +159,82 @@ def update_cache(clean=False):
             db.commit()
 
 
-def register_cache_file(path, owner, args):
+def _find_orphans():
+    top = SETTINGS.get("cache-directory")
+    with connection as db:
+        for name in os.listdir(top):
+            if name == CACHE_DB:
+                continue
+
+            full = os.path.join(top, name)
+            count = db.execute(
+                "SELECT count(*) FROM cache WHERE path=?", (full,)
+            ).fetchone()[0]
+
+            if count == 0:
+                LOG.warning(f"cache orphan found: {full}")
+                _register_cache_file(
+                    full,
+                    "orphans",
+                    None,
+                )
+
+
+def _delete_entry(db, top, entry):
+    path, size = entry["path"], entry["size"]
+    assert path.startswith(top), (path, top)
+    if not os.path.exists(path):
+        LOG.warning(f"cache file lost: {path}")
+        with connection as db:
+            db.execute("DELETE FROM cache WHERE path=?", (path,))
+        return 0
+    delete = path + ".delete"
+    os.rename(path, delete)
+    LOG.warning(f"CliMetLab cache: deleting {path} ({bytes_to_string(size)})")
+    if os.path.isdir(delete):
+        shutil.rmtree(delete)
+    else:
+        os.unlink(delete)
+    db.execute("DELETE FROM cache WHERE path=?", (path,))
+    return size
+
+
+def decache(bytes):
+    _find_orphans()
+    _update_cache(clean=True)
+
+    if bytes <= 0:
+        return 0
+
+    LOG.warning("CliMetLab cache: trying to free %s", bytes_to_string(bytes))
+
+    total = 0
+    top = SETTINGS.get("cache-directory")
+    with connection as db:
+
+        latest = latest_date()
+
+        try:
+            # Remove all orphans
+            for stmt in (
+                "SELECT * FROM cache WHERE owner='orphans' AND creation_date < ?",
+                "SELECT * FROM cache WHERE creation_date < ? ORDER BY last_access DESC",
+            ):
+                for entry in db.execute(stmt, (latest,)):
+                    total += _delete_entry(db, top, entry)
+                    if total >= bytes:
+                        LOG.warning(
+                            "CliMetLab cache: freed %s from cache",
+                            bytes_to_string(bytes),
+                        )
+                        return total
+        finally:
+            db.commit()
+
+    LOG.warning("CliMetLab cache: could not free %s", bytes_to_string(bytes))
+
+
+def _register_cache_file(path, owner, args):
     """Register a file in the cache
 
     Parameters
@@ -154,7 +256,7 @@ def register_cache_file(path, owner, args):
 
         now = datetime.datetime.utcnow()
 
-        args = json.dumps(args, indent=4)
+        args = json.dumps(args)
 
         db.execute(
             """
@@ -186,33 +288,48 @@ def register_cache_file(path, owner, args):
     return not changes
 
 
-def update(m, x):
-    """Recursively call the update() on `m` with the values (and keys) given in `x`.
+def _update_hash(m, x):
+    """Recursively call the _update_hash() on `m` with the values (and keys) given in `x`.
 
     Parameters
     ----------
     m : dict
-        Object with a update method.
+        Object with a _update_hash method.
     x : list or dict or any
-        values to send as parameter to m.update()
+        values to send as parameter to m._update_hash()
     """
     if isinstance(x, (list, tuple)):
         for y in x:
-            update(m, y)
+            _update_hash(m, y)
         return
 
     if isinstance(x, dict):
         for k, v in sorted(x.items()):
-            update(m, k)
-            update(m, v)
+            _update_hash(m, k)
+            _update_hash(m, v)
         return
 
-    m.update(str(x).encode("utf-8"))
+    m._update_hash(str(x).encode("utf-8"))
 
 
-def cache_file(owner: str, *args, extension: str = ".cache"):
+def cache_size():
+    with connection as db:
+        size = db.execute("SELECT SUM(size) FROM cache").fetchone()[0]
+        if size is None:
+            size = 0
+        return size
+
+
+def _check_cache_size():
+    maximum = SETTINGS.as_bytes("maximum-cache-size")
+    size = cache_size()
+    if size > maximum:
+        decache(size - maximum)
+
+
+def cache_file(owner: str, create, args, extension: str = ".cache"):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
-    Uses :py:func:`register_cache_file()`
+    Uses :py:func:`_register_cache_file()`
 
     Parameters
     ----------
@@ -228,8 +345,8 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
     """
 
     m = hashlib.sha256()
-    update(m, owner)
-    update(m, args)
+    _update_hash(m, owner)
+    _update_hash(m, args)
     path = "%s/%s-%s%s" % (
         SETTINGS.get("cache-directory"),
         owner.lower(),
@@ -237,8 +354,17 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
         extension,
     )
 
-    if register_cache_file(path, owner, args):
-        update_cache()
+    _register_cache_file(path, owner, args)
+
+    if not os.path.exists(path):
+
+        _check_cache_size()
+
+        create(path + ".tmp", args)
+        os.rename(path + ".tmp", path)
+        _update_cache()
+
+        _check_cache_size()
 
     return path
 
@@ -289,7 +415,7 @@ class Cache:
             HTML status of the cache.
         """
 
-        update_cache(True)
+        _update_cache(True)
 
         html = [css("table")]
         with connection as db:

@@ -41,13 +41,13 @@ class Source(Base):
         # Give a chance to `multi` to change source
         return self
 
-    def cache_file(self, *args, extension=".cache"):
+    def cache_file(self, create, args, extension=".cache"):
         owner = self.name
         if self.dataset:
             owner = self.dataset.name
         if owner is None:
             owner = self.__class__.__name__.lower()
-        return cache_file(owner, *args, extension=extension)
+        return cache_file(owner, create, args, extension)
 
     @property
     def dataset(self):

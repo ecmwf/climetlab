@@ -9,7 +9,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 
 from climetlab.core.caching import cache_file, get_cached_files, purge_cache
 
@@ -18,12 +17,26 @@ def test_cache():
 
     purge_cache(owner="test_cache")
 
-    path1 = cache_file("test_cache", {"foo": 1}, extension=".test")
-    path2 = cache_file("test_cache", {"foo": 2}, extension=".test")
+    def touch(target, args):
+        assert args["foo"] in (1, 2)
+        with open(target, "w"):
+            pass
 
-    assert not os.path.exists(path1), f"Path already exists: {path1}"
-    assert not os.path.exists(path2), f"Path already exists: {path2}"
-    assert path1 != path2, f"{path1} == {path2}"
+    path1 = cache_file(
+        "test_cache",
+        touch,
+        {"foo": 1},
+        extension=".test",
+    )
+
+    path2 = cache_file(
+        "test_cache",
+        touch,
+        {"foo": 2},
+        extension=".test",
+    )
+
+    assert path1 != path2
 
     cnt = 0
     for f in get_cached_files():

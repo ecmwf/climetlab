@@ -36,6 +36,9 @@ class Reader(Base):
     def multi_merge(cls, readers):
         return None
 
+    def cache_file(self, *args, **kwargs):
+        return self.source.cache_file(*args, **kwargs)
+
 
 class DefaultMerger:
     def __init__(self, engine, backend_kwargs):

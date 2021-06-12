@@ -39,26 +39,37 @@ class Url(FileSource):
         if unpack is None:
             unpack = ext in (".tar", ".tar.gz")
 
-        if unpack:
-            self.path = self.cache_file(url, extension=".d")
-            if not os.path.exists(self.path):
-                archive = self.path + ext
-                self.download(url, archive)
-                self.unpack(archive, self.path)
-                os.unlink(archive)
-        else:
-            _, ext = os.path.splitext(url)
-            self.path = self.cache_file(url, extension=ext)
-            if not os.path.exists(self.path):
-                self.download(url, self.path)
+        def download(target, url):
+            return self._download(url, target)
 
-    def download(self, url, target):
+        def download_and_unpack(target, url):
+            archive = target + ext
+            download(archive, url)
+            LOG.info("Unpacking...")
+            shutil.unpack_archive(archive, target)
+            LOG.info("Done.")
+            os.unlink(archive)
+
+        if unpack:
+            self.path = self.cache_file(
+                download_and_unpack,
+                url,
+                extension=".d",
+            )
+        else:
+            self.path = self.cache_file(
+                download,
+                url,
+                extension=ext,
+            )
+
+    def _download(self, url, target):
 
         if os.path.exists(target):
             return
 
-        LOG.info("Downloading %s", url)
         download = target + ".download"
+        LOG.info("Downloading %s", url)
 
         r = requests.head(url, verify=self.verify)
         r.raise_for_status()
@@ -89,18 +100,6 @@ class Url(FileSource):
             pbar.close()
 
         os.rename(download, target)
-
-    def unpack(self, archive, directory):
-        if os.path.exists(directory):
-            return
-        LOG.info("Unpacking...")
-        target = directory + ".tmp"
-        if not os.path.exists(target):
-            os.mkdir(target)
-
-        shutil.unpack_archive(archive, target)
-        os.rename(target, directory)
-        LOG.info("Done.")
 
 
 source = Url

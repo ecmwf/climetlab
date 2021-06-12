@@ -7,8 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-
 import cdsapi
 
 from climetlab.normalize import normalize_args
@@ -53,7 +51,10 @@ def client():
         raise
 
 
-EXTENSIONS = {"grib": ".grib", "netcdf": ".nc"}
+EXTENSIONS = {
+    "grib": ".grib",
+    "netcdf": ".nc",
+}
 
 
 class CDSRetriever(FileSource):
@@ -64,13 +65,15 @@ class CDSRetriever(FileSource):
 
     def __init__(self, dataset, **kwargs):
         request = self.request(**kwargs)
+
+        def retrieve(target, args):
+            client().retrieve(args[0], args[1], target)
+
         self.path = self.cache_file(
-            request,
+            retrieve,
+            (dataset, request),
             extension=EXTENSIONS.get(request.get("format"), ".cache"),
         )
-        if not os.path.exists(self.path):
-            client().retrieve(dataset, request, self.path + ".tmp")
-            os.rename(self.path + ".tmp", self.path)
 
     @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
     def request(self, **kwargs):

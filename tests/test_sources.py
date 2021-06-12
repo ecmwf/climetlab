@@ -86,17 +86,17 @@ def test_file_source_cds_grib():
 #    assert len(s) == 2
 
 
-def test_ulr_source_1():
+def test_url_source_1():
     load_source("url", "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr")
 
 
-def test_ulr_source_2():
+def test_url_source_2():
     load_source(
         "url", "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib"
     )
 
 
-def test_ulr_source_3():
+def test_url_source_3():
     load_source(
         "url", "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.nc"
     )
