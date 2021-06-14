@@ -10,10 +10,16 @@
 #
 
 
-from climetlab.core.caching import cache_file, get_cached_files, purge_cache
+import getpass
+import os
+import shutil
+import tempfile
+
+from climetlab import load_source, settings
+from climetlab.core.caching import cache_file, cache_size, get_cached_files, purge_cache
 
 
-def test_cache():
+def test_cache_1():
 
     purge_cache(owner="test_cache")
 
@@ -46,5 +52,44 @@ def test_cache():
     assert cnt == 2
 
 
+def test_cache_2():
+    directory = os.path.join(
+        tempfile.gettempdir(),
+        "climetlab-%s-testing" % (getpass.getuser(),),
+    )
+
+    try:
+        with settings.temporary("cache-directory", directory):
+            settings.set("maximum-cache-size", "50MB")
+
+            assert cache_size() == 0
+
+            load_source(
+                "url-pattern",
+                "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
+                {
+                    "size": 10,
+                    "n": [0, 1, 2, 3, 4],
+                },
+            )
+
+            assert cache_size() == 50 * 1024 * 1024
+
+            load_source(
+                "url-pattern",
+                "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
+                {
+                    "size": 10,
+                    "n": [5, 6, 7, 8],
+                },
+            )
+
+    finally:
+        shutil.rmtree(directory)
+
+
 if __name__ == "__main__":
-    test_cache()
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

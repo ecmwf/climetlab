@@ -140,6 +140,31 @@ def test_settings():
     settings.reset()
 
 
+def test_temporary():
+
+    settings.reset()
+
+    settings.set("styles-directories", "/c", "/d")
+    settings.set("plotting-options", {"width": 400})
+
+    with settings.temporary("plotting-options", {"width": 100}):
+
+        assert settings.get("styles-directories") == ["/c", "/d"]
+        assert settings.get("plotting-options") == {"width": 100}, settings.get(
+            "plotting-options"
+        )
+        settings.set("plotting-options", {"width": 200})
+        assert settings.get("plotting-options") == {"width": 200}
+        settings.reset()
+        assert settings.get("plotting-options") == {}
+
+    settings.set("plotting-options", {"width": 400})
+    settings.set("styles-directories", "/c", "/d")
+
+    settings.reset()
+    assert settings.get("plotting-options") == {}
+
+
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):
         if k.startswith("test_") and callable(f):

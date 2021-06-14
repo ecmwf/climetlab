@@ -22,6 +22,7 @@ import shutil
 import sqlite3
 import tempfile
 import threading
+from functools import wraps
 
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
@@ -35,6 +36,15 @@ LOG = logging.getLogger(__name__)
 
 
 LOCK = threading.Lock()
+
+
+def locked(func):
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        with LOCK:
+            return func(*args, **kwargs)
+
+    return wrapped
 
 
 class Connection(threading.local):
@@ -172,11 +182,27 @@ def _find_orphans():
             ).fetchone()[0]
 
             if count == 0:
-                LOG.warning(f"cache orphan found: {full}")
+
+                parent = None
+                start = full.split(".")[0] + "%"
+                for n in db.execute(
+                    "SELECT path FROM cache WHERE parent IS NULL and path LIKE ?",
+                    (start,),
+                ).fetchall():
+                    if full.startswith(n["path"]):
+                        parent = n["path"]
+                        break
+                if not parent:
+                    #     LOG.warning(f"cache orphan found: {full}")
+                    #     LOG.warning(f"parent: {parent}")
+                    # else:
+                    LOG.warning(f"cache orphan found: {full}")
+
                 _register_cache_file(
                     full,
                     "orphans",
                     None,
+                    parent,
                 )
 
 
@@ -200,7 +226,7 @@ def _delete_entry(db, top, entry):
 
 
 def decache(bytes):
-    # _find_orphans()
+    _find_orphans()
     _update_cache(clean=True)
 
     if bytes <= 0:
@@ -234,7 +260,7 @@ def decache(bytes):
     LOG.warning("CliMetLab cache: could not free %s", bytes_to_string(bytes))
 
 
-def _register_cache_file(path, owner, args):
+def _register_cache_file(path, owner, args, parent=None):
     """Register a file in the cache
 
     Parameters
@@ -279,10 +305,14 @@ def _register_cache_file(path, owner, args):
                                 args,
                                 creation_date,
                                 last_access,
-                                accesses)
-                VALUES(?,?,?,?,?,?)""",
-                (path, owner, args, now, now, 1),
+                                accesses,
+                                parent)
+                VALUES(?,?,?,?,?,?,?)""",
+                (path, owner, args, now, now, 1, parent),
             )
+
+        else:
+            assert parent is None
 
         db.commit()
     return not changes
@@ -312,6 +342,7 @@ def _update_hash(m, x):
     m.update(str(x).encode("utf-8"))
 
 
+@locked
 def cache_size():
     with connection as db:
         size = db.execute("SELECT SUM(size) FROM cache").fetchone()[0]
@@ -321,11 +352,10 @@ def cache_size():
 
 
 def _check_cache_size():
-    pass
-    # maximum = SETTINGS.as_bytes("maximum-cache-size")
-    # size = cache_size()
-    # if size > maximum:
-    #     decache(size - maximum)
+    maximum = SETTINGS.as_bytes("maximum-cache-size")
+    size = cache_size()
+    if size > maximum:
+        decache(size - maximum)
 
 
 def cache_file(owner: str, create, args, extension: str = ".cache"):
@@ -371,13 +401,15 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
 
 
 class TmpFile:
-    """The TmpFile objets are designed to be used for temporary files. It ensures that the file is unlinked when the object is out-of-scope (with __del__).
+    """The TmpFile objets are designed to be used for temporary files.
+    It ensures that the file is unlinked when the object is
+    out-of-scope (with __del__).
 
     Parameters
     ----------
     path : str
         Actual path of the file.
-    """  # noqa: E501
+    """
 
     def __init__(self, path: str):
         self.path = path

@@ -11,6 +11,8 @@ import getpass
 import logging
 import os
 import tempfile
+from contextlib import contextmanager
+from functools import wraps
 from typing import Callable
 
 import yaml
@@ -20,6 +22,8 @@ from climetlab.utils.html import css
 LOG = logging.getLogger(__name__)
 
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
+
+SETTINGS_STACK = []
 
 SETTINGS_AND_HELP = {
     "cache-directory": (
@@ -70,14 +74,36 @@ for k, v in SETTINGS_AND_HELP.items():
 NONE = object()
 
 
+@contextmanager
+def new_settings(s):
+    SETTINGS._stack.append(s)
+    try:
+        yield None
+    finally:
+        SETTINGS._stack.pop()
+        SETTINGS._notify()
+
+
+def forward(func):
+    @wraps(func)
+    def wrapped(self, *args, **kwargs):
+        if self._stack:
+            return func(self._stack[-1], *args, **kwargs)
+        return func(self, *args, **kwargs)
+
+    return wrapped
+
+
 class Settings:
-    def __init__(self, settings_yaml: str, defaults: dict):
+    def __init__(self, settings_yaml: str, defaults: dict, callbacks=[]):
         self._defaults = defaults
         self._settings = dict(**defaults)
-        self._callbacks = []
+        self._callbacks = [c for c in callbacks]
         self._settings_yaml = settings_yaml
         self._pytest = None
+        self._stack = []
 
+    @forward
     def get(self, name: str, default=NONE):
         """[summary]
 
@@ -97,6 +123,7 @@ class Settings:
 
         return self._settings.get(name, default)
 
+    @forward
     def set(self, name: str, *args, **kwargs):
         """[summary]
 
@@ -139,6 +166,7 @@ class Settings:
         self._settings[name] = value
         self._changed()
 
+    @forward
     def reset(self, name: str = None):
         """Reset setting(s) to default values.
 
@@ -157,6 +185,7 @@ class Settings:
                 self._settings[name] = DEFAULTS[name]
         self._changed()
 
+    @forward
     def _repr_html_(self):
         html = [css("table")]
         html.append("<table class='climetlab'>")
@@ -170,6 +199,9 @@ class Settings:
 
     def _changed(self):
         self._save()
+        self._notify()
+
+    def _notify(self):
         for cb in self._callbacks:
             cb()
 
@@ -177,6 +209,9 @@ class Settings:
         self._callbacks.append(callback)
 
     def _save(self):
+
+        if self._settings_yaml is None:
+            return
 
         try:
             with open(self._settings_yaml, "w") as f:
@@ -204,6 +239,12 @@ class Settings:
         if len(value):
             v *= bytes[value[0].upper()]
         return v
+
+    @forward
+    def temporary(self, name, *args, **kwargs):
+        tmp = Settings(None, self._settings, self._callbacks)
+        tmp.set(name, *args, **kwargs)
+        return new_settings(tmp)
 
 
 save = False
