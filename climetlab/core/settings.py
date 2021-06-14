@@ -241,9 +241,10 @@ class Settings:
         return v
 
     @forward
-    def temporary(self, name, *args, **kwargs):
+    def temporary(self, name=None, *args, **kwargs):
         tmp = Settings(None, self._settings, self._callbacks)
-        tmp.set(name, *args, **kwargs)
+        if name is not None:
+            tmp.set(name, *args, **kwargs)
         return new_settings(tmp)
 
 

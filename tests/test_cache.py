@@ -59,8 +59,10 @@ def test_cache_2():
     )
 
     try:
-        with settings.temporary("cache-directory", directory):
+        with settings.temporary():
+            settings.set("cache-directory", directory)
             settings.set("maximum-cache-size", "50MB")
+            settings.set("number-of-download-threads", 5)
 
             assert cache_size() == 0
 
@@ -80,7 +82,7 @@ def test_cache_2():
                 "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
                 {
                     "size": 10,
-                    "n": [5, 6, 7, 8],
+                    "n": [5, 6, 7, 8, 9],
                 },
             )
 
