@@ -200,7 +200,7 @@ def _delete_entry(db, top, entry):
 
 
 def decache(bytes):
-    _find_orphans()
+    # _find_orphans()
     _update_cache(clean=True)
 
     if bytes <= 0:
@@ -321,10 +321,11 @@ def cache_size():
 
 
 def _check_cache_size():
-    maximum = SETTINGS.as_bytes("maximum-cache-size")
-    size = cache_size()
-    if size > maximum:
-        decache(size - maximum)
+    pass
+    # maximum = SETTINGS.as_bytes("maximum-cache-size")
+    # size = cache_size()
+    # if size > maximum:
+    #     decache(size - maximum)
 
 
 def cache_file(owner: str, create, args, extension: str = ".cache"):
