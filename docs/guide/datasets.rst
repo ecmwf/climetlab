@@ -42,7 +42,8 @@ It is also possible to add  `import climetlab_...` in order to make clear
 which packages are needed to run the notebook, especially if the plugin
 name does not match the dataset name.
 
-Note that the plugin name does not have to match the dataset name, and the same plugin may provide several datasets.
+Note that the plugin name does not have to match the dataset name,
+and the same plugin may provide several datasets.
 
 .. For example::
 
@@ -72,15 +73,18 @@ It often includ a column for the latitude and longitude of the data.
         dsc.to_pandas()
 
 
-Additionnal options
--------------------
+Generic options
+---------------
 
-Some arguments in the ``options`` dictionary are always included in ``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()``  or ``climetlab.Dataset.to_pandas()`` (see :ref:`developer/dataset-options`).
+Some arguments in the ``options`` dictionary are always included in
+``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()`` or
+``climetlab.Dataset.to_pandas()`` (see :ref:`developer/dataset-options`).
 
 .. todo::
     Currently no options are added by CliMetLab.
 
-Other arguments are defined by the plugin maintainer, and should be documented in the plugin documentation.
+Other arguments are defined by the plugin maintainer, and are be
+documented in the plugin documentation.
 
 The plugin documentation url is provided by the plugin with :
 
