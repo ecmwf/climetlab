@@ -1,3 +1,5 @@
+.. _contributing-overview:
+
 Overview
 ========
 

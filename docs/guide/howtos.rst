@@ -1,32 +1,12 @@
 Howtos
 ======
 
-TODO
+.. todo::
 
-NameError: Cannot find dataset 'XXX' (values are ...)
------------------------------------------------------
+  Add more standard recipes.
 
-When calling `cml.load_dataset('some-dataset'), I get this error.
-
-Solution :
-
-The dataset 'some-dataset-name' is not available, this could be due
-to a typo in the dataset name (such as confusing 'some-dataset'
-with 'somedataset').
-
-If there is no typo, the relevant plugin providing the dataset may
-not be installed.
-
-.. code-block:: bash
-
-   pip install climetlab-the-relevant-plugin
-
-See the :ref:`list of plugins <plugin-list>`.
-
-How to install climetlab ?
---------------------------
-
-Solution :
+How to install climetlab?
+-------------------------
 
 .. code-block:: bash
 
@@ -34,8 +14,17 @@ Solution :
 
 See the :ref:`installing instructions <installing>` for more details.
 
-..
-  .. command-output:: date +%Y%M%d
+How to access data?
+-------------------
 
-..
- .. command-output:: ls -l
+As CliMetLab only provides a few demo datasets.
+To access a dataset with :py:func:`load_dataset`, the relevant plugin
+must be installed. See :ref:`accessing_data`.
+
+
+How to help others to use my data?
+----------------------------------
+
+Creating a CliMetLab plugin can be a solution to share some code along
+with the dataset that you are publishing/using.
+See the :ref:`plugin documentation <contributing-overview>`.
