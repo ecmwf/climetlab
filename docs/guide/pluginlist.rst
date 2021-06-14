@@ -29,7 +29,7 @@ a pull request to add it.
 
   Dataset provided: ``demo-source``
 
-- `climetlab-tc-dataset <https://github.com/ecmwf/climetlab-tc-dataset>`_:
+- `climetlab-tropical-cyclone-dataset <https://github.com/ecmwf-lab/climetlab-tropical-cyclone-dataset>`_:
   Tropical cyclones. In progress.
 
   Datasets provided: ``tc-*``
