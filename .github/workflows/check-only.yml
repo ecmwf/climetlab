@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: ["ubuntu-latest"]
-        python-version: ["3.8"]
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
@@ -62,3 +62,4 @@ jobs:
           pytest
         env:
           CLIMETLAB_DEBUG: 1
+          CLIMETLAB_SKIP_NOTEBOOKS_TESTS: 1
