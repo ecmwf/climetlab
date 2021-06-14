@@ -1,4 +1,4 @@
-name: Check only
+name: Full test
 
 on:
   push:
