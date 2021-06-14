@@ -309,7 +309,7 @@ def _update_hash(m, x):
             _update_hash(m, v)
         return
 
-    m._update_hash(str(x).encode("utf-8"))
+    m.update(str(x).encode("utf-8"))
 
 
 def cache_size():
