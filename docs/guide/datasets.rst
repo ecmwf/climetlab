@@ -23,21 +23,24 @@ Once the relevant plugin has been installed, the dataset can be loaded with :py:
         !pip install --quiet climetlab-demo-dataset
         import climetlab as cml
 
-        ds = cml.load_dataset("demo-dataset").to_xarray()
+        ds = cml.load_dataset("demo-dataset")
 
 The relevant plugin package **must be installed** to access the dataset, with pip (such as ``pip install climetlab-demo-dataset``).
 If the package is not installed, CliMetLab will fail with a NameError exception.
 
     .. code-block:: python
 
-        climetlab.load_dataset("demo-dataset", **options)
+        ds = climetlab.load_dataset("demo-dataset")
         NameError: Cannot find dataset 'demo-dataset' (values are ...),
 
-When sharing a python notebook, it is a good practice to add ``!pip install climetlab-... ` at the top of the notebook.
-There is **currently** (this may change) no need to import the plugin package, i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.
+When sharing a python notebook, it is a good practice to add
+`!pip install climetlab-...` at the top of the notebook.
+There is **currently** (this may change) no need to import the plugin package,
+i.e. no `import climetlab_demo_dataset` to load the dataset `demo-dataset`.
 (see how the :ref:`dataset plugins <contributing/datasets>` work to know more).
-It is also possible to add  `import climetlab_...` `in order to make clear which packages are needed to run the notebook,
-especially if the plugin name does not match the dataset name.
+It is also possible to add  `import climetlab_...` in order to make clear
+which packages are needed to run the notebook, especially if the plugin
+name does not match the dataset name.
 
 Note that the plugin name does not have to match the dataset name, and the same plugin may provide several datasets.
 
