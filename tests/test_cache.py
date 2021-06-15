@@ -58,11 +58,14 @@ def test_cache_2():
         "climetlab-%s-testing" % (getpass.getuser(),),
     )
 
+    if os.path.exists(directory):
+        shutil.rmtree(directory)
+
     try:
         with settings.temporary():
             settings.set("cache-directory", directory)
-            settings.set("maximum-cache-size", "50MB")
-            settings.set("number-of-download-threads", 5)
+            settings.set("maximum-cache-size", "5MB")
+            settings.set("number-of-download-threads", 0)
 
             assert cache_size() == 0
 
@@ -70,22 +73,40 @@ def test_cache_2():
                 "url-pattern",
                 "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
                 {
-                    "size": 10,
+                    "size": 1,
                     "n": [0, 1, 2, 3, 4],
                 },
             )
 
-            assert cache_size() == 50 * 1024 * 1024
+            assert cache_size() == 5 * 1024 * 1024, cache_size()
+
+            cnt = 0
+            for f in get_cached_files():
+                cnt += 1
+            assert cnt == 5, f"Files in cache database: {cnt}"
 
             load_source(
                 "url-pattern",
                 "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
                 {
-                    "size": 10,
+                    "size": 1,
                     "n": [5, 6, 7, 8, 9],
                 },
             )
 
+            assert cache_size() == 5 * 1024 * 1024
+
+            cnt = 0
+            for f in get_cached_files():
+                cnt += 1
+            assert cnt == 5, f"Files in cache database: {cnt}"
+
+            cnt = 0
+            for n in os.listdir(directory):
+                if n.startswith("cache-") and n.endswith(".db"):
+                    continue
+                cnt += 1
+            assert cnt == 5, f"Files in cache directory: {cnt}"
     finally:
         shutil.rmtree(directory)
 

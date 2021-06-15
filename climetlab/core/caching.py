@@ -24,10 +24,9 @@ import tempfile
 import threading
 from functools import wraps
 
+from climetlab.core.settings import SETTINGS
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
-
-from .settings import SETTINGS
 
 VERSION = 1
 CACHE_DB = f"cache-{VERSION}.db"
@@ -99,6 +98,16 @@ class Connection(threading.local):
 connection = Connection()
 
 
+class Cleaner(threading.Thread):
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.condition = threading.Condition()
+
+    def wait(self):
+        with self.condition:
+            self.condition.wait(120)
+
+
 def _settings_changed():
     """Need to be called when the settings has been changed to update the connection to the cache database."""
     if connection.db is not None:
@@ -118,7 +127,9 @@ def latest_date():
             "SELECT MIN(creation_date) FROM cache WHERE size IS NULL"
         ).fetchone()[0]
         if latest is None:
-            latest = db.execute("SELECT MAX(creation_date) FROM cache").fetchone()[0]
+            latest = db.execute(
+                "SELECT MAX(creation_date) FROM cache WHERE size IS NOT NULL"
+            ).fetchone()[0]
         if latest is None:
             latest = datetime.datetime.utcnow()
         return latest
@@ -193,10 +204,7 @@ def _find_orphans():
                         parent = n["path"]
                         break
                 if not parent:
-                    #     LOG.warning(f"cache orphan found: {full}")
-                    #     LOG.warning(f"parent: {parent}")
-                    # else:
-                    LOG.warning(f"cache orphan found: {full}")
+                    LOG.warning(f"CliMetLab cache: orphan found: {full}")
 
                 _register_cache_file(
                     full,
@@ -207,7 +215,12 @@ def _find_orphans():
 
 
 def _delete_entry(db, top, entry):
-    path, size = entry["path"], entry["size"]
+    path, size, owner, args = (
+        entry["path"],
+        entry["size"],
+        entry["owner"],
+        entry["args"],
+    )
     assert path.startswith(top), (path, top)
     if not os.path.exists(path):
         LOG.warning(f"cache file lost: {path}")
@@ -217,6 +230,7 @@ def _delete_entry(db, top, entry):
     delete = path + ".delete"
     os.rename(path, delete)
     LOG.warning(f"CliMetLab cache: deleting {path} ({bytes_to_string(size)})")
+    LOG.warning(f"CliMetLab cache: {owner} {args}")
     if os.path.isdir(delete):
         shutil.rmtree(delete)
     else:
@@ -225,8 +239,9 @@ def _delete_entry(db, top, entry):
     return size
 
 
+@locked
 def decache(bytes):
-    _find_orphans()
+    # _find_orphans()
     _update_cache(clean=True)
 
     if bytes <= 0:
@@ -241,10 +256,9 @@ def decache(bytes):
         latest = latest_date()
 
         try:
-            # Remove all orphans
             for stmt in (
-                "SELECT * FROM cache WHERE owner='orphans' AND creation_date < ?",
-                "SELECT * FROM cache WHERE creation_date < ? ORDER BY last_access DESC",
+                "SELECT * FROM cache WHERE size IS NOT NULL AND owner='orphans' AND creation_date < ?",
+                "SELECT * FROM cache WHERE size IS NOT NULL AND creation_date < ? ORDER BY last_access ASC",
             ):
                 for entry in db.execute(stmt, (latest,)):
                     total += _delete_entry(db, top, entry)
@@ -464,4 +478,6 @@ class Cache:
         return "".join(html)
 
 
+CLEANER = Cleaner()
+CLEANER.start()
 CACHE = Cache()

@@ -22,8 +22,7 @@ from typing import List, Union
 import entrypoints
 
 import climetlab
-
-from .settings import SETTINGS
+from climetlab import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -168,7 +167,7 @@ def directories(owner: bool = False) -> list:
         "layers-directories",
         "datasets-directories",
     ):
-        for d in SETTINGS.get(conf):
+        for d in settings.get(conf):
             if os.path.exists(d) and os.path.isdir(d):
                 result.append(("user-settings", d))
 

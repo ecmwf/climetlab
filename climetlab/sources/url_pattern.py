@@ -30,11 +30,14 @@ class UrlPattern(MultiSource):
         def url_to_source(url):
             return Url(url)
 
-        with ThreadPoolExecutor(
-            max_workers=self.settings("number-of-download-threads")
-        ) as executor:
-            futures = executor.map(url_to_source, urls)
-            sources = list(tqdm(futures, leave=True, total=len(urls)))
+        nthreads = self.settings("number-of-download-threads")
+
+        if nthreads < 2:
+            sources = [url_to_source(url) for url in urls]
+        else:
+            with ThreadPoolExecutor(max_workers=nthreads) as executor:
+                futures = executor.map(url_to_source, urls)
+                sources = list(tqdm(futures, leave=True, total=len(urls)))
 
         super().__init__(sources, merger=merger)
 
