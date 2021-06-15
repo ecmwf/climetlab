@@ -150,6 +150,25 @@ def get_cached_files():
             yield n
 
 
+def _update_entry(path):
+    if os.path.isdir(path):
+        kind = "directory"
+        size = 0
+        for root, _, files in os.walk(path):
+            for f in files:
+                size += os.path.getsize(os.path.join(root, f))
+    else:
+        kind = "file"
+        size = os.path.getsize(path)
+
+    with connection as db:
+        db.execute(
+            "UPDATE cache SET size=?, type=? WHERE path=?",
+            (size, kind, path),
+        )
+        db.commit()
+
+
 def _update_cache(clean=False):
     """Update cache size and size of each file in the database ."""
     with connection as db:
@@ -403,11 +422,9 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
 
     if not os.path.exists(path):
 
-        _check_cache_size()
-
         create(path + ".tmp", args)
         os.rename(path + ".tmp", path)
-        _update_cache()
+        _update_entry(path)
 
         _check_cache_size()
 

@@ -107,6 +107,7 @@ def test_cache_2():
                     continue
                 cnt += 1
             assert cnt == 5, f"Files in cache directory: {cnt}"
+
     finally:
         shutil.rmtree(directory)
 
