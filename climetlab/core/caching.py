@@ -20,9 +20,7 @@ import logging
 import os
 import shutil
 import sqlite3
-import tempfile
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from climetlab.core.settings import SETTINGS
@@ -38,11 +36,11 @@ LOG = logging.getLogger(__name__)
 CONNECTION = None
 CACHE = None
 
+
 def in_executor(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
         global CACHE
-        print("in_executor", func)
         s = CACHE.enqueue(func, *args, **kwargs)
         return s.result()
 
@@ -58,6 +56,7 @@ def in_executor_forget(func):
 
     return wrapped
 
+
 class Future:
     def __init__(self, func, args, kwargs):
         self.func = func
@@ -68,10 +67,10 @@ class Future:
         self._result = None
 
     def execute(self):
-        print("----", self.func, self.args, self.kwargs)
         try:
             self._result = self.func(*self.args, **self.kwargs)
         except Exception as e:
+            LOG.error(e)
             self._result = e
         with self._condition:
             self._ready = True
@@ -97,12 +96,11 @@ class Cache(threading.Thread):
     def run(self):
         while True:
             with self._condition:
-                while len(self._queue)==0:
+                while len(self._queue) == 0:
                     self._condition.wait()
                 s = self._queue.pop(0)
                 self._condition.notify_all()
             s.execute()
-
 
     @property
     def connection(self):
@@ -144,7 +142,7 @@ class Cache(threading.Thread):
             return s
 
     def _settings_changed(self):
-        self._connection = None  # The database
+        self._connection = None  # The user may have changed the cache directory
         self._check_cache_size()
 
     def _latest_date(self):
@@ -162,7 +160,7 @@ class Cache(threading.Thread):
                 latest = datetime.datetime.utcnow()
             return latest
 
-    def _purge_cache(self,owner):
+    def _purge_cache(self, owner):
         with self.connection as db:
             db.execute("DELETE FROM cache WHERE owner=?", (owner,))
 
@@ -175,7 +173,7 @@ class Cache(threading.Thread):
                 result.append(n)
         return result
 
-    def _update_entry(self,path):
+    def _update_entry(self, path):
         if os.path.isdir(path):
             kind = "directory"
             size = 0
@@ -192,7 +190,7 @@ class Cache(threading.Thread):
                 (size, kind, path),
             )
 
-    def _update_cache(self,clean=False):
+    def _update_cache(self, clean=False):
         """Update cache size and size of each file in the database ."""
         with self.connection as db:
             update = []
@@ -247,14 +245,14 @@ class Cache(threading.Thread):
                     if not parent:
                         LOG.warning(f"CliMetLab cache: orphan found: {full}")
 
-                    _register_cache_file(
+                    self._register_cache_file(
                         full,
                         "orphans",
                         None,
                         parent,
                     )
 
-    def _delete_entry(self, top, entry):
+    def _delete_entry(self, db, top, entry):
         path, size, owner, args = (
             entry["path"],
             entry["size"],
@@ -278,7 +276,7 @@ class Cache(threading.Thread):
         db.execute("DELETE FROM cache WHERE path=?", (path,))
         return size
 
-    def _decache(self,bytes):
+    def _decache(self, bytes):
         # _find_orphans()
         # _update_cache(clean=True)
 
@@ -306,10 +304,9 @@ class Cache(threading.Thread):
                         )
                         return total
 
-
         LOG.warning("CliMetLab cache: could not free %s", bytes_to_string(bytes))
 
-    def _register_cache_file(self,path, owner, args, parent=None):
+    def _register_cache_file(self, path, owner, args, parent=None):
         """Register a file in the cache
 
         Parameters
@@ -401,41 +398,6 @@ class Cache(threading.Thread):
         return "".join(html)
 
 
-class TmpFile:
-    """The TmpFile objets are designed to be used for temporary files.
-    It ensures that the file is unlinked when the object is
-    out-of-scope (with __del__).
-
-    Parameters
-    ----------
-    path : str
-        Actual path of the file.
-    """
-
-    def __init__(self, path: str):
-        self.path = path
-
-    def __del__(self):
-        os.unlink(self.path)
-
-
-def temp_file(extension=".tmp") -> TmpFile:
-    """Create a temporary file with the given extension .
-
-    Parameters
-    ----------
-    extension : str, optional
-        By default ".tmp"
-
-    Returns
-    -------
-    TmpFile
-    """
-
-    fd, path = tempfile.mkstemp(suffix=extension)
-    os.close(fd)
-    return TmpFile(path)
-
 CACHE = Cache()
 CACHE.start()
 
@@ -445,6 +407,7 @@ check_cache_size = in_executor_forget(CACHE._check_cache_size)
 cache_size = in_executor(CACHE._cache_size)
 get_cached_files = in_executor(CACHE._get_cached_files)
 purge_cache = in_executor(CACHE._purge_cache)
+
 
 def cache_file(owner: str, create, args, extension: str = ".cache"):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).

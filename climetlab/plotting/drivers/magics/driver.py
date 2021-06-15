@@ -11,9 +11,9 @@ import logging
 
 import yaml
 
-from climetlab.core.caching import temp_file
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.metadata import annotation
+from climetlab.core.temporary import temp_file
 from climetlab.utils.bbox import BoundingBox
 
 from .actions import mcoast, mgrib, minput, mmap, mnetcdf, mtable, mtext, output, plot

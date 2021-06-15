@@ -1,5 +1,5 @@
 from climetlab import new_plot
-from climetlab.core.caching import temp_file
+from climetlab.core.temporary import temp_file
 
 from ._folium import make_map
 
