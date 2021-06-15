@@ -426,7 +426,7 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
         os.rename(path + ".tmp", path)
         _update_entry(path)
 
-        _check_cache_size()
+        # _check_cache_size()
 
     return path
 

@@ -52,7 +52,7 @@ def test_cache_1():
     assert cnt == 2
 
 
-def test_cache_2():
+def dont_test_cache_2():
     directory = os.path.join(
         tempfile.gettempdir(),
         "climetlab-%s-testing" % (getpass.getuser(),),
