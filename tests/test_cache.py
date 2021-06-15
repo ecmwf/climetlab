@@ -52,7 +52,7 @@ def test_cache_1():
     assert cnt == 2
 
 
-def dont_test_cache_2():
+def test_cache_2():
     directory = os.path.join(
         tempfile.gettempdir(),
         "climetlab-%s-testing" % (getpass.getuser(),),
@@ -65,7 +65,7 @@ def dont_test_cache_2():
         with settings.temporary():
             settings.set("cache-directory", directory)
             settings.set("maximum-cache-size", "5MB")
-            settings.set("number-of-download-threads", 0)
+            settings.set("number-of-download-threads", 5)
 
             assert cache_size() == 0
 
@@ -82,6 +82,7 @@ def dont_test_cache_2():
 
             cnt = 0
             for f in get_cached_files():
+                print(f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database: {cnt}"
 
@@ -94,7 +95,7 @@ def dont_test_cache_2():
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024
+            assert cache_size() == 5 * 1024 * 1024, cache_size()
 
             cnt = 0
             for f in get_cached_files():
