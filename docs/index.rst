@@ -53,6 +53,7 @@ Documentation
 * :doc:`guide/mltools`
 * :doc:`guide/plotting`
 * :doc:`guide/settings`
+* :doc:`guide/pluginlist`
 
 .. toctree::
    :maxdepth: 1
@@ -66,6 +67,7 @@ Documentation
    guide/mltools
    guide/plotting
    guide/settings
+   guide/pluginlist
 
 **Contributor Guide**
 

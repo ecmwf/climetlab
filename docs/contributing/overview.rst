@@ -1,3 +1,5 @@
+.. _contributing-overview:
+
 Overview
 ========
 
@@ -38,9 +40,9 @@ differently either as a dataset or a source or a reader or a helper.
      - Sharing code to access a curated set data optionally with additional functionalities.
      - :py:func:`climetlab.load_dataset`
    * - :doc:`Source <sources>`
-     - Sharing code to access a new type of location where there is data. 
+     - Sharing code to access a new type of location where there is data.
      - :py:func:`climetlab.load_source`
-   * - :doc:`Reader <readers>` (DRAFT) 
+   * - :doc:`Reader <readers>` (DRAFT)
      - Sharing code to read data on a given format, using specific conventions, or requiring conversions. Readers will be available to the code written for the sources.
      - :py:func:`climetlab.load_source`
    * - Helper (DRAFT)
@@ -51,10 +53,13 @@ differently either as a dataset or a source or a reader or a helper.
      - :py:class:`climetlab.Dataset` , :py:class:`climetlab.Source`
 
 
-The actual integrating your code as a CliMetLab plugin is achieved by creating a package (such as a pip package) or a yaml file.
+The actual integrating your code as a CliMetLab plugin is achieved by creating
+a package (such as a pip package) or a yaml file.
 
-To make it easier, there is a `template for a Dataset plugin using cookiecutter <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset>`_.
-In addition, for a simple dataset, you can also use a yaml file and rely only on the code provided by CliMetLab or other plugins.
+To make it easier, there is a `template for a Dataset plugin using cookiecutter
+<https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset>`_. In addition,
+for a simple dataset, you can also use a yaml file and rely only on the code
+provided by CliMetLab or other plugins.
 
 Python documentation on plugins_.
 
@@ -62,5 +67,6 @@ Python documentation on plugins_.
 
 How else can I to contribute ?
 ------------------------------
-- Submit bug reports, propose enhancements, on github. 
-- You can also contribute to the core code by forking and submitting a pull request.
+- Submit bug reports, propose enhancements, on github.
+- You can also contribute to the core code by forking and
+  submitting a pull request.
