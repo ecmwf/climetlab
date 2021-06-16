@@ -245,10 +245,9 @@ class Cache(threading.Thread):
                     (start,),
                 ).fetchall():
                     if full.startswith(n["path"]):
-                        parent = n["path"]
+                        parent = n["path"]  # noqa: F841 TODO: remove this
                         break
                     # if not parent:
-
 
                     # self._register_cache_file(
                     #     full,
@@ -432,24 +431,9 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
         Full path to the cache file.
     """
 
-    def _update_hash(m, x):
-
-        if isinstance(x, (list, tuple)):
-            for y in x:
-                _update_hash(m, y)
-            return
-
-        if isinstance(x, dict):
-            for k, v in sorted(x.items()):
-                _update_hash(m, k)
-                _update_hash(m, v)
-            return
-
-        m.update(str(x).encode("utf-8"))
-
     m = hashlib.sha256()
-    _update_hash(m, owner)
-    _update_hash(m, args)
+    m.update(owner.encode("utf-8"))
+    m.update(json.dumps(args, sort_keys=True).encode("utf-8"))
 
     path = "%s/%s-%s%s" % (
         SETTINGS.get("cache-directory"),
