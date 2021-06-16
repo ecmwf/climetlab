@@ -45,17 +45,49 @@ class SoftThread(threading.Thread):
                     self._condition.wait()
                 s = self._queue.pop(0)
                 self._condition.notify_all()
+            if s is None:
+                break
             s.execute()
 
 
 class SoftThreadPool:
     def __init__(self, nthreads=4):
+        self._nthreads = nthreads
         self._queue = []
         self._condition = threading.Condition()
-        for _ in range(nthreads):
-            SoftThread(self._queue, self._condition).start()
+        self._active = False
+        self._lock = threading.RLock()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.shutdown()
+
+    def start(self):
+        with self._lock:
+            self._active = True
+            for _ in range(self._nthreads):
+                SoftThread(self._queue, self._condition).start()
+
+    def shutdown(self):
+        with self._lock:
+            if not self._active:
+                return
+
+        for _ in range(self._nthreads):
+            with self._condition:
+                self._queue.append(None)
+                self._condition.notify_all()
+
+        with self._lock:
+            self._active = False
 
     def submit(self, func, *args, **kwargs):  # submit
+        with self._lock:
+            if not self._active:
+                self.start()
+
         with self._condition:
             s = Future(func, args, kwargs)
             self._queue.append(s)
