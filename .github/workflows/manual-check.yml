@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ["ubuntu-latest"]
+        platform: ["ubuntu-latest", "windows-latest"]
         python-version: ["3.8",]
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}

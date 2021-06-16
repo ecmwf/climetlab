@@ -9,9 +9,13 @@
 
 """
 
-Internally, CliMetLab cache is managed by the module `climetlab.core.cache`, it relies on a sqlite database. The :py:func:`cache_file` function provide a unique path for a given couple (`owner`, `args`). The calling code is responsible for checking if the file exists and decide to read it or create it.
+Internally, CliMetLab cache is managed by the module `climetlab.core.cache`,
+it relies on a sqlite database. The :py:func:`cache_file` function provide
+a unique path for a given couple (`owner`, `args`).
+The calling code is responsible for checking if the file exists and
+decide to read it or create it.
 
-"""  # noqa: E501
+"""
 
 import datetime
 import hashlib
@@ -164,7 +168,7 @@ class Cache(threading.Thread):
         with self.connection as db:
             db.execute("DELETE FROM cache WHERE owner=?", (owner,))
 
-    def _get_cached_files(self):
+    def _cache_entries(self):
         result = []
         with self.connection as db:
             for n in db.execute("SELECT * FROM cache").fetchall():
@@ -219,7 +223,7 @@ class Cache(threading.Thread):
             if update or commit:
                 db.commit()
 
-    def _find_orphans(self):
+    def _housekeeping(self):
         top = SETTINGS.get("cache-directory")
         with self.connection as db:
             for name in os.listdir(top):
@@ -232,25 +236,26 @@ class Cache(threading.Thread):
                 ).fetchone()[0]
 
                 if count == 0:
+                    continue
+                LOG.warning(f"CliMetLab cache: orphan found: {full}")
+                parent = None
+                start = full.split(".")[0] + "%"
+                for n in db.execute(
+                    "SELECT path FROM cache WHERE parent IS NULL and path LIKE ?",
+                    (start,),
+                ).fetchall():
+                    if full.startswith(n["path"]):
+                        parent = n["path"]
+                        break
+                    # if not parent:
 
-                    parent = None
-                    start = full.split(".")[0] + "%"
-                    for n in db.execute(
-                        "SELECT path FROM cache WHERE parent IS NULL and path LIKE ?",
-                        (start,),
-                    ).fetchall():
-                        if full.startswith(n["path"]):
-                            parent = n["path"]
-                            break
-                    if not parent:
-                        LOG.warning(f"CliMetLab cache: orphan found: {full}")
 
-                    self._register_cache_file(
-                        full,
-                        "orphans",
-                        None,
-                        parent,
-                    )
+                    # self._register_cache_file(
+                    #     full,
+                    #     "orphans",
+                    #     None,
+                    #     parent,
+                    # )
 
     def _delete_entry(self, db, top, entry):
         path, size, owner, args = (
@@ -405,8 +410,9 @@ register_cache_file = in_executor(CACHE._register_cache_file)
 update_entry = in_executor(CACHE._update_entry)
 check_cache_size = in_executor_forget(CACHE._check_cache_size)
 cache_size = in_executor(CACHE._cache_size)
-get_cached_files = in_executor(CACHE._get_cached_files)
+cache_entries = in_executor(CACHE._cache_entries)
 purge_cache = in_executor(CACHE._purge_cache)
+housekeeping = in_executor(CACHE._housekeeping)
 
 
 def cache_file(owner: str, create, args, extension: str = ".cache"):

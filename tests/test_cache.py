@@ -16,7 +16,7 @@ import shutil
 import tempfile
 
 from climetlab import load_source, settings
-from climetlab.core.caching import cache_file, cache_size, get_cached_files, purge_cache
+from climetlab.core.caching import cache_file, cache_size, cache_entries, purge_cache
 
 
 def test_cache_1():
@@ -45,7 +45,7 @@ def test_cache_1():
     assert path1 != path2
 
     cnt = 0
-    for f in get_cached_files():
+    for f in cache_entries():
         if f["owner"] == "test_cache":
             cnt += 1
 
@@ -81,7 +81,7 @@ def test_cache_2():
             assert cache_size() == 5 * 1024 * 1024, cache_size()
 
             cnt = 0
-            for f in get_cached_files():
+            for f in cache_entries():
                 print(f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database: {cnt}"
@@ -98,7 +98,7 @@ def test_cache_2():
             assert cache_size() == 5 * 1024 * 1024, cache_size()
 
             cnt = 0
-            for f in get_cached_files():
+            for f in cache_entries():
                 cnt += 1
             assert cnt == 5, f"Files in cache database: {cnt}"
 
@@ -112,6 +112,23 @@ def test_cache_2():
     finally:
         shutil.rmtree(directory)
 
+
+def df(name):
+    fs = os.statvfs(name)
+    size = fs.f_blocks * fs.f_bsize
+    used = int((1.0 - float(fs.f_bavail) / float(fs.f_blocks)) * 100 + 0.5)
+    return (used, size)
+
+
+def mount_point(path):
+    ret = os.path.realpath(path)
+    while not os.path.ismount(ret):
+        ret = os.path.dirname(ret)
+    return ret
+
+def test_cache_3():
+    directory = settings.get("cache-directory")
+    print('XXXXX', df(mount_point(directory)))
 
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):

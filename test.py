@@ -1,15 +1,14 @@
 from climetlab.core.caching import (
-    _check_cache_size,
     cache_size,
-    decache,
-    get_cached_files,
+    cache_entries,
+    housekeeping
+
 )
 
-for n in get_cached_files():
+for n in cache_entries():
     print(n)
 
-decache(0)
 
 
 print(cache_size())
-_check_cache_size()
+housekeeping()
