@@ -7,14 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from concurrent.futures import ThreadPoolExecutor
-
 try:
     import ipywidgets  # noqa
     from tqdm.auto import tqdm
 except ImportError:
     from tqdm import tqdm
 
+from climetlab.core.thread import SoftThreadPool
 from climetlab.utils.patterns import Pattern
 
 from .multi import MultiSource
@@ -35,9 +34,9 @@ class UrlPattern(MultiSource):
         if nthreads < 2:
             sources = [url_to_source(url) for url in urls]
         else:
-            with ThreadPoolExecutor(max_workers=nthreads) as executor:
-                futures = executor.map(url_to_source, urls)
-                sources = list(tqdm(futures, leave=True, total=len(urls)))
+            pool = SoftThreadPool(nthreads=nthreads)
+            futures = [pool.submit(url_to_source, url) for url in urls]
+            sources = list(tqdm(futures, leave=True, total=len(urls)))
 
         super().__init__(sources, merger=merger)
 
