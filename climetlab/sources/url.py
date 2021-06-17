@@ -23,13 +23,16 @@ from .base import FileSource
 
 LOG = logging.getLogger(__name__)
 
+def dummy():
+    pass
 
 class Url(FileSource):
-    def __init__(self, url, unpack=None, verify=True, **kwargs):
+    def __init__(self, url, unpack=None, verify=True, watcher=None, **kwargs):
 
         super().__init__(**kwargs)
 
         self.verify = verify
+        self.watcher = watcher if watcher else dummy
 
         base, ext = os.path.splitext(url)
         _, tar = os.path.splitext(base)
@@ -93,6 +96,7 @@ class Url(FileSource):
             pbar.update(total)
             with open(download, mode) as f:
                 for chunk in r.iter_content(chunk_size=1024 * 1024):
+                    self.watcher()
                     if chunk:
                         f.write(chunk)
                         total += len(chunk)
