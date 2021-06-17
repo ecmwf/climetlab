@@ -447,7 +447,15 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
     if not os.path.exists(path):
 
         create(path + ".tmp", args)
-        os.rename(path + ".tmp", path)
+
+        # take care of race condition when two processes
+        # cache the same file
+        try:
+            os.rename(path + ".tmp", path)
+        except FileNotFoundError as e:
+            if not os.path.exists(path):
+                raise e
+
         update_entry(path)
         check_cache_size()
 
