@@ -45,11 +45,11 @@ class UrlPattern(MultiSource):
         #     pbar.update(total)
 
         if nthreads < 2:
-            sources = [url_to_source(url) for url in urls]
+            sources = [Url(url) for url in urls]
         else:
             with SoftThreadPool(nthreads=nthreads) as pool:
 
-                futures = [pool.submit(url_to_source, url) for url in urls]
+                futures = [pool.submit(Url, url, watcher=pool) for url in urls]
 
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))

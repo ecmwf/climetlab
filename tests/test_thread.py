@@ -51,3 +51,10 @@ def test_thread():
     assert futures[1].result() == 1
     assert futures[2].result() == 4
     assert futures[3].result() == 9
+
+
+if __name__ == "__main__":
+    for k, f in sorted(globals().items()):
+        if k.startswith("test_") and callable(f):
+            print(k)
+            f()

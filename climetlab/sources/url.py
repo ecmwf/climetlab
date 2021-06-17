@@ -23,8 +23,10 @@ from .base import FileSource
 
 LOG = logging.getLogger(__name__)
 
+
 def dummy():
     pass
+
 
 class Url(FileSource):
     def __init__(self, url, unpack=None, verify=True, watcher=None, **kwargs):

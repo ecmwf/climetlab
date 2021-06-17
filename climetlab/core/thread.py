@@ -57,12 +57,13 @@ class SoftThreadPool:
         self._condition = threading.Condition()
         self._active = False
         self._lock = threading.RLock()
+        self._error = None
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.shutdown()
+        self.shutdown(exc_type)
 
     def start(self):
         with self._lock:
@@ -70,7 +71,7 @@ class SoftThreadPool:
             for _ in range(self._nthreads):
                 SoftThread(self._queue, self._condition).start()
 
-    def shutdown(self):
+    def shutdown(self, error=None):
         with self._lock:
             if not self._active:
                 return
@@ -82,6 +83,7 @@ class SoftThreadPool:
 
         with self._lock:
             self._active = False
+            self._error = error
 
     def submit(self, func, *args, **kwargs):  # submit
         with self._lock:
@@ -93,3 +95,8 @@ class SoftThreadPool:
             self._queue.append(s)
             self._condition.notify_all()
             return s
+
+    def __call__(self):
+        with self._lock:
+            if self._error:
+                raise self._error
