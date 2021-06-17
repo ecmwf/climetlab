@@ -16,7 +16,7 @@ import shutil
 import tempfile
 
 from climetlab import load_source, settings
-from climetlab.core.caching import cache_file, cache_size, cache_entries, purge_cache
+from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_cache
 
 
 def test_cache_1():
@@ -126,9 +126,11 @@ def mount_point(path):
         ret = os.path.dirname(ret)
     return ret
 
+
 def test_cache_3():
     directory = settings.get("cache-directory")
-    print('XXXXX', df(mount_point(directory)))
+    print("XXXXX", df(mount_point(directory)))
+
 
 if __name__ == "__main__":
     for k, f in sorted(globals().items()):
