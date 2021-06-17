@@ -235,7 +235,7 @@ class Cache(threading.Thread):
                     "SELECT count(*) FROM cache WHERE path=?", (full,)
                 ).fetchone()[0]
 
-                if count == 0:
+                if count > 0:
                     continue
                 LOG.warning(f"CliMetLab cache: orphan found: {full}")
                 parent = None
