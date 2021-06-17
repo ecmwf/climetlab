@@ -105,7 +105,13 @@ class Url(FileSource):
                         pbar.update(len(chunk))
             pbar.close()
 
-        os.rename(download, target)
+        # take care of race condition when two processes
+        # download into the same file at the same time
+        try:
+            os.rename(download, target)
+        except FileNotFoundError as e:
+            if not os.path.exists(target):
+                raise e
 
 
 source = Url
