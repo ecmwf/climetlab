@@ -88,7 +88,7 @@ def bbox_defaults(area=None):
 
 
 @normalize_args(name=["a", "b", "c"])
-def enum_1(name="a"):
+def enum_1(name=None):
     return name
 
 
@@ -100,6 +100,8 @@ def enum_2(name=1):
 def test_enum():
     assert enum_1("a") == "a"
     assert enum_1("b") == "b"
+    assert enum_1() == ["a", "b", "c"]
+    assert enum_1(None) == ["a", "b", "c"]
     with pytest.raises(ValueError):
         enum_1("z")
     with pytest.raises(ValueError):

@@ -77,9 +77,16 @@ class DateNormaliser:
 
 class EnumNormaliser:
     def __init__(self, values):
+        for v in values:
+            if v is None:
+                raise ValueError(
+                    f'"None" cannot be in the list of possible values ({self.values}).'
+                )
         self.values = values
 
     def __call__(self, value):
+        if value is None:
+            return self.values
         for n in self.values:
             if value == n:
                 return n
