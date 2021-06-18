@@ -10,16 +10,10 @@ A Source provides access to data, the code performing the actual reading can eit
 located in the Source itself or delegated to a Reader class.
 See details in :ref:`Source class <reference/source>`.
 
-
-Adding a new source as a plugin
--------------------------------
+Adding a new source as a pip plugin
+-----------------------------------
 
 See https://github.com/ecmwf/climetlab-demo-source
-
-The plugin mechanism of CliMetLab as follows :
- - The plugin is a python package (the pipy package name should preferably starts with "climetlab-"). The python package to import should starts with "climetlab\_".
-
- - When installed, the plugin register itself thanks to the entry_points in the setup.py.
 
 
     .. code-block:: python
@@ -31,5 +25,3 @@ The plugin mechanism of CliMetLab as follows :
                 ]
             },
         )
-
- - CliMetLab is aware of the new capability and cml.load_source("demo-source") becomes available.

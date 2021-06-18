@@ -1,6 +1,5 @@
 .. _datasets:
 
-
 Datasets
 ========
 
@@ -55,22 +54,26 @@ usually provides several datasets.
 As an example, the plugin ``climetlab_s2s_ai_challenge`` provides
 the datasets ``s2s-ai-challenge-training-input`` and ``s2s-ai-challenge-training-output``:
 
-    .. code-block:: python
+.. code-block:: ipython
 
-        !pip install climetlab_s2s_ai_challenge
-        >>> climetlab.load_dataset("s2s-ai-challenge-training-input")
-        >>> climetlab.load_dataset("s2s-ai-challenge-training-output")
+    >>> !pip install climetlab_s2s_ai_challenge
+    >>> climetlab.load_dataset("s2s-ai-challenge-training-input")
+    >>> climetlab.load_dataset("s2s-ai-challenge-training-output")
 
 
-There is no need to import the plugin package to enable load the dataset,
-i.e. no ``import climetlab_demo_dataset`` 
+There is no need to import the plugin package to enable load the dataset:
 
-**Currently**, the best way to know which plugin need to be installed to access 
+.. code-block:: ipython
+
+    >> import climetlab_demo_dataset  # Not needed
+
+
+**Currently**, the best way to know which plugin needs to be installed to access 
 a given dataset is to look at :ref:`list of plugins <pluginlist>` (non-exhaustive).
 
 .. todo::
 
-    Design a way to register and publish plugins.
+    Design a streamlined way to register and publish plugins.
 
 
 Xarray for gridded data
