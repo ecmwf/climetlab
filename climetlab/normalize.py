@@ -80,7 +80,7 @@ class EnumNormaliser:
         for v in values:
             if v is None:
                 raise ValueError(
-                    f'"None" cannot be in the list of possible values ({self.values}).'
+                    f'"{v}" cannot be in the list of possible values ({self.values}).'
                 )
         self.values = values
 
