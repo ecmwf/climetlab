@@ -26,7 +26,7 @@ class ZIPReader(Reader):
             if ext in (".csv", ".txt"):
                 return  # Pandas can read zipped files directly
 
-        def unzip(target):
+        def unzip(target, args):
             with ZipFile(path, "r") as z:
                 z.extractall(target)
 
