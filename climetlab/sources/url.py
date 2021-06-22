@@ -36,7 +36,7 @@ class Url(FileSource):
         self.verify = verify
         self.watcher = watcher if watcher else dummy
 
-        base, ext = os.path.splitext(url)
+        base, ext = os.path.splitext(url.split("?")[0])
         _, tar = os.path.splitext(base)
         if tar == ".tar":
             ext = ".tar" + ext
