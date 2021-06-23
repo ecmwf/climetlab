@@ -414,7 +414,6 @@ purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
 
 
-
 def cache_file(owner: str, create, args, extension: str = ".cache"):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -443,7 +442,7 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
         extension,
     )
 
-    cache_entry = register_cache_file(path, owner, args)
+    register_cache_file(path, owner, args)
 
     if not os.path.exists(path):
 
