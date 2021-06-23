@@ -10,6 +10,7 @@
 import logging
 import os
 import shutil
+from urllib.parse import urlparse
 
 import requests
 
@@ -69,6 +70,59 @@ class Url(FileSource):
             )
 
     def _download(self, url, target):
+        o = urlparse(url)
+        method = f"_download_{o.scheme}"
+        return getattr(self, method)(url, target)
+
+    def _download_file(self, url, target):
+        o = urlparse(url)
+        assert o.scheme == "file"
+        os.symlink(o.path, target)
+
+    def _download_ftp(self, url, target):
+        from ftplib import FTP
+
+        o = urlparse(url)
+        assert o.scheme == "ftp"
+        if "@" in o.netloc:
+            auth, server = o.netloc.split("@")
+            user, password = auth.split(":")
+        else:
+            auth, server = None, o.netloc
+            user, password = "anonymous", "anonymous"
+        ftp = FTP(server)
+        if auth:
+            ftp.login(user, password)
+        else:
+            ftp.login()
+        ftp.cwd(os.path.dirname(o.path))
+        ftp.set_pasv(True)
+        filename = os.path.basename(o.path)
+        size = ftp.size(filename)
+        with tqdm(
+            total=size,
+            unit_scale=True,
+            unit_divisor=1024,
+            unit="B",
+            disable=False,
+            leave=False,
+            desc=os.path.basename(url),
+        ) as pbar:
+            with open(target, "wb") as f:
+
+                def callback(chunk):
+                    self.watcher()
+                    f.write(chunk)
+                    pbar.update(len(chunk))
+
+                ftp.retrbinary(f"RETR {filename}", callback)
+            pbar.close()
+        ftp.close()
+
+    def _download_https(self, url, target):
+        return self._download_http(url, target)
+
+    def _download_http(self, url, target):
 
         if os.path.exists(target):
             return
