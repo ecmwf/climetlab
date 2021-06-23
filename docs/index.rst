@@ -74,6 +74,7 @@ Documentation
 * :doc:`contributing/overview`
 * :doc:`contributing/datasets`
 * :doc:`contributing/sources`
+* :doc:`contributing/normalize`
 * :doc:`contributing/readers`
 * :doc:`contributing/plotting`
 * :doc:`contributing/todolist`
@@ -86,6 +87,7 @@ Documentation
    contributing/overview
    contributing/datasets
    contributing/sources
+   contributing/normalize
    contributing/readers
    contributing/plotting
    contributing/todolist
