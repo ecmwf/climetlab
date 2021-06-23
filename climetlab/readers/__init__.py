@@ -105,8 +105,4 @@ def reader(source, path):
         except Exception as e:
             warnings.warn(f"Error calling reader '{name}': {e}")
 
-    reader = source.fallback_reader(path, magic)
-    if reader is not None:
-        return reader.mutate()
-
     raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic}) {source}")
