@@ -13,6 +13,7 @@ import functools
 import inspect
 import json
 import os
+import io
 
 from climetlab.utils.factorise import Tree, factorise
 
@@ -25,6 +26,40 @@ class Availability:
                     avail = json.loads(f.read())
             avail = factorise(avail, intervals=intervals)
         self._tree = avail
+
+    @classmethod
+    def from_mars_list(cls, tree, intervals=None):
+        if os.path.exists(tree):
+            input = open(tree)
+        else:
+            input = io.StringIO(tree)
+
+        def as_dict(s):
+            r = {}
+            for a in s.split(','):
+                p, v = a.split('=')
+                r[p] = v.split('/')
+            return r
+        requests = []
+        stack = []
+        last = 0
+        for line in input:
+            line = line.rstrip()
+            cnt = 0
+            while len(line) > 0 and line[0] == ' ':
+                line = line[1:]
+                cnt += 1
+            if cnt <= last and stack:
+                requests.append(as_dict(','.join(stack)))
+            while len(stack) <= cnt:
+                stack.append(None)
+            stack[cnt] = line
+            last = cnt
+
+        if stack:
+            requests.append(as_dict(','.join(stack)))
+
+        return cls(requests, intervals)
 
     def _repr_html_(self):
         return "<hr><pre>{}</pre><hr>".format(self.tree())
@@ -56,3 +91,8 @@ def availability(avail):
         return inner
 
     return outer
+
+
+if __name__ == "__main__":
+    for n in Availability.from_mars_list('mars.list.tree').iterate():
+        print(n)
