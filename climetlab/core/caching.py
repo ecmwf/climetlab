@@ -364,7 +364,7 @@ class Cache(threading.Thread):
             else:
                 assert parent is None
 
-        return not changes
+            return db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone()[0]
 
     def _cache_size(self):
         with self.connection as db:
@@ -414,6 +414,7 @@ purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
 
 
+
 def cache_file(owner: str, create, args, extension: str = ".cache"):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -442,7 +443,7 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
         extension,
     )
 
-    register_cache_file(path, owner, args)
+    cache_entry = register_cache_file(path, owner, args)
 
     if not os.path.exists(path):
 
