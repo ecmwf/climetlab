@@ -18,11 +18,7 @@ Data sources
                            "parameter1",
                            "parameter2", ...)
 
-
-                           
-
 .. _data-sources-file:
-
 
 file
 ----
@@ -81,6 +77,80 @@ want to keep the downloaded file as is, pass ``unpack=False`` to the method.
                            unpack=False)
 
 
+.. _data-sources-url-pattern:
+
+url-pattern
+-----------
+
+The *url-pattern* data source will build urls from the pattern specified,
+using the other arguments to fill the pattern. Each argument can be a list
+to iterate and create the cartesian product of all lists.
+Then each url is downloaded and stored it in the :ref:`cache <caching>`. The
+supported download the data from the address data formats are the same as
+for the *file* and *url* data sources above.
+
+.. code-block:: python
+
+    import climetlab as cml
+
+    data = cml.load_source("url-pattern",
+         "https://www.example.com/data-{foo}-{bar}-{qux}.csv",
+         foo = [1,2,3],
+         bar = ["a", "b"],
+         qux = "unique"
+         )
+
+The code above will download and process the data from the six following urls:
+
+#. \https://www.example.com/data-1-a-unique.csv
+#. \https://www.example.com/data-2-a-unique.csv
+#. \https://www.example.com/data-3-a-unique.csv
+#. \https://www.example.com/data-1-b-unique.csv
+#. \https://www.example.com/data-2-b-unique.csv
+#. \https://www.example.com/data-3-b-unique.csv
+
+If the urls are pointing to archive format, the data will be unpacked by
+``url-pattern`` according to the **unpack** argument, similarly to what
+the source ``url`` does (see above :ref:`data-sources-url`)
+
+
+
+.. todo:
+
+    test `to_pandas()` with `url-pattern`.
+
+Once the data have been properly downloaded [and unpacked] and cached. It can
+can be accessed using ``to_xarray()`` or ``to_pandas()``.
+
+To provide a unique xarray.Dataset (or pandas.DataFrame), the different
+datasets are merged.
+The default merger strategy for field data is to use ``xarray.open_mfdataset``
+from `xarray`. This can be changed by providing a merger to the
+``url-pattern`` source:
+
+.. code-block:: python
+
+    import climetlab as cml
+    import xarray as xr
+
+    class MyMerger():
+        def __init__(self, *args, **kwargs):
+            pass
+        def merge(self, paths, **kwargs):
+            return xr.open_mfdataset(paths)
+
+    data = cml.load_source("url-pattern",
+         "https://www.example.com/data-{foo}-{bar}-{qux}.csv",
+         foo = [1,2,3],
+         bar = ["a", "b"],
+         qux = "unique"
+         merger = MyMerger()
+         )
+
+
+.. warning::
+
+    The merger functionality is experimental, the API may change.
 
 .. _data-sources-cds:
 

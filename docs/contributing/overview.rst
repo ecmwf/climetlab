@@ -29,6 +29,8 @@ Depending its functionalities, your code can be integrated in CliMetLab
 differently either as a dataset or a source or a reader or a helper.
 
 
+.. _list-plugin-table:
+
 .. list-table::
    :widths: 10 80 10
    :header-rows: 1
@@ -53,15 +55,56 @@ differently either as a dataset or a source or a reader or a helper.
      - :py:class:`climetlab.Dataset` , :py:class:`climetlab.Source`
 
 
-The actual integrating your code as a CliMetLab plugin is achieved by creating
-a package (such as a pip package) or a yaml file.
+.. _plugins general:
 
-To make it easier, there is a `template for a Dataset plugin using cookiecutter
-<https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset>`_. In addition,
-for a simple dataset, you can also use a yaml file and rely only on the code
-provided by CliMetLab or other plugins.
+CliMetLab plugin system
+-----------------------
 
-Python documentation on plugins_.
+The generic CliMetLab plugin mechanism relies on creating a python package using
+the `python plugin <plugins>`_ mechanism with ``entry_points``. Additionally,
+`dataset <datasets>`_ plugins can be created using yaml file.
+A Dataset plugin template (https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset)
+has been designed to create the boilerplate code for a plugin.
+
+.. note::
+
+  **Naming convention**: the package name should preferably starts with ``climetlab-`` and use "-". The python package to import should starts with
+  :py:class:`climetlab\_` and use "_".
+
+After installation, the plugin registers itself thanks to the entry points in the setup.py 
+file, making CliMetLab aware of the new capabilities. Then, the user can take advantage of the shared code
+though the enhanced :py:func:`climetlab.load_dataset()`, :py:func:`climetlab.load_dataset()`
+and :py:func:`climetlab.plot_map()`, etc.
+
+For pip packages using setuptools, creating a plugin consists in adding an entry in ``setup.py``:
+
+.. code-block:: python
+  :emphasize-lines: 4-7
+
+    setuptools.setup(
+        name = 'climetlab-package-name',
+        ...
+        entry_points={"climetlab.<plugintype>":
+                ["foo = climetlab_package_name:FooClass",
+                 "bar = climetlab_package_name:BarClass"]
+        },
+    )
+
+In this package called **climetlab-package-name**, the class
+:py:class:`climetlab_package_name.FooClass` provides python code related to ``"foo"``.
+Additional code related to ``"bar"`` is located in the class
+:py:class:`climetlab_package_name.BarClass`.
+The **<plugintype>** is one of the plugin type in the table above:
+:ref:`dataset <datasets>`, 
+:ref:`sources <sources>`, 
+:ref:`readers <readers>`, 
+etc.
+See the individual documentation for each plugin type for detailed examples.
+
+.. todo::
+
+  Move from ``setup.py`` to ``setup.cfg`` or ``pytoml``? Add doc for ``conda``?
+  Link to documentation about climetlab.plugin.register(). 
 
 .. _plugins: https://packaging.python.org/guides/creating-and-discovering-plugins/
 

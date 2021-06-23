@@ -105,4 +105,4 @@ def reader(source, path):
         except Exception as e:
             warnings.warn(f"Error calling reader '{name}': {e}")
 
-    raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic})")
+    raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic}) {source}")

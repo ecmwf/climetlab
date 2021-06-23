@@ -57,6 +57,9 @@ class FileSource(Source):
     def to_numpy(self, *args, **kwargs):
         return self._reader.to_numpy(*args, **kwargs)
 
+    def to_tfrecord(self, *args, **kwargs):
+        return self._reader.to_tfrecord(*args, **kwargs)
+
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 

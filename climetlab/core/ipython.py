@@ -85,7 +85,7 @@ def ipython_environment():
     print(json.dumps(tidy(r), sort_keys=True, indent=4))
 
 
-def enable_ipython_login(level=logging.INFO):
+def enable_ipython_logging(level=logging.INFO):
     class Filter(logging.Filter):
         def filter(self, message):
             return message.levelno < logging.WARNING
@@ -110,7 +110,7 @@ def _identity(x, **kwargs):
 if ipython_active:
     from IPython.display import HTML, SVG, Image, Markdown, display
 
-    # enable_ipython_login()
+    # enable_ipython_logging()
 else:
     Image = _identity
     SVG = _identity

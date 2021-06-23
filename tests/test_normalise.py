@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 
 from climetlab import load_source
-from climetlab.normalize import normalize_args
+from climetlab.normalize import EnumNormaliser, normalize_args
 from climetlab.utils.bbox import BoundingBox
 
 
@@ -88,7 +88,7 @@ def bbox_defaults(area=None):
 
 
 @normalize_args(name=["a", "b", "c"])
-def enum_1(name="a"):
+def enum_1(name=None):
     return name
 
 
@@ -97,15 +97,41 @@ def enum_2(name=1):
     return name
 
 
-def test_enum():
+def test_enum_decorator():
     assert enum_1("a") == "a"
     assert enum_1("b") == "b"
     with pytest.raises(ValueError):
         enum_1("z")
-    with pytest.raises(ValueError):
-        enum_1(["a", "b"])
+    assert enum_1(["a", "b"]) == ["a", "b"]
     with pytest.raises(ValueError):
         enum_1(1)
+
+
+def test_enum_none():
+    assert enum_1() == ["a", "b", "c"]
+    assert enum_1(None) == ["a", "b", "c"]
+
+
+def test_enum():
+    enum_3 = EnumNormaliser(["a", "b", "c"])
+    assert enum_3("a") == "a"
+    assert enum_3("b") == "b"
+    with pytest.raises(ValueError):
+        enum_3("z")
+    assert enum_3(None) == ["a", "b", "c"]
+
+
+def test_enum_case_sensitive():
+    enum_4 = EnumNormaliser(["A", "b", "c"], case_sensitive=True)
+    enum_5 = EnumNormaliser(["A", "b", "c"], case_sensitive=False)
+    assert enum_4(None) == ["A", "b", "c"]
+    assert enum_5(None) == ["A", "b", "c"]
+    assert enum_4("A") == "A"
+    assert enum_5("a") == "A"
+    with pytest.raises(ValueError):
+        enum_4("a")
+    assert enum_5("A") == "A"
+    assert enum_5(["a", "B"]) == ["A", "b"]
 
 
 def test_bbox():
