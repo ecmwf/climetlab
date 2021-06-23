@@ -26,6 +26,20 @@ def test_file_source_netcdf():
     assert len(s) == 2
 
 
+def test_url_file_source():
+    filename = os.path.abspath("docs/examples/test.nc")
+    s = load_source("url", f"file://{filename}")
+    assert len(s) == 2
+
+
+def test_url_ftp_source():
+    s = load_source(
+        "url",
+        "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20210622/00/atmos/wafsgfs_P_t00z_intdsk84.grib2",
+    )
+    assert len(s) == 78
+
+
 # obsolete
 # @pytest.mark.skipif(
 #     True or sys.version_info < (3, 7), reason="Version 3.7 or greater needed"
