@@ -9,6 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import os
 
 import pytest
@@ -32,12 +33,25 @@ def test_url_file_source():
     assert len(s) == 2
 
 
-def test_url_ftp_source():
-    s = load_source(
-        "url",
-        "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20210622/00/atmos/wafsgfs_P_t00z_intdsk84.grib2",
+def test_url_ftp_source_anonymous():
+    date = datetime.datetime.now() - datetime.timedelta(days=1)
+    load_source(
+        "url-pattern",
+        "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{date:date(%Y%m%d)}/00/atmos/wafsgfs_P_t00z_intdsk84.grib2",  # noqa: 501
+        # "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/A_HPXA89ECMF240000_C_ECMF_{date:date(%Y%m%d)}000000_an_msl_global_0p5deg_grib2.bin"
+        {"date": date},
     )
-    assert len(s) == 78
+
+
+# Skip because sometimes fails, when the user "wmo" is already downloading
+# from many places somewhre else in the world.
+# def test_url_ftp_source_with_user_pass():
+#     date = datetime.datetime.now() - datetime.timedelta(days=1)
+#     load_source(
+#         "url-pattern",
+#         "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/A_HPXA89ECMF240000_C_ECMF_{date:date(%Y%m%d)}000000_an_msl_global_0p5deg_grib2.bin",
+#         {"date": date},
+#     )
 
 
 def test_file_source_mars():
