@@ -33,7 +33,7 @@ class UrlPattern(MultiSource):
             #            pbar.update(1)
             return url
 
-        nthreads = self.settings("number-of-download-threads")
+        nthreads = min(self.settings("number-of-download-threads"), len(urls))
         # import os
         # with tqdm(
         #     total=len(urls),
