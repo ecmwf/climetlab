@@ -48,7 +48,6 @@
         "--ignore B101"
     ],
     "cmake.configureOnOpen": false,
-    "python.pythonPath": "/usr/local/bin/python3",
     "spellright.language": [
         "en"
     ],
