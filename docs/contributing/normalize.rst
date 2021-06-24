@@ -1,5 +1,10 @@
 .. _normalize:
 
+.. todo::
+
+    This doc does not reflect the current API.
+    This part is under development and refactoring.
+
 Normalizer
 ==========
 
@@ -79,6 +84,7 @@ Compare the following four codes snippets:
     def __init__(self, date, option):
         do_suff(date, option)
 
+The following table lists the available normalizer:
 
 .. list-table::
    :widths: 10 80 10
