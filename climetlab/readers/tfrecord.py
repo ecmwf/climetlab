@@ -17,7 +17,8 @@ LOG = logging.getLogger(__name__)
 class MultiTfRecordReaders(MultiReaders):
     def to_tfrecord(self, merger=None, **kwargs):
         if merger is None:
-            raise NotImplementedError()  # TODO: Mat Chantry
+            import tensorflow as tf
+            return tf.data.TFRecordDataset([r.path for r in self.readers], **kwargs)
         return merger.merge([r.path for r in self.readers], **kwargs)
 
 
