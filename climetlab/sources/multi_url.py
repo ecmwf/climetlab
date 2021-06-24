@@ -21,7 +21,9 @@ from .url import Url
 
 
 class MultiUrl(MultiSource):
-    def __init__(self, urls, *args, merger=None, file_filter=None, **kwargs):
+    def __init__(
+        self, urls, *args, merger=None, merger_tfrecord=None, file_filter=None, **kwargs
+    ):
         print(f"multi url {file_filter}")
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
@@ -41,4 +43,9 @@ class MultiUrl(MultiSource):
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))
 
-        super().__init__(sources, merger=merger, file_filter=file_filter)
+        super().__init__(
+            sources,
+            merger=merger,
+            merger_tfrecord=merger_tfrecord,
+            file_filter=file_filter,
+        )

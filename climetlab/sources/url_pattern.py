@@ -12,9 +12,11 @@ from climetlab.utils.patterns import Pattern
 
 
 class UrlPattern(MultiUrl):
-    def __init__(self, pattern, *args, merger=None, **kwargs):
+    def __init__(self, pattern, *args, merger=None, merger_tfrecord=None, **kwargs):
         urls = Pattern(pattern).substitute(*args, **kwargs)
-        super().__init__(urls, *args, merger=merger, **kwargs)
+        super().__init__(
+            urls, *args, merger=merger, merger_tfrecord=merger_tfrecord, **kwargs
+        )
 
 
 source = UrlPattern

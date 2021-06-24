@@ -31,7 +31,7 @@ class MultiSource(Source):
         print("multisource after : ", src)
 
         self.merger = merger
-        self.merger = merger_tfrecord
+        self.merger_tfrecord = merger_tfrecord
         self.sources = sources
         self._lengths = [None] * len(sources)
         self.empty = len(sources) == 0
