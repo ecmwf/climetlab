@@ -38,7 +38,6 @@ def test_url_ftp_source_anonymous():
     load_source(
         "url-pattern",
         "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{date:date(%Y%m%d)}/00/atmos/wafsgfs_P_t00z_intdsk84.grib2",  # noqa: 501
-        # "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/A_HPXA89ECMF240000_C_ECMF_{date:date(%Y%m%d)}000000_an_msl_global_0p5deg_grib2.bin"
         {"date": date},
     )
 
