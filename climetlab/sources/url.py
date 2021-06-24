@@ -14,6 +14,8 @@ from urllib.parse import urlparse
 
 import requests
 
+from climetlab.core.settings import SETTINGS
+
 try:
     import ipywidgets  # noqa
     from tqdm.auto import tqdm
@@ -84,21 +86,27 @@ class Url(FileSource):
 
         o = urlparse(url)
         assert o.scheme == "ftp"
+
         if "@" in o.netloc:
             auth, server = o.netloc.split("@")
             user, password = auth.split(":")
         else:
             auth, server = None, o.netloc
             user, password = "anonymous", "anonymous"
-        ftp = FTP(server)
+        ftp = FTP(
+            server,
+            timeout=SETTINGS.as_seconds("url-download-timeout"),
+        )
         if auth:
             ftp.login(user, password)
         else:
             ftp.login()
+
         ftp.cwd(os.path.dirname(o.path))
         ftp.set_pasv(True)
         filename = os.path.basename(o.path)
         size = ftp.size(filename)
+
         with tqdm(
             total=size,
             unit_scale=True,
@@ -136,7 +144,12 @@ class Url(FileSource):
             size = int(r.headers["content-length"])
         except Exception:
             size = None
-        r = requests.get(url, stream=True, verify=self.verify)
+        r = requests.get(
+            url,
+            stream=True,
+            verify=self.verify,
+            timeout=SETTINGS.as_seconds("url-download-timeout"),
+        )
         r.raise_for_status()
         mode = "wb"
         with tqdm(

@@ -64,6 +64,10 @@ SETTINGS_AND_HELP = {
         "10GB",
         """Maximum disk space used by the CliMetLab cache.""",
     ),
+    "url-download-timeout": (
+        "30s",
+        """Timeout when downloading from an url.""",
+    ),
 }
 
 DEFAULTS = {}
@@ -222,6 +226,22 @@ class Settings:
                 self._settings_yaml,
                 exc_info=True,
             )
+
+    def as_seconds(self, name):
+        value = str(self.get(name))
+        v = 0
+        while len(value) and str.isdigit(value[0]):
+            v *= 10
+            v += int(value[0])
+            value = value[1:]
+        seconds = {}
+        n = 1
+        for u in "SMH":
+            n *= 60
+            seconds[u] = n
+        if len(value):
+            v *= seconds[value[0].upper()]
+        return v
 
     def as_bytes(self, name):
         value = str(self.get(name))
