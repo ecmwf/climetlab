@@ -21,20 +21,24 @@ from .url import Url
 
 
 class MultiUrl(MultiSource):
-    def __init__(self, urls, *args, merger=None, **kwargs):
+    def __init__(self, urls, *args, merger=None, file_filter=None, **kwargs):
+        print(f"multi url {file_filter}")
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 
         nthreads = min(self.settings("number-of-download-threads"), len(urls))
 
         if nthreads < 2:
-            sources = [Url(url) for url in urls]
+            sources = [Url(url, file_filter=file_filter) for url in urls]
         else:
             with SoftThreadPool(nthreads=nthreads) as pool:
 
-                futures = [pool.submit(Url, url, watcher=pool) for url in urls]
+                futures = [
+                    pool.submit(Url, url, file_filter=file_filter, watcher=pool)
+                    for url in urls
+                ]
 
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))
 
-        super().__init__(sources, merger=merger)
+        super().__init__(sources, merger=merger, file_filter=file_filter)

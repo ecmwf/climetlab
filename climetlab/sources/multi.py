@@ -10,20 +10,39 @@
 import itertools
 from collections import defaultdict
 
+from climetlab.sources.emtpy import EmptySource
+
 from . import Source
 
 
 class MultiSource(Source):
-    def __init__(self, *sources, merger=None):
+    def __init__(self, *sources, merger=None, file_filter=None):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
+
+        print("multisource before: ", sources)
+        src = []
+        for s in sources:
+            if s.empty:
+                print("multisource skipping: ", s)
+                continue
+            src += s.flatten()
+        self.sources = src
+        print("multisource after : ", src)
+
         self.merger = merger
         self.sources = sources
         self._lengths = [None] * len(sources)
+        self.empty = len(sources) == 0
+
+    def flatten(self):
+        return self.sources
 
     def mutate(self):
         if len(self.sources) == 1 and self.merger is None:
             return self.sources[0].mutate()
+        if len(self.sources) == 0:
+            return EmptySource()
         return self
 
     def _set_dataset(self, dataset):
@@ -59,6 +78,8 @@ class MultiSource(Source):
     def to_xarray(self, **kwargs):
         import xarray as xr
 
+        print(f"merging {self}")
+
         merged = self.sources[0].multi_merge(self.sources)
         if merged is not None:
             return merged.to_xarray(merger=self.merger, **kwargs)
@@ -82,6 +103,10 @@ class MultiSource(Source):
             arrays = [a.expand_dims(dims) for a in arrays]
 
         return xr.merge(arrays)
+
+    def __repr__(self) -> str:
+        string = ",".join(repr(s) for s in self.sources)
+        return f"{self.__class__.__name__}({string})"
 
 
 source = MultiSource

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
 import warnings
 import weakref
@@ -14,6 +15,8 @@ from importlib import import_module
 
 from climetlab.core import Base
 from climetlab.decorators import locked
+
+LOG = logging.getLogger(__name__)
 
 
 class Reader(Base):
@@ -102,7 +105,7 @@ def reader(source, path):
             reader = r(source, path, magic)
             if reader is not None:
                 return reader.mutate()
-        except Exception as e:
-            warnings.warn(f"Error calling reader '{name}': {e}")
+        except Exception:
+            LOG.exception("Error calling reader %s", name)  # , stack_info=True)
 
     raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic}) {source}")

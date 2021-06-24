@@ -13,15 +13,22 @@ from . import Reader
 from . import reader as find_reader
 
 
+def _accept_all(*args, **kwargs):
+    return True
+
+
 class DirectoryReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
+        file_filter = self.source.file_filter
+        self.file_filter = file_filter if file_filter is not None else _accept_all
 
         self._content = []
 
         for root, _, files in os.walk(path):
             for file in files:
-                self._content.append(os.path.join(root, file))
+                if self.file_filter(file):
+                    self._content.append(os.path.join(root, file))
 
         assert self._content, path
 

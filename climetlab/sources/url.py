@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 import requests
 
 from climetlab.core.settings import SETTINGS
+from climetlab.sources.empty import EmptySource
 
 try:
     import ipywidgets  # noqa
@@ -32,14 +33,29 @@ def dummy():
 
 
 class Url(FileSource):
-    def __init__(self, url, unpack=None, verify=True, watcher=None, **kwargs):
+    def __init__(
+        self,
+        url,
+        unpack=None,
+        file_filter=None,
+        verify=True,
+        watcher=None,
+        **kwargs,
+    ):
+        self.url = url
+        print(f"url {file_filter}")
 
-        super().__init__(**kwargs)
+        super().__init__(file_filter=file_filter, **kwargs)
 
         self.verify = verify
         self.watcher = watcher if watcher else dummy
 
-        base, ext = os.path.splitext(url.split("?")[0])
+        url_no_args = url.split("?")[0]
+        if file_filter is not None and not file_filter(url_no_args):
+            self.empty = True
+            return
+
+        base, ext = os.path.splitext(url_no_args)
         _, tar = os.path.splitext(base)
         if tar == ".tar":
             ext = ".tar" + ext
@@ -70,6 +86,13 @@ class Url(FileSource):
                 url,
                 extension=ext,
             )
+
+    def mutate(self):
+        if self.path is None:
+            # The download was not performed.
+            # Filtered out by file_filter.
+            return EmptySource()
+        return self
 
     def _download(self, url, target):
         o = urlparse(url)
@@ -179,6 +202,9 @@ class Url(FileSource):
         except FileNotFoundError as e:
             if not os.path.exists(target):
                 raise e
+
+    def __repr__(self) -> str:
+        return f"Url({self.url})"
 
 
 source = Url

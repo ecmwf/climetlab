@@ -38,7 +38,7 @@ class ZIPReader(Reader):
 
     def mutate(self):
         if os.path.isdir(self.path):
-            return find_reader(self.source, self.path)
+            return find_reader(self.source, self.path).mutate()
         return self
 
     def to_pandas(self, **kwargs):

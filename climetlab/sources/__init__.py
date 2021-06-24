@@ -30,8 +30,10 @@ class Source(Base):
     citation = "-"
 
     _dataset = None
+    empty = False
 
-    def __init__(self, **kwargs):
+    def __init__(self, file_filter=None, **kwargs):
+        self.file_filter = file_filter
         self._kwargs = kwargs
 
     def settings(self, name):
@@ -40,6 +42,9 @@ class Source(Base):
     def mutate(self):
         # Give a chance to `multi` to change source
         return self
+
+    def flatten(self):
+        return [self]
 
     def cache_file(self, create, args, extension=".cache"):
         owner = self.name
