@@ -40,6 +40,11 @@ a pull request to add it.
 Drafts plugins
 --------------
 
+- `maelstrom-nogwd <https://github.com/mchantry/climetlab-maelstrom-nogwd>`_:
+  Maelstom project.
+
+  Dataset provided: ``maelstom-nogwd``
+
 - `climetlab-cems-flood <https://github.com/ecmwf-lab/climetlab-cems-flood>`_:
   Glofas data. In progress.
 
