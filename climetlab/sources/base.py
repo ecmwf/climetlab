@@ -51,14 +51,14 @@ class FileSource(Source):
     def to_xarray(self, *args, **kwargs):
         return self._reader.to_xarray(*args, **kwargs)
 
+    def to_tfrecord(self, *args, **kwargs):
+        return self._reader.to_tfrecord(*args, **kwargs)
+
     def to_pandas(self, *args, **kwargs):
         return self._reader.to_pandas(*args, **kwargs)
 
     def to_numpy(self, *args, **kwargs):
         return self._reader.to_numpy(*args, **kwargs)
-
-    def to_tfrecord(self, *args, **kwargs):
-        return self._reader.to_tfrecord(*args, **kwargs)
 
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
@@ -69,6 +69,13 @@ class FileSource(Source):
             return None
         readers = [s._reader for s in sources]
         return readers[0].multi_merge(readers)
+
+    @classmethod
+    def multi_merge_tfrecord(cls, sources):
+        if not all(isinstance(s, FileSource) for s in sources):
+            return None
+        readers = [s._reader for s in sources]
+        return readers[0].multi_merge_tfrecord(readers)
 
     def _attributes(self, names):
         return self._reader._attributes(names)

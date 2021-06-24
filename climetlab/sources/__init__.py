@@ -84,6 +84,10 @@ class Source(Base):
     def multi_merge(cls, sources):
         return None
 
+    @classmethod
+    def multi_merge_tfrecord(cls, sources):
+        return None
+
 
 class SourceLoader:
 

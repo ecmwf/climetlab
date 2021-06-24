@@ -107,6 +107,9 @@ class Dataset(Base):
     def to_xarray(self, *args, **kwargs):
         return self.source.to_xarray(*args, **kwargs)
 
+    def to_tfrecord(self, *args, **kwargs):
+        return self.source.to_tfrecord(*args, **kwargs)
+
     def to_pandas(self, *args, **kwargs):
         return self.source.to_pandas(*args, **kwargs)
 

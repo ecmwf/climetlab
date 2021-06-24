@@ -16,7 +16,7 @@ from . import Source
 
 
 class MultiSource(Source):
-    def __init__(self, *sources, merger=None, file_filter=None):
+    def __init__(self, *sources, merger=None, merger_tfrecord=None, file_filter=None):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
 
@@ -31,6 +31,7 @@ class MultiSource(Source):
         print("multisource after : ", src)
 
         self.merger = merger
+        self.merger = merger_tfrecord
         self.sources = sources
         self._lengths = [None] * len(sources)
         self.empty = len(sources) == 0
@@ -103,6 +104,14 @@ class MultiSource(Source):
             arrays = [a.expand_dims(dims) for a in arrays]
 
         return xr.merge(arrays)
+
+    def to_tfrecord(self, **kwargs):
+
+        merged = self.sources[0].multi_merge_tfrecord(self.sources)
+        if merged is not None:
+            return merged.to_tfrecord(merger=self.merger_tfrecord, **kwargs)
+
+        raise NotImplementedError()
 
     def __repr__(self) -> str:
         string = ",".join(repr(s) for s in self.sources)

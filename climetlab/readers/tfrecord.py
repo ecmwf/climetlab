@@ -9,9 +9,16 @@
 
 import logging
 
-from climetlab.readers import Reader
+from climetlab.readers import MultiReaders, Reader
 
 LOG = logging.getLogger(__name__)
+
+
+class MultiTfRecordReaders(MultiReaders):
+    def to_tfrecord(self, merger=None, **kwargs):
+        if merger is None:
+            raise NotImplementedError()  # TODO: Mat Chantry
+        return merger.merge([r.path for r in self.readers], **kwargs)
 
 
 class TfRecordReader(Reader):
@@ -20,6 +27,11 @@ class TfRecordReader(Reader):
 
         tfrecord = tf.data.TFRecordDataset(self.path)
         return tfrecord
+
+    @classmethod
+    def multi_merge_tfrecord(cls, readers):
+        assert all(isinstance(r, TfRecordReader) for r in readers)
+        return MultiTfRecordReaders(readers)
 
 
 def reader(source, path, magic):
