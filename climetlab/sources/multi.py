@@ -10,7 +10,7 @@
 import itertools
 from collections import defaultdict
 
-from climetlab.sources.emtpy import EmptySource
+from climetlab.sources.empty import EmptySource
 
 from . import Source
 
