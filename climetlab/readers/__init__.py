@@ -9,7 +9,6 @@
 
 import logging
 import os
-import warnings
 import weakref
 from importlib import import_module
 
@@ -58,7 +57,7 @@ def _readers():
                     module = import_module(f".{name}", package=__name__)
                     if hasattr(module, "reader"):
                         _READERS[name] = module.reader
-                except Exception as e:
+                except Exception:
                     LOG.exception("Error loading reader %s", name)
     return _READERS
 

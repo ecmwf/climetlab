@@ -12,7 +12,7 @@ from climetlab.utils.patterns import Pattern
 
 
 class UrlPattern(MultiUrl):
-    def __init__(self, pattern, *args, merger=None, force=False,**kwargs):
+    def __init__(self, pattern, *args, merger=None, force=False, **kwargs):
         urls = Pattern(pattern).substitute(*args, **kwargs)
         super().__init__(urls, *args, merger=merger, force=force, **kwargs)
 

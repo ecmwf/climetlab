@@ -265,11 +265,11 @@ class Cache(threading.Thread):
                 pass
         else:
             path, size, owner, args = (
-            entry["path"],
-            entry["size"],
-            entry["owner"],
-            entry["args"],
-        )
+                entry["path"],
+                entry["size"],
+                entry["owner"],
+                entry["args"],
+            )
         assert path.startswith(top), (path, top)
         if not os.path.exists(path):
             LOG.warning(f"cache file lost: {path}")
@@ -384,7 +384,6 @@ class Cache(threading.Thread):
         top = SETTINGS.get("cache-directory")
         with self.connection as db:
             self._delete_entry(db, top, path)
-
 
     def _check_cache_size(self):
         maximum = SETTINGS.as_bytes("maximum-cache-size")
