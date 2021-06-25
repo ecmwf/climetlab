@@ -14,8 +14,8 @@ import datetime
 import numpy as np
 import pytest
 
-from climetlab import load_source
-from climetlab.normalize import EnumNormaliser, normalize_args
+from climetlab import ALL, load_source
+from climetlab.normalize import EnumListNormaliser, EnumNormaliser, normalize_args
 from climetlab.utils.bbox import BoundingBox
 
 
@@ -87,29 +87,78 @@ def bbox_defaults(area=None):
     return area
 
 
+# def test_enum_definition():
+@normalize_args(name=("a", "b", "c"))
+def enum_1(name="a"):
+    return name
+
+
+@normalize_args(name=("a", "b", "c"))
+def enum_no_default(name):
+    return name
+
+
+@normalize_args(name=("a", "b", "c"))
+def enum_default_is_none(name=None):
+    return name
+
+
+@normalize_args(name=(1, 0.5, 3))
+def enum_number(name=1):
+    return name
+
+
+#    for k, v in vars().items():
+#         globals()[k] = v
+
+
+# def test_enum_list_definition():
 @normalize_args(name=["a", "b", "c"])
-def enum_1(name=None):
+def enum_list_1(name="a"):
+    return name
+
+
+@normalize_args(name=["a", "b", "c"])
+def enum_list_no_default(name):
+    return name
+
+
+@normalize_args(name=["a", "b", "c"])
+def enum_list_default_is_none(name=None):
+    return name
+
+
+@normalize_args(name=["a", "b", "c"])
+def enum_list_default_is_all(name=ALL):
     return name
 
 
 @normalize_args(name=[1, 0.5, 3])
-def enum_2(name=1):
+def enum_list_number(name=1):
     return name
+
+
+# for k, v in vars().items():
+#    globals()[k] = v
 
 
 def test_enum_decorator():
     assert enum_1("a") == "a"
     assert enum_1("b") == "b"
+    assert enum_1() == "a"
     with pytest.raises(ValueError):
         enum_1("z")
-    assert enum_1(["a", "b"]) == ["a", "b"]
     with pytest.raises(ValueError):
-        enum_1(1)
+        enum_1(["a", "b"])
 
 
-def test_enum_none():
-    assert enum_1() == ["a", "b", "c"]
-    assert enum_1(None) == ["a", "b", "c"]
+def test_enum_decorator_default():
+    assert enum_no_default("a") == "a"
+    assert enum_default_is_none("a") == "a"
+    with pytest.raises(ValueError):
+        enum_default_is_none()
+    with pytest.raises(TypeError):
+        enum_no_default()
 
 
 def test_enum():
@@ -118,19 +167,34 @@ def test_enum():
     assert enum_3("b") == "b"
     with pytest.raises(ValueError):
         enum_3("z")
-    assert enum_3(None) == ["a", "b", "c"]
+    with pytest.raises(ValueError):
+        enum_3(ALL)
 
 
-def test_enum_case_sensitive():
-    enum_4 = EnumNormaliser(["A", "b", "c"], case_sensitive=True)
-    enum_5 = EnumNormaliser(["A", "b", "c"], case_sensitive=False)
-    assert enum_4(None) == ["A", "b", "c"]
-    assert enum_5(None) == ["A", "b", "c"]
-    assert enum_4("A") == "A"
-    assert enum_5("a") == "A"
+def test_enum_list_decorator_default():
+    assert enum_list_no_default("a") == ["a"]
+    assert enum_list_default_is_none("a") == ["a"]
+    assert enum_list_default_is_none() == ["a", "b", "c"]
+    assert enum_list_default_is_all() == ["a", "b", "c"]
+    assert enum_list_number(1.0) == [1]
+    with pytest.raises(ValueError):
+        enum_list_number("1")
+    #    with pytest.raises(ValueError):
+    #        enum_list_default_is_none()
+    with pytest.raises(TypeError):
+        enum_list_no_default()
+
+
+def test_enum_list_case_sensitive():
+    enum_4 = EnumListNormaliser(["A", "b", "c"], case_sensitive=True)
+    enum_5 = EnumListNormaliser(["A", "b", "c"], case_sensitive=False)
+    assert enum_4(ALL) == ["A", "b", "c"]
+    assert enum_5(ALL) == ["A", "b", "c"]
+    assert enum_4("A") == ["A"]
+    assert enum_5("a") == ["A"]
     with pytest.raises(ValueError):
         enum_4("a")
-    assert enum_5("A") == "A"
+    assert enum_5("A") == ["A"]
     assert enum_5(["a", "B"]) == ["A", "b"]
 
 

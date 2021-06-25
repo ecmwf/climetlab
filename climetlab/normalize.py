@@ -16,6 +16,14 @@ from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
 
 
+class _all:
+    def __repr__(self):
+        return "climetlab.normalize.ALL"
+
+
+ALL = _all()
+
+
 def _identity(x):
     return x
 
@@ -75,8 +83,8 @@ class DateNormaliser:
         return dates[0]
 
 
-class EnumNormaliser:
-    def __init__(self, values, case_sensitive=True):
+class _EnumNormaliser:
+    def __init__(self, *values, case_sensitive=True):
         """Initialize the parameter instance .
 
         Parameters
@@ -91,23 +99,23 @@ class EnumNormaliser:
         ValueError
             Ret[description]
         """
-        for v in values:
-            if v is None:
-                raise ValueError(
-                    f'"{v}" cannot be in the list of possible values ({self.values}).'
-                )
+        # for v in values:
+        #    if v is None:
+        #        raise ValueError(
+        #            f'"{v}" cannot be in the list of possible values ({self.values}).'
+        #        )
         self.case_sensitive = case_sensitive
+
+        if len(values) == 1 and isinstance(values[0], (list, tuple)):
+            values = values[0]
+
         self.values = values
 
-    def __call__(self, x):
-        if x is None:
-            return self.values
+    def normalize_one_value(self, x):
         for v in self.values:
             if self.compare(x, v):
                 return v
-        if isinstance(x, (list, tuple)):
-            return [self.__call__(y) for y in x]
-        raise ValueError(f'Invalid value "{x}", possible values are {self.values}')
+        self.raise_error(x)
 
     def compare(self, x, value):
         if self.case_sensitive is False:
@@ -118,8 +126,37 @@ class EnumNormaliser:
                 pass
         return x == value
 
+    def raise_error(self, x):
+        raise ValueError(f'Invalid value "{x}", possible values are {self.values}')
+
+
+class EnumNormaliser(_EnumNormaliser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, x):
+        return self.normalize_one_value(x)
+
+
+class EnumListNormaliser(_EnumNormaliser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, x):
+        if x is ALL:
+            return self.values
+        if x is None:  # TODO: To be discussed
+            return self.values
+
+        if not isinstance(x, (list, tuple)):
+            x = [x]
+
+        return [self.normalize_one_value(y) for y in x]
+
 
 NORMALISERS = {
+    "enum": EnumNormaliser,
+    "enum-list": EnumListNormaliser,
     "date-list": DateListNormaliser,
     "date": DateNormaliser,
     "variable-list": VariableNormaliser,
@@ -128,13 +165,16 @@ NORMALISERS = {
 }
 
 
-def _normalizer(v):
+def _find_normaliser(v):
 
     if callable(v):
         return v
 
-    if isinstance(v, list):
+    if isinstance(v, tuple):
         return EnumNormaliser(v)
+
+    if isinstance(v, list):
+        return EnumListNormaliser(v)
 
     assert isinstance(v, str), v
     m = re.match(r"(.+)\((.+)\)", v)
@@ -151,7 +191,7 @@ def normalize_args(**kwargs):
     normalizers = {}
 
     for k, v in kwargs.items():
-        normalizers[k] = _normalizer(v)
+        normalizers[k] = _find_normaliser(v)
 
     def outer(func):
         @functools.wraps(func)

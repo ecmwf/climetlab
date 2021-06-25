@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import climetlab as cml
 
 cml.load_source(
