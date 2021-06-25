@@ -15,7 +15,12 @@ import numpy as np
 import pytest
 
 from climetlab import ALL, load_source
-from climetlab.normalize import EnumListNormaliser, EnumNormaliser, normalize_args
+from climetlab.normalize import (
+    DateListNormaliser,
+    EnumListNormaliser,
+    EnumNormaliser,
+    normalize_args,
+)
 from climetlab.utils.bbox import BoundingBox
 
 
@@ -43,23 +48,55 @@ def test_param_convention_cf():
     assert values_cf(parameter="t2m") == "t2m"
 
 
-@normalize_args(date="date-list")
+@normalize_args(date="date")
 def dates_1(date):
+    return date
+
+
+@normalize_args(date="date-list")
+def dates_list_1(date):
     return date
 
 
 def test_dates():
     npdate = np.datetime64("2016-01-01")
-    assert dates_1(date=npdate) == [datetime.datetime(2016, 1, 1)]
+    assert dates_1(date=npdate) == datetime.datetime(2016, 1, 1)
+    assert dates_list_1(date=npdate) == [datetime.datetime(2016, 1, 1)]
 
     source = load_source("file", "docs/examples/test.grib")
-    assert dates_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
+    assert dates_1(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
+    assert dates_list_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
     source = load_source("file", "docs/examples/test.nc")
 
     #  For now
     with pytest.raises(NotImplementedError):
-        assert dates_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
+        assert dates_1(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
+        assert dates_list_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
+
+
+def test_dates_no_list():
+    norm = DateListNormaliser("%Y.%m.%d")
+    assert norm("20200513") == ["2020.05.13"]
+    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
+    assert norm([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
+
+
+# def test_dates_with_list():
+#     norm = DateListNormaliser("%Y.%m.%d", valid=["2020.05.13"] )
+#     assert norm("20200513") == ["2020.05.13"]
+#     assert norm([datetime.datetime(2020, 5, 13, 12, 0)]) == ["2020.05.13"]
+#
+#     with pytest.raises(ValueError):
+#         assert norm("19991231")
+
+
+def test_dates_3():
+    norm = DateListNormaliser()
+    assert norm("20200513") == [datetime.datetime(2020, 5, 13, 0, 0)]
+    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == [
+        datetime.datetime(2020, 5, 13, 0, 0)
+    ]
 
 
 @normalize_args(area="bounding-box")
@@ -186,14 +223,9 @@ def test_enum_list_decorator_default():
 
 
 def test_enum_list_case_sensitive():
-    enum_4 = EnumListNormaliser(["A", "b", "c"], case_sensitive=True)
-    enum_5 = EnumListNormaliser(["A", "b", "c"], case_sensitive=False)
-    assert enum_4(ALL) == ["A", "b", "c"]
+    enum_5 = EnumListNormaliser(["A", "b", "c"])
     assert enum_5(ALL) == ["A", "b", "c"]
-    assert enum_4("A") == ["A"]
     assert enum_5("a") == ["A"]
-    with pytest.raises(ValueError):
-        enum_4("a")
     assert enum_5("A") == ["A"]
     assert enum_5(["a", "B"]) == ["A", "b"]
 
