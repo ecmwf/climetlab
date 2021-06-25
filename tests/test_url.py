@@ -11,7 +11,10 @@
 
 import time
 
+import climetlab as cml
 from climetlab.utils import download_and_cache
+
+from utils import data_file
 
 
 def test_download():
@@ -21,6 +24,12 @@ def test_download():
     )
     download_and_cache(url)
 
+def test_local():
+    ds = cml.load_source('url','file://{}'.format(data_file('single/z_500_20000101.grib'),))
+    assert len(ds) == 1
+
+def test_ftp():
+    pass
 
 # TODO: test .tar, .zip, .tar.gz
 if __name__ == "__main__":
