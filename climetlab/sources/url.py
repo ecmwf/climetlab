@@ -43,7 +43,6 @@ class Url(FileSource):
         **kwargs,
     ):
         self.url = url
-        print(f"url {file_filter}")
 
         super().__init__(file_filter=file_filter, **kwargs)
 
@@ -102,6 +101,7 @@ class Url(FileSource):
     def _download_file(self, url, target):
         o = urlparse(url)
         assert o.scheme == "file"
+        assert os.path.exists(o.path), f"File not found: {o.path}"
         os.symlink(o.path, target)
 
     def _download_ftp(self, url, target):

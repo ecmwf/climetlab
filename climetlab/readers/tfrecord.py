@@ -30,7 +30,7 @@ class TfRecordReader(Reader):
         return tfrecord
 
     @classmethod
-    def multi_merge_tfrecord(cls, readers):
+    def multi_merge(cls, readers):
         assert all(isinstance(r, TfRecordReader) for r in readers)
         return MultiTfRecordReaders(readers)
 

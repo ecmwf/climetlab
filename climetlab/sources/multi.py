@@ -107,9 +107,9 @@ class MultiSource(Source):
 
     def to_tfrecord(self, **kwargs):
 
-        merged = self.sources[0].multi_merge_tfrecord(self.sources)
+        merged = self.sources[0].multi_merge(self.sources)
         if merged is not None:
-            return merged.to_tfrecord(merger=self.merger_tfrecord, **kwargs)
+            return merged.to_tfrecord(merger=self.merger, **kwargs)
 
         raise NotImplementedError()
 

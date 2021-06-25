@@ -24,7 +24,6 @@ class MultiUrl(MultiSource):
     def __init__(
         self, urls, *args, merger=None, merger_tfrecord=None, file_filter=None, **kwargs
     ):
-        print(f"multi url {file_filter}")
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 
