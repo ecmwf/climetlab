@@ -28,11 +28,13 @@ class MultiUrl(MultiSource):
         nthreads = min(self.settings("number-of-download-threads"), len(urls))
 
         if nthreads < 2:
-            sources = [Url(url,force=force) for url in urls]
+            sources = [Url(url, force=force) for url in urls]
         else:
             with SoftThreadPool(nthreads=nthreads) as pool:
 
-                futures = [pool.submit(Url, url, watcher=pool,force=force) for url in urls]
+                futures = [
+                    pool.submit(Url, url, watcher=pool, force=force) for url in urls
+                ]
 
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))

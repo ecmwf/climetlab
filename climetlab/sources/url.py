@@ -160,6 +160,14 @@ class FileDownloader(Downloader):
         os.symlink(o.path, target)
 
 
+DOWNLOADERS = dict(
+    ftp=FTPDownloader,
+    http=HTTPDownloader,
+    https=HTTPDownloader,
+    file=FileDownloader,
+)
+
+
 class Url(FileSource):
     def __init__(
         self,
@@ -187,7 +195,8 @@ class Url(FileSource):
             unpack = ext in (".tar", ".tar.gz")
 
         def download(target, url):
-            return self._download(url, target)
+            o = urlparse(self.url)
+            return DOWNLOADERS[o.scheme](self).download(url, target)
 
         def download_and_unpack(target, url):
             archive = target + ext
@@ -211,17 +220,6 @@ class Url(FileSource):
                 extension=ext,
                 force=self.force,
             )
-
-    def _download(self, url, target):
-
-        downloaders = dict(
-            ftp=FTPDownloader,
-            http=HTTPDownloader,
-            https=HTTPDownloader,
-            file=FileDownloader,
-        )
-        o = urlparse(self.url)
-        return downloaders[o.scheme](self).download(url, target)
 
     def __repr__(self) -> str:
         return f"Url({self.url})"

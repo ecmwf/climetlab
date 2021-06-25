@@ -16,9 +16,15 @@ from utils import data_file
 import climetlab as cml
 from climetlab.utils import download_and_cache
 
-# def test_multi_1():
-#     ds = cml.load_source('url','file://{}'.format(data_file('mixed'),))
-#     assert len(ds) == 1
+
+def test_multi_1():
+    ds = cml.load_source(
+        "url",
+        "file://{}".format(
+            data_file("mixed"),
+        ),
+    )
+    assert len(ds) == 1
 
 
 # def test_grib_zip():

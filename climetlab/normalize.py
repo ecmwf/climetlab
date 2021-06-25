@@ -84,27 +84,19 @@ class DateNormaliser:
 
 
 class _EnumNormaliser:
-    def __init__(self, *values, case_sensitive=True):
+    def __init__(self, *values):
         """Initialize the parameter instance .
 
         Parameters
         ----------
         values : [type]
             [description]
-        case_sensitive : bool, optional
-            [description], by default True
 
         Raises
         ------
         ValueError
             Ret[description]
         """
-        # for v in values:
-        #    if v is None:
-        #        raise ValueError(
-        #            f'"{v}" cannot be in the list of possible values ({self.values}).'
-        #        )
-        self.case_sensitive = case_sensitive
 
         if len(values) == 1 and isinstance(values[0], (list, tuple)):
             values = values[0]
@@ -118,12 +110,8 @@ class _EnumNormaliser:
         self.raise_error(x)
 
     def compare(self, x, value):
-        if self.case_sensitive is False:
-            try:
-                x = x.upper()
-                value = value.upper()
-            except AttributeError:
-                pass
+        if isinstance(x, str) and isinstance(value, str):
+            return x.upper() == value.upper()
         return x == value
 
     def raise_error(self, x):
