@@ -16,22 +16,16 @@ from . import Source
 
 
 class MultiSource(Source):
-    def __init__(self, *sources, merger=None, merger_tfrecord=None, file_filter=None):
+    def __init__(self, *sources, merger=None):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
 
-        print("multisource before: ", sources)
         src = []
         for s in sources:
-            if s.empty:
-                print("multisource skipping: ", s)
-                continue
             src += s.flatten()
         self.sources = src
-        print("multisource after : ", src)
 
         self.merger = merger
-        self.merger_tfrecord = merger_tfrecord
         self.sources = sources
         self._lengths = [None] * len(sources)
         self.empty = len(sources) == 0

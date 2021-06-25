@@ -257,7 +257,14 @@ class Cache(threading.Thread):
                     # )
 
     def _delete_entry(self, db, top, entry):
-        path, size, owner, args = (
+        if isinstance(entry, str):
+            path, size, owner, args = entry, None, None, None
+            try:
+                size = os.path.getsize(path)
+            except OSError:
+                pass
+        else:
+            path, size, owner, args = (
             entry["path"],
             entry["size"],
             entry["owner"],
@@ -373,6 +380,12 @@ class Cache(threading.Thread):
                 size = 0
             return size
 
+    def _decache_file(self, path):
+        top = SETTINGS.get("cache-directory")
+        with self.connection as db:
+            self._delete_entry(db, top, path)
+
+
     def _check_cache_size(self):
         maximum = SETTINGS.as_bytes("maximum-cache-size")
         size = self._cache_size()
@@ -412,9 +425,10 @@ cache_size = in_executor(CACHE._cache_size)
 cache_entries = in_executor(CACHE._cache_entries)
 purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
+decache_file = in_executor(CACHE._decache_file)
 
 
-def cache_file(owner: str, create, args, extension: str = ".cache"):
+def cache_file(owner: str, create, args, extension: str = ".cache", force=False):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
 
@@ -441,6 +455,9 @@ def cache_file(owner: str, create, args, extension: str = ".cache"):
         m.hexdigest(),
         extension,
     )
+
+    if force:
+        decache_file(path)
 
     register_cache_file(path, owner, args)
 

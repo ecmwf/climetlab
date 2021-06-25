@@ -43,37 +43,6 @@ class Reader(Base):
         return self.source.cache_file(*args, **kwargs)
 
 
-class DefaultMerger:
-    def __init__(self, engine, backend_kwargs):
-        self.engine = engine
-        self.backend_kwargs = backend_kwargs
-
-    def merge(self, paths, **kwargs):
-        import xarray as xr
-
-        options = dict(backend_kwargs=self.backend_kwargs)
-        options.update(kwargs)
-        return xr.open_mfdataset(
-            paths,
-            engine=self.engine,
-            **options,
-        )
-
-
-class MultiReaders(Base):
-    def __init__(self, readers):
-        self.readers = readers
-
-
-class GriddedMultiReaders(MultiReaders):
-    backend_kwargs = {}
-
-    def to_xarray(self, merger=None, **kwargs):
-        if merger is None:
-            merger = DefaultMerger(self.engine, self.backend_kwargs)
-        return merger.merge([r.path for r in self.readers], **kwargs)
-
-
 _READERS = {}
 
 
@@ -86,9 +55,11 @@ def _readers():
             if path.endswith(".py") and path[0] not in ("_", "."):
                 name, _ = os.path.splitext(path)
                 try:
-                    _READERS[name] = import_module(f".{name}", package=__name__).reader
+                    module = import_module(f".{name}", package=__name__)
+                    if hasattr(module, "reader"):
+                        _READERS[name] = module.reader
                 except Exception as e:
-                    warnings.warn(f"Error loading wrapper {name}: {e}")
+                    LOG.exception("Error loading reader %s", name)
     return _READERS
 
 
@@ -103,11 +74,10 @@ def reader(source, path):
         magic = f.read(8)
 
     for name, r in _readers().items():
-        try:
-            reader = r(source, path, magic)
-            if reader is not None:
-                return reader.mutate()
-        except Exception:
-            LOG.exception("Error calling reader %s", name)  # , stack_info=True)
+        reader = r(source, path, magic)
+        if reader is not None:
+            return reader.mutate()
 
-    raise ValueError(f"Cannot find a reader for file '{path}' (magic {magic}) {source}")
+    from .unknown import Unknown
+
+    return Unknown(source, path, magic)

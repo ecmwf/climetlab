@@ -30,10 +30,8 @@ class Source(Base):
     citation = "-"
 
     _dataset = None
-    empty = False
 
-    def __init__(self, file_filter=None, **kwargs):
-        self.file_filter = file_filter
+    def __init__(self, **kwargs):
         self._kwargs = kwargs
 
     def settings(self, name):
@@ -46,13 +44,13 @@ class Source(Base):
     def flatten(self):
         return [self]
 
-    def cache_file(self, create, args, extension=".cache"):
+    def cache_file(self, create, args, extension=".cache", force=False):
         owner = self.name
         if self.dataset:
             owner = self.dataset.name
         if owner is None:
             owner = self.__class__.__name__.lower()
-        return cache_file(owner, create, args, extension)
+        return cache_file(owner, create, args, extension, force)
 
     @property
     def dataset(self):

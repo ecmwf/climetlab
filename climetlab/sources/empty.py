@@ -11,7 +11,7 @@ from . import Source
 
 
 class EmptySource(Source):
-    empty = True
+    pass
 
 
 source = EmptySource

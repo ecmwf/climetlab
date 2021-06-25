@@ -20,15 +20,12 @@ def _accept_all(*args, **kwargs):
 class DirectoryReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
-        file_filter = self.source.file_filter
-        self.file_filter = file_filter if file_filter is not None else _accept_all
 
         self._content = []
 
         for root, _, files in os.walk(path):
             for file in files:
-                if self.file_filter(file):
-                    self._content.append(os.path.join(root, file))
+                self._content.append(os.path.join(root, file))
 
         assert self._content, path
 

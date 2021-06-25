@@ -10,12 +10,12 @@
 import logging
 import os
 import shutil
+from ftplib import FTP
 from urllib.parse import urlparse
 
 import requests
 
 from climetlab.core.settings import SETTINGS
-from climetlab.sources.empty import EmptySource
 
 try:
     import ipywidgets  # noqa
@@ -32,27 +32,151 @@ def dummy():
     pass
 
 
+class Downloader:
+    def __init__(self, owner):
+        self.owner = owner
+
+    def download(self, url, target):
+        if os.path.exists(target):
+            return
+
+        download = target + ".download"
+        LOG.info("Downloading %s", url)
+
+        size = self.prepare(url)
+
+        mode = "wb"
+        with tqdm(
+            total=size,
+            unit_scale=True,
+            unit_divisor=1024,
+            unit="B",
+            disable=False,
+            leave=False,
+            desc=os.path.basename(url),
+        ) as pbar:
+
+            with open(download, mode) as f:
+                total = self.transfer(f, pbar, self.owner.watcher)
+
+            pbar.close()
+
+        # take care of race condition when two processes
+        # download into the same file at the same time
+        try:
+            os.rename(download, target)
+        except FileNotFoundError as e:
+            if not os.path.exists(target):
+                raise e
+
+        self.finalise()
+        return total
+
+    def finalise(self):
+        pass
+
+
+class HTTPDownloader(Downloader):
+    def prepare(self, url):
+
+        r = requests.head(url, verify=self.owner.verify)
+        r.raise_for_status()
+        try:
+            size = int(r.headers["content-length"])
+        except Exception:
+            size = None
+        r = requests.get(
+            url,
+            stream=True,
+            verify=self.owner.verify,
+            timeout=SETTINGS.as_seconds("url-download-timeout"),
+        )
+        r.raise_for_status()
+
+        self.request = r
+
+        return size
+
+    def transfer(self, f, pbar, watcher):
+        total = 0
+        for chunk in self.request.iter_content(chunk_size=1024 * 1024):
+            watcher()
+            if chunk:
+                f.write(chunk)
+                total += len(chunk)
+                pbar.update(len(chunk))
+        return total
+
+
+class FTPDownloader(Downloader):
+    def prepare(self, url):
+
+        o = urlparse(url)
+        assert o.scheme == "ftp"
+
+        if "@" in o.netloc:
+            auth, server = o.netloc.split("@")
+            user, password = auth.split(":")
+        else:
+            auth, server = None, o.netloc
+            user, password = "anonymous", "anonymous"
+
+        ftp = FTP(
+            server,
+            timeout=SETTINGS.as_seconds("url-download-timeout"),
+        )
+
+        if auth:
+            ftp.login(user, password)
+        else:
+            ftp.login()
+
+        ftp.cwd(os.path.dirname(o.path))
+        ftp.set_pasv(True)
+        self.filename = os.path.basename(o.path)
+        self.ftp = ftp
+        return ftp.size(self.filename)
+
+    def transfer(self, f, pbar, watcher):
+        total = 0
+
+        def callback(chunk):
+            nonlocal total
+            watcher()
+            f.write(chunk)
+            total += len(chunk)
+            pbar.update(len(chunk))
+
+        self.ftp.retrbinary(f"RETR {self.filename}", callback)
+
+    def finalise(self):
+        self.ftp.close()
+
+
+class FileDownloader(Downloader):
+    def download(self, url, target):
+        o = urlparse(url)
+        assert os.path.exists(o.path), f"File not found: {o.path}"
+        os.symlink(o.path, target)
+
+
 class Url(FileSource):
     def __init__(
         self,
         url,
         unpack=None,
-        file_filter=None,
         verify=True,
         watcher=None,
+        force=False,
         **kwargs,
     ):
         self.url = url
 
-        super().__init__(file_filter=file_filter, **kwargs)
-
         self.verify = verify
         self.watcher = watcher if watcher else dummy
+        self.force = force
 
         url_no_args = url.split("?")[0]
-        if file_filter is not None and not file_filter(url_no_args):
-            self.empty = True
-            return
 
         base, ext = os.path.splitext(url_no_args)
         _, tar = os.path.splitext(base)
@@ -78,130 +202,26 @@ class Url(FileSource):
                 download_and_unpack,
                 url,
                 extension=".d",
+                force=self.force,
             )
         else:
             self.path = self.cache_file(
                 download,
                 url,
                 extension=ext,
+                force=self.force,
             )
 
-    def mutate(self):
-        if self.path is None:
-            # The download was not performed.
-            # Filtered out by file_filter.
-            return EmptySource()
-        return self
-
     def _download(self, url, target):
-        o = urlparse(url)
-        method = f"_download_{o.scheme}"
-        return getattr(self, method)(url, target)
 
-    def _download_file(self, url, target):
-        o = urlparse(url)
-        assert o.scheme == "file"
-        assert os.path.exists(o.path), f"File not found: {o.path}"
-        os.symlink(o.path, target)
-
-    def _download_ftp(self, url, target):
-        from ftplib import FTP
-
-        o = urlparse(url)
-        assert o.scheme == "ftp"
-
-        if "@" in o.netloc:
-            auth, server = o.netloc.split("@")
-            user, password = auth.split(":")
-        else:
-            auth, server = None, o.netloc
-            user, password = "anonymous", "anonymous"
-        ftp = FTP(
-            server,
-            timeout=SETTINGS.as_seconds("url-download-timeout"),
+        downloaders = dict(
+            ftp=FTPDownloader,
+            http=HTTPDownloader,
+            https=HTTPDownloader,
+            file=FileDownloader,
         )
-        if auth:
-            ftp.login(user, password)
-        else:
-            ftp.login()
-
-        ftp.cwd(os.path.dirname(o.path))
-        ftp.set_pasv(True)
-        filename = os.path.basename(o.path)
-        size = ftp.size(filename)
-
-        with tqdm(
-            total=size,
-            unit_scale=True,
-            unit_divisor=1024,
-            unit="B",
-            disable=False,
-            leave=False,
-            desc=os.path.basename(url),
-        ) as pbar:
-            with open(target, "wb") as f:
-
-                def callback(chunk):
-                    self.watcher()
-                    f.write(chunk)
-                    pbar.update(len(chunk))
-
-                ftp.retrbinary(f"RETR {filename}", callback)
-            pbar.close()
-        ftp.close()
-
-    def _download_https(self, url, target):
-        return self._download_http(url, target)
-
-    def _download_http(self, url, target):
-
-        if os.path.exists(target):
-            return
-
-        download = target + ".download"
-        LOG.info("Downloading %s", url)
-
-        r = requests.head(url, verify=self.verify)
-        r.raise_for_status()
-        try:
-            size = int(r.headers["content-length"])
-        except Exception:
-            size = None
-        r = requests.get(
-            url,
-            stream=True,
-            verify=self.verify,
-            timeout=SETTINGS.as_seconds("url-download-timeout"),
-        )
-        r.raise_for_status()
-        mode = "wb"
-        with tqdm(
-            total=size,
-            unit_scale=True,
-            unit_divisor=1024,
-            unit="B",
-            disable=False,
-            leave=False,
-            desc=os.path.basename(url),
-        ) as pbar:
-            total = 0
-            pbar.update(total)
-            with open(download, mode) as f:
-                for chunk in r.iter_content(chunk_size=1024 * 1024):
-                    self.watcher()
-                    if chunk:
-                        f.write(chunk)
-                        total += len(chunk)
-                        pbar.update(len(chunk))
-            pbar.close()
-
-        # take care of race condition when two processes
-        # download into the same file at the same time
-        try:
-            os.rename(download, target)
-        except FileNotFoundError as e:
-            if not os.path.exists(target):
-                raise e
+        o = urlparse(self.url)
+        return downloaders[o.scheme](self).download(url, target)
 
     def __repr__(self) -> str:
         return f"Url({self.url})"
