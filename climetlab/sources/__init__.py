@@ -121,18 +121,6 @@ def register_source(module):
 
 
 def load_source(name: str, *args, **kwargs) -> Source:
-    """Loads a data source.
-
-    Parameters
-    ----------
-    name : str
-        [description]
-
-    Returns
-    -------
-    Source
-        [description]
-    """
     return source(name, *args, **kwargs).mutate()
 
 

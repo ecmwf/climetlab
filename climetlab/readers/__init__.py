@@ -31,6 +31,10 @@ class Reader(Base):
         # Give a chance to `directory` or `zip` to change the reader
         return self
 
+    def mutate_source(self):
+        # The source may ask if it needs to mutate
+        return None
+
     def sel(self, *args, **kwargs):
         raise NotImplementedError()
 

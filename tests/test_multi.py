@@ -16,18 +16,29 @@ import climetlab as cml
 from climetlab.utils import download_and_cache
 
 
-def test_multi_1():
+def test_multi_directory_1():
     ds = cml.load_source(
+        "file",
+        data_file("mixed"),
+    )
+    print(ds)
+    # assert len(ds) == 1
+
+
+def test_multi_directory_2():
+    ds =cml.load_source(
         "url",
         "file://{}".format(
             data_file("mixed"),
         ),
     )
+    print(ds)
     # assert len(ds) == 1
 
 
 def test_grib_zip():
-    ds = cml.load_source(
+    # ds =
+    cml.load_source(
         "url",
         "file://{}".format(
             data_file("grib.zip"),

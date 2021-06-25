@@ -23,7 +23,7 @@ try:
 except ImportError:
     from tqdm import tqdm
 
-from .base import FileSource
+from .file import FileSource
 
 LOG = logging.getLogger(__name__)
 

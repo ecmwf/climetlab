@@ -11,10 +11,7 @@ import os
 
 from . import Reader
 from . import reader as find_reader
-
-
-def _accept_all(*args, **kwargs):
-    return True
+from climetlab import load_source
 
 
 class DirectoryReader(Reader):
@@ -27,12 +24,13 @@ class DirectoryReader(Reader):
             for file in files:
                 self._content.append(os.path.join(root, file))
 
-        assert self._content, path
-
     def mutate(self):
         if len(self._content) == 1:
-            return find_reader(self.source, self._content[0]).mutate()
+            return find_reader(self.source, self._content[0])
         return self
+
+    def mutate_source(self):
+        return load_source("multi", [load_source("file",c) for c in self._content])
 
 
 def reader(source, path, magic):

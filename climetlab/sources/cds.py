@@ -11,7 +11,8 @@ import cdsapi
 
 from climetlab.normalize import normalize_args
 
-from .base import APIKeyPrompt, FileSource
+from .file import FileSource
+from .prompt import APIKeyPrompt
 
 APIRC = "key: {key}\nurl: https://cds.climate.copernicus.eu/api/v2"
 

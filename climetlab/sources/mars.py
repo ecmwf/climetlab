@@ -13,7 +13,8 @@ import ecmwfapi
 
 from climetlab.normalize import normalize_args
 
-from .base import APIKeyPrompt, FileSource
+from .file import FileSource
+from .prompt import APIKeyPrompt
 
 
 class MARSAPI(APIKeyPrompt):
