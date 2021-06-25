@@ -1,11 +1,9 @@
 import os
-
 from importlib import import_module
+
+
 def data_file(name):
-    return os.path.join(os.path.dirname(__file__), 'data', name)
-
-
-
+    return os.path.join(os.path.dirname(__file__), "data", name)
 
 
 def is_package_installed(package):
