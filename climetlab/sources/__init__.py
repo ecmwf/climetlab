@@ -42,7 +42,12 @@ class Source(Base):
         return self
 
     def flatten(self):
+        # Used by multi-source
         return [self]
+
+    def ignore(self):
+        # Used by multi-source
+        return False
 
     def cache_file(self, create, args, extension=".cache", force=False):
         owner = self.name

@@ -6,9 +6,20 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import warnings
+
 from . import Reader
 
 
 class Unknown(Reader):
     def __init__(self, source, path, magic):
         super().__init__(source, path)
+        self.magic = magic
+        # warnings.warn(f"Unknown file type {path} ({magic}), ignoring")
+
+    def ignore(self):
+        # Used by multi-source
+        return True
+
+    def __len__(self):
+        return 0

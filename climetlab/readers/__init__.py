@@ -35,6 +35,10 @@ class Reader(Base):
         # The source may ask if it needs to mutate
         return None
 
+    def ignore(self):
+        # Used by multi-source
+        return False
+
     def sel(self, *args, **kwargs):
         raise NotImplementedError()
 

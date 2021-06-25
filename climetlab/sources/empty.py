@@ -11,7 +11,12 @@ from . import Source
 
 
 class EmptySource(Source):
-    pass
+    def ignore(self):
+        # Used by multi-source
+        return True
+
+    def __len__(self):
+        return 0
 
 
 source = EmptySource

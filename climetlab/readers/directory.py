@@ -9,9 +9,10 @@
 
 import os
 
+from climetlab import load_source
+
 from . import Reader
 from . import reader as find_reader
-from climetlab import load_source
 
 
 class DirectoryReader(Reader):
@@ -30,7 +31,7 @@ class DirectoryReader(Reader):
         return self
 
     def mutate_source(self):
-        return load_source("multi", [load_source("file",c) for c in self._content])
+        return load_source("multi", [load_source("file", c) for c in self._content])
 
 
 def reader(source, path, magic):

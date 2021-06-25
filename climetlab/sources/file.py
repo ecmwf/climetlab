@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 
 from climetlab.readers import reader
 
@@ -27,6 +26,9 @@ class FileSource(Source):
             source._parent = self
             return source
         return self
+
+    def ignore(self):
+        return self._reader.ignore()
 
     @property
     def _reader(self):
@@ -75,7 +77,9 @@ class FileSource(Source):
         return self._reader._attributes(names)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.path},{self._reader.__class__.__name__})'
+        return (
+            f"{self.__class__.__name__}({self.path},{self._reader.__class__.__name__})"
+        )
 
 
 class File(FileSource):

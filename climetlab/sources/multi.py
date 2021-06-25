@@ -22,22 +22,29 @@ class MultiSource(Source):
 
         src = []
         for s in sources:
-            src += s.flatten()
+            s = s.mutate()  # Just in case
+            if not s.ignore():
+                src += s.flatten()
+
         self.sources = src
 
         self.merger = merger
-        self.sources = sources
-        self._lengths = [None] * len(sources)
-        self.empty = len(sources) == 0
+        self._lengths = [None] * len(self.sources)
+
+    def ignore(self):
+        return len(self.sources) == 0
 
     def flatten(self):
         return self.sources
 
     def mutate(self):
+
         if len(self.sources) == 1 and self.merger is None:
             return self.sources[0].mutate()
+
         if len(self.sources) == 0:
             return EmptySource()
+
         return self
 
     def _set_dataset(self, dataset):
@@ -73,13 +80,15 @@ class MultiSource(Source):
     def to_xarray(self, **kwargs):
         import xarray as xr
 
-        print(f"merging {self}")
+        sources = self.sources
+        if len(sources) == 1:
+            return sources[0].to_xarray(**kwargs)
 
-        merged = self.sources[0].multi_merge(self.sources)
+        merged = sources[0].multi_merge(sources)
         if merged is not None:
             return merged.to_xarray(merger=self.merger, **kwargs)
 
-        arrays = [s.to_xarray() for s in self.sources]
+        arrays = [s.to_xarray() for s in sources]
 
         # Get values of scalar coordinates
         values = defaultdict(set)
@@ -100,8 +109,9 @@ class MultiSource(Source):
         return xr.merge(arrays)
 
     def to_tfrecord(self, **kwargs):
+        sources = self.sources
 
-        merged = self.sources[0].multi_merge(self.sources)
+        merged = sources[0].multi_merge(sources)
         if merged is not None:
             return merged.to_tfrecord(merger=self.merger, **kwargs)
 
