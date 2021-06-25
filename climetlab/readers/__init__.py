@@ -61,10 +61,12 @@ class DefaultMerger:
 
 
 class MultiReaders(Base):
-    backend_kwargs = {}
-
     def __init__(self, readers):
         self.readers = readers
+
+
+class GriddedMultiReader(MultiReaders):
+    backend_kwargs = {}
 
     def to_xarray(self, merger=None, **kwargs):
         if merger is None:

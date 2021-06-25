@@ -17,7 +17,7 @@ from climetlab.core import Base
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
-from . import MultiReaders, Reader
+from . import GriddedMultiReaders, Reader
 
 LOG = logging.getLogger(__name__)
 
@@ -217,7 +217,7 @@ class GRIBFilter:
         return GRIBIterator(self.path)
 
 
-class MultiGribReaders(MultiReaders):
+class MultiGribReaders(GriddedMultiReaders):
     engine = "cfgrib"
     backend_kwargs = {"squeeze": False}
 

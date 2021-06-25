@@ -70,13 +70,6 @@ class FileSource(Source):
         readers = [s._reader for s in sources]
         return readers[0].multi_merge(readers)
 
-    @classmethod
-    def multi_merge_tfrecord(cls, sources):
-        if not all(isinstance(s, FileSource) for s in sources):
-            return None
-        readers = [s._reader for s in sources]
-        return readers[0].multi_merge_tfrecord(readers)
-
     def _attributes(self, names):
         return self._reader._attributes(names)
 

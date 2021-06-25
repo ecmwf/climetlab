@@ -19,7 +19,7 @@ import xarray as xr
 from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 
-from . import MultiReaders, Reader
+from . import GriddedMultiReaders, Reader
 
 
 def as_datetime(self, time):
@@ -187,7 +187,7 @@ class NetCDFField(Base):
         )
 
 
-class MultiNetcdfReaders(MultiReaders):
+class MultiNetcdfReaders(GriddedMultiReaders):
     engine = "netcdf4"
 
 
