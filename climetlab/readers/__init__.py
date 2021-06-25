@@ -65,7 +65,7 @@ class MultiReaders(Base):
         self.readers = readers
 
 
-class GriddedMultiReader(MultiReaders):
+class GriddedMultiReaders(MultiReaders):
     backend_kwargs = {}
 
     def to_xarray(self, merger=None, **kwargs):
