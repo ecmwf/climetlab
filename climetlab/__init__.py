@@ -11,6 +11,7 @@ from .core.caching import CACHE as cache
 from .core.metadata import init_metadata
 from .core.settings import SETTINGS as settings
 from .datasets import Dataset, dataset, load_dataset, register_dataset
+from .normalize import ALL
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
@@ -22,6 +23,7 @@ __version__ = "0.8.0"
 
 
 __all__ = [
+    "ALL",
     "cache",
     "dataset",
     "Dataset",
