@@ -21,14 +21,14 @@ from climetlab.utils import download_and_cache
 #     assert len(ds) == 1
 
 
-def test_grib_zip():
-    ds = cml.load_source(
-        "url",
-        "file://{}".format(
-            data_file("grib.zip"),
-        ),
-    )
-    assert len(ds) == 1
+# def test_grib_zip():
+#     ds = cml.load_source(
+#         "url",
+#         "file://{}".format(
+#             data_file("grib.zip"),
+#         ),
+#     )
+#     assert len(ds) == 1
 
 
 if __name__ == "__main__":

@@ -9,7 +9,8 @@
 
 import logging
 
-from climetlab.readers import MultiReaders, Reader
+from . import Reader
+from .multi import MultiReaders
 
 LOG = logging.getLogger(__name__)
 

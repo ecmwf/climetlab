@@ -19,7 +19,8 @@ import xarray as xr
 from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 
-from . import GriddedMultiReaders, Reader
+from . import Reader
+from .gridded import GriddedMultiReaders
 
 
 def as_datetime(self, time):

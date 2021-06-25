@@ -17,7 +17,8 @@ from climetlab.core import Base
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
-from . import GriddedMultiReaders, Reader
+from . import Reader
+from .gridded import GriddedMultiReaders
 
 LOG = logging.getLogger(__name__)
 
