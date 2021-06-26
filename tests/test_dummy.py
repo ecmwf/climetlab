@@ -15,7 +15,8 @@ from climetlab import load_source
 
 def test_dummy_grib():
     s = load_source(
-        "dummy-grib",
+        "dummy-source",
+        kind='grib',
         paramId=[129, 130],
         date=[19900101, 19900102],
         level=[1000, 500],
