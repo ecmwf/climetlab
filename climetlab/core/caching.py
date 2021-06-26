@@ -452,11 +452,13 @@ def cache_file(
     m.update(json.dumps(hash_extra, sort_keys=True).encode("utf-8"))
     m.update(json.dumps(extension, sort_keys=True).encode("utf-8"))
 
-    path = "%s/%s-%s%s" % (
+    path = os.path.join(
         SETTINGS.get("cache-directory"),
-        owner.lower(),
-        m.hexdigest(),
-        extension,
+        "{}-{}{}".format(
+            owner.lower(),
+            m.hexdigest(),
+            extension,
+        ),
     )
 
     if force:

@@ -115,6 +115,7 @@ def test_cache_2():
 
 def df(name):
     import psutil
+
     return psutil.disk_usage(name)
 
 

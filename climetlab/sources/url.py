@@ -220,7 +220,7 @@ class FTPDownloader(Downloader):
 class FileDownloader(Downloader):
     def download(self, url, target):
         o = urlparse(url)
-        assert os.path.exists(o.path), f"File not found: {o.path}"
+        assert os.path.exists(o.path), f"File not found: [{url}] [{o}]"
         os.symlink(o.path, target)
 
 
