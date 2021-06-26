@@ -50,8 +50,11 @@ def test_pandas_filter():
     assert len(irma) == 66
 
 
+def test_samples():
+    cml.load_dataset("meteonet-samples-radar")
+
+
 if __name__ == "__main__":
-    for k, f in sorted(globals().items()):
-        if k.startswith("test_") and callable(f):
-            print(k)
-            f()
+    from utils import main
+
+    main(globals())

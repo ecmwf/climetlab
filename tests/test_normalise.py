@@ -255,7 +255,6 @@ def test_bbox():
 
 
 if __name__ == "__main__":
-    for k, f in sorted(globals().items()):
-        if k.startswith("test_") and callable(f):
-            print(k)
-            f()
+    from utils import main
+
+    main(globals())

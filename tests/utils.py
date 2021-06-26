@@ -1,5 +1,8 @@
+import logging
 import os
 from importlib import import_module
+
+LOG = logging.getLogger(__name__)
 
 
 def data_file(name):
@@ -19,3 +22,11 @@ def is_package_installed(package):
         return True
     except ImportError:
         return False
+
+
+def main(globals):
+    logging.basicConfig(level=logging.DEBUG)
+    for k, f in sorted(globals.items()):
+        if k.startswith("test_") and callable(f):
+            LOG.debug("Running '%s'", k)
+            f()

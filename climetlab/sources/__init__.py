@@ -49,7 +49,9 @@ class Source(Base):
         # Used by multi-source
         return False
 
-    def cache_file(self, create, args, hash_extra=None, extension=".cache", force=False):
+    def cache_file(
+        self, create, args, hash_extra=None, extension=".cache", force=False
+    ):
         owner = self.name
         if self.dataset:
             owner = self.dataset.name

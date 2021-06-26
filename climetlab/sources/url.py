@@ -7,7 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
+import cgi
 import logging
+import mimetypes
 import os
 import shutil
 from ftplib import FTP
@@ -36,6 +38,19 @@ class Downloader:
     def __init__(self, owner):
         self.owner = owner
 
+    def extension(self, url):
+        url_no_args = url.split("?")[0]
+
+        base, ext = os.path.splitext(url_no_args)
+        if ext == "":
+            base, ext = os.path.splitext(url)
+
+        _, tar = os.path.splitext(base)
+        if tar == ".tar":
+            ext = ".tar" + ext
+
+        return ext
+
     def download(self, url, target):
         if os.path.exists(target):
             return
@@ -53,7 +68,7 @@ class Downloader:
             unit="B",
             disable=False,
             leave=False,
-            desc=os.path.basename(url),
+            desc=self.title(url),
         ) as pbar:
 
             with open(download, mode) as f:
@@ -75,16 +90,65 @@ class Downloader:
     def finalise(self):
         pass
 
+    def title(self, url):
+        return os.path.basename(url)
+
 
 class HTTPDownloader(Downloader):
+
+    _headers = None
+    _url = None
+
+    def headers(self, url):
+        if self._headers is None or url != self._url:
+            self._url = url
+            self._headers = {}
+            try:
+                r = requests.head(url, verify=self.owner.verify)
+                r.raise_for_status()
+                self._headers = r.headers
+            except Exception:
+                LOG.exception("HEAD %s", url)
+        return self._headers
+
+    def extension(self, url):
+
+        headers = self.headers(url)
+        ext = None
+
+        if "content-type" in headers:
+            ext = mimetypes.guess_extension(headers["content-type"])
+
+        if "content-disposition" in headers:
+            value, params = cgi.parse_header(headers["content-disposition"])
+            assert value == "attachment", value
+            if "filename" in params:
+                ext = super().extension(params["filename"])
+
+        if ext is None:
+            ext = super().extension(url)
+
+        return ext
+
+    def title(self, url):
+        headers = self.headers(url)
+        if "content-disposition" in headers:
+            value, params = cgi.parse_header(headers["content-disposition"])
+            assert value == "attachment", value
+            if "filename" in params:
+                return params["filename"]
+        return super().title(url)
+
     def prepare(self, url):
 
-        r = requests.head(url, verify=self.owner.verify)
-        r.raise_for_status()
-        try:
-            size = int(r.headers["content-length"])
-        except Exception:
-            size = None
+        size = None
+        headers = self.headers(url)
+        if "content-length" in headers:
+            try:
+                size = int(headers["content-length"])
+            except Exception:
+                LOG.exception("content-length %s", url)
+
         r = requests.get(
             url,
             stream=True,
@@ -179,27 +243,26 @@ class Url(FileSource):
         **kwargs,
     ):
         self.url = url
+        LOG.debug("URL %s", url)
 
         self.verify = verify
         self.watcher = watcher if watcher else dummy
         self.force = force
 
-        url_no_args = url.split("?")[0]
-
-        base, ext = os.path.splitext(url_no_args)
-        _, tar = os.path.splitext(base)
-        if tar == ".tar":
-            ext = ".tar" + ext
+        o = urlparse(url)
+        downloader = DOWNLOADERS[o.scheme](self)
+        extension = downloader.extension(url)
 
         if unpack is None:
-            unpack = ext in (".tar", ".tar.gz")
+            unpack = extension in (".tar", ".tar.gz")
 
         def download(target, url):
             o = urlparse(self.url)
-            return DOWNLOADERS[o.scheme](self).download(url, target)
+            return downloader.download(url, target)
 
         def download_and_unpack(target, url):
-            archive = target + ext
+            assert extension in (".tar", ".tar.gz", ".zip"), (ext, url)
+            archive = target + extension
             download(archive, url)
             LOG.info("Unpacking...")
             shutil.unpack_archive(archive, target)
@@ -217,7 +280,7 @@ class Url(FileSource):
             self.path = self.cache_file(
                 download,
                 url,
-                extension=ext,
+                extension=extension,
                 force=self.force,
             )
 

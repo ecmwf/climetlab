@@ -16,7 +16,7 @@ from climetlab import load_source
 def test_dummy_grib():
     s = load_source(
         "dummy-source",
-        kind='grib',
+        kind="grib",
         paramId=[129, 130],
         date=[19900101, 19900102],
         level=[1000, 500],
@@ -25,7 +25,6 @@ def test_dummy_grib():
 
 
 if __name__ == "__main__":
-    for k, f in sorted(globals().items()):
-        if k.startswith("test_") and callable(f):
-            print(k)
-            f()
+    from utils import main
+
+    main(globals())

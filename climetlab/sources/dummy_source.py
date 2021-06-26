@@ -11,7 +11,6 @@
 import itertools
 import os
 
-import json
 from .file import FileSource
 
 
@@ -21,6 +20,7 @@ def iterate_request(r):
 
 def generate_grib(target, args):
     import eccodes
+
     handle = None
     try:
         with open(os.path.join(os.path.dirname(__file__), "dummy.grib"), "rb") as f:
@@ -36,13 +36,19 @@ def generate_grib(target, args):
         if handle is not None:
             eccodes.codes_release(handle)
 
+
 def generate_unknown(target, args):
     import json
+
     with open(target, "w") as f:
         print(json.dumps(args), file=f)
 
-GENERATORS = {'grib': (generate_grib, '.grib'),
-              'unknown':(generate_unknown, '.unknown'),}
+
+GENERATORS = {
+    "grib": (generate_grib, ".grib"),
+    "unknown": (generate_unknown, ".unknown"),
+}
+
 
 class DummyGrib(FileSource):
     def __init__(self, kind, request=None, force=False, **kwargs):

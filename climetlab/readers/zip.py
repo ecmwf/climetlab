@@ -56,6 +56,11 @@ class ZIPReader(Reader):
         return pandas.read_csv(self.path, **options)
 
 
+EXTENSIONS_TO_SKIP = (".npz",)  # Numpy arrays
+
+
 def reader(source, path, magic):
-    if magic[:4] == b"PK\x03\x04":
+    _, extension = os.path.splitext(path)
+
+    if magic[:4] == b"PK\x03\x04" and extension not in EXTENSIONS_TO_SKIP:
         return ZIPReader(source, path)

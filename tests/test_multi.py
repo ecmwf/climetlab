@@ -12,11 +12,11 @@
 
 from utils import data_file
 
-import climetlab as cml
+from climetlab import load_source
 
 
 def test_multi_directory_1():
-    ds = cml.load_source(
+    ds = load_source(
         "file",
         data_file("mixed"),
     )
@@ -26,7 +26,7 @@ def test_multi_directory_1():
 
 
 def test_multi_directory_2():
-    ds = cml.load_source(
+    ds = load_source(
         "url",
         "file://{}".format(
             data_file("mixed"),
@@ -38,7 +38,7 @@ def test_multi_directory_2():
 
 def test_grib_zip():
     # ds =
-    cml.load_source(
+    load_source(
         "url",
         "file://{}".format(
             data_file("grib.zip"),
@@ -47,8 +47,26 @@ def test_grib_zip():
     # assert len(ds) == 1
 
 
+def test_multi_grib():
+    ds = load_source(
+        "multi",
+        load_source("dummy-source", kind="grib", date=20000101),
+        load_source("dummy-source", kind="grib", date=20000102),
+    )
+    assert len(ds) == 2
+
+
+def test_multi_grib_mixed():
+    ds = load_source(
+        "multi",
+        load_source("dummy-source", kind="grib", date=20000101),
+        load_source("dummy-source", kind="grib", date=20000102),
+        load_source("dummy-source", kind="unknown", hello="world"),
+    )
+    assert len(ds) == 2
+
+
 if __name__ == "__main__":
-    for k, f in sorted(globals().items()):
-        if k.startswith("test_") and callable(f):
-            print(k)
-            f()
+    from utils import main
+
+    main(globals())

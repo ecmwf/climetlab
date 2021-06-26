@@ -427,7 +427,9 @@ housekeeping = in_executor(CACHE._housekeeping)
 decache_file = in_executor(CACHE._decache_file)
 
 
-def cache_file(owner: str, create, args, hash_extra=None, extension: str = ".cache", force=False):
+def cache_file(
+    owner: str, create, args, hash_extra=None, extension: str = ".cache", force=False
+):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
 

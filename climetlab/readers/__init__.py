@@ -20,6 +20,9 @@ LOG = logging.getLogger(__name__)
 
 class Reader(Base):
     def __init__(self, source, path):
+
+        LOG.debug("Reader for %s is %s", path, self.__class__.__name__)
+
         self._source = weakref.ref(source)
         self.path = path
 
@@ -80,6 +83,7 @@ def reader(source, path):
     with open(path, "rb") as f:
         magic = f.read(8)
 
+    LOG.debug("Looking for a reader for %s (%s)", path, magic)
     for name, r in _readers().items():
         reader = r(source, path, magic)
         if reader is not None:

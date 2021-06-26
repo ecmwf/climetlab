@@ -18,6 +18,7 @@ from . import reader as find_reader
 class DirectoryReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
+        print("DIR", path)
 
         self._content = []
 
