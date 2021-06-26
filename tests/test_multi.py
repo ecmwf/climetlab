@@ -10,6 +10,9 @@
 #
 
 
+import sys
+
+import pytest
 from utils import data_file
 
 from climetlab import load_source
@@ -25,6 +28,9 @@ def test_multi_directory_1():
     ds.to_xarray()
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
+)
 def test_multi_directory_2():
     ds = load_source(
         "url",

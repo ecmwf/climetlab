@@ -11,8 +11,10 @@
 
 import os
 import pathlib
+import sys
 import time
 
+import pytest
 from utils import data_file
 
 import climetlab as cml
@@ -31,6 +33,9 @@ def test_download():
     download_and_cache(url)
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
+)
 def test_local():
     ds = cml.load_source(
         "url",
