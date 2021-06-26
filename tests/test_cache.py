@@ -114,10 +114,8 @@ def test_cache_2():
 
 
 def df(name):
-    fs = os.statvfs(name)
-    size = fs.f_blocks * fs.f_bsize
-    used = int((1.0 - float(fs.f_bavail) / float(fs.f_blocks)) * 100 + 0.5)
-    return (used, size)
+    import psutil
+    return psutil.disk_usage(name)
 
 
 def mount_point(path):
