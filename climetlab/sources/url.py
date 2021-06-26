@@ -257,11 +257,10 @@ class Url(FileSource):
             unpack = extension in (".tar", ".tar.gz")
 
         def download(target, url):
-            o = urlparse(self.url)
             return downloader.download(url, target)
 
         def download_and_unpack(target, url):
-            assert extension in (".tar", ".tar.gz", ".zip"), (ext, url)
+            assert extension in (".tar", ".tar.gz", ".zip", ".gz"), (extension, url)
             archive = target + extension
             download(archive, url)
             LOG.info("Unpacking...")
