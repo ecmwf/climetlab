@@ -9,12 +9,18 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import pathlib
 import time
 
 from utils import data_file
 
 import climetlab as cml
 from climetlab.utils import download_and_cache
+
+
+def path_to_url(path):
+    return pathlib.Path(os.path.abspath(path)).as_uri()
 
 
 def test_download():
@@ -28,9 +34,7 @@ def test_download():
 def test_local():
     ds = cml.load_source(
         "url",
-        "file://{}".format(
-            data_file("single/z_500_20000101.grib"),
-        ),
+        path_to_url(data_file("single/z_500_20000101.grib")),
     )
     assert len(ds) == 1
 
