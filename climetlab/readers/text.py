@@ -16,6 +16,10 @@ class TextReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
 
+    def ignore(self):
+        # Used by multi-source
+        return True
+
 
 def reader(source, path, magic):
     _, extension = os.path.splitext(path)

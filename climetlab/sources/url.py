@@ -231,6 +231,14 @@ DOWNLOADERS = dict(
     file=FileDownloader,
 )
 
+UNPACK_EXTENSIONS = (
+    ".tar",
+    ".tar.gz",
+    ".zip",
+    ".gz",
+    ".tgz",
+)
+
 
 class Url(FileSource):
     def __init__(
@@ -260,7 +268,7 @@ class Url(FileSource):
             return downloader.download(url, target)
 
         def download_and_unpack(target, url):
-            assert extension in (".tar", ".tar.gz", ".zip", ".gz"), (extension, url)
+            assert extension in UNPACK_EXTENSIONS, (extension, url)
             archive = target + extension
             download(archive, url)
             LOG.info("Unpacking...")
