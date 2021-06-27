@@ -10,22 +10,30 @@
 #
 
 
+import os
 import sys
 
 import pytest
 from utils import data_file
 
 from climetlab import load_source
+from climetlab.core.temporary import temp_directory, temp_file
 
 
 def test_multi_directory_1():
-    ds = load_source(
-        "file",
-        data_file("mixed"),
-    )
-    print(ds)
-    assert len(ds) == 1
-    ds.to_xarray()
+    with temp_directory() as directory:
+        for date in (20000101, 20000102):
+            ds = load_source("dummy-source", kind="grib", date=date)
+            ds.save(os.path.join(directory, f"{date}.grib"))
+
+        ds = load_source("file", directory)
+        print(ds)
+        assert len(ds) == 2
+
+        with temp_file() as filename:
+            ds.save(filename)
+            ds = load_source("file", filename)
+            assert len(ds) == 2
 
 
 @pytest.mark.skipif(
@@ -42,6 +50,9 @@ def test_multi_directory_2():
     # assert len(ds) == 1
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
+)
 def test_grib_zip():
     # ds =
     load_source(

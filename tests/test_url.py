@@ -25,11 +25,16 @@ def path_to_url(path):
     return pathlib.Path(os.path.abspath(path)).as_uri()
 
 
-def test_download():
+def test_download_1():
     url = (
         "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib?_=%s"
         % (time.time(),)
     )
+    download_and_cache(url)
+
+
+def test_download_2():
+    url = "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib"
     download_and_cache(url)
 
 

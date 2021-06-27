@@ -10,13 +10,11 @@
 #
 
 
-import getpass
 import os
-import shutil
-import tempfile
 
 from climetlab import load_source, settings
 from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_cache
+from climetlab.core.temporary import temp_directory
 
 
 def test_cache_1():
@@ -53,17 +51,10 @@ def test_cache_1():
 
 
 def test_cache_2():
-    directory = os.path.join(
-        tempfile.gettempdir(),
-        "climetlab-%s-testing" % (getpass.getuser(),),
-    )
 
-    if os.path.exists(directory):
-        shutil.rmtree(directory)
-
-    try:
+    with temp_directory() as tmpdir:
         with settings.temporary():
-            settings.set("cache-directory", directory)
+            settings.set("cache-directory", tmpdir)
             settings.set("maximum-cache-size", "5MB")
             settings.set("number-of-download-threads", 5)
 
@@ -103,14 +94,11 @@ def test_cache_2():
             assert cnt == 5, f"Files in cache database: {cnt}"
 
             cnt = 0
-            for n in os.listdir(directory):
+            for n in os.listdir(tmpdir):
                 if n.startswith("cache-") and n.endswith(".db"):
                     continue
                 cnt += 1
             assert cnt == 5, f"Files in cache directory: {cnt}"
-
-    finally:
-        shutil.rmtree(directory)
 
 
 def df(name):

@@ -66,6 +66,12 @@ class FileSource(Source):
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 
+    def save(self, path):
+        return self._reader.save(path)
+
+    def write(self, f):
+        return self._reader.write(f)
+
     @classmethod
     def multi_merge(cls, sources):
         if not all(isinstance(s, FileSource) for s in sources):

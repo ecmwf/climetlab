@@ -19,6 +19,10 @@ LOG = logging.getLogger(__name__)
 
 
 class Reader(Base):
+
+    appendable = False  # Set to True if the data can be appened to and existing file
+    binary = True
+
     def __init__(self, source, path):
 
         LOG.debug("Reader for %s is %s", path, self.__class__.__name__)
@@ -51,6 +55,22 @@ class Reader(Base):
 
     def cache_file(self, *args, **kwargs):
         return self.source.cache_file(*args, **kwargs)
+
+    def save(self, path):
+        mode = "wb" if self.binary else "w"
+        with open(path, mode) as f:
+            self.write(f)
+
+    def write(self, f):
+        if not self.appendable:
+            assert f.tell() == 0
+        mode = "rb" if self.binary else "r"
+        with open(self.path, mode) as g:
+            while True:
+                chunk = g.read(1024 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
 
 
 _READERS = {}

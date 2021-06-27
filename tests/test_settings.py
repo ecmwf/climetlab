@@ -18,6 +18,7 @@ import climetlab.plotting
 from climetlab import settings
 from climetlab.core.data import clear_cache, get_data_entry
 from climetlab.core.plugins import directories
+from climetlab.core.temporary import temp_directory
 
 
 def check_user_defined_objects(collection, setting, obj, tree, get_list, get_entry):
@@ -163,6 +164,65 @@ def test_temporary():
 
     settings.reset()
     assert settings.get("plotting-options") == {}
+
+
+def test_numbers():
+    with temp_directory() as tmpdir:
+
+        with settings.temporary("cache-directory", tmpdir):
+            settings.set("url-download-timeout", 30)
+            assert settings.as_seconds("url-download-timeout") == 30
+
+            settings.set("url-download-timeout", "30")
+            assert settings.as_seconds("url-download-timeout") == 30
+
+            settings.set("url-download-timeout", "30s")
+            assert settings.as_seconds("url-download-timeout") == 30
+
+            settings.set("url-download-timeout", "2m")
+            assert settings.as_seconds("url-download-timeout") == 120
+
+            settings.set("url-download-timeout", "10h")
+            assert settings.as_seconds("url-download-timeout") == 36000
+
+            settings.set("url-download-timeout", "7d")
+            assert settings.as_seconds("url-download-timeout") == 7 * 24 * 3600
+
+            with pytest.raises(ValueError):
+                settings.set("url-download-timeout", "1x")
+
+            settings.set("maximum-cache-size", "1")
+            assert settings.as_bytes("maximum-cache-size") == 1
+
+            settings.set("maximum-cache-size", "1k")
+            assert settings.as_bytes("maximum-cache-size") == 1024
+
+            settings.set("maximum-cache-size", "1kb")
+            assert settings.as_bytes("maximum-cache-size") == 1024
+
+            settings.set("maximum-cache-size", "1k")
+            assert settings.as_bytes("maximum-cache-size") == 1024
+
+            settings.set("maximum-cache-size", "1kb")
+            assert settings.as_bytes("maximum-cache-size") == 1024
+
+            settings.set("maximum-cache-size", "1K")
+            assert settings.as_bytes("maximum-cache-size") == 1024
+
+            settings.set("maximum-cache-size", "1M")
+            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024
+
+            settings.set("maximum-cache-size", "1G")
+            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024 * 1024
+
+            settings.set("maximum-cache-size", "1T")
+            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024 * 1024 * 1024
+
+            settings.set("maximum-cache-size", "1P")
+            assert (
+                settings.as_bytes("maximum-cache-size")
+                == 1024 * 1024 * 1024 * 1024 * 1024
+            )
 
 
 if __name__ == "__main__":

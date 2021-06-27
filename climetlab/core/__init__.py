@@ -43,6 +43,13 @@ class Base:
     def field_metadata(self):
         self._not_implemented()
 
+    # I/O
+    def save(self, path):
+        self._not_implemented()
+
+    def write(self, f):
+        self._not_implemented()
+
     # Used by normalisers
     def to_datetime(self):
         self._not_implemented()

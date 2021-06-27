@@ -121,5 +121,10 @@ class MultiSource(Source):
         string = ",".join(repr(s) for s in self.sources)
         return f"{self.__class__.__name__}({string})"
 
+    def save(self, path):
+        with open(path, "wb") as f:
+            for s in self.sources:
+                s.write(f)
+
 
 source = MultiSource

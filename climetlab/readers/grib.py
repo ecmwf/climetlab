@@ -224,6 +224,8 @@ class MultiGribReaders(GriddedMultiReaders):
 
 
 class GRIBReader(Reader):
+    appendable = True  # GRIB messages can be added to the same file
+
     def __init__(self, source, path):
         super().__init__(source, path)
         self._fields = None

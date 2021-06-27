@@ -31,7 +31,7 @@ from climetlab.core.settings import SETTINGS
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
 
-VERSION = 1
+VERSION = 2
 CACHE_DB = f"cache-{VERSION}.db"
 
 LOG = logging.getLogger(__name__)
@@ -126,9 +126,8 @@ class Cache(threading.Thread):
                         args          TEXT NOT NULL,
                         creation_date TEXT NOT NULL,
                         flags         INTEGER DEFAULT 0,
-                        remote_date   TEXT, -- TODO expire URLs
-                        remote_tag    TEXT, -- TODO expire URLs
-                        last_access   TEXT,
+                        owner_data    TEXT,
+                        last_access   TEXT NOT NULL,
                         type          TEXT,
                         parent        TEXT,
                         extra         TEXT,
@@ -174,10 +173,14 @@ class Cache(threading.Thread):
             for n in db.execute("SELECT * FROM cache").fetchall():
                 n = dict(n)
                 n["args"] = json.loads(n["args"])
+                try:
+                    n["owner_data"] = json.loads(n["owner_data"])
+                except Exception:
+                    pass
                 result.append(n)
         return result
 
-    def _update_entry(self, path):
+    def _update_entry(self, path, owner_data=None):
         if os.path.isdir(path):
             kind = "directory"
             size = 0
@@ -190,8 +193,13 @@ class Cache(threading.Thread):
 
         with self.connection as db:
             db.execute(
-                "UPDATE cache SET size=?, type=? WHERE path=?",
-                (size, kind, path),
+                "UPDATE cache SET size=?, type=?, owner_data=? WHERE path=?",
+                (
+                    size,
+                    kind,
+                    json.dumps(owner_data),
+                    path,
+                ),
             )
 
     def _update_cache(self, clean=False):
@@ -371,7 +379,9 @@ class Cache(threading.Thread):
             else:
                 assert parent is None
 
-            return db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone()[0]
+            return dict(
+                db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone()
+            )
 
     def _cache_size(self):
         with self.connection as db:
@@ -406,7 +416,7 @@ class Cache(threading.Thread):
                 html.append("<table class='climetlab'>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
-                for k in [x for x in n.keys() if x != "path"]:
+                for k in [x for x in n.keys() if x not in ("path", "owner_data")]:
                     v = bytes_to_string(n[k]) if k == "size" else n[k]
                     html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
                 html.append("</table>")
@@ -428,7 +438,12 @@ decache_file = in_executor(CACHE._decache_file)
 
 
 def cache_file(
-    owner: str, create, args, hash_extra=None, extension: str = ".cache", force=False
+    owner: str,
+    create,
+    args,
+    hash_extra=None,
+    extension: str = ".cache",
+    force=None,
 ):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -461,14 +476,19 @@ def cache_file(
         ),
     )
 
+    record = register_cache_file(path, owner, args)
+    if callable(force):
+        owner_data = record["owner_data"]
+        if owner_data is not None:
+            owner_data = json.loads(owner_data)
+        force = force(args, owner_data)
+
     if force:
         decache_file(path)
 
-    register_cache_file(path, owner, args)
-
     if not os.path.exists(path):
 
-        create(path + ".tmp", args)
+        owner_data = create(path + ".tmp", args)
 
         # take care of race condition when two processes
         # cache the same file
@@ -478,7 +498,7 @@ def cache_file(
             if not os.path.exists(path):
                 raise e
 
-        update_entry(path)
+        update_entry(path, owner_data)
         check_cache_size()
 
     return path

@@ -21,7 +21,7 @@ from .url import Url
 
 
 class MultiUrl(MultiSource):
-    def __init__(self, urls, *args, merger=None, force=False, **kwargs):
+    def __init__(self, urls, *args, merger=None, force=None, **kwargs):
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 

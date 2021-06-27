@@ -10,6 +10,7 @@
 import getpass
 import logging
 import os
+import re
 import tempfile
 from contextlib import contextmanager
 from functools import wraps
@@ -24,6 +25,7 @@ LOG = logging.getLogger(__name__)
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
 SETTINGS_STACK = []
+
 
 SETTINGS_AND_HELP = {
     "cache-directory": (
@@ -63,16 +65,21 @@ SETTINGS_AND_HELP = {
     "maximum-cache-size": (
         "10GB",
         """Maximum disk space used by the CliMetLab cache.""",
+        "as_bytes",
     ),
     "url-download-timeout": (
         "30s",
         """Timeout when downloading from an url.""",
+        "as_seconds",
     ),
 }
 
 DEFAULTS = {}
+CHECKER = {}
 for k, v in SETTINGS_AND_HELP.items():
     DEFAULTS[k] = v[0]
+    if len(v) >= 3:
+        CHECKER[k] = v[2]
 
 
 NONE = object()
@@ -164,8 +171,16 @@ class Settings:
                 assert len(kwargs) == 0
                 value = args[0]
 
-        if not isinstance(value, klass):
-            raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
+        if name in CHECKER:
+            save = self._settings[name]
+            try:
+                self._settings[name] = value
+                getattr(self, CHECKER[name])(name)
+            finally:
+                self._settings[name] = save
+        else:
+            if not isinstance(value, klass):
+                raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
 
         self._settings[name] = value
         self._changed()
@@ -227,38 +242,38 @@ class Settings:
                 exc_info=True,
             )
 
-    def as_seconds(self, name):
+    def _as_number(self, name, units):
         value = str(self.get(name))
-        v = 0
-        while len(value) and str.isdigit(value[0]):
-            v *= 10
-            v += int(value[0])
-            value = value[1:]
-        seconds = {}
-        n = 1
-        for u in "SMH":
-            n *= 60
-            seconds[u] = n
-        if len(value):
-            v *= seconds[value[0].upper()]
-        return v
+        m = re.search(r"^\s*(\d+)\s*(\w+)?\s*$", value)
+        value = int(m.group(1))
+        if m.group(2) is None:
+            return value
+        unit = m.group(2)[0]
+        if unit not in units:
+            valid = ", ".join(units.keys())
+            raise ValueError(f"Invalid unit '{unit}', valid values are {valid}")
+        return value * units[unit]
+
+    def as_seconds(self, name):
+        return self._as_number(
+            name,
+            {
+                "s": 1,
+                "m": 60,
+                "h": 3600,
+                "d": 24 * 3600,
+            },
+        )
 
     def as_bytes(self, name):
-        value = str(self.get(name))
-        v = 0
-        while len(value) and str.isdigit(value[0]):
-            v *= 10
-            v += int(value[0])
-            value = value[1:]
-        # bytes = {"%": 0.01}
-        bytes = {}
+        units = {}
         n = 1
         for u in "KMGTP":
             n *= 1024
-            bytes[u] = n
-        if len(value):
-            v *= bytes[value[0].upper()]
-        return v
+            units[u] = n
+            units[u.lower()] = n
+
+        return self._as_number(name, units)
 
     @forward
     def temporary(self, name=None, *args, **kwargs):

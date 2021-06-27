@@ -93,6 +93,12 @@ class Downloader:
     def title(self, url):
         return os.path.basename(url)
 
+    def cache_data(sel, url):
+        return None
+
+    def out_of_date(self, url, cache_data):
+        return False
+
 
 class HTTPDownloader(Downloader):
 
@@ -104,9 +110,10 @@ class HTTPDownloader(Downloader):
             self._url = url
             self._headers = {}
             try:
-                r = requests.head(url, verify=self.owner.verify)
+                r = requests.head(url, verify=self.owner.verify, allow_redirects=True)
                 r.raise_for_status()
-                self._headers = r.headers
+                for k, v in r.headers.items():
+                    self._headers[k.lower()] = v
             except Exception:
                 LOG.exception("HEAD %s", url)
         return self._headers
@@ -117,7 +124,8 @@ class HTTPDownloader(Downloader):
         ext = None
 
         if "content-type" in headers:
-            ext = mimetypes.guess_extension(headers["content-type"])
+            if headers["content-type"] != "application/octet-stream":
+                ext = mimetypes.guess_extension(headers["content-type"])
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])
@@ -170,6 +178,14 @@ class HTTPDownloader(Downloader):
                 total += len(chunk)
                 pbar.update(len(chunk))
         return total
+
+    def cache_data(self, url):
+        return self.headers(url)
+
+    def out_of_date(self, url, cache_data):
+        # TODO: checkout cache control
+
+        return False
 
 
 class FTPDownloader(Downloader):
@@ -247,7 +263,7 @@ class Url(FileSource):
         unpack=None,
         verify=True,
         watcher=None,
-        force=False,
+        force=None,
         **kwargs,
     ):
         self.url = url
@@ -255,17 +271,20 @@ class Url(FileSource):
 
         self.verify = verify
         self.watcher = watcher if watcher else dummy
-        self.force = force
 
         o = urlparse(url)
         downloader = DOWNLOADERS[o.scheme](self)
         extension = downloader.extension(url)
 
+        if force is None:
+            force = downloader.out_of_date
+
         if unpack is None:
             unpack = extension in (".tar", ".tar.gz")
 
         def download(target, url):
-            return downloader.download(url, target)
+            downloader.download(url, target)
+            return downloader.cache_data(url)
 
         def download_and_unpack(target, url):
             assert extension in UNPACK_EXTENSIONS, (extension, url)
@@ -275,20 +294,21 @@ class Url(FileSource):
             shutil.unpack_archive(archive, target)
             LOG.info("Done.")
             os.unlink(archive)
+            return downloader.cache_data(url)
 
         if unpack:
             self.path = self.cache_file(
                 download_and_unpack,
                 url,
                 extension=".d",
-                force=self.force,
+                force=force,
             )
         else:
             self.path = self.cache_file(
                 download,
                 url,
                 extension=extension,
-                force=self.force,
+                force=force,
             )
 
     def __repr__(self) -> str:

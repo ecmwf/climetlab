@@ -26,7 +26,18 @@ class TmpFile:
         self.path = path
 
     def __del__(self):
-        os.unlink(self.path)
+        self.cleanup()
+
+    def __enter__(self):
+        return self.path
+
+    def __exit__(self, *args, **kwargs):
+        self.cleanup()
+
+    def cleanup(self):
+        if self.path is not None:
+            os.unlink(self.path)
+        self.path = None
 
 
 def temp_file(extension=".tmp") -> TmpFile:
@@ -45,3 +56,13 @@ def temp_file(extension=".tmp") -> TmpFile:
     fd, path = tempfile.mkstemp(suffix=extension)
     os.close(fd)
     return TmpFile(path)
+
+
+class TmpDirectory(tempfile.TemporaryDirectory):
+    @property
+    def path(self):
+        return self.name
+
+
+def temp_directory():
+    return TmpDirectory()
