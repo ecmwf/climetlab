@@ -137,10 +137,13 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
                 if ext == ".py" and base[0] != "_":
 
                     full = os.path.join(path, base)
-                    if full[0] != "/":
-                        full = "/" + full
+
                     if sys.platform == "win32":
                         full = full.replace("\\", "/")
+
+                    if full[0] != "/":
+                        full = "/" + full
+
                     p = full[1:].replace("/", "-").replace("_", "-")
                     candidates.add(p)
                     if p == name:

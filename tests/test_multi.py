@@ -11,10 +11,8 @@
 
 
 import os
-import sys
 
-import pytest
-from utils import data_file
+from utils import data_file_url
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
@@ -36,30 +34,20 @@ def test_multi_directory_1():
             assert len(ds) == 2
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
-)
 def test_multi_directory_2():
     ds = load_source(
         "url",
-        "file://{}".format(
-            data_file("mixed"),
-        ),
+        data_file_url("mixed"),
     )
     print(ds)
     # assert len(ds) == 1
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
-)
 def test_grib_zip():
     # ds =
     load_source(
         "url",
-        "file://{}".format(
-            data_file("grib.zip"),
-        ),
+        data_file_url("grib.zip"),
     )
     # assert len(ds) == 1
 
