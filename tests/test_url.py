@@ -12,11 +12,11 @@
 import os
 import pathlib
 import time
-from climetlab import settings
 
 from utils import data_file_url
 
 import climetlab as cml
+from climetlab import settings
 from climetlab.utils import download_and_cache
 
 
