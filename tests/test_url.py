@@ -12,6 +12,7 @@
 import os
 import pathlib
 import time
+from climetlab import settings
 
 from utils import data_file_url
 
@@ -34,6 +35,12 @@ def test_download_1():
 def test_download_2():
     url = "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib"
     download_and_cache(url)
+
+
+def test_download_3():
+    with settings.temporary("download-updated-urls", True):
+        url = "https://datastore.copernicus-climate.eu/climetlab/test.txt"
+        download_and_cache(url)
 
 
 def test_local():

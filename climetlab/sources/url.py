@@ -8,10 +8,12 @@
 #
 
 import cgi
+import json
 import logging
 import mimetypes
 import os
 import shutil
+import sys
 from ftplib import FTP
 from urllib.parse import urlparse
 
@@ -114,6 +116,10 @@ class HTTPDownloader(Downloader):
                 r.raise_for_status()
                 for k, v in r.headers.items():
                     self._headers[k.lower()] = v
+                LOG.debug(
+                    "HTTP headers %s",
+                    json.dumps(self._headers, sort_keys=True, indent=4),
+                )
             except Exception:
                 LOG.exception("HEAD %s", url)
         return self._headers
@@ -183,7 +189,21 @@ class HTTPDownloader(Downloader):
         return self.headers(url)
 
     def out_of_date(self, url, cache_data):
-        # TODO: checkout cache control
+        if cache_data is not None:
+            headers = self.headers(url)
+            cached_etag = cache_data.get("etag")
+            remote_etag = headers.get("etag")
+
+            if cached_etag != remote_etag:
+                LOG.warning("Remote content of URL %s has changed", url)
+                if SETTINGS.get("download-updated-urls"):
+                    LOG.warning("Invalidating cache version and re-downloading %s", url)
+                    return True
+                LOG.warning(
+                    "To enable automatic downloading of updated URLs set the 'download-updated-urls' setting to True",
+                )
+            else:
+                LOG.debug("Remote content of URL %s unchanged", url)
 
         return False
 
@@ -236,8 +256,11 @@ class FTPDownloader(Downloader):
 class FileDownloader(Downloader):
     def download(self, url, target):
         o = urlparse(url)
-        assert os.path.exists(o.path), f"File not found: [{url}] [{o}]"
-        os.symlink(o.path, target)
+        path = o.path
+        if sys.platform == "win32" and path[0] == "/" and path[2] == ":":
+            path = path[1:]
+        assert os.path.exists(path), f"File not found: [{url}] [{o}]"
+        os.symlink(path, target)
 
 
 DOWNLOADERS = dict(

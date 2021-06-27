@@ -72,6 +72,10 @@ SETTINGS_AND_HELP = {
         """Timeout when downloading from an url.""",
         "as_seconds",
     ),
+    "download-updated-urls": (
+        False,
+        "Re-download URLs when the remote version of a cached file as been changed",
+    ),
 }
 
 DEFAULTS = {}
