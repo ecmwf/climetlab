@@ -11,10 +11,8 @@
 
 import os
 import pathlib
-import sys
 import time
 
-import pytest
 from utils import data_file_url
 
 import climetlab as cml
@@ -38,11 +36,10 @@ def test_download_2():
     download_and_cache(url)
 
 
-
 def test_local():
     ds = cml.load_source(
         "url",
-        data_file_url("single","z_500_20000101.grib"),
+        data_file_url("single", "z_500_20000101.grib"),
     )
     assert len(ds) == 1
 
