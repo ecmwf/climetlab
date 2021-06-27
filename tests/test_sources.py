@@ -50,16 +50,23 @@ def test_url_ftp_source_anonymous():
 
 
 def test_url_ftp_source_with_user_pass():
+    import ftplib
+
     date = datetime.datetime.now() - datetime.timedelta(days=1)
-    load_source(
-        "url-pattern",
-        (
-            "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/"
-            "A_HPXA89ECMF{date:date(%d)}0000_C_ECMF_{date:date(%Y%m%d)}"
-            "000000_an_msl_global_0p5deg_grib2.bin"
-        ),
-        {"date": date},
-    )
+    try:
+        load_source(
+            "url-pattern",
+            (
+                "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/"
+                "A_HPXA89ECMF{date:date(%d)}0000_C_ECMF_{date:date(%Y%m%d)}"
+                "000000_an_msl_global_0p5deg_grib2.bin"
+            ),
+            {"date": date},
+        )
+    except ftplib.error_temp:
+        # Sometimes this site returns:
+        # ftplib.error_temp: 421 Maximum number of connections exceeded (500)
+        pass
 
 
 def test_file_source_mars():
