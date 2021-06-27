@@ -11,6 +11,7 @@
 
 import datetime
 import os
+import sys
 
 import pytest
 
@@ -27,6 +28,9 @@ def test_file_source_netcdf():
     assert len(s) == 2
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
+)
 def test_url_file_source():
     filename = os.path.abspath("docs/examples/test.nc")
     s = load_source("url", f"file://{filename}")
