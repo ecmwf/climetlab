@@ -7,16 +7,18 @@
 # nor does it submit to any jurisdiction.
 
 
-import warnings
+import logging
 
 from . import Reader
+
+LOG = logging.getLogger(__name__)
 
 
 class Unknown(Reader):
     def __init__(self, source, path, magic):
         super().__init__(source, path)
         self.magic = magic
-        warnings.warn(f"Unknown file type {path} ({magic}), ignoring")
+        LOG.warning("Unknown file type %s (%s), ignoring", path, magic)
 
     def ignore(self):
         # Used by multi-source
