@@ -15,6 +15,7 @@
 
 import logging
 import os
+import sys
 from collections import defaultdict
 from importlib import import_module
 from typing import List, Union
@@ -138,6 +139,8 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
                     full = os.path.join(path, base)
                     if full[0] != "/":
                         full = "/" + full
+                    if sys.platform == "win32":
+                        full = full.replace("\\", "/")
                     p = full[1:].replace("/", "-").replace("_", "-")
                     candidates.add(p)
                     if p == name:
