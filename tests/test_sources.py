@@ -14,6 +14,7 @@ import os
 import sys
 
 import pytest
+from utils import modules_installed
 
 from climetlab import load_source
 
@@ -145,20 +146,12 @@ def test_url_pattern_source_3():
     # source.to_xarray()
 
 
-def zarr_not_installed():
-    try:
-        import s3fs  # noqa
-        import zarr  # noqa
-
-        return False
-    except ImportError:
-        return True
-
-
 S3_URL = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
 
 
-@pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
+@pytest.mark.skipif(
+    not modules_installed("zarr", "s3fs"), reason="Zarr or S3FS not installed"
+)
 def test_zarr_source_1():
     source = load_source(
         "zarr-s3",
@@ -168,7 +161,9 @@ def test_zarr_source_1():
     assert len(ds.forecast_time) == 1
 
 
-@pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
+@pytest.mark.skipif(
+    not modules_installed("zarr", "s3fs"), reason="Zarr or S3FS not installed"
+)
 def test_zarr_source_2():
     import datetime
 
@@ -194,7 +189,9 @@ def test_zarr_source_2():
     assert dates[1] == datetime.datetime(2020, 1, 9)
 
 
-@pytest.mark.skipif(zarr_not_installed(), reason="Zarr or S3FS not installed")
+@pytest.mark.skipif(
+    not modules_installed("zarr", "s3fs"), reason="Zarr or S3FS not installed"
+)
 def test_zarr_source_3():
     import datetime
 

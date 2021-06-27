@@ -18,24 +18,26 @@ def data_file_url(*args):
     return file_url(data_file(*args))
 
 
-def is_package_installed(package):
-    """return true if all packages in "package" are installed"""
-    if isinstance(package, (list, tuple)):
-        installed = [p for p in package if is_package_installed(p)]
-        if len(installed) != len(package):
+def modules_installed(*modules):
+    for module in modules:
+        try:
+            import_module(module)
+        except ImportError:
             return False
-        return True
-
-    try:
-        import_module(package)
-        return True
-    except ImportError:
-        return False
+    return True
 
 
 def main(globals):
     logging.basicConfig(level=logging.DEBUG)
     for k, f in sorted(globals.items()):
         if k.startswith("test_") and callable(f):
-            LOG.debug("Running '%s'", k)
-            f()
+            skip=None
+            if hasattr(f,'pytestmark'):
+                for m in f.pytestmark:
+                    if m.name == 'skipif' and m.args[0] is True:
+                        skip=m.kwargs.get('reason', '?')
+            if skip:
+                LOG.debug("========= Skipping '%s' %s", k, skip)
+            else:
+                LOG.debug("========= Running '%s'")
+                f()

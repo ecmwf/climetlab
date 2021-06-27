@@ -8,6 +8,7 @@
 #
 
 import cgi
+import datetime
 import json
 import logging
 import mimetypes
@@ -17,7 +18,9 @@ import sys
 from ftplib import FTP
 from urllib.parse import urlparse
 
+import pytz
 import requests
+from dateutil.parser import parse as parse_date
 
 from climetlab.core.settings import SETTINGS
 
@@ -98,7 +101,7 @@ class Downloader:
     def cache_data(sel, url):
         return None
 
-    def out_of_date(self, url, cache_data):
+    def out_of_date(self, url, path, cache_data):
         return False
 
 
@@ -188,8 +191,25 @@ class HTTPDownloader(Downloader):
     def cache_data(self, url):
         return self.headers(url)
 
-    def out_of_date(self, url, cache_data):
+    def out_of_date(self, url, path, cache_data):
         if cache_data is not None:
+
+            # TODO: check 'cache-control' to see if we should check the etag
+            if "cache-control" in cache_data:
+                pass
+
+            if "expires" in cache_data:
+                try:
+                    expires = parse_date(cache_data["expires"])
+                    now = pytz.UTC.localize(datetime.datetime.utcnow())
+                    if expires > now:
+                        LOG.debug("URL %s not expired (%s > %s)", url, expires, now)
+                        return False
+                except Exception:
+                    LOG.exception(
+                        "Failed to check URL expiry date '%s'", cache_data["expires"]
+                    )
+
             headers = self.headers(url)
             cached_etag = cache_data.get("etag")
             remote_etag = headers.get("etag")

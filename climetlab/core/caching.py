@@ -477,14 +477,15 @@ def cache_file(
     )
 
     record = register_cache_file(path, owner, args)
-    if callable(force):
-        owner_data = record["owner_data"]
-        if owner_data is not None:
-            owner_data = json.loads(owner_data)
-        force = force(args, owner_data)
+    if os.path.exists(path):
+        if callable(force):
+            owner_data = record["owner_data"]
+            if owner_data is not None:
+                owner_data = json.loads(owner_data)
+            force = force(args, path, owner_data)
 
-    if force:
-        decache_file(path)
+        if force:
+            decache_file(path)
 
     if not os.path.exists(path):
 
