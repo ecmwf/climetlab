@@ -31,13 +31,13 @@ def main(globals):
     logging.basicConfig(level=logging.DEBUG)
     for k, f in sorted(globals.items()):
         if k.startswith("test_") and callable(f):
-            skip=None
-            if hasattr(f,'pytestmark'):
+            skip = None
+            if hasattr(f, "pytestmark"):
                 for m in f.pytestmark:
-                    if m.name == 'skipif' and m.args[0] is True:
-                        skip=m.kwargs.get('reason', '?')
+                    if m.name == "skipif" and m.args[0] is True:
+                        skip = m.kwargs.get("reason", "?")
             if skip:
                 LOG.debug("========= Skipping '%s' %s", k, skip)
             else:
-                LOG.debug("========= Running '%s'")
+                LOG.debug("========= Running '%s'", k)
                 f()
