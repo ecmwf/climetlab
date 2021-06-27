@@ -15,7 +15,7 @@ import sys
 import time
 
 import pytest
-from utils import data_file
+from utils import data_file_url
 
 import climetlab as cml
 from climetlab.utils import download_and_cache
@@ -38,13 +38,11 @@ def test_download_2():
     download_and_cache(url)
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
-)
+
 def test_local():
     ds = cml.load_source(
         "url",
-        path_to_url(data_file("single/z_500_20000101.grib")),
+        data_file_url("single","z_500_20000101.grib"),
     )
     assert len(ds) == 1
 

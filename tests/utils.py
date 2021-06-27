@@ -1,12 +1,21 @@
 import logging
 import os
+import pathlib
 from importlib import import_module
 
 LOG = logging.getLogger(__name__)
 
 
-def data_file(name):
-    return os.path.join(os.path.dirname(__file__), "data", name)
+def data_file(*args):
+    return os.path.join(os.path.dirname(__file__), "data", *args)
+
+
+def file_url(path):
+    return pathlib.Path(os.path.abspath(path)).as_uri()
+
+
+def data_file_url(*args):
+    return file_url(data_file(*args))
 
 
 def is_package_installed(package):

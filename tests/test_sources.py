@@ -46,19 +46,20 @@ def test_url_ftp_source_anonymous():
             "gfs.{date:date(%Y%m%d)}/00/atmos/wafsgfs_P_t00z_intdsk84.grib2"
         ),
         {"date": date},
-        force=True,
     )
 
 
-# Skip because sometimes fails, when the user "wmo" is already downloading
-# from many places somewhre else in the world.
-# def test_url_ftp_source_with_user_pass():
-#     date = datetime.datetime.now() - datetime.timedelta(days=1)
-#     load_source(
-#         "url-pattern",
-#         "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/A_HPXA89ECMF240000_C_ECMF_{date:date(%Y%m%d)}000000_an_msl_global_0p5deg_grib2.bin",
-#         {"date": date},
-#     )
+def test_url_ftp_source_with_user_pass():
+    date = datetime.datetime.now() - datetime.timedelta(days=1)
+    load_source(
+        "url-pattern",
+        (
+            "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/"
+            "A_HPXA89ECMF{date:date(%d)}0000_C_ECMF_{date:date(%Y%m%d)}"
+            "000000_an_msl_global_0p5deg_grib2.bin"
+        ),
+        {"date": date},
+    )
 
 
 def test_file_source_mars():
@@ -94,22 +95,22 @@ def test_file_source_cds_grib():
     assert len(s) == 2
 
 
-# def test_file_source_cds_netcdf():
-#
-#    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-#        pytest.skip("No ~/.cdsapirc")
-#
-#    s = load_source(
-#        "cds",
-#        "reanalysis-era5-single-levels",
-#        variable=["2t", "msl"],
-#        product_type="reanalysis",
-#        area=[50, -50, 20, 50],
-#        date="2012-12-12",
-#        time="12:00",
-#        format="netcdf",
-#    )
-#    assert len(s) == 2
+def test_file_source_cds_netcdf():
+
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+        format="netcdf",
+    )
+    assert len(s) == 2
 
 
 def test_url_source_1():
