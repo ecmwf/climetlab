@@ -17,7 +17,7 @@ import yaml
 def test_yaml():
     yfile = os.path.dirname(__file__) + "/example.yaml"
     with open(yfile) as f:
-        s = yaml.load(f.read(), Loader=yaml.SafeLoader)
+        yaml.load(f.read(), Loader=yaml.SafeLoader)
 
 
 if __name__ == "__main__":
