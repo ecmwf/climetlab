@@ -276,6 +276,13 @@ class FileDownloader(Downloader):
     def download(self, url, target):
         o = urlparse(url)
         path = o.path
+
+        if sys.platform == "win32" and url.startswith("file://"):
+            # this is because urllib does not decode
+            # 'file://C:\Users\name\climetlab\docs\examples\test.nc'
+            # as expected.
+            path = url[len("file://") :]
+
         if sys.platform == "win32" and path[0] == "/" and path[2] == ":":
             path = path[1:]
         assert os.path.exists(path), f"File not found: [{url}] [{o}]"
