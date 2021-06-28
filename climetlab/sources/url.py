@@ -13,7 +13,6 @@ import json
 import logging
 import mimetypes
 import os
-import shutil
 import sys
 from ftplib import FTP
 from urllib.parse import urlparse
@@ -290,20 +289,11 @@ DOWNLOADERS = dict(
     file=FileDownloader,
 )
 
-UNPACK_EXTENSIONS = (
-    ".tar",
-    ".tar.gz",
-    ".zip",
-    ".gz",
-    ".tgz",
-)
-
 
 class Url(FileSource):
     def __init__(
         self,
         url,
-        unpack=None,
         verify=True,
         watcher=None,
         force=None,
@@ -322,37 +312,16 @@ class Url(FileSource):
         if force is None:
             force = downloader.out_of_date
 
-        if unpack is None:
-            unpack = extension in (".tar", ".tar.gz")
-
         def download(target, url):
             downloader.download(url, target)
             return downloader.cache_data(url)
 
-        def download_and_unpack(target, url):
-            assert extension in UNPACK_EXTENSIONS, (extension, url)
-            archive = target + extension
-            download(archive, url)
-            LOG.info("Unpacking...")
-            shutil.unpack_archive(archive, target)
-            LOG.info("Done.")
-            os.unlink(archive)
-            return downloader.cache_data(url)
-
-        if unpack:
-            self.path = self.cache_file(
-                download_and_unpack,
-                url,
-                extension=".d",
-                force=force,
-            )
-        else:
-            self.path = self.cache_file(
-                download,
-                url,
-                extension=extension,
-                force=force,
-            )
+        self.path = self.cache_file(
+            download,
+            url,
+            extension=extension,
+            force=force,
+        )
 
     def __repr__(self) -> str:
         return f"Url({self.url})"

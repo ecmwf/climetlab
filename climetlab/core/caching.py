@@ -264,7 +264,17 @@ class Cache(threading.Thread):
                     #     parent,
                     # )
 
-    def _delete_entry(self, db, top, entry):
+    def _delete_file(self, path):
+        cache_directory = SETTINGS.get("cache-directory")
+        assert path.startswith(cache_directory), (path, cache_directory)
+        delete = path + ".delete"
+        os.rename(path, delete)
+        if os.path.isdir(delete):
+            shutil.rmtree(delete)
+        else:
+            os.unlink(delete)
+
+    def _delete_entry(self, entry):
         if isinstance(entry, str):
             path, size, owner, args = entry, None, None, None
             try:
@@ -278,22 +288,48 @@ class Cache(threading.Thread):
                 entry["owner"],
                 entry["args"],
             )
-        assert path.startswith(top), (path, top)
+
+        total = 0
+
+        # First, delete child files, e.g. unzipped data
+        with self.connection as db:
+            for child in db.execute("SELECT * FROM cache WHERE parent = ?", (path,)):
+                total += self._delete_entry(child)
+
         if not os.path.exists(path):
             LOG.warning(f"cache file lost: {path}")
             with self.connection as db:
                 db.execute("DELETE FROM cache WHERE path=?", (path,))
-            return 0
-        delete = path + ".delete"
-        os.rename(path, delete)
+            return total
+
         LOG.warning(f"CliMetLab cache: deleting {path} ({bytes_to_string(size)})")
         LOG.warning(f"CliMetLab cache: {owner} {args}")
-        if os.path.isdir(delete):
-            shutil.rmtree(delete)
-        else:
-            os.unlink(delete)
-        db.execute("DELETE FROM cache WHERE path=?", (path,))
-        return size
+        self._delete_file(path)
+
+        with self.connection as db:
+            db.execute("DELETE FROM cache WHERE path=?", (path,))
+
+        return total + size
+
+    def _update_parent(self, path):
+        if False:
+            cache_directory = SETTINGS.get("cache-directory")
+            assert path.startswith(cache_directory), (path, cache_directory)
+            LOG.warning(f"CliMetLab cache: zeroing parent file {path}")
+            self._delete_file(path)
+            with open(path, 'wb'):
+                pass
+
+            with self.connection as db:
+                db.execute(
+                    "UPDATE cache SET size=?, type=? WHERE path=?",
+                    (
+                        0,
+                        'parent',
+                        path,
+                    ),
+                )
+
 
     def _decache(self, bytes):
         # _find_orphans()
@@ -305,7 +341,7 @@ class Cache(threading.Thread):
         LOG.warning("CliMetLab cache: trying to free %s", bytes_to_string(bytes))
 
         total = 0
-        top = SETTINGS.get("cache-directory")
+
         with self.connection as db:
 
             latest = self._latest_date()
@@ -315,7 +351,7 @@ class Cache(threading.Thread):
                 "SELECT * FROM cache WHERE size IS NOT NULL AND creation_date < ? ORDER BY last_access ASC",
             ):
                 for entry in db.execute(stmt, (latest,)):
-                    total += self._delete_entry(db, top, entry)
+                    total += self._delete_entry(entry)
                     if total >= bytes:
                         LOG.warning(
                             "CliMetLab cache: freed %s from cache",
@@ -376,9 +412,6 @@ class Cache(threading.Thread):
                     (path, owner, args, now, now, 1, parent),
                 )
 
-            else:
-                assert parent is None
-
             return dict(
                 db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone()
             )
@@ -391,9 +424,7 @@ class Cache(threading.Thread):
             return size
 
     def _decache_file(self, path):
-        top = SETTINGS.get("cache-directory")
-        with self.connection as db:
-            self._delete_entry(db, top, path)
+        self._delete_entry(path)
 
     def _check_cache_size(self):
         maximum = SETTINGS.as_bytes("maximum-cache-size")
@@ -435,6 +466,7 @@ cache_entries = in_executor(CACHE._cache_entries)
 purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
 decache_file = in_executor(CACHE._decache_file)
+update_parent = in_executor(CACHE._update_parent)
 
 
 def cache_file(
@@ -444,6 +476,7 @@ def cache_file(
     hash_extra=None,
     extension: str = ".cache",
     force=None,
+    parent=None,
 ):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -476,7 +509,7 @@ def cache_file(
         ),
     )
 
-    record = register_cache_file(path, owner, args)
+    record = register_cache_file(path, owner, args, parent)
     if os.path.exists(path):
         if callable(force):
             owner_data = record["owner_data"]
@@ -489,17 +522,17 @@ def cache_file(
 
     if not os.path.exists(path):
 
-        owner_data = create(path + ".tmp", args)
+        tmp = ".{}-{}.tmp".format(os.getpid(), threading.get_ident())
 
-        # take care of race condition when two processes
-        # cache the same file
-        try:
-            os.rename(path + ".tmp", path)
-        except FileNotFoundError as e:
-            if not os.path.exists(path):
-                raise e
+        owner_data = create(path + tmp, args)
+
+        os.rename(path + tmp, path)
 
         update_entry(path, owner_data)
+
+        if parent is not None:
+            update_parent(parent)
+
         check_cache_size()
 
     return path

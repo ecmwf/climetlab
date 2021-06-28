@@ -13,6 +13,12 @@ from zipfile import ZipFile
 from . import Reader
 from . import reader as find_reader
 
+try:
+    import ipywidgets  # noqa
+    from tqdm.auto import tqdm
+except ImportError:
+    from tqdm import tqdm
+
 
 class ZIPReader(Reader):
     def __init__(self, source, path):
@@ -28,12 +34,15 @@ class ZIPReader(Reader):
 
         def unzip(target, args):
             with ZipFile(path, "r") as z:
-                z.extractall(target)
+                files = z.namelist()
+                for file in tqdm(iterable=files, total=len(files)):
+                    z.extract(member=file, path=target)
 
         self.path = self.cache_file(
             unzip,
             path,
             extension=".d",
+            parent=path,
         )
 
     def mutate(self):
