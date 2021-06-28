@@ -5,6 +5,9 @@ from importlib import import_module
 
 LOG = logging.getLogger(__name__)
 
+def climetlab_file(*args):
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *args)
+
 
 def data_file(*args):
     return os.path.join(os.path.dirname(__file__), "data", *args)

@@ -14,13 +14,15 @@ import os
 import sys
 
 import pytest
-from utils import modules_installed
+from utils import modules_installed, climetlab_file
 
 from climetlab import load_source
+import climetlab
 
 
 def test_file_source_grib():
-    s = load_source("file", "docs/examples/test.grib")
+
+    s = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert len(s) == 2
 
 

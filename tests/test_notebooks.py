@@ -13,9 +13,7 @@ import os
 import re
 import sys
 
-import nbformat
 import pytest
-from nbconvert.preprocessors import ExecutePreprocessor
 
 # See https://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
 
@@ -62,10 +60,12 @@ def notebooks_list():
     reason="CLIMETLAB_SKIP_NOTEBOOKS_TESTS not zero",
 )
 @pytest.mark.skipif(
-    sys.platform == "win32", reason="Cannot execute notebookds on Windows"
+    sys.platform == "win32", reason="Cannot execute notebooks on Windows"
 )
 @pytest.mark.parametrize("path", notebooks_list())
 def test_notebook(path):
+    import nbformat
+    from nbconvert.preprocessors import ExecutePreprocessor
 
     if path in SKIP:
         pytest.skip("Notebook marked as 'skip'")

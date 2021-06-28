@@ -15,6 +15,7 @@ import numpy as np
 
 from climetlab import load_source
 from climetlab.utils.dates import parse_date, to_datetime, to_datetime_list
+from utils import  climetlab_file
 
 
 def test_to_datetime():
@@ -82,7 +83,7 @@ def test_to_datetimes_list():
 
 
 def test_to_datetimes_list_grib():
-    source = load_source("file", "docs/examples/test.grib")
+    source = load_source("file", climetlab_file("docs/examples/test.grib"))
     for s in source:
         assert to_datetime_list(s) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
