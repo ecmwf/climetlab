@@ -71,7 +71,6 @@ class Future:
         self._result = None
 
     def execute(self):
-        # LOG.debug("===> %r(%r,%r)",self.func,self.args, self.kwargs)
         try:
             self._result = self.func(*self.args, **self.kwargs)
         except Exception as e:
@@ -80,7 +79,6 @@ class Future:
         with self._condition:
             self._ready = True
             self._condition.notify_all()
-        # LOG.debug("<=== %r(%r,%r)",self.func,self.args, self.kwargs)
 
     def result(self):
         with self._condition:
