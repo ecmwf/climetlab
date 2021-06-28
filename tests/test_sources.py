@@ -16,7 +16,6 @@ import sys
 import pytest
 from utils import climetlab_file, modules_installed
 
-import climetlab
 from climetlab import load_source
 
 
