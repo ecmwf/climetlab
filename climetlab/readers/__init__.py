@@ -95,10 +95,13 @@ def _readers():
 
 def reader(source, path):
 
+    assert isinstance(path, str), source
+
     if os.path.isdir(path):
         from .directory import DirectoryReader
 
         return DirectoryReader(source, path).mutate()
+    LOG.debug("Reader for %s", path)
 
     with open(path, "rb") as f:
         magic = f.read(8)

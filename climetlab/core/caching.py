@@ -71,6 +71,7 @@ class Future:
         self._result = None
 
     def execute(self):
+        # LOG.debug("===> %r(%r,%r)",self.func,self.args, self.kwargs)
         try:
             self._result = self.func(*self.args, **self.kwargs)
         except Exception as e:
@@ -79,6 +80,7 @@ class Future:
         with self._condition:
             self._ready = True
             self._condition.notify_all()
+        # LOG.debug("<=== %r(%r,%r)",self.func,self.args, self.kwargs)
 
     def result(self):
         with self._condition:
@@ -143,6 +145,13 @@ class Cache(threading.Thread):
             self._queue.append(s)
             self._condition.notify_all()
             return s
+
+    def _file_in_cache_directory(self, path):
+        cache_directory = SETTINGS.get("cache-directory")
+        return path.startswith(cache_directory)
+
+    def _ensure_in_cache(self, path):
+        assert self._file_in_cache_directory(path), f"File not in cache {path}"
 
     def _settings_changed(self):
         self._connection = None  # The user may have changed the cache directory
@@ -265,8 +274,9 @@ class Cache(threading.Thread):
                     # )
 
     def _delete_file(self, path):
-        cache_directory = SETTINGS.get("cache-directory")
-        assert path.startswith(cache_directory), (path, cache_directory)
+
+        self._ensure_in_cache(path)
+
         delete = path + ".delete"
         os.rename(path, delete)
         if os.path.isdir(delete) and not os.path.islink(delete):
@@ -311,24 +321,23 @@ class Cache(threading.Thread):
 
         return total + size
 
-    def _update_parent(self, path):
-        if False:
-            cache_directory = SETTINGS.get("cache-directory")
-            assert path.startswith(cache_directory), (path, cache_directory)
-            LOG.warning(f"CliMetLab cache: zeroing parent file {path}")
-            self._delete_file(path)
-            with open(path, "wb"):
-                pass
+    def _update_parent(self, parent_path, delete_parent):
 
-            with self.connection as db:
-                db.execute(
-                    "UPDATE cache SET size=?, type=? WHERE path=?",
-                    (
-                        0,
-                        "parent",
-                        path,
-                    ),
-                )
+        if not self._file_in_cache_directory(parent_path):
+            return
+
+        if delete_parent:
+            self._delete_file(parent_path)
+
+        with self.connection as db:
+            db.execute(
+                "UPDATE cache SET size=?, type=? WHERE path=?",
+                (
+                    0,
+                    "parent",
+                    parent_path,
+                ),
+            )
 
     def _decache(self, bytes):
         # _find_orphans()
@@ -377,6 +386,8 @@ class Cache(threading.Thread):
         changes :
             None or False if database does not need to be updated. TODO: clarify.
         """
+
+        self._ensure_in_cache(path)
 
         with self.connection as db:
 
@@ -475,7 +486,8 @@ def cache_file(
     hash_extra=None,
     extension: str = ".cache",
     force=None,
-    parent=None,
+    parent: str=None,
+    delete_parent=False,
 ):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -530,7 +542,7 @@ def cache_file(
         update_entry(path, owner_data)
 
         if parent is not None:
-            update_parent(parent)
+            update_parent(parent, delete_parent)
 
         check_cache_size()
 

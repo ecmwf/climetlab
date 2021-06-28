@@ -49,13 +49,13 @@ class Source(Base):
         # Used by multi-source
         return False
 
-    def cache_file(self, create, args, **kwargs):
+    def cache_file(self, *args, **kwargs):
         owner = self.name
         if self.dataset:
             owner = self.dataset.name
         if owner is None:
             owner = self.__class__.__name__.lower()
-        return cache_file(owner, create, args, **kwargs)
+        return cache_file(owner, *args, **kwargs)
 
     @property
     def dataset(self):

@@ -43,7 +43,7 @@ class Downloader:
         self.owner = owner
 
     def local_path(self, url):
-        return False
+        return None
 
     def extension(self, url):
         url_no_args = url.split("?")[0]
