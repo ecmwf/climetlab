@@ -269,7 +269,7 @@ class Cache(threading.Thread):
         assert path.startswith(cache_directory), (path, cache_directory)
         delete = path + ".delete"
         os.rename(path, delete)
-        if os.path.isdir(delete):
+        if os.path.isdir(delete) and not os.path.islink(delete):
             shutil.rmtree(delete)
         else:
             os.unlink(delete)
