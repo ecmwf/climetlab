@@ -317,7 +317,7 @@ class Cache(threading.Thread):
             assert path.startswith(cache_directory), (path, cache_directory)
             LOG.warning(f"CliMetLab cache: zeroing parent file {path}")
             self._delete_file(path)
-            with open(path, 'wb'):
+            with open(path, "wb"):
                 pass
 
             with self.connection as db:
@@ -325,11 +325,10 @@ class Cache(threading.Thread):
                     "UPDATE cache SET size=?, type=? WHERE path=?",
                     (
                         0,
-                        'parent',
+                        "parent",
                         path,
                     ),
                 )
-
 
     def _decache(self, bytes):
         # _find_orphans()
