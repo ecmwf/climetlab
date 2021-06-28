@@ -14,10 +14,10 @@ import os
 import sys
 
 import pytest
-from utils import modules_installed, climetlab_file
+from utils import climetlab_file, modules_installed
 
-from climetlab import load_source
 import climetlab
+from climetlab import load_source
 
 
 def test_file_source_grib():

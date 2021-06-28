@@ -12,10 +12,10 @@
 import datetime
 
 import numpy as np
+from utils import climetlab_file
 
 from climetlab import load_source
 from climetlab.utils.dates import parse_date, to_datetime, to_datetime_list
-from utils import  climetlab_file
 
 
 def test_to_datetime():

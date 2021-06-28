@@ -12,9 +12,9 @@
 import os
 
 import pytest
+from utils import climetlab_file
 
 from climetlab import load_source, plot_map
-from utils import climetlab_file
 
 
 def test_plot():

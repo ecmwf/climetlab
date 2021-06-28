@@ -9,8 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
+from utils import climetlab_file
+
 import climetlab as cml
-from utils import  climetlab_file
 
 """
 Test if a numpy array can be plotted using another field as metadata,
