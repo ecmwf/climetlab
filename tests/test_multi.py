@@ -10,15 +10,16 @@
 #
 
 
+import logging
 import os
 
 from utils import data_file_url
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
-import logging
 
 LOG = logging.getLogger(__name__)
+
 
 def test_multi_directory_1():
     with temp_directory() as directory:
@@ -89,9 +90,7 @@ def test_download_zip():
 
     LOG.debug("Use the force")
     ds = load_source(
-        "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
-        force=True
+        "url", "https://datastore.copernicus-climate.eu/climetlab/grib.zip", force=True
     )
     assert len(ds) == 18, len(ds)
 
