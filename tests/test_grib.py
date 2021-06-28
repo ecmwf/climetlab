@@ -14,10 +14,11 @@ import os
 import pytest
 
 from climetlab import load_source, plot_map
+from utils import climetlab_file
 
 
 def test_plot():
-    for s in load_source("file", "docs/examples/test.grib"):
+    for s in load_source("file", climetlab_file("docs/examples/test.grib")):
         plot_map(s)
 
         # test.grib fields endStep is 0, so datetime == valid_datetime
@@ -29,7 +30,7 @@ def test_plot():
 
 @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
 def test_sel():
-    s = load_source("file", "docs/examples/test.grib")
+    s = load_source("file", climetlab_file("docs/examples/test.grib"))
 
     s.sel(shortName="2t")
 

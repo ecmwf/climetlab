@@ -27,7 +27,7 @@ def test_file_source_grib():
 
 
 def test_file_source_netcdf():
-    s = load_source("file", "docs/examples/test.nc")
+    s = load_source("file", climetlab_file("docs/examples/test.nc"))
     assert len(s) == 2
 
 
@@ -35,7 +35,7 @@ def test_file_source_netcdf():
     sys.platform == "win32", reason="file:// not working on Windows yet"  # TODO: fix
 )
 def test_url_file_source():
-    filename = os.path.abspath("docs/examples/test.nc")
+    filename = os.path.abspath(climetlab_file("docs/examples/test.nc"))
     s = load_source("url", f"file://{filename}")
     assert len(s) == 2
 

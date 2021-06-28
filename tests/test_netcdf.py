@@ -14,10 +14,11 @@ import os
 import pytest
 
 from climetlab import load_source, plot_map
+from utils import climetlab_file
 
 
 def test_netcdf():
-    for s in load_source("file", "docs/examples/test.nc"):
+    for s in load_source("file", climetlab_file("docs/examples/test.nc")):
         plot_map(s)
 
 

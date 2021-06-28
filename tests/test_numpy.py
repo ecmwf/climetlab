@@ -10,6 +10,7 @@
 #
 
 import climetlab as cml
+from utils import  climetlab_file
 
 """
 Test if a numpy array can be plotted using another field as metadata,
@@ -30,7 +31,7 @@ i.e. for bounding box, style, etc.
 
 
 def test_numpy_xarray():
-    s = cml.load_source("file", "docs/examples/test.nc")
+    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
     x = s.to_xarray()
     cml.plot_map(x.msl.values, metadata=x.msl)
 

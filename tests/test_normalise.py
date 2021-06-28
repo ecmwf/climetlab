@@ -13,6 +13,7 @@ import datetime
 
 import numpy as np
 import pytest
+from utils import climetlab_file
 
 from climetlab import ALL, load_source
 from climetlab.normalize import (
@@ -63,11 +64,11 @@ def test_dates():
     assert dates_1(date=npdate) == datetime.datetime(2016, 1, 1)
     assert dates_list_1(date=npdate) == [datetime.datetime(2016, 1, 1)]
 
-    source = load_source("file", "docs/examples/test.grib")
+    source = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert dates_1(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
     assert dates_list_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
-    source = load_source("file", "docs/examples/test.nc")
+    source = load_source("file", climetlab_file("docs/examples/test.nc"))
 
     #  For now
     with pytest.raises(NotImplementedError):
@@ -247,10 +248,10 @@ def test_bbox():
 
     assert bbox_defaults(area) == bbox
 
-    source = load_source("file", "docs/examples/test.grib")
+    source = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert bbox_tuple(source[0]) == (73.0, -27.0, 33.0, 45.0)
 
-    source = load_source("file", "docs/examples/test.nc")
+    source = load_source("file", climetlab_file("docs/examples/test.nc"))
     assert bbox_tuple(source[0]) == (73.0, -27.0, 33.0, 45.0)
 
 
