@@ -42,6 +42,9 @@ class Downloader:
     def __init__(self, owner):
         self.owner = owner
 
+    def local_path(self, url):
+        return False
+
     def extension(self, url):
         url_no_args = url.split("?")[0]
 
@@ -273,7 +276,7 @@ class FTPDownloader(Downloader):
 
 
 class FileDownloader(Downloader):
-    def download(self, url, target):
+    def local_path(self, url):
         o = urlparse(url)
         path = o.path
 
@@ -285,8 +288,8 @@ class FileDownloader(Downloader):
 
         if sys.platform == "win32" and path[0] == "/" and path[2] == ":":
             path = path[1:]
-        assert os.path.exists(path), f"File not found: [{url}] [{o}]"
-        os.symlink(path, target)
+
+        return path
 
 
 DOWNLOADERS = dict(
@@ -315,6 +318,10 @@ class Url(FileSource):
         o = urlparse(url)
         downloader = DOWNLOADERS[o.scheme](self)
         extension = downloader.extension(url)
+
+        self.path = downloader.local_path(url)
+        if self.path is not None:
+            return
 
         if force is None:
             force = downloader.out_of_date
