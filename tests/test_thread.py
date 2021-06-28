@@ -32,7 +32,7 @@ def test_thread():
     futures.append(pool.submit(f, 3, 1))
 
     duration = datetime.now() - start
-    assert duration > timedelta(seconds=0)
+    assert duration > timedelta(seconds=-0.000001)
     assert duration < timedelta(seconds=0.5)
 
     assert futures[3].result() == 9
