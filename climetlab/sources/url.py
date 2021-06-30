@@ -33,6 +33,13 @@ from .file import FileSource
 
 LOG = logging.getLogger(__name__)
 
+OFFLINE = False  # For use with pytest
+
+
+def offline(off):
+    global OFFLINE
+    OFFLINE = off
+
 
 def dummy():
     pass
@@ -327,6 +334,7 @@ class Url(FileSource):
             force = downloader.out_of_date
 
         def download(target, url):
+            assert not OFFLINE
             downloader.download(url, target)
             return downloader.cache_data(url)
 

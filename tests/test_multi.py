@@ -74,33 +74,6 @@ def test_multi_grib_mixed():
     assert len(ds) == 2
 
 
-def test_download_zip():
-    ds = load_source(
-        "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
-    )
-    assert len(ds) == 18, len(ds)
-
-    # Check cache
-    ds = load_source(
-        "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
-    )
-    assert len(ds) == 18, len(ds)
-
-    LOG.debug("Use the force")
-    ds = load_source(
-        "url", "https://datastore.copernicus-climate.eu/climetlab/grib.zip", force=True
-    )
-    assert len(ds) == 18, len(ds)
-
-    ds = load_source(
-        "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
-    )
-    assert len(ds) == 18, len(ds)
-
-
 # def test_download_tar():
 #     ds = load_source(
 #         "url",

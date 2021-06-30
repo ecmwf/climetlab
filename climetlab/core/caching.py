@@ -130,6 +130,7 @@ class Cache(threading.Thread):
                         last_access   TEXT NOT NULL,
                         type          TEXT,
                         parent        TEXT,
+                        replaced      TEXT,
                         extra         TEXT,
                         expires       INTEGER,
                         accesses      INTEGER,
@@ -319,23 +320,6 @@ class Cache(threading.Thread):
 
         return total + size
 
-    def _update_parent(self, parent_path, delete_parent):
-
-        if not self._file_in_cache_directory(parent_path):
-            return
-
-        if delete_parent:
-            self._delete_file(parent_path)
-
-        with self.connection as db:
-            db.execute(
-                "UPDATE cache SET size=?, type=? WHERE path=?",
-                (
-                    0,
-                    "parent",
-                    parent_path,
-                ),
-            )
 
     def _decache(self, bytes):
         # _find_orphans()
@@ -474,7 +458,7 @@ cache_entries = in_executor(CACHE._cache_entries)
 purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
 decache_file = in_executor(CACHE._decache_file)
-update_parent = in_executor(CACHE._update_parent)
+file_in_cache_directory = in_executor(CACHE._file_in_cache_directory)
 
 
 def cache_file(
@@ -484,8 +468,7 @@ def cache_file(
     hash_extra=None,
     extension: str = ".cache",
     force=None,
-    parent: str=None,
-    delete_parent=False,
+    replace=None,
 ):
     """Creates a cache file in the climetlab cache-directory (defined in the :py:class:`Settings`).
     Uses :py:func:`_register_cache_file()`
@@ -509,6 +492,11 @@ def cache_file(
     m.update(json.dumps(hash_extra, sort_keys=True).encode("utf-8"))
     m.update(json.dumps(extension, sort_keys=True).encode("utf-8"))
 
+    if replace is not None:
+        # Don't replace files that are not in the cache
+        if not file_in_cache_directory(replace):
+            replace = None
+
     path = os.path.join(
         SETTINGS.get("cache-directory"),
         "{}-{}{}".format(
@@ -518,7 +506,7 @@ def cache_file(
         ),
     )
 
-    record = register_cache_file(path, owner, args, parent)
+    record = register_cache_file(path, owner, args)
     if os.path.exists(path):
         if callable(force):
             owner_data = record["owner_data"]
@@ -538,9 +526,6 @@ def cache_file(
         os.rename(path + tmp, path)
 
         update_entry(path, owner_data)
-
-        if parent is not None:
-            update_parent(parent, delete_parent)
 
         check_cache_size()
 

@@ -42,8 +42,7 @@ class ZIPReader(Reader):
             unzip,
             path,
             extension=".d",
-            parent=path,
-            delete_parent=True,
+            replace=path,
         )
 
     def mutate(self):
