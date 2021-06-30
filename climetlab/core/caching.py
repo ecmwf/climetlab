@@ -320,7 +320,6 @@ class Cache(threading.Thread):
 
         return total + size
 
-
     def _decache(self, bytes):
         # _find_orphans()
         # _update_cache(clean=True)
