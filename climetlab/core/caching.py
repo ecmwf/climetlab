@@ -97,7 +97,7 @@ class Cache(threading.Thread):
         self._connection = None
         self._queue = []
         self._condition = threading.Condition()
-        SETTINGS.on_change(in_executor(self._settings_changed))
+
 
     def run(self):
         while True:
@@ -115,6 +115,7 @@ class Cache(threading.Thread):
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir, exist_ok=True)
             cache_db = os.path.join(cache_dir, CACHE_DB)
+            LOG.debug("Cache database is %s", cache_db)
             self._connection = sqlite3.connect(cache_db)
             # So we can use rows as dictionaries
             self._connection.row_factory = sqlite3.Row
@@ -155,6 +156,7 @@ class Cache(threading.Thread):
         assert self._file_in_cache_directory(path), f"File not in cache {path}"
 
     def _settings_changed(self):
+        LOG.debug("Settings changed")
         self._connection = None  # The user may have changed the cache directory
         self._check_cache_size()
 
@@ -191,6 +193,8 @@ class Cache(threading.Thread):
         return result
 
     def _update_entry(self, path, owner_data=None):
+        self._ensure_in_cache(path)
+
         if os.path.isdir(path):
             kind = "directory"
             size = 0
@@ -255,7 +259,7 @@ class Cache(threading.Thread):
 
                 if count > 0:
                     continue
-                LOG.warning(f"CliMetLab cache: orphan found: {full}")
+
                 parent = None
                 start = full.split(".")[0] + "%"
                 for n in db.execute(
@@ -263,27 +267,34 @@ class Cache(threading.Thread):
                     (start,),
                 ).fetchall():
                     if full.startswith(n["path"]):
-                        parent = n["path"]  # noqa: F841 TODO: remove this
+                        parent = n["path"]
                         break
-                    # if not parent:
 
-                    # self._register_cache_file(
-                    #     full,
-                    #     "orphans",
-                    #     None,
-                    #     parent,
-                    # )
+                if parent is None:
+                    LOG.warning(f"CliMetLab cache: orphan found: {full}")
+                else:
+                    LOG.debug(f"CliMetLab cache: orphan found: {full} with parent {parent}")
+
+
+                self._register_cache_file(
+                    full,
+                    "orphans",
+                    None,
+                    parent,
+                )
+        self._update_cache()
 
     def _delete_file(self, path):
 
         self._ensure_in_cache(path)
 
-        delete = path + ".delete"
-        os.rename(path, delete)
-        if os.path.isdir(delete) and not os.path.islink(delete):
-            shutil.rmtree(delete)
-        else:
-            os.unlink(delete)
+        try:
+            if os.path.isdir(path) and not os.path.islink(path):
+                shutil.rmtree(path)
+            else:
+                os.unlink(path)
+        except Exception:
+            LOG.exception("Deleting %s", path)
 
     def _delete_entry(self, entry):
         if isinstance(entry, str):
@@ -425,6 +436,7 @@ class Cache(threading.Thread):
         size = self._cache_size()
         maximum = SETTINGS.get("maximum-cache-size")
         if maximum is not None and size > maximum:
+            self._housekeeping()
             self._decache(size - maximum)
 
         # Check relative limit
@@ -433,6 +445,8 @@ class Cache(threading.Thread):
         cache_directory = SETTINGS.get("cache-directory")
         df = psutil.disk_usage(cache_directory)
         if df.percent > usage:
+            LOG.debug("Cache disk usage %s, limit %s", df.percent,usage)
+            self._housekeeping()
             delta = (df.percent - usage) * df.total * 0.01
             self._decache(delta)
 
@@ -471,6 +485,7 @@ purge_cache = in_executor(CACHE._purge_cache)
 housekeeping = in_executor(CACHE._housekeeping)
 decache_file = in_executor(CACHE._decache_file)
 file_in_cache_directory = in_executor(CACHE._file_in_cache_directory)
+settings_changed = in_executor(CACHE._settings_changed)
 
 
 def cache_file(
@@ -542,3 +557,7 @@ def cache_file(
         check_cache_size()
 
     return path
+
+
+# housekeeping()
+SETTINGS.on_change(settings_changed)

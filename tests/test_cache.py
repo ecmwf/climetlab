@@ -103,22 +103,6 @@ def xxx_test_cache_2():
             assert cnt == 5, f"Files in cache directory: {cnt}"
 
 
-def df(name):
-    import psutil
-
-    return psutil.disk_usage(name)
-
-
-def mount_point(path):
-    ret = os.path.realpath(path)
-    while not os.path.ismount(ret):
-        ret = os.path.dirname(ret)
-    return ret
-
-
-# def test_cache_3():
-#     directory = settings.get("cache-directory")
-#     print("XXXXX", df(mount_point(directory)))
 
 
 # 1GB ram disk on MacOS (blocks of 512 bytes)
@@ -126,7 +110,7 @@ def mount_point(path):
 @pytest.mark.skipif(not os.path.exists("/Volumes/RAMDisk"), reason="No RAM disk")
 def test_cache_4():
     with settings.temporary():
-        settings.set("cache-directory", "/Volumes/RAMDisk")
+        settings.set("cache-directory", "/Volumes/RAMDisk/climetlab")
         settings.set("maximum-cache-disk-usage", "90%")
         for n in range(10):
             load_source("dummy-source", "zeros", size=100 * 1024 * 1024, n=n)
