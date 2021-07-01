@@ -179,7 +179,7 @@ class HTTPDownloader(Downloader):
             url,
             stream=True,
             verify=self.owner.verify,
-            timeout=SETTINGS.as_seconds("url-download-timeout"),
+            timeout=SETTINGS.get("url-download-timeout"),
         )
         r.raise_for_status()
 
@@ -252,7 +252,7 @@ class FTPDownloader(Downloader):
 
         ftp = FTP(
             server,
-            timeout=SETTINGS.as_seconds("url-download-timeout"),
+            timeout=SETTINGS.get("url-download-timeout"),
         )
 
         if auth:

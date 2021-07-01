@@ -27,6 +27,8 @@ import sqlite3
 import threading
 from functools import wraps
 
+import psutil
+
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
@@ -418,10 +420,21 @@ class Cache(threading.Thread):
         self._delete_entry(path)
 
     def _check_cache_size(self):
-        maximum = SETTINGS.as_bytes("maximum-cache-size")
+
+        # Check absolute limit
         size = self._cache_size()
-        if size > maximum:
+        maximum = SETTINGS.get("maximum-cache-size")
+        if maximum is not None and size > maximum:
             self._decache(size - maximum)
+
+        # Check relative limit
+        size = self._cache_size()
+        usage = SETTINGS.get("maximum-cache-disk-usage")
+        cache_directory = SETTINGS.get("cache-directory")
+        df = psutil.disk_usage(cache_directory)
+        if df.percent > usage:
+            delta = (df.percent - usage) * df.total * 0.01
+            self._decache(delta)
 
     def _repr_html_(self):
         """Return a html representation of the cache .

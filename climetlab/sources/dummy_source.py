@@ -21,6 +21,10 @@ def iterate_request(r):
 def generate_grib(target, args):
     import eccodes
 
+    for k, v in list(args.items()):
+        if not isinstance(v, (list, tuple)):
+            args[k] = [v]
+
     handle = None
     try:
         with open(os.path.join(os.path.dirname(__file__), "dummy.grib"), "rb") as f:
@@ -44,9 +48,24 @@ def generate_unknown(target, args):
         print(json.dumps(args), file=f)
 
 
+def generate_zeros(target, args):
+    total = args["size"]
+    chunk_size = args.get("chunk_size", 1024 * 1024)
+
+    chunk_size = min(chunk_size, total)
+    zeros = bytes(chunk_size)
+
+    with open(target, "wb") as f:
+        while total > 0:
+            size = min(total, chunk_size)
+            f.write(zeros[:size])
+            total -= size
+
+
 GENERATORS = {
     "grib": (generate_grib, ".grib"),
     "unknown": (generate_unknown, ".unknown"),
+    "zeros": (generate_zeros, ".zeros"),
 }
 
 
@@ -55,10 +74,6 @@ class DummyGrib(FileSource):
         if request is None:
             request = {}
         request.update(kwargs)
-
-        for k, v in list(request.items()):
-            if not isinstance(v, (list, tuple)):
-                request[k] = [v]
 
         generate, extension = GENERATORS[kind]
 

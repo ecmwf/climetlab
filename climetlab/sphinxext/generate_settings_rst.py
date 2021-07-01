@@ -54,8 +54,8 @@ def execute(*args):
         if len(args) and not k.startswith(args[0]):
             continue
         print("   * - |", k.replace("-", "\u2011"))  # Non-breaking hyphen
-        print("     - |", repr(v[0]).replace("-", "\u2011"))
-        print("     - |", v[1])
+        print("     - |", repr(v.default).replace("-", "\u2011"))
+        print("     - |", v.description)
     print()
 
 

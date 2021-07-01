@@ -27,66 +27,83 @@ DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 SETTINGS_STACK = []
 
 
+class Settings:
+    def __init__(self, default, description, getter=None, none_ok=False, kind=None):
+        self.default = default
+        self.description = description
+        self.getter = getter
+        self.none_ok = none_ok
+        self.kind = kind if kind is not None else type(default)
+
+    def kind(self):
+        return type(self.default)
+
+
+_ = Settings
+
 SETTINGS_AND_HELP = {
-    "cache-directory": (
+    "cache-directory": _(
         os.path.join(tempfile.gettempdir(), "climetlab-%s" % (getpass.getuser(),)),
         """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
         See :ref:`caching` for more information.""",
     ),
-    "styles-directories": (
+    "styles-directories": _(
         [os.path.join(DOT_CLIMETLAB, "styles")],
         """List of directories where to search for styles definitions.
         See :ref:`styles` for more information.""",
     ),
-    "projections-directories": (
+    "projections-directories": _(
         [os.path.join(DOT_CLIMETLAB, "projections")],
         """List of directories where to search for projections definitions.
         See :ref:`projections` for more information.""",
     ),
-    "layers-directories": (
+    "layers-directories": _(
         [os.path.join(DOT_CLIMETLAB, "layers")],
         """List of directories where to search for layers definitions.
         See :ref:`layers` for more information.""",
     ),
-    "datasets-directories": (
+    "datasets-directories": _(
         [os.path.join(DOT_CLIMETLAB, "datasets")],
         """List of directories where to search for datasets definitions.
         See :ref:`datasets` for more information.""",
     ),
-    "plotting-options": (
+    "plotting-options": _(
         {},
         """Dictionary of default plotting options.
            See :ref:`plotting` for more information.""",
     ),
-    "number-of-download-threads": (
+    "number-of-download-threads": _(
         5,
         """Number of threads used to download data.""",
     ),
-    "maximum-cache-size": (
-        "10GB",
+    "maximum-cache-size": _(
+        None,
         """Maximum disk space used by the CliMetLab cache.""",
-        "as_bytes",
+        getter="_as_bytes",
+        none_ok=True,
     ),
-    "url-download-timeout": (
+    "maximum-cache-disk-usage": _(
+        "90%",
+        """Maximum disk space used by the CliMetLab cache.""",
+        getter="_as_percent",
+    ),
+    "url-download-timeout": _(
         "30s",
         """Timeout when downloading from an url.""",
-        "as_seconds",
+        getter="_as_seconds",
     ),
-    "download-updated-urls": (
+    "download-updated-urls": _(
         False,
         "Re-download URLs when the remote version of a cached file as been changed",
     ),
 }
 
-DEFAULTS = {}
-CHECKER = {}
-for k, v in SETTINGS_AND_HELP.items():
-    DEFAULTS[k] = v[0]
-    if len(v) >= 3:
-        CHECKER[k] = v[2]
 
 
 NONE = object()
+DEFAULTS = {}
+for k, v in SETTINGS_AND_HELP.items():
+    DEFAULTS[k] = v.default
 
 
 @contextmanager
@@ -130,13 +147,19 @@ class Settings:
             [type]: [description]
         """
 
-        if name not in DEFAULTS:
+        if name not in SETTINGS_AND_HELP:
             raise KeyError("No setting name '%s'" % (name,))
 
-        if default is NONE:
-            return self._settings[name]
+        getter, none_ok = SETTINGS_AND_HELP[name].getter,  SETTINGS_AND_HELP[name].none_ok
+        if getter is None:
+            getter = lambda name, value, none_ok:value
+        else:
+            getter = getattr(self, getter)
 
-        return self._settings.get(name, default)
+        if default is NONE:
+            return getter(name, self._settings[name], none_ok)
+
+        return getter(name, self._settings.get(name, default), none_ok)
 
     @forward
     def set(self, name: str, *args, **kwargs):
@@ -147,10 +170,10 @@ class Settings:
             value ([type]): [description]
         """
 
-        if name not in DEFAULTS:
+        if name not in SETTINGS_AND_HELP:
             raise KeyError("No setting name '%s'" % (name,))
 
-        klass = type(DEFAULTS[name])
+        klass = SETTINGS_AND_HELP[name].kind
 
         if klass in (bool, int, float, str):
             # TODO: Proper exceptions
@@ -175,13 +198,14 @@ class Settings:
                 assert len(kwargs) == 0
                 value = args[0]
 
-        if name in CHECKER:
-            save = self._settings[name]
-            try:
-                self._settings[name] = value
-                getattr(self, CHECKER[name])(name)
-            finally:
-                self._settings[name] = save
+
+        getter, none_ok = SETTINGS_AND_HELP[name].getter, SETTINGS_AND_HELP[name].none_ok
+        if getter is not None:
+            assert len(args) == 1
+            assert len(kwargs) == 0
+            value = args[0]
+            # Check if value is properly formatted for getter
+            getattr(self, getter)(name, value,none_ok)
         else:
             if not isinstance(value, klass):
                 raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
@@ -246,30 +270,33 @@ class Settings:
                 exc_info=True,
             )
 
-    def _as_number(self, name, units):
-        value = str(self.get(name))
-        m = re.search(r"^\s*(\d+)\s*(\w+)?\s*$", value)
+    def _as_number(self, name, value, units, none_ok):
+        if value is None and none_ok:
+                return None
+
+        value = str(value)
+        # TODO: support floats
+        m = re.search(r"^\s*(\d+)\s*([%\w]+)?\s*$", value)
+        if m is None:
+            raise ValueError(f"{name}: invalid number/unit {value}")
         value = int(m.group(1))
         if m.group(2) is None:
             return value
         unit = m.group(2)[0]
         if unit not in units:
             valid = ", ".join(units.keys())
-            raise ValueError(f"Invalid unit '{unit}', valid values are {valid}")
+            raise ValueError(f"{name}: invalid unit '{unit}', valid values are {valid}")
         return value * units[unit]
 
-    def as_seconds(self, name):
-        return self._as_number(
-            name,
-            {
-                "s": 1,
-                "m": 60,
-                "h": 3600,
-                "d": 24 * 3600,
-            },
-        )
+    def _as_seconds(self, name, value, none_ok):
+        units = dict(s=1, m=60, h=3600, d = 86400)
+        return self._as_number(name, value, units, none_ok)
 
-    def as_bytes(self, name):
+    def _as_percent(self, name, value, none_ok):
+        units = {"%": 1}
+        return self._as_number(name, value, units, none_ok)
+
+    def _as_bytes(self, name, value, none_ok):
         units = {}
         n = 1
         for u in "KMGTP":
@@ -277,7 +304,7 @@ class Settings:
             units[u] = n
             units[u.lower()] = n
 
-        return self._as_number(name, units)
+        return self._as_number(name, value, units, none_ok)
 
     @forward
     def temporary(self, name=None, *args, **kwargs):

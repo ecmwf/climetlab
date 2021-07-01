@@ -111,34 +111,37 @@ def test_user_layers():
 
 def test_settings():
 
-    settings.reset()
+    with settings.temporary():
+        settings.reset()
 
-    assert settings.get("plotting-options") == {}, "Check 1"
-    settings.set("plotting-options", width=400)
-    assert settings.get("plotting-options") == {"width": 400}
-    settings.reset("plotting-options")
-    assert settings.get("plotting-options") == {}, "Check 2"
-    settings.set("plotting-options", {"width": 400})
-    assert settings.get("plotting-options") == {"width": 400}
-    settings.reset()
-    assert settings.get("plotting-options") == {}, "Check 3"
+        assert settings.get("plotting-options") == {}, "Check 1"
+        settings.set("plotting-options", width=400)
+        assert settings.get("plotting-options") == {"width": 400}
+        settings.reset("plotting-options")
+        assert settings.get("plotting-options") == {}, "Check 2"
+        settings.set("plotting-options", {"width": 400})
+        assert settings.get("plotting-options") == {"width": 400}
+        settings.reset()
+        assert settings.get("plotting-options") == {}, "Check 3"
 
-    with pytest.raises(TypeError):
-        settings.set("plotting-options", 3)
+        with pytest.raises(TypeError):
+            settings.set("plotting-options", 3)
 
-    settings.set("styles-directories", ["/a", "/b"])
-    assert settings.get("styles-directories") == ["/a", "/b"]
+        settings.set("styles-directories", ["/a", "/b"])
+        assert settings.get("styles-directories") == ["/a", "/b"]
 
-    settings.set("styles-directories", "/c", "/d")
-    assert settings.get("styles-directories") == ["/c", "/d"]
+        settings.set("styles-directories", "/c", "/d")
+        assert settings.get("styles-directories") == ["/c", "/d"]
 
-    with pytest.raises(KeyError):
-        settings.set("test", 42)
+        with pytest.raises(KeyError):
+            settings.set("test", 42)
 
-    with pytest.raises(KeyError):
-        settings.get("test")
+        with pytest.raises(KeyError):
+            settings.get("test")
 
-    settings.reset()
+        with pytest.raises(ValueError):
+            settings.set("url-download-timeout", "1M")
+
 
 
 def test_temporary():
@@ -171,58 +174,64 @@ def test_numbers():
 
         with settings.temporary("cache-directory", tmpdir):
             settings.set("url-download-timeout", 30)
-            assert settings.as_seconds("url-download-timeout") == 30
+            assert settings.get("url-download-timeout") == 30
 
             settings.set("url-download-timeout", "30")
-            assert settings.as_seconds("url-download-timeout") == 30
+            assert settings.get("url-download-timeout") == 30
 
             settings.set("url-download-timeout", "30s")
-            assert settings.as_seconds("url-download-timeout") == 30
+            assert settings.get("url-download-timeout") == 30
 
             settings.set("url-download-timeout", "2m")
-            assert settings.as_seconds("url-download-timeout") == 120
+            assert settings.get("url-download-timeout") == 120
 
             settings.set("url-download-timeout", "10h")
-            assert settings.as_seconds("url-download-timeout") == 36000
+            assert settings.get("url-download-timeout") == 36000
 
             settings.set("url-download-timeout", "7d")
-            assert settings.as_seconds("url-download-timeout") == 7 * 24 * 3600
+            assert settings.get("url-download-timeout") == 7 * 24 * 3600
 
             with pytest.raises(ValueError):
                 settings.set("url-download-timeout", "1x")
 
             settings.set("maximum-cache-size", "1")
-            assert settings.as_bytes("maximum-cache-size") == 1
+            assert settings.get("maximum-cache-size") == 1
 
             settings.set("maximum-cache-size", "1k")
-            assert settings.as_bytes("maximum-cache-size") == 1024
+            assert settings.get("maximum-cache-size") == 1024
 
             settings.set("maximum-cache-size", "1kb")
-            assert settings.as_bytes("maximum-cache-size") == 1024
+            assert settings.get("maximum-cache-size") == 1024
 
             settings.set("maximum-cache-size", "1k")
-            assert settings.as_bytes("maximum-cache-size") == 1024
+            assert settings.get("maximum-cache-size") == 1024
 
             settings.set("maximum-cache-size", "1kb")
-            assert settings.as_bytes("maximum-cache-size") == 1024
+            assert settings.get("maximum-cache-size") == 1024
 
             settings.set("maximum-cache-size", "1K")
-            assert settings.as_bytes("maximum-cache-size") == 1024
+            assert settings.get("maximum-cache-size") == 1024
 
             settings.set("maximum-cache-size", "1M")
-            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024
+            assert settings.get("maximum-cache-size") == 1024 * 1024
 
             settings.set("maximum-cache-size", "1G")
-            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024 * 1024
+            assert settings.get("maximum-cache-size") == 1024 * 1024 * 1024
 
             settings.set("maximum-cache-size", "1T")
-            assert settings.as_bytes("maximum-cache-size") == 1024 * 1024 * 1024 * 1024
+            assert settings.get("maximum-cache-size") == 1024 * 1024 * 1024 * 1024
 
             settings.set("maximum-cache-size", "1P")
             assert (
-                settings.as_bytes("maximum-cache-size")
+                settings.get("maximum-cache-size")
                 == 1024 * 1024 * 1024 * 1024 * 1024
             )
+
+            settings.set("maximum-cache-size", None)
+            assert settings.get("maximum-cache-size") is None
+
+            settings.set("maximum-cache-disk-usage", "2%")
+            assert settings.get("maximum-cache-disk-usage") == 2
 
 
 if __name__ == "__main__":
