@@ -47,6 +47,6 @@ Notice how the caching options interact:
 Caching options
 ---------------
 
-.. module-output:: generate_settings_rst cache-
+.. module-output:: generate_settings_rst .*-cache-.*
 
 

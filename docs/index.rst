@@ -52,6 +52,7 @@ Documentation
 * :doc:`guide/sources`
 * :doc:`guide/mltools`
 * :doc:`guide/plotting`
+* :doc:`guide/caching`
 * :doc:`guide/settings`
 * :doc:`guide/pluginlist`
 
@@ -66,6 +67,7 @@ Documentation
    guide/sources
    guide/mltools
    guide/plotting
+   guide/caching
    guide/settings
    guide/pluginlist
 
@@ -101,7 +103,6 @@ Documentation
 * :doc:`developer/datasets`
 * :doc:`developer/sources`
 * :doc:`developer/api`
-* :doc:`developer/caching`
 * :doc:`developer/plotting`
 * :doc:`developer/gallery`
 * :doc:`developer/plugins`

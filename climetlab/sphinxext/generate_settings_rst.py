@@ -10,6 +10,7 @@
 
 import getpass
 import os
+import re
 
 from climetlab.core.settings import SETTINGS_AND_HELP
 
@@ -51,7 +52,7 @@ def execute(*args):
     print("     - | Description")
     print()
     for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
-        if len(args) and not k.startswith(args[0]):
+        if len(args) and not re.match(args[0], k):
             continue
         print("   * - |", k.replace("-", "\u2011"))  # Non-breaking hyphen
         print("     - |", repr(v.default).replace("-", "\u2011"))
