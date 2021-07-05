@@ -155,7 +155,7 @@ class Settings:
             SETTINGS_AND_HELP[name].none_ok,
         )
         if getter is None:
-            getter = lambda name, value, none_ok: value
+            getter = lambda name, value, none_ok: value  # noqa: E731
         else:
             getter = getattr(self, getter)
 
