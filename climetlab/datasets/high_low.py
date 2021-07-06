@@ -127,5 +127,20 @@ class HighLow(Dataset):
 
         return (x_train, y_train), (x_test, y_test)
 
+    def to_tfdataset(self, split=None):
+        import tensorflow as tf
+
+        (x_train, y_train), (x_test, y_test) = self.load_data()
+
+        # return dict(
+        #     train=tf.data.Dataset.from_tensors((x_train, y_train)),
+        #     test=tf.data.Dataset.from_tensors((x_test, y_test)),
+        # )
+
+        return (
+            tf.data.Dataset.from_tensors((x_train, y_train)),
+            tf.data.Dataset.from_tensors((x_test, y_test)),
+        )
+
 
 dataset = HighLow
