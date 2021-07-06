@@ -16,11 +16,9 @@ class CSVReader(Reader):
     def to_pandas(self, **kwargs):
         import pandas
 
-        options = {}
-        options.update(self.source.panda_read_csv_kwargs())
-        options.update(kwargs)
+        pandas_read_csv_kwargs = kwargs.get("pandas_read_csv_kwargs", {})
 
-        return pandas.read_csv(self.path, **options)
+        return pandas.read_csv(self.path, **pandas_read_csv_kwargs)
 
     def plot_map(self, driver):
         get_wrapper(self.to_pandas()).plot_map(driver)

@@ -23,8 +23,9 @@ except Exception:
 
 
 class ODBReader(Reader):
-    def to_pandas(self):
-        return odc.read_odb(self.path, single=True)
+    def to_pandas(self, **kwargs):
+        odc_read_odb_kwargs = kwargs.get("odc_read_odb_kwargs", {})
+        return odc.read_odb(self.path, single=True, *odc_read_odb_kwargs)
 
 
 def reader(source, path, magic):

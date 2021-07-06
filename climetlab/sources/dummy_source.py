@@ -69,7 +69,7 @@ GENERATORS = {
 }
 
 
-class DummyGrib(FileSource):
+class DummySource(FileSource):
     def __init__(self, kind, request=None, force=False, **kwargs):
         if request is None:
             request = {}
@@ -86,4 +86,4 @@ class DummyGrib(FileSource):
         )
 
 
-source = DummyGrib
+source = DummySource

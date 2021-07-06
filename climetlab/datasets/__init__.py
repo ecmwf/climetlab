@@ -96,25 +96,25 @@ class Dataset(Base):
     def __getitem__(self, n):
         return self.source[n]
 
-    def sel(self, *args, **kwargs):
-        return self.source.sel(*args, **kwargs)
+    def sel(self, **kwargs):
+        return self.source.sel(**kwargs)
 
-    def to_numpy(self, *args, **kwargs):
+    def to_numpy(self, **kwargs):
         import numpy as np
 
-        return np.array([s.to_numpy(*args, **kwargs) for s in self.source])
+        return np.array([s.to_numpy(**kwargs) for s in self.source])
 
-    def to_xarray(self, *args, **kwargs):
-        return self.source.to_xarray(*args, **kwargs)
+    def to_xarray(self, **kwargs):
+        return self.source.to_xarray(**kwargs)
 
-    def to_tfdataset(self, *args, **kwargs):
-        return self.source.to_tfdataset(*args, **kwargs)
+    def to_tfdataset(self, **kwargs):
+        return self.source.to_tfdataset(**kwargs)
 
-    def to_pandas(self, *args, **kwargs):
-        return self.source.to_pandas(*args, **kwargs)
+    def to_pandas(self, **kwargs):
+        return self.source.to_pandas(**kwargs)
 
-    def to_metview(self, *args, **kwargs):
-        return self.source.to_metview(*args, **kwargs)
+    def to_metview(self, **kwargs):
+        return self.source.to_metview(**kwargs)
 
     def _repr_html_(self):
         return table(self)
