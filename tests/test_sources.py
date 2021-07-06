@@ -148,6 +148,7 @@ def test_url_pattern_source_3():
 
 
 S3_URL = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
+S3_URL2 = "s3://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
 
 
 @pytest.mark.skipif(
@@ -219,6 +220,24 @@ def test_zarr_source_3():
     assert dates[1] == datetime.datetime(2000, 1, 9)
     assert dates[2] == datetime.datetime(2001, 1, 2)
     assert dates[3] == datetime.datetime(2001, 1, 9)
+
+
+@pytest.mark.skipif(
+    not modules_installed("zarr", "s3fs"), reason="Zarr or S3FS not installed"
+)
+def test_zarr_source_4():
+    source = load_source("zarr", f"{S3_URL}/zarr/mini-rt-20200102.zarr")
+    ds = source.to_xarray()
+    assert len(ds.forecast_time) == 1
+
+
+@pytest.mark.skipif(
+    not modules_installed("zarr", "s3fs"), reason="Zarr or S3FS not installed"
+)
+def test_zarr_source_5():
+    source = load_source("zarr", f"{S3_URL2}/zarr/mini-rt-20200102.zarr")
+    ds = source.to_xarray()
+    assert len(ds.forecast_time) == 1
 
 
 if __name__ == "__main__":
