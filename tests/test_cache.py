@@ -103,8 +103,6 @@ def xxx_test_cache_2():
             assert cnt == 5, f"Files in cache directory: {cnt}"
 
 
-
-
 # 1GB ram disk on MacOS (blocks of 512 bytes)
 # diskutil erasevolume HFS+ "RAMDisk" `hdiutil attach -nomount ram://2097152`
 @pytest.mark.skipif(not os.path.exists("/Volumes/RAMDisk"), reason="No RAM disk")

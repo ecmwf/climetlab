@@ -16,7 +16,7 @@ LOG = logging.getLogger(__name__)
 
 
 class MultiTfRecordReaders(MultiReaders):
-    def to_tfrecord(self, merger=None, **kwargs):
+    def to_tfdataset(self, merger=None, **kwargs):
         if merger is None:
             import tensorflow as tf
 
@@ -25,7 +25,7 @@ class MultiTfRecordReaders(MultiReaders):
 
 
 class TfRecordReader(Reader):
-    def to_tfrecord(self, **kwargs):
+    def to_tfdataset(self, **kwargs):
         import tensorflow as tf
 
         tfrecord = tf.data.TFRecordDataset(self.path)

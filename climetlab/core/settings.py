@@ -99,7 +99,6 @@ SETTINGS_AND_HELP = {
 }
 
 
-
 NONE = object()
 DEFAULTS = {}
 for k, v in SETTINGS_AND_HELP.items():
@@ -150,9 +149,16 @@ class Settings:
         if name not in SETTINGS_AND_HELP:
             raise KeyError("No setting name '%s'" % (name,))
 
-        getter, none_ok = SETTINGS_AND_HELP[name].getter,  SETTINGS_AND_HELP[name].none_ok
+        getter, none_ok = (
+            SETTINGS_AND_HELP[name].getter,
+            SETTINGS_AND_HELP[name].none_ok,
+        )
         if getter is None:
-            getter = lambda name, value, none_ok:value
+
+            def default(name, value, none_ok):
+                return value
+
+            getter = default
         else:
             getter = getattr(self, getter)
 
@@ -198,14 +204,16 @@ class Settings:
                 assert len(kwargs) == 0
                 value = args[0]
 
-
-        getter, none_ok = SETTINGS_AND_HELP[name].getter, SETTINGS_AND_HELP[name].none_ok
+        getter, none_ok = (
+            SETTINGS_AND_HELP[name].getter,
+            SETTINGS_AND_HELP[name].none_ok,
+        )
         if getter is not None:
             assert len(args) == 1
             assert len(kwargs) == 0
             value = args[0]
             # Check if value is properly formatted for getter
-            getattr(self, getter)(name, value,none_ok)
+            getattr(self, getter)(name, value, none_ok)
         else:
             if not isinstance(value, klass):
                 raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
@@ -272,7 +280,7 @@ class Settings:
 
     def _as_number(self, name, value, units, none_ok):
         if value is None and none_ok:
-                return None
+            return None
 
         value = str(value)
         # TODO: support floats
@@ -289,7 +297,7 @@ class Settings:
         return value * units[unit]
 
     def _as_seconds(self, name, value, none_ok):
-        units = dict(s=1, m=60, h=3600, d = 86400)
+        units = dict(s=1, m=60, h=3600, d=86400)
         return self._as_number(name, value, units, none_ok)
 
     def _as_percent(self, name, value, none_ok):

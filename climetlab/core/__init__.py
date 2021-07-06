@@ -30,7 +30,7 @@ class Base:
     def to_pandas(self, **kwargs):
         self._not_implemented()
 
-    def to_tfrecord(self, **kwargs):
+    def to_tfdataset(self, **kwargs):
         self._not_implemented()
 
     def to_metview(self, **kwargs):

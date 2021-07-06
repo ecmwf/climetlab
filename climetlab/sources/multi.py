@@ -108,12 +108,12 @@ class MultiSource(Source):
 
         return xr.merge(arrays)
 
-    def to_tfrecord(self, **kwargs):
+    def to_tfdataset(self, **kwargs):
         sources = self.sources
 
         merged = sources[0].multi_merge(sources)
         if merged is not None:
-            return merged.to_tfrecord(merger=self.merger, **kwargs)
+            return merged.to_tfdataset(merger=self.merger, **kwargs)
 
         raise NotImplementedError()
 

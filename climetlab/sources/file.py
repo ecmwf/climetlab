@@ -54,8 +54,8 @@ class FileSource(Source):
     def to_xarray(self, *args, **kwargs):
         return self._reader.to_xarray(*args, **kwargs)
 
-    def to_tfrecord(self, *args, **kwargs):
-        return self._reader.to_tfrecord(*args, **kwargs)
+    def to_tfdataset(self, *args, **kwargs):
+        return self._reader.to_tfdataset(*args, **kwargs)
 
     def to_pandas(self, *args, **kwargs):
         return self._reader.to_pandas(*args, **kwargs)

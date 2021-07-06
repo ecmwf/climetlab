@@ -92,8 +92,7 @@ class HighLow(Dataset):
             return titles[i]
         return "%s (%s%%)" % (titles[i], int(label[i] * 100 + 0.5))
 
-    # load_data is used by keras
-    def load_data(self, normalise=True, test_size=0.5, shuffle=True, fields=False):
+    def _load_data(self, normalise=True):
         data = []
         for field, label in self._fields:
             if normalise:
@@ -101,6 +100,11 @@ class HighLow(Dataset):
             else:
                 array = field.to_numpy()
             data.append((array, label, field))
+        return data
+
+    # load_data is used by keras
+    def load_data(self, normalise=True, test_size=0.5, shuffle=True, fields=False):
+        data = self._load_data(normalise)
 
         if shuffle:
             random.shuffle(data)

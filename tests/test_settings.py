@@ -143,7 +143,6 @@ def test_settings():
             settings.set("url-download-timeout", "1M")
 
 
-
 def test_temporary():
 
     settings.reset()
@@ -223,8 +222,7 @@ def test_numbers():
 
             settings.set("maximum-cache-size", "1P")
             assert (
-                settings.get("maximum-cache-size")
-                == 1024 * 1024 * 1024 * 1024 * 1024
+                settings.get("maximum-cache-size") == 1024 * 1024 * 1024 * 1024 * 1024
             )
 
             settings.set("maximum-cache-size", None)

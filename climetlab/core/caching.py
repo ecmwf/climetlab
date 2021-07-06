@@ -98,7 +98,6 @@ class Cache(threading.Thread):
         self._queue = []
         self._condition = threading.Condition()
 
-
     def run(self):
         while True:
             with self._condition:
@@ -273,8 +272,9 @@ class Cache(threading.Thread):
                 if parent is None:
                     LOG.warning(f"CliMetLab cache: orphan found: {full}")
                 else:
-                    LOG.debug(f"CliMetLab cache: orphan found: {full} with parent {parent}")
-
+                    LOG.debug(
+                        f"CliMetLab cache: orphan found: {full} with parent {parent}"
+                    )
 
                 self._register_cache_file(
                     full,
@@ -445,7 +445,7 @@ class Cache(threading.Thread):
         cache_directory = SETTINGS.get("cache-directory")
         df = psutil.disk_usage(cache_directory)
         if df.percent > usage:
-            LOG.debug("Cache disk usage %s, limit %s", df.percent,usage)
+            LOG.debug("Cache disk usage %s, limit %s", df.percent, usage)
             self._housekeeping()
             delta = (df.percent - usage) * df.total * 0.01
             self._decache(delta)
