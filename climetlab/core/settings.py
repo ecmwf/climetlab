@@ -70,7 +70,7 @@ SETTINGS_AND_HELP = {
     "plotting-options": _(
         {},
         """Dictionary of default plotting options.
-           See :ref:`plotting` for more information.""",
+        See :ref:`plotting` for more information.""",
     ),
     "number-of-download-threads": _(
         5,
@@ -78,13 +78,14 @@ SETTINGS_AND_HELP = {
     ),
     "maximum-cache-size": _(
         None,
-        """Maximum disk space used by the CliMetLab cache.""",
+        """Maximum disk space used by the CliMetLab cache (ex: 100G or 2T).""",
         getter="_as_bytes",
         none_ok=True,
     ),
     "maximum-cache-disk-usage": _(
         "90%",
-        """Maximum disk space used by the CliMetLab cache.""",
+        """Disk usage threshold after which CliMetLab expires older cached entries (% of the full disk capacity).
+        See :ref:`caching` for more information.""",
         getter="_as_percent",
     ),
     "url-download-timeout": _(
@@ -154,11 +155,7 @@ class Settings:
             SETTINGS_AND_HELP[name].none_ok,
         )
         if getter is None:
-
-            def default(name, value, none_ok):
-                return value
-
-            getter = default
+            getter = lambda name, value, none_ok: value  # noqa: E731
         else:
             getter = getattr(self, getter)
 
