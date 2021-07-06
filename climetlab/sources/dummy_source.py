@@ -10,6 +10,9 @@
 
 import itertools
 import os
+import zipfile
+
+from climetlab.core.temporary import temp_directory
 
 from .file import FileSource
 
@@ -62,10 +65,57 @@ def generate_zeros(target, args):
             total -= size
 
 
+def make_xarray(args):
+    import numpy as np
+    import xarray as xr
+
+    lat = [0.0, 10.0, 20.0]
+    lon = [0.0, 10.0]
+    foo = xr.DataArray(
+        np.zeros((3, 2)),
+        dims=["lat", "lon"],
+        coords={"lat": lat, "lon": lon},
+    )
+    bar = foo + 1
+
+    ds = xr.Dataset(dict(foo=foo, bar=bar))
+
+    return ds
+
+
+def generate_zarr(target, args):
+    ds = make_xarray(args)
+    ds.to_zarr(target)
+
+
+def generate_zarr_zip(target, args):
+    ds = make_xarray(args)
+    with temp_directory() as tmpdir:
+        ds.to_zarr(tmpdir)
+        zip_dir(target, tmpdir)
+
+
+def zip_dir(target, directory):
+    z = zipfile.ZipFile(target, "w")
+    for dir, subdirs, files in os.walk(directory):
+        z.write(dir)
+        for f in files:
+            z.write(os.path.join(dir, f))
+    z.close()
+
+
+def generate_netcdf(target, args):
+    ds = make_xarray(args)
+    ds.to_netcdf(target)
+
+
 GENERATORS = {
     "grib": (generate_grib, ".grib"),
     "unknown": (generate_unknown, ".unknown"),
     "zeros": (generate_zeros, ".zeros"),
+    "zarr": (generate_zarr, ".zarr"),
+    "netcdf": (generate_netcdf, ".nc"),
+    "zarr-zip": (generate_zarr_zip, ".zarr.zip"),
 }
 
 

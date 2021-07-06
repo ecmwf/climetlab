@@ -10,8 +10,11 @@
 import os
 from zipfile import ZipFile
 
+from climetlab import load_source
+
 from . import Reader
 from . import reader as find_reader
+from .csv import CSVReader
 
 try:
     import ipywidgets  # noqa

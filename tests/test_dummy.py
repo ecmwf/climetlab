@@ -10,7 +10,42 @@
 #
 
 
+import pytest
+from utils import modules_installed
+
 from climetlab import load_source
+
+
+@pytest.mark.skipif(not modules_installed("zarr"), reason="Zarr not installed")
+def test_dummy_zarr():
+    s = load_source(
+        "dummy-source",
+        kind="zarr",
+    )
+    print(s)
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+@pytest.mark.skipif(not modules_installed("zarr"), reason="Zarr not installed")
+def test_dummy_zarr_zip():
+    s = load_source(
+        "dummy-source",
+        kind="zarr-zip",
+    )
+    print(s)
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+    )
+    ds = s.to_xarray()
+    print(ds)
+    assert "lat" in ds.dims
 
 
 def test_dummy_grib():
