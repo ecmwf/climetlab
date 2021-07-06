@@ -73,16 +73,6 @@ class Source(Base):
     def _repr_html_(self):
         return table(self)
 
-    def read_csv_options(self, *args, **kwargs):
-        if self.dataset is None:
-            return {}
-        return self.dataset.read_csv_options(*args, **kwargs)
-
-    def read_zarr_options(self, *args, **kwargs):
-        if self.dataset is None:
-            return {}
-        return self.dataset.read_zarr_options(*args, **kwargs)
-
     @classmethod
     def multi_merge(cls, sources):
         return None

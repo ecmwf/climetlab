@@ -122,12 +122,6 @@ class Dataset(Base):
     def annotate(self, data, **kargs):
         return annotate(data, self, **kargs)
 
-    def read_csv_options(self, *args, **kwargs):
-        return {}
-
-    def read_zarr_options(self, *args, **kwargs):
-        return {}
-
 
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset

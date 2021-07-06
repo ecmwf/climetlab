@@ -45,26 +45,26 @@ class FileSource(Source):
     def __getitem__(self, n):
         return self._reader[n]
 
-    def sel(self, *args, **kwargs):
-        return self._reader.sel(*args, **kwargs)
+    def sel(self, **kwargs):
+        return self._reader.sel(**kwargs)
 
-    def plot_map(self, *args, **kwargs):
-        return self._reader.plot_map(*args, **kwargs)
+    def plot_map(self, **kwargs):
+        return self._reader.plot_map(**kwargs)
 
-    def to_xarray(self, *args, **kwargs):
-        return self._reader.to_xarray(*args, **kwargs)
+    def to_xarray(self, **kwargs):
+        return self._reader.to_xarray(**kwargs)
 
-    def to_tfdataset(self, *args, **kwargs):
-        return self._reader.to_tfdataset(*args, **kwargs)
+    def to_tfdataset(self, **kwargs):
+        return self._reader.to_tfdataset(**kwargs)
 
-    def to_pandas(self, *args, **kwargs):
-        return self._reader.to_pandas(*args, **kwargs)
+    def to_pandas(self, **kwargs):
+        return self._reader.to_pandas(**kwargs)
 
-    def to_numpy(self, *args, **kwargs):
-        return self._reader.to_numpy(*args, **kwargs)
+    def to_numpy(self, **kwargs):
+        return self._reader.to_numpy(**kwargs)
 
-    def to_metview(self, *args, **kwargs):
-        return self._reader.to_metview(*args, **kwargs)
+    def to_metview(self, **kwargs):
+        return self._reader.to_metview(**kwargs)
 
     def save(self, path):
         return self._reader.save(path)
@@ -91,9 +91,6 @@ class FileSource(Source):
 class File(FileSource):
     def __init__(self, path):
         self.path = path
-
-    def read_csv_options(self):
-        return {}
 
 
 source = File

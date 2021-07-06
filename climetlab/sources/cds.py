@@ -80,13 +80,15 @@ class CDSRetriever(FileSource):
     def request(self, **kwargs):
         return kwargs
 
-    def read_csv_options(self):
-        return dict(
+    def to_pandas(self, **kwargs):
+        options = dict(
             comment="#",
             parse_dates=["report_timestamp"],
             skip_blank_lines=True,
             compression="zip",
         )
+        options.update(kwargs)
+        return super().to_pandas(**options)
 
 
 source = CDSRetriever

@@ -59,7 +59,6 @@ class ZIPReader(Reader):
         import pandas
 
         options = dict(compression="zip")
-        options.update(self.source.read_csv_options())
         options.update(kwargs)
 
         return pandas.read_csv(self.path, **options)

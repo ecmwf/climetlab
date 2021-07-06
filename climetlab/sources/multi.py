@@ -115,7 +115,11 @@ class MultiSource(Source):
         if merged is not None:
             return merged.to_tfdataset(merger=self.merger, **kwargs)
 
-        raise NotImplementedError()
+        ds = sources[0]
+        for s in sources[1:]:
+            ds = ds.concatenate(s.to_tfdataset())
+
+        return ds
 
     def __repr__(self) -> str:
         string = ",".join(repr(s) for s in self.sources)

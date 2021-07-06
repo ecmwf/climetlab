@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../climetlab-s2s-ai-challenge"
+		},
+		{
+			"path": "../climetlab-maelstrom-radiation"
 		}
 	],
 	"settings": {
