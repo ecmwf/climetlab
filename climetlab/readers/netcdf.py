@@ -224,6 +224,8 @@ class NetCDFReader(Reader):
 
     def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
+        has_lat = False
+        has_lon = False
 
         fields = []
 
