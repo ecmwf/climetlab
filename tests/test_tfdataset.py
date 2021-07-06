@@ -39,7 +39,7 @@ def test_tfdataset_2():
     from tensorflow.keras.models import Sequential
 
     ds = cml.load_dataset("high-low")
-    train, test = ds.to_tfdataset()
+    train, test = ds.to_tfdataset(split=["train", "test"])
 
     shape = train.element_spec[0].shape
 
