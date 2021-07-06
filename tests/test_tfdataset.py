@@ -15,7 +15,6 @@ import pytest
 from utils import modules_installed
 
 import climetlab as cml
-from climetlab.utils.bbox import BoundingBox
 
 
 @pytest.mark.skipif(
