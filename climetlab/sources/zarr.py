@@ -41,10 +41,6 @@ class Cache:
         return self._store.keys()
 
 
-def url_to_file_store(url, user=None, password=None):
-    raise NotImplementedError()
-
-
 def url_to_s3_store(url, user=None, password=None):
     bits = url.split("/")
     if bits[0] == "s3:":
@@ -75,10 +71,13 @@ def find_store(store):
 
     if o.scheme in ["http", "https", "s3"]:
         return url_to_s3_store(store)
-    if o.scheme in ["file"]:
-        return url_to_file_store(store)
     if os.path.exists(store):
-        return url_to_file_store(store)
+        if store.endswith(".zip"):
+            return zarr.ZipStore(store)
+        return store
+    if o.scheme in ["file"]:
+        # hard coded 3 because urlparse plays with the initial /
+        return store[(len(o.scheme) + 3) :]
 
     raise NotImplementedError(f"Unknown protocol '{o.scheme}' for Zarr in {store}")
 

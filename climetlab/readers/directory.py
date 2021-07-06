@@ -31,6 +31,9 @@ class DirectoryReader(Reader):
         return self
 
     def mutate_source(self):
+        if os.path.exists(os.path.join(self.path, ".zattrs")):
+            return load_source("zarr", self.path)
+
         return load_source("multi", [load_source("file", c) for c in self._content])
 
 

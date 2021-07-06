@@ -32,6 +32,9 @@ class ZIPReader(Reader):
             if ext in (".csv", ".txt"):
                 return  # Pandas can read zipped files directly
 
+        if ".zattrs" in self._content:
+            return  # Zarr can read zipped files directly
+
         def unzip(target, args):
             with ZipFile(path, "r") as z:
                 files = z.namelist()
@@ -48,20 +51,20 @@ class ZIPReader(Reader):
     def mutate(self):
         if os.path.isdir(self.path):
             return find_reader(self.source, self.path).mutate()
+
+        if len(self._content) == 1:
+            _, ext = os.path.splitext(self._content[0])
+            if ext not in (".csv", ".txt"):
+                raise NotImplementedError("File type", ext)
+            return CSVReader(self.source, self.path).mutate()
+
         return self
 
-    def to_pandas(self, **kwargs):
+    def mutate_source(self):
+        if ".zattrs" in self._content:
+            return load_source("zarr", self.path)
 
-        _, ext = os.path.splitext(self._content[0])
-        if ext not in (".csv", ".txt"):
-            raise NotImplementedError("File type", ext)
-
-        import pandas
-
-        options = dict(compression="zip")
-        options.update(kwargs)
-
-        return pandas.read_csv(self.path, **options)
+        return None
 
 
 EXTENSIONS_TO_SKIP = (".npz",)  # Numpy arrays
