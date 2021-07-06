@@ -47,6 +47,8 @@ def url_to_file_store(url, user=None, password=None):
 
 def url_to_s3_store(url, user=None, password=None):
     bits = url.split("/")
+    if bits[0] == "s3:":
+        bits[0] = "https:"
 
     url = "/".join(bits[:3])
     root = "/".join(bits[3:])
@@ -95,11 +97,15 @@ class Zarr(Source):
             self._ds = xr.open_dataset(store, engine="zarr")  # TODO: chunks="auto" ?
         except zarr.errors.GroupNotFoundError as e:
             if self._url:
-                LOG.error("ERROR : Cannot find data from {}", self._url)
+                LOG.error("ERROR : Cannot find data from %s", self._url)
             raise (e)
         except PermissionError as e:
             if self._url:
-                LOG.error("ERROR : Permission denied on accessing {}", self._url)
+                LOG.error("ERROR : Permission denied on accessing %s", self._url)
+            raise (e)
+        except Exception as e:
+            if self._url:
+                LOG.error("ERROR when accessing %s", self._url)
             raise (e)
 
     def to_xarray(self):
