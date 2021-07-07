@@ -27,16 +27,15 @@ def test_dummy_zarr():
     assert "lat" in ds.dims
 
 
-# wip: not working yet
-# @pytest.mark.skipif(not modules_installed("zarr"), reason="Zarr not installed")
-# def test_dummy_zarr_zip():
-#     s = load_source(
-#         "dummy-source",
-#         kind="zarr-zip",
-#     )
-#     print(s)
-#     ds = s.to_xarray()
-#     assert "lat" in ds.dims
+@pytest.mark.skipif(not modules_installed("zarr"), reason="Zarr not installed")
+def test_dummy_zarr_zip():
+    s = load_source(
+        "dummy-source",
+        kind="zarr-zip",
+    )
+    print(s)
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
 
 
 def test_dummy_netcdf():

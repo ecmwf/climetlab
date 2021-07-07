@@ -12,9 +12,20 @@ import itertools
 import os
 import zipfile
 
-from climetlab.core.temporary import temp_directory
+from climetlab.core.temporary import temp_chdir, temp_directory
 
 from .file import FileSource
+
+
+def zip_dir(target, directory):
+    z = zipfile.ZipFile(target, "w")
+    with temp_chdir(directory):
+
+        for root, _, files in os.walk("."):
+            for f in files:
+                fullname = os.path.join(root, f)
+                z.write(fullname)
+        z.close()
 
 
 def iterate_request(r):
@@ -94,15 +105,6 @@ def generate_zarr_zip(target, **kwargs):
     with temp_directory() as tmpdir:
         ds.to_zarr(tmpdir)
         zip_dir(target, tmpdir)
-
-
-def zip_dir(target, directory):
-    z = zipfile.ZipFile(target, "w")
-    for dir, subdirs, files in os.walk(directory):
-        z.write(dir)
-        for f in files:
-            z.write(os.path.join(dir, f))
-    z.close()
 
 
 def generate_netcdf(target, **kwargs):
