@@ -30,6 +30,7 @@ def test_cds_csv_zip():
         format="csv-lev.zip",
     )
     s.to_pandas()
+    # s.to_tfdataset()
 
 
 if __name__ == "__main__":
