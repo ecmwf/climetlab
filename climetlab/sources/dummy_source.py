@@ -74,21 +74,34 @@ def generate_zeros(target, size=1024 * 1024, chunk_size=1024 * 1024, **kwargs):
             size -= bufsize
 
 
-def make_xarray(variables=["a"], **kwargs):
+def make_xarray(variables=["a"], dims=["lat", "lon"], size=2, **kwargs):
     import numpy as np
     import xarray as xr
 
-    lat = [0.0, 10.0, 20.0]
-    lon = [0.0, 10.0]
-    seed = xr.DataArray(
-        np.zeros((3, 2)),
-        dims=["lat", "lon"],
-        coords={"lat": lat, "lon": lon},
-    )
+    if isinstance(dims, (list, tuple)):
+        dims = {k: dict(size=size) for k in dims}
+
+    all_dims = list(dims.keys())
+
+    if isinstance(variables, (list, tuple)):
+        variables = {k: dict(dims=all_dims) for k in variables}
+
+    coords = {}
+    for d, args in dims.items():
+        _size = args["size"]
+        coords[d] = np.arange(_size, dtype=float)
 
     vars = {}
-    for i, v in enumerate(variables):
-        vars[v] = seed + 1
+    for v, args in variables.items():
+        _dims = variables[v]["dims"]
+        _coords = {k: coords[k] for k in _dims}
+        _shape = [dims[d]["size"] for d in _dims]
+        arr = xr.DataArray(
+            np.zeros(_shape, dtype=float),
+            dims=_dims,
+            coords=_coords,
+        )
+        vars[v] = arr
 
     ds = xr.Dataset(vars)
 

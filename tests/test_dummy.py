@@ -22,7 +22,6 @@ def test_dummy_zarr():
         "dummy-source",
         kind="zarr",
     )
-    print(s)
     ds = s.to_xarray()
     assert "lat" in ds.dims
 
@@ -33,7 +32,6 @@ def test_dummy_zarr_zip():
         "dummy-source",
         kind="zarr-zip",
     )
-    print(s)
     ds = s.to_xarray()
     assert "lat" in ds.dims
 
@@ -44,7 +42,39 @@ def test_dummy_netcdf():
         kind="netcdf",
     )
     ds = s.to_xarray()
-    print(ds)
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf_2():
+    s = load_source(
+        "dummy-source", kind="netcdf", dims=["lat", "lon", "time"], variables=["a", "b"]
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf_3():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
+        variables=["a", "b"],
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf_4():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
+        variables={
+            "a": dict(dims=["lat", "lon"]),
+            "b": dict(dims=["lat", "time"]),
+        },
+    )
+    ds = s.to_xarray()
     assert "lat" in ds.dims
 
 
