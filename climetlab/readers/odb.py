@@ -14,16 +14,15 @@ from . import Reader
 LOG = logging.getLogger(__name__)
 
 
-try:
-    import codc as odc
-except Exception:
-    import pyodc as odc
-
-    LOG.debug("Using pure Python odc decoder.")
-
-
 class ODBReader(Reader):
     def to_pandas(self, **kwargs):
+        try:
+            import codc as odc
+        except Exception:
+            import pyodc as odc
+
+            LOG.debug("Using pure Python odc decoder.")
+
         odc_read_odb_kwargs = kwargs.get("odc_read_odb_kwargs", {})
         return odc.read_odb(self.path, single=True, *odc_read_odb_kwargs)
 

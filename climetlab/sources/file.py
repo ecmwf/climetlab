@@ -8,9 +8,13 @@
 #
 
 
+import logging
+
 from climetlab.readers import reader
 
 from . import Source
+
+LOG = logging.getLogger(__name__)
 
 
 class FileSource(Source):
@@ -58,6 +62,7 @@ class FileSource(Source):
         return self._reader.to_tfdataset(**kwargs)
 
     def to_pandas(self, **kwargs):
+        LOG.debug("Calling reader.to_pandas %s", self)
         return self._reader.to_pandas(**kwargs)
 
     def to_numpy(self, **kwargs):

@@ -21,12 +21,12 @@ def iterate_request(r):
     yield from (dict(zip(r.keys(), x)) for x in itertools.product(*r.values()))
 
 
-def generate_grib(target, args):
+def generate_grib(target, **kwargs):
     import eccodes
 
-    for k, v in list(args.items()):
+    for k, v in list(kwargs.items()):
         if not isinstance(v, (list, tuple)):
-            args[k] = [v]
+            kwargs[k] = [v]
 
     handle = None
     try:
@@ -34,7 +34,7 @@ def generate_grib(target, args):
             handle = eccodes.codes_new_from_file(f, eccodes.CODES_PRODUCT_GRIB)
 
         with open(target, "wb") as f:
-            for r in iterate_request(args):
+            for r in iterate_request(kwargs):
                 for k, v in r.items():
                     eccodes.codes_set(handle, k, v)
                 eccodes.codes_write(handle, f)
@@ -44,52 +44,53 @@ def generate_grib(target, args):
             eccodes.codes_release(handle)
 
 
-def generate_unknown(target, args):
+def generate_unknown(target, **kwargs):
     import json
 
     with open(target, "w") as f:
-        print(json.dumps(args), file=f)
+        print(json.dumps(kwargs), file=f)
 
 
-def generate_zeros(target, args):
-    total = args["size"]
-    chunk_size = args.get("chunk_size", 1024 * 1024)
+def generate_zeros(target, size=1024 * 1024, chunk_size=1024 * 1024, **kwargs):
 
-    chunk_size = min(chunk_size, total)
+    chunk_size = min(chunk_size, size)
     zeros = bytes(chunk_size)
 
     with open(target, "wb") as f:
-        while total > 0:
-            size = min(total, chunk_size)
-            f.write(zeros[:size])
-            total -= size
+        while size > 0:
+            bufsize = min(size, chunk_size)
+            f.write(zeros[:bufsize])
+            size -= bufsize
 
 
-def make_xarray(args):
+def make_xarray(variables=["a"], **kwargs):
     import numpy as np
     import xarray as xr
 
     lat = [0.0, 10.0, 20.0]
     lon = [0.0, 10.0]
-    foo = xr.DataArray(
+    seed = xr.DataArray(
         np.zeros((3, 2)),
         dims=["lat", "lon"],
         coords={"lat": lat, "lon": lon},
     )
-    bar = foo + 1
 
-    ds = xr.Dataset(dict(foo=foo, bar=bar))
+    vars = {}
+    for i, v in enumerate(variables):
+        vars[v] = seed + 1
+
+    ds = xr.Dataset(vars)
 
     return ds
 
 
-def generate_zarr(target, args):
-    ds = make_xarray(args)
+def generate_zarr(target, **kwargs):
+    ds = make_xarray(**kwargs)
     ds.to_zarr(target)
 
 
-def generate_zarr_zip(target, args):
-    ds = make_xarray(args)
+def generate_zarr_zip(target, **kwargs):
+    ds = make_xarray(**kwargs)
     with temp_directory() as tmpdir:
         ds.to_zarr(tmpdir)
         zip_dir(target, tmpdir)
@@ -104,8 +105,8 @@ def zip_dir(target, directory):
     z.close()
 
 
-def generate_netcdf(target, args):
-    ds = make_xarray(args)
+def generate_netcdf(target, **kwargs):
+    ds = make_xarray(**kwargs)
     ds.to_netcdf(target)
 
 
@@ -127,8 +128,11 @@ class DummySource(FileSource):
 
         generate, extension = GENERATORS[kind]
 
+        def _generate(target, args):
+            return generate(target, **args)
+
         self.path = self.cache_file(
-            generate,
+            _generate,
             request,
             hash_extra=kind,
             extension=extension,

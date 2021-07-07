@@ -31,6 +31,14 @@ def modules_installed(*modules):
     return True
 
 
+def can_call_mars():
+    return os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+
+
+def can_call_cds():
+    return os.path.exists(os.path.expanduser("~/.cdsapirc"))
+
+
 def main(globals):
     logging.basicConfig(level=logging.DEBUG)
     for k, f in sorted(globals.items()):

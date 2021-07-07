@@ -59,7 +59,7 @@ class ZIPReader(Reader):
             _, ext = os.path.splitext(self._content[0])
             if ext not in (".csv", ".txt"):
                 raise NotImplementedError("File type", ext)
-            return CSVReader(self.source, self.path).mutate()
+            return CSVReader(self.source, self.path, compression="zip").mutate()
 
         return self
 

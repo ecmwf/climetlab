@@ -7,17 +7,29 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+
 from climetlab.wrappers import get_wrapper
 
 from . import Reader
 
+LOG = logging.getLogger(__name__)
+
 
 class CSVReader(Reader):
+    def __init__(self, source, path, compression=None):
+        super().__init__(source, path)
+        self.compression = compression
+
     def to_pandas(self, **kwargs):
         import pandas
 
         pandas_read_csv_kwargs = kwargs.get("pandas_read_csv_kwargs", {})
+        if self.compression is not None:
+            pandas_read_csv_kwargs = dict(**pandas_read_csv_kwargs)
+            pandas_read_csv_kwargs["compression"] = self.compression
 
+        LOG.debug("pandas.read_csv(%s,%s)", self.path, pandas_read_csv_kwargs)
         return pandas.read_csv(self.path, **pandas_read_csv_kwargs)
 
     def plot_map(self, driver):
