@@ -1,10 +1,5 @@
 .. _normalize:
 
-.. todo::
-
-    This doc does not reflect the current API.
-    This part is under development and refactoring.
-
 Normalizer
 ==========
 
@@ -30,6 +25,10 @@ The longer forms aims to tackle specific needs.
 
 Compare the following four codes snippets:
 
+
+Boilerplate code
+~~~~~~~~~~~~~~~~
+
 .. code-block:: python
 
     # Boilerplate code (extract)
@@ -50,20 +49,22 @@ Compare the following four codes snippets:
         do_stuff(date, option)
 
 
-
+Using CliMetLab short form API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-    # Using CliMetLab (short form API)
     from climetlab.normalize import normalize_args
     @normalize_args(date="date(%Y%m%d)", option=["foo", "bar"])
     def __init__(self, date, option):
         do_suff(date, option)
 
 
+Using CliMetLab medium-range API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code-block:: python
 
-    # Using CliMetLab (medium-range API)
     from climetlab.normalize import normalize_args, Date, Enum
     @normalize_args(date=Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST),
     		    option=Enum(["foo", "bar"])
@@ -71,9 +72,15 @@ Compare the following four codes snippets:
         do_suff(date, option)
 
 
+Using CliMetLab fine-control API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo::
+
+    The fine-control API is not implemented.
+
 .. code-block:: python
 
-    # Using CliMetLab (fine-control API)
     from climetlab.normalize import ArgNormalizer, Date, Enum
     norm = ArgNormalizer()
     norm.add_argument("date", Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST))
@@ -221,3 +228,9 @@ starting with "date-list(" is assigned to a parameter in @normalize_args.
 .. code-block:: python
 
     @normalize_args(date="date-list(%Y%m%d)")
+
+
+.. todo::
+
+    Add more normalizers.
+    For instance, for the "parameter" argument such as ```t2m``` or ```tp```.
