@@ -19,7 +19,7 @@ from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_
 from climetlab.core.temporary import temp_directory
 
 
-def xxx_test_cache_1():
+def test_cache_1():
 
     purge_cache(owner="test_cache")
 
@@ -52,7 +52,7 @@ def xxx_test_cache_1():
     assert cnt == 2
 
 
-def xxx_test_cache_2():
+def test_cache_2():
 
     with temp_directory() as tmpdir:
         with settings.temporary():
