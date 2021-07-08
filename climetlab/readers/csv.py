@@ -36,9 +36,9 @@ class CSVReader(Reader):
         # See https://www.tensorflow.org/api_docs/python/tf/data/experimental/make_csv_dataset
         import tensorflow as tf
 
-
         return tf.data.experimental.make_csv_dataset(
-            self.path, batch_size,
+            self.path,
+            batch_size,
         )
 
     def plot_map(self, driver):
