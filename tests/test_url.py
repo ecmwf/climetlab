@@ -42,12 +42,12 @@ def test_download_3():
         download_and_cache(url)
 
 
-def test_local():
-    ds = cml.load_source(
-        "url",
-        data_file_url("single", "z_500_20000101.grib"),
-    )
-    assert len(ds) == 1
+# def test_local():
+#     ds = cml.load_source(
+#         "url",
+#         data_file_url("single", "z_500_20000101.grib"),
+#     )
+#     assert len(ds) == 1
 
 
 def test_ftp():

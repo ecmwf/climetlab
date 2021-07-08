@@ -36,22 +36,22 @@ def test_multi_directory_1():
             assert len(ds) == 2
 
 
-def test_multi_directory_2():
-    ds = load_source(
-        "url",
-        data_file_url("mixed"),
-    )
-    print(ds)
-    # assert len(ds) == 1
+# def test_multi_directory_2():
+#     ds = load_source(
+#         "url",
+#         data_file_url("mixed"),
+#     )
+#     print(ds)
+#     # assert len(ds) == 1
 
 
-def test_grib_zip():
-    # ds =
-    load_source(
-        "url",
-        data_file_url("grib.zip"),
-    )
-    # assert len(ds) == 1
+# def test_grib_zip():
+#     # ds =
+#     load_source(
+#         "url",
+#         data_file_url("grib.zip"),
+#     )
+#     # assert len(ds) == 1
 
 
 def test_multi_grib():
