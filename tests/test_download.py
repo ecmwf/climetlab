@@ -13,9 +13,7 @@ import os
 import pathlib
 import time
 
-import climetlab as cml
 from climetlab import settings
-from climetlab.testing import data_file_url
 from climetlab.utils import download_and_cache
 
 

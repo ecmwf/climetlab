@@ -15,7 +15,6 @@ import os
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.testing import data_file_url
 
 LOG = logging.getLogger(__name__)
 

@@ -7,7 +7,8 @@ LOG = logging.getLogger(__name__)
 
 
 def climetlab_file(*args):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *args)
+    top = os.path.dirname(os.path.dirname(__file__))
+    return os.path.join(top, *args)
 
 
 def data_file(*args):
@@ -31,12 +32,12 @@ def modules_installed(*modules):
     return True
 
 
-def can_call_mars():
-    return os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+NO_CDS = not os.path.exists(os.path.expanduser("~/.cdsapirc"))
 
 
-def can_call_cds():
-    return os.path.exists(os.path.expanduser("~/.cdsapirc"))
+def MISSING(*modules):
+    return not modules_installed(*modules)
 
 
 def main(globals):

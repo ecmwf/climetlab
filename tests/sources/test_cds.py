@@ -12,13 +12,41 @@
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import can_call_cds
+from climetlab.testing import NO_CDS
 
 
-@pytest.mark.skipif(
-    not can_call_cds(),
-    reason="No access to CDS",
-)
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+def test_cds_grib():
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+    )
+    assert len(s) == 2
+
+
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+def test_cds_netcdf():
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+        format="netcdf",
+    )
+    assert len(s) == 2
+
+
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_cds_csv_zip():
     s = load_source(
         "cds",
