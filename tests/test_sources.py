@@ -14,9 +14,9 @@ import os
 import sys
 
 import pytest
-from utils import climetlab_file, modules_installed
 
 from climetlab import load_source
+from climetlab.testing import climetlab_file, modules_installed
 
 
 def test_file_source_grib():
@@ -241,6 +241,6 @@ def test_zarr_source_5():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

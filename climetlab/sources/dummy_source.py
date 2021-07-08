@@ -112,6 +112,38 @@ def generate_netcdf(target, **kwargs):
     ds.to_netcdf(target)
 
 
+def generate_csv(
+    target,
+    headers=None,
+    lines=[],
+    separator=",",
+    quote_strings=None,
+    none_are_empty=True,
+    **kwargs,
+):
+    assert none_are_empty
+    with open(target, "w") as f:
+        if headers:
+            print(separator.join(headers), file=f)
+
+        def str_or_none(x):
+            if x is None:
+                return ""
+            return str(x)
+
+        def repr_or_none(x):
+            if x is None:
+                return ""
+            return repr(x)
+
+        _ = repr_or_none if quote_strings else str_or_none
+
+
+
+        for line in lines:
+            print(separator.join(_(x) for x in line), file=f)
+
+
 GENERATORS = {
     "grib": (generate_grib, ".grib"),
     "unknown": (generate_unknown, ".unknown"),
@@ -119,6 +151,7 @@ GENERATORS = {
     "zarr": (generate_zarr, ".zarr"),
     "netcdf": (generate_netcdf, ".nc"),
     "zarr-zip": (generate_zarr_zip, ".zarr.zip"),
+    "csv": (generate_csv, ".csv"),
 }
 
 

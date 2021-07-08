@@ -13,10 +13,9 @@
 import logging
 import os
 
-from utils import data_file_url
-
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.testing import data_file_url
 
 LOG = logging.getLogger(__name__)
 
@@ -104,6 +103,6 @@ def test_multi_grib_mixed():
 #     assert len(ds) == 2, len(ds)
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

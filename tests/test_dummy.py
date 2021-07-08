@@ -11,9 +11,9 @@
 
 
 import pytest
-from utils import modules_installed
 
 from climetlab import load_source
+from climetlab.testing import modules_installed
 
 
 @pytest.mark.skipif(not modules_installed("zarr"), reason="Zarr not installed")
@@ -60,6 +60,6 @@ def test_dummy_grib():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

@@ -10,9 +10,9 @@
 #
 
 import pytest
-from utils import can_call_cds
 
 from climetlab import load_source
+from climetlab.testing import can_call_cds
 
 
 @pytest.mark.skipif(
@@ -34,6 +34,6 @@ def test_cds_csv_zip():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

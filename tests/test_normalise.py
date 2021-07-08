@@ -13,7 +13,6 @@ import datetime
 
 import numpy as np
 import pytest
-from utils import climetlab_file
 
 from climetlab import ALL, load_source
 from climetlab.normalize import (
@@ -22,6 +21,7 @@ from climetlab.normalize import (
     EnumNormaliser,
     normalize_args,
 )
+from climetlab.testing import climetlab_file
 from climetlab.utils.bbox import BoundingBox
 
 
@@ -256,6 +256,6 @@ def test_bbox():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

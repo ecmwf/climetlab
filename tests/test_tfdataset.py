@@ -12,9 +12,9 @@
 import os
 
 import pytest
-from utils import modules_installed
 
 import climetlab as cml
+from climetlab.testing import modules_installed
 
 
 @pytest.mark.skipif(
@@ -58,6 +58,6 @@ def test_tfdataset_2():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

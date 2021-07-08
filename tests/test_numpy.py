@@ -9,9 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-from utils import climetlab_file
-
 import climetlab as cml
+from climetlab.testing import climetlab_file
 
 """
 Test if a numpy array can be plotted using another field as metadata,
@@ -38,6 +37,6 @@ def test_numpy_xarray():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

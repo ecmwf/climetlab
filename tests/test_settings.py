@@ -233,6 +233,6 @@ def test_numbers():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

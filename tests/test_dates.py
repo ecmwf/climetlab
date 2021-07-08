@@ -12,9 +12,9 @@
 import datetime
 
 import numpy as np
-from utils import climetlab_file
 
 from climetlab import load_source
+from climetlab.testing import climetlab_file
 from climetlab.utils.dates import parse_date, to_datetime, to_datetime_list
 
 
@@ -101,6 +101,6 @@ def test_pandas_dates():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())

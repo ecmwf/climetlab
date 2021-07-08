@@ -12,9 +12,9 @@
 import os
 
 import pytest
-from utils import climetlab_file
 
 from climetlab import load_source, plot_map
+from climetlab.testing import climetlab_file
 
 
 def test_netcdf():
@@ -52,6 +52,6 @@ def test_multi():
 
 
 if __name__ == "__main__":
-    from utils import main
+    from climetlab.testing import main
 
     main(globals())
