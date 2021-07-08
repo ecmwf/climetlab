@@ -9,8 +9,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-
 import pytest
 
 import climetlab as cml
@@ -61,6 +59,7 @@ def test_csv_3():
 
     print(s.to_pandas())
 
+
 def test_csv_4():
     s = cml.load_source(
         "dummy-source",
@@ -75,6 +74,26 @@ def test_csv_4():
     )
 
     print(s.to_pandas())
+
+
+@pytest.mark.skipif(
+    not modules_installed("tensorflow"),
+    reason="Tensorflow not installed",
+)
+def test_csv_tfdataset():
+    s = cml.load_source(
+        "dummy-source",
+        "csv",
+        headers=["lat", "lon", "value"],
+        lines=[
+            [1, 0, 3],
+            [0, 1, 6],
+        ],
+    )
+
+    ds = s.to_tfdataset()
+    print(ds)
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
