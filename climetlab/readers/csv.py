@@ -32,15 +32,13 @@ class CSVReader(Reader):
         LOG.debug("pandas.read_csv(%s,%s)", self.path, pandas_read_csv_kwargs)
         return pandas.read_csv(self.path, **pandas_read_csv_kwargs)
 
-    def to_tfdataset(self, **kwargs):
+    def to_tfdataset(self, batch_size=1000, **kwargs):
         # See https://www.tensorflow.org/api_docs/python/tf/data/experimental/make_csv_dataset
         import tensorflow as tf
 
-        tensorflow_data_csvdataset_kwargs = kwargs.get(
-            "tensorflow_data_csvdataset_kwargs", {}
-        )
-        return tf.data.experimental.CsvDataset(
-            self.path, **tensorflow_data_csvdataset_kwargs
+        return tf.data.experimental.make_csv_dataset(
+            self.path,
+            batch_size,
         )
 
     def plot_map(self, driver):

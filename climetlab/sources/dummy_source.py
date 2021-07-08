@@ -74,7 +74,12 @@ def generate_zeros(target, size=1024 * 1024, chunk_size=1024 * 1024, **kwargs):
             size -= bufsize
 
 
-def make_xarray(variables=["a"], dims=["lat", "lon"], size=2, **kwargs):
+def make_xarray(
+    variables=["a"],
+    dims=["lat", "lon"],
+    size=2,
+    **kwargs,
+):
     import numpy as np
     import xarray as xr
 
@@ -150,8 +155,6 @@ def generate_csv(
             return repr(x)
 
         _ = repr_or_none if quote_strings else str_or_none
-
-
 
         for line in lines:
             print(separator.join(_(x) for x in line), file=f)
