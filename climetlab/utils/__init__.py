@@ -8,8 +8,10 @@
 #
 import inspect
 
+import requests
 
-def download_and_cache(url: str) -> str:
+
+def download_and_cache(url: str, return_none_on_404=False) -> str:
     """[summary]
 
     :param url: [description]
@@ -19,7 +21,13 @@ def download_and_cache(url: str) -> str:
     """
     from climetlab import load_source
 
-    return load_source("url", url).path
+    try:
+        return load_source("url", url).path
+    except requests.HTTPError as e:
+        # TODO: move this into source url?
+        if return_none_on_404:  # and is_404(e):
+            return None
+        raise e
 
 
 def bytes_to_string(n):

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
 from importlib import import_module
 
@@ -19,6 +20,8 @@ from climetlab.core.plugins import find_plugin, register
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import download_and_cache
 from climetlab.utils.html import table
+
+LOG = logging.getLogger(__name__)
 
 
 class Dataset(Base):
@@ -177,14 +180,12 @@ class DatasetLoader:
     def load_remote(self, name):
         catalogs = self.settings("datasets-catalogs-urls")
         for catalog in catalogs:
-            try:
-                url = f"{catalog}/{name}.yaml"
-                path = download_and_cache(url)
-                # path = download_and_cache(url, return_none_on_404=True) # TODO: implement option in caching.py
-            except Exception:
-                continue
+            url = f"{catalog}/{name}.yaml"
+            path = download_and_cache(url, return_none_on_404=True)
 
-            return self.load_yaml(path)
+            if path:
+                LOG.debug("Found dataset at %s", url)
+                return self.load_yaml(path)
 
         return None
 
