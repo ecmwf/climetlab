@@ -67,6 +67,11 @@ SETTINGS_AND_HELP = {
         """List of directories where to search for datasets definitions.
         See :ref:`datasets` for more information.""",
     ),
+    "datasets-catalogs-urls": _(
+        ["https://github.com/ecmwf-lab/climetlab-datasets/raw/main/datasets"],
+        """List of url where to search for catalogues of datasets definitions.
+        See :ref:`datasets` for more information.""",
+    ),
     "plotting-options": _(
         {},
         """Dictionary of default plotting options.

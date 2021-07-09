@@ -16,6 +16,8 @@ import climetlab
 from climetlab.core import Base
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin, register
+from climetlab.core.settings import SETTINGS
+from climetlab.utils import download_and_cache
 from climetlab.utils.html import table
 
 
@@ -150,6 +152,9 @@ class DatasetLoader:
 
     kind = "dataset"
 
+    def settings(self, name):
+        return SETTINGS.get(name)
+
     def load_yaml(self, path):
         name, _ = os.path.splitext(os.path.basename(path))
         with open(path) as f:
@@ -168,6 +173,20 @@ class DatasetLoader:
         if callable(entry):
             return entry
         return entry.dataset
+
+    def load_remote(self, name):
+        catalogs = self.settings("datasets-catalogs-urls")
+        for catalog in catalogs:
+            try:
+                url = f"{catalog}/{name}.yaml"
+                path = download_and_cache(url)
+                # path = download_and_cache(url, return_none_on_404=True) # TODO: implement option in caching.py
+            except Exception:
+                continue
+
+            return self.load_yaml(path)
+
+        return None
 
 
 def register_dataset(module):

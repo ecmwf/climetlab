@@ -11,10 +11,7 @@ The documentation can be found at <https://climetlab.readthedocs.io/>.
 
 ### Plugins
 
-- [climetlab-s2s-ai-challenge](https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge) : data for the 2021 S2S competition.
-- [climetlab-datasets](https://github.com/ecmwf-lab/climetlab-datasets) : Example dataset plugin.
-- [climetlab-meteonet](https://github.com/ecmwf-lab/climetlab-meteonet) : Meteonet data (WIP).
-
+See https://climetlab.readthedocs.io/en/latest/guide/pluginlist.html.
 
 ### License
 [Apache License 2.0](LICENSE) In applying this licence, ECMWF does not waive the privileges and immunities 

@@ -91,6 +91,9 @@ class SourceLoader:
             return entry
         return entry.source
 
+    def load_remote(self, name):
+        return None
+
 
 class SourceMaker:
     def __call__(self, name, *args, **kwargs):

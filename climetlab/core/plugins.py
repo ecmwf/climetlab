@@ -149,6 +149,10 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
                     if p == name:
                         return loader.load_module(full.replace("/", "."))
 
+    module = loader.load_remote(name)
+    if module is not None:
+        return module
+
     candidates = ", ".join(sorted(c for c in candidates if "-" in c))
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")
 
