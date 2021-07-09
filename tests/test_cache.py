@@ -74,8 +74,8 @@ def test_cache_2():
             assert cache_size() == 5 * 1024 * 1024, cache_size()
 
             cnt = 0
-            for f in cache_entries():
-                print(f)
+            for i, f in enumerate(cache_entries()):
+                print("FILE", i, f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database: {cnt}"
 
@@ -91,7 +91,8 @@ def test_cache_2():
             assert cache_size() == 5 * 1024 * 1024, cache_size()
 
             cnt = 0
-            for f in cache_entries():
+            for i, f in enumerate(cache_entries()):
+                print("FILE", i, f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database: {cnt}"
 

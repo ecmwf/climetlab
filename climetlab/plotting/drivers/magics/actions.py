@@ -12,10 +12,10 @@
 # N806 = variables should be lower case
 
 import logging
-import warnings
 
 from .convertions import convert
 
+LOG = logging.getLogger(__name__)
 
 class NoMagics:
     def plot(self, *args, **kwargs):
@@ -31,9 +31,9 @@ try:
     try:
         Magics.strict_mode()
     except Exception as e:
-        warnings.warn(str(e))
+        LOG.warning(str(e))
 except Exception as e:
-    warnings.warn(str(e))
+    LOG.warning(str(e))
     macro = NoMagics()
 
 

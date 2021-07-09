@@ -9,7 +9,7 @@
 
 import inspect
 import os
-import warnings
+import logging
 from collections import defaultdict
 
 import yaml
@@ -17,6 +17,9 @@ import yaml
 from climetlab.core.plugins import directories
 from climetlab.decorators import locked
 from climetlab.utils.html import css
+
+LOG = logging.getLogger(__name__)
+
 
 YAML_FILES = None
 
@@ -41,7 +44,7 @@ def _guess(data, path):
         if "mmap" in data["magics"]:
             return "projections"
 
-        warnings.warn("Cannot guess collection for %s", path)
+        LOG.warning("Cannot guess collection for %s", path)
     return "unknown"
 
 
@@ -104,8 +107,8 @@ def _load_yaml_files():
                         else:
                             collection[name] = e
 
-                except Exception as e:
-                    warnings.warn(f"Cannot process YAML file {path} {owner} ({e})")
+                except Exception:
+                    LOG.exception("Cannot process YAML file %s (%s)", path, owner)
 
     return YAML_FILES
 

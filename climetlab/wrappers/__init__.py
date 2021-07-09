@@ -8,12 +8,13 @@
 #
 
 import os
-import warnings
+import logging
 from importlib import import_module
 
 from climetlab.core import Base
 from climetlab.decorators import locked
 
+LOG = logging.getLogger(__name__)
 
 class Wrapper(Base):
     pass
@@ -33,7 +34,7 @@ def _wrappers():
                 try:
                     _HELPERS[name] = import_module(f".{name}", package=__name__).wrapper
                 except Exception as e:
-                    warnings.warn(f"Error loading wrapper '{name}': {e}")
+                    LOG.warning(f"Error loading wrapper '{name}': {e}")
     return _HELPERS
 
 

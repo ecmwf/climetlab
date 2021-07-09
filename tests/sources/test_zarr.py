@@ -98,6 +98,26 @@ def test_zarr_source_5():
     assert len(ds.forecast_time) == 1
 
 
+@pytest.mark.skipif(MISSING("zarr"), reason="Zarr not installed")
+def test_zarr_from_directory():
+    s = load_source(
+        "dummy-source",
+        kind="zarr",
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+@pytest.mark.skipif(MISSING("zarr"), reason="Zarr not installed")
+def test_zarr_from_zip_file():
+    s = load_source(
+        "dummy-source",
+        kind="zarr-zip",
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

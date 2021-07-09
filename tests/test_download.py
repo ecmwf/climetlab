@@ -48,8 +48,6 @@ def test_download_3():
 #     assert len(ds) == 1
 
 
-def test_ftp():
-    pass
 
 
 # TODO: test .tar, .zip, .tar.gz
