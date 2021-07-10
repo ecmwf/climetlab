@@ -311,6 +311,8 @@ class Url(FileSource):
     def __init__(
         self,
         url,
+        filter=None,
+        merger=None,
         verify=True,
         watcher=None,
         force=None,
@@ -319,6 +321,8 @@ class Url(FileSource):
         self.url = url
         LOG.debug("URL %s", url)
 
+        self.filter = filter
+        self.merger = merger
         self.verify = verify
         self.watcher = watcher if watcher else dummy
 

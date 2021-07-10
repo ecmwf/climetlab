@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
 
 from climetlab import load_source
@@ -15,18 +16,38 @@ from . import Reader
 from . import reader as find_reader
 
 
+def path_components(path, top="/"):
+    bits = []
+    while path != top:
+        dirname, basename = os.path.split(path)
+        bits.insert(0, basename)
+        path = dirname
+    return bits
+
+
+LOG = logging.getLogger(__name__)
+
+def _accept_all(*args, **kwargs):
+    return True
+
 class DirectoryReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
 
         self._content = []
 
-        filter = self.filter
+        f = self.filter
+        if f is None:
+            f = _accept_all
 
-        for root, _, files in os.walk(path):
+        top = self.path
+
+        print(f)
+
+        for root, _, files in os.walk(self.path):
             for file in files:
                 full = os.path.join(root, file)
-                if filter(full):
+                if f(path_components(full, top)):
                     self._content.append(full)
 
     def mutate(self):
@@ -43,11 +64,11 @@ class DirectoryReader(Reader):
             [
                 load_source(
                     "file",
-                    c,
-                    self.filter,
-                    self.merger,
+                    path=path,
+                    filter=self.filter,
+                    merger=self.merger,
                 )
-                for c in self._content
+                for path in sorted(self._content)
             ],
         )
 

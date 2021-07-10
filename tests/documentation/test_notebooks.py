@@ -15,10 +15,12 @@ import sys
 
 import pytest
 
+from climetlab.testing import climetlab_file
+
 # See https://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
 
 
-EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "examples")
+EXAMPLES = climetlab_file("docs", "examples")
 
 SKIP = (
     "11-icoads.ipynb",
@@ -26,7 +28,6 @@ SKIP = (
 )
 
 MARS = (
-    "04-source-mars.ipynb",
     "04-source-mars.ipynb",
     "08-mars-odb.ipynb",
     "11-icoads.ipynb",

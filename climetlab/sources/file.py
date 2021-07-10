@@ -18,15 +18,11 @@ from . import Source
 LOG = logging.getLogger(__name__)
 
 
-def _accept_all(*args, **kwargs):
-    return True
-
-
 class FileSource(Source):
 
     _reader_ = None
     path = None
-    filter = _accept_all
+    filter = None
     merger = None
 
     def mutate(self):
@@ -101,7 +97,7 @@ class FileSource(Source):
 
 
 class File(FileSource):
-    def __init__(self, path, filter=_accept_all, merger=None):
+    def __init__(self, path, filter=None, merger=None):
         self.path = path
         self.filter = filter
         self.merger = merger

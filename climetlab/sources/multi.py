@@ -26,7 +26,7 @@ class MultiSource(Source):
         #     if not s.ignore():
         #         src += s.flatten()
 
-        self.sources = sources
+        self.sources = [s.mutate() for s in sources]
         self.filter = filter
         self.merger = merger
         self._lengths = [None] * len(self.sources)

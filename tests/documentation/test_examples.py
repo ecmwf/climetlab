@@ -13,6 +13,8 @@ import os
 
 import pytest
 
+from climetlab.testing import climetlab_file
+
 IGNORE = [
     "conf.py",
     "xml2rst.py",
@@ -20,7 +22,8 @@ IGNORE = [
     "generate-examples-maps.py",
     "settings-2-set.py",
 ]
-EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
+
+EXAMPLES = climetlab_file("docs", "examples")
 
 
 def example_list():

@@ -19,7 +19,7 @@ from climetlab.core.temporary import temp_directory, temp_file
 LOG = logging.getLogger(__name__)
 
 
-def test_multi_graph_1():
+def xtest_multi_graph_1():
     a11 = load_source("dummy-source", kind="grib", date=20000101)
     a12 = load_source("dummy-source", kind="grib", date=20000102)
     b11 = load_source("dummy-source", kind="grib", date=20000103)
@@ -48,7 +48,7 @@ def test_multi_graph_1():
     assert len(ds) == 8
 
 
-def test_multi_graph_2():
+def xtest_multi_graph_2():
     with temp_directory() as tmpdir:
         os.mkdir(os.path.join(tmpdir, "a1"))
         a11 = load_source("dummy-source", kind="grib", date=20000101)
@@ -74,8 +74,8 @@ def test_multi_graph_2():
         b22 = load_source("dummy-source", kind="grib", date=20000108)
         b22.save(os.path.join(tmpdir, "b2", "b22.grib"))
 
-        def filter(path):
-            return path.endswith("2.grib")
+        def filter(path_components):
+            return path_components[-1].endswith("2.grib")
 
         ds = load_source("file", tmpdir, filter=filter)
         ds.graph()
@@ -98,6 +98,34 @@ def xtest_multi_directory_1():
             ds.save(filename)
             ds = load_source("file", filename)
             assert len(ds) == 2
+
+
+def test_download_zip_1():
+    ds = load_source(
+        "url-pattern",
+        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
+        x=["a", "b"],
+    )
+
+    ds.graph()
+    assert len(ds) == 36, len(ds)
+
+
+def test_download_zip_2():
+
+    def filter(path_components):
+        LOG.debug("test_download_zip_2.filter %s", path_components)
+        return True
+
+    ds = load_source(
+        "url-pattern",
+        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
+        x=["c", "d"],
+        filter = filter,
+    )
+
+    ds.graph()
+    assert len(ds) == 36, len(ds)
 
 
 # def test_multi_directory_2():
