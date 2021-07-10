@@ -7,14 +7,15 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 import logging
+import os
 from importlib import import_module
 
 from climetlab.core import Base
 from climetlab.decorators import locked
 
 LOG = logging.getLogger(__name__)
+
 
 class Wrapper(Base):
     pass

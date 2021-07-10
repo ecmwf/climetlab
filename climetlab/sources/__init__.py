@@ -30,6 +30,7 @@ class Source(Base):
     citation = "-"
 
     _dataset = None
+    _parent = None
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
@@ -70,12 +71,28 @@ class Source(Base):
     def _set_dataset(self, dataset):
         self._dataset = dataset
 
+    @property
+    def parent(self):
+        if self._parent is None:
+            return None
+        return self._parent()
+
+    @parent.setter
+    def parent(self, parent):
+        self._set_parent(weakref.ref(parent))
+
+    def _set_parent(self, parent):
+        self._parent = parent
+
     def _repr_html_(self):
         return table(self)
 
     @classmethod
     def multi_merge(cls, sources):
         return None
+
+    def graph(self, depth=0):
+        print(" " * depth, self)
 
 
 class SourceLoader:
@@ -118,7 +135,7 @@ def register_source(module):
     register("source", module)
 
 
-def load_source(name: str, *args, **kwargs) -> Source:
+def load_source(name: str, *args, context=None, **kwargs) -> Source:
     return source(name, *args, **kwargs).mutate()
 
 

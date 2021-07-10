@@ -8,8 +8,8 @@
 #
 
 import inspect
-import os
 import logging
+import os
 from collections import defaultdict
 
 import yaml

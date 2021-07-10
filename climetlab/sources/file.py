@@ -10,6 +10,7 @@
 
 import logging
 
+from climetlab.core.settings import SETTINGS
 from climetlab.readers import reader
 
 from . import Source
@@ -17,10 +18,16 @@ from . import Source
 LOG = logging.getLogger(__name__)
 
 
+def _accept_all(*args, **kwargs):
+    return True
+
+
 class FileSource(Source):
 
     _reader_ = None
     path = None
+    filter = _accept_all
+    merger = None
 
     def mutate(self):
         # Give a chance to directories and zip files
@@ -88,14 +95,16 @@ class FileSource(Source):
         return self._reader._attributes(names)
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.path},{self._reader.__class__.__name__})"
-        )
+        cache_dir = SETTINGS.get("cache-directory")
+        path = self.path.replace(cache_dir, "CACHE:")
+        return f"{self.__class__.__name__}({path},{self._reader.__class__.__name__})"
 
 
 class File(FileSource):
-    def __init__(self, path):
+    def __init__(self, path, filter=_accept_all, merger=None):
         self.path = path
+        self.filter = filter
+        self.merger = merger
 
 
 source = File

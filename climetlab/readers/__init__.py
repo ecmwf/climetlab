@@ -34,6 +34,14 @@ class Reader(Base):
     def source(self):
         return self._source()
 
+    @property
+    def filter(self):
+        return self.source.filter
+
+    @property
+    def merger(self):
+        return self.source.merger
+
     def mutate(self):
         # Give a chance to `directory` or `zip` to change the reader
         return self

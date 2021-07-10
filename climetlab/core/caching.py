@@ -188,7 +188,7 @@ class Cache(threading.Thread):
                     n["owner_data"] = json.loads(n["owner_data"])
                 except Exception:
                     pass
-                if os.path.exists(n['path']):
+                if os.path.exists(n["path"]):
                     result.append(n)
         return result
 

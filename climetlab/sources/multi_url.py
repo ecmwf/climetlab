@@ -21,7 +21,7 @@ from .url import Url
 
 
 class MultiUrl(MultiSource):
-    def __init__(self, urls, *args, merger=None, force=None, **kwargs):
+    def __init__(self, urls, *args, filter=None, merger=None, force=None, **kwargs):
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 
@@ -39,4 +39,4 @@ class MultiUrl(MultiSource):
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))
 
-        super().__init__(sources, merger=merger)
+        super().__init__(sources, filter=filter, merger=merger)

@@ -48,8 +48,6 @@ def test_download_3():
 #     assert len(ds) == 1
 
 
-
-
 # TODO: test .tar, .zip, .tar.gz
 
 if __name__ == "__main__":

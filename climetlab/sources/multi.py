@@ -16,18 +16,18 @@ from . import Source
 
 
 class MultiSource(Source):
-    def __init__(self, *sources, merger=None):
+    def __init__(self, *sources, filter=None, merger=None):
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
 
-        src = []
-        for s in sources:
-            s = s.mutate()  # Just in case
-            if not s.ignore():
-                src += s.flatten()
+        # src = []
+        # for s in sources:
+        #     s = s.mutate()  # Just in case
+        #     if not s.ignore():
+        #         src += s.flatten()
 
-        self.sources = src
-
+        self.sources = sources
+        self.filter = filter
         self.merger = merger
         self._lengths = [None] * len(self.sources)
 
@@ -129,6 +129,11 @@ class MultiSource(Source):
         with open(path, "wb") as f:
             for s in self.sources:
                 s.write(f)
+
+    def graph(self, depth=0):
+        print(" " * depth, self.__class__.__name__)
+        for s in self.sources:
+            s.graph(depth + 3)
 
 
 source = MultiSource

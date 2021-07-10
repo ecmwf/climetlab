@@ -9,13 +9,17 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
 
 import pytest
 
-from climetlab import load_source
-from climetlab.testing import modules_installed
+from climetlab import load_source, plot_map
+from climetlab.testing import climetlab_file
 
 
+def test_netcdf():
+    for s in load_source("file", climetlab_file("docs/examples/test.nc")):
+        plot_map(s)
 
 
 def test_dummy_netcdf():
@@ -60,15 +64,33 @@ def test_dummy_netcdf_4():
     assert "lat" in ds.dims
 
 
-def test_dummy_grib():
-    s = load_source(
-        "dummy-source",
-        kind="grib",
-        paramId=[129, 130],
-        date=[19900101, 19900102],
-        level=[1000, 500],
+def test_multi():
+    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
+    s1 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-01",
+        format="netcdf",
     )
-    assert len(s) == 8
+    s1.to_xarray()
+    s2 = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="2t",
+        date="2021-03-02",
+        format="netcdf",
+    )
+    s2.to_xarray()
+
+    source = load_source("multi", s1, s2)
+    for s in source:
+        print(s)
+
+    source.to_xarray()
 
 
 if __name__ == "__main__":

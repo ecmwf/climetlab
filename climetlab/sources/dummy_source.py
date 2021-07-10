@@ -160,14 +160,35 @@ def generate_csv(
             print(separator.join(_(x) for x in line), file=f)
 
 
+def generate_zip(target, sources=None, names=None, directory=None, **kwargs):
+    if sources is not None:
+        assert directory is None
+        assert names is not None
+        assert len(sources) == len(names)
+        with temp_directory() as tmpdir:
+            for s, n in zip(sources, names):
+                s.save(os.path.join(tmpdir, n))
+            zip_dir(target, tmpdir)
+            return
+
+    if directory is not None:
+        assert sources is None
+        assert names is None
+        zip_dir(target, directory)
+        return
+
+    assert False
+
+
 GENERATORS = {
-    "grib": (generate_grib, ".grib"),
-    "unknown": (generate_unknown, ".unknown"),
-    "zeros": (generate_zeros, ".zeros"),
-    "zarr": (generate_zarr, ".zarr"),
-    "netcdf": (generate_netcdf, ".nc"),
-    "zarr-zip": (generate_zarr_zip, ".zarr.zip"),
     "csv": (generate_csv, ".csv"),
+    "grib": (generate_grib, ".grib"),
+    "netcdf": (generate_netcdf, ".nc"),
+    "unknown": (generate_unknown, ".unknown"),
+    "zarr-zip": (generate_zarr_zip, ".zarr.zip"),
+    "zarr": (generate_zarr, ".zarr"),
+    "zeros": (generate_zeros, ".zeros"),
+    "zip": (generate_zip, ".zip"),
 }
 
 

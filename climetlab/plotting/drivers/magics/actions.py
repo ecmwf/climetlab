@@ -17,6 +17,7 @@ from .convertions import convert
 
 LOG = logging.getLogger(__name__)
 
+
 class NoMagics:
     def plot(self, *args, **kwargs):
         raise NotImplementedError(

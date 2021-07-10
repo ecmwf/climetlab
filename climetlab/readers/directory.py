@@ -21,9 +21,13 @@ class DirectoryReader(Reader):
 
         self._content = []
 
+        filter = self.filter
+
         for root, _, files in os.walk(path):
             for file in files:
-                self._content.append(os.path.join(root, file))
+                full = os.path.join(root, file)
+                if filter(full):
+                    self._content.append(full)
 
     def mutate(self):
         if len(self._content) == 1:
@@ -34,7 +38,18 @@ class DirectoryReader(Reader):
         if os.path.exists(os.path.join(self.path, ".zattrs")):
             return load_source("zarr", self.path)
 
-        return load_source("multi", [load_source("file", c) for c in self._content])
+        return load_source(
+            "multi",
+            [
+                load_source(
+                    "file",
+                    c,
+                    self.filter,
+                    self.merger,
+                )
+                for c in self._content
+            ],
+        )
 
 
 def reader(source, path, magic):
