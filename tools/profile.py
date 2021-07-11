@@ -16,8 +16,6 @@ from threading import Lock, Thread
 
 import requests
 
-# from tqdm import tqdm
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument(

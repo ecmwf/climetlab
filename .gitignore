@@ -148,3 +148,7 @@ list.*
 climetlab/tools/
 *.db
 *.data
+*.zip
+*.gz
+*.tar
+*.tgz

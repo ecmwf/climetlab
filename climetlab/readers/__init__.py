@@ -115,10 +115,14 @@ def reader(source, path):
         magic = f.read(8)
 
     LOG.debug("Looking for a reader for %s (%s)", path, magic)
-    for name, r in _readers().items():
-        reader = r(source, path, magic)
-        if reader is not None:
-            return reader.mutate()
+
+    for deeper_check in (False, True):
+        # We do two passes, the second one
+        # allow the plugin to look deeper in the file
+        for name, r in _readers().items():
+            reader = r(source, path, magic, deeper_check)
+            if reader is not None:
+                return reader.mutate()
 
     from .unknown import Unknown
 

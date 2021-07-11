@@ -15,20 +15,12 @@ from climetlab import load_source
 from . import Reader
 from . import reader as find_reader
 
-
-def path_components(path, top="/"):
-    bits = []
-    while path != top:
-        dirname, basename = os.path.split(path)
-        bits.insert(0, basename)
-        path = dirname
-    return bits
-
-
 LOG = logging.getLogger(__name__)
+
 
 def _accept_all(*args, **kwargs):
     return True
+
 
 class DirectoryReader(Reader):
     def __init__(self, source, path):
@@ -36,18 +28,14 @@ class DirectoryReader(Reader):
 
         self._content = []
 
-        f = self.filter
-        if f is None:
-            f = _accept_all
-
-        top = self.path
-
-        print(f)
+        filter = self.filter
+        if filter is None:
+            filter = _accept_all
 
         for root, _, files in os.walk(self.path):
             for file in files:
                 full = os.path.join(root, file)
-                if f(path_components(full, top)):
+                if filter(full):
                     self._content.append(full)
 
     def mutate(self):
@@ -73,6 +61,6 @@ class DirectoryReader(Reader):
         )
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if os.path.isdir(path):
         return DirectoryReader(source, path)

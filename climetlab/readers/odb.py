@@ -27,6 +27,6 @@ class ODBReader(Reader):
         return odc.read_odb(self.path, single=True, *odc_read_odb_kwargs)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if magic[:5] == b"\xff\xffODA":
         return ODBReader(source, path)

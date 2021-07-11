@@ -21,7 +21,7 @@ class TextReader(Reader):
         return True
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     _, extension = os.path.splitext(path)
     if extension in (".txt",):
         return TextReader(source, path)

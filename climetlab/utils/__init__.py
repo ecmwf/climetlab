@@ -10,6 +10,14 @@ import inspect
 
 import requests
 
+try:
+    # There is a bug in tqdm that expects ipywidgets
+    # to be installed if running in a notebook
+    import ipywidgets  # noqa F401
+    from tqdm.auto import tqdm  # noqa F401
+except ImportError:
+    from tqdm import tqdm  # noqa F401
+
 
 def download_and_cache(url: str, return_none_on_404=False) -> str:
     """[summary]

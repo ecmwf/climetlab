@@ -45,6 +45,6 @@ class CSVReader(Reader):
         get_wrapper(self.to_pandas()).plot_map(driver)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if path.endswith(".csv"):
         return CSVReader(source, path)

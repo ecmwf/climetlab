@@ -22,12 +22,7 @@ import requests
 from dateutil.parser import parse as parse_date
 
 from climetlab.core.settings import SETTINGS
-
-try:
-    import ipywidgets  # noqa
-    from tqdm.auto import tqdm
-except ImportError:
-    from tqdm import tqdm
+from climetlab.utils import tqdm
 
 from .file import FileSource
 

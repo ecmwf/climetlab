@@ -262,6 +262,6 @@ class GRIBReader(Reader):
         return MultiGribReaders(readers)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if magic[:4] == b"GRIB":
         return GRIBReader(source, path)

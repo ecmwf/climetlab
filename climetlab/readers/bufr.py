@@ -21,6 +21,6 @@ class BUFRReader(Reader):
         return pdbufr.read_bufr(self.path, columns=columns, filters=filters)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if magic[:4] == b"BUFR":
         return BUFRReader(source, path)

@@ -7,14 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-try:
-    import ipywidgets  # noqa
-    from tqdm.auto import tqdm
-except ImportError:
-    from tqdm import tqdm
-
-
 from climetlab.core.thread import SoftThreadPool
+from climetlab.utils import tqdm
 
 from .multi import MultiSource
 from .url import Url
@@ -24,6 +18,11 @@ class MultiUrl(MultiSource):
     def __init__(self, urls, *args, filter=None, merger=None, force=None, **kwargs):
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
+
+        if filter is not None:
+            urls = [url for url in urls if filter(url)]
+
+        assert len(urls)
 
         urls = sorted(urls)
 

@@ -323,6 +323,6 @@ class NetCDFReader(Reader):
         return MultiNetcdfReaders(readers)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if magic[:4] in (b"\x89HDF", b"CDF\x01", b"CDF\x02"):
         return NetCDFReader(source, path)

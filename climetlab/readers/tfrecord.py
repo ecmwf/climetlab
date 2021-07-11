@@ -37,6 +37,6 @@ class TfRecordReader(Reader):
         return MultiTfRecordReaders(readers)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
     if path.endswith(".tfrecord"):
         return TfRecordReader(source, path)

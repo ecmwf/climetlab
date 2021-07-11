@@ -3,6 +3,10 @@ import os
 import pathlib
 from importlib import import_module
 
+from climetlab import load_source
+from climetlab.readers.unknown import Unknown
+from climetlab.sources.empty import EmptySource
+
 LOG = logging.getLogger(__name__)
 
 
@@ -40,8 +44,40 @@ def MISSING(*modules):
     return not modules_installed(*modules)
 
 
+UNSAFE_SAMPLES_URL = "https://github.com/jwilk/traversal-archives/releases/download/0"
+
+
+def empty(ds):
+    assert isinstance(ds, EmptySource)
+
+
+def unknown(ds):
+    assert isinstance(ds._reader, Unknown)
+
+
+UNSAFE_SAMPLES = (
+    ("absolute1", empty),
+    ("absolute2", empty),
+    ("relative0", empty),
+    ("relative2", empty),
+    ("symlink", unknown),
+    ("dirsymlink", unknown),
+    ("dirsymlink2a", unknown),
+    ("dirsymlink2b", unknown),
+)
+
+
+def check_unsafe_archives(extension):
+    for archive, check in UNSAFE_SAMPLES:
+        ds = load_source("url", f"{UNSAFE_SAMPLES_URL}/{archive}{extension}")
+        check(ds)
+
+
 def main(globals):
-    logging.basicConfig(level=logging.DEBUG)
+    import sys
+
+    if len(sys.argv) > 1 and sys.argv[1] != "--no-debug":
+        logging.basicConfig(level=logging.DEBUG)
     for k, f in sorted(globals.items()):
         if k.startswith("test_") and callable(f):
             skip = None

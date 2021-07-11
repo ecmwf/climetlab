@@ -22,7 +22,7 @@ class NumpyZipReader(Reader):
         super().__init__(source, path)
 
 
-def reader(source, path, magic):
+def reader(source, path, magic, deeper_check):
 
     if magic[:6] == b"\x93NUMPY":
         return NumpyReader(source, path)
