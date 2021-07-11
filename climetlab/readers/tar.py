@@ -20,7 +20,7 @@ class TarReader(ArchiveReader):
             self._content = tar.getmembers()
 
         self.expand(
-            tar.getmembers(),
+            self._content,
             set_attrs=False,
         )
 
