@@ -17,12 +17,11 @@ class TarReader(ArchiveReader):
         super().__init__(source, path)
 
         with tarfile.open(path) as tar:
-            self._content = tar.getmembers()
-
-        self.expand(
-            self._content,
-            set_attrs=False,
-        )
+            self.expand(
+                tar,
+                tar.getmembers(),
+                set_attrs=False,
+            )
 
     def open(self, path):
         return tarfile.open(path)

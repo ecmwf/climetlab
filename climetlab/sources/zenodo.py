@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
@@ -16,7 +17,7 @@ import requests
 
 from climetlab.sources.multi_url import MultiUrl
 
-URLPATTERN = "https://zenodo.org/api/records/{zenodo_id}"
+URLPATTERN = "https://zenodo.org/api/records/{record_id}"
 
 
 def DEFAULT_FILE_FILTER(path, *args, **kwargs):
@@ -33,14 +34,14 @@ def DEFAULT_FILE_FILTER(path, *args, **kwargs):
 class Zenodo(MultiUrl):
     def __init__(
         self,
-        id=None,
+        record_id=None,
         list_only=False,
         zenodo_file_filter=None,
-        file_filter=DEFAULT_FILE_FILTER,
+        filter=DEFAULT_FILE_FILTER,
         *args,
         **kwargs,
     ):
-        url = URLPATTERN.format(zenodo_id=id)
+        url = URLPATTERN.format(record_id=record_id)
         self.url = url
         r = requests.get(url)
         r.raise_for_status()
@@ -78,7 +79,11 @@ class Zenodo(MultiUrl):
             print(self.list_content_keys)
             return  # Note: will mutate into Empty
 
-        super().__init__(urls, file_filter=file_filter, *args, **kwargs)
+
+        def interanl_filter(path):
+            return filter(path)
+
+        super().__init__(urls, filter=interanl_filter, *args, **kwargs)
 
     def mutate(self):
         if self.list_only:

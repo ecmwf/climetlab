@@ -8,8 +8,10 @@
 #
 
 import pytest
+import os
 
 import climetlab as cml
+from climetlab.datasets import dataset_from_yaml
 
 
 def test_zenodo_read_csv():
@@ -83,6 +85,13 @@ def test_zenodo_read_nc_partial_regexpr():
 #     print(ds)
 #     assert "t" in ds.keys()
 
+def load_yaml(name):
+    full = os.path.join(os.path.dirname(__file__),name)
+    return dataset_from_yaml(full)
+
+def test_zenodo_from_yaml_1():
+    s = load_yaml('zedono-dataset-1.yaml')
+    s.to_pandas()
 
 if __name__ == "__main__":
     from climetlab.testing import main

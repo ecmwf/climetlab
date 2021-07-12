@@ -45,32 +45,30 @@ class ZIPReader(ArchiveReader):
     def __init__(self, source, path):
         super().__init__(source, path)
 
-        with ZipFile(path, "r") as z:
-            self._content = z.infolist()
+        self._mutate = None
 
-        if len(self._content) == 1:
-            _, ext = os.path.splitext(self._content[0].filename)
-            if ext in (".csv", ".txt"):
-                return  # Pandas can read zipped files directly
+        with ZipFile(path, "r") as zip:
+            members = zip.infolist()
 
-        if ".zattrs" in self._content:
-            return  # Zarr can read zipped files directly
+            if len(members) == 1:
 
-        self.expand(self._content)
+                _, ext = os.path.splitext(members[0].filename)
+                if ext in (".csv", ".txt"):
+                    self._mutate = CSVReader(source, path, compression="zip")
+                    return  # Pandas can read zipped files directly
 
-    def open(self, path):
-        return ZipFile(path, "r")
+            if ".zattrs" in members:
+                return  # Zarr can read zipped files directly
+
+            self.expand(zip, members)
 
     def check(self, member):
         return super().check(InfoWrapper(member))
 
     def mutate(self):
 
-        if not os.path.isdir(self.path) and len(self._content) == 1:
-            _, ext = os.path.splitext(self._content[0].filename)
-            if ext not in (".csv", ".txt"):
-                raise NotImplementedError("File type", ext)
-            return CSVReader(self.source, self.path, compression="zip").mutate()
+        if self._mutate:
+            return self._mutate.mutate()
 
         return super().mutate()
 

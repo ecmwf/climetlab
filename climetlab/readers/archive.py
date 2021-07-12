@@ -54,15 +54,14 @@ class ArchiveReader(Reader):
 
         return self
 
-    def expand(self, members, **kwargs):
+    def expand(self, archive, members, **kwargs):
         def unpack(target, args):
             os.mkdir(target)
 
-            with self.open(self.path) as archive:
-                for member in tqdm(iterable=members, total=len(members)):
-                    if not self.check(member):
-                        continue
-                    archive.extract(member=member, path=target, **kwargs)
+            for member in tqdm(iterable=members, total=len(members)):
+                if not self.check(member):
+                    continue
+                archive.extract(member=member, path=target, **kwargs)
 
         self.path = self.cache_file(
             unpack,

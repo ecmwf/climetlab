@@ -58,6 +58,8 @@ class DirectoryReader(Reader):
                 )
                 for path in sorted(self._content)
             ],
+            filter=self.filter,
+            merger=self.merger,
         )
 
 
