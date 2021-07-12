@@ -12,20 +12,22 @@ import itertools
 import os
 import zipfile
 
-from climetlab.core.temporary import temp_chdir, temp_directory
+from climetlab.core.temporary import temp_directory
 
 from .file import FileSource
 
 
 def zip_dir(target, directory):
-    z = zipfile.ZipFile(target, "w")
-    with temp_chdir(directory):
-
-        for root, _, files in os.walk("."):
+    with zipfile.ZipFile(target, "w") as z:
+        for root, _, files in os.walk(directory):
             for f in files:
-                fullname = os.path.join(root, f)
-                z.write(fullname)
-        z.close()
+                fullpath = os.path.join(root, f)
+                relpath = os.path.relpath(fullpath, start=directory)
+                z.write(
+                    fullpath,
+                    arcname=relpath,
+                    compress_type=zipfile.ZIP_DEFLATED,
+                )
 
 
 def iterate_request(r):

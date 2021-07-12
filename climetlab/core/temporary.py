@@ -9,7 +9,6 @@
 
 import os
 import tempfile
-from contextlib import contextmanager
 
 
 class TmpFile:
@@ -67,15 +66,3 @@ class TmpDirectory(tempfile.TemporaryDirectory):
 
 def temp_directory():
     return TmpDirectory()
-
-
-@contextmanager
-def temp_chdir(directory):
-
-    save = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield directory
-
-    finally:
-        os.chdir(save)
