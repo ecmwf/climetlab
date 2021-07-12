@@ -9,6 +9,7 @@
 
 import logging
 import os
+import shutil
 
 from climetlab import load_source
 
@@ -61,6 +62,11 @@ class DirectoryReader(Reader):
             filter=self.filter,
             merger=self.merger,
         )
+    def save(self, path):
+        shutil.copytree(self.path, path)
+
+    def write(self, f):
+        raise NotImplemented()
 
 
 def reader(source, path, magic, deeper_check):
