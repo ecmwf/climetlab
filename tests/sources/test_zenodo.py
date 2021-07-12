@@ -7,8 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import pytest
 import os
+
+import pytest
 
 import climetlab as cml
 from climetlab.datasets import dataset_from_yaml
@@ -21,6 +22,27 @@ def test_zenodo_read_csv():
     )
     ds = ds.to_pandas()
     assert len(ds) == 49
+
+
+def test_zenodo_read_nc_with_merge():
+    ds1 = cml.load_source("zenodo", id="654", filter="analysis.**")
+    ds.merger = AnMerger
+
+    ds2 = cml.load_source("zenodo", id="654", filter="forecast.**")
+    ds.merger = FcMerger
+
+    cml.load_source("multi", ds1, ds2, merger=AnFcMerger)
+
+
+def test_zenodo_read_nc_2():
+    ds = cml.load_source(
+        "zenodo",
+        record_id="4707154",
+        filter=".*europa_grid_data.zip|europa_grid|.*analysis.*.nc",
+    )
+    print(ds)
+    ds = ds.to_xarray()
+    assert "t2m" in list(ds.keys())
 
 
 def test_zenodo_read_nc():
@@ -75,14 +97,21 @@ def test_zenodo_read_nc_partial_regexpr():
     assert "t_min" in list(ds.keys())
 
 
-
-
 def test_zenodo_merge():
-    an = cml.load_source("zenodo", id="3403963", zenodo_file_filter="analysis/2000_.*.nc", merger=an_merger)
-    fc = cml.load_source("zenodo", id="3403963", zenodo_file_filter="forecast/2000_.*.nc",merger=fc_merger)
-    ds = load_source('multi', an, fc, merger=an_with_fc)
+    an = cml.load_source(
+        "zenodo",
+        id="3403963",
+        zenodo_file_filter="analysis/2000_.*.nc",
+        merger=an_merger,
+    )
+    fc = cml.load_source(
+        "zenodo",
+        id="3403963",
+        zenodo_file_filter="forecast/2000_.*.nc",
+        merger=fc_merger,
+    )
+    ds = load_source("multi", an, fc, merger=an_with_fc)
     ds.to_xarray()
-
 
 
 # TODO: add zenodo test with tar.gz
@@ -95,13 +124,16 @@ def test_zenodo_merge():
 #     print(ds)
 #     assert "t" in ds.keys()
 
+
 def load_yaml(name):
-    full = os.path.join(os.path.dirname(__file__),name)
+    full = os.path.join(os.path.dirname(__file__), name)
     return dataset_from_yaml(full)
 
+
 def test_zenodo_from_yaml_1():
-    s = load_yaml('zedono-dataset-1.yaml')
+    s = load_yaml("zedono-dataset-1.yaml")
     s.to_pandas()
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
