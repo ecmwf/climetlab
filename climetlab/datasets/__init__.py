@@ -150,6 +150,7 @@ class YamlDefinedDataset(Dataset):
     def __call__(self):
         return self
 
+
 def dataset_from_dict(name, dataset, path=None):
     attributes = dataset.get("metadata", {})
     attributes.update(
@@ -157,11 +158,13 @@ def dataset_from_dict(name, dataset, path=None):
     )
     return type(camel(name), (YamlDefinedDataset,), attributes)
 
+
 def dataset_from_yaml(path):
     name, _ = os.path.splitext(os.path.basename(path))
     with open(path) as f:
         dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
         return dataset_from_dict(name, dataset, path)
+
 
 class DatasetLoader:
 

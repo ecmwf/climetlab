@@ -73,8 +73,6 @@ def check_unsafe_archives(extension):
         check(ds)
 
 
-
-
 def main(globals):
     import sys
 

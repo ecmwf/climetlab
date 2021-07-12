@@ -3,4 +3,5 @@ dataset:
   source: zenodo
   args:
     record_id: 3403963
+    filter: 'http://.*europa_grid_data.zip|europa_grid|.*analysis.*.nc'
     
