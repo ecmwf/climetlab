@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
@@ -31,62 +30,81 @@ def DEFAULT_FILE_FILTER(path, *args, **kwargs):
     return False
 
 
+def filter_builder(filter):
+    if callable(filter):
+
+        def _filter(k):
+            print(f"checking {k}")
+            return filter(k)
+
+        return _filter
+    if isinstance(filter, (tuple, list)):
+
+        def _filter(k):
+            print(f"checking {k}")
+            return k in filter
+
+        return _filter
+    if isinstance(filter, str):
+
+        def _filter(k):
+            f = re.match(filter, k)
+            print(f"checking {k} with {filter}: {f}")
+            return f
+
+        return _filter
+    raise ValueError(f"Wrong input of type {type(filter)} for filter={filter}")
+
+
 class Zenodo(MultiUrl):
     def __init__(
         self,
         record_id=None,
         list_only=False,
-        zenodo_file_filter=None,
         filter=DEFAULT_FILE_FILTER,
         *args,
         **kwargs,
     ):
+        self.list_only = list_only
+        _filter = filter_builder(filter)
+
         url = URLPATTERN.format(record_id=record_id)
         self.url = url
         r = requests.get(url)
         r.raise_for_status()
         self.json = r.json()
 
-        zfiles = self.json["files"]
+        files = self.json["files"]
 
-        keys = [f["key"] for f in zfiles]
+        keys = [f["key"] for f in files]
 
-        keys = []
         urls = []
-        for f in zfiles:
-            k = f["key"]
-            if callable(zenodo_file_filter):
-                if not zenodo_file_filter(k):
-                    continue
-            if isinstance(zenodo_file_filter, (tuple, list)):
-                if not k in zenodo_file_filter:
-                    continue
-            if isinstance(zenodo_file_filter, str):
-                if not re.match(zenodo_file_filter, k):
-                    continue
-
-            keys.append(k)
+        for f in files:
             urls.append(f["links"]["self"])
+        keys = []
 
+        for f in files:
+            k = f["key"]
+            print(k)
+            if _filter(k):
+                print(f"Appending {k}")
+                keys.append(k)
+            else:
+                print(f"Skipping {k}")
         self.list_content_keys = keys
 
-        self.list_only = list_only
         if list_only:
-
             # Idea: generate csv in cache
-            super().__init__([])
-
+            # super().__init__([])
             print(self.list_content_keys)
-            return  # Note: will mutate into Empty
+            return  # Note: will mutate into a csv File
 
-
-        def interanl_filter(path):
-            return filter(path)
-
-        super().__init__(urls, filter=interanl_filter, *args, **kwargs)
+        print(urls)
+        super().__init__(urls, filter=_filter, *args, **kwargs)
 
     def mutate(self):
         if self.list_only:
+            # create csv file in cache and
             return cml.load_source("file", ...)
         return self
 
