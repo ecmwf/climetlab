@@ -75,6 +75,16 @@ def test_zenodo_read_nc_partial_regexpr():
     assert "t_min" in list(ds.keys())
 
 
+
+
+def test_zenodo_merge():
+    an = cml.load_source("zenodo", id="3403963", zenodo_file_filter="analysis/2000_.*.nc", merger=an_merger)
+    fc = cml.load_source("zenodo", id="3403963", zenodo_file_filter="forecast/2000_.*.nc",merger=fc_merger)
+    ds = load_source('multi', an, fc, merger=an_with_fc)
+    ds.to_xarray()
+
+
+
 # TODO: add zenodo test with tar.gz
 # def test_zenodo_read_tar_gz():
 #     ds = cml.load_source(

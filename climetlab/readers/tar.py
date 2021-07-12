@@ -22,10 +22,7 @@ class TarReader(ArchiveReader):
                 tar.getmembers(),
                 set_attrs=False,
             )
-
-    def open(self, path):
-        return tarfile.open(path)
-
+            
 
 def reader(source, path, magic, deeper_check):
 
