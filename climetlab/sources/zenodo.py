@@ -59,7 +59,7 @@ def filter_builder(filter):
 class Zenodo(MultiUrl):
     def __init__(
         self,
-        record_id=None,
+        record_id,
         list_only=False,
         filter=DEFAULT_FILE_FILTER,
         *args,
@@ -102,11 +102,11 @@ class Zenodo(MultiUrl):
         print(urls)
         super().__init__(urls, filter=_filter, *args, **kwargs)
 
-    def mutate(self):
-        if self.list_only:
-            # create csv file in cache and
-            return cml.load_source("file", ...)
-        return self
+    # def mutate(self):
+    #     if self.list_only:
+    #         # create csv file in cache and
+    #         return cml.load_source("file", ...)
+    #     return self
 
 
 source = Zenodo

@@ -151,7 +151,7 @@ class YamlDefinedDataset(Dataset):
         return self
 
 
-def dataset_from_dict(name, dataset, path=None):
+def _dataset_from_dict(name, dataset, path=None):
     attributes = dataset.get("metadata", {})
     attributes.update(
         dict(_path=path, _src=dataset["source"], _args=dataset.get("args", {}))
@@ -159,11 +159,19 @@ def dataset_from_dict(name, dataset, path=None):
     return type(camel(name), (YamlDefinedDataset,), attributes)
 
 
-def dataset_from_yaml(path):
+def dataset_from_dict(path, *args, **kwargs):
+    return _dataset_from_dict(path)(*args, **kwargs).mutate()
+
+
+def _dataset_from_yaml(path):
     name, _ = os.path.splitext(os.path.basename(path))
     with open(path) as f:
         dataset = yaml.load(f.read(), Loader=yaml.SafeLoader)["dataset"]
-        return dataset_from_dict(name, dataset, path)
+        return _dataset_from_dict(name, dataset, path)
+
+
+def dataset_from_yaml(path, *args, **kwargs):
+    return _dataset_from_yaml(path)(*args, **kwargs).mutate()
 
 
 class DatasetLoader:
@@ -174,7 +182,7 @@ class DatasetLoader:
         return SETTINGS.get(name)
 
     def load_yaml(self, path):
-        return dataset_from_yaml(path)
+        return _dataset_from_yaml(path)
 
     def load_module(self, module):
         return import_module(module, package=__name__).dataset

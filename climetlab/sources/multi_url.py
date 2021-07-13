@@ -19,8 +19,8 @@ class MultiUrl(MultiSource):
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 
-        if filter is not None:
-            urls = [url for url in urls if filter(url)]
+        # if filter is not None:
+        #     urls = [url for url in urls if filter(url)]
 
         assert len(urls)
 

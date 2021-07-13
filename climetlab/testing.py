@@ -76,8 +76,9 @@ def check_unsafe_archives(extension):
 def main(globals):
     import sys
 
-    if len(sys.argv) > 1 and sys.argv[1] != "--no-debug":
+    if not (len(sys.argv) > 1 and sys.argv[1] != "--no-debug"):
         logging.basicConfig(level=logging.DEBUG)
+
     for k, f in sorted(globals.items()):
         if k.startswith("test_") and callable(f):
             skip = None
