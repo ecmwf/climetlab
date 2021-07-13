@@ -40,6 +40,11 @@ def test_download_3():
         download_and_cache(url)
 
 
+def test_download_4():
+    url = "https://datastore.copernicus-climate.eu/climetlab/missing.txt"
+    r = download_and_cache(url, return_none_on_404=True)
+    assert r is None, r
+
 # def test_local():
 #     ds = cml.load_source(
 #         "url",

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 import inspect
+import json
 
 import requests
 
@@ -32,10 +33,20 @@ def download_and_cache(url: str, return_none_on_404=False) -> str:
     try:
         return load_source("url", url).path
     except requests.HTTPError as e:
-        # TODO: move this into source url?
-        if return_none_on_404:  # and is_404(e):
-            return None
+        if return_none_on_404:
+            if e.response is not None and e.response.status_code == 404:
+                return None
         raise e
+
+
+def get_json(url: str, cache=False):
+    if cache:
+        with open(download_and_cache(url)) as f:
+            return json.loads(f.read())
+
+    r = requests.get(url)
+    r.raise_for_status()
+    return r.json()
 
 
 def bytes_to_string(n):

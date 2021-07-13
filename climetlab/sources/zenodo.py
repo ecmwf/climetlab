@@ -12,9 +12,8 @@ __version__ = "0.1.0"
 
 import re
 
-import requests
-
 from climetlab.sources.multi_url import MultiUrl
+from climetlab.utils import get_json
 
 URLPATTERN = "https://zenodo.org/api/records/{record_id}"
 
@@ -70,9 +69,8 @@ class Zenodo(MultiUrl):
 
         url = URLPATTERN.format(record_id=record_id)
         self.url = url
-        r = requests.get(url)
-        r.raise_for_status()
-        self.json = r.json()
+
+        self.json = get_json(url)
 
         files = self.json["files"]
 
