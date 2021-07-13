@@ -113,6 +113,7 @@ def test_download_zip_1():
     assert len(ds) == 36, len(ds)
 
 
+@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_download_zip_2():
     def filter(path_or_url):
         LOG.debug("test_download_zip_2.filter %s", path_or_url)

@@ -102,7 +102,7 @@ def test_zenodo_read_nc_partial():
     ds = cml.load_source(
         "zenodo",
         record_id="3403963",
-        zenodo_file_filter=["2000_temperature_summary.nc"],
+        file_key="2000_temperature_summary.nc",
     )
     ds = ds.to_xarray()
     assert "t_min" in list(ds.keys())
@@ -148,7 +148,7 @@ def load_yaml(name, *args, **kwargs):
     return dataset_from_yaml(full, *args, **kwargs)
 
 
-@pytest.mark.skipif(True, reason="Test not yet implemented")
+# @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_from_yaml_1():
     s = load_yaml("zedono-dataset-1.yaml")
     s.to_pandas()

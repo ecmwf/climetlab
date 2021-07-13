@@ -13,19 +13,18 @@ __version__ = "0.1.0"
 import json
 import logging
 
-from climetlab.sources.multi_url import MultiUrl
+from climetlab.sources.url import Url
 from climetlab.utils import get_json
 
 LOG = logging.getLogger(__name__)
 URLPATTERN = "https://zenodo.org/api/records/{record_id}"
 
 
-class Zenodo(MultiUrl):
+class Zenodo(Url):
     def __init__(
         self,
         record_id,
-        key=None,
-        keys=None,
+        file_key=None,
         filter=None,
         merger=None,
         *args,
@@ -35,37 +34,32 @@ class Zenodo(MultiUrl):
         record = get_json(URLPATTERN.format(record_id=record_id))
         LOG.debug("ZENODO record %s", json.dumps(record, indent=4, sort_keys=True))
 
-        record_keys = set()
+        urls = {}
         for file in record["files"]:
-            record_keys.add(file["key"])
+            urls[file["key"]] = file["links"]["self"]
 
-        user_keys = set()
-        if key is not None:
-            user_keys.add(key)
-
-        if keys is not None:
-            for key in keys:
-                user_keys.add(key)
-
-        if len(user_keys) == 0:
-            user_keys = record_keys
-
-        for key in user_keys:
-            if key not in record_keys:
+        if file_key is None:
+            if len(urls) != 1:
                 raise ValueError(
-                    f"Invalid zenodo key '{key}', values are {sorted(record_keys)}"
+                    f"No `file_key` given, please specify on of {sorted(urls.keys())}"
                 )
+            file_key = list(urls.keys())[0]
 
-        LOG.debug("ZENODO record_keys %s", record_keys)
-        LOG.debug("ZENODO user_keys %s", user_keys)
-        urls = [
-            file["links"]["self"]
-            for file in record["files"]
-            if file["key"] in user_keys
-        ]
+        if file_key not in urls:
+            raise ValueError(
+                f"Invalid zenodo key '{file_key}', values are {sorted(urls.keys())}"
+            )
 
-        LOG.debug("ZENODO urls %s", urls)
-        super().__init__(urls, filter=filter, merger=merger, *args, **kwargs)
+        LOG.debug("ZENODO record_keys %s", sorted(urls.keys()))
+
+        LOG.debug("ZENODO url %s", urls[file_key])
+        super().__init__(
+            urls[file_key],
+            filter=filter,
+            merger=merger,
+            *args,
+            **kwargs,
+        )
 
 
 source = Zenodo
