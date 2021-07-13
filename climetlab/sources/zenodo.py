@@ -10,101 +10,62 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
-import re
+import json
+import logging
 
 from climetlab.sources.multi_url import MultiUrl
 from climetlab.utils import get_json
 
+LOG = logging.getLogger(__name__)
 URLPATTERN = "https://zenodo.org/api/records/{record_id}"
-
-
-def DEFAULT_FILE_FILTER(path, *args, **kwargs):
-    if path.endswith(".csv"):
-        return True
-    if path.endswith(".nc"):
-        return True
-    if path.endswith(".zip"):
-        return True
-    print(f"skipping {path} ")
-    return False
-
-
-def filter_builder(filter):
-    if callable(filter):
-
-        def _filter(k):
-            print(f"checking {k}")
-            return filter(k)
-
-        return _filter
-    if isinstance(filter, (tuple, list)):
-
-        def _filter(k):
-            print(f"checking {k}")
-            return k in filter
-
-        return _filter
-    if isinstance(filter, str):
-
-        def _filter(k):
-            f = re.match(filter, k)
-            print(f"checking {k} with {filter}: {f}")
-            return f
-
-        return _filter
-    raise ValueError(f"Wrong input of type {type(filter)} for filter={filter}")
 
 
 class Zenodo(MultiUrl):
     def __init__(
         self,
         record_id,
-        list_only=False,
-        filter=DEFAULT_FILE_FILTER,
+        key=None,
+        keys=None,
+        filter=None,
+        merger=None,
         *args,
         **kwargs,
     ):
-        self.list_only = list_only
-        _filter = filter_builder(filter)
 
-        url = URLPATTERN.format(record_id=record_id)
-        self.url = url
+        record = get_json(URLPATTERN.format(record_id=record_id))
+        LOG.debug("ZENODO record %s", json.dumps(record, indent=4, sort_keys=True))
 
-        self.json = get_json(url)
+        record_keys = set()
+        for file in record["files"]:
+            record_keys.add(file["key"])
 
-        files = self.json["files"]
+        user_keys = set()
+        if key is not None:
+            user_keys.add(key)
 
-        keys = [f["key"] for f in files]
+        if keys is not None:
+            for key in keys:
+                user_keys.add(key)
 
-        urls = []
-        for f in files:
-            urls.append(f["links"]["self"])
-        keys = []
+        if len(user_keys) == 0:
+            user_keys = record_keys
 
-        for f in files:
-            k = f["key"]
-            print(k)
-            if _filter(k):
-                print(f"Appending {k}")
-                keys.append(k)
-            else:
-                print(f"Skipping {k}")
-        self.list_content_keys = keys
+        for key in user_keys:
+            if key not in record_keys:
+                raise ValueError(
+                    f"Invalid zenodo key '{key}', values are {sorted(record_keys)}"
+                )
 
-        if list_only:
-            # Idea: generate csv in cache
-            # super().__init__([])
-            print(self.list_content_keys)
-            return  # Note: will mutate into a csv File
+        LOG.debug("ZENODO record_keys %s", record_keys)
+        LOG.debug("ZENODO user_keys %s", user_keys)
+        urls = [
+            file["links"]["self"]
+            for file in record["files"]
+            if file["key"] in user_keys
+        ]
 
-        print(urls)
-        super().__init__(urls, filter=_filter, *args, **kwargs)
-
-    # def mutate(self):
-    #     if self.list_only:
-    #         # create csv file in cache and
-    #         return cml.load_source("file", ...)
-    #     return self
+        LOG.debug("ZENODO urls %s", urls)
+        super().__init__(urls, filter=filter, merger=merger, *args, **kwargs)
 
 
 source = Zenodo

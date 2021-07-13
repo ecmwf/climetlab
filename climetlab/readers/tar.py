@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
 import tarfile
 
 from .archive import ArchiveReader
@@ -24,10 +25,20 @@ class TarReader(ArchiveReader):
             )
 
 
-def reader(source, path, magic, deeper_check):
+def _check_tar(path):
+    name, ext = os.path.splitext(path)
 
-    # Only check during the second pass as tarfile.is_tarfile()
-    # is potentially slow on large files
-    if deeper_check:
-        if tarfile.is_tarfile(path):
-            return TarReader(source, path)
+    if ext in (".tar", ".tgz", ".txz", ".tbz", ".tbz2", ".tb2"):
+        return True
+
+    if ext in (".Z", ".gz", ".xz", ".bz2"):
+        return name.endswith(".tar")
+
+    return False
+
+
+def reader(source, path, magic, deeper_check):
+    # We don't use tarfile.is_tarfile() because is
+    # returns true given a file of zeros
+    if _check_tar(path):
+        return TarReader(source, path)

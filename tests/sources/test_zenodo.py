@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
 
 import pytest
@@ -14,16 +15,24 @@ import pytest
 import climetlab as cml
 from climetlab.datasets import dataset_from_yaml
 
+LOG = logging.getLogger(__name__)
+
 
 def only_csv(path):
     return path.endswith(".csv")
 
 
 def test_zenodo_read_csv():
-    ds = cml.load_source("zenodo", record_id="5020468", filter=only_csv)
-    print(ds)
-    ds = ds.to_pandas()
-    assert len(ds) == 49
+
+    ds = cml.load_source(
+        "zenodo",
+        record_id="5020468",
+        filter=only_csv,
+    )
+
+    pd = ds.to_pandas()
+    print(pd)
+    assert len(pd) == 49
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
@@ -49,9 +58,7 @@ def test_zenodo_read_nc_2():
     assert "t2m" in list(ds.keys())
 
 
-# @pytest.mark.skipif(True, reason="Test not yet implemented")
-
-
+@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc():
     def file_filter(path):
         # return path.endswith('past_observations_2t_2009-01-02_4745.csv')
