@@ -24,11 +24,7 @@ def only_csv(path):
 
 def test_zenodo_read_csv():
 
-    ds = cml.load_source(
-        "zenodo",
-        record_id="5020468",
-        filter=only_csv,
-    )
+    ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
 
     pd = ds.to_pandas()
     print(pd)
@@ -50,7 +46,7 @@ def test_zenodo_read_nc_with_merge():
 def test_zenodo_read_nc_2():
     ds = cml.load_source(
         "zenodo",
-        record_id="4707154",
+        record_id=4707154,
         filter=".*europa_grid_data.zip|europa_grid|.*analysis.*.nc",
     )
     print(ds)
