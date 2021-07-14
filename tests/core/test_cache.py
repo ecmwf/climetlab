@@ -88,7 +88,7 @@ def test_cache_2():
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size()
+            assert cache_size() == 5 * 1024 * 1024, cache_size() / 1024.0 / 1024.0
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
