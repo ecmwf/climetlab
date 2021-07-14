@@ -177,6 +177,7 @@ def test_download_tar():
     assert len(ds) == 18, len(ds)
 
 
+@pytest.mark.skipif(True, reason="Not yet implemented")
 def test_download_tgz():
     ds = load_source(
         "url",
@@ -185,6 +186,7 @@ def test_download_tgz():
     assert len(ds) == 18, len(ds)
 
 
+@pytest.mark.skipif(True, reason="Not yet implemented")
 def test_download_tar_gz():
     ds = load_source(
         "url",

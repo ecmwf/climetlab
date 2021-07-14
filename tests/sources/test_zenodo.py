@@ -14,6 +14,7 @@ import pytest
 
 import climetlab as cml
 from climetlab.datasets import dataset_from_yaml
+from climetlab.testing import MISSING
 
 LOG = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ def test_zenodo_1():
     assert len(pd) == 49
 
 
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_zenodo_2():
     ds = cml.load_source(
         "zenodo",
