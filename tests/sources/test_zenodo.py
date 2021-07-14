@@ -30,27 +30,30 @@ def test_zenodo_1():
     print(pd)
     assert len(pd) == 49
 
+
 def test_zenodo_2():
     ds = cml.load_source(
         "zenodo",
         record_id=4707154,
-        file_key='soltau_station_data.zip',
+        file_key="soltau_station_data.zip",
         filter="**/reforecasts_mx2t6_*.csv",
     )
 
     ds = ds.to_tfdataset()
     print(ds)
 
+
 def test_zenodo_3():
     ds = cml.load_source(
         "zenodo",
         record_id=4707154,
-        file_key='soltau_station_data.zip',
+        file_key="soltau_station_data.zip",
         filter="**/reforecasts_mx2t6_*.csv",
     )
 
     ds = ds.to_pandas()
     print(ds)
+
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc():

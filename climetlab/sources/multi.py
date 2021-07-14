@@ -129,6 +129,7 @@ class MultiSource(Source):
         #     return merged.to_tfdataset(merger=self.merger, **kwargs)
 
         import pandas
+
         return pandas.concat([s.to_pandas() for s in self.sources])
 
     def __repr__(self) -> str:

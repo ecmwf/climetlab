@@ -69,6 +69,6 @@ class Base:
         name = self.__class__.__name__
 
         extra = ""
-        if hasattr(self, 'path'):
+        if hasattr(self, "path"):
             extra = self.path
         raise NotImplementedError(f"{module}.{name}.{func}({extra})")
