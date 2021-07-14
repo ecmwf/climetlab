@@ -67,4 +67,8 @@ class Base:
         func = inspect.stack()[1][3]
         module = self.__class__.__module__
         name = self.__class__.__name__
-        raise NotImplementedError(f"{module}.{name}.{func}()")
+
+        extra = ""
+        if hasattr(self, 'path'):
+            extra = self.path
+        raise NotImplementedError(f"{module}.{name}.{func}({extra})")

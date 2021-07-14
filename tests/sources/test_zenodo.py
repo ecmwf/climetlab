@@ -22,7 +22,7 @@ def only_csv(path):
     return path.endswith(".csv")
 
 
-def test_zenodo_read_csv():
+def test_zenodo_1():
 
     ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
 
@@ -30,29 +30,27 @@ def test_zenodo_read_csv():
     print(pd)
     assert len(pd) == 49
 
-
-@pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_zenodo_read_nc_with_merge():
-    ds1 = cml.load_source("zenodo", record_id="654", filter="analysis.**")
-    # ds.merger = AnMerger
-
-    ds2 = cml.load_source("zenodo", record_id="654", filter="forecast.**")
-    # ds.merger = FcMerger
-
-    cml.load_source("multi", ds1, ds2)  # , merger=AnFcMerger)
-
-
-@pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_zenodo_read_nc_2():
+def test_zenodo_2():
     ds = cml.load_source(
         "zenodo",
         record_id=4707154,
-        filter=".*europa_grid_data.zip|europa_grid|.*analysis.*.nc",
+        file_key='soltau_station_data.zip',
+        filter="**/reforecasts_mx2t6_*.csv",
     )
-    print(ds)
-    ds = ds.to_xarray()
-    assert "t2m" in list(ds.keys())
 
+    ds = ds.to_tfdataset()
+    print(ds)
+
+def test_zenodo_3():
+    ds = cml.load_source(
+        "zenodo",
+        record_id=4707154,
+        file_key='soltau_station_data.zip',
+        filter="**/reforecasts_mx2t6_*.csv",
+    )
+
+    ds = ds.to_pandas()
+    print(ds)
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc():
@@ -132,23 +130,12 @@ def test_zenodo_read_nc_partial_regexpr():
 #     ds.to_xarray()
 
 
-# TODO: add zenodo test with tar.gz
-# def test_zenodo_read_tar_gz():
-#     ds = cml.load_source(
-#         "zenodo",
-#         record_id="4707154",
-#     )
-#     ds = ds.to_xarray()
-#     print(ds)
-#     assert "t" in ds.keys()
-
-
 def load_yaml(name, *args, **kwargs):
     full = os.path.join(os.path.dirname(__file__), name)
     return dataset_from_yaml(full, *args, **kwargs)
 
 
-# @pytest.mark.skipif(True, reason="Test not yet implemented")
+@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_from_yaml_1():
     s = load_yaml("zedono-dataset-1.yaml")
     s.to_pandas()
