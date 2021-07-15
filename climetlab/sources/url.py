@@ -132,22 +132,22 @@ class HTTPDownloader(Downloader):
         return self._headers
 
     def extension(self, url):
+        EXCEPTIONS = (".tgz", ".tar.gz")
 
         headers = self.headers(url)
-        ext = None
 
-        if "content-type" in headers:
-            if headers["content-type"] != "application/octet-stream":
-                ext = mimetypes.guess_extension(headers["content-type"])
+        ext = super().extension(url)
+
+        if ext not in EXCEPTIONS:
+            if "content-type" in headers:
+                if headers["content-type"] != "application/octet-stream":
+                    ext = mimetypes.guess_extension(headers["content-type"])
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])
             assert value == "attachment", value
             if "filename" in params:
                 ext = super().extension(params["filename"])
-
-        if ext is None:
-            ext = super().extension(url)
 
         return ext
 
