@@ -23,6 +23,7 @@ from dateutil.parser import parse as parse_date
 
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import tqdm
+from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
 
@@ -300,36 +301,6 @@ DOWNLOADERS = dict(
     https=HTTPDownloader,
     file=FileDownloader,
 )
-
-
-class UrlMirror:
-    def __init__(self, redirections):
-        self.redirections = redirections
-
-    def __call__(self, url):
-        origin, copy = self.redirections.split(" ")
-        new = url.replace(origin, copy)
-
-        if os.path.exists(new):
-            print(f"Mirror found at {new}")
-            return new
-
-        if new.startswith("file://") and os.path.exists(new.replace("file://", "")):
-            print(f"Mirror found at {new}")
-            return new
-
-        print(f"Mirror not found at {new} for {url}")
-        return url
-
-
-# TODO: move this to another file
-MIRROR_ENV_VAR = os.environ.get("CLIMETLAB_MIRROR")
-# export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
-
-if MIRROR_ENV_VAR:
-    DEFAULT_MIRROR = UrlMirror(MIRROR_ENV_VAR)
-else:
-    DEFAULT_MIRROR = None
 
 
 class Url(FileSource):
