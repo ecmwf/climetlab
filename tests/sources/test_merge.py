@@ -201,30 +201,30 @@ def test_nc_concat_merge_var():
     a1 = load_source(
         "dummy-source",
         kind="netcdf",
-        dims=["lat", "lon", "time"],
+        dims=["lat", "lon", "forecast_time"],
         variables=["a"],
-        coord_values=dict(time=[1, 3]),
+        coord_values=dict(forecast_time=[1, 3]),
     )
     a2 = load_source(
         "dummy-source",
         kind="netcdf",
-        dims=["lat", "lon", "time"],
+        dims=["lat", "lon", "forecast_time"],
         variables=["a"],
-        coord_values=dict(time=[2, 4]),
+        coord_values=dict(forecast_time=[2, 4]),
     )
     b1 = load_source(
         "dummy-source",
         kind="netcdf",
-        dims=["lat", "lon", "time"],
+        dims=["lat", "lon", "forecast_time"],
         variables=["b"],
-        coord_values=dict(time=[1, 3]),
+        coord_values=dict(forecast_time=[1, 3]),
     )
     b2 = load_source(
         "dummy-source",
         kind="netcdf",
-        dims=["lat", "lon", "time"],
+        dims=["lat", "lon", "forecast_time"],
         variables=["b"],
-        coord_values=dict(time=[2, 4]),
+        coord_values=dict(forecast_time=[2, 4]),
     )
 
     target = xr.merge(
@@ -249,14 +249,14 @@ def test_nc_concat_merge_var():
             load_source("multi", [a1, b1]),
             load_source("multi", [a2, b2]),
         ],
-        merger="concat(dim=time)",
+        # merger="concat(dim=time)",
     )
     merged = s.to_xarray()
     assert target.identical(merged)
 
 
 if __name__ == "__main__":
-    test_nc_merge_var()
-    # from climetlab.testing import main
+    # test_nc_concat_merge_var()
+    from climetlab.testing import main
 
-    # main(globals())
+    main(globals())
