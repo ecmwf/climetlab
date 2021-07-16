@@ -40,7 +40,8 @@ def test_merge_netcdf_merge_var():
             dims=["lat", "lon", "time"],
             variables=["a", "b"],
         )
-        s1.save(os.path.join(tmpdir, "s1", "s1.netcdf"))
+        fn1 = os.path.join(tmpdir, "s1", "s1.netcdf")
+        s1.save(fn1)
         ds1 = s1.to_xarray()
 
         os.mkdir(os.path.join(tmpdir, "s2"))
@@ -50,7 +51,8 @@ def test_merge_netcdf_merge_var():
             dims=["lat", "lon", "time"],
             variables=["c", "d"],
         )
-        s2.save(os.path.join(tmpdir, "s2", "s2.netcdf"))
+        fn2 = os.path.join(tmpdir, "s2", "s2.netcdf")
+        s2.save(fn2)
         ds2 = s2.to_xarray()
 
         target = xr.merge([ds1, ds2])
@@ -59,6 +61,9 @@ def test_merge_netcdf_merge_var():
         merged = ds.to_xarray()
 
         assert_same_xarray(target, merged)
+
+        target2 = xr.open_mfdataset([fn1, fn2])
+        assert_same_xarray(target2, merged)
 
 
 def test_merge_netcdf_merge_var_different_coords():
