@@ -15,8 +15,22 @@ from climetlab.sources.empty import EmptySource
 from . import Source
 
 
+def infer_open_mfdataset_kwargs(sources, user_kwargs):
+    result = {}
+    ds = sources[0].to_xarray()
+    # lat_dims = [s.get_lat_dim() for s in sources]
+
+    if ds.dims == ['lat', 'lon', 'forecast_time']:
+        result['concat_dim'] = 'forecast_time'
+
+    result.update(user_kwargs)
+    return result
+
 class MultiSource(Source):
     def __init__(self, *sources, filter=None, merger=None):
+        if not merger:
+            merger = DefaultMerger()
+
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
 
@@ -78,35 +92,32 @@ class MultiSource(Source):
         return self._lengths[i]
 
     def to_xarray(self, **kwargs):
+
+        merger = 'hindcast'
+
+
+        merger = 'merge(concat(forecast_dim))'
+
+        paths = [s.get_path() for s in self.sources]
+
+        return self.merger.to_xarray_from_path ((self.sources, paths, **kwargs)
+
+
         import xarray as xr
+        from xarray.backends.common import BackendEntrypoint
 
-        sources = self.sources
-        if len(sources) == 1:
-            return sources[0].to_xarray(**kwargs)
+        class MyEngine(BackendEntrypoint):
+            @classmethod
+            def open_dataset(cls, filename_or_obj, *args, **kwargs):
+                return filename_or_obj.to_xarray()
 
-        merged = sources[0].multi_merge(sources)
-        if merged is not None:
-            return merged.to_xarray(merger=self.merger, **kwargs)
+        options =  infer_open_mfdataset_kwargs(self.sources, kwargs)
+        
+        if all self sources is path:
+            return xr.open_mfdataset([s.path for s in self.sources], **options)
+        else:
+            return xr.open_mfdataset(self.sources, engine=MyEngine, **options)
 
-        arrays = [s.to_xarray() for s in sources]
-
-        # Get values of scalar coordinates
-        values = defaultdict(set)
-        for a in arrays:
-            for v in a.coords:
-                if len(a[v].shape) == 0:
-                    vals = a[v].values
-                    # assert len(vals) == 1, (v, vals)
-                    values[v].add(float(vals))
-
-        # Promote scalar coordinates
-        promote = [name for name, count in values.items() if len(count) > 1]
-
-        if promote:
-            dims = dict(zip(promote, [1] * len(promote)))
-            arrays = [a.expand_dims(dims) for a in arrays]
-
-        return xr.merge(arrays)
 
     def to_tfdataset(self, **kwargs):
         sources = self.sources
@@ -122,11 +133,8 @@ class MultiSource(Source):
         return ds
 
     def to_pandas(self, **kwargs):
-        # sources = self.sources
-
-        # merged = sources[0].multi_merge(sources)
-        # if merged is not None:
-        #     return merged.to_tfdataset(merger=self.merger, **kwargs)
+        if self.merger:
+            return self.merger.to_pandas(self.sources, **kwargs)
 
         import pandas
 
