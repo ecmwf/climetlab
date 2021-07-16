@@ -57,10 +57,6 @@ class Reader(Base):
     def sel(self, *args, **kwargs):
         raise NotImplementedError()
 
-    @classmethod
-    def multi_merge(cls, readers):
-        return None
-
     def cache_file(self, *args, **kwargs):
         return self.source.cache_file(*args, **kwargs)
 

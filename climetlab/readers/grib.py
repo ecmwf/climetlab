@@ -17,8 +17,7 @@ from climetlab.core import Base
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
-from . import Reader
-from .gridded import GriddedMultiReaders
+from .gridded import GriddedReader
 
 LOG = logging.getLogger(__name__)
 
@@ -218,13 +217,16 @@ class GRIBFilter:
         return GRIBIterator(self.path)
 
 
-class MultiGribReaders(GriddedMultiReaders):
-    engine = "cfgrib"
-    backend_kwargs = {"squeeze": False}
+# class MultiGribReaders(GriddedMultiReaders):
+#     engine = "cfgrib"
+#     backend_kwargs = {"squeeze": False}
 
 
-class GRIBReader(Reader):
+class GRIBReader(GriddedReader):
     appendable = True  # GRIB messages can be added to the same file
+
+    open_mfdataset_backend_kwargs = {"squeeze": False}
+    open_mfdataset_engine = "cfgrib"
 
     def __init__(self, source, path):
         super().__init__(source, path)
@@ -251,15 +253,6 @@ class GRIBReader(Reader):
 
     def __len__(self):
         return len(self._items())
-
-    def to_xarray(self, **kwargs):
-        # So we use the same code
-        return MultiGribReaders([self]).to_xarray(**kwargs)
-
-    @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, GRIBReader) for r in readers)
-        return MultiGribReaders(readers)
 
 
 def reader(source, path, magic, deeper_check):

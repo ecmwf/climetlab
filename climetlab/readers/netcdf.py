@@ -19,8 +19,7 @@ import xarray as xr
 from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 
-from . import Reader
-from .gridded import GriddedMultiReaders
+from .gridded import GriddedReader
 
 
 def as_datetime(self, time):
@@ -188,11 +187,15 @@ class NetCDFField(Base):
         )
 
 
-class MultiNetcdfReaders(GriddedMultiReaders):
-    engine = "netcdf4"
+# class MultiNetcdfReaders(GriddedMultiReaders):
+#     engine = "netcdf4"
 
 
-class NetCDFReader(Reader):
+class NetCDFReader(GriddedReader):
+
+    open_mfdataset_backend_kwargs = {}
+    open_mfdataset_engine = None
+
     def __init__(self, source, path):
         super().__init__(source, path)
         self.fields = None
@@ -312,15 +315,6 @@ class NetCDFReader(Reader):
             raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
 
         return fields
-
-    def to_xarray(self, *args, **kwargs):
-        # So we use the same code
-        return MultiNetcdfReaders([self]).to_xarray(*args, **kwargs)
-
-    @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, NetCDFReader) for r in readers)
-        return MultiNetcdfReaders(readers)
 
 
 def reader(source, path, magic, deeper_check):

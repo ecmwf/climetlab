@@ -80,13 +80,6 @@ class FileSource(Source):
     def write(self, f):
         return self._reader.write(f)
 
-    @classmethod
-    def multi_merge(cls, sources):
-        if not all(isinstance(s, FileSource) for s in sources):
-            return None
-        readers = [s._reader for s in sources]
-        return readers[0].multi_merge(readers)
-
     def _attributes(self, names):
         return self._reader._attributes(names)
 

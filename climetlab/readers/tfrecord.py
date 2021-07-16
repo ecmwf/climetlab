@@ -10,18 +10,8 @@
 import logging
 
 from . import Reader
-from .multi import MultiReaders
 
 LOG = logging.getLogger(__name__)
-
-
-class MultiTfRecordReaders(MultiReaders):
-    def to_tfdataset(self, merger=None, **kwargs):
-        if merger is None:
-            import tensorflow as tf
-
-            return tf.data.TFRecordDataset([r.path for r in self.readers], **kwargs)
-        return merger.merge([r.path for r in self.readers], **kwargs)
 
 
 class TfRecordReader(Reader):
@@ -30,11 +20,6 @@ class TfRecordReader(Reader):
 
         tfrecord = tf.data.TFRecordDataset(self.path)
         return tfrecord
-
-    @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, TfRecordReader) for r in readers)
-        return MultiTfRecordReaders(readers)
 
 
 def reader(source, path, magic, deeper_check):

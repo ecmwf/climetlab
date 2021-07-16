@@ -7,30 +7,19 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .multi import MultiReaders
+from . import Reader
 
 
-class DefaultMerger:
-    def __init__(self, engine, backend_kwargs):
-        self.engine = engine
-        self.backend_kwargs = backend_kwargs
-
-    def merge(self, paths, **kwargs):
+class GriddedReader(Reader):
+    def to_xarray(self, **kwargs):
         import xarray as xr
 
-        options = dict(backend_kwargs=self.backend_kwargs)
+        options = dict(
+            backend_kwargs=self.open_mfdataset_backend_kwargs,
+        )
         options.update(kwargs)
         return xr.open_mfdataset(
-            paths,
-            engine=self.engine,
+            self.path,
+            engine=self.open_mfdataset_engine,
             **options,
         )
-
-
-class GriddedMultiReaders(MultiReaders):
-    backend_kwargs = {}
-
-    def to_xarray(self, merger=None, **kwargs):
-        if merger is None:
-            merger = DefaultMerger(self.engine, self.backend_kwargs)
-        return merger.merge([r.path for r in self.readers], **kwargs)
