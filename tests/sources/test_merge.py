@@ -20,6 +20,9 @@ from climetlab.core.temporary import temp_directory
 
 
 def assert_same_xarray(x, y):
+    assert x.broadcast_equals(y)
+    assert x.equals(y)
+    assert x.identical(y)
     assert len(x) == len(y)
     assert len(x.dims) == len(y.dims)
     assert set(x.keys()) == set(y.keys())
@@ -31,7 +34,7 @@ def assert_same_xarray(x, y):
         assert np.all(xda.values == yda.values)
 
 
-def test_merge_netcdf_merge_var():
+def test_nc_merge_var():
     with temp_directory() as tmpdir:
         os.mkdir(os.path.join(tmpdir, "s1"))
         s1 = load_source(
@@ -60,13 +63,13 @@ def test_merge_netcdf_merge_var():
         ds.graph()
         merged = ds.to_xarray()
 
-        assert_same_xarray(target, merged)
+        assert target.identical(merged)
 
         target2 = xr.open_mfdataset([fn1, fn2])
-        assert_same_xarray(target2, merged)
+        assert target2.identical(merged)
 
 
-def test_merge_netcdf_merge_var_different_coords():
+def test_nc_merge_var_different_coords():
     s1 = load_source(
         "dummy-source", kind="netcdf", dims=["lat", "lon"], variables=["a", "b"]
     )
@@ -82,16 +85,17 @@ def test_merge_netcdf_merge_var_different_coords():
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
-def test_merge_netcdf_concat_var_different_coords():
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_nc_concat_var_different_coords():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon"],
-        coord_values=dict(lat=[1, 2]),
+        coord_values=dict(lat=[2, 1]),
     )
     ds1 = s1.to_xarray()
 
@@ -105,15 +109,16 @@ def test_merge_netcdf_concat_var_different_coords():
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="lat")
+
     ds = load_source("multi", [s1, s2])
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_merge_netcdf_wrong_concat_var():
+def test_nc_wrong_concat_var():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
@@ -138,7 +143,7 @@ def test_merge_netcdf_wrong_concat_var():
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
 if __name__ == "__main__":
