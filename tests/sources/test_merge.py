@@ -18,8 +18,14 @@ import xarray as xr
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory
 
+# These functionalities are variations around
+# http://xarray.pydata.org/en/stable/user-guide/combining.html#combining-multi
+
 
 def assert_same_xarray(x, y):
+    assert x.broadcast_equals(y)
+    assert x.equals(y)
+    assert x.identical(y)
     assert len(x) == len(y)
     assert len(x.dims) == len(y.dims)
     assert set(x.keys()) == set(y.keys())
@@ -31,7 +37,20 @@ def assert_same_xarray(x, y):
         assert np.all(xda.values == yda.values)
 
 
-def test_merge_netcdf_merge_var():
+def get_a():
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a", "b"],
+    )
+    with temp_directory() as tmpdir:
+        fn1 = os.path.join(tmpdir, "s1", "s1.netcdf")
+        s1.save(fn1)
+        s1.to_xarray()
+
+
+def test_nc_merge_var():
     with temp_directory() as tmpdir:
         os.mkdir(os.path.join(tmpdir, "s1"))
         s1 = load_source(
@@ -60,13 +79,16 @@ def test_merge_netcdf_merge_var():
         ds.graph()
         merged = ds.to_xarray()
 
-        assert_same_xarray(target, merged)
+        assert target.identical(merged)
 
         target2 = xr.open_mfdataset([fn1, fn2])
-        assert_same_xarray(target2, merged)
+        assert target2.identical(merged)
+
+        # target3 = xr.open_mfdataset([s1, s2], engine=MyEngine)
+        # assert target3.identical(merged)
 
 
-def test_merge_netcdf_merge_var_different_coords():
+def test_nc_merge_var_different_coords():
     s1 = load_source(
         "dummy-source", kind="netcdf", dims=["lat", "lon"], variables=["a", "b"]
     )
@@ -82,16 +104,17 @@ def test_merge_netcdf_merge_var_different_coords():
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
-def test_merge_netcdf_concat_var_different_coords():
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_nc_concat_var_different_coords_2():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon"],
-        coord_values=dict(lat=[1, 2]),
+        coord_values=dict(lat=[1, 3]),
     )
     ds1 = s1.to_xarray()
 
@@ -100,20 +123,52 @@ def test_merge_netcdf_concat_var_different_coords():
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon"],
-        coord_values=dict(lat=[8, 9]),
+        coord_values=dict(lat=[2, 4]),
     )
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="lat")
+    # print(target)
+
     ds = load_source("multi", [s1, s2])
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_merge_netcdf_wrong_concat_var():
+def test_nc_concat_var_different_coords_1():
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        variables=["a"],
+        dims=["lat", "lon"],
+        coord_values=dict(lat=[2, 1]),
+    )
+    ds1 = s1.to_xarray()
+
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        variables=["a"],
+        dims=["lat", "lon"],
+        coord_values=dict(lat=[3, 4]),
+    )
+    ds2 = s2.to_xarray()
+
+    target = xr.concat([ds1, ds2], dim="lat")
+    # print(target)
+
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
+
+    assert target.identical(merged)
+
+
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_nc_wrong_concat_var():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
@@ -138,10 +193,11 @@ def test_merge_netcdf_wrong_concat_var():
     ds.graph()
     merged = ds.to_xarray()
 
-    assert_same_xarray(target, merged)
+    assert target.identical(merged)
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    test_nc_merge_var()
+    # from climetlab.testing import main
 
-    main(globals())
+    # main(globals())
