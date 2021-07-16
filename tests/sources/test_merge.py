@@ -62,93 +62,78 @@ def test_merge_netcdf_merge_var():
 
 
 def test_merge_netcdf_merge_var_different_coords():
-    with temp_directory() as tmpdir:
-        os.mkdir(os.path.join(tmpdir, "s1"))
-        s1 = load_source(
-            "dummy-source", kind="netcdf", dims=["lat", "lon"], variables=["a", "b"]
-        )
-        s1.save(os.path.join(tmpdir, "s1", "s1.netcdf"))
-        ds1 = s1.to_xarray()
+    s1 = load_source(
+        "dummy-source", kind="netcdf", dims=["lat", "lon"], variables=["a", "b"]
+    )
+    ds1 = s1.to_xarray()
 
-        os.mkdir(os.path.join(tmpdir, "s2"))
-        s2 = load_source(
-            "dummy-source", kind="netcdf", dims=["lat", "time"], variables=["c", "d"]
-        )
-        s2.save(os.path.join(tmpdir, "s2", "s2.netcdf"))
-        ds2 = s2.to_xarray()
+    s2 = load_source(
+        "dummy-source", kind="netcdf", dims=["lat", "time"], variables=["c", "d"]
+    )
+    ds2 = s2.to_xarray()
 
-        target = xr.merge([ds1, ds2])
-        ds = load_source("multi", [s1, s2])
-        ds.graph()
-        merged = ds.to_xarray()
+    target = xr.merge([ds1, ds2])
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
 
-        assert_same_xarray(target, merged)
+    assert_same_xarray(target, merged)
 
 
 def test_merge_netcdf_concat_var_different_coords():
-    with temp_directory() as tmpdir:
-        os.mkdir(os.path.join(tmpdir, "s1"))
-        s1 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat", "lon"],
-            variables=["a", "b"],
-            coord_values=dict(lat=[1, 2]),
-        )
-        s1.save(os.path.join(tmpdir, "s1", "s1.netcdf"))
-        ds1 = s1.to_xarray()
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon"],
+        variables=["a", "b"],
+        coord_values=dict(lat=[1, 2]),
+    )
+    ds1 = s1.to_xarray()
 
-        os.mkdir(os.path.join(tmpdir, "s2"))
-        s2 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat", "lon"],
-            variables=["a", "b"],
-            coord_values=dict(lat=[8, 9]),
-        )
-        s2.save(os.path.join(tmpdir, "s2", "s2.netcdf"))
-        ds2 = s2.to_xarray()
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon"],
+        variables=["a", "b"],
+        coord_values=dict(lat=[8, 9]),
+    )
+    ds2 = s2.to_xarray()
 
-        target = xr.concat([ds1, ds2], dim="lat")
-        ds = load_source("multi", [s1, s2])
-        ds.graph()
-        merged = ds.to_xarray()
+    target = xr.concat([ds1, ds2], dim="lat")
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
 
-        assert_same_xarray(target, merged)
+    assert_same_xarray(target, merged)
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_merge_netcdf_wrong_concat_var():
-    with temp_directory() as tmpdir:
-        os.mkdir(os.path.join(tmpdir, "s1"))
-        s1 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat", "lon"],
-            variables=["a", "b"],
-            coord_values=dict(lat=[1, 2]),
-        )
-        s1.save(os.path.join(tmpdir, "s1", "s1.netcdf"))
-        ds1 = s1.to_xarray()
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon"],
+        variables=["a", "b"],
+        coord_values=dict(lat=[1, 2]),
+    )
+    ds1 = s1.to_xarray()
 
-        os.mkdir(os.path.join(tmpdir, "s2"))
-        s2 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat"],
-            variables=["a", "b"],
-            coord_values=dict(lat=[8, 9]),
-        )
-        s2.save(os.path.join(tmpdir, "s2", "s2.netcdf"))
-        ds2 = s2.to_xarray()
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat"],
+        variables=["a", "b"],
+        coord_values=dict(lat=[8, 9]),
+    )
+    ds2 = s2.to_xarray()
 
-        target = xr.concat([ds1, ds2], dim="lat")
-        print(target)
-        ds = load_source("multi", [s1, s2])
-        ds.graph()
-        merged = ds.to_xarray()
+    target = xr.concat([ds1, ds2], dim="lat")
+    print(target)
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
 
-        assert_same_xarray(target, merged)
+    assert_same_xarray(target, merged)
 
 
 if __name__ == "__main__":
