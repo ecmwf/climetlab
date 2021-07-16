@@ -89,7 +89,37 @@ def test_nc_merge_var_different_coords():
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_nc_concat_var_different_coords():
+def test_nc_concat_var_different_coords_2():
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        variables=["a"],
+        dims=["lat", "lon"],
+        coord_values=dict(lat=[1, 3]),
+    )
+    ds1 = s1.to_xarray()
+
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        variables=["a"],
+        dims=["lat", "lon"],
+        coord_values=dict(lat=[2, 4]),
+    )
+    ds2 = s2.to_xarray()
+
+    target = xr.concat([ds1, ds2], dim="lat")
+    # print(target)
+
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
+
+    assert target.identical(merged)
+
+
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_nc_concat_var_different_coords_1():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
@@ -104,11 +134,12 @@ def test_nc_concat_var_different_coords():
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon"],
-        coord_values=dict(lat=[8, 9]),
+        coord_values=dict(lat=[3, 4]),
     )
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="lat")
+    # print(target)
 
     ds = load_source("multi", [s1, s2])
     ds.graph()
