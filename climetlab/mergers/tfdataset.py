@@ -11,7 +11,7 @@
 def merge(
     sources=None,
     paths=None,
-    readers=None,
+    reader_class=None,
     **kwargs,
 ):
     ds = sources[0].to_tfdataset()

@@ -13,7 +13,7 @@ import pandas as pd
 def merge(
     sources=None,
     paths=None,
-    readers=None,
+    reader_class=None,
     **kwargs,
 ):
     return pd.concat(

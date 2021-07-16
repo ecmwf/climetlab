@@ -29,20 +29,21 @@ def infer_open_mfdataset_kwargs(sources, user_kwargs):
     return result
 
 
-def to_xarray(self, *args, **kwargs):
-
-    options = infer_open_mfdataset_kwargs(self.sources, kwargs)
-
-    if False:  # all self sources is path:
-        return xr.open_mfdataset([s.path for s in self.sources], **options)
-    else:
-        return xr.open_mfdataset(self.sources, engine=CMLEngine, **options)
-
-
 def merge(
-    source=None,
+    sources=None,
     paths=None,
-    readers=None,
+    reader_class=None,
     **kwargs,
 ):
-    pass
+
+    assert len(sources)
+
+    options = infer_open_mfdataset_kwargs(sources, kwargs)
+
+    if paths is not None:
+        if reader_class is not None and hasattr(reader_class, "to_xarray_multi"):
+            return reader_class.to_xarray_multi(paths, **options)
+
+        return xr.open_mfdataset(paths, **options)
+
+    return xr.open_mfdataset(sources, engine=CMLEngine, **options)

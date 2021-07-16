@@ -48,6 +48,7 @@ def test_multi_graph_1():
     ds.graph()
 
     assert len(ds) == 8
+    ds.to_xarray()
 
 
 def test_multi_graph_2():

@@ -9,6 +9,7 @@
 
 import logging
 
+from climetlab.readers import Reader
 from climetlab.sources.file import FileSource
 
 LOG = logging.getLogger(__name__)
@@ -28,25 +29,35 @@ def _nearest_common_class(objects):
     assert False
 
 
+def _flatten(sources):
+    from climetlab.sources.multi import MultiSource
+
+    for s in sources:
+        if isinstance(s, MultiSource) and s.merger is None:
+            yield from _flatten(s.sources)
+        else:
+            yield s
+
+
 class Merger:
     def __init__(self, sources):
-        self.sources = sources
-        self.readers = None
+
+        assert sources
+
+        self.sources = list(_flatten(sources))
+        assert self.sources, sources
+
         self.paths = None
+        self.reader_class = None
         self.common = _nearest_common_class(sources)
         LOG.debug("nearest_common_class %s", self.common)
 
-        readers = []
         if issubclass(self.common, FileSource):
-            self.readers = [s._reader for s in self.sources]
-            common_reader = _nearest_common_class(self.readers)
-            LOG.debug("nearest_common_class %s", common_reader)
-
-        # for s in sources:
-        #     if isinstance(s, MultiSource):
-        #         # TODO check if it has a merger, otherwise
-        #         # flatten() and combine
-        #         pass
+            readers = [s._reader for s in self.sources]
+            self.reader_class = _nearest_common_class(readers)
+            LOG.debug("nearest_common_class %s", self.reader_class)
+            if self.reader_class is Reader:
+                self.reader_class = None
 
 
 class DefaultMerger(Merger):
@@ -54,9 +65,9 @@ class DefaultMerger(Merger):
         from .pandas import merge
 
         return merge(
-            source=self.sources,
+            sources=self.sources,
             paths=self.paths,
-            readers=self.readers,
+            reader_class=self.reader_class,
             **kwargs,
         )
 
@@ -64,9 +75,9 @@ class DefaultMerger(Merger):
         from .tfdataset import merge
 
         return merge(
-            source=self.sources,
+            sources=self.sources,
             paths=self.paths,
-            readers=self.readers,
+            reader_class=self.reader_class,
             **kwargs,
         )
 
@@ -74,9 +85,9 @@ class DefaultMerger(Merger):
         from .xarray import merge
 
         return merge(
-            source=self.sources,
+            sources=self.sources,
             paths=self.paths,
-            readers=self.readers,
+            reader_class=self.reader_class,
             **kwargs,
         )
 
