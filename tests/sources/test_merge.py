@@ -196,6 +196,65 @@ def test_nc_wrong_concat_var():
     assert target.identical(merged)
 
 
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_nc_concat_merge_var():
+    a1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a"],
+        coord_values=dict(time=[1, 3]),
+    )
+    a2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a"],
+        coord_values=dict(time=[2, 4]),
+    )
+    b1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["b"],
+        coord_values=dict(time=[1, 3]),
+    )
+    b2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["b"],
+        coord_values=dict(time=[2, 4]),
+    )
+
+    target = xr.merge(
+        [
+            xr.merge([a1.to_xarray(), a2.to_xarray()]),
+            xr.merge([b1.to_xarray(), b2.to_xarray()]),
+        ]
+    )
+    s = load_source(
+        "multi",
+        [
+            load_source("multi", [a1, a2], merger="concat(dim=time)"),
+            load_source("multi", [b1, b2], merger="concat(dim=time)"),
+        ],
+    )
+    merged = s.to_xarray()
+    assert target.identical(merged)
+
+    s = load_source(
+        "multi",
+        [
+            load_source("multi", [a1, b1]),
+            load_source("multi", [a2, b2]),
+        ],
+        merger="concat(dim=time)",
+    )
+    merged = s.to_xarray()
+    assert target.identical(merged)
+
+
 if __name__ == "__main__":
     test_nc_merge_var()
     # from climetlab.testing import main
