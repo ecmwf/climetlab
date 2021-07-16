@@ -20,11 +20,12 @@ def infer_open_mfdataset_kwargs(sources, user_kwargs):
     ds = sources[0].to_xarray()
     # lat_dims = [s.get_lat_dim() for s in sources]
 
-    if ds.dims == ['lat', 'lon', 'forecast_time']:
-        result['concat_dim'] = 'forecast_time'
+    if ds.dims == ["lat", "lon", "forecast_time"]:
+        result["concat_dim"] = "forecast_time"
 
     result.update(user_kwargs)
     return result
+
 
 class MultiSource(Source):
     def __init__(self, *sources, filter=None, merger=None):
@@ -93,15 +94,13 @@ class MultiSource(Source):
 
     def to_xarray(self, **kwargs):
 
-        merger = 'hindcast'
+        merger = "hindcast"
 
-
-        merger = 'merge(concat(forecast_dim))'
+        merger = "merge(concat(forecast_dim))"
 
         paths = [s.get_path() for s in self.sources]
 
-        return self.merger.to_xarray_from_path ((self.sources, paths, **kwargs)
-
+        return self.merger.to_xarray_from_path(self.sources, paths, **kwargs)
 
         import xarray as xr
         from xarray.backends.common import BackendEntrypoint
@@ -111,13 +110,12 @@ class MultiSource(Source):
             def open_dataset(cls, filename_or_obj, *args, **kwargs):
                 return filename_or_obj.to_xarray()
 
-        options =  infer_open_mfdataset_kwargs(self.sources, kwargs)
-        
-        if all self sources is path:
+        options = infer_open_mfdataset_kwargs(self.sources, kwargs)
+
+        if False:  # all self sources is path:
             return xr.open_mfdataset([s.path for s in self.sources], **options)
         else:
             return xr.open_mfdataset(self.sources, engine=MyEngine, **options)
-
 
     def to_tfdataset(self, **kwargs):
         sources = self.sources
