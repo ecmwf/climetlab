@@ -89,8 +89,8 @@ def test_merge_netcdf_concat_var_different_coords():
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
+        variables=["a"],
         dims=["lat", "lon"],
-        variables=["a", "b"],
         coord_values=dict(lat=[1, 2]),
     )
     ds1 = s1.to_xarray()
@@ -98,8 +98,8 @@ def test_merge_netcdf_concat_var_different_coords():
     s2 = load_source(
         "dummy-source",
         kind="netcdf",
+        variables=["a"],
         dims=["lat", "lon"],
-        variables=["a", "b"],
         coord_values=dict(lat=[8, 9]),
     )
     ds2 = s2.to_xarray()
