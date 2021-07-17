@@ -1,0 +1,56 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../climetlab-meteonet"
+		},
+		{
+			"path": "../climetlab-demo-dataset"
+		},
+		{
+			"path": "../climetlab-demo-source"
+		},
+		{
+			"path": "../climetlab-s2s-ai-challenge"
+		},
+		{
+			"path": "../climetlab-maelstrom-radiation"
+		}
+	],
+	"settings": {
+		
+		"cSpell.language": "en-GB",
+		"cSpell.languageSettings": [
+
+		],
+		"cSpell.enabledLanguageIds": [
+			"html",
+			"markdown",
+			"plaintext",
+			"restructuredtext",
+			"text"
+		],
+		"todo-tree.filtering.excludeGlobs": [
+			"**/*.ipynb"
+		],
+		"compile-hero.disable-compile-files-on-did-save-code": true,
+		"python.testing.pytestEnabled": true,
+		"python.linting.pycodestyleArgs": [
+
+		],
+		"python.linting.pylamaArgs": [
+
+		],
+		"code-runner.fileDirectoryAsCwd": true,
+		"code-runner.showRunCommandInEditorContextMenu": false,
+		"liveServer.settings.multiRootWorkspaceName": "climetlab",
+		"yaml.schemas": {
+			"./schemas/magics.json": ["*.yaml"]
+		},
+		"python.dataScience.jupyterServerURI": "local",
+		"python.pythonPath": "/usr/local/bin/python3",
+		"ai-docstring.docstringFormat": "numpy"
+	}
+}

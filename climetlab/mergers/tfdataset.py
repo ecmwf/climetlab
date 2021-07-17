@@ -14,6 +14,10 @@ def merge(
     reader_class=None,
     **kwargs,
 ):
+    if paths is not None:
+        if reader_class is not None and hasattr(reader_class, "to_tfdataset_multi"):
+            return reader_class.to_tfdataset_multi(paths, **kwargs)
+
     ds = sources[0].to_tfdataset()
     for s in sources[1:]:
         ds = ds.concatenate(s.to_tfdataset())

@@ -17,15 +17,21 @@ class CMLEngine(BackendEntrypoint):
         return filename_or_obj.to_xarray()
 
 
-def infer_open_mfdataset_kwargs(sources, user_kwargs):
+def infer_open_mfdataset_kwargs(
+    sources=None,
+    paths=None,
+    reader_class=None,
+    user_kwargs={},
+):
     result = {}
-    ds = sources[0].to_xarray()
-    # lat_dims = [s.get_lat_dim() for s in sources]
+    if False:
+        ds = sources[0].to_xarray()
+        # lat_dims = [s.get_lat_dim() for s in sources]
 
-    if ds.dims == ["lat", "lon", "forecast_time"]:
-        result["concat_dim"] = "forecast_time"
+        if ds.dims == ["lat", "lon", "forecast_time"]:
+            result["concat_dim"] = "forecast_time"
 
-    result.update(user_kwargs)
+        result.update(user_kwargs)
     return result
 
 
@@ -36,9 +42,14 @@ def merge(
     **kwargs,
 ):
 
-    assert len(sources)
+    assert sources
 
-    options = infer_open_mfdataset_kwargs(sources, kwargs)
+    options = infer_open_mfdataset_kwargs(
+        sources=sources,
+        paths=paths,
+        reader_class=reader_class,
+        user_kwargs=kwargs,
+    )
 
     if paths is not None:
         if reader_class is not None and hasattr(reader_class, "to_xarray_multi"):

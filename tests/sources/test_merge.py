@@ -9,14 +9,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 
 import numpy as np
 import pytest
 import xarray as xr
 
 from climetlab import load_source
-from climetlab.core.temporary import temp_directory
 
 # These functionalities are variations around
 # http://xarray.pydata.org/en/stable/user-guide/combining.html#combining-multi
@@ -27,7 +25,6 @@ def assert_same_xarray(x, y):
     assert x.equals(y)
     assert x.identical(y)
     assert len(x) == len(y)
-    assert len(x.dims) == len(y.dims)
     assert set(x.keys()) == set(y.keys())
     assert len(x.dims) == len(y.dims)
     assert len(x.coords) == len(y.coords)
@@ -37,65 +34,49 @@ def assert_same_xarray(x, y):
         assert np.all(xda.values == yda.values)
 
 
-def get_a():
+def test_nc_merge_var():
+
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],
     )
-    with temp_directory() as tmpdir:
-        fn1 = os.path.join(tmpdir, "s1", "s1.netcdf")
-        s1.save(fn1)
-        s1.to_xarray()
+    ds1 = s1.to_xarray()
 
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["c", "d"],
+    )
+    ds2 = s2.to_xarray()
 
-def test_nc_merge_var():
-    with temp_directory() as tmpdir:
-        os.mkdir(os.path.join(tmpdir, "s1"))
-        s1 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat", "lon", "time"],
-            variables=["a", "b"],
-        )
-        fn1 = os.path.join(tmpdir, "s1", "s1.netcdf")
-        s1.save(fn1)
-        ds1 = s1.to_xarray()
+    target = xr.merge([ds1, ds2])
+    ds = load_source("multi", [s1, s2])
+    ds.graph()
+    merged = ds.to_xarray()
 
-        os.mkdir(os.path.join(tmpdir, "s2"))
-        s2 = load_source(
-            "dummy-source",
-            kind="netcdf",
-            dims=["lat", "lon", "time"],
-            variables=["c", "d"],
-        )
-        fn2 = os.path.join(tmpdir, "s2", "s2.netcdf")
-        s2.save(fn2)
-        ds2 = s2.to_xarray()
+    assert target.identical(merged)
 
-        target = xr.merge([ds1, ds2])
-        ds = load_source("multi", [s1, s2])
-        ds.graph()
-        merged = ds.to_xarray()
-
-        assert target.identical(merged)
-
-        target2 = xr.open_mfdataset([fn1, fn2])
-        assert target2.identical(merged)
-
-        # target3 = xr.open_mfdataset([s1, s2], engine=MyEngine)
-        # assert target3.identical(merged)
+    target2 = xr.open_mfdataset([s1.path, s2.path])
+    assert target2.identical(merged)
 
 
 def test_nc_merge_var_different_coords():
     s1 = load_source(
-        "dummy-source", kind="netcdf", dims=["lat", "lon"], variables=["a", "b"]
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon"],
+        variables=["a", "b"],
     )
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source", kind="netcdf", dims=["lat", "time"], variables=["c", "d"]
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "time"],
+        variables=["c", "d"],
     )
     ds2 = s2.to_xarray()
 

@@ -21,6 +21,19 @@ class TfRecordReader(Reader):
         tfrecord = tf.data.TFRecordDataset(self.path)
         return tfrecord
 
+    @classmethod
+    def to_tfdataset_multi(cls, paths, **kwargs):
+        import tensorflow as tf
+
+        files_ds = tf.data.Dataset.list_files(paths)
+        options = tf.data.Options()
+        # options.experimental_deterministic = False
+        files_ds = files_ds.with_options(options)
+        return tf.data.TFRecordDataset(
+            files_ds,
+            num_parallel_reads=tf.data.experimental.AUTOTUNE,
+        )
+
 
 def reader(source, path, magic, deeper_check):
     if path.endswith(".tfrecord"):
