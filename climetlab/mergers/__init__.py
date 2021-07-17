@@ -9,7 +9,6 @@
 
 import logging
 
-from climetlab.readers import Reader
 from climetlab.sources.file import FileSource
 
 LOG = logging.getLogger(__name__)
@@ -56,8 +55,6 @@ class Merger:
             readers = [s._reader for s in self.sources]
             self.reader_class = _nearest_common_class(readers)
             LOG.debug("nearest_common_class %s", self.reader_class)
-            if self.reader_class is Reader:
-                self.reader_class = None
 
 
 class DefaultMerger(Merger):

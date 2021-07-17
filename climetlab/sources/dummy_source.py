@@ -199,12 +199,14 @@ GENERATORS = {
 
 
 class DummySource(FileSource):
-    def __init__(self, kind, request=None, force=False, **kwargs):
+    def __init__(self, kind, request=None, force=False, extension=None, **kwargs):
         if request is None:
             request = {}
         request.update(kwargs)
 
-        generate, extension = GENERATORS[kind]
+        generate, ext = GENERATORS[kind]
+        if extension is not None:
+            ext = extension
 
         def _generate(target, args):
             return generate(target, **args)
@@ -213,7 +215,7 @@ class DummySource(FileSource):
             _generate,
             request,
             hash_extra=kind,
-            extension=extension,
+            extension=ext,
             force=force,
         )
 

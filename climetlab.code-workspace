@@ -4,12 +4,11 @@
 			"path": "."
 		}
 	],
-	"settings": {
+	"settings": {"cSpell.language": "en-GB",
 		"yaml.schemas": {
 			"./schemas/magics.json": [
 				"*.yaml"
 			]
-		},
-		"python.pythonPath": "/usr/local/bin/python3"
+		}
 	}
 }

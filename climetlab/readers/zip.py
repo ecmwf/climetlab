@@ -53,7 +53,7 @@ class ZIPReader(ArchiveReader):
             if len(members) == 1:
 
                 _, ext = os.path.splitext(members[0].filename)
-                if ext in (".csv", ".txt"):
+                if ext in (".csv",):
                     self._mutate = CSVReader(source, path, compression="zip")
                     return  # Pandas can read zipped files directly
 

@@ -1,8 +1,14 @@
-# flake8: noqa
+from climetlab.readers.csv import is_csv
+from climetlab.readers.text import is_text
 
-import climetlab as cml
+print(is_text("/dev/random"))
+print(is_text("/dev/zero"))
+print(is_text("/dev/null"))
 
-cml.load_source(
-    "url",
-    "ftp://wmo:essential@dissemination.ecmwf.int/20210624000000/A_HPXA89ECMF240000_C_ECMF_20210624000000_an_msl_global_0p5deg_grib2.bin",
-)
+print(is_csv("/dev/random"))
+print(is_csv("/dev/zero"))
+print(is_csv("/dev/null"))
+
+print(is_text("test"))
+
+print(is_csv("test"))

@@ -1,0 +1,64 @@
+Just a test.
+.raw.30746
++ grib_cds=grib.cds.30746
++ todo=ea-an-ewmo-sfc-0005.todo
++ done=ea-an-ewmo-sfc-0005.done
++ fail=ea-an-ewmo-sfc-0005.fail
++ [[ ! -f ea-an-ewmo-sfc-0005.done ]]
++ done=/dev/null
++ [[ ! -f ea-an-ewmo-sfc-0005.fail ]]
++ fail=/dev/null
++ wc -l ea-an-ewmo-sfc-0005.todo
+1 ea-an-ewmo-sfc-0005.todo
++ wc -l /dev/null
+0 /dev/null
++ wc -l /dev/null
+0 /dev/null
++ filediff ea-an-ewmo-sfc-0005.todo /dev/null /dev/null
++ sort
++ cat
++ read mars
++ echo =================
+=================
++ echo class=ea,date=20210501,domain=g,expver=0005,levtype=sfc,number=7,param=140238,stream=ewmo,type=an
+class=ea,date=20210501,domain=g,expver=0005,levtype=sfc,number=7,param=140238,stream=ewmo,type=an
++ echo =================
+=================
++ rm -f grib.raw.30746 grib.mars.30746
+++ echo class=ea,date=20210501,domain=g,expver=0005,levtype=sfc,number=7,param=140238,stream=ewmo,type=an
+++ python mars.py
++ cmd=mars
++ mars
+mars - WARN -
+mars - WARN - Due to the migration of our meteorological archive, there will be no or
+mars - WARN - degraded access to the archive at times between September and December 2021.
+mars - WARN - Please visit our dedicated confluence space for more information.
+mars - WARN - https://confluence.ecmwf.int/x/qv9CDQ
+mars - WARN -
+MIR environment variables:
+MIR_CACHE_PATH=/tmp/cache
+Using MARS binary: /usr/local/apps/mars/versions/20210618175329/bin/mars.bin
+mars - INFO   - 20210717.192154 - Welcome to MARS
+mars - INFO   - 20210717.192154 - MARS_HOME=/usr/local/apps/mars/configs/prod
+mars - INFO   - 20210717.192154 - MARS Client build stamp: 20210618175329
+mars - INFO   - 20210717.192154 - MARS Client bundle version: 6.31.6.0
+mars - INFO   - 20210717.192154 - package mars-client version: 6.31.6
+mars - INFO   - 20210717.192154 - package mir version: 1.7.2
+mars - INFO   - 20210717.192154 - package odc version: 1.3.0
+mars - INFO   - 20210717.192154 - package fdb version: 5.8.5
+mars - INFO   - 20210717.192154 - package metkit version: 1.8.3
+mars - INFO   - 20210717.192154 - package eckit version: 1.16.3
+mars - INFO   - 20210717.192154 - package eccodes version: 2.22.1
+retrieve,target=grib.raw.30746,class=ea,date=20210501,domain=g,expver=0005,levtype=sfc,number=7,param=140238,stream=ewmo,type=an,expect=1,database=marser
+mars - WARN   - 20210717.192154 - For wave data, LEVTYPE forced to Surface
+
+mars - INFO   - 20210717.192154 - Processing request 1
+
+RETRIEVE,
+    CLASS      = EA,
+    TYPE       = AN,
+    STREAM     = EWMO,
+    EXPVER     = 0005,
+    REPRES     = SH,
+    LEVTYPE    = SFC,
+    PARAM      = 140238,
