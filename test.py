@@ -1,14 +1,10 @@
-from climetlab.readers.csv import is_csv
-from climetlab.readers.text import is_text
+import mimetypes
 
-print(is_text("/dev/random"))
-print(is_text("/dev/zero"))
-print(is_text("/dev/null"))
+from climetlab.sources.url import canonical_extension
 
-print(is_csv("/dev/random"))
-print(is_csv("/dev/zero"))
-print(is_csv("/dev/null"))
-
-print(is_text("test"))
-
-print(is_csv("test"))
+print(mimetypes.guess_all_extensions("application/x-netcdf"))
+# print(mimetypes.guess_type("x.cdf"))
+# print(canonical_extension("z.nc"))
+# print(canonical_extension("z.grib1"))
+# print(canonical_extension("z.grib2"))
+print(canonical_extension("z.tb2"))

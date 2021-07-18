@@ -8,7 +8,7 @@
 #
 
 from .core.caching import CACHE as cache
-from .core.metadata import init_metadata
+from .core.initialise import initialise
 from .core.settings import SETTINGS as settings
 from .datasets import Dataset, dataset, load_dataset, register_dataset
 from .normalize import ALL
@@ -42,4 +42,4 @@ __all__ = [
     "register_source",
 ]
 
-init_metadata()
+initialise()

@@ -37,8 +37,33 @@ def offline(off):
     OFFLINE = off
 
 
-def dummy():
+def dummy_watcher():
     pass
+
+
+def mimetype_to_extension(mimetype, compression, default=".unknown"):
+    EXTENSIONS = {
+        None: "",
+        "gzip": ".gz",
+        "xz": ".xz",
+        "bzip2": ".bz2",
+    }
+    if mimetype is None:
+        extension = default
+    else:
+        extension = mimetypes.guess_extension(mimetype)
+
+    return extension + EXTENSIONS[compression]
+
+
+def canonical_extension(path):
+    _, ext = os.path.splitext(path)
+    ext = mimetype_to_extension(*mimetypes.guess_type(path), default=ext)
+    # Looks like mimetypes as .cdf before .nc
+    # TODO: report it to Python's bug tracker
+    EXTENSIONS = {".cdf": ".nc"}
+
+    return EXTENSIONS.get(ext, ext)
 
 
 class Downloader:
@@ -50,16 +75,7 @@ class Downloader:
 
     def extension(self, url):
         url_no_args = url.split("?")[0]
-
-        base, ext = os.path.splitext(url_no_args)
-        if ext == "":
-            base, ext = os.path.splitext(url)
-
-        _, tar = os.path.splitext(base)
-        if tar == ".tar":
-            ext = ".tar" + ext
-
-        return ext
+        return canonical_extension(url_no_args)
 
     def download(self, url, target):
         if os.path.exists(target):
@@ -321,7 +337,7 @@ class Url(FileSource):
         self.filter = filter
         self.merger = merger
         self.verify = verify
-        self.watcher = watcher if watcher else dummy
+        self.watcher = watcher if watcher else dummy_watcher
 
         if mirror:
             url = mirror(url)

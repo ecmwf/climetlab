@@ -9,6 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import mimetypes
+
 import pytest
 
 import climetlab as cml
@@ -132,6 +134,14 @@ def test_csv_text():
 
     print(s.to_pandas())
 
+
+def test_csv_mimetypes():
+    assert mimetypes.guess_type("x.csv") == ("text/csv", None)
+    assert mimetypes.guess_type("x.csv.gz") == ("text/csv", "gzip")
+    assert mimetypes.guess_type("x.csv.bz2") == ("text/csv", "bzip2")
+
+
+# TODO test compression
 
 if __name__ == "__main__":
     from climetlab.testing import main

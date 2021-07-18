@@ -4,7 +4,7 @@ import pathlib
 from importlib import import_module
 
 from climetlab import load_source
-from climetlab.readers.unknown import Unknown
+from climetlab.readers.text import TextReader
 from climetlab.sources.empty import EmptySource
 
 LOG = logging.getLogger(__name__)
@@ -48,11 +48,13 @@ UNSAFE_SAMPLES_URL = "https://github.com/jwilk/traversal-archives/releases/downl
 
 
 def empty(ds):
+    LOG.debug("%s", ds)
     assert isinstance(ds, EmptySource)
 
 
-def unknown(ds):
-    assert isinstance(ds._reader, Unknown)
+def text(ds):
+    LOG.debug("%s", ds)
+    assert isinstance(ds._reader, TextReader)
 
 
 UNSAFE_SAMPLES = (
@@ -60,15 +62,16 @@ UNSAFE_SAMPLES = (
     ("absolute2", empty),
     ("relative0", empty),
     ("relative2", empty),
-    ("symlink", unknown),
-    ("dirsymlink", unknown),
-    ("dirsymlink2a", unknown),
-    ("dirsymlink2b", unknown),
+    ("symlink", text),
+    ("dirsymlink", text),
+    ("dirsymlink2a", text),
+    ("dirsymlink2b", text),
 )
 
 
 def check_unsafe_archives(extension):
     for archive, check in UNSAFE_SAMPLES:
+        LOG.debug("%s.%s", archive, extension)
         ds = load_source("url", f"{UNSAFE_SAMPLES_URL}/{archive}{extension}")
         check(ds)
 
