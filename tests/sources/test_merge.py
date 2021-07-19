@@ -217,8 +217,11 @@ def test_nc_concat_merge_var():
     s = load_source(
         "multi",
         [
-            load_source("multi", [a1, a2], merger="concat(dim=time)"),
-            load_source("multi", [b1, b2], merger="concat(dim=time)"),
+            load_source("multi", [a1, a2], merger="concat(dim=forcast_time)"),
+            load_source("multi", [b1, b2], merger="concat(dim=forcast_time)"),
+            # load_source("multi", [b1, b2], merger=["concat(forecast_time)", "merge(time)"]),
+            # load_source("multi", [b1, b2], merger="concat", merger_kwargs=dict(dim="forecast_time")),
+            # load_source("multi", [b1, b2], merger=("concat", dict(dim="forecast_time")),
         ],
     )
     merged = s.to_xarray()

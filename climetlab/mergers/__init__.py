@@ -89,6 +89,11 @@ class DefaultMerger(Merger):
             **kwargs,
         )
 
+
+class ChainedMerger(Merger):
+    pass
+
+
 class CallableMerger(Merger):
     def __init__(self, merger, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,7 +104,6 @@ class CallableMerger(Merger):
             return self.merger(self.paths, **kwargs)
         return self.merger(self.sources, **kwargs)
 
- 
 
 def make_merger(merger, sources):
     if callable(merger):

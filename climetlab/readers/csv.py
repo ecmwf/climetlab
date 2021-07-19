@@ -151,6 +151,20 @@ class CSVReader(Reader):
             **options,
         )
 
+    @classmethod
+    def to_tfdataset_multi(cls, paths, batch_size=1000, **kwargs):
+        # See https://www.tensorflow.org/api_docs/python/tf/data/experimental/make_csv_dataset
+        import tensorflow as tf
+
+        options = {}
+        # TODO: read dialect(s) in options
+
+        return tf.data.experimental.make_csv_dataset(
+            paths,
+            batch_size,
+            **options,
+        )
+
     def plot_map(self, driver):
         get_wrapper(self.to_pandas()).plot_map(driver)
 
