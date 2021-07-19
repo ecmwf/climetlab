@@ -8,9 +8,9 @@
 #
 
 import logging
-import re
 
 from climetlab.sources.file import FileSource
+from climetlab.utils import string_to_args
 
 LOG = logging.getLogger(__name__)
 
@@ -146,6 +146,7 @@ class XarrayMerger(XarrayGenericMerger):
 
 MERGERS = {
     "concat": XarrayConcatMerger,
+    "merge": DefaultMerger,
 }
 
 
@@ -163,21 +164,15 @@ def make_merger(merger, sources):
         return CallableMerger(merger, sources)
 
     if isinstance(merger, str):
-        m = re.match(r"(.+)\((.+)\)", merger)
-
-        if m in MERGERS:
-            return MERGERS[merger](sources)
-
-        if m is not None:
-            args = m.group(2).split(",")
-            name = m.group(1)
-            if name in MERGERS:
-                kwargs = args_to_kwargs(args)
-                return MERGERS[name](sources, **kwargs)
+        name, args, kwargs = string_to_args(merger)
+        return MERGERS[merger](name, sources, *args, **kwargs)
 
     if isinstance(merger, tuple):
-        assert len(merger) == 2
-        return MERGERS[merger[0]](sources, **merger[1])
+        if len(merger) == 2 and isinstance(merger[1], dict):
+            return MERGERS[merger[0]](sources, **merger[1])
+        return MERGERS[merger[0]](sources, *merger[1:])
 
-    assert merger in (None, "merge", "merge()"), "For now..."
-    return DefaultMerger(sources)
+    if merger is None:
+        return DefaultMerger(sources)
+
+    raise ValueError(f"Unsupported merger {merger} ({type(merger)})")
