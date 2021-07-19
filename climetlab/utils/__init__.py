@@ -8,6 +8,7 @@
 #
 import inspect
 import json
+import re
 
 import requests
 
@@ -119,3 +120,40 @@ def consume_args(func1, func2, *args, **kwargs):
 
     # print('<=====', args_1, kwargs_1, args, kwargs)
     return args_1, kwargs_1, args, kwargs
+
+
+def string_to_args(s):
+    def typed(x):
+        try:
+            return int(x)
+        except ValueError:
+            pass
+
+        try:
+            return float(x)
+        except ValueError:
+            pass
+
+        return x
+
+    assert isinstance(s, str), s
+    m = re.match(r"([\w\-]+)(\((.*)\))?", s)
+    if not m:
+        raise ValueError(f"Invalid argument '{s}'")
+
+    name = m.group(1)
+
+    if m.group(2) is None:
+        return name, [], {}
+
+    args = []
+    kwargs = {}
+    bits = [x.strip() for x in m.group(3).split(",") if x.strip()]
+    for bit in bits:
+        if "=" in bit:
+            k, v = bit.split("=")
+            kwargs[k.strip()] = typed(v.strip())
+        else:
+            args.append(typed(bit))
+
+    return name, args, kwargs

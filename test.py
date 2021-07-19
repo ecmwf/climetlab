@@ -1,10 +1,8 @@
-import mimetypes
+from climetlab.utils import string_to_args
 
-from climetlab.sources.url import canonical_extension
-
-print(mimetypes.guess_all_extensions("application/x-netcdf"))
-# print(mimetypes.guess_type("x.cdf"))
-# print(canonical_extension("z.nc"))
-# print(canonical_extension("z.grib1"))
-# print(canonical_extension("z.grib2"))
-print(canonical_extension("z.tb2"))
+print(string_to_args("a"))
+print(string_to_args("a()"))
+print(string_to_args("a(1,2)"))
+print(string_to_args("a(1,p=2)"))
+print(string_to_args("a-b(i,j)"))
+print(string_to_args("a-b(i=2,j=9)"))
