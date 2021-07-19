@@ -8,6 +8,7 @@
 #
 
 import logging
+import re
 
 from climetlab.sources.file import FileSource
 
@@ -90,27 +91,93 @@ class DefaultMerger(Merger):
         )
 
 
-class ChainedMerger(Merger):
-    pass
-
-
 class CallableMerger(Merger):
     def __init__(self, merger, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.merger = merger
 
-    def to_xarray(self, **kwargs):
-        if self.paths:
-            return self.merger(self.paths, **kwargs)
-        return self.merger(self.sources, **kwargs)
+    def _merge_path_or_source(self, sources, *args, **kwargs):
+        paths, reader_class = self.extract_path(sources)
+        if paths:
+            return self.merger(paths, *args, **kwargs)
+        return self.merger(sources, *args, **kwargs)
+
+    def to_xarray(self, sources, *args, **kwargs):
+        return self._merge_path_or_source.to_xarray(sources, *args, **kwargs)
+
+    def to_pandas(self, *args, **kwargs):
+        return self._merge_path_or_source.to_pandas(*args, **kwargs)
+
+    def to_tfdataset(self, *args, **kwargs):
+        return self._merge_path_or_source.to_tfdataset(*args, **kwargs)
+
+
+class XarrayGenericMerger(Merger):
+    def __init__(self, sources, **options):
+        super().__init__(sources)
+        self.options = options
+
+    def to_xarray(self, *args, **kwargs):
+        assert self.paths is not None, self.paths
+        import xarray as xr
+
+        options = {}
+        options.update(self.default_options)
+        options.update(self.options)
+        options.update(kwargs)
+        return xr.open_mfdataset(
+            self.paths,
+            **options,
+        )
+
+
+class XarrayConcatMerger(XarrayGenericMerger):
+    def __init__(self, sources, **options):
+        if "dim" in options:
+            dim = options.pop("dim")
+            options["concat_dim"] = dim
+        super().__init__(sources, **options)
+
+    default_options = {"combine": "nested"}
+
+
+class XarrayMerger(XarrayGenericMerger):
+    default_options = {}
+
+
+MERGERS = {
+    "concat": XarrayConcatMerger,
+}
+
+
+def args_to_kwargs(args):
+    kwargs = dict()
+    for a in args:
+        k, v = a.split("=")
+        kwargs[k] = v
+    return kwargs
 
 
 def make_merger(merger, sources):
+
     if callable(merger):
         return CallableMerger(merger, sources)
 
-    if isinstance(merger, (list, tuple)):
-        return ChainedMerger(merger, [make_merger(m, sources) for m in merger])
+    if isinstance(merger, str):
+        m = re.match(r"(.+)\((.+)\)", merger)
 
-    assert merger is None, "For now..."
+        if m in MERGERS:
+            return MERGERS[merger](sources)
+
+        if m is not None:
+            args = m.group(2).split(",")
+            name = m.group(1)
+            if name in MERGERS:
+                kwargs = args_to_kwargs(args)
+                return MERGERS[name](sources, **kwargs)
+
+    if isinstance(merger, tuple):
+        assert len(merger) == 2
+        return MERGERS[merger[0]](sources, **merger[1])
+
+    assert merger in (None, "merge", "merge()"), "For now..."
     return DefaultMerger(sources)
