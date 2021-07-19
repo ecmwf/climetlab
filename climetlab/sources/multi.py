@@ -82,7 +82,7 @@ class MultiSource(Source):
                 s.write(f)
 
     def graph(self, depth=0):
-        print(" " * depth, self.__class__.__name__)
+        print(" " * depth, self.__class__.__name__, self.merger)
         for s in self.sources:
             s.graph(depth + 3)
 
