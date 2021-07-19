@@ -1,0 +1,6 @@
+*.grib
+data
+*.tar
+*.tgz
+*.zip
+*.gz

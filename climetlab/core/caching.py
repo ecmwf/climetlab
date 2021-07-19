@@ -174,7 +174,13 @@ class Cache(threading.Thread):
                 latest = datetime.datetime.utcnow()
             return latest
 
-    def _purge_cache(self, owner):
+    def _purge_cache(self, owner=None, age=None, size=None):
+
+        if owner is None and age is None and size is None:
+            self._decache(self._cache_size())
+            return
+
+
         with self.connection as db:
             db.execute("DELETE FROM cache WHERE owner=?", (owner,))
 

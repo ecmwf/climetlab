@@ -1,8 +1,3 @@
-from climetlab.utils import string_to_args
+import climetlab as cml
 
-print(string_to_args("a"))
-print(string_to_args("a()"))
-print(string_to_args("a(1,2)"))
-print(string_to_args("a(1,p=2)"))
-print(string_to_args("a-b(i,j)"))
-print(string_to_args("a-b(i=2,j=9)"))
+s = cml.load_source('url', 'https://get.ecmwf.int/repository/test-data/climetlab/issue/20/TripCloud0.0.tfrecord')

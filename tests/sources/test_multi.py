@@ -103,15 +103,7 @@ def test_multi_directory_1():
             assert len(ds) == 2
 
 
-def test_download_zip_1():
-    ds = load_source(
-        "url-pattern",
-        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
-        x=["a", "b"],
-    )
 
-    ds.graph()
-    assert len(ds) == 36, len(ds)
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
@@ -124,7 +116,7 @@ def test_download_zip_2():
 
     ds = load_source(
         "url-pattern",
-        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{x}.zip",
         x=["c", "d"],
         filter=filter,
     )
@@ -173,35 +165,52 @@ def test_multi_grib_mixed():
 def test_download_tar():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tar",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 def test_download_tgz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tgz",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tgz",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 def test_download_tar_gz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tar.gz",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar.gz",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 @pytest.mark.skipif(True, reason="Not yet implemented")
 def test_download_gz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.gz",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib.gz",
     )
     assert len(ds) == 2, len(ds)
 
+def test_download_zip_1():
+    ds = load_source(
+        "url",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib.zip",
+    )
+
+    assert len(ds) == 6, len(ds)
+
+def test_download_zip_2():
+    ds = load_source(
+        "url-pattern",
+        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{param}.zip",
+        param=["2t", "msl"],
+    )
+
+    ds.graph()
+    assert len(ds) == 6, len(ds)
 
 if __name__ == "__main__":
     from climetlab.testing import main
