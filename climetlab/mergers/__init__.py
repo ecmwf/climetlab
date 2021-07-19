@@ -55,6 +55,7 @@ class Merger:
             readers = [s._reader for s in self.sources]
             self.reader_class = _nearest_common_class(readers)
             LOG.debug("nearest_common_class %s", self.reader_class)
+            self.paths = [s.path for s in self.sources]
 
 
 class DefaultMerger(Merger):
@@ -88,7 +89,24 @@ class DefaultMerger(Merger):
             **kwargs,
         )
 
+class CallableMerger(Merger):
+    def __init__(self, merger, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.merger = merger
+
+    def to_xarray(self, **kwargs):
+        if self.paths:
+            return self.merger(self.paths, **kwargs)
+        return self.merger(self.sources, **kwargs)
+
+ 
 
 def make_merger(merger, sources):
+    if callable(merger):
+        return CallableMerger(merger, sources)
+
+    if isinstance(merger, (list, tuple)):
+        return ChainedMerger(merger, [make_merger(m, sources) for m in merger])
+
     assert merger is None, "For now..."
     return DefaultMerger(sources)
