@@ -59,21 +59,17 @@ def test_zenodo_3():
 
 def test_zenodo_read_nc():
     def file_filter(path):
-        # return path.endswith('past_observations_2t_2009-01-02_4745.csv')
-        return path.endswith("analysis_2t_2013-01-02.nc.nc")
+        return path.endswith("analysis_2t_2013-01-02.nc")
 
-    # ds = cml.load_source("zenodo", record_id="4707154", zenodo_file_filter = 'europa.*', file_filter = file_filter)
-    # ds = ds.to_xarray()
     ds = cml.load_source(
         "zenodo",
         record_id="4707154",
-        # zenodo_file_filter="soltau.*",
-        # file_filter=file_filter,
+        file_key="europa_grid_data.zip",
         filter=file_filter,
         merger="concat(concat_dim=tt)",
     )
-    ds = ds.to_pandas()
-    assert "t_min" in list(ds.keys())
+    ds = ds.to_xarray()
+    assert "t2m" in list(ds.keys())
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
@@ -88,7 +84,6 @@ def test_zenodo_read_nc_list_content():
     assert len(content) == 555
 
 
-@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_partial():
     ds = cml.load_source(
         "zenodo",
