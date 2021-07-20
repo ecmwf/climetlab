@@ -27,7 +27,7 @@ def test_unpack_zip():
                     "url",
                     "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(True)  # Make sure we fail if not cached
 
@@ -36,7 +36,7 @@ def test_unpack_zip():
                     "url",
                     "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(False)
 
@@ -46,7 +46,7 @@ def test_unpack_zip():
                     "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                     force=True,
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(True)  # Make sure we fail if not cached
 
@@ -54,14 +54,14 @@ def test_unpack_zip():
                     "url",
                     "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 # Again
                 ds = load_source(
                     "url",
                     "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
     finally:
         offline(False)
 
