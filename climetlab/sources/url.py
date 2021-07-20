@@ -68,6 +68,7 @@ def canonical_extension(path):
 
 class Downloader:
     def __init__(self, owner):
+        # TODO: use weakref instead
         self.owner = owner
 
     def local_path(self, url):
@@ -237,7 +238,7 @@ class HTTPDownloader(Downloader):
 
             if cached_etag != remote_etag:
                 LOG.warning("Remote content of URL %s has changed", url)
-                if SETTINGS.get("download-updated-urls"):
+                if SETTINGS.get("download-updated-urls") or self.owner.update_if_out_of_date:
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True
                 LOG.warning(
@@ -328,6 +329,7 @@ class Url(FileSource):
         verify=True,
         watcher=None,
         force=None,
+        update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
         **kwargs,
     ):
@@ -338,6 +340,7 @@ class Url(FileSource):
         self.merger = merger
         self.verify = verify
         self.watcher = watcher if watcher else dummy_watcher
+        self.update_if_out_of_date = update_if_out_of_date
 
         if mirror:
             url = mirror(url)
