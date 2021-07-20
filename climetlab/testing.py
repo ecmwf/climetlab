@@ -38,6 +38,7 @@ def modules_installed(*modules):
 
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 NO_CDS = not os.path.exists(os.path.expanduser("~/.cdsapirc"))
+IN_GITHUB = os.environ.get("GITHUB_WORKFLOW") is not None
 
 
 def MISSING(*modules):

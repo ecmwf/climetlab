@@ -15,7 +15,7 @@ import sys
 
 import pytest
 
-from climetlab.testing import climetlab_file
+from climetlab.testing import IN_GITHUB, climetlab_file
 
 # See https://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
 
@@ -56,10 +56,7 @@ def notebooks_list():
     return sorted(notebooks)
 
 
-@pytest.mark.skipif(
-    int(os.environ.get("CLIMETLAB_SKIP_NOTEBOOKS_TESTS", 0)),
-    reason="CLIMETLAB_SKIP_NOTEBOOKS_TESTS not zero",
-)
+@pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Cannot execute notebooks on Windows"
 )

@@ -64,11 +64,8 @@ def test_cache_2():
 
             load_source(
                 "url-pattern",
-                "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
-                # TODO : update url:
-                # "https://download.ecmwf.int/test-data/climetlab/test-data/test-cache.{n}.{size}mb",
+                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
                 {
-                    "size": 1,
                     "n": [0, 1, 2, 3, 4],
                 },
             )
@@ -83,11 +80,8 @@ def test_cache_2():
 
             load_source(
                 "url-pattern",
-                "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/cache.{n}.{size}mb",
-                # TODO : update url:
-                # "https://download.ecmwf.int/test-data/climetlab/test-data/test-cache.{n}.{size}mb",
+                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
                 {
-                    "size": 1,
                     "n": [5, 6, 7, 8, 9],
                 },
             )

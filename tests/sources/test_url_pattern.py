@@ -16,7 +16,7 @@ from climetlab import load_source
 def test_url_pattern_source_3():
     load_source(
         "url-pattern",
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.{format}",
+        "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.{format}",
         {"format": ["nc", "grib"]},
     )
     # source.to_xarray()

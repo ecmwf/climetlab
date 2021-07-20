@@ -73,14 +73,14 @@ def test_url_source_1():
 def test_url_source_2():
     load_source(
         "url",
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib",
+        "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib",
     )
 
 
 def test_url_source_3():
     load_source(
         "url",
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.nc",
+        "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.nc",
     )
 
 

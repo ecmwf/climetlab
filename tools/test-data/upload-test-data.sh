@@ -39,3 +39,10 @@ upload grib-2t.zip
 
 zip grib-msl.zip msl-*.grib
 upload grib-msl.zip
+
+dd if=/dev/random of=data.bin bs=1024 count=1024
+for n in $(seq 0 9)
+do
+    ln -sf data.bin 1mb-$n.bin
+    upload 1mb-$n.bin
+done

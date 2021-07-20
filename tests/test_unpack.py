@@ -25,7 +25,7 @@ def test_unpack_zip():
             with settings.temporary("cache-directory", tmpdir):
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
                 assert len(ds) == 18, len(ds)
 
@@ -34,7 +34,7 @@ def test_unpack_zip():
                 # Check cache
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
                 assert len(ds) == 18, len(ds)
 
@@ -43,7 +43,7 @@ def test_unpack_zip():
                 LOG.debug("Use the force")
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                     force=True,
                 )
                 assert len(ds) == 18, len(ds)
@@ -52,14 +52,14 @@ def test_unpack_zip():
 
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
                 assert len(ds) == 18, len(ds)
 
                 # Again
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
                 )
                 assert len(ds) == 18, len(ds)
     finally:
