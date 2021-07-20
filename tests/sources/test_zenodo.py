@@ -57,22 +57,10 @@ def test_zenodo_3():
     print(ds)
 
 
-@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc():
     def file_filter(path):
         # return path.endswith('past_observations_2t_2009-01-02_4745.csv')
         return path.endswith("analysis_2t_2013-01-02.nc.nc")
-
-    class ConcatMerger:
-        def __init__(self, concat_dim="tt"):
-            self.concat_dim = concat_dim
-
-        def merge(self, paths, **kwargs):
-            import xarray as xr
-
-            return xr.open_mfdataset(
-                paths, concat_dim=self.concat_dim, combine="nested"
-            )
 
     # ds = cml.load_source("zenodo", record_id="4707154", zenodo_file_filter = 'europa.*', file_filter = file_filter)
     # ds = ds.to_xarray()
@@ -82,7 +70,7 @@ def test_zenodo_read_nc():
         # zenodo_file_filter="soltau.*",
         # file_filter=file_filter,
         filter=file_filter,
-        # merger=ConcatMerger,
+        merger="concat(concat_dim=tt)",
     )
     ds = ds.to_pandas()
     assert "t_min" in list(ds.keys())
