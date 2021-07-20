@@ -82,6 +82,7 @@ def test_string_to_args():
     assert string_to_args("a-b(i=2,j=9)") == ("a-b", [], {"i": 2, "j": 9})
     assert string_to_args("merge()") == ("merge", [], {})
 
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
