@@ -46,3 +46,6 @@ do
     ln -sf data.bin 1mb-$n.bin
     upload 1mb-$n.bin
 done
+
+ln -sf $0 test.txt
+upload test.txt
