@@ -122,8 +122,8 @@ def test_zarr_from_zip_file():
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")
 def test_https_does_not_support_zarr():
     # If the http(s) server is not a s3 server,
-    # zarr may not work (error such as "ETag not found")
-    with pytest.raises(KeyError):
+    # it does not work
+    with pytest.raises(Exception):
         source = load_source(
             "zarr-s3",
             f"{NOT_S3_URL}/zarr/mini-rt-20200102.zarr",
