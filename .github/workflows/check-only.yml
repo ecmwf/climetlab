@@ -2,7 +2,7 @@ name: Check only
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   quality:

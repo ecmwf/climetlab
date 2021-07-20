@@ -2,12 +2,12 @@ name: Check and publish
 
 on:
   # push:
-  #  branches: [ master ]
+  #  branches: [ main ]
 
   workflow_dispatch: {}
 
   pull_request:
-    branches: [master]
+    branches: [main]
 
   release:
     types: [created]
