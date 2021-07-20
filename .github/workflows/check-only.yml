@@ -2,7 +2,10 @@ name: Check only
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
+
+  pull_request:
+    branches: [develop]
 
 jobs:
   quality:
