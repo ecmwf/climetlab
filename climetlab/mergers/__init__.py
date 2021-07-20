@@ -165,7 +165,7 @@ def make_merger(merger, sources):
 
     if isinstance(merger, str):
         name, args, kwargs = string_to_args(merger)
-        return MERGERS[merger](name, sources, *args, **kwargs)
+        return MERGERS[name](sources, *args, **kwargs)
 
     if isinstance(merger, tuple):
         if len(merger) == 2 and isinstance(merger[1], dict):
