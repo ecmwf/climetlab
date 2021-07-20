@@ -59,7 +59,7 @@ jobs:
         run: |
           python setup.py develop
           pip freeze
-          pytest
+          pytest --durations=0
         env:
           CLIMETLAB_DEBUG: 1
           CLIMETLAB_SKIP_NOTEBOOKS_TESTS: 1
