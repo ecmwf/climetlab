@@ -67,8 +67,7 @@ def test_zenodo_read_nc():
     ds = cml.load_source(
         "zenodo",
         record_id="4707154",
-        # zenodo_file_filter="soltau.*",
-        # file_filter=file_filter,
+        file_key="soltau_station_data.zip",
         filter=file_filter,
         merger="concat(concat_dim=tt)",
     )
@@ -88,7 +87,6 @@ def test_zenodo_read_nc_list_content():
     assert len(content) == 555
 
 
-@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_partial():
     ds = cml.load_source(
         "zenodo",
