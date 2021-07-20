@@ -180,7 +180,6 @@ class Cache(threading.Thread):
             self._decache(self._cache_size())
             return
 
-
         with self.connection as db:
             db.execute("DELETE FROM cache WHERE owner=?", (owner,))
 

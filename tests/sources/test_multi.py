@@ -103,9 +103,6 @@ def test_multi_directory_1():
             assert len(ds) == 2
 
 
-
-
-
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_download_zip_2():
     def filter(path_or_url):
@@ -194,6 +191,7 @@ def test_download_gz():
     )
     assert len(ds) == 2, len(ds)
 
+
 def test_download_zip_1():
     ds = load_source(
         "url",
@@ -202,7 +200,8 @@ def test_download_zip_1():
 
     assert len(ds) == 6, len(ds)
 
-def test_download_zip_2():
+
+def test_download_zip_3():
     ds = load_source(
         "url-pattern",
         "https://get.ecmwf.int/repository/test-data/climetlab/grib-{param}.zip",
@@ -211,6 +210,7 @@ def test_download_zip_2():
 
     ds.graph()
     assert len(ds) == 6, len(ds)
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
