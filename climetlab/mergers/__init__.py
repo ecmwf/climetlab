@@ -14,6 +14,8 @@ from climetlab.utils import string_to_args
 
 LOG = logging.getLogger(__name__)
 
+FORWARDS = ("to_xarray", "to_pandas", "to_tfdataset")
+
 
 def _nearest_common_class(objects):
 
@@ -58,6 +60,12 @@ class Merger:
             LOG.debug("nearest_common_class %s", self.reader_class)
             self.paths = [s.path for s in self.sources]
 
+    @property
+    def paths_or_sources(self):
+        if self.paths is not None:
+            return self.paths
+        return self.sources
+
 
 class DefaultMerger(Merger):
     def to_pandas(self, **kwargs):
@@ -91,24 +99,32 @@ class DefaultMerger(Merger):
         )
 
 
+class ObjMerger(Merger):
+    def __init__(self, obj, sources, *args, **kwargs):
+        super().__init__(sources)
+        self.obj = obj
+
+    def to_xarray(self, *args, **kwargs):
+        return self.obj.to_xarray(self.paths_or_sources, **kwargs)
+
+    def to_pandas(self, *args, **kwargs):
+        return self.obj.to_pandas(self.paths_or_sources, **kwargs)
+
+    def to_tfdataset(self, *args, **kwargs):
+        return self.obj.to_tfdataset(self.paths_or_sources, **kwargs)
+
+
 class CallableMerger(Merger):
     def __init__(self, func, sources, *args, **kwargs):
         super().__init__(sources)
         self.func = func
 
+        # defines to_xarray, to_pandas, to_tfdataset, etc.
+        for fwd in FORWARDS:
+            setattr(self, fwd, self._call_func)
+
     def _call_func(self, *args, **kwargs):
-        if self.paths is not None:
-            return self.func(self.paths, *args, **kwargs)
-        return self.func(self.sources, *args, **kwargs)
-
-    def to_xarray(self, *args, **kwargs):
-        return self._call_func(*args, **kwargs)
-
-    def to_pandas(self, *args, **kwargs):
-        return self._call_func(*args, **kwargs)
-
-    def to_tfdataset(self, *args, **kwargs):
-        return self._call_func(*args, **kwargs)
+        return self.func(self.paths_or_sources, **kwargs)
 
 
 class XarrayGenericMerger(Merger):
@@ -159,6 +175,16 @@ def args_to_kwargs(args):
 
 
 def make_merger(merger, sources):
+
+    for fwd in FORWARDS:
+        if hasattr(merger, fwd) and callable(getattr(merger, fwd)):
+            return ObjMerger(merger, sources)
+
+    if hasattr(merger, "to_pandas") and callable(merger.to_pandas):
+        return ObjMerger(merger, sources)
+
+    if hasattr(merger, "to_tfdataset") and callable(merger.to_tfdataset):
+        return ObjMerger(merger, sources)
 
     if callable(merger):
         return CallableMerger(merger, sources)
