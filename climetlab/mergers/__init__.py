@@ -92,23 +92,23 @@ class DefaultMerger(Merger):
 
 
 class CallableMerger(Merger):
-    def __init__(self, merger, *args, **kwargs):
-        self.merger = merger
+    def __init__(self, func, sources, *args, **kwargs):
+        super().__init__(sources)
+        self.func = func
 
-    def _merge_path_or_source(self, sources, *args, **kwargs):
-        paths, reader_class = self.extract_path(sources)
-        if paths:
-            return self.merger(paths, *args, **kwargs)
-        return self.merger(sources, *args, **kwargs)
+    def _call_func(self, *args, **kwargs):
+        if self.paths is not None:
+            return self.func(self.paths, *args, **kwargs)
+        return self.func(self.sources, *args, **kwargs)
 
-    def to_xarray(self, sources, *args, **kwargs):
-        return self._merge_path_or_source.to_xarray(sources, *args, **kwargs)
+    def to_xarray(self, *args, **kwargs):
+        return self._call_func(*args, **kwargs)
 
     def to_pandas(self, *args, **kwargs):
-        return self._merge_path_or_source.to_pandas(*args, **kwargs)
+        return self._call_func(*args, **kwargs)
 
     def to_tfdataset(self, *args, **kwargs):
-        return self._merge_path_or_source.to_tfdataset(*args, **kwargs)
+        return self._call_func(*args, **kwargs)
 
 
 class XarrayGenericMerger(Merger):
