@@ -104,14 +104,14 @@ class ObjMerger(Merger):
         super().__init__(sources)
         self.obj = obj
 
-    def to_xarray(self, *args, **kwargs):
-        return self.obj.to_xarray(self.paths_or_sources, **kwargs)
+        # defines to_xarray, to_pandas, to_tfdataset, etc.
+        for fwd in FORWARDS:
+            def factory(name):
+                def wrapped(**kwargs):
+                    return getattr(self.obj, name)(self.paths_or_sources, **kwargs)
+                return wrapped
 
-    def to_pandas(self, *args, **kwargs):
-        return self.obj.to_pandas(self.paths_or_sources, **kwargs)
-
-    def to_tfdataset(self, *args, **kwargs):
-        return self.obj.to_tfdataset(self.paths_or_sources, **kwargs)
+            setattr(self, fwd, factory(fwd))
 
 
 class CallableMerger(Merger):
@@ -119,13 +119,12 @@ class CallableMerger(Merger):
         super().__init__(sources)
         self.func = func
 
-        # defines to_xarray, to_pandas, to_tfdataset, etc.
-        for fwd in FORWARDS:
-            setattr(self, fwd, self._call_func)
-
     def _call_func(self, *args, **kwargs):
         return self.func(self.paths_or_sources, **kwargs)
 
+    to_xarray = _call_func
+    to_pandas = _call_func
+    to_tfdataset = _call_func
 
 class XarrayGenericMerger(Merger):
     def __init__(self, sources, **options):
