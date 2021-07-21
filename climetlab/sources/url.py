@@ -238,7 +238,10 @@ class HTTPDownloader(Downloader):
 
             if cached_etag != remote_etag:
                 LOG.warning("Remote content of URL %s has changed", url)
-                if SETTINGS.get("download-updated-urls") or self.owner.update_if_out_of_date:
+                if (
+                    SETTINGS.get("download-updated-urls")
+                    or self.owner.update_if_out_of_date
+                ):
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True
                 LOG.warning(
