@@ -18,7 +18,7 @@ from climetlab.decorators import locked
 LOG = logging.getLogger(__name__)
 
 
-class Reader(Base):
+class Reader(Base, os.PathLike):
 
     appendable = False  # Set to True if the data can be appened to and existing file
     binary = True
@@ -75,6 +75,9 @@ class Reader(Base):
                 if not chunk:
                     break
                 f.write(chunk)
+
+    def __fspath__(self):
+        return self.path
 
 
 _READERS = {}

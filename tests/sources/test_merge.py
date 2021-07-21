@@ -34,6 +34,46 @@ def assert_same_xarray(x, y):
         assert np.all(xda.values == yda.values)
 
 
+def merger_func(paths_or_sources):
+    return xr.open_mfdataset(paths_or_sources)
+
+
+class Merger_obj:
+    def to_xarray(self, paths_or_sources, **kwargs):
+        return xr.open_mfdataset(paths_or_sources)
+
+
+@pytest.mark.parametrize("custom_merger", (merger_func, Merger_obj()))
+def test_nc_merge_custom(custom_merger):
+
+    s1 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a", "b"],
+    )
+    ds1 = s1.to_xarray()
+
+    s2 = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["c", "d"],
+    )
+    ds2 = s2.to_xarray()
+
+    target = xr.merge([ds1, ds2])
+
+    ds = load_source("multi", [s1, s2], merger=custom_merger)
+    ds.graph()
+    merged = ds.to_xarray()
+
+    assert target.identical(merged)
+
+    target2 = xr.open_mfdataset([s1.path, s2.path])
+    assert target2.identical(merged)
+
+
 def test_nc_merge_var():
 
     s1 = load_source(

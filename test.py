@@ -1,6 +1,6 @@
 import climetlab as cml
 
-s = cml.load_source(
-    "url",
-    "https://get.ecmwf.int/repository/test-data/climetlab/issue/20/TripCloud0.0.tfrecord",
-)
+source = cml.load_source("file", "./docs/examples/test.grib")
+
+with open(source, "rb") as f:
+    print(f.read(1024))

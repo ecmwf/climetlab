@@ -23,7 +23,7 @@ def read(fname):
 
 
 version = None
-for line in read("climetlab/__init__.py").split("\n"):
+for line in read("climetlab/version.py").split("\n"):
     if line.startswith("__version__"):
         version = line.split("=")[-1].strip()[1:-1]
 

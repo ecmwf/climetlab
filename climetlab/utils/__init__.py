@@ -21,7 +21,11 @@ except ImportError:
     from tqdm import tqdm  # noqa F401
 
 
-def download_and_cache(url: str, return_none_on_404=False) -> str:
+def download_and_cache(
+    url: str,
+    update_if_out_of_date=False,
+    return_none_on_404=False,
+) -> str:
     """[summary]
 
     :param url: [description]

@@ -17,10 +17,8 @@ from .plotting import options as plotting_options
 from .plotting import plot_map
 from .readers import Reader
 from .sources import Source, load_source, register_source, source
+from .version import __version__
 from .wrappers import Wrapper
-
-__version__ = "0.8.5"
-
 
 __all__ = [
     "ALL",
@@ -40,6 +38,7 @@ __all__ = [
     "Source",
     "register_dataset",
     "register_source",
+    "__version__",
 ]
 
 initialise()

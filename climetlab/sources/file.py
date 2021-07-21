@@ -9,6 +9,7 @@
 
 
 import logging
+import os
 
 from climetlab.core.settings import SETTINGS
 from climetlab.readers import reader
@@ -18,7 +19,7 @@ from . import Source
 LOG = logging.getLogger(__name__)
 
 
-class FileSource(Source):
+class FileSource(Source, os.PathLike):
 
     _reader_ = None
     path = None
@@ -87,6 +88,9 @@ class FileSource(Source):
         cache_dir = SETTINGS.get("cache-directory")
         path = self.path.replace(cache_dir, "CACHE:")
         return f"{self.__class__.__name__}({path},{self._reader.__class__.__name__})"
+
+    def __fspath__(self):
+        return self.path
 
 
 class File(FileSource):
