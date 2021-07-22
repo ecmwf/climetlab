@@ -146,7 +146,12 @@ class HTTPDownloader(Downloader):
             self._url = url
             self._headers = {}
             try:
-                r = requests.head(url, verify=self.owner.verify, allow_redirects=True)
+                r = requests.head(
+                    url,
+                    headers=self.owner.http_headers,
+                    verify=self.owner.verify,
+                    allow_redirects=True,
+                )
                 r.raise_for_status()
                 for k, v in r.headers.items():
                     self._headers[k.lower()] = v
@@ -196,6 +201,7 @@ class HTTPDownloader(Downloader):
             stream=True,
             verify=self.owner.verify,
             timeout=SETTINGS.get("url-download-timeout"),
+            headers=self.owner.http_headers,
         )
         r.raise_for_status()
 
@@ -335,11 +341,15 @@ class Url(FileSource):
         verify=True,
         watcher=None,
         force=None,
-        extension=None,
+        # extension=None,
+        http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
         **kwargs,
     ):
+        # TODO: re-enable this feature
+        extension = None
+
         self.url = url
         LOG.debug("URL %s", url)
 
@@ -348,6 +358,7 @@ class Url(FileSource):
         self.verify = verify
         self.watcher = watcher if watcher else dummy_watcher
         self.update_if_out_of_date = update_if_out_of_date
+        self.http_headers = http_headers if http_headers else {}
 
         if mirror:
             url = mirror(url)
