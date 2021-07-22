@@ -114,8 +114,9 @@ def test_download_zip_2():
 
     ds = load_source(
         "url-pattern",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{x}.zip",
+        "{url}/grib-{x}.zip",
         x=["c", "d"],
+        url=TEST_DATA_URL,
         filter=filter,
     )
 
@@ -196,7 +197,7 @@ def test_download_gz():
 def test_download_zip_1():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.zip",
+        f"{TEST_DATA_URL}/grib.zip",
     )
 
     assert len(ds) == 6, len(ds)
@@ -205,12 +206,25 @@ def test_download_zip_1():
 def test_download_zip_3():
     ds = load_source(
         "url-pattern",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{param}.zip",
+        "{url}/grib-{param}.zip",
         param=["2t", "msl"],
+        url=TEST_DATA_URL,
     )
 
     ds.graph()
     assert len(ds) == 6, len(ds)
+
+
+def test_download_tfdataset():
+    ds = load_source(
+        "url-pattern",
+        "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+    )
+
+    ds.graph()
+    assert len(ds) == 200, len(ds)
 
 
 if __name__ == "__main__":
