@@ -76,7 +76,16 @@ class Downloader:
 
     def extension(self, url):
         url_no_args = url.split("?")[0]
-        return canonical_extension(url_no_args)
+        base = os.path.basename(url_no_args)
+        extensions = []
+        while True:
+            base, ext = os.path.splitext(base)
+            if not ext:
+                break
+            extensions.append(ext)
+        if not extensions:
+            extensions.append(".unknown")
+        return "".join(reversed(extensions))
 
     def download(self, url, target):
         if os.path.exists(target):
@@ -150,16 +159,10 @@ class HTTPDownloader(Downloader):
         return self._headers
 
     def extension(self, url):
-        EXCEPTIONS = (".tgz", ".tar.gz")
 
         headers = self.headers(url)
 
         ext = super().extension(url)
-
-        if ext not in EXCEPTIONS:
-            if "content-type" in headers:
-                if headers["content-type"] != "application/octet-stream":
-                    ext = mimetypes.guess_extension(headers["content-type"])
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])

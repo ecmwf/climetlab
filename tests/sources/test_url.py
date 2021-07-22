@@ -18,7 +18,7 @@ import pytest
 
 from climetlab import load_source
 from climetlab.sources.url import canonical_extension
-from climetlab.testing import climetlab_file
+from climetlab.testing import TEST_DATA_URL, climetlab_file
 
 
 @pytest.mark.skipif(  # TODO: fix
@@ -103,6 +103,20 @@ def test_canonical_extension():
     assert canonical_extension("x.foo") == ".foo"
     assert canonical_extension("x.csv") == ".csv"
     assert canonical_extension("x.csv.gz") == ".csv.gz"
+
+
+def test_extension():
+
+    s = load_source(
+        "url",
+        f"{TEST_DATA_URL}/fixtures/tfrecord/EWCTest0.0.tfrecord",
+    )
+    assert s.path.endswith(".0.tfrecord")
+    s = load_source(
+        "url",
+        f"{TEST_DATA_URL}/fixtures/tfrecord/EWCTest0.1.tfrecord",
+    )
+    assert s.path.endswith(".1.tfrecord")
 
 
 if __name__ == "__main__":
