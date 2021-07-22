@@ -178,9 +178,11 @@ def make_merger(merger, sources):
 
     for fwd in FORWARDS:
         if hasattr(merger, fwd) and callable(getattr(merger, fwd)):
+            LOG.debug("Merger %s has method in %s()", merger, fwd)
             return ObjMerger(merger, sources)
 
     if callable(merger):
+        LOG.debug("Merger %s is callable", merger)
         return CallableMerger(merger, sources)
 
     if isinstance(merger, str):
@@ -193,6 +195,7 @@ def make_merger(merger, sources):
         return MERGERS[merger[0]](sources, *merger[1:])
 
     if merger is None:
+        LOG.debug("Using DefaultMerger")
         return DefaultMerger(sources)
 
     raise ValueError(f"Unsupported merger {merger} ({type(merger)})")
