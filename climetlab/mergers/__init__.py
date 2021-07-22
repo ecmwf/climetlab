@@ -180,12 +180,6 @@ def make_merger(merger, sources):
         if hasattr(merger, fwd) and callable(getattr(merger, fwd)):
             return ObjMerger(merger, sources)
 
-    if hasattr(merger, "to_pandas") and callable(merger.to_pandas):
-        return ObjMerger(merger, sources)
-
-    if hasattr(merger, "to_tfdataset") and callable(merger.to_tfdataset):
-        return ObjMerger(merger, sources)
-
     if callable(merger):
         return CallableMerger(merger, sources)
 
