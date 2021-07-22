@@ -201,7 +201,7 @@ class HTTPDownloader(Downloader):
             stream=True,
             verify=self.owner.verify,
             timeout=SETTINGS.get("url-download-timeout"),
-            headers=self.http_headers,
+            headers=self.owner.http_headers,
         )
         r.raise_for_status()
 
