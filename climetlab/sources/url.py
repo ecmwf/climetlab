@@ -148,7 +148,7 @@ class HTTPDownloader(Downloader):
             try:
                 r = requests.head(
                     url,
-                    headers=self.http_headers,
+                    headers=self.owner.http_headers,
                     verify=self.owner.verify,
                     allow_redirects=True,
                 )
