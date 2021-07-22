@@ -35,12 +35,12 @@ def test_download_2():
 
 def test_download_3():
     with settings.temporary("download-updated-urls", True):
-        url = "https://get.ecmwf.int/test-data/climetlab/test.txt"
+        url = "https://get.ecmwf.int/test-data/climetlab/input/test.txt"
         download_and_cache(url)
 
 
 def test_download_4():
-    url = "https://get.ecmwf.int/test-data/climetlab/missing.txt"
+    url = "https://get.ecmwf.int/test-data/climetlab/input/missing.txt"
     r = download_and_cache(url, return_none_on_404=True)
     assert r is None, r
 

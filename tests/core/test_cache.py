@@ -17,6 +17,7 @@ import pytest
 from climetlab import load_source, settings
 from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_cache
 from climetlab.core.temporary import temp_directory
+from climetlab.testing import TEST_DATA_URL
 
 
 def test_cache_1():
@@ -64,13 +65,13 @@ def test_cache_2():
 
             load_source(
                 "url-pattern",
-                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
+                f"{TEST_DATA_URL}/input/" + "1mb-{n}.bin",
                 {
                     "n": [0, 1, 2, 3, 4],
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size()
+            assert cache_size() == 5 * 1024 * 1024, cache_size() / 1024.0 / 1024.0
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
@@ -80,7 +81,7 @@ def test_cache_2():
 
             load_source(
                 "url-pattern",
-                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
+                f"{TEST_DATA_URL}/input/" + "1mb-{n}.bin",
                 {
                     "n": [5, 6, 7, 8, 9],
                 },
