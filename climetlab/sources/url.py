@@ -335,6 +335,7 @@ class Url(FileSource):
         verify=True,
         watcher=None,
         force=None,
+        extension=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
         **kwargs,
@@ -353,7 +354,12 @@ class Url(FileSource):
 
         o = urlparse(url)
         downloader = DOWNLOADERS[o.scheme](self)
-        extension = downloader.extension(url)
+
+        if extension and extension[0] != ".":
+            extension = "." + extension
+
+        if extension is None:
+            extension = downloader.extension(url)
 
         self.path = downloader.local_path(url)
         if self.path is not None:
