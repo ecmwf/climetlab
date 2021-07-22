@@ -17,6 +17,7 @@ import pytest
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.testing import TEST_DATA_URL
 
 LOG = logging.getLogger(__name__)
 
@@ -162,7 +163,7 @@ def test_multi_grib_mixed():
 def test_download_tar():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar",
+        f"{TEST_DATA_URL}/input/grib.tar",
     )
     assert len(ds) == 6, len(ds)
 
@@ -170,7 +171,7 @@ def test_download_tar():
 def test_download_tgz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tgz",
+        f"{TEST_DATA_URL}/input/grib.tgz",
     )
     assert len(ds) == 6, len(ds)
 
@@ -178,7 +179,7 @@ def test_download_tgz():
 def test_download_tar_gz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar.gz",
+        f"{TEST_DATA_URL}/input/grib.tar.gz",
     )
     assert len(ds) == 6, len(ds)
 
@@ -187,7 +188,7 @@ def test_download_tar_gz():
 def test_download_gz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.gz",
+        f"{TEST_DATA_URL}/input/grib.gz",
     )
     assert len(ds) == 2, len(ds)
 
