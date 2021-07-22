@@ -76,7 +76,16 @@ class Downloader:
 
     def extension(self, url):
         url_no_args = url.split("?")[0]
-        return canonical_extension(url_no_args)
+        base = os.path.basename(url_no_args)
+        extensions = []
+        while True:
+            base, ext = os.path.splitext(base)
+            if not ext:
+                break
+            extensions.append(ext)
+        if not extensions:
+            extensions.append(".unknown")
+        return "".join(reversed(extensions))
 
     def download(self, url, target):
         if os.path.exists(target):
@@ -137,7 +146,12 @@ class HTTPDownloader(Downloader):
             self._url = url
             self._headers = {}
             try:
-                r = requests.head(url, verify=self.owner.verify, allow_redirects=True)
+                r = requests.head(
+                    url,
+                    headers=self.http_headers,
+                    verify=self.owner.verify,
+                    allow_redirects=True,
+                )
                 r.raise_for_status()
                 for k, v in r.headers.items():
                     self._headers[k.lower()] = v
@@ -150,16 +164,10 @@ class HTTPDownloader(Downloader):
         return self._headers
 
     def extension(self, url):
-        EXCEPTIONS = (".tgz", ".tar.gz")
 
         headers = self.headers(url)
 
         ext = super().extension(url)
-
-        if ext not in EXCEPTIONS:
-            if "content-type" in headers:
-                if headers["content-type"] != "application/octet-stream":
-                    ext = mimetypes.guess_extension(headers["content-type"])
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])
@@ -193,6 +201,7 @@ class HTTPDownloader(Downloader):
             stream=True,
             verify=self.owner.verify,
             timeout=SETTINGS.get("url-download-timeout"),
+            headers=self.http_headers,
         )
         r.raise_for_status()
 
@@ -332,10 +341,15 @@ class Url(FileSource):
         verify=True,
         watcher=None,
         force=None,
+        # extension=None,
+        http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
         **kwargs,
     ):
+        # TODO: re-enable this feature
+        extension = None
+
         self.url = url
         LOG.debug("URL %s", url)
 
@@ -344,13 +358,19 @@ class Url(FileSource):
         self.verify = verify
         self.watcher = watcher if watcher else dummy_watcher
         self.update_if_out_of_date = update_if_out_of_date
+        self.http_headers = http_headers if http_headers else {}
 
         if mirror:
             url = mirror(url)
 
         o = urlparse(url)
         downloader = DOWNLOADERS[o.scheme](self)
-        extension = downloader.extension(url)
+
+        if extension and extension[0] != ".":
+            extension = "." + extension
+
+        if extension is None:
+            extension = downloader.extension(url)
 
         self.path = downloader.local_path(url)
         if self.path is not None:

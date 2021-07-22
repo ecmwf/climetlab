@@ -46,6 +46,7 @@ def MISSING(*modules):
 
 
 UNSAFE_SAMPLES_URL = "https://github.com/jwilk/traversal-archives/releases/download/0"
+TEST_DATA_URL = "https://get.ecmwf.int/repository/test-data/climetlab"
 
 
 def empty(ds):
