@@ -220,7 +220,9 @@ def test_download_tfdataset():
         "url-pattern",
         "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
         n=[0, 1],
-        url=f"{TEST_DATA_URL}/input/",
+        url=f"{TEST_DATA_URL}/",
+        # TODO: move adapt test data creation script
+        # url=f"{TEST_DATA_URL}/input/",
     )
 
     ds.graph()
