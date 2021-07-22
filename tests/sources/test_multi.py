@@ -17,6 +17,7 @@ import pytest
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.testing import TEST_DATA_URL
 
 LOG = logging.getLogger(__name__)
 
@@ -113,8 +114,9 @@ def test_download_zip_2():
 
     ds = load_source(
         "url-pattern",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{x}.zip",
+        "{url}/grib-{x}.zip",
         x=["c", "d"],
+        url=TEST_DATA_URL,
         filter=filter,
     )
 
@@ -162,7 +164,7 @@ def test_multi_grib_mixed():
 def test_download_tar():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar",
+        f"{TEST_DATA_URL}/grib.tar",
     )
     assert len(ds) == 6, len(ds)
 
@@ -170,7 +172,7 @@ def test_download_tar():
 def test_download_tgz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tgz",
+        f"{TEST_DATA_URL}/grib.tgz",
     )
     assert len(ds) == 6, len(ds)
 
@@ -178,7 +180,7 @@ def test_download_tgz():
 def test_download_tar_gz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.tar.gz",
+        f"{TEST_DATA_URL}/grib.tar.gz",
     )
     assert len(ds) == 6, len(ds)
 
@@ -187,7 +189,7 @@ def test_download_tar_gz():
 def test_download_gz():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.gz",
+        f"{TEST_DATA_URL}/grib.gz",
     )
     assert len(ds) == 2, len(ds)
 
@@ -195,7 +197,7 @@ def test_download_gz():
 def test_download_zip_1():
     ds = load_source(
         "url",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib.zip",
+        f"{TEST_DATA_URL}/grib.zip",
     )
 
     assert len(ds) == 6, len(ds)
@@ -204,12 +206,25 @@ def test_download_zip_1():
 def test_download_zip_3():
     ds = load_source(
         "url-pattern",
-        "https://get.ecmwf.int/repository/test-data/climetlab/grib-{param}.zip",
+        "{url}/grib-{param}.zip",
         param=["2t", "msl"],
+        url=TEST_DATA_URL,
     )
 
     ds.graph()
     assert len(ds) == 6, len(ds)
+
+
+def test_download_tfdataset():
+    ds = load_source(
+        "url-pattern",
+        "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+    )
+
+    ds.graph()
+    assert len(ds) == 200, len(ds)
 
 
 if __name__ == "__main__":
