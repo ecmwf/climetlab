@@ -116,7 +116,7 @@ def test_download_zip_2():
         "url-pattern",
         "{url}/grib-{x}.zip",
         x=["c", "d"],
-        url=TEST_DATA_URL,
+        url=f"{TEST_DATA_URL}/input/",
         filter=filter,
     )
 
@@ -197,7 +197,7 @@ def test_download_gz():
 def test_download_zip_1():
     ds = load_source(
         "url",
-        f"{TEST_DATA_URL}/grib.zip",
+        f"{TEST_DATA_URL}/input/grib.zip",
     )
 
     assert len(ds) == 6, len(ds)
@@ -208,7 +208,7 @@ def test_download_zip_3():
         "url-pattern",
         "{url}/grib-{param}.zip",
         param=["2t", "msl"],
-        url=TEST_DATA_URL,
+        url=f"{TEST_DATA_URL}/input/",
     )
 
     ds.graph()
@@ -220,7 +220,7 @@ def test_download_tfdataset():
         "url-pattern",
         "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
         n=[0, 1],
-        url=TEST_DATA_URL,
+        url=f"{TEST_DATA_URL}/input/",
     )
 
     ds.graph()
