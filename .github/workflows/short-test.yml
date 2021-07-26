@@ -25,9 +25,9 @@ jobs:
       matrix:
         platform: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.7", "3.8", "3.9"]
-        filter: ["reader", "not reader"]
+        filter: ["reader or dataset", "not reader and not dataset"]
 
-    name: ${{ matrix.filter }} python  ${{ matrix.python-version }} on ${{ matrix.platform }}
+    name: Python  ${{ matrix.python-version }} on ${{ matrix.platform }}, ${{ matrix.filter }} 
     runs-on: ${{ matrix.platform }}
 
     steps:
