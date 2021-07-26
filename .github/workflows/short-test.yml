@@ -50,10 +50,18 @@ jobs:
                   with open(m, "w") as f:
                       print(os.environ[n], file=f)
 
-      - name: Tests
+      - name: Install climetlab
         run: |
           pip install -e .
           pip freeze
+
+      - name: Install test tools
+        run: |
+          pip install pytest pytest-cov
+          pip freeze
+
+      - name: Tests
+        run: |
           pytest --durations=0
           # pytest -E short-test
         env:
