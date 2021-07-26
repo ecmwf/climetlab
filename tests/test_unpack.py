@@ -12,6 +12,8 @@
 
 import logging
 
+import pytest
+
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
 from climetlab.sources.url import offline
@@ -19,6 +21,7 @@ from climetlab.sources.url import offline
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.long_test
 def test_unpack_zip():
     try:
         with temp_directory() as tmpdir:

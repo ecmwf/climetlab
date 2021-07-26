@@ -39,5 +39,5 @@ def pytest_runtest_setup(item):
     mark_to_skip = SKIP[subset]
 
     for m in item.iter_markers():
-        if m in mark_to_skip:
+        if m.name in mark_to_skip:
             pytest.skip(f"test is skipped because -E {subset}")

@@ -35,6 +35,7 @@ def test_sel():
     s.sel(shortName="2t")
 
 
+@pytest.mark.long_test
 # @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
 def test_multi():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):

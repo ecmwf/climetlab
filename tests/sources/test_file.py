@@ -10,10 +10,13 @@
 #
 
 
+import pytest
+
 from climetlab import load_source
 from climetlab.testing import climetlab_file
 
 
+@pytest.mark.long_test
 def test_file_source_grib():
 
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
