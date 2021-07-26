@@ -8,30 +8,20 @@ SKIP = {
 
 
 def pytest_addoption(parser):
-    help_str = ""
-    for k, v in help_str:
+    help_str = "NAME: short, long, release. Runs a subset of tests.\n"
+    for k, v in SKIP.items():
         if v:
-            help_str += f"'{k}': skip test marked as {','.join(v)}."
+            help_str += f"'{k}': skip test marked as {','.join(v)}.\n"
         else:
-            help_str += f"'{k}': do skip tests."
+            help_str += f"'{k}': do skip tests.\n"
 
     parser.addoption(
         "-E",
         action="store",
         metavar="NAME",
         default="short",
-        help="NAME: short, long, release. Runs a subset of tests." "Short",
+        help=help_str,
     )
-
-
-# def pytest_collection_modifyitems(config, items):
-#    if config.getoption("--run-long"):
-#        # --runslow given in cli: do not skip slow tests
-#        return
-#    skip_slow = pytest.mark.skip(reason="Need --run-long option to run")
-#    for item in items:
-#        if "long_test" in item.keywords:
-#            item.add_marker(skip_slow)
 
 
 def pytest_runtest_setup(item):
@@ -40,4 +30,4 @@ def pytest_runtest_setup(item):
 
     for m in item.iter_markers():
         if m.name in mark_to_skip:
-            pytest.skip(f"test is skipped because -E {subset}")
+            pytest.skip(f"test is skipped because custom pytest option -E {subset}")
