@@ -52,7 +52,7 @@ jobs:
 
       - name: Tests
         run: |
-          python setup.py develop
+          pip install -e .
           pip freeze
           pytest --durations=0
           # pytest -E short-test
