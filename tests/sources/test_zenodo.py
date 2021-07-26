@@ -28,7 +28,6 @@ def test_zenodo_1():
     ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
 
     pd = ds.to_pandas()
-    print(pd)
     assert len(pd) == 49
 
 
@@ -42,7 +41,6 @@ def test_zenodo_2():
     )
 
     ds = ds.to_tfdataset()
-    print(ds)
 
 
 def test_zenodo_3():
@@ -54,9 +52,9 @@ def test_zenodo_3():
     )
 
     ds = ds.to_pandas()
-    print(ds)
 
 
+@pytest.mark.long_test
 def test_zenodo_read_nc():
     def file_filter(path):
         return path.endswith("analysis_2t_2013-01-02.nc")
