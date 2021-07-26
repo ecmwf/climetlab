@@ -306,14 +306,17 @@ def test_nc_merge_concat_var():
     assert target.identical(merged)
 
 
+@pytest.mark.external_download
 def test_merge_pangeo_1():
     _merge_pangeo(inner_merger="concat(concat_dim=time)")
 
 
+@pytest.mark.external_download
 def test_merge_pangeo_2():
     _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
 
 
+@pytest.mark.external_download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_merge_pangeo_3():
     def preprocess(ds):

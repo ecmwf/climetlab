@@ -64,6 +64,7 @@ def test_dummy_netcdf_4():
     assert "lat" in ds.dims
 
 
+@pytest.mark.long_test
 def test_multi():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
