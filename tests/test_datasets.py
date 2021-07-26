@@ -25,6 +25,7 @@ def test_dataset_2():
     dataset.sample_bufr_data()
 
 
+@pytest.mark.long_test
 def test_era5_temperature():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")

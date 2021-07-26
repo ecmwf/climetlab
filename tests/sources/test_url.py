@@ -107,6 +107,7 @@ def test_canonical_extension():
     assert canonical_extension("x.csv.gz") == ".csv.gz"
 
 
+@pytest.mark.long_test
 def test_extension():
 
     s = load_source(

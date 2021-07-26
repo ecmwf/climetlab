@@ -45,7 +45,7 @@ def test_zenodo_2():
     ds = ds.to_tfdataset()
 
 
-@pytest.mark.external_download
+# @pytest.mark.external_download
 def test_zenodo_3():
     ds = cml.load_source(
         "zenodo",
