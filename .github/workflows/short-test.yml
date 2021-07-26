@@ -62,7 +62,7 @@ jobs:
 
       - name: Tests
         run: |
-          pytest --durations=0 -m 'not long_test and not notebook'
+          pytest --durations=0 -m 'not long_test and not notebook and not external_download'
           # pytest -E short-test
         env:
           CLIMETLAB_DEBUG: 1
