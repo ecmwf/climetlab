@@ -40,10 +40,15 @@ a pull request to add it.
 Drafts plugins
 --------------
 
-- `maelstrom-nogwd <https://github.com/mchantry/climetlab-maelstrom-nogwd>`_:
-  Maelstom project.
+- `maelstrom-nogwd <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-nogwd>`_:
+  Part of the MAELSTROM project, designed for machine learning emulation of non-orographic gravity wave drag.
 
   Dataset provided: ``maelstom-nogwd``
+
+- `maelstrom-radiation <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-radiation>`_:
+  Part of the MAELSTROM project, designed for machine learning emulation of radiative heating.
+
+  Dataset provided: ``maelstom-radiation``, ``maelstom-radiation-tf``
 
 - `climetlab-cems-flood <https://github.com/ecmwf-lab/climetlab-cems-flood>`_:
   Glofas data. In progress.
