@@ -17,7 +17,7 @@ import pytest
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.testing import TEST_DATA_URL, MISSING
+from climetlab.testing import MISSING, TEST_DATA_URL
 
 LOG = logging.getLogger(__name__)
 
@@ -214,7 +214,8 @@ def test_download_zip_3():
     ds.graph()
     assert len(ds) == 6, len(ds)
 
-@pytest.mark.skipif(MISSING('tensorflow'), reason='No tensorflow')
+
+@pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
 def test_download_tfdataset():
     ds = load_source(
         "url-pattern",

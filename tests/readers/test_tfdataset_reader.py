@@ -9,14 +9,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-import mimetypes
-
 import pytest
 
 from climetlab import load_source
 from climetlab.testing import MISSING, TEST_DATA_URL
 
-@pytest.mark.skipif(MISSING('tensorflow'), reason='No tensorflow')
+
+@pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
 def test_download_tfdataset():
     ds = load_source(
         "url-pattern",
