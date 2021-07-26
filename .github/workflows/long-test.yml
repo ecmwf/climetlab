@@ -1,11 +1,14 @@
-name: Short tests
+name: Long tests
 
 on:
-  push: {}
+  push:
+    branches: [ main ]
+
+#  schedule:
+#    # Every day at 3:07 am
+#    - cron:  '07 3 * * *'
 
   workflow_dispatch: {}
-
-  pull_request: {}
 
 jobs:
   quality:
@@ -60,8 +63,22 @@ jobs:
           pip install pytest pytest-cov
           pip freeze
 
+      - name: Install packages needed to build the documentation
+        run: |
+          pip install sphinx
+          pip install -r docs/requirements.txt
+          # sudo apt-get install pandoc
+          pip freeze
+
       - name: Tests
         run: |
-          pytest --durations=0 -E short
+          pytest --durations=0 -E long
         env:
           CLIMETLAB_DEBUG: 1
+
+      - name: Documentation
+        run: |
+          make clean
+          make html
+          # make linkcheck (don't run yet)
+        working-directory: docs
