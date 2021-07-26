@@ -56,7 +56,7 @@ def notebooks_list():
     return sorted(notebooks)
 
 
-@pytest.mark.notebooks
+@pytest.mark.notebook
 @pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Cannot execute notebooks on Windows"

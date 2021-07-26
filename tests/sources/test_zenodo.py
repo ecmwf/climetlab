@@ -46,6 +46,9 @@ def test_zenodo_2():
 
 
 # @pytest.mark.external_download
+# Unmarking this test as external_download to run it anyways.
+# The file to download is small enough and it is worth
+# checking that this works for at least one file.
 def test_zenodo_3():
     ds = cml.load_source(
         "zenodo",
