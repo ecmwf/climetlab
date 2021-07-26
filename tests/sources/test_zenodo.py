@@ -23,6 +23,7 @@ def only_csv(path):
     return path.endswith(".csv")
 
 
+@pytest.mark.external_download
 def test_zenodo_1():
 
     ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
@@ -31,6 +32,7 @@ def test_zenodo_1():
     assert len(pd) == 49
 
 
+@pytest.mark.external_download
 @pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_zenodo_2():
     ds = cml.load_source(
@@ -43,6 +45,7 @@ def test_zenodo_2():
     ds = ds.to_tfdataset()
 
 
+@pytest.mark.external_download
 def test_zenodo_3():
     ds = cml.load_source(
         "zenodo",
@@ -54,7 +57,7 @@ def test_zenodo_3():
     ds = ds.to_pandas()
 
 
-@pytest.mark.long_test
+@pytest.mark.external_download
 def test_zenodo_read_nc():
     def file_filter(path):
         return path.endswith("analysis_2t_2013-01-02.nc")
@@ -70,6 +73,7 @@ def test_zenodo_read_nc():
     assert "t2m" in list(ds.keys())
 
 
+@pytest.mark.external_download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_list_content():
     ds = cml.load_source("zenodo", record_id="3403963", list_only=True)
@@ -82,6 +86,7 @@ def test_zenodo_read_nc_list_content():
     assert len(content) == 555
 
 
+@pytest.mark.external_download
 def test_zenodo_read_nc_partial():
     ds = cml.load_source(
         "zenodo",
@@ -92,6 +97,7 @@ def test_zenodo_read_nc_partial():
     assert "t_min" in list(ds.keys())
 
 
+@pytest.mark.external_download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_partial_regexpr():
     ds = cml.load_source("zenodo", record_id="3403963", zenodo_file_filter="2000_.*.nc")
