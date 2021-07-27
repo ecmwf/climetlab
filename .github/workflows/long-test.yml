@@ -31,7 +31,7 @@ jobs:
         platform: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.7", "3.8", "3.9"]
 
-    name: Python  ${{ matrix.python-version }} on ${{ matrix.platform }}
+    name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -68,6 +68,8 @@ jobs:
 
       - name: Tests
         run: |
+          # -E flag is defined in conftest.py
+          # notebooks are tested below, as they need more dependencies
           pytest --durations=0 -E long -k 'not test_notebooks'
         env:
           CLIMETLAB_DEBUG: 1
