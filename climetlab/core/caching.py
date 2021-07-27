@@ -479,9 +479,15 @@ class Cache(threading.Thread):
         return "".join(html)
 
     def _dump_cache_database(self):
+        result = []
         with self.connection as db:
-            for n in db.execute("SELECT * FROM cache"):
-                print(json.dumps(n, indent=4))
+            for d in db.execute("SELECT * FROM cache"):
+                n = dict(d)
+                for k in ("args", "owner_data"):
+                    if n[k] is not None:
+                        n[k] = json.loads(n[k])
+                result.append(n)
+        return result
 
 
 CACHE = Cache()

@@ -10,6 +10,8 @@
 #
 
 
+import json
+import logging
 import os
 
 import pytest
@@ -24,6 +26,8 @@ from climetlab.core.caching import (
 )
 from climetlab.core.temporary import temp_directory
 from climetlab.testing import TEST_DATA_URL
+
+LOG = logging.getLogger(__name__)
 
 
 def test_cache_1():
@@ -77,14 +81,14 @@ def test_cache_2():
                 },
             )
 
-            dump_cache_database()
+            print(json.dumps(dump_cache_database(), indent=4))
 
             cachesize = cache_size()
             assert cachesize == 5 * 1024 * 1024, ("before", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
-                print("FILE", i, f)
+                # print("FILE", i, f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database (before): {cnt}"
 
@@ -96,14 +100,14 @@ def test_cache_2():
                 },
             )
 
-            dump_cache_database()
+            print(json.dumps(dump_cache_database(), indent=4))
 
             cachesize = cache_size()
             assert cachesize == 5 * 1024 * 1024, ("after", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
-                print("FILE", i, f)
+                # print("FILE", i, f)
                 cnt += 1
             assert cnt == 5, f"Files in cache database (after): {cnt}"
 
