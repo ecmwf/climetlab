@@ -302,6 +302,13 @@ class Cache(threading.Thread):
         except Exception:
             LOG.exception("Deleting %s", path)
 
+    def _entry_to_dict(self, entry):
+        n = dict(entry)
+        for k in ("args", "owner_data"):
+            if isinstance(n[k], str):
+                n[k] = json.loads(n[k])
+        return n
+
     def _delete_entry(self, entry):
         if isinstance(entry, str):
             path, size, owner, args = entry, None, None, None
@@ -317,6 +324,9 @@ class Cache(threading.Thread):
                 entry["args"],
             )
 
+        LOG.warning(
+            "Deleting entry %s", json.dumps(self._entry_to_dict(entry), indent=4)
+        )
         total = 0
 
         # First, delete child files, e.g. unzipped data
