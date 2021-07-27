@@ -5,7 +5,8 @@ on:
     branches: [ main ]
 
   schedule:
-    # Every day at 3:07 am
+    # Every day at 3:07am
+    # on the "default" branch set in github (currently is develop)
     - cron:  '07 3 * * *'
 
   workflow_dispatch: {}

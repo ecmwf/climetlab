@@ -23,11 +23,8 @@ def read(fname):
 
 
 version = None
-for line in read("climetlab/version.py").split("\n"):
-    if line.startswith("__version__"):
-        version = line.split("=")[-1].strip()[1:-1]
-
-
+with open("climetlab/version", "r") as f:
+    version = f.readlines()[0].strip()
 assert version
 
 numpy = "numpy"
