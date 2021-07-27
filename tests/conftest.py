@@ -13,7 +13,7 @@ def pytest_addoption(parser):
         if v:
             help_str += f"'{k}': skip test marked as {','.join(v)}.\n"
         else:
-            help_str += f"'{k}': do skip tests.\n"
+            help_str += f"'{k}': do not skip tests.\n"
 
     parser.addoption(
         "-E",
@@ -30,4 +30,4 @@ def pytest_runtest_setup(item):
 
     for m in item.iter_markers():
         if m.name in mark_to_skip:
-            pytest.skip(f"test is skipped because custom pytest option -E {subset}")
+            pytest.skip(f"test is skipped because custom pytest option: -E {subset}")
