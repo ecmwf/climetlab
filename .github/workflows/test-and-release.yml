@@ -124,7 +124,7 @@ jobs:
     # add if owner, etc.
 
     name: Upload to Pypi and release
-    needs: [checkversion, checks]
+    needs: checks
 
     runs-on: ubuntu-latest
 
