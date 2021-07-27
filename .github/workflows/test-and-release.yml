@@ -110,7 +110,7 @@ jobs:
 
       - name: Re-install packaging without -e
         run: |
-          pip uninstall climetlab
+          pip uninstall climetlab -y
           pip install .
           pip freeze
 
