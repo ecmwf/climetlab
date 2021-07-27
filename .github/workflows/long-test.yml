@@ -33,6 +33,7 @@ jobs:
 
     name: Python  ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
+    needs: quality
 
     steps:
       - uses: actions/checkout@v2
