@@ -65,21 +65,23 @@ jobs:
           pip install pytest pytest-cov
           pip freeze
 
-      - name: Install packages needed to build the documentation
-        run: |
-          pip install sphinx
-          pip install -r docs/requirements.txt
-          sudo apt-get install pandoc
-          pip freeze
-
       - name: Tests
         run: |
           pytest --durations=0 -E long
         env:
           CLIMETLAB_DEBUG: 1
 
+      - name: Install packages needed to build the documentation
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
+        run: |
+          pip install sphinx
+          pip install -r docs/requirements.txt
+          sudo apt-get install pandoc
+          pip freeze
+
       - name: Documentation
         run: |
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
           make clean
           make html
           # make linkcheck (don't run yet)
