@@ -81,16 +81,19 @@ def test_cache_2():
                 },
             )
 
-            print(json.dumps(dump_cache_database(), indent=4))
-
             cachesize = cache_size()
-            assert cachesize == 5 * 1024 * 1024, ("before", cachesize / 1024.0 / 1024.0)
+            expected = 5 * 1024 * 1024
+            if cachesize != expected:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cachesize == expected, ("before", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
                 # print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database (before): {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache database (before): {cnt}"
 
             load_source(
                 "url-pattern",
@@ -100,23 +103,28 @@ def test_cache_2():
                 },
             )
 
-            print(json.dumps(dump_cache_database(), indent=4))
-
             cachesize = cache_size()
-            assert cachesize == 5 * 1024 * 1024, ("after", cachesize / 1024.0 / 1024.0)
+            expected = 5 * 1024 * 1024
+            if cachesize != expected:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cachesize == expected, ("after", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
                 # print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database (after): {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache database (after): {cnt}"
 
             cnt = 0
             for n in os.listdir(tmpdir):
                 if n.startswith("cache-") and n.endswith(".db"):
                     continue
                 cnt += 1
-            assert cnt == 5, f"Files in cache directory: {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache directory: {cnt}"
 
 
 # 1GB ram disk on MacOS (blocks of 512 bytes)
