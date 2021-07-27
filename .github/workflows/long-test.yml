@@ -68,7 +68,7 @@ jobs:
 
       - name: Tests
         run: |
-          pytest --durations=0 -E long
+          pytest --durations=0 -E long -k 'not test_notebooks'
         env:
           CLIMETLAB_DEBUG: 1
 
@@ -87,3 +87,17 @@ jobs:
           make html
           # make linkcheck (don't run yet)
         working-directory: docs
+
+      - name: Install test tools for notebooks
+        # Testing notebooks happens after the documentation tests.
+        # Because testing notebooks requires packages installed to 
+        # test the documentation
+        run: |
+          pip install nbformat nbconvert
+          pip freeze
+
+      - name: Tests notebooks
+        run: |
+          pytest --durations=0 -E long -k 'test_notebooks'
+        env:
+          CLIMETLAB_DEBUG: 1
