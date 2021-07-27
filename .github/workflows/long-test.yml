@@ -57,7 +57,7 @@ jobs:
 
       - name: Install climetlab
         run: |
-          pip install .
+          pip install -e .
           pip freeze
 
       - name: Install test tools
@@ -99,3 +99,12 @@ jobs:
           # make linkcheck (don't run yet)
         working-directory: docs
 
+      - name: Re-install packaging without -e
+        run: |
+          pip uninstall climetlab
+          pip install .
+          pip freeze
+
+      - name: Tests packaging
+        run: |
+          pytest --durations=0 tests/core/test/version.py
