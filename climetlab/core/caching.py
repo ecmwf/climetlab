@@ -478,10 +478,16 @@ class Cache(threading.Thread):
                 html.append("<br>")
         return "".join(html)
 
+    def _dump_cache_database(self):
+        with self.connection as db:
+            for n in db.execute("SELECT * FROM cache"):
+                print(json.dumps(n, indent=4))
+
 
 CACHE = Cache()
 CACHE.start()
 
+dump_cache_database = in_executor(CACHE._dump_cache_database)
 register_cache_file = in_executor(CACHE._register_cache_file)
 update_entry = in_executor(CACHE._update_entry)
 check_cache_size = in_executor_forget(CACHE._check_cache_size)

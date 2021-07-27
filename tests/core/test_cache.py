@@ -15,7 +15,13 @@ import os
 import pytest
 
 from climetlab import load_source, settings
-from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_cache
+from climetlab.core.caching import (
+    cache_entries,
+    cache_file,
+    cache_size,
+    dump_cache_database,
+    purge_cache,
+)
 from climetlab.core.temporary import temp_directory
 from climetlab.testing import TEST_DATA_URL
 
@@ -71,6 +77,8 @@ def test_cache_2():
                 },
             )
 
+            dump_cache_database()
+
             cachesize = cache_size()
             assert cachesize == 5 * 1024 * 1024, ("before", cachesize / 1024.0 / 1024.0)
 
@@ -87,6 +95,8 @@ def test_cache_2():
                     "n": [5, 6, 7, 8, 9],
                 },
             )
+
+            dump_cache_database()
 
             cachesize = cache_size()
             assert cachesize == 5 * 1024 * 1024, ("after", cachesize / 1024.0 / 1024.0)
