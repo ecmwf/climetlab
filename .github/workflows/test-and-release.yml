@@ -134,10 +134,10 @@ jobs:
       - name: Check version
         run: |
           tag=${GITHUB_REF#refs/tags/}
-          version=$(./pythonsetup.py --version)
-          echo 'tag='$release
+          version=$(python setup.py --version)
+          echo 'tag='$tag
           echo "version file="$version
-          test "$release" == "$version"
+          test "$tag" == "$version"
 
       - name: Set up Python
         uses: actions/setup-python@v2
