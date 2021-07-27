@@ -60,10 +60,6 @@ jobs:
 
       - name: Install climetlab
         run: |
-          ls
-          pwd
-          ls *
-          cat climetlab/version
           pip install -e .
           pip freeze
 
