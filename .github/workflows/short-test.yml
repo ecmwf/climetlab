@@ -64,6 +64,6 @@ jobs:
 
       - name: Tests
         run: |
-          pytest --durations=0 -E short
+          pytest --durations=0 -vv -E short
         env:
           CLIMETLAB_DEBUG: 1
