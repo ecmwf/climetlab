@@ -71,13 +71,14 @@ def test_cache_2():
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size() / 1024.0 / 1024.0
+            cachesize = cache_size()
+            assert cachesize == 5 * 1024 * 1024, ("before", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
                 print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database: {cnt}"
+            assert cnt == 5, f"Files in cache database (before): {cnt}"
 
             load_source(
                 "url-pattern",
@@ -87,13 +88,14 @@ def test_cache_2():
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size() / 1024.0 / 1024.0
+            cachesize = cache_size()
+            assert cachesize == 5 * 1024 * 1024, ("after", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
                 print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database: {cnt}"
+            assert cnt == 5, f"Files in cache database (after): {cnt}"
 
             cnt = 0
             for n in os.listdir(tmpdir):
