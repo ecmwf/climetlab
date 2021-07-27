@@ -11,6 +11,7 @@ import os
 
 
 def get_version():
+    return "0.8.9"
 
     version_file = os.path.join(os.path.dirname(__file__), "version")
     with open(version_file, "r") as f:
