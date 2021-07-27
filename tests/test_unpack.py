@@ -21,6 +21,7 @@ from climetlab.sources.url import offline
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(True, reason="TODO")
 @pytest.mark.long_test
 def test_unpack_zip():
     try:
