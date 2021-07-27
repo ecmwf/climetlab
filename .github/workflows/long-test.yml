@@ -69,7 +69,7 @@ jobs:
         run: |
           pip install sphinx
           pip install -r docs/requirements.txt
-          # sudo apt-get install pandoc
+          sudo apt-get install pandoc
           pip freeze
 
       - name: Tests
