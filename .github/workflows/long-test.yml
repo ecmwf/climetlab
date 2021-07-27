@@ -57,7 +57,7 @@ jobs:
 
       - name: Install climetlab
         run: |
-          pip install -e .
+          pip install .
           pip freeze
 
       - name: Install test tools
