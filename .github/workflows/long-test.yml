@@ -63,6 +63,7 @@ jobs:
       - name: Install test tools
         run: |
           pip install pytest pytest-cov
+          pip install nbformat # to test notebooks
           pip freeze
 
       - name: Tests
