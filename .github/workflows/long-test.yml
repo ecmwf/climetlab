@@ -79,7 +79,7 @@ jobs:
 
       - name: Tests notebooks
         run: |
-          pytest --durations=0 -E long -k 'test_notebooks'
+          pytest --durations=0 tests/documentation/test_notebooks.py
         env:
           CLIMETLAB_DEBUG: 1
 
