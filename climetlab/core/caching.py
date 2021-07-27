@@ -25,6 +25,7 @@ import os
 import shutil
 import sqlite3
 import threading
+import time
 from functools import wraps
 
 import psutil
@@ -274,6 +275,13 @@ class Cache(threading.Thread):
                     if full.startswith(n["path"]):
                         parent = n["path"]
                         break
+
+                try:
+                    s = os.stat(full)
+                    if time.time() - s.st_mtime < 120:  # Two minutes
+                        continue
+                except OSError:
+                    pass
 
                 if parent is None:
                     LOG.warning(f"CliMetLab cache: orphan found: {full}")

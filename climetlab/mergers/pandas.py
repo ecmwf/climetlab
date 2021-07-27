@@ -16,6 +16,6 @@ def merge(
     reader_class=None,
     **kwargs,
 ):
-    return pd.concat(
-        [s.to_pandas(**kwargs) for s in sources],
-    )
+    options = dict(ignore_index=True)  # Renumber all indices
+    options.update(kwargs)
+    return pd.concat([s.to_pandas(**kwargs) for s in sources], **options)

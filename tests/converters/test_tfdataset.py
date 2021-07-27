@@ -14,13 +14,10 @@ import os
 import pytest
 
 import climetlab as cml
-from climetlab.testing import modules_installed
+from climetlab.testing import MISSING
 
 
-@pytest.mark.skipif(
-    not modules_installed("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_1():
     pass
 
@@ -30,7 +27,7 @@ def test_tfdataset_1():
     reason="No ~/.cdsapirc",
 )
 @pytest.mark.skipif(
-    not modules_installed("tensorflow"),
+    MISSING("tensorflow"),
     reason="Tensorflow not installed",
 )
 def test_tfdataset_2():
