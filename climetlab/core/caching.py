@@ -315,24 +315,30 @@ class Cache(threading.Thread):
             return {entry: ""}
         n = dict(entry)
         for k in ("args", "owner_data"):
-            if isinstance(n[k], str):
+            if k in n and isinstance(n[k], str):
                 n[k] = json.loads(n[k])
         return n
 
     def _delete_entry(self, entry):
         if isinstance(entry, str):
+            entry = dict(
+                path=entry,
+                size=None,
+                owner=None,
+                args=None,
+            )
             path, size, owner, args = entry, None, None, None
             try:
-                size = os.path.getsize(path)
+                entry["size"] = os.path.getsize(entry["path"])
             except OSError:
                 pass
-        else:
-            path, size, owner, args = (
-                entry["path"],
-                entry["size"],
-                entry["owner"],
-                entry["args"],
-            )
+
+        path, size, owner, args = (
+            entry["path"],
+            entry["size"],
+            entry["owner"],
+            entry["args"],
+        )
 
         LOG.warning(
             "Deleting entry %s", json.dumps(self._entry_to_dict(entry), indent=4)
