@@ -258,7 +258,8 @@ class HTTPDownloader(Downloader):
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True
                 LOG.warning(
-                    "To enable automatic downloading of updated URLs set the 'download-out-of-date-urls' setting to True",
+                    "To enable automatic downloading of updated URLs set the 'download-out-of-date-urls'"
+                    " setting to True",
                 )
             else:
                 LOG.debug("Remote content of URL %s unchanged", url)
