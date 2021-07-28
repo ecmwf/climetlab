@@ -64,6 +64,7 @@ jobs:
 
       - name: Tests
         run: |
+          # -E flag is defined in conftest.py
           pytest --durations=0 -vv -E short
         env:
           CLIMETLAB_DEBUG: 1
