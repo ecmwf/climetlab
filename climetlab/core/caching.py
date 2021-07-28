@@ -311,8 +311,6 @@ class Cache(threading.Thread):
             LOG.exception("Deleting %s", path)
 
     def _entry_to_dict(self, entry):
-        if isinstance(entry, str):
-            return {entry: ""}
         n = dict(entry)
         for k in ("args", "owner_data"):
             if k in n and isinstance(n[k], str):
