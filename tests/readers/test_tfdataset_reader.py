@@ -9,23 +9,25 @@
 # nor does it submit to any jurisdiction.
 #
 
-
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import climetlab_file
+from climetlab.testing import MISSING, TEST_DATA_URL
 
 
-@pytest.mark.long_test
-def test_file_source_grib():
+@pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
+def test_download_tfdataset():
+    ds = load_source(
+        "url-pattern",
+        "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+        # TODO: move adapt test data creation script
+        # url=f"{TEST_DATA_URL}/input/",
+    )
 
-    s = load_source("file", climetlab_file("docs/examples/test.grib"))
-    assert len(s) == 2
-
-
-def test_file_source_netcdf():
-    s = load_source("file", climetlab_file("docs/examples/test.nc"))
-    assert len(s) == 2
+    ds.graph()
+    assert len(ds) == 200, len(ds)
 
 
 if __name__ == "__main__":

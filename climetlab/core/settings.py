@@ -25,8 +25,6 @@ LOG = logging.getLogger(__name__)
 
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
-SETTINGS_STACK = []
-
 
 class Settings:
     def __init__(self, default, description, getter=None, none_ok=False, kind=None):
@@ -113,7 +111,11 @@ SETTINGS_AND_HELP = {
         """Timeout when downloading from an url.""",
         getter="_as_seconds",
     ),
-    "download-updated-urls": _(
+    "check-out-of-date-urls": _(
+        False,
+        "Perform a HTTP request to check if the remote version of a cache file has changed",
+    ),
+    "download-out-of-date-urls": _(
         False,
         "Re-download URLs when the remote version of a cached file as been changed",
     ),

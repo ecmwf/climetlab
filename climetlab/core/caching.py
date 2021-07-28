@@ -25,6 +25,7 @@ import os
 import shutil
 import sqlite3
 import threading
+import time
 from functools import wraps
 
 import psutil
@@ -275,6 +276,13 @@ class Cache(threading.Thread):
                         parent = n["path"]
                         break
 
+                try:
+                    s = os.stat(full)
+                    if time.time() - s.st_mtime < 120:  # Two minutes
+                        continue
+                except OSError:
+                    pass
+
                 if parent is None:
                     LOG.warning(f"CliMetLab cache: orphan found: {full}")
                 else:
@@ -302,6 +310,15 @@ class Cache(threading.Thread):
         except Exception:
             LOG.exception("Deleting %s", path)
 
+    def _entry_to_dict(self, entry):
+        if isinstance(entry, str):
+            return {entry: ""}
+        n = dict(entry)
+        for k in ("args", "owner_data"):
+            if isinstance(n[k], str):
+                n[k] = json.loads(n[k])
+        return n
+
     def _delete_entry(self, entry):
         if isinstance(entry, str):
             path, size, owner, args = entry, None, None, None
@@ -317,6 +334,9 @@ class Cache(threading.Thread):
                 entry["args"],
             )
 
+        LOG.warning(
+            "Deleting entry %s", json.dumps(self._entry_to_dict(entry), indent=4)
+        )
         total = 0
 
         # First, delete child files, e.g. unzipped data
@@ -478,10 +498,22 @@ class Cache(threading.Thread):
                 html.append("<br>")
         return "".join(html)
 
+    def _dump_cache_database(self):
+        result = []
+        with self.connection as db:
+            for d in db.execute("SELECT * FROM cache"):
+                n = dict(d)
+                for k in ("args", "owner_data"):
+                    if n[k] is not None:
+                        n[k] = json.loads(n[k])
+                result.append(n)
+        return result
+
 
 CACHE = Cache()
 CACHE.start()
 
+dump_cache_database = in_executor(CACHE._dump_cache_database)
 register_cache_file = in_executor(CACHE._register_cache_file)
 update_entry = in_executor(CACHE._update_entry)
 check_cache_size = in_executor_forget(CACHE._check_cache_size)

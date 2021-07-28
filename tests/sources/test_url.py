@@ -31,6 +31,7 @@ def test_url_file_source():
     assert len(s) == 2
 
 
+@pytest.mark.ftp
 def test_url_ftp_source_anonymous():
     date = datetime.datetime.now() - datetime.timedelta(days=1)
     load_source(
@@ -43,6 +44,7 @@ def test_url_ftp_source_anonymous():
     )
 
 
+@pytest.mark.ftp
 def test_url_ftp_source_with_user_pass():
     import ftplib
 
@@ -105,6 +107,7 @@ def test_canonical_extension():
     assert canonical_extension("x.csv.gz") == ".csv.gz"
 
 
+@pytest.mark.long_test
 def test_extension():
 
     s = load_source(

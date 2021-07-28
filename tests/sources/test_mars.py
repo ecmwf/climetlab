@@ -15,6 +15,7 @@ from climetlab import load_source
 from climetlab.testing import NO_MARS
 
 
+@pytest.mark.long_test
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_mars_grib():
     s = load_source(

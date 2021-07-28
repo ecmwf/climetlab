@@ -13,9 +13,9 @@
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import MISSING
+from climetlab.testing import MISSING, TEST_DATA_URL
 
-NOT_S3_URL = "https://get.ecmwf.int/test-data/climetlab/fixtures"
+NOT_S3_URL = f"{TEST_DATA_URL}/input"
 S3_URL = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
 S3_URL2 = "s3://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
 
@@ -120,13 +120,13 @@ def test_zarr_from_zip_file():
 
 
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")
-def test_https_does_not_support_zarr():
+def test_http_does_not_support_zarr():
     # If the http(s) server is not a s3 server,
     # it does not work
     with pytest.raises(Exception):
         source = load_source(
             "zarr-s3",
-            f"{NOT_S3_URL}/zarr/mini-rt-20200102.zarr",
+            f"{NOT_S3_URL}/mini-rt-20200102.zarr",
         )
         ds = source.to_xarray()
         assert len(ds.forecast_time) == 1

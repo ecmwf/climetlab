@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # (C) Copyright 2020 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
@@ -7,16 +9,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
+
+def test_version():
+    from climetlab import __version__
+
+    assert __version__ is not None
 
 
-def get_version():
-    version_file = os.path.join(os.path.dirname(__file__), "version")
-    with open(version_file, "r") as f:
-        version = f.readlines()
-        version = version[0]
-        version = version.strip()
-    return version
+if __name__ == "__main__":
+    from climetlab.testing import main
 
-
-__version__ = get_version()
+    main(globals())

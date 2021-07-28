@@ -14,7 +14,7 @@ import mimetypes
 import pytest
 
 import climetlab as cml
-from climetlab.testing import modules_installed
+from climetlab.testing import MISSING, TEST_DATA_URL
 
 
 def test_csv_1():
@@ -78,10 +78,7 @@ def test_csv_4():
     print(s.to_pandas())
 
 
-@pytest.mark.skipif(
-    not modules_installed("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_csv_tfdataset():
     s = cml.load_source(
         "dummy-source",
@@ -139,6 +136,18 @@ def test_csv_mimetypes():
     assert mimetypes.guess_type("x.csv") == ("text/csv", None)
     assert mimetypes.guess_type("x.csv.gz") == ("text/csv", "gzip")
     assert mimetypes.guess_type("x.csv.bz2") == ("text/csv", "bzip2")
+
+
+def test_download_tfdataset():
+    ds = cml.load_source(
+        "url-pattern",
+        "{url}/input/test-{n}.csv",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+    )
+
+    ds.graph()
+    print(ds.to_pandas())
 
 
 # TODO test compression

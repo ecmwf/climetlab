@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+
 from climetlab.core.thread import SoftThreadPool
 from climetlab.utils import tqdm
 
@@ -55,5 +57,7 @@ class MultiUrl(MultiSource):
 
                 iterator = (f.result() for f in futures)
                 sources = list(tqdm(iterator, leave=True, total=len(urls)))
+
+                assert all(os.path.exists(s.path) for s in sources)
 
         super().__init__(sources, filter=filter, merger=merger)

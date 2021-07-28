@@ -12,6 +12,8 @@
 
 import logging
 
+import pytest
+
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
 from climetlab.sources.url import offline
@@ -19,13 +21,14 @@ from climetlab.sources.url import offline
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.long_test
 def test_unpack_zip():
     try:
         with temp_directory() as tmpdir:
             with settings.temporary("cache-directory", tmpdir):
                 ds = load_source(
                     "url",
-                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
                 assert len(ds) == 6, len(ds)
 
@@ -34,7 +37,7 @@ def test_unpack_zip():
                 # Check cache
                 ds = load_source(
                     "url",
-                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
                 assert len(ds) == 6, len(ds)
 
@@ -43,7 +46,7 @@ def test_unpack_zip():
                 LOG.debug("Use the force")
                 ds = load_source(
                     "url",
-                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                     force=True,
                 )
                 assert len(ds) == 6, len(ds)
@@ -52,14 +55,14 @@ def test_unpack_zip():
 
                 ds = load_source(
                     "url",
-                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
                 assert len(ds) == 6, len(ds)
 
                 # Again
                 ds = load_source(
                     "url",
-                    "https://get.ecmwf.int/test-data/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
                 assert len(ds) == 6, len(ds)
     finally:

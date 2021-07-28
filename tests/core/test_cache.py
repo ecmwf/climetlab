@@ -10,13 +10,24 @@
 #
 
 
+import json
+import logging
 import os
 
 import pytest
 
 from climetlab import load_source, settings
-from climetlab.core.caching import cache_entries, cache_file, cache_size, purge_cache
+from climetlab.core.caching import (
+    cache_entries,
+    cache_file,
+    cache_size,
+    dump_cache_database,
+    purge_cache,
+)
 from climetlab.core.temporary import temp_directory
+from climetlab.testing import TEST_DATA_URL
+
+LOG = logging.getLogger(__name__)
 
 
 def test_cache_1():
@@ -64,42 +75,56 @@ def test_cache_2():
 
             load_source(
                 "url-pattern",
-                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
+                f"{TEST_DATA_URL}/input/" + "1mb-{n}.bin",
                 {
                     "n": [0, 1, 2, 3, 4],
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size()
+            cachesize = cache_size()
+            expected = 5 * 1024 * 1024
+            if cachesize != expected:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cachesize == expected, ("before", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
-                print("FILE", i, f)
+                # print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database: {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache database (before): {cnt}"
 
             load_source(
                 "url-pattern",
-                "https://get.ecmwf.int/test-data/climetlab/1mb-{n}.bin",
+                f"{TEST_DATA_URL}/input/" + "1mb-{n}.bin",
                 {
                     "n": [5, 6, 7, 8, 9],
                 },
             )
 
-            assert cache_size() == 5 * 1024 * 1024, cache_size() / 1024.0 / 1024.0
+            cachesize = cache_size()
+            expected = 5 * 1024 * 1024
+            if cachesize != expected:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cachesize == expected, ("after", cachesize / 1024.0 / 1024.0)
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
-                print("FILE", i, f)
+                # print("FILE", i, f)
                 cnt += 1
-            assert cnt == 5, f"Files in cache database: {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache database (after): {cnt}"
 
             cnt = 0
             for n in os.listdir(tmpdir):
                 if n.startswith("cache-") and n.endswith(".db"):
                     continue
                 cnt += 1
-            assert cnt == 5, f"Files in cache directory: {cnt}"
+            if cnt != 5:
+                print(json.dumps(dump_cache_database(), indent=4))
+                assert cnt == 5, f"Files in cache directory: {cnt}"
 
 
 # 1GB ram disk on MacOS (blocks of 512 bytes)
