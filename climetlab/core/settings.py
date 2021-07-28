@@ -25,8 +25,6 @@ LOG = logging.getLogger(__name__)
 
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
-SETTINGS_STACK = []
-
 
 class Settings:
     def __init__(self, default, description, getter=None, none_ok=False, kind=None):
