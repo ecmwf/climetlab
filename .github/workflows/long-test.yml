@@ -97,8 +97,8 @@ jobs:
           pip freeze
 
       - name: Documentation
-        run: |
         if: ${{ matrix.platform == 'ubuntu-latest' }}
+        run: |
           make clean
           make html
           # make linkcheck (don't run yet)
