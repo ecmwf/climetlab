@@ -223,6 +223,10 @@ class HTTPDownloader(Downloader):
         return self.headers(url)
 
     def out_of_date(self, url, path, cache_data):
+
+        if SETTINGS.get("check-out-of-date-urls"):
+            return False
+
         if cache_data is not None:
 
             # TODO: check 'cache-control' to see if we should check the etag
@@ -248,13 +252,13 @@ class HTTPDownloader(Downloader):
             if cached_etag != remote_etag:
                 LOG.warning("Remote content of URL %s has changed", url)
                 if (
-                    SETTINGS.get("download-updated-urls")
+                    SETTINGS.get("download-out-of-date-urls")
                     or self.owner.update_if_out_of_date
                 ):
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True
                 LOG.warning(
-                    "To enable automatic downloading of updated URLs set the 'download-updated-urls' setting to True",
+                    "To enable automatic downloading of updated URLs set the 'download-out-of-date-urls' setting to True",
                 )
             else:
                 LOG.debug("Remote content of URL %s unchanged", url)

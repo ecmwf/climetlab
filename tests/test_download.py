@@ -34,7 +34,7 @@ def test_download_2():
 
 
 def test_download_3():
-    with settings.temporary("download-updated-urls", True):
+    with settings.temporary("download-out-of-date-urls", True):
         url = "https://get.ecmwf.int/test-data/climetlab/input/test.txt"
         download_and_cache(url)
 
