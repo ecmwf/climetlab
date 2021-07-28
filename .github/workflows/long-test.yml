@@ -112,4 +112,4 @@ jobs:
 
       - name: Tests packaging
         run: |
-          pytest --durations=0 tests/core/test/version.py
+          pytest --durations=0 tests/core/test_version.py
