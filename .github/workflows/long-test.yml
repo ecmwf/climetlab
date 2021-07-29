@@ -1,4 +1,4 @@
-name: Long tests
+name: nightly build
 
 on:
   schedule:
