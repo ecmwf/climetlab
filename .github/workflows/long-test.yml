@@ -1,9 +1,6 @@
 name: Long tests
 
 on:
-  push:
-    branches: [ main ]
-
   schedule:
     # Every day at 3:07am
     # on the "default" branch set in github (currently is develop)
