@@ -22,6 +22,7 @@ def test_tfdataset_1():
     pass
 
 
+@pytest.mark.long_test
 @pytest.mark.skipif(
     not os.path.exists(os.path.expanduser("~/.cdsapirc")),
     reason="No ~/.cdsapirc",
