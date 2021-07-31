@@ -1,10 +1,10 @@
 name: nightly build
 
 on:
-  schedule:
-    # Every day at 3:07am
-    # on the "default" branch set in github (currently is develop)
-    - cron:  '07 3 * * *'
+  # schedule:
+  #   # Every day at 3:07am
+  #   # on the "default" branch set in github (currently is develop)
+  #   - cron:  '07 3 * * *'
 
   pull_request: {}
 

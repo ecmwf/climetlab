@@ -8,9 +8,11 @@
 #
 
 
+import glob
 import logging
 import os
 
+from climetlab import load_source
 from climetlab.core.settings import SETTINGS
 from climetlab.readers import reader
 
@@ -27,6 +29,15 @@ class FileSource(Source, os.PathLike):
     merger = None
 
     def mutate(self):
+
+        if isinstance(self.path, (list, tuple)):
+            return load_source(
+                "multi",
+                [load_source("file", p) for p in self.path],
+                filter=self.filter,
+                merger=self.merger,
+            )
+
         # Give a chance to directories and zip files
         # to return a multi-source
         source = self._reader.mutate_source()
@@ -94,7 +105,30 @@ class FileSource(Source, os.PathLike):
 
 
 class File(FileSource):
-    def __init__(self, path, filter=None, merger=None):
+    def __init__(
+        self,
+        path,
+        expand_user=True,
+        expand_vars=False,
+        unix_glob=True,
+        recursive_glob=True,
+        filter=None,
+        merger=None,
+    ):
+
+        if expand_user:
+            path = os.path.expanduser(path)
+
+        if expand_vars:
+            path = os.path.expandvars(path)
+
+        if unix_glob and set(path).intersection(set("[]?*")):
+            matches = glob.glob(path, recursive=recursive_glob)
+            if len(matches) == 1:
+                path = matches[0]
+            if len(matches) > 1:
+                path = sorted(matches)
+
         self.path = path
         self.filter = filter
         self.merger = merger

@@ -68,7 +68,7 @@ class ZIPReader(ArchiveReader):
     def mutate(self):
 
         if self._mutate:
-            return self._mutate.mutate()
+            return self._mutate
 
         return super().mutate()
 

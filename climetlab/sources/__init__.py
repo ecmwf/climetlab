@@ -128,7 +128,12 @@ def register_source(module):
 
 
 def load_source(name: str, *args, context=None, **kwargs) -> Source:
-    return source(name, *args, **kwargs).mutate()
+    prev = None
+    src = source(name, *args, **kwargs)
+    while src is not prev:
+        prev = src
+        src = src.mutate()
+    return src
 
 
 def list_entries():
