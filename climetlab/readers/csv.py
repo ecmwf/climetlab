@@ -7,12 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import bz2
 import csv
-import gzip
 import io
 import logging
-import lzma
 import mimetypes
 import zipfile
 
@@ -52,11 +49,29 @@ def probe_csv(
 
     OPENS = {
         None: open,
-        "gzip": gzip.open,
-        "bz2": bz2.open,
-        "xz": lzma.open,
         "zip": ZipProbe,
     }
+
+    try:
+        import gzip
+
+        OPENS["gzip"] = gzip.open
+    except ImportError:
+        pass
+
+    try:
+        import bz2
+
+        OPENS["bz2"] = bz2.open
+    except ImportError:
+        pass
+
+    try:
+        import lzma
+
+        OPENS["lzma"] = lzma.open
+    except ImportError:
+        pass
 
     _open = OPENS[compression]
 

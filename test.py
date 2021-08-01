@@ -1,21 +1,19 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.layers import (
+from tensorflow.keras.layers import (  # Dropout,; MaxPool2D,
     AveragePooling2D,
     Conv2D,
     Dense,
-    Dropout,
     Flatten,
     InputLayer,
-    MaxPool2D,
     Reshape,
 )
 from tensorflow.keras.models import Sequential
-from tensorflow.python.keras.backend import one_hot
 
-from climetlab import load_source, plot_map
-from climetlab.testing import climetlab_file
+from climetlab import load_source
+
+# from tensorflow.python.keras.backend import one_hot
+
 
 years = list(range(1979, 1979 + 4))
 
@@ -288,12 +286,11 @@ s = load_source(
         load_source(
             "cds",
             "reanalysis-era5-single-levels-monthly-means",
-            variable='all',
+            variable="all",
             year=year,
             month=list(range(1, 13)),
             time=0,
             product_type="monthly_averaged_reanalysis",
-
             grid=[1, 1],
         )
         for year in years
