@@ -257,6 +257,45 @@ class GRIBReader(Reader):
     def to_xarray(self, **kwargs):
         return type(self).to_xarray_multi([self.path], **kwargs)
 
+    def to_tfdataset(self, **kwargs):
+        assert "label" in kwargs
+        if "label" in kwargs:
+            return self._to_tfdataset_supervised(**kwargs)
+        else:
+            return self._to_tfdataset_unsupervised(**kwargs)
+
+    def _to_tfdataset_unsupervised(self, **kwargs):
+        def generate():
+            for s in self:
+                yield s.to_numpy()
+
+        import tensorflow as tf
+
+        # TODO check the cost of the conversion
+        # maybe default to float64
+        dtype = kwargs.get("dtype", tf.float32)
+        return tf.data.Dataset.from_generator(generate, dtype)
+
+    def _to_tfdataset_supervised(self, label, **kwargs):
+        def generate():
+            for s in self:
+                yield s.to_numpy(), s.handle.get(label)
+
+        import tensorflow as tf
+
+        shape = self[0].shape
+
+        # TODO check the cost of the conversion
+        # maybe default to float64
+        dtype = kwargs.get("dtype", tf.float32)
+        return tf.data.Dataset.from_generator(
+            generate,
+            output_signature=(
+                tf.TensorSpec(shape, dtype=dtype, name="data"),
+                tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
+            ),
+        )
+
     @classmethod
     def to_xarray_multi(cls, paths, **kwargs):
         import xarray as xr

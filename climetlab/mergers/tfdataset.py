@@ -8,6 +8,19 @@
 #
 
 
+def _concat(sources, *args, **kwargs):
+    ds = sources[0].to_tfdataset(**kwargs)
+    for s in sources[1:]:
+        ds = ds.concatenate(s.to_tfdataset(**kwargs))
+    return ds
+
+
+def _zip(sources, *args, **kwargs):
+    import tensorflow as tf
+
+    return tf.data.Dataset.zip(tuple(s.to_tfdataset(**kwargs) for s in sources))
+
+
 def merge(
     sources=None,
     paths=None,
@@ -18,7 +31,5 @@ def merge(
         if reader_class is not None and hasattr(reader_class, "to_tfdataset_multi"):
             return reader_class.to_tfdataset_multi(paths, **kwargs)
 
-    ds = sources[0].to_tfdataset()
-    for s in sources[1:]:
-        ds = ds.concatenate(s.to_tfdataset())
-    return ds
+    method = "_" + kwargs.get("method", "concat")
+    return globals()[method](sources, paths, reader_class, **kwargs)

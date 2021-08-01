@@ -64,7 +64,14 @@ class CDSRetriever(FileSource):
     CDSRetriever
     """
 
-    def __init__(self, dataset, **kwargs):
+    def __init__(self, dataset, *args, **kwargs):
+        assert isinstance(dataset, str)
+        if len(args):
+            assert len(args) == 1
+            assert isinstance(args[0], dict)
+            assert not kwargs
+            kwargs = args[0]
+
         request = self.request(**kwargs)
 
         def retrieve(target, args):

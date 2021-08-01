@@ -9,17 +9,73 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 import os
 
 import pytest
 
 import climetlab as cml
-from climetlab.testing import MISSING
+from climetlab.testing import MISSING, climetlab_file
+
+LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
-def test_tfdataset_1():
-    pass
+@pytest.mark.skipif(
+    MISSING("tensorflow"),
+    reason="Tensorflow not installed",
+)
+def test_tfdataset_grib_1():
+    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
+    dataset = s.to_tfdataset()
+
+    # First pass
+    cnt = 0
+    for _ in dataset:
+        cnt += 1
+    assert cnt == 2
+
+    # Second pass
+    cnt = 0
+    for _ in dataset:
+        cnt += 1
+    assert cnt == 2
+
+
+@pytest.mark.skipif(
+    MISSING("tensorflow"),
+    reason="Tensorflow not installed",
+)
+def test_tfdataset_grib_2():
+    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
+    dataset = s.to_tfdataset(dtype="float64")
+    for _ in dataset:
+        pass
+
+
+@pytest.mark.skipif(
+    MISSING("tensorflow"),
+    reason="Tensorflow not installed",
+)
+def test_tfdataset_grib_3():
+    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
+    dataset = s.to_tfdataset(label="paramId")
+    for data, paramId in dataset:
+        LOG.debug("Shape %s, param %s", data.shape, paramId)
+
+
+@pytest.mark.skipif(
+    MISSING("tensorflow"),
+    reason="Tensorflow not installed",
+)
+def test_tfdataset_grib_4():
+    s = cml.load_source(
+        "multi",
+        cml.load_source("file", climetlab_file("docs/examples/test.grib")),
+        cml.load_source("file", climetlab_file("docs/examples/test.grib")),
+    )
+    dataset = s.to_tfdataset(label="paramId")
+    for r in dataset:
+        print(len(r), [type(x) for x in r])
 
 
 @pytest.mark.long_test

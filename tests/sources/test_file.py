@@ -16,8 +16,8 @@ import os
 import pytest
 
 from climetlab import load_source
+from climetlab.core.temporary import temp_directory
 from climetlab.testing import climetlab_file
-from climetlab.core.temporary import temp_directory, temp_file
 
 LOG = logging.getLogger(__name__)
 
@@ -55,14 +55,15 @@ def test_user():
 def test_glob():
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
     with temp_directory() as tmpdir:
-        s.save(os.path.join(tmpdir,"a.grib"))
-        s.save(os.path.join(tmpdir,"b.grib"))
+        s.save(os.path.join(tmpdir, "a.grib"))
+        s.save(os.path.join(tmpdir, "b.grib"))
 
-        s = load_source("file", os.path.join(tmpdir,"*.grib"))
+        s = load_source("file", os.path.join(tmpdir, "*.grib"))
         assert len(s) == 4, len(s)
 
         s = load_source("file", tmpdir)
         assert len(s) == 4, len(s)
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
