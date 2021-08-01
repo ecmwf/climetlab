@@ -258,7 +258,7 @@ class GRIBReader(Reader):
         return type(self).to_xarray_multi([self.path], **kwargs)
 
     def to_tfdataset(self, **kwargs):
-        assert "label" in kwargs
+        # assert "label" in kwargs
         if "label" in kwargs:
             return self._to_tfdataset_supervised(**kwargs)
         else:
