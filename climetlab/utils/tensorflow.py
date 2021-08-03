@@ -6,20 +6,33 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import tensorflow as tf  # noqa
+import tensorflow as tf  
 
 
-def python_dict_to_tensorflow_hash_table(labels, name=None, dtype=tf.int32):
+def make_labels_hash_table(
+    labels,
+    name=None,
+    key_dtype=None,
+    dtype=tf.int64,
+):
 
-    assert False, "Work in progress"
+    if key_dtype is None:
+        if all(isinstance(label, str) for label in labels):
+            key_dtype = tf.string
+
+        if all(isinstance(label, int) for label in labels):
+            key_dtype = tf.int64
+
+        if all(isinstance(label, float) for label in labels):
+            key_dtype = tf.float64
 
     mapping = dict()
     for label in labels:
         mapping[len(mapping)] = label
 
-    return tf.lookup.StaticHashTable(
+    return mapping, tf.lookup.StaticHashTable(
         initializer=tf.lookup.KeyValueTensorInitializer(
-            keys=tf.constant(mapping, dtype=dtype),
+            keys=tf.constant(labels, dtype=key_dtype),
             values=tf.constant(list(range(len(mapping))), dtype=dtype),
         ),
         default_value=tf.constant(-1, dtype=dtype),
@@ -29,6 +42,11 @@ def python_dict_to_tensorflow_hash_table(labels, name=None, dtype=tf.int32):
 
 def make_label_one_hot(table, name=None, axis=-1):
     def wrapped(x):
-        return tf.one_hot(table.lookup(x), len(table), name=name, axis=axis)
+        return tf.one_hot(
+            table.lookup(x),
+            int(table.size()),
+            name=name,
+            axis=axis,
+        )
 
     return wrapped
