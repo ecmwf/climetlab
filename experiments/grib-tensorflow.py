@@ -8,7 +8,7 @@
 #
 
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
 from tensorflow.keras.layers import (
     AveragePooling2D,
     Conv2D,
@@ -318,7 +318,7 @@ print(dataset.element_spec)
 dataset = dataset.shuffle(1024)
 dataset = dataset.map(one_hot)
 
-# dataset = dataset.cache()
+dataset = dataset.cache()
 dataset = dataset.batch(len(mapping))
 dataset = dataset.prefetch(tf.data.AUTOTUNE)
 
@@ -358,14 +358,15 @@ train = dataset.skip(split)
 
 model.fit(
     train,
-    epochs=4,
+    epochs=1,
     verbose=1,
     validation_data=validation,
     callbacks=[
         EarlyStopping(
             # monitor="val_accuracy",
             patience=10,
-        )
+        ),
+        TensorBoard(log_dir="logs"),
     ],
 )
 
