@@ -36,6 +36,10 @@ class Base:
     def to_metview(self, **kwargs):
         self._not_implemented()
 
+    # Change class
+    def mutate(self):
+        return self
+
     # Used when plotting
     def plot_map(self, driver):
         self._not_implemented()

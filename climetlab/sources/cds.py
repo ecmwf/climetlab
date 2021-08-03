@@ -74,9 +74,7 @@ class CDSRetriever(FileSource):
             assert not kwargs
             kwargs = args[0]
 
-        requests = self.request(**kwargs)
-        if not isinstance(requests, (list, tuple)):
-            requests = [requests]
+        requests = self.requests(**kwargs)
 
         client()  # Trigger password prompt before thraeding
 
@@ -103,10 +101,10 @@ class CDSRetriever(FileSource):
         )
 
     @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
-    def request(self, **kwargs):
+    def requests(self, **kwargs):
         split_on = kwargs.pop("split_on", None)
         if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):
-            return kwargs
+            return [kwargs]
 
         result = []
 

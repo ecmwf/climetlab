@@ -100,7 +100,8 @@ class FileSource(Source, os.PathLike):
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
-        path = self.path.replace(cache_dir, "CACHE:")
+        if isinstance(self.path, str):
+            path = self.path.replace(cache_dir, "CACHE:")
         return f"{self.__class__.__name__}({path},{self._reader.__class__.__name__})"
 
     def __fspath__(self):

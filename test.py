@@ -15,7 +15,7 @@ from climetlab import load_source
 # from tensorflow.python.keras.backend import one_hot
 
 
-years = list(range(1979, 1979+4))
+years = list(range(1979, 1979 + 4))
 
 PARAMS = (
     129,
@@ -291,6 +291,7 @@ s = load_source(
     grid=[1, 1],
     split_on="year",
 )
+
 
 print(s.sources[0].path)
 

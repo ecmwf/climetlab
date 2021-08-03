@@ -51,7 +51,7 @@ def get_wrapper(data, *args, **kwargs):
     for name, h in _wrappers().items():
         wrapper = h(data, *args, **kwargs)
         if wrapper is not None:
-            return wrapper
+            return wrapper.mutate()
 
     fullname = ".".join([data.__class__.__module__, data.__class__.__qualname__])
 

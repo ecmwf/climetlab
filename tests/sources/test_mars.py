@@ -17,7 +17,7 @@ from climetlab.testing import NO_MARS
 
 @pytest.mark.long_test
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_mars_grib():
+def test_mars_grib_1():
     s = load_source(
         "mars",
         param=["2t", "msl"],
@@ -27,6 +27,22 @@ def test_mars_grib():
         date="2012-12-13",
     )
     assert len(s) == 2
+
+
+@pytest.mark.long_test
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
+def test_mars_grib_2():
+    s = load_source(
+        "mars",
+        param=["2t", "msl"],
+        levtype="sfc",
+        area=[50, -50, 20, 50],
+        grid=[1, 1],
+        date="2012-12-13",
+        split_on="param",
+    )
+    assert len(s) == 2
+    assert len(s.sources) == 2
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@
 
 import logging
 import os
+import sys
 
 import pytest
 
@@ -34,7 +35,7 @@ def test_file_source_netcdf():
     assert len(s) == 2
 
 
-def test_user():
+def test_user_1():
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
     home_file = os.path.expanduser("~/.climetlab/test.grib")
     try:
@@ -42,6 +43,21 @@ def test_user():
         # Test expand user
         s = load_source("file", "~/.climetlab/test.grib")
         assert len(s) == 2
+    finally:
+        try:
+            os.unlink(home_file)
+        except OSError:
+            LOG.exception("unlink(%s)", home_file)
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="Cannot (yet) use expandvars on Windows"
+)
+def test_user_2():
+    s = load_source("file", climetlab_file("docs/examples/test.grib"))
+    home_file = os.path.expanduser("~/.climetlab/test.grib")
+    try:
+        s.save(home_file)
         # Test expand vars
         s = load_source("file", "$HOME/.climetlab/test.grib", expand_vars=True)
         assert len(s) == 2

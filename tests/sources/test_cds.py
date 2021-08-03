@@ -16,7 +16,7 @@ from climetlab.testing import NO_CDS
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_cds_grib():
+def test_cds_grib_1():
 
     s = load_source(
         "cds",
@@ -28,6 +28,23 @@ def test_cds_grib():
         time="12:00",
     )
     assert len(s) == 2
+
+
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+def test_cds_grib_2():
+
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12",
+        time="12:00",
+        split_on="variable",
+    )
+    assert len(s) == 2
+    assert len(s.sources) == 2
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
