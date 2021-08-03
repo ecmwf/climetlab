@@ -23,6 +23,7 @@ from climetlab import load_source
 from climetlab.utils.tensorflow import make_label_one_hot, make_labels_hash_table
 
 years = list(range(1979, 1979 + 4))
+years = list(range(1979, 2021))
 
 PARAMS = (
     129,
@@ -300,7 +301,7 @@ s = load_source(
 )
 
 
-print(s.sources[0].path)
+# print(s.sources[0].path)
 
 
 dataset = s.to_tfdataset(label="paramId")
@@ -358,7 +359,7 @@ train = dataset.skip(split)
 
 model.fit(
     train,
-    epochs=1,
+    epochs=3,
     verbose=1,
     validation_data=validation,
     callbacks=[
@@ -366,7 +367,12 @@ model.fit(
             # monitor="val_accuracy",
             patience=10,
         ),
-        TensorBoard(log_dir="logs"),
+        TensorBoard(
+            log_dir="logs",
+            histogram_freq=1,
+            # profile_batch="500,520",
+            profile_batch = (1, 1000),
+        ),
     ],
 )
 
