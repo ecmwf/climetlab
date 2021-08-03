@@ -15,7 +15,7 @@ from climetlab import load_source
 # from tensorflow.python.keras.backend import one_hot
 
 
-years = list(range(1979, 1979 + 4))
+years = list(range(1979, 1979+4))
 
 PARAMS = (
     129,
@@ -281,20 +281,15 @@ PARAMS = (
 )
 
 s = load_source(
-    "multi",
-    [
-        load_source(
-            "cds",
-            "reanalysis-era5-single-levels-monthly-means",
-            variable="all",
-            year=year,
-            month=list(range(1, 13)),
-            time=0,
-            product_type="monthly_averaged_reanalysis",
-            grid=[1, 1],
-        )
-        for year in years
-    ],
+    "cds",
+    "reanalysis-era5-single-levels-monthly-means",
+    variable="all",
+    year=years,
+    month=list(range(1, 13)),
+    time=0,
+    product_type="monthly_averaged_reanalysis",
+    grid=[1, 1],
+    split_on="year",
 )
 
 print(s.sources[0].path)

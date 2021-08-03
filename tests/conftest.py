@@ -1,8 +1,8 @@
 import pytest
 
 SKIP = {
-    "short": ["notebook", "long_test", "external_download"],
-    "long": ["external_download"],
+    "short": ["notebook", "long_test", "external_download", "ftp"],
+    "long": ["external_download", "ftp"],
     "release": [],
 }
 

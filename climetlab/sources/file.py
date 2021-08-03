@@ -31,12 +31,15 @@ class FileSource(Source, os.PathLike):
     def mutate(self):
 
         if isinstance(self.path, (list, tuple)):
-            return load_source(
-                "multi",
-                [load_source("file", p) for p in self.path],
-                filter=self.filter,
-                merger=self.merger,
-            )
+            if len(self.path) == 1:
+                self.path = self.path[0]
+            else:
+                return load_source(
+                    "multi",
+                    [load_source("file", p) for p in self.path],
+                    filter=self.filter,
+                    merger=self.merger,
+                )
 
         # Give a chance to directories and zip files
         # to return a multi-source

@@ -32,6 +32,7 @@ def test_url_file_source():
 
 
 @pytest.mark.ftp
+@pytest.mark.external_download
 def test_url_ftp_source_anonymous():
     date = datetime.datetime.now() - datetime.timedelta(days=1)
     load_source(
