@@ -318,7 +318,7 @@ print(dataset.element_spec)
 dataset = dataset.shuffle(1024)
 dataset = dataset.map(one_hot)
 
-dataset = dataset.cache()
+# dataset = dataset.cache()
 dataset = dataset.batch(len(mapping))
 dataset = dataset.prefetch(tf.data.AUTOTUNE)
 
@@ -358,7 +358,7 @@ train = dataset.skip(split)
 
 model.fit(
     train,
-    epochs=1000,
+    epochs=4,
     verbose=1,
     validation_data=validation,
     callbacks=[
@@ -368,3 +368,5 @@ model.fit(
         )
     ],
 )
+
+print(len(s))

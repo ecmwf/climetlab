@@ -7,8 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+import atexit
 import datetime
 import logging
+from collections import defaultdict
 
 import eccodes
 
@@ -26,14 +28,26 @@ LOG = logging.getLogger(__name__)
 # See https://pymotw.com/2/weakref/
 
 
+STATS = defaultdict(int)
+
+
+def print_stats():
+    print(STATS)
+
+
+atexit.register(print_stats)
+
+
 class CodesHandle:
     def __init__(self, handle, path, offset):
         self.handle = handle
         self.path = path
         self.offset = offset
+        STATS["+CodesHandle"] += 1
 
     def __del__(self):
         eccodes.codes_release(self.handle)
+        STATS["-CodesHandle"] += 1
 
     def get(self, name):
         try:
