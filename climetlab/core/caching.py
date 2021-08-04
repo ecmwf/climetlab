@@ -601,5 +601,35 @@ def cache_file(
     return path
 
 
+def auxiliary_cache_file(
+    owner,
+    path,
+    index=0,
+    extension=".cache",
+):
+    # Create an auxiliary cache file
+    # to be used for example to cache an index
+    # It is invalidated if `path` is changed
+    stat = os.stat(path)
+
+    def create(target, args):
+        # Simply touch the file
+        with open(target, "w") as f:
+            pass
+
+    return cache_file(
+        owner,
+        create,
+        (
+            path,
+            stat.st_ctime,
+            stat.st_mtime,
+            stat.st_size,
+            index,
+        ),
+        extension=extension,
+    )
+
+
 # housekeeping()
 SETTINGS.on_change(settings_changed)

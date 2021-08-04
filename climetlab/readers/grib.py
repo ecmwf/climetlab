@@ -11,10 +11,12 @@ import atexit
 import datetime
 import logging
 from collections import defaultdict
-
+import json
 import eccodes
+import os
 
 from climetlab.core import Base
+from climetlab.core.caching import auxiliary_cache_file
 from climetlab.utils import timer
 
 # from climetlab.decorators import dict_args
@@ -22,6 +24,7 @@ from climetlab.utils.bbox import BoundingBox
 
 from . import Reader
 
+N = 0
 LOG = logging.getLogger(__name__)
 
 # return eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
@@ -37,6 +40,68 @@ def print_stats():
 
 
 atexit.register(print_stats)
+
+# This does not belong here, should be in the C library
+def _get_message_offsets(path):
+    global N
+    print(N, "_get_message_offsets", path, os.path.getsize(path))
+    N += 1
+
+    fd = os.open(path, os.O_RDONLY)
+    try:
+
+        def get(count):
+            buf = os.read(fd, count)
+            assert len(buf) == count
+            n = 0
+            for i in buf:
+                n = n * 256 + int(i)
+            return n
+
+        offset = 0
+        while True:
+            code = os.read(fd, 4)
+            if len(code) < 4:
+                break
+
+            if code != b"GRIB":
+                offset = os.lseek(fd, offset + 1, os.SEEK_SET)
+                continue
+
+            length = get(3)
+            edition = get(1)
+
+            if edition == 1:
+                if length & 0x800000:
+                    sec1len = get(3)
+                    os.lseek(fd, 4, os.SEEK_CUR)
+                    flags = int(os.read(fd, 1))
+                    os.lseek(fd, sec1len - 8, os.SEEK_CUR)
+
+                    if flags & (1 << 7):
+                        sec2len = get(3)
+                        os.lseek(fd, sec2len - 3, os.SEEK_CUR)
+
+                    if flags & (1 << 6):
+                        sec3len = get(3)
+                        os.lseek(fd, sec3len - 3, os.SEEK_CUR)
+
+                    sec4len = get(3)
+
+                    if sec4len < 120:
+                        length &= 0x7FFFFF
+                        length *= 120
+                        length -= sec4len
+                        length += 4
+
+            if edition == 2:
+                length = get(8)
+
+            yield offset, length
+            offset = os.lseek(fd, offset + length, os.SEEK_SET)
+
+    finally:
+        os.close(fd)
 
 
 class CodesHandle:
@@ -247,6 +312,12 @@ class GRIBReader(Reader):
         super().__init__(source, path)
         self._fields = None
         self._reader = None
+        self._cache = auxiliary_cache_file("grib", path, extension=".idx")
+        # try:
+        #     with open(self._cache) as f:
+        #         self._fields = json.loads(f.read())
+        # except Exception:
+        #     pass
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -257,8 +328,16 @@ class GRIBReader(Reader):
     def _items(self):
         if self._fields is None:
             self._fields = []
-            for f in self:
-                self._fields.append(f.offset)
+            with timer(f"_items {self.path}"):
+                for offset, length in _get_message_offsets(self.path):
+                    self._fields.append(offset)
+            print("---->", len(self._fields))
+            # try:
+            #     with open(self._cache, "w") as f:
+            #         f.write(json.dumps(self._fields))
+            # except Exception:
+            #     pass
+
         return self._fields
 
     def __getitem__(self, n):

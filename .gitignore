@@ -153,3 +153,7 @@ climetlab/tools/
 *.tar
 *.tgz
 test-data/
+logs/
+*.index
+*.data-*
+*.out
