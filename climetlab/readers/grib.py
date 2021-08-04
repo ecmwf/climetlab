@@ -15,6 +15,7 @@ from collections import defaultdict
 import eccodes
 
 from climetlab.core import Base
+from climetlab.utils import timer
 
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
@@ -265,6 +266,12 @@ class GRIBReader(Reader):
             self._reader = CodesReader(self.path)
         return GribField(reader=self._reader, offset=self._items()[n])
 
+    @property
+    def first(self):
+        if self._reader is None:
+            self._reader = CodesReader(self.path)
+        return GribField(reader=self._reader, offset=0)
+
     def __len__(self):
         return len(self._items())
 
@@ -297,18 +304,20 @@ class GRIBReader(Reader):
 
         import tensorflow as tf
 
-        shape = self[0].shape
+        with timer("_to_tfdataset_supervised shape"):
+            shape = self.first.shape
 
         # TODO check the cost of the conversion
         # maybe default to float64
         dtype = kwargs.get("dtype", tf.float32)
-        return tf.data.Dataset.from_generator(
-            generate,
-            output_signature=(
-                tf.TensorSpec(shape, dtype=dtype, name="data"),
-                tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
-            ),
-        )
+        with timer("tf.data.Dataset.from_generator"):
+            return tf.data.Dataset.from_generator(
+                generate,
+                output_signature=(
+                    tf.TensorSpec(shape, dtype=dtype, name="data"),
+                    tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
+                ),
+            )
 
     @classmethod
     def to_xarray_multi(cls, paths, **kwargs):

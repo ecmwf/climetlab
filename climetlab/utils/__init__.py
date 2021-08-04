@@ -9,6 +9,8 @@
 import inspect
 import json
 import re
+import time
+from contextlib import contextmanager
 
 import requests
 
@@ -161,3 +163,12 @@ def string_to_args(s):
             args.append(typed(bit))
 
     return name, args, kwargs
+
+
+@contextmanager
+def timer(msg):
+    start = time.time()
+    try:
+        yield None
+    finally:
+        print(f"{msg}: {time.time()-start}")
