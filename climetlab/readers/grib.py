@@ -157,6 +157,7 @@ class CodesReader:
 
 class GribField(Base):
     def __init__(self, *, handle=None, reader=None, offset=None):
+        assert reader
         self._handle = handle
         self._reader = reader
         self._offset = offset
@@ -397,7 +398,7 @@ class GRIBReader(Reader):
 
     @property
     def first(self):
-        return GribField(reader=self._reader, offset=0)
+        return GribField(reader=self.reader, offset=0)
 
     def __len__(self):
         return len(self.index.offsets)
@@ -431,14 +432,14 @@ class GRIBReader(Reader):
 
         import tensorflow as tf
 
-        with timer("_to_tfdataset_supervised shape"):
-            shape = self.first.shape
+        # with timer("_to_tfdataset_supervised shape"):
+        shape = self.first.shape
 
         # TODO check the cost of the conversion
         # maybe default to float64
         dtype = kwargs.get("dtype", tf.float32)
-        with timer("tf.data.Dataset.from_generator"):
-            return tf.data.Dataset.from_generator(
+        # with timer("tf.data.Dataset.from_generator"):
+        return tf.data.Dataset.from_generator(
                 generate,
                 output_signature=(
                     tf.TensorSpec(shape, dtype=dtype, name="data"),

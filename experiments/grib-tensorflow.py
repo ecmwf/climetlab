@@ -287,86 +287,64 @@ PARAMS = (
     9,
 )
 
-with timer("load_source"):
-    s = load_source(
-        "cds",
-        "reanalysis-era5-single-levels-monthly-means",
-        variable="all",
-        year=years,
-        month=list(range(1, 13)),
-        time=0,
-        product_type="monthly_averaged_reanalysis",
-        grid=[0.25, 0.25],
-        split_on="year",
-    )
+s = load_source(
+    "cds",
+    "reanalysis-era5-single-levels-monthly-means",
+    variable="all",
+    year=years,
+    month=list(range(1, 13)),
+    time=0,
+    product_type="monthly_averaged_reanalysis",
+    grid=[0.25, 0.25],
+    split_on="year",
+)
 
 
-# print(s.sources[0].path)
+dataset1 = s.to_tfdataset().skip(10)
+dataset2 = s.to_tfdataset()
+
+wb = tf.dataset.zip()
 
 
-with timer("to_tfdataset"):
-    dataset = s.to_tfdataset(label="paramId")
-
-with timer("make_labels_hash_table"):
-    mapping, table = make_labels_hash_table(PARAMS)
-
-with timer("make_label_one_hot"):
-    one_hot_1 = make_label_one_hot(table, "paramId")
-
+mapping, table = make_labels_hash_table(PARAMS)
+one_hot_1 = make_label_one_hot(table, "paramId")
 
 def one_hot(data, paramId):
     return data, one_hot_1(paramId)
 
-
 # print(dataset.element_spec)
-with timer("shuffle"):
-    dataset = dataset.shuffle(1024)
+dataset = dataset.shuffle(1024)
+dataset = dataset.map(one_hot)
+dataset = dataset.cache("cache")
 
-with timer("map"):
-    dataset = dataset.map(one_hot)
-
-with timer("cache"):
-    dataset = dataset.cache("cache")
-
-with timer(f"batch {len(mapping)}"):
-    dataset = dataset.batch(len(mapping))
-
-with timer("prefetch"):
-    dataset = dataset.prefetch(tf.data.AUTOTUNE)
+dataset = dataset.batch(len(mapping))
+dataset = dataset.prefetch(tf.data.AUTOTUNE)
 
 
-with timer("take(1)"):
-    for n in dataset.take(1):
-        print(n)
+for n in dataset.take(1):
+    print(n)
 
-with timer("shape"):
-    shape = dataset.element_spec[0].shape
-    print(shape)
+shape = dataset.element_spec[0].shape
+print(shape)
 
-with timer("model"):
 
-    model = Sequential()
-    model.add(InputLayer(input_shape=(shape[-2], shape[-1])))
+model = Sequential()
+model.add(InputLayer(input_shape=(shape[-2], shape[-1])))
 
-    # model.add(Reshape(target_shape=(shape[-2], shape[-1], 1)))
-    # model.add(Conv2D(8, 2))
-    # model.add(AveragePooling2D((10, 10)))
 
-    model.add(Flatten())
-    model.add(Dense(2, activation="relu"))
-    # model.add(Dropout(0.2))
-    model.add(Dense(len(mapping), activation="softmax"))
-    print(model.summary())
+model.add(Flatten())
+model.add(Dense(2, activation="relu"))
+model.add(Dense(len(mapping), activation="softmax"))
+print(model.summary())
 
-with timer("compile"):
 
-    model.compile(
-        optimizer="adam",
-        loss="categorical_crossentropy",
-        metrics=["accuracy"],
-    )
+model.compile(
+    optimizer="adam",
+    loss="categorical_crossentropy",
+    metrics=["accuracy"],
+)
 
-    print(model.summary())
+print(model.summary())
 
 split = 1
 print(split)
