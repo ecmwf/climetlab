@@ -12,6 +12,7 @@ from climetlab import load_source
 from climetlab.utils import timer
 
 years = list(range(1979, 2021))
+years = list(range(1979, 1979 + 3))
 
 
 with timer("load_source"):
@@ -23,7 +24,8 @@ with timer("load_source"):
         month=list(range(1, 13)),
         time=0,
         product_type="monthly_averaged_reanalysis",
-        grid=[0.25, 0.25],
+        # grid=[0.25, 0.25],
+        grid=[1, 1],
         split_on="year",
     )
 

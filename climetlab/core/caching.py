@@ -605,6 +605,7 @@ def auxiliary_cache_file(
     owner,
     path,
     index=0,
+    content=None,
     extension=".cache",
 ):
     # Create an auxiliary cache file
@@ -615,7 +616,8 @@ def auxiliary_cache_file(
     def create(target, args):
         # Simply touch the file
         with open(target, "w") as f:
-            pass
+            if content:
+                f.write(content)
 
     return cache_file(
         owner,

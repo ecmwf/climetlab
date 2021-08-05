@@ -7,13 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-import atexit
+# import atexit
 import datetime
-import logging
-from collections import defaultdict
 import json
-import eccodes
+import logging
 import os
+
+import eccodes
 
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
@@ -24,28 +24,27 @@ from climetlab.utils.bbox import BoundingBox
 
 from . import Reader
 
-N = 0
+# from collections import defaultdict
+
+
 LOG = logging.getLogger(__name__)
 
-# return eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
 
 # See https://pymotw.com/2/weakref/
 
 
-STATS = defaultdict(int)
+# STATS = defaultdict(int)
 
 
-def print_stats():
-    print(STATS)
+# def print_stats():
+#     print(STATS)
 
 
-atexit.register(print_stats)
+# atexit.register(print_stats)
+
 
 # This does not belong here, should be in the C library
 def _get_message_offsets(path):
-    global N
-    print(N, "_get_message_offsets", path, os.path.getsize(path))
-    N += 1
 
     fd = os.open(path, os.O_RDONLY)
     try:
@@ -109,11 +108,11 @@ class CodesHandle:
         self.handle = handle
         self.path = path
         self.offset = offset
-        STATS["+CodesHandle"] += 1
+        # STATS["+CodesHandle"] += 1
 
     def __del__(self):
         eccodes.codes_release(self.handle)
-        STATS["-CodesHandle"] += 1
+        # STATS["-CodesHandle"] += 1
 
     def get(self, name):
         try:
@@ -154,10 +153,6 @@ class CodesReader:
     @property
     def offset(self):
         return self.file.tell()
-
-
-def cb(r):
-    print("Delete", r)
 
 
 class GribField(Base):
@@ -302,6 +297,69 @@ class GRIBFilter:
 #     backend_kwargs = {"squeeze": False}
 
 
+class GRIBIndex:
+
+    VERSION = 1
+
+    def __init__(self, path):
+        self.path = path
+        self.offsets = None
+        self.lengths = None
+        self.cache = auxiliary_cache_file(
+            "grib",
+            path,
+            content="null",
+            extension=".json",
+        )
+
+        if not self._load_cache():
+            self._build_index()
+
+    def _build_index(self):
+
+        offsets = []
+        lengths = []
+
+        for offset, length in _get_message_offsets(self.path):
+            offsets.append(offset)
+            lengths.append(length)
+
+        self.offsets = offsets
+        self.lengths = lengths
+
+        self._save_cache()
+
+    def _save_cache(self):
+        try:
+            with open(self.cache, "w") as f:
+                json.dump(
+                    dict(
+                        version=self.VERSION,
+                        offsets=self.offsets,
+                        lengths=self.lengths,
+                    ),
+                    f,
+                )
+        except Exception:
+            LOG.exception("Write to cache failed %s", self.cache)
+
+    def _load_cache(self):
+        try:
+            with open(self.cache) as f:
+                c = json.load(f)
+                if not isinstance(c, dict):
+                    return False
+
+                assert c["version"] == self.VERSION
+                self.offsets = c["offsets"]
+                self.lengths = c["lengths"]
+                return True
+        except Exception:
+            LOG.exception("Load from cache failed %s", self.cache)
+
+        return False
+
+
 class GRIBReader(Reader):
     appendable = True  # GRIB messages can be added to the same file
 
@@ -310,14 +368,8 @@ class GRIBReader(Reader):
 
     def __init__(self, source, path):
         super().__init__(source, path)
-        self._fields = None
+        self._index = None
         self._reader = None
-        self._cache = auxiliary_cache_file("grib", path, extension=".idx")
-        # try:
-        #     with open(self._cache) as f:
-        #         self._fields = json.loads(f.read())
-        # except Exception:
-        #     pass
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -325,34 +377,30 @@ class GRIBReader(Reader):
     def __iter__(self):
         return GRIBIterator(self.path)
 
-    def _items(self):
-        if self._fields is None:
-            self._fields = []
-            with timer(f"_items {self.path}"):
-                for offset, length in _get_message_offsets(self.path):
-                    self._fields.append(offset)
-            print("---->", len(self._fields))
-            # try:
-            #     with open(self._cache, "w") as f:
-            #         f.write(json.dumps(self._fields))
-            # except Exception:
-            #     pass
-
-        return self._fields
-
-    def __getitem__(self, n):
+    @property
+    def reader(self):
         if self._reader is None:
             self._reader = CodesReader(self.path)
-        return GribField(reader=self._reader, offset=self._items()[n])
+        return self._reader
+
+    @property
+    def index(self):
+        if self._index is None:
+            self._index = GRIBIndex(self.path)
+        return self._index
+
+    def __getitem__(self, n):
+        return GribField(
+            reader=self.reader,
+            offset=self.index.offsets[n],
+        )
 
     @property
     def first(self):
-        if self._reader is None:
-            self._reader = CodesReader(self.path)
         return GribField(reader=self._reader, offset=0)
 
     def __len__(self):
-        return len(self._items())
+        return len(self.index.offsets)
 
     def to_xarray(self, **kwargs):
         return type(self).to_xarray_multi([self.path], **kwargs)

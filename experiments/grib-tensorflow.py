@@ -7,17 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from time import time
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
-from tensorflow.keras.layers import (
-    AveragePooling2D,
-    Conv2D,
+from tensorflow.keras.layers import (  # AveragePooling2D,; Conv2D,; Reshape,
     Dense,
     Flatten,
     InputLayer,
-    Reshape,
 )
 from tensorflow.keras.models import Sequential
 
