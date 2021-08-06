@@ -18,7 +18,6 @@ from tensorflow.keras.layers import (  # AveragePooling2D,; Conv2D,; Reshape,
 from tensorflow.keras.models import Sequential
 
 from climetlab import load_source
-from climetlab.utils import timer
 from climetlab.utils.tensorflow import make_label_one_hot, make_labels_hash_table
 
 years = list(range(1979, 1979 + 4))
@@ -300,8 +299,7 @@ s = load_source(
 )
 
 
-dataset1 = s.to_tfdataset().skip(10)
-dataset2 = s.to_tfdataset()
+dataset = s.to_tfdataset()
 
 wb = tf.dataset.zip()
 
@@ -309,8 +307,10 @@ wb = tf.dataset.zip()
 mapping, table = make_labels_hash_table(PARAMS)
 one_hot_1 = make_label_one_hot(table, "paramId")
 
+
 def one_hot(data, paramId):
     return data, one_hot_1(paramId)
+
 
 # print(dataset.element_spec)
 dataset = dataset.shuffle(1024)

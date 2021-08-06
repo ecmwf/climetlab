@@ -17,7 +17,6 @@ import eccodes
 
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
-from climetlab.utils import timer
 
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
@@ -440,12 +439,12 @@ class GRIBReader(Reader):
         dtype = kwargs.get("dtype", tf.float32)
         # with timer("tf.data.Dataset.from_generator"):
         return tf.data.Dataset.from_generator(
-                generate,
-                output_signature=(
-                    tf.TensorSpec(shape, dtype=dtype, name="data"),
-                    tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
-                ),
-            )
+            generate,
+            output_signature=(
+                tf.TensorSpec(shape, dtype=dtype, name="data"),
+                tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
+            ),
+        )
 
     @classmethod
     def to_xarray_multi(cls, paths, **kwargs):
