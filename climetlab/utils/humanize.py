@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
+
 
 def bytes(n):
     u = ["", " KiB", " MiB", " GiB", " TiB", " PiB", "EiB", "ZiB", "YiB"]
@@ -80,8 +82,6 @@ def number(value):
 def plural(value, what):
     return f"{number(value)} {what}{_plural(value)}"
 
-
-import datetime
 
 DOW = [
     "Monday",

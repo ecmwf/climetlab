@@ -159,8 +159,14 @@ def test_humanize():
     assert when(now - datetime.timedelta(days=3660), now) == "10 years ago"
     assert when(now, now - datetime.timedelta(days=3660)) == "in 10 years"
 
-    assert when(now - datetime.timedelta(days=3660), now, short=False) == "on Tuesday 30 September 2011"
-    assert when(now, now - datetime.timedelta(days=3660), short=False) == "on Monday 6 October 2021"
+    assert (
+        when(now - datetime.timedelta(days=3660), now, short=False)
+        == "on Tuesday 30 September 2011"
+    )
+    assert (
+        when(now, now - datetime.timedelta(days=3660), short=False)
+        == "on Monday 6 October 2021"
+    )
 
 
 if __name__ == "__main__":
