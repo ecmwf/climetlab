@@ -17,6 +17,7 @@ import eccodes
 
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
+from climetlab.profiling import call_counter
 
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
@@ -27,19 +28,6 @@ from . import Reader
 
 
 LOG = logging.getLogger(__name__)
-
-
-# See https://pymotw.com/2/weakref/
-
-
-# STATS = defaultdict(int)
-
-
-# def print_stats():
-#     print(STATS)
-
-
-# atexit.register(print_stats)
 
 
 # This does not belong here, should be in the C library
@@ -101,17 +89,17 @@ def _get_message_offsets(path):
     finally:
         os.close(fd)
 
+eccodes_codes_release = call_counter(eccodes.codes_release)
+eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
 class CodesHandle:
     def __init__(self, handle, path, offset):
         self.handle = handle
         self.path = path
         self.offset = offset
-        # STATS["+CodesHandle"] += 1
 
     def __del__(self):
-        eccodes.codes_release(self.handle)
-        # STATS["-CodesHandle"] += 1
+        eccodes_codes_release(self.handle)
 
     def get(self, name):
         try:
@@ -137,16 +125,22 @@ class CodesReader:
 
     def at_offset(self, offset):
         self.file.seek(offset, 0)
-        return self.__next__()
+        return next(self)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        offset = self.file.tell()
-        handle = eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
-        if not handle:
+        handle = self._next_handle()
+        if handle is None:
             raise StopIteration()
+        return handle
+
+    def _next_handle(self):
+        offset = self.file.tell()
+        handle = eccodes_codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
+        if not handle:
+            return None
         return CodesHandle(handle, self.path, offset)
 
     @property
@@ -202,6 +196,7 @@ class GribField(Base):
         )
         driver.plot_grib(self.path, self.handle.get("offset"))
 
+    @call_counter
     def to_numpy(self):
         return self.values.reshape(self.shape)
 
@@ -425,6 +420,7 @@ class GRIBReader(Reader):
         return tf.data.Dataset.from_generator(generate, dtype)
 
     def _to_tfdataset_supervised(self, label, **kwargs):
+        @call_counter
         def generate():
             for s in self:
                 yield s.to_numpy(), s.handle.get(label)

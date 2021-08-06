@@ -9,7 +9,7 @@
 
 
 from climetlab import load_source
-from climetlab.utils import timer
+from climetlab.profiling import timer
 
 years = list(range(1979, 2021))
 years = list(range(1979, 1979 + 3))

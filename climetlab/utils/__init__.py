@@ -56,15 +56,6 @@ def get_json(url: str, cache=False):
     return r.json()
 
 
-def bytes_to_string(n):
-    u = ["", " KiB", " MiB", " GiB", " TiB", " PiB"]
-    i = 0
-    while n >= 1024:
-        n /= 1024.0
-        i += 1
-    return "%g%s" % (int(n * 10 + 0.5) / 10.0, u[i])
-
-
 def _dummy(**kwargs):
     pass
 
@@ -163,12 +154,3 @@ def string_to_args(s):
             args.append(typed(bit))
 
     return name, args, kwargs
-
-
-@contextmanager
-def timer(msg):
-    start = time.time()
-    try:
-        yield None
-    finally:
-        print(f"{msg}: {time.time()-start}")

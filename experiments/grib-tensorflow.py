@@ -22,6 +22,7 @@ from climetlab.utils.tensorflow import make_label_one_hot, make_labels_hash_tabl
 
 years = list(range(1979, 1979 + 4))
 years = list(range(1979, 2021))
+years = list(range(1979, 1979 + 1))
 
 PARAMS = (
     129,
@@ -294,15 +295,13 @@ s = load_source(
     month=list(range(1, 13)),
     time=0,
     product_type="monthly_averaged_reanalysis",
-    grid=[0.25, 0.25],
+    # grid=[0.25, 0.25],
+    grid=[1, 1],
     split_on="year",
 )
 
 
-dataset = s.to_tfdataset()
-
-wb = tf.dataset.zip()
-
+dataset = s.to_tfdataset(label="paramId")
 
 mapping, table = make_labels_hash_table(PARAMS)
 one_hot_1 = make_label_one_hot(table, "paramId")
@@ -315,9 +314,10 @@ def one_hot(data, paramId):
 # print(dataset.element_spec)
 dataset = dataset.shuffle(1024)
 dataset = dataset.map(one_hot)
-dataset = dataset.cache("cache")
 
-dataset = dataset.batch(len(mapping))
+dataset = dataset.batch(len(mapping) * 10)
+# dataset = dataset.batch(1)
+
 dataset = dataset.prefetch(tf.data.AUTOTUNE)
 
 
@@ -354,7 +354,7 @@ train = dataset.skip(split)
 
 model.fit(
     train,
-    epochs=1,
+    epochs=2,
     verbose=1,
     validation_data=validation,
     callbacks=[

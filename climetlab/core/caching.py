@@ -31,8 +31,8 @@ from functools import wraps
 import psutil
 
 from climetlab.core.settings import SETTINGS
-from climetlab.utils import bytes_to_string
 from climetlab.utils.html import css
+from climetlab.utils.humanize import bytes_to_string
 
 VERSION = 2
 CACHE_DB = f"cache-{VERSION}.db"
