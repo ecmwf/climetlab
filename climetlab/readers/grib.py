@@ -89,8 +89,10 @@ def _get_message_offsets(path):
     finally:
         os.close(fd)
 
+
 eccodes_codes_release = call_counter(eccodes.codes_release)
 eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
+
 
 class CodesHandle:
     def __init__(self, handle, path, offset):

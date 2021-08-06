@@ -11,7 +11,7 @@ import atexit
 import time
 from contextlib import contextmanager, wraps
 
-from climetlab.utils.humanize import big_number, seconds_to_english
+from climetlab.utils.humanize import number, seconds
 
 
 @contextmanager
@@ -34,9 +34,9 @@ class Counter:
         m = self.n if self.n else 1
         return "COUNTER [%s], calls: %s, elapsed: %s, average: %s" % (
             self.name,
-            big_number(self.n),
-            seconds_to_english(self.elapsed),
-            seconds_to_english(self.elapsed / m),
+            number(self.n),
+            seconds(self.elapsed),
+            seconds(self.elapsed / m),
         )
 
     def __enter__(self):
