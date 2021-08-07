@@ -8,10 +8,13 @@
 #
 
 import atexit
+import os
 import time
 from contextlib import contextmanager, wraps
 
 from climetlab.utils.humanize import number, seconds
+
+PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))
 
 
 @contextmanager
@@ -52,8 +55,9 @@ COUNTERS = []
 
 
 def print_counters():
-    for n in COUNTERS:
-        print(n)
+    if PROFILING:
+        for n in COUNTERS:
+            print(n)
 
 
 atexit.register(print_counters)
