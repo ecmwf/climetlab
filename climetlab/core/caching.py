@@ -31,8 +31,8 @@ from functools import wraps
 import psutil
 
 from climetlab.core.settings import SETTINGS
+from climetlab.utils import humanize
 from climetlab.utils.html import css
-from climetlab.utils.humanize import bytes
 
 VERSION = 2
 CACHE_DB = f"cache-{VERSION}.db"
@@ -354,7 +354,7 @@ class Cache(threading.Thread):
                 db.execute("DELETE FROM cache WHERE path=?", (path,))
             return total
 
-        LOG.warning(f"CliMetLab cache: deleting {path} ({bytes(size)})")
+        LOG.warning(f"CliMetLab cache: deleting {path} ({humanize.bytes(size)})")
         LOG.warning(f"CliMetLab cache: {owner} {args}")
         self._delete_file(path)
 
@@ -370,7 +370,7 @@ class Cache(threading.Thread):
         if bytes <= 0:
             return 0
 
-        LOG.warning("CliMetLab cache: trying to free %s", bytes(bytes))
+        LOG.warning("CliMetLab cache: trying to free %s", humanize.bytes(bytes))
 
         total = 0
 
@@ -387,11 +387,11 @@ class Cache(threading.Thread):
                     if total >= bytes:
                         LOG.warning(
                             "CliMetLab cache: freed %s from cache",
-                            bytes(bytes),
+                            humanize.bytes(bytes),
                         )
                         return total
 
-        LOG.warning("CliMetLab cache: could not free %s", bytes(bytes))
+        LOG.warning("CliMetLab cache: could not free %s", humanize.bytes(bytes))
 
     def _register_cache_file(self, path, owner, args, parent=None):
         """Register a file in the cache
@@ -496,7 +496,7 @@ class Cache(threading.Thread):
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
                 for k in [x for x in n.keys() if x not in ("path", "owner_data")]:
-                    v = bytes(n[k]) if k == "size" else n[k]
+                    v = humanize.bytes(n[k]) if k == "size" else n[k]
                     html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
                 html.append("</table>")
                 html.append("<br>")

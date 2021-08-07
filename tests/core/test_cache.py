@@ -111,7 +111,7 @@ def test_cache_2():
 
             cnt = 0
             for i, f in enumerate(cache_entries()):
-                # print("FILE", i, f)
+                LOG.debug("FILE %s %s", i, f)
                 cnt += 1
             if cnt != 5:
                 print(json.dumps(dump_cache_database(), indent=4))
