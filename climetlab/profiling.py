@@ -11,7 +11,8 @@ import atexit
 import os
 import time
 from contextlib import contextmanager, wraps
-
+from collections import defaultdict
+import threading
 from climetlab.utils.humanize import number, seconds
 
 PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))
@@ -26,29 +27,53 @@ def timer(msg):
         print(f"{msg}: {time.time()-start}")
 
 
-class Counter:
-    def __init__(self, name):
-        self.name = name
-        self.n = 0
-        self.start = 0
-        self.elapsed = 0
+class C:
+    n = 0
+    now = 0
+    elapsed = 0
+
+    def start(self):
+        self.n += 1
+        self.now = time.time()
+
+    def end(self):
+        self.elapsed += time.time() - self.now
 
     def __repr__(self):
         m = self.n if self.n else 1
-        return "COUNTER [%s], calls: %s, elapsed: %s, average: %s" % (
-            self.name,
+        return "calls: %s, elapsed: %s, average: %s" % (
             number(self.n),
             seconds(self.elapsed),
             seconds(self.elapsed / m),
         )
 
+
+class Counter:
+    def __init__(self, name):
+        self.name = name
+        self._c = C()
+        self.threads = defaultdict(C)
+
+    def __repr__(self):
+        extra = ""
+        if len(self.threads) > 1:
+            extra = "\n threads:\n   %s" % (
+                "\n   ".join(repr(t) for t in self.threads.values()),
+            )
+        return "COUNTER [%s], %s%s" % (
+            self.name,
+            self._c,
+            extra,
+        )
+
     def __enter__(self):
-        self.start = time.time()
-        self.n += 1
+        self._c.start()
+        self.threads[threading.current_thread()].start()
         return self
 
     def __exit__(self, *args, **kwargs):
-        self.elapsed += time.time() - self.start
+        self._c.end()
+        self.threads[threading.current_thread()].end()
 
 
 COUNTERS = []
