@@ -234,16 +234,17 @@ class HTTPDownloader(Downloader):
                 pass
 
             if "expires" in cache_data:
-                try:
-                    expires = parse_date(cache_data["expires"])
-                    now = pytz.UTC.localize(datetime.datetime.utcnow())
-                    if expires > now:
-                        LOG.debug("URL %s not expired (%s > %s)", url, expires, now)
-                        return False
-                except Exception:
-                    LOG.exception(
-                        "Failed to check URL expiry date '%s'", cache_data["expires"]
-                    )
+                if cache_data["expires"] != "0": # HTTP1.0 legacy
+                    try:
+                        expires = parse_date(cache_data["expires"])
+                        now = pytz.UTC.localize(datetime.datetime.utcnow())
+                        if expires > now:
+                            LOG.debug("URL %s not expired (%s > %s)", url, expires, now)
+                            return False
+                    except Exception:
+                        LOG.exception(
+                            "Failed to check URL expiry date '%s'", cache_data["expires"]
+                        )
 
             headers = self.headers(url)
             cached_etag = cache_data.get("etag")

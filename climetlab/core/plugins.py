@@ -20,6 +20,7 @@ from collections import defaultdict
 from importlib import import_module
 from typing import List, Union
 
+import editdistance
 import entrypoints
 
 import climetlab
@@ -152,6 +153,10 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
     module = loader.load_remote(name)
     if module is not None:
         return module
+
+    distance, best = min((editdistance.eval(name, w), w) for w in candidates)
+    if distance < min(len(name), len(best)):
+        LOG.warning("Cannot find %s '%s', did you mean '%s'?", loader.kind, name, best)
 
     candidates = ", ".join(sorted(c for c in candidates if "-" in c))
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")

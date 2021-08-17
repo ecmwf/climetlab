@@ -70,8 +70,8 @@ class FileSource(Source, os.PathLike):
     def sel(self, **kwargs):
         return self._reader.sel(**kwargs)
 
-    def plot_map(self, **kwargs):
-        return self._reader.plot_map(**kwargs)
+    def plot_map(self, *args, **kwargs):
+        return self._reader.plot_map(*args, **kwargs)
 
     def to_xarray(self, **kwargs):
         return self._reader.to_xarray(**kwargs)
