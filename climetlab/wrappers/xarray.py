@@ -23,6 +23,7 @@ class XArrayDatasetWrapper(Wrapper):
         latitude = None
         longitude = None
 
+        # 1. See search lat/lon according to the "standard_name" attribute
         for name, var in itertools.chain(data.coords.items(), data.data_vars.items()):
             if var.attrs.get("standard_name") == "latitude":
                 assert latitude is None
@@ -32,6 +33,20 @@ class XArrayDatasetWrapper(Wrapper):
                 assert longitude is None
                 longitude = var
 
+        # 2. See search lat/lon according to the name of the coords
+        for name in ["latitude", "lat", "LATITUDE", "LAT"]:
+            if latitude is None and name in data.coords:
+                latitude = data[name]
+                # for Magics
+                latitude.attrs["standard_name"] = "latitude"
+
+        for name in ["longitude", "lon", "LONGITUDE", "LON"]:
+            if longitude is None and name in data.coords:
+                longitude = data[name]
+                # for Magics
+                longitude.attrs["standard_name"] = "longitude"
+
+        # 3. Use the latest dimensions to use it as lat/lon.
         self.data = data
         dims = 0
         for name, var in data.data_vars.items():
