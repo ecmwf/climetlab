@@ -70,7 +70,6 @@ class Plot:
 
         for d in data:
             d = get_wrapper(d)
-            print(d)
             d.plot_map(self.driver)
 
         options = Options(kwargs)

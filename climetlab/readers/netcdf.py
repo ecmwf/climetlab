@@ -116,7 +116,6 @@ class DataSet:
 
     def bbox(self, variable):
 
-        print(variable)
         data_array = self[variable]
         dims = data_array.dims
 
@@ -234,12 +233,12 @@ class NetCDFReader(Reader):
         fields = []
 
         skip = set()
-        skip.add('crs')
 
         for name in ds.data_vars:
             v = ds[name]
             skip.update(getattr(v, "coordinates", "").split(" "))
             skip.update(getattr(v, "bounds", "").split(" "))
+            skip.update(getattr(v, "grid_mapping", "").split(" "))
 
         for name in ds.data_vars:
 
@@ -335,6 +334,7 @@ class NetCDFReader(Reader):
 
     def plot_map(self, *args, **kwargs):
         return self.get_fields()[0].plot_map(*args, **kwargs)
+
 
 def reader(source, path, magic, deeper_check):
     if magic[:4] in (b"\x89HDF", b"CDF\x01", b"CDF\x02"):

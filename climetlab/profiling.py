@@ -9,10 +9,11 @@
 
 import atexit
 import os
-import time
-from contextlib import contextmanager, wraps
-from collections import defaultdict
 import threading
+import time
+from collections import defaultdict
+from contextlib import contextmanager, wraps
+
 from climetlab.utils.humanize import number, seconds
 
 PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))

@@ -210,3 +210,11 @@ def when(then, now=None, short=True):
         MONTH[then.month],
         then.year,
     )
+
+
+def did_you_mean(word, vocabulary):
+    from jellyfish import levenshtein_distance
+
+    distance, best = min((levenshtein_distance(word, w), w) for w in vocabulary)
+    # if distance < min(len(word), len(best)):
+    return best

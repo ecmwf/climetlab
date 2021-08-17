@@ -11,7 +11,7 @@
 import logging
 from collections import defaultdict
 
-import editdistance
+from climetlab.utils.humanize import did_you_mean
 
 LOG = logging.getLogger(__name__)
 
@@ -34,13 +34,13 @@ class Vocabulary:
         if word in self.words:
             return word
 
-        distance, best = min((editdistance.eval(word, w), w) for w in self.words.keys())
-        # if distance < min(len(word), len(best)):
-        LOG.warning(
+        correction = did_you_mean(word, self.words.keys())
+        if correction is not None:
+            LOG.warning(
                 "Cannot find '%s' in %s vocabulary, did you mean '%s'?",
                 word,
                 self.name,
-                best,
+                correction,
             )
 
         return word
