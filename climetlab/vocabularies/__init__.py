@@ -8,14 +8,18 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 #
+import itertools
 import logging
-from collections import defaultdict
 
 from climetlab.utils.humanize import did_you_mean
 
 LOG = logging.getLogger(__name__)
 
-MAPPING = defaultdict(set)
+
+SYNONYMS = (
+    (("mars", "2t"), ("cf", "t2m")),
+    (("mars", "ci"), ("cf", "siconc")),
+)
 
 VOCABULARIES = {}
 
@@ -23,18 +27,42 @@ VOCABULARIES = {}
 class Vocabulary:
     def __init__(self, name):
         self.name = name
-        self.words = {}
+        self.words = set()
+        self.aliases = {}
 
-    def add(self, word, key=None):
-        self.words[word] = key
-        if key is not None:
-            MAPPING[word].add((self.name, key))
+    def add(self, word, *aliases):
+        self.words.add(word)
+        for a in aliases:
+            self.aliases[a] = word
+
+    def lookup(self, word):
+        while word in self.aliases:
+            word = self.aliases[word]
+
+        return word if word in self.words else None
 
     def normalise(self, word):
-        if word in self.words:
-            return word
+        w = self.lookup(word)
+        if w is not None:
+            return w
 
-        correction = did_you_mean(word, self.words.keys())
+        # For now....
+        for synonyms in SYNONYMS:
+            matches = [s for s in synonyms if s[0] != self.name and s[1] == word]
+            if not matches:
+                continue
+            assert len(matches) == 1, matches
+            for name, w in synonyms:
+                if name == self.name:
+                    return w
+
+        correction = did_you_mean(
+            word,
+            itertools.chain(
+                self.words,
+                self.aliases.keys(),
+            ),
+        )
         if correction is not None:
             LOG.warning(
                 "Cannot find '%s' in %s vocabulary, did you mean '%s'?",
@@ -47,13 +75,13 @@ class Vocabulary:
 
 
 mars = Vocabulary("mars")
-mars.add("2t", 1)
-mars.add("tp", 2)
-mars.add("ci", 3)
+mars.add("2t")
+mars.add("tp")
+mars.add("ci")
 VOCABULARIES["mars"] = mars
 
 cf = Vocabulary("cf")
-cf.add("t2m", 1)
-cf.add("tp", 2)
-cf.add("siconc", 3)
+cf.add("t2m")
+cf.add("tp")
+cf.add("siconc")
 VOCABULARIES["cf"] = cf
