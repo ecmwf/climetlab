@@ -7,13 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
+from climetlab.sources.file import File
+from climetlab.sources.multi import MultiSource
 from climetlab.utils.patterns import Pattern
-
-from . import File, MultiSource
 
 
 class FilePattern(MultiSource):
-    def __init__(self, pattern, filter=None, merger=None, *args, **kwargs):
+    def __init__(self, pattern, *args, filter=None, merger=None, **kwargs):
         files = Pattern(pattern).substitute(*args, **kwargs)
         if not isinstance(files, list):
             files = [files]
