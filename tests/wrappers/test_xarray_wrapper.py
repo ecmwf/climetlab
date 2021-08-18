@@ -18,39 +18,55 @@ from climetlab.core.temporary import temp_file
 from climetlab.wrappers.xarray import find_lat_lon
 
 
-@pytest.mark.parametrize(
-    "initial_format",
-    [
-        #        "grib",
-        "netcdf",
-    ],
-)
+def checksum_of_plot_map(ds):
+    with temp_file(extension=".png") as filename:
+        cml.plot_map(ds, path=filename)
+        with open(filename, "rb") as f:
+            return f.read()
+
+
+def get_reference_checksum():
+    source = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon"],
+    )
+    ds = source.to_xarray()
+    return checksum_of_plot_map(ds)
+
+
+CHECK = get_reference_checksum()
+
+
 @pytest.mark.parametrize(
     "coords",
     [
         "lat,lon",
+        "lon,lat",
+        "time,Latitude,Longitude",
         "other,lat,lon",
         "time,lat,lon",
         "lat,lon,time",
         "LAT,lon",
         "LatitudE,LONgitUDE",
-        "other,unknown_lat,lon",
-        "unknown_lat,unknown_lon,time",
-        "lat,time,time2,unknown_lon",
+        "other,custom_lat,lon",
+        "other,custom_lon,custom_lat",
+        "custom_lat,custom_lon,time",
+        "lat,time,time2,custom_lon",
     ],
 )
-def test_wrapper_xarray_plot_map(coords, initial_format):
+def test_wrapper_xarray_plot_map(coords):
     source = load_source(
         "dummy-source",
-        kind=initial_format,
+        kind="netcdf",
         dims=coords.split(","),
     )
     ds = source.to_xarray()
 
-    if "unknown_lat" in ds.keys():
-        ds["unknown_lat"].attrs["long_name"] = "latitude"
-    if "unknown_lon" in ds.keys():
-        ds["unknown_lon"].attrs["standard_name"] = "longitude"
+    if "custom_lat" in ds.keys():
+        ds["custom_lat"].attrs["long_name"] = "latitude"
+    if "custom_lon" in ds.keys():
+        ds["custom_lon"].attrs["standard_name"] = "longitude"
 
     lat, lon = find_lat_lon(ds)
     assert lat is not None
@@ -58,19 +74,32 @@ def test_wrapper_xarray_plot_map(coords, initial_format):
 
     cml.plot_map(ds)
 
-    with temp_file() as filename:
-        ds.to_netcdf(filename)
-        source = load_source("file", filename)
-        cml.plot_map(source)
+    # checksum not good.
+    # check = checksum_of_plot_map(ds)
+    # assert check == CHECK, f'Image from xr.dataset is different from reference'
+
+    # with temp_file() as filename:
+    #     ds.to_netcdf(filename)
+    #     source = load_source("file", filename)
+    #     with temp_file(extension='.png') as imagefile:
+    #         check = checksum_of_plot_map(source)
+    #         assert check == CHECK, f'Image from netcdf is different from reference'
 
 
-@pytest.mark.skip("Currently failing")
-def test_wrapper_xarray2():
-    source = load_source(
-        "dummy-source",
-        kind="grib",
-        dims=["other", "lat", "lon"],
-    )
+@pytest.mark.skip("Checksum on image not implemented")
+def test_check_cheksum():
+    for i in range(10):
+        assert get_reference_checksum() == get_reference_checksum(), "Checksum not ok"
+
+
+@pytest.mark.skip("Currently failing for grib")
+def test_plot_map_grib():
+    source = load_source("dummy-source", kind="grib", date=20000101)
+    cml.plot_map(source)
+
+
+def test_wrapper_xarray_grib():
+    source = load_source("dummy-source", kind="grib", date=20000101)
     ds = source.to_xarray()
 
     lat, lon = find_lat_lon(ds)
@@ -78,3 +107,14 @@ def test_wrapper_xarray2():
     assert lon is not None
 
     cml.plot_map(ds)
+
+
+if __name__ == "__main__":
+    from climetlab.testing import main
+
+    # test_wrapper_xarray_plot_map("lat,lon")
+    # test_wrapper_xarray_plot_map("time,lat,lon")
+    # print("ok")
+    # test_wrapper_xarray_plot_map("lat,lon,time")
+
+    main(globals())

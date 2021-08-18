@@ -48,7 +48,7 @@ def find_lat_lon(data, variable=None):
 
     # Else, use latest coordinates from the variable
     if latitude is None or longitude is None and variable is not None:
-        assert latitude is None and longitude is None
+        assert latitude is None and longitude is None, (latitude, longitude)
 
         lat, lon = variable.dims[-2], variable.dims[-1]
         latitude = data[lat]
@@ -97,6 +97,9 @@ class XArrayDatasetWrapper(Wrapper):
 
         for d in extra_dims:
             dimension_settings[d] = 0  # self.data[d].data[0]
+
+        assert self.data[self.latitude.name].attrs["standard_name"] == "latitude"
+        assert self.data[self.longitude.name].attrs["standard_name"] == "longitude"
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
 
