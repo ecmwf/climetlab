@@ -325,7 +325,7 @@ class NetCDFReader(Reader):
         import xarray as xr
 
         options = dict()
-        options.update(kwargs)
+        options.update(kwargs.get("xarray_open_mfdataset_kwargs", {}))
 
         return xr.open_mfdataset(
             paths,
