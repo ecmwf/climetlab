@@ -5,14 +5,16 @@ Machine learning tools
 
      This part of CliMetLab is still a work in progress. Documentation and code behaviour will change.
 
-TODO Develop and document machine learning related tools
+.. todo::
+
+     TODO: Develop and document machine learning related tools
 
 
 to_tfdataset()
 --------------
 
 To use a CliMetLab dataset with tensorflow,
-use the ```_to_tfdataset()``` method.
+use the ``_to_tfdataset()`` method.
 
     .. code-block:: python
 
@@ -21,11 +23,11 @@ use the ```_to_tfdataset()``` method.
         >>> x = ds.to_tfdataset(options)
         >>> model.fit(x, ....)
 
-The discussion is still open to decide whether ```to_dataset()``` returns:
+The discussion is still open to decide whether ``to_dataset()`` returns:
 
- - ```tf.keras.utils.experimental.DatasetCreator```
- - ```tf.data.Dataset```
- - ```tf.keras.utils.Sequence```
+ - ``tf.keras.utils.experimental.DatasetCreator``
+ - ``tf.data.Dataset``
+ - ``tf.keras.utils.Sequence``
  - A custom CliMetLab class
 
 PyTorch support
