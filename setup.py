@@ -66,6 +66,7 @@ install_requires += [
     "pyodc",
     "psutil",
     "toolz",
+    "filelock",
     "pyyaml",
     "markdown",
     "jellyfish",

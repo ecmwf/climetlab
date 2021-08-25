@@ -94,11 +94,11 @@ class Downloader:
         download = target + ".download"
         LOG.info("Downloading %s", url)
 
-        size = self.prepare(url)
+        size, mode, skip = self.prepare(url, download)
 
-        mode = "wb"
         with tqdm(
             total=size,
+            initial=skip,
             unit_scale=True,
             unit_divisor=1024,
             unit="B",
@@ -111,6 +111,8 @@ class Downloader:
                 total = self.transfer(f, pbar, self.owner.watcher)
 
             pbar.close()
+
+        assert os.path.getsize(download) == size
 
         # take care of race condition when two processes
         # download into the same file at the same time
@@ -186,9 +188,12 @@ class HTTPDownloader(Downloader):
                 return params["filename"]
         return super().title(url)
 
-    def prepare(self, url):
+    def prepare(self, url, download):
 
         size = None
+        mode = "wb"
+        skip = 0
+
         headers = self.headers(url)
         if "content-length" in headers:
             try:
@@ -196,18 +201,39 @@ class HTTPDownloader(Downloader):
             except Exception:
                 LOG.exception("content-length %s", url)
 
+        http_headers = dict(**self.owner.http_headers)
+        if os.path.exists(download):
+            bytes = os.path.getsize(download)
+
+            if bytes > 0:
+                if headers.get("accept-ranges") == "bytes":
+                    mode = "ab"
+                    http_headers["range"] = f"bytes={bytes}-"
+                    LOG.info(
+                        "%s: resuming download from byte %s",
+                        download,
+                        bytes,
+                    )
+                    skip = bytes
+                else:
+                    LOG.warning(
+                        "%s: %s bytes already download, but server does not support restarts",
+                        download,
+                        bytes,
+                    )
+
         r = requests.get(
             url,
             stream=True,
             verify=self.owner.verify,
             timeout=SETTINGS.get("url-download-timeout"),
-            headers=self.owner.http_headers,
+            headers=http_headers,
         )
         r.raise_for_status()
 
         self.request = r
 
-        return size
+        return size, mode, skip
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -270,7 +296,9 @@ class HTTPDownloader(Downloader):
 
 
 class FTPDownloader(Downloader):
-    def prepare(self, url):
+    def prepare(self, url, download):
+
+        mode = "wb"
 
         o = urlparse(url)
         assert o.scheme == "ftp"
@@ -296,7 +324,8 @@ class FTPDownloader(Downloader):
         ftp.set_pasv(True)
         self.filename = os.path.basename(o.path)
         self.ftp = ftp
-        return ftp.size(self.filename)
+
+        return ftp.size(self.filename), mode, 0
 
     def transfer(self, f, pbar, watcher):
         total = 0
