@@ -157,3 +157,4 @@ logs/
 *.index
 *.data-*
 *.out
+test.py
