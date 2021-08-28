@@ -209,24 +209,24 @@ class HTTPDownloader(Downloader):
         http_headers = dict(**self.owner.http_headers)
         if not encoded and os.path.exists(download):
 
-                bytes = os.path.getsize(download)
+            bytes = os.path.getsize(download)
 
-                if bytes > 0:
-                    if headers.get("accept-ranges") == "bytes":
-                        mode = "ab"
-                        http_headers["range"] = f"bytes={bytes}-"
-                        LOG.info(
-                            "%s: resuming download from byte %s",
-                            download,
-                            bytes,
-                        )
-                        skip = bytes
-                    else:
-                        LOG.warning(
-                            "%s: %s bytes already download, but server does not support restarts",
-                            download,
-                            bytes,
-                        )
+            if bytes > 0:
+                if headers.get("accept-ranges") == "bytes":
+                    mode = "ab"
+                    http_headers["range"] = f"bytes={bytes}-"
+                    LOG.info(
+                        "%s: resuming download from byte %s",
+                        download,
+                        bytes,
+                    )
+                    skip = bytes
+                else:
+                    LOG.warning(
+                        "%s: %s bytes already download, but server does not support restarts",
+                        download,
+                        bytes,
+                    )
 
         r = requests.get(
             url,

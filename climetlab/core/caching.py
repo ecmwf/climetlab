@@ -604,7 +604,10 @@ def cache_file(
 
                 check_cache_size()
 
-        os.unlink(lock)
+        try:
+            os.unlink(lock)
+        except OSError:
+            pass
 
     return path
 
