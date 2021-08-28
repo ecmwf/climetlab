@@ -38,6 +38,7 @@ class TextReader(Reader):
     def mutate(self):
         if is_csv(self.path):
             return CSVReader(self.source, self.path)
+
         return self
 
 

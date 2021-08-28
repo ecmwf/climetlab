@@ -112,16 +112,12 @@ class Downloader:
 
             pbar.close()
 
-        if not encoded:
-            assert os.path.getsize(download) == size
+        if not encoded and size is not None:
+            assert (
+                os.path.getsize(download) == size
+            ), f"File size mismatch {os.path.getsize(download)} bytes instead of {size}"
 
-        # take care of race condition when two processes
-        # download into the same file at the same time
-        try:
-            os.rename(download, target)
-        except FileNotFoundError as e:
-            if not os.path.exists(target):
-                raise e
+        os.rename(download, target)
 
         self.finalise()
         return total
@@ -148,22 +144,25 @@ class HTTPDownloader(Downloader):
         if self._headers is None or url != self._url:
             self._url = url
             self._headers = {}
-            try:
-                r = requests.head(
-                    url,
-                    headers=self.owner.http_headers,
-                    verify=self.owner.verify,
-                    allow_redirects=True,
-                )
-                r.raise_for_status()
-                for k, v in r.headers.items():
-                    self._headers[k.lower()] = v
-                LOG.debug(
-                    "HTTP headers %s",
-                    json.dumps(self._headers, sort_keys=True, indent=4),
-                )
-            except Exception:
-                LOG.exception("HEAD %s", url)
+            if self.owner.fake_headers is not None:
+                self._headers = dict(**self.owner.fake_headers)
+            else:
+                try:
+                    r = requests.head(
+                        url,
+                        headers=self.owner.http_headers,
+                        verify=self.owner.verify,
+                        allow_redirects=True,
+                    )
+                    r.raise_for_status()
+                    for k, v in r.headers.items():
+                        self._headers[k.lower()] = v
+                    LOG.debug(
+                        "HTTP headers %s",
+                        json.dumps(self._headers, sort_keys=True, indent=4),
+                    )
+                except Exception:
+                    LOG.exception("HEAD %s", url)
         return self._headers
 
     def extension(self, url):
@@ -387,6 +386,7 @@ class Url(FileSource):
         http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
+        fake_headers=None,  # When HEAD is not allowed but you know the size
         **kwargs,
     ):
         # TODO: re-enable this feature
@@ -401,6 +401,7 @@ class Url(FileSource):
         self.watcher = watcher if watcher else dummy_watcher
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
+        self.fake_headers = fake_headers
 
         if mirror:
             url = mirror(url)

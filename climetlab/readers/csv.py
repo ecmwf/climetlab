@@ -11,6 +11,7 @@ import csv
 import io
 import logging
 import mimetypes
+import os
 import zipfile
 
 from climetlab.wrappers import get_wrapper
@@ -109,6 +110,12 @@ def probe_csv(
 
 
 def is_csv(path, probe_size=4096, compression=None):
+
+    _, extension = os.path.splitext(path)
+
+    if extension in (".xml",):
+        return False
+
     dialect, _ = probe_csv(path, probe_size, compression, for_is_csv=True)
     return dialect is not None
 
