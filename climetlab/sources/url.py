@@ -94,7 +94,7 @@ class Downloader:
         download = target + ".download"
         LOG.info("Downloading %s", url)
 
-        size, mode, skip = self.prepare(url, download)
+        size, mode, skip, encoded = self.prepare(url, download)
 
         with tqdm(
             total=size,
@@ -112,7 +112,8 @@ class Downloader:
 
             pbar.close()
 
-        assert os.path.getsize(download) == size
+        if not encoded:
+            assert os.path.getsize(download) == size
 
         # take care of race condition when two processes
         # download into the same file at the same time
@@ -201,26 +202,31 @@ class HTTPDownloader(Downloader):
             except Exception:
                 LOG.exception("content-length %s", url)
 
-        http_headers = dict(**self.owner.http_headers)
-        if os.path.exists(download):
-            bytes = os.path.getsize(download)
+        # content-length is the size of the encoded body
+        # so we cannot rely on it to check the file size
+        encoded = headers.get("content-encoding") is not None
 
-            if bytes > 0:
-                if headers.get("accept-ranges") == "bytes":
-                    mode = "ab"
-                    http_headers["range"] = f"bytes={bytes}-"
-                    LOG.info(
-                        "%s: resuming download from byte %s",
-                        download,
-                        bytes,
-                    )
-                    skip = bytes
-                else:
-                    LOG.warning(
-                        "%s: %s bytes already download, but server does not support restarts",
-                        download,
-                        bytes,
-                    )
+        http_headers = dict(**self.owner.http_headers)
+        if not encoded and os.path.exists(download):
+
+                bytes = os.path.getsize(download)
+
+                if bytes > 0:
+                    if headers.get("accept-ranges") == "bytes":
+                        mode = "ab"
+                        http_headers["range"] = f"bytes={bytes}-"
+                        LOG.info(
+                            "%s: resuming download from byte %s",
+                            download,
+                            bytes,
+                        )
+                        skip = bytes
+                    else:
+                        LOG.warning(
+                            "%s: %s bytes already download, but server does not support restarts",
+                            download,
+                            bytes,
+                        )
 
         r = requests.get(
             url,
@@ -233,7 +239,7 @@ class HTTPDownloader(Downloader):
 
         self.request = r
 
-        return size, mode, skip
+        return size, mode, skip, encoded
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -325,7 +331,7 @@ class FTPDownloader(Downloader):
         self.filename = os.path.basename(o.path)
         self.ftp = ftp
 
-        return ftp.size(self.filename), mode, 0
+        return ftp.size(self.filename), mode, 0, False
 
     def transfer(self, f, pbar, watcher):
         total = 0

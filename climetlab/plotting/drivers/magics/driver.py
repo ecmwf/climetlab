@@ -177,7 +177,6 @@ class Driver:
 
     def plot_xarray(self, ds, variable: str, dimensions: dict = None):
         tmp = self.temporary_file(".nc")
-        tmp = "tmp.nc"
         field = ds[variable].isel({} if dimensions is None else dimensions)
         dataset = field.to_dataset()
 

@@ -604,6 +604,8 @@ def cache_file(
 
                 check_cache_size()
 
+        os.unlink(lock)
+
     return path
 
 
