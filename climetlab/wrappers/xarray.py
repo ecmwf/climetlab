@@ -15,38 +15,53 @@ from climetlab.utils.dates import to_datetime_list
 from climetlab.wrappers import Wrapper
 
 
+def find_lat_lon(data, variable=None):
+
+    latitude = None
+    longitude = None
+
+    LATITUDES = [
+        lambda name, v: v.attrs.get("standard_name") == "latitude",
+        # lambda name, v: v.attrs.get("standard_name") == "projection_x_coordinate",
+        lambda name, v: v.attrs.get("long_name") == "latitude",
+        lambda name, v: v.attrs.get("long_name") == "projection_x_coordinate",
+        lambda name, v: name.lower() in ["latitude", "lat"],
+    ]
+
+    LONGITUDES = [
+        lambda name, v: v.attrs.get("standard_name") == "longitude",
+        # lambda name, v: v.attrs.get("standard_name") == "projection_y_coordinate",
+        lambda name, v: v.attrs.get("long_name") == "longitude",
+        lambda name, v: v.attrs.get("long_name") == "projection_y_coordinate",
+        lambda name, v: name.lower() in ["longitude", "lon"],
+    ]
+
+    for trigger in LATITUDES:
+        for name, v in itertools.chain(data.coords.items(), data.data_vars.items()):
+            if latitude is None and trigger(name, v):
+                latitude = v
+
+    for trigger in LONGITUDES:
+        for name, v in itertools.chain(data.coords.items(), data.data_vars.items()):
+            if longitude is None and trigger(name, v):
+                longitude = v
+
+    # Else, use latest coordinates from the variable
+    if latitude is None or longitude is None and variable is not None:
+        assert latitude is None and longitude is None, (latitude, longitude)
+
+        lat, lon = variable.dims[-2], variable.dims[-1]
+        latitude = data[lat]
+        longitude = data[lon]
+
+    assert latitude.name != longitude.name, latitude.name
+
+    return latitude, longitude
+
+
 class XArrayDatasetWrapper(Wrapper):
     def __init__(self, data):
 
-        # data.climetlab.foo(42)
-
-        latitude = None
-        longitude = None
-
-        # 1. See search lat/lon according to the "standard_name" attribute
-        for name, var in itertools.chain(data.coords.items(), data.data_vars.items()):
-            if var.attrs.get("standard_name") == "latitude":
-                assert latitude is None
-                latitude = var
-
-            if var.attrs.get("standard_name") == "longitude":
-                assert longitude is None
-                longitude = var
-
-        # 2. See search lat/lon according to the name of the coords
-        for name in ["latitude", "lat", "LATITUDE", "LAT"]:
-            if latitude is None and name in data.coords:
-                latitude = data[name]
-                # for Magics
-                latitude.attrs["standard_name"] = "latitude"
-
-        for name in ["longitude", "lon", "LONGITUDE", "LON"]:
-            if longitude is None and name in data.coords:
-                longitude = data[name]
-                # for Magics
-                longitude.attrs["standard_name"] = "longitude"
-
-        # 3. Use the latest dimensions to use it as lat/lon.
         self.data = data
         dims = 0
         for name, var in data.data_vars.items():
@@ -54,24 +69,18 @@ class XArrayDatasetWrapper(Wrapper):
             if len(var.dims) > dims:
                 self.name = name
                 self.var = var
-                self.extra_dims = var.dims[:-2]
                 dims = len(var.dims)
 
-        if latitude is None or longitude is None:
-            assert latitude is None and longitude is None
+        self.latitude, self.longitude = find_lat_lon(self.data, self.var)
 
-            lat, lon = self.var.dims[-2], self.var.dims[-1]
-            latitude = data[lat]
-            longitude = data[lon]
+        # For Magics
+        self.latitude.attrs["standard_name"] = "latitude"
+        self.longitude.attrs["standard_name"] = "longitude"
 
-            # For Magics
-            latitude.attrs["standard_name"] = "latitude"
-            longitude.attrs["standard_name"] = "longitude"
-
-        self.north = np.amax(latitude.data)
-        self.south = np.amin(latitude.data)
-        self.east = np.amax(longitude.data)
-        self.west = np.amin(longitude.data)
+        self.north = np.amax(self.latitude.data)
+        self.south = np.amin(self.latitude.data)
+        self.east = np.amax(self.longitude.data)
+        self.west = np.amin(self.longitude.data)
 
     def plot_map(self, driver):
         driver.bounding_box(
@@ -80,8 +89,17 @@ class XArrayDatasetWrapper(Wrapper):
 
         dimension_settings = dict()
 
-        for d in self.extra_dims:
+        extra_dims = list(self.var.dims[:])
+        assert self.latitude.name in extra_dims, (self.latitude.name, extra_dims)
+        extra_dims.remove(self.latitude.name)
+        assert self.longitude.name in extra_dims, (self.longitude.name, extra_dims)
+        extra_dims.remove(self.longitude.name)
+
+        for d in extra_dims:
             dimension_settings[d] = 0  # self.data[d].data[0]
+
+        assert self.data[self.latitude.name].attrs["standard_name"] == "latitude"
+        assert self.data[self.longitude.name].attrs["standard_name"] == "longitude"
 
         driver.plot_xarray(self.data, self.name, dimension_settings)
 

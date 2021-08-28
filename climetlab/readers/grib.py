@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import copy
+
 # import atexit
 import datetime
 import json
@@ -28,6 +30,34 @@ from . import Reader
 
 
 LOG = logging.getLogger(__name__)
+
+
+def mix_kwargs(user, default, forced={}, logging_owner="", logging_main_key=""):
+    kwargs = copy.deepcopy(default)
+
+    for k, v in user.items():
+        if k in forced and v != forced[k]:
+            LOG.warning(
+                (
+                    f"In {logging_owner} {logging_main_key},"
+                    f"ignoring attempt to override {k}={forced[k]} with {k}={v}."
+                )
+            )
+            continue
+
+        if k in default and v != default[k]:
+            LOG.warning(
+                (
+                    f"In {logging_owner} {logging_main_key}, overriding the default value "
+                    f"({k}={default[k]}) with {k}={v} is not recommended."
+                )
+            )
+
+        kwargs[k] = v
+
+    kwargs.update(forced)
+
+    return kwargs
 
 
 # This does not belong here, should be in the C library
@@ -448,14 +478,30 @@ class GRIBReader(Reader):
     def to_xarray_multi(cls, paths, **kwargs):
         import xarray as xr
 
-        options = dict(
-            backend_kwargs={"squeeze": False},
+        xarray_open_mfdataset_kwargs = {}
+
+        user_xarray_open_mfdataset_kwargs = kwargs.get(
+            "xarray_open_mfdataset_kwargs", {}
         )
-        options.update(kwargs)
-        options["engine"] = "cfgrib"
+        for key in ["backend_kwargs"]:
+            xarray_open_mfdataset_kwargs[key] = mix_kwargs(
+                user=user_xarray_open_mfdataset_kwargs.pop(key, {}),
+                default={"squeeze": False},
+                forced={},
+                logging_owner="xarray_open_mfdataset_kwargs",
+                logging_main_key=key,
+            )
+        xarray_open_mfdataset_kwargs.update(
+            mix_kwargs(
+                user=user_xarray_open_mfdataset_kwargs,
+                default={},
+                forced={"engine": "cfgrib"},
+            )
+        )
+
         return xr.open_mfdataset(
             paths,
-            **options,
+            **xarray_open_mfdataset_kwargs,
         )
 
 

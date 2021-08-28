@@ -16,6 +16,11 @@ from climetlab.utils.humanize import did_you_mean
 LOG = logging.getLogger(__name__)
 
 
+SYNONYMS = (
+    (("mars", "2t"), ("cf", "t2m")),
+    (("mars", "ci"), ("cf", "siconc")),
+)
+
 VOCABULARIES = {}
 
 SYNONYMS = (
@@ -36,30 +41,25 @@ class Vocabulary:
             self.aliases[a] = word
 
     def lookup(self, word):
-        w = self.aliases.get(word, word)
+        while word in self.aliases:
+            word = self.aliases[word]
 
-        if w in self.words:
-            return w
-
-        return None
+        return word if word in self.words else None
 
     def normalise(self, word):
-
         w = self.lookup(word)
         if w is not None:
             return w
 
-        #  For now....
+        # For now....
         for synonyms in SYNONYMS:
-            matches = [s for s in synonyms if s[0] != self.name and s[1]==word]
+            matches = [s for s in synonyms if s[0] != self.name and s[1] == word]
             if not matches:
                 continue
-            assert len(matches) == 1, f"Too many synonyms {matches}"
-            for s in synonyms:
-                if s[0] == self.name:
-                    return s[1]
-
-
+            assert len(matches) == 1, matches
+            for name, w in synonyms:
+                if name == self.name:
+                    return w
 
         correction = did_you_mean(
             word,

@@ -90,7 +90,7 @@ jobs:
 
       - name: Tests notebooks
         run: |
-          pytest --durations=0 tests/documentation/test_notebooks.py
+          pytest --durations=0 -E release tests/documentation/test_notebooks.py
         env:
           CLIMETLAB_DEBUG: 1
 
@@ -118,7 +118,7 @@ jobs:
 
       - name: Tests packaging
         run: |
-          pytest --durations=0 tests/core/test_version.py
+          pytest --durations=0 -E release tests/core/test_version.py
 
 
   deploy:

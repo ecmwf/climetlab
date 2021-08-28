@@ -25,3 +25,5 @@ ds.to_xarray()
 
 # %%
 cml.plot_map(ds)
+
+# %%

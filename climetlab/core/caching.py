@@ -29,6 +29,7 @@ import time
 from functools import wraps
 
 import psutil
+from filelock import FileLock
 
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import humanize
@@ -588,15 +589,20 @@ def cache_file(
 
     if not os.path.exists(path):
 
-        tmp = ".{}-{}.tmp".format(os.getpid(), threading.get_ident())
+        lock = path + ".lock"
 
-        owner_data = create(path + tmp, args)
+        with FileLock(lock):
+            if not os.path.exists(
+                path
+            ):  # Check again, another thread/process may have created the file
 
-        os.rename(path + tmp, path)
+                owner_data = create(path + ".tmp", args)
 
-        update_entry(path, owner_data)
+                os.rename(path + ".tmp", path)
 
-        check_cache_size()
+                update_entry(path, owner_data)
+
+                check_cache_size()
 
     return path
 
