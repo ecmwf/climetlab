@@ -11,9 +11,9 @@ def check():
     import xarray  # noqa: F401
 
     print(f"xarray: ok ({os.path.dirname(xarray.__file__)})")
-    import pandas  # noqa: F401
+    import folium  # noqa: F401
 
-    print(f"pandas: ok ({os.path.dirname(pandas.__file__)})")
+    print(f"folium: ok ({os.path.dirname(folium.__file__)})")
     # TODO: add more
     # print('All required dependencies seems to be ok.')
 
