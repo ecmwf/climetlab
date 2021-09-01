@@ -122,4 +122,5 @@ setuptools.setup(
         "climetlab-demo-source",
     ],
     test_suite="tests",
+    entry_points={"console_scripts": ["climetlab = climetlab.scripts:main_climetlab"]},
 )
