@@ -1,37 +1,43 @@
 import os
 import sys
+from importlib import import_module
 
 import climetlab
 
 
 def check():
+    print(
+        (
+            "This script is experimental to help debugging."
+            "Seeing everything to 'ok' does NOT means that you have the right versions installed."
+        )
+    )
+    print("--------------------")
+
     print("Checking climetlab installation.")
     print(f"Climetlab installed in {os.path.dirname(climetlab.__file__)}")
-    print("Checking required dependencies...")
-    import xarray  # noqa: F401
+    print("Checking required compiled dependencies...")
+    import ecmwflibs
 
-    print(f"xarray: ok ({os.path.dirname(xarray.__file__)})")
-    import folium  # noqa: F401
+    versions = ecmwflibs.versions()
 
-    print(f"folium: ok ({os.path.dirname(folium.__file__)})")
-    # TODO: add more
-    # print('All required dependencies seems to be ok.')
+    for name in ["eccodes", "magics"]:
+        print(f"{name}: ok {versions[name]} ({ecmwflibs.find(name)})")
+
+    print("Checking required python dependencies...")
+    for name in ["xarray", "eccodes", "ecmwflibs"]:
+        lib = import_module(name)
+        print(f"{name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
 
     print("Checking optional dependencies...")
-    try:
-        import pdbufr  # noqa: F401
+    for name in ["folium", "pdbufr", "pyodc"]:
+        try:
+            lib = import_module(name)
+            print(f"{name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
+        except Exception as e:
+            print(e)
+            print(f"Warning: cannot import {name}. Limited capabilities.")
 
-        print(f"pdbufr: ok ({os.path.dirname(pdbufr.__file__)})")
-    except Exception as e:
-        print(e)
-        print("Warning: cannot import pdbufr. Limited capabilities.")
-    try:
-        import pyodc  # noqa: F401
-
-        print(f"pyodc: ok ({os.path.dirname(pyodc.__file__)})")
-    except Exception as e:
-        print(e)
-        print("Warning: cannot import pyodc. Limited capabilities.")
     # TODO: add more
     # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
 
