@@ -72,10 +72,17 @@ install_requires += [
     "jellyfish",
     "entrypoints",
     "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
-    "folium>=0.12.1",
 ]
 
-extras_require = {}  # {"interactive": ["skinnywms", "folium"]}
+extras_require = {
+    "interactive": [
+        "skinnywms",
+        "folium>=0.12.1",
+    ],
+    "tensorflow": [
+        "tensorflow",
+    ],
+}
 
 
 full = []
