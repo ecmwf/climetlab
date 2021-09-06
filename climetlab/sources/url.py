@@ -23,6 +23,7 @@ from dateutil.parser import parse as parse_date
 
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import tqdm
+from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
 
@@ -36,12 +37,38 @@ def offline(off):
     OFFLINE = off
 
 
-def dummy():
+def dummy_watcher():
     pass
+
+
+def mimetype_to_extension(mimetype, compression, default=".unknown"):
+    EXTENSIONS = {
+        None: "",
+        "gzip": ".gz",
+        "xz": ".xz",
+        "bzip2": ".bz2",
+    }
+    if mimetype is None:
+        extension = default
+    else:
+        extension = mimetypes.guess_extension(mimetype)
+
+    return extension + EXTENSIONS[compression]
+
+
+def canonical_extension(path):
+    _, ext = os.path.splitext(path)
+    ext = mimetype_to_extension(*mimetypes.guess_type(path), default=ext)
+    # Looks like mimetypes as .cdf before .nc
+    # TODO: report it to Python's bug tracker
+    EXTENSIONS = {".cdf": ".nc"}
+
+    return EXTENSIONS.get(ext, ext)
 
 
 class Downloader:
     def __init__(self, owner):
+        # TODO: use weakref instead
         self.owner = owner
 
     def local_path(self, url):
@@ -49,16 +76,16 @@ class Downloader:
 
     def extension(self, url):
         url_no_args = url.split("?")[0]
-
-        base, ext = os.path.splitext(url_no_args)
-        if ext == "":
-            base, ext = os.path.splitext(url)
-
-        _, tar = os.path.splitext(base)
-        if tar == ".tar":
-            ext = ".tar" + ext
-
-        return ext
+        base = os.path.basename(url_no_args)
+        extensions = []
+        while True:
+            base, ext = os.path.splitext(base)
+            if not ext:
+                break
+            extensions.append(ext)
+        if not extensions:
+            extensions.append(".unknown")
+        return "".join(reversed(extensions))
 
     def download(self, url, target):
         if os.path.exists(target):
@@ -67,11 +94,11 @@ class Downloader:
         download = target + ".download"
         LOG.info("Downloading %s", url)
 
-        size = self.prepare(url)
+        size, mode, skip, encoded = self.prepare(url, download)
 
-        mode = "wb"
         with tqdm(
             total=size,
+            initial=skip,
             unit_scale=True,
             unit_divisor=1024,
             unit="B",
@@ -84,6 +111,9 @@ class Downloader:
                 total = self.transfer(f, pbar, self.owner.watcher)
 
             pbar.close()
+
+        if not encoded:
+            assert os.path.getsize(download) == size
 
         # take care of race condition when two processes
         # download into the same file at the same time
@@ -119,7 +149,12 @@ class HTTPDownloader(Downloader):
             self._url = url
             self._headers = {}
             try:
-                r = requests.head(url, verify=self.owner.verify, allow_redirects=True)
+                r = requests.head(
+                    url,
+                    headers=self.owner.http_headers,
+                    verify=self.owner.verify,
+                    allow_redirects=True,
+                )
                 r.raise_for_status()
                 for k, v in r.headers.items():
                     self._headers[k.lower()] = v
@@ -134,20 +169,14 @@ class HTTPDownloader(Downloader):
     def extension(self, url):
 
         headers = self.headers(url)
-        ext = None
 
-        if "content-type" in headers:
-            if headers["content-type"] != "application/octet-stream":
-                ext = mimetypes.guess_extension(headers["content-type"])
+        ext = super().extension(url)
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])
             assert value == "attachment", value
             if "filename" in params:
                 ext = super().extension(params["filename"])
-
-        if ext is None:
-            ext = super().extension(url)
 
         return ext
 
@@ -160,9 +189,12 @@ class HTTPDownloader(Downloader):
                 return params["filename"]
         return super().title(url)
 
-    def prepare(self, url):
+    def prepare(self, url, download):
 
         size = None
+        mode = "wb"
+        skip = 0
+
         headers = self.headers(url)
         if "content-length" in headers:
             try:
@@ -170,17 +202,44 @@ class HTTPDownloader(Downloader):
             except Exception:
                 LOG.exception("content-length %s", url)
 
+        # content-length is the size of the encoded body
+        # so we cannot rely on it to check the file size
+        encoded = headers.get("content-encoding") is not None
+
+        http_headers = dict(**self.owner.http_headers)
+        if not encoded and os.path.exists(download):
+
+            bytes = os.path.getsize(download)
+
+            if bytes > 0:
+                if headers.get("accept-ranges") == "bytes":
+                    mode = "ab"
+                    http_headers["range"] = f"bytes={bytes}-"
+                    LOG.info(
+                        "%s: resuming download from byte %s",
+                        download,
+                        bytes,
+                    )
+                    skip = bytes
+                else:
+                    LOG.warning(
+                        "%s: %s bytes already download, but server does not support restarts",
+                        download,
+                        bytes,
+                    )
+
         r = requests.get(
             url,
             stream=True,
             verify=self.owner.verify,
             timeout=SETTINGS.get("url-download-timeout"),
+            headers=http_headers,
         )
         r.raise_for_status()
 
         self.request = r
 
-        return size
+        return size, mode, skip, encoded
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -196,6 +255,10 @@ class HTTPDownloader(Downloader):
         return self.headers(url)
 
     def out_of_date(self, url, path, cache_data):
+
+        if SETTINGS.get("check-out-of-date-urls"):
+            return False
+
         if cache_data is not None:
 
             # TODO: check 'cache-control' to see if we should check the etag
@@ -203,16 +266,18 @@ class HTTPDownloader(Downloader):
                 pass
 
             if "expires" in cache_data:
-                try:
-                    expires = parse_date(cache_data["expires"])
-                    now = pytz.UTC.localize(datetime.datetime.utcnow())
-                    if expires > now:
-                        LOG.debug("URL %s not expired (%s > %s)", url, expires, now)
-                        return False
-                except Exception:
-                    LOG.exception(
-                        "Failed to check URL expiry date '%s'", cache_data["expires"]
-                    )
+                if cache_data["expires"] != "0":  # HTTP1.0 legacy
+                    try:
+                        expires = parse_date(cache_data["expires"])
+                        now = pytz.UTC.localize(datetime.datetime.utcnow())
+                        if expires > now:
+                            LOG.debug("URL %s not expired (%s > %s)", url, expires, now)
+                            return False
+                    except Exception:
+                        LOG.exception(
+                            "Failed to check URL expiry date '%s'",
+                            cache_data["expires"],
+                        )
 
             headers = self.headers(url)
             cached_etag = cache_data.get("etag")
@@ -220,11 +285,15 @@ class HTTPDownloader(Downloader):
 
             if cached_etag != remote_etag:
                 LOG.warning("Remote content of URL %s has changed", url)
-                if SETTINGS.get("download-updated-urls"):
+                if (
+                    SETTINGS.get("download-out-of-date-urls")
+                    or self.owner.update_if_out_of_date
+                ):
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True
                 LOG.warning(
-                    "To enable automatic downloading of updated URLs set the 'download-updated-urls' setting to True",
+                    "To enable automatic downloading of updated URLs set the 'download-out-of-date-urls'"
+                    " setting to True",
                 )
             else:
                 LOG.debug("Remote content of URL %s unchanged", url)
@@ -233,7 +302,9 @@ class HTTPDownloader(Downloader):
 
 
 class FTPDownloader(Downloader):
-    def prepare(self, url):
+    def prepare(self, url, download):
+
+        mode = "wb"
 
         o = urlparse(url)
         assert o.scheme == "ftp"
@@ -259,7 +330,8 @@ class FTPDownloader(Downloader):
         ftp.set_pasv(True)
         self.filename = os.path.basename(o.path)
         self.ftp = ftp
-        return ftp.size(self.filename)
+
+        return ftp.size(self.filename), mode, 0, False
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -311,19 +383,36 @@ class Url(FileSource):
         verify=True,
         watcher=None,
         force=None,
+        # extension=None,
+        http_headers=None,
+        update_if_out_of_date=False,
+        mirror=DEFAULT_MIRROR,
         **kwargs,
     ):
+        # TODO: re-enable this feature
+        extension = None
+
         self.url = url
         LOG.debug("URL %s", url)
 
         self.filter = filter
         self.merger = merger
         self.verify = verify
-        self.watcher = watcher if watcher else dummy
+        self.watcher = watcher if watcher else dummy_watcher
+        self.update_if_out_of_date = update_if_out_of_date
+        self.http_headers = http_headers if http_headers else {}
+
+        if mirror:
+            url = mirror(url)
 
         o = urlparse(url)
         downloader = DOWNLOADERS[o.scheme](self)
-        extension = downloader.extension(url)
+
+        if extension and extension[0] != ".":
+            extension = "." + extension
+
+        if extension is None:
+            extension = downloader.extension(url)
 
         self.path = downloader.local_path(url)
         if self.path is not None:

@@ -22,38 +22,28 @@ def path_to_url(path):
 
 
 def test_download_1():
-    url = (
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib?_=%s"
-        % (time.time(),)
+    url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib?_=%s" % (
+        time.time(),
     )
     download_and_cache(url)
 
 
 def test_download_2():
-    url = "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib"
+    url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib"
     download_and_cache(url)
 
 
 def test_download_3():
-    with settings.temporary("download-updated-urls", True):
-        url = "https://datastore.copernicus-climate.eu/climetlab/test.txt"
+    with settings.temporary("download-out-of-date-urls", True):
+        url = "https://get.ecmwf.int/test-data/climetlab/input/test.txt"
         download_and_cache(url)
 
 
 def test_download_4():
-    url = "https://datastore.copernicus-climate.eu/climetlab/missing.txt"
+    url = "https://get.ecmwf.int/test-data/climetlab/input/missing.txt"
     r = download_and_cache(url, return_none_on_404=True)
     assert r is None, r
 
-# def test_local():
-#     ds = cml.load_source(
-#         "url",
-#         data_file_url("single", "z_500_20000101.grib"),
-#     )
-#     assert len(ds) == 1
-
-
-# TODO: test .tar, .zip, .tar.gz
 
 if __name__ == "__main__":
     from climetlab.testing import main

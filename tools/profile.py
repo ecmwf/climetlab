@@ -21,7 +21,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-u",
     "--url",
-    default="https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/data/training-input/ecmwf-hindcast/0.2.5/netcdf/ecmwf-hindcast-q-20200102.nc",  # noqa: E501
+    default=(
+        "https://storage.ecmwf.europeanweather.cloud/s2s-ai-challenge/"
+        "data/training-input/ecmwf-hindcast/0.2.5/netcdf/ecmwf-hindcast-q-20200102.nc"
+    ),
 )
 parser.add_argument("-t", "--threads", default=4, type=int)
 parser.add_argument("-o", "--output", default="out.data", help="output file")

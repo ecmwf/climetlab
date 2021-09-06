@@ -12,6 +12,8 @@
 
 import logging
 
+import pytest
+
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
 from climetlab.sources.url import offline
@@ -19,49 +21,50 @@ from climetlab.sources.url import offline
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.long_test
 def test_unpack_zip():
     try:
         with temp_directory() as tmpdir:
             with settings.temporary("cache-directory", tmpdir):
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(True)  # Make sure we fail if not cached
 
                 # Check cache
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(False)
 
                 LOG.debug("Use the force")
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                     force=True,
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 offline(True)  # Make sure we fail if not cached
 
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
 
                 # Again
                 ds = load_source(
                     "url",
-                    "https://datastore.copernicus-climate.eu/climetlab/grib.zip",
+                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
                 )
-                assert len(ds) == 18, len(ds)
+                assert len(ds) == 6, len(ds)
     finally:
         offline(False)
 

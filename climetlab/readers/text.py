@@ -7,9 +7,24 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 
 from . import Reader
+from .csv import CSVReader, is_csv
+
+
+def is_text(path, prob_lines=1000, probe_size=4096):
+    try:
+        with open(path, "rb") as f:
+            if 0x0 in f.read(probe_size):
+                return False
+
+        with open(path, "r", encoding="utf-8") as f:
+            for i, _ in enumerate(f):
+                if i > prob_lines:
+                    break
+        return True
+    except UnicodeDecodeError:
+        return False
 
 
 class TextReader(Reader):
@@ -20,8 +35,13 @@ class TextReader(Reader):
         # Used by multi-source
         return True
 
+    def mutate(self):
+        if is_csv(self.path):
+            return CSVReader(self.source, self.path)
+        return self
+
 
 def reader(source, path, magic, deeper_check):
-    _, extension = os.path.splitext(path)
-    if extension in (".txt",):
-        return TextReader(source, path)
+    if deeper_check:
+        if is_text(path):
+            return TextReader(source, path)

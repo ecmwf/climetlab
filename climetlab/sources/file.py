@@ -8,8 +8,11 @@
 #
 
 
+import glob
 import logging
+import os
 
+from climetlab import load_source
 from climetlab.core.settings import SETTINGS
 from climetlab.readers import reader
 
@@ -18,7 +21,7 @@ from . import Source
 LOG = logging.getLogger(__name__)
 
 
-class FileSource(Source):
+class FileSource(Source, os.PathLike):
 
     _reader_ = None
     path = None
@@ -26,6 +29,18 @@ class FileSource(Source):
     merger = None
 
     def mutate(self):
+
+        if isinstance(self.path, (list, tuple)):
+            if len(self.path) == 1:
+                self.path = self.path[0]
+            else:
+                return load_source(
+                    "multi",
+                    [load_source("file", p) for p in self.path],
+                    filter=self.filter,
+                    merger=self.merger,
+                )
+
         # Give a chance to directories and zip files
         # to return a multi-source
         source = self._reader.mutate_source()
@@ -55,8 +70,8 @@ class FileSource(Source):
     def sel(self, **kwargs):
         return self._reader.sel(**kwargs)
 
-    def plot_map(self, **kwargs):
-        return self._reader.plot_map(**kwargs)
+    def plot_map(self, *args, **kwargs):
+        return self._reader.plot_map(*args, **kwargs)
 
     def to_xarray(self, **kwargs):
         return self._reader.to_xarray(**kwargs)
@@ -80,24 +95,44 @@ class FileSource(Source):
     def write(self, f):
         return self._reader.write(f)
 
-    @classmethod
-    def multi_merge(cls, sources):
-        if not all(isinstance(s, FileSource) for s in sources):
-            return None
-        readers = [s._reader for s in sources]
-        return readers[0].multi_merge(readers)
-
     def _attributes(self, names):
         return self._reader._attributes(names)
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
-        path = self.path.replace(cache_dir, "CACHE:")
+        if isinstance(self.path, str):
+            path = self.path.replace(cache_dir, "CACHE:")
         return f"{self.__class__.__name__}({path},{self._reader.__class__.__name__})"
+
+    def __fspath__(self):
+        return self.path
 
 
 class File(FileSource):
-    def __init__(self, path, filter=None, merger=None):
+    def __init__(
+        self,
+        path,
+        expand_user=True,
+        expand_vars=False,
+        unix_glob=True,
+        recursive_glob=True,
+        filter=None,
+        merger=None,
+    ):
+
+        if expand_user:
+            path = os.path.expanduser(path)
+
+        if expand_vars:
+            path = os.path.expandvars(path)
+
+        if unix_glob and set(path).intersection(set("[]?*")):
+            matches = glob.glob(path, recursive=recursive_glob)
+            if len(matches) == 1:
+                path = matches[0]
+            if len(matches) > 1:
+                path = sorted(matches)
+
         self.path = path
         self.filter = filter
         self.merger = merger

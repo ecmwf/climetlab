@@ -9,7 +9,9 @@
 
 import cdsapi
 
+from climetlab.core.thread import SoftThreadPool
 from climetlab.normalize import normalize_args
+from climetlab.utils import tqdm
 
 from .file import FileSource
 from .prompt import APIKeyPrompt
@@ -64,21 +66,54 @@ class CDSRetriever(FileSource):
     CDSRetriever
     """
 
-    def __init__(self, dataset, **kwargs):
-        request = self.request(**kwargs)
+    def __init__(self, dataset, *args, **kwargs):
+        assert isinstance(dataset, str)
+        if len(args):
+            assert len(args) == 1
+            assert isinstance(args[0], dict)
+            assert not kwargs
+            kwargs = args[0]
 
+        requests = self.requests(**kwargs)
+
+        client()  # Trigger password prompt before thraeding
+
+        nthreads = min(self.settings("number-of-download-threads"), len(requests))
+
+        if nthreads < 2:
+            self.path = [self._retrieve(dataset, r) for r in requests]
+        else:
+            with SoftThreadPool(nthreads=nthreads) as pool:
+
+                futures = [pool.submit(self._retrieve, dataset, r) for r in requests]
+
+                iterator = (f.result() for f in futures)
+                self.path = list(tqdm(iterator, leave=True, total=len(requests)))
+
+    def _retrieve(self, dataset, request):
         def retrieve(target, args):
             client().retrieve(args[0], args[1], target)
 
-        self.path = self.cache_file(
+        return self.cache_file(
             retrieve,
             (dataset, request),
             extension=EXTENSIONS.get(request.get("format"), ".cache"),
         )
 
     @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
-    def request(self, **kwargs):
-        return kwargs
+    def requests(self, **kwargs):
+        split_on = kwargs.pop("split_on", None)
+        if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):
+            return [kwargs]
+
+        result = []
+
+        for v in kwargs[split_on]:
+            r = dict(**kwargs)
+            r[split_on] = v
+            result.append(r)
+
+        return result
 
     def to_pandas(self, **kwargs):
         pandas_read_csv_kwargs = dict(

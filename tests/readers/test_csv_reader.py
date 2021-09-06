@@ -9,10 +9,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import mimetypes
+
 import pytest
 
 import climetlab as cml
-from climetlab.testing import modules_installed
+from climetlab.testing import MISSING, TEST_DATA_URL
 
 
 def test_csv_1():
@@ -76,10 +78,7 @@ def test_csv_4():
     print(s.to_pandas())
 
 
-@pytest.mark.skipif(
-    not modules_installed("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_csv_tfdataset():
     s = cml.load_source(
         "dummy-source",
@@ -94,6 +93,64 @@ def test_csv_tfdataset():
     ds = s.to_tfdataset()
     print(ds)
 
+
+@pytest.mark.skipif(True, reason="Test not yet implemented")
+def test_csv_icoads():
+
+    r = {
+        "class": "e2",
+        "date": "1662-10-01/to/1663-12-31",
+        "dataset": "icoads",
+        "expver": "1608",
+        "groupid": "17",
+        "reportype": "16008",
+        "format": "ascii",
+        "stream": "oper",
+        "time": "all",
+        "type": "ofb",
+    }
+
+    source = cml.load_source("mars", **r)
+    print(source)
+
+
+def test_csv_text():
+
+    s = cml.load_source(
+        "dummy-source",
+        "csv",
+        headers=["a", "b", "c"],
+        quote_strings=True,
+        lines=[
+            [1, "x", 3],
+            [4, "y", 6],
+            [7, "z", 9],
+        ],
+        extension=".txt",
+    )
+
+    print(s.to_pandas())
+
+
+def test_csv_mimetypes():
+    assert mimetypes.guess_type("x.csv") == ("text/csv", None)
+    assert mimetypes.guess_type("x.csv.gz") == ("text/csv", "gzip")
+    assert mimetypes.guess_type("x.csv.bz2") == ("text/csv", "bzip2")
+
+
+def test_download_tfdataset():
+    ds = cml.load_source(
+        "url-pattern",
+        "{url}/input/test-{n}.csv",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+    )
+
+    ds.graph()
+    print(ds.to_pandas())
+
+
+# TODO test compression
 
 if __name__ == "__main__":
     from climetlab.testing import main

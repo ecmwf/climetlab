@@ -152,3 +152,9 @@ climetlab/tools/
 *.gz
 *.tar
 *.tgz
+test-data/
+logs/
+*.index
+*.data-*
+*.out
+test.py

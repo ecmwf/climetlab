@@ -17,25 +17,54 @@ from climetlab import load_source, plot_map
 from climetlab.testing import climetlab_file
 
 
-def test_plot():
-    for s in load_source("file", climetlab_file("docs/examples/test.grib")):
+def test_netcdf():
+    for s in load_source("file", climetlab_file("docs/examples/test.nc")):
         plot_map(s)
 
-        # test.grib fields endStep is 0, so datetime == valid_datetime
-        assert s.datetime() == s.valid_datetime()
 
-        # test shape
-        assert s.shape == (11, 19)
-
-
-@pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
-def test_sel():
-    s = load_source("file", climetlab_file("docs/examples/test.grib"))
-
-    s.sel(shortName="2t")
+def test_dummy_netcdf():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
 
 
-# @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
+def test_dummy_netcdf_2():
+    s = load_source(
+        "dummy-source", kind="netcdf", dims=["lat", "lon", "time"], variables=["a", "b"]
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf_3():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
+        variables=["a", "b"],
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+def test_dummy_netcdf_4():
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
+        variables={
+            "a": dict(dims=["lat", "lon"]),
+            "b": dict(dims=["lat", "time"]),
+        },
+    )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+
+
+@pytest.mark.long_test
 def test_multi():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
@@ -45,34 +74,24 @@ def test_multi():
         product_type="reanalysis",
         param="2t",
         date="2021-03-01",
+        format="netcdf",
     )
-    print(s1.to_xarray())
-
+    s1.to_xarray()
     s2 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
         product_type="reanalysis",
         param="2t",
         date="2021-03-02",
+        format="netcdf",
     )
-    print(s2.to_xarray())
+    s2.to_xarray()
 
     source = load_source("multi", s1, s2)
     for s in source:
         print(s)
 
     source.to_xarray()
-
-
-def test_dummy_grib():
-    s = load_source(
-        "dummy-source",
-        kind="grib",
-        paramId=[129, 130],
-        date=[19900101, 19900102],
-        level=[1000, 500],
-    )
-    assert len(s) == 8
 
 
 if __name__ == "__main__":

@@ -7,24 +7,121 @@
 # nor does it submit to any jurisdiction.
 #
 
+import copy
+
+# import atexit
 import datetime
+import json
 import logging
+import os
 
 import eccodes
 
 from climetlab.core import Base
+from climetlab.core.caching import auxiliary_cache_file
+from climetlab.profiling import call_counter
 
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
 from . import Reader
-from .gridded import GriddedMultiReaders
+
+# from collections import defaultdict
+
 
 LOG = logging.getLogger(__name__)
 
-# return eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
 
-# See https://pymotw.com/2/weakref/
+def mix_kwargs(user, default, forced={}, logging_owner="", logging_main_key=""):
+    kwargs = copy.deepcopy(default)
+
+    for k, v in user.items():
+        if k in forced and v != forced[k]:
+            LOG.warning(
+                (
+                    f"In {logging_owner} {logging_main_key},"
+                    f"ignoring attempt to override {k}={forced[k]} with {k}={v}."
+                )
+            )
+            continue
+
+        if k in default and v != default[k]:
+            LOG.warning(
+                (
+                    f"In {logging_owner} {logging_main_key}, overriding the default value "
+                    f"({k}={default[k]}) with {k}={v} is not recommended."
+                )
+            )
+
+        kwargs[k] = v
+
+    kwargs.update(forced)
+
+    return kwargs
+
+
+# This does not belong here, should be in the C library
+def _get_message_offsets(path):
+
+    fd = os.open(path, os.O_RDONLY)
+    try:
+
+        def get(count):
+            buf = os.read(fd, count)
+            assert len(buf) == count
+            n = 0
+            for i in buf:
+                n = n * 256 + int(i)
+            return n
+
+        offset = 0
+        while True:
+            code = os.read(fd, 4)
+            if len(code) < 4:
+                break
+
+            if code != b"GRIB":
+                offset = os.lseek(fd, offset + 1, os.SEEK_SET)
+                continue
+
+            length = get(3)
+            edition = get(1)
+
+            if edition == 1:
+                if length & 0x800000:
+                    sec1len = get(3)
+                    os.lseek(fd, 4, os.SEEK_CUR)
+                    flags = int(os.read(fd, 1))
+                    os.lseek(fd, sec1len - 8, os.SEEK_CUR)
+
+                    if flags & (1 << 7):
+                        sec2len = get(3)
+                        os.lseek(fd, sec2len - 3, os.SEEK_CUR)
+
+                    if flags & (1 << 6):
+                        sec3len = get(3)
+                        os.lseek(fd, sec3len - 3, os.SEEK_CUR)
+
+                    sec4len = get(3)
+
+                    if sec4len < 120:
+                        length &= 0x7FFFFF
+                        length *= 120
+                        length -= sec4len
+                        length += 4
+
+            if edition == 2:
+                length = get(8)
+
+            yield offset, length
+            offset = os.lseek(fd, offset + length, os.SEEK_SET)
+
+    finally:
+        os.close(fd)
+
+
+eccodes_codes_release = call_counter(eccodes.codes_release)
+eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
 
 class CodesHandle:
@@ -34,7 +131,7 @@ class CodesHandle:
         self.offset = offset
 
     def __del__(self):
-        eccodes.codes_release(self.handle)
+        eccodes_codes_release(self.handle)
 
     def get(self, name):
         try:
@@ -60,16 +157,22 @@ class CodesReader:
 
     def at_offset(self, offset):
         self.file.seek(offset, 0)
-        return self.__next__()
+        return next(self)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        offset = self.file.tell()
-        handle = eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
-        if not handle:
+        handle = self._next_handle()
+        if handle is None:
             raise StopIteration()
+        return handle
+
+    def _next_handle(self):
+        offset = self.file.tell()
+        handle = eccodes_codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
+        if not handle:
+            return None
         return CodesHandle(handle, self.path, offset)
 
     @property
@@ -77,12 +180,9 @@ class CodesReader:
         return self.file.tell()
 
 
-def cb(r):
-    print("Delete", r)
-
-
 class GribField(Base):
     def __init__(self, *, handle=None, reader=None, offset=None):
+        assert reader
         self._handle = handle
         self._reader = reader
         self._offset = offset
@@ -128,6 +228,7 @@ class GribField(Base):
         )
         driver.plot_grib(self.path, self.handle.get("offset"))
 
+    @call_counter
     def to_numpy(self):
         return self.values.reshape(self.shape)
 
@@ -218,17 +319,83 @@ class GRIBFilter:
         return GRIBIterator(self.path)
 
 
-class MultiGribReaders(GriddedMultiReaders):
-    engine = "cfgrib"
-    backend_kwargs = {"squeeze": False}
+# class MultiGribReaders(GriddedMultiReaders):
+#     engine = "cfgrib"
+#     backend_kwargs = {"squeeze": False}
+
+
+class GRIBIndex:
+
+    VERSION = 1
+
+    def __init__(self, path):
+        self.path = path
+        self.offsets = None
+        self.lengths = None
+        self.cache = auxiliary_cache_file(
+            "grib",
+            path,
+            content="null",
+            extension=".json",
+        )
+
+        if not self._load_cache():
+            self._build_index()
+
+    def _build_index(self):
+
+        offsets = []
+        lengths = []
+
+        for offset, length in _get_message_offsets(self.path):
+            offsets.append(offset)
+            lengths.append(length)
+
+        self.offsets = offsets
+        self.lengths = lengths
+
+        self._save_cache()
+
+    def _save_cache(self):
+        try:
+            with open(self.cache, "w") as f:
+                json.dump(
+                    dict(
+                        version=self.VERSION,
+                        offsets=self.offsets,
+                        lengths=self.lengths,
+                    ),
+                    f,
+                )
+        except Exception:
+            LOG.exception("Write to cache failed %s", self.cache)
+
+    def _load_cache(self):
+        try:
+            with open(self.cache) as f:
+                c = json.load(f)
+                if not isinstance(c, dict):
+                    return False
+
+                assert c["version"] == self.VERSION
+                self.offsets = c["offsets"]
+                self.lengths = c["lengths"]
+                return True
+        except Exception:
+            LOG.exception("Load from cache failed %s", self.cache)
+
+        return False
 
 
 class GRIBReader(Reader):
     appendable = True  # GRIB messages can be added to the same file
 
+    open_mfdataset_backend_kwargs = {"squeeze": False}
+    open_mfdataset_engine = "cfgrib"
+
     def __init__(self, source, path):
         super().__init__(source, path)
-        self._fields = None
+        self._index = None
         self._reader = None
 
     def __repr__(self):
@@ -237,29 +404,105 @@ class GRIBReader(Reader):
     def __iter__(self):
         return GRIBIterator(self.path)
 
-    def _items(self):
-        if self._fields is None:
-            self._fields = []
-            for f in self:
-                self._fields.append(f.offset)
-        return self._fields
-
-    def __getitem__(self, n):
+    @property
+    def reader(self):
         if self._reader is None:
             self._reader = CodesReader(self.path)
-        return GribField(reader=self._reader, offset=self._items()[n])
+        return self._reader
+
+    @property
+    def index(self):
+        if self._index is None:
+            self._index = GRIBIndex(self.path)
+        return self._index
+
+    def __getitem__(self, n):
+        return GribField(
+            reader=self.reader,
+            offset=self.index.offsets[n],
+        )
+
+    @property
+    def first(self):
+        return GribField(reader=self.reader, offset=0)
 
     def __len__(self):
-        return len(self._items())
+        return len(self.index.offsets)
 
     def to_xarray(self, **kwargs):
-        # So we use the same code
-        return MultiGribReaders([self]).to_xarray(**kwargs)
+        return type(self).to_xarray_multi([self.path], **kwargs)
+
+    def to_tfdataset(self, **kwargs):
+        # assert "label" in kwargs
+        if "label" in kwargs:
+            return self._to_tfdataset_supervised(**kwargs)
+        else:
+            return self._to_tfdataset_unsupervised(**kwargs)
+
+    def _to_tfdataset_unsupervised(self, **kwargs):
+        def generate():
+            for s in self:
+                yield s.to_numpy()
+
+        import tensorflow as tf
+
+        # TODO check the cost of the conversion
+        # maybe default to float64
+        dtype = kwargs.get("dtype", tf.float32)
+        return tf.data.Dataset.from_generator(generate, dtype)
+
+    def _to_tfdataset_supervised(self, label, **kwargs):
+        @call_counter
+        def generate():
+            for s in self:
+                yield s.to_numpy(), s.handle.get(label)
+
+        import tensorflow as tf
+
+        # with timer("_to_tfdataset_supervised shape"):
+        shape = self.first.shape
+
+        # TODO check the cost of the conversion
+        # maybe default to float64
+        dtype = kwargs.get("dtype", tf.float32)
+        # with timer("tf.data.Dataset.from_generator"):
+        return tf.data.Dataset.from_generator(
+            generate,
+            output_signature=(
+                tf.TensorSpec(shape, dtype=dtype, name="data"),
+                tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
+            ),
+        )
 
     @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, GRIBReader) for r in readers)
-        return MultiGribReaders(readers)
+    def to_xarray_multi(cls, paths, **kwargs):
+        import xarray as xr
+
+        xarray_open_mfdataset_kwargs = {}
+
+        user_xarray_open_mfdataset_kwargs = kwargs.get(
+            "xarray_open_mfdataset_kwargs", {}
+        )
+        for key in ["backend_kwargs"]:
+            xarray_open_mfdataset_kwargs[key] = mix_kwargs(
+                user=user_xarray_open_mfdataset_kwargs.pop(key, {}),
+                default={"squeeze": False},
+                forced={},
+                logging_owner="xarray_open_mfdataset_kwargs",
+                logging_main_key=key,
+            )
+        xarray_open_mfdataset_kwargs.update(
+            mix_kwargs(
+                user=user_xarray_open_mfdataset_kwargs,
+                default={},
+                forced={"engine": "cfgrib"},
+            )
+        )
+
+        return xr.open_mfdataset(
+            paths,
+            **xarray_open_mfdataset_kwargs,
+        )
 
 
 def reader(source, path, magic, deeper_check):

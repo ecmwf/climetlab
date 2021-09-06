@@ -80,6 +80,7 @@ def make_xarray(
     variables=["a"],
     dims=["lat", "lon"],
     size=2,
+    coord_values=None,
     **kwargs,
 ):
     import numpy as np
@@ -97,14 +98,17 @@ def make_xarray(
     for d, args in dims.items():
         _size = args["size"]
         coords[d] = np.arange(_size, dtype=float)
+        if coord_values and d in coord_values:
+            coords[d] = coord_values[d]
 
     vars = {}
     for v, args in variables.items():
         _dims = variables[v]["dims"]
         _coords = {k: coords[k] for k in _dims}
         _shape = [dims[d]["size"] for d in _dims]
+        data = np.arange(np.prod(_shape)).reshape(_shape)  # .as_type(float)
         arr = xr.DataArray(
-            np.zeros(_shape, dtype=float),
+            data,
             dims=_dims,
             coords=_coords,
         )
@@ -195,12 +199,14 @@ GENERATORS = {
 
 
 class DummySource(FileSource):
-    def __init__(self, kind, request=None, force=False, **kwargs):
+    def __init__(self, kind, request=None, force=False, extension=None, **kwargs):
         if request is None:
             request = {}
         request.update(kwargs)
 
-        generate, extension = GENERATORS[kind]
+        generate, ext = GENERATORS[kind]
+        if extension is not None:
+            ext = extension
 
         def _generate(target, args):
             return generate(target, **args)
@@ -209,7 +215,7 @@ class DummySource(FileSource):
             _generate,
             request,
             hash_extra=kind,
-            extension=extension,
+            extension=ext,
             force=force,
         )
 

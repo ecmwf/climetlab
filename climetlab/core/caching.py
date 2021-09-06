@@ -25,12 +25,14 @@ import os
 import shutil
 import sqlite3
 import threading
+import time
 from functools import wraps
 
 import psutil
+from filelock import FileLock
 
 from climetlab.core.settings import SETTINGS
-from climetlab.utils import bytes_to_string
+from climetlab.utils import humanize
 from climetlab.utils.html import css
 
 VERSION = 2
@@ -174,7 +176,12 @@ class Cache(threading.Thread):
                 latest = datetime.datetime.utcnow()
             return latest
 
-    def _purge_cache(self, owner):
+    def _purge_cache(self, owner=None, age=None, size=None):
+
+        if owner is None and age is None and size is None:
+            self._decache(self._cache_size())
+            return
+
         with self.connection as db:
             db.execute("DELETE FROM cache WHERE owner=?", (owner,))
 
@@ -270,6 +277,13 @@ class Cache(threading.Thread):
                         parent = n["path"]
                         break
 
+                try:
+                    s = os.stat(full)
+                    if time.time() - s.st_mtime < 120:  # Two minutes
+                        continue
+                except OSError:
+                    pass
+
                 if parent is None:
                     LOG.warning(f"CliMetLab cache: orphan found: {full}")
                 else:
@@ -297,21 +311,37 @@ class Cache(threading.Thread):
         except Exception:
             LOG.exception("Deleting %s", path)
 
+    def _entry_to_dict(self, entry):
+        n = dict(entry)
+        for k in ("args", "owner_data"):
+            if k in n and isinstance(n[k], str):
+                n[k] = json.loads(n[k])
+        return n
+
     def _delete_entry(self, entry):
         if isinstance(entry, str):
+            entry = dict(
+                path=entry,
+                size=None,
+                owner=None,
+                args=None,
+            )
             path, size, owner, args = entry, None, None, None
             try:
-                size = os.path.getsize(path)
+                entry["size"] = os.path.getsize(entry["path"])
             except OSError:
                 pass
-        else:
-            path, size, owner, args = (
-                entry["path"],
-                entry["size"],
-                entry["owner"],
-                entry["args"],
-            )
 
+        path, size, owner, args = (
+            entry["path"],
+            entry["size"],
+            entry["owner"],
+            entry["args"],
+        )
+
+        LOG.warning(
+            "Deleting entry %s", json.dumps(self._entry_to_dict(entry), indent=4)
+        )
         total = 0
 
         # First, delete child files, e.g. unzipped data
@@ -325,7 +355,7 @@ class Cache(threading.Thread):
                 db.execute("DELETE FROM cache WHERE path=?", (path,))
             return total
 
-        LOG.warning(f"CliMetLab cache: deleting {path} ({bytes_to_string(size)})")
+        LOG.warning(f"CliMetLab cache: deleting {path} ({humanize.bytes(size)})")
         LOG.warning(f"CliMetLab cache: {owner} {args}")
         self._delete_file(path)
 
@@ -341,7 +371,7 @@ class Cache(threading.Thread):
         if bytes <= 0:
             return 0
 
-        LOG.warning("CliMetLab cache: trying to free %s", bytes_to_string(bytes))
+        LOG.warning("CliMetLab cache: trying to free %s", humanize.bytes(bytes))
 
         total = 0
 
@@ -358,11 +388,11 @@ class Cache(threading.Thread):
                     if total >= bytes:
                         LOG.warning(
                             "CliMetLab cache: freed %s from cache",
-                            bytes_to_string(bytes),
+                            humanize.bytes(bytes),
                         )
                         return total
 
-        LOG.warning("CliMetLab cache: could not free %s", bytes_to_string(bytes))
+        LOG.warning("CliMetLab cache: could not free %s", humanize.bytes(bytes))
 
     def _register_cache_file(self, path, owner, args, parent=None):
         """Register a file in the cache
@@ -467,16 +497,28 @@ class Cache(threading.Thread):
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
                 for k in [x for x in n.keys() if x not in ("path", "owner_data")]:
-                    v = bytes_to_string(n[k]) if k == "size" else n[k]
+                    v = humanize.bytes(n[k]) if k == "size" else n[k]
                     html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
                 html.append("</table>")
                 html.append("<br>")
         return "".join(html)
 
+    def _dump_cache_database(self):
+        result = []
+        with self.connection as db:
+            for d in db.execute("SELECT * FROM cache"):
+                n = dict(d)
+                for k in ("args", "owner_data"):
+                    if n[k] is not None:
+                        n[k] = json.loads(n[k])
+                result.append(n)
+        return result
+
 
 CACHE = Cache()
 CACHE.start()
 
+dump_cache_database = in_executor(CACHE._dump_cache_database)
 register_cache_file = in_executor(CACHE._register_cache_file)
 update_entry = in_executor(CACHE._update_entry)
 check_cache_size = in_executor_forget(CACHE._check_cache_size)
@@ -547,17 +589,59 @@ def cache_file(
 
     if not os.path.exists(path):
 
-        tmp = ".{}-{}.tmp".format(os.getpid(), threading.get_ident())
+        lock = path + ".lock"
 
-        owner_data = create(path + tmp, args)
+        with FileLock(lock):
+            if not os.path.exists(
+                path
+            ):  # Check again, another thread/process may have created the file
 
-        os.rename(path + tmp, path)
+                owner_data = create(path + ".tmp", args)
 
-        update_entry(path, owner_data)
+                os.rename(path + ".tmp", path)
 
-        check_cache_size()
+                update_entry(path, owner_data)
+
+                check_cache_size()
+
+        try:
+            os.unlink(lock)
+        except OSError:
+            pass
 
     return path
+
+
+def auxiliary_cache_file(
+    owner,
+    path,
+    index=0,
+    content=None,
+    extension=".cache",
+):
+    # Create an auxiliary cache file
+    # to be used for example to cache an index
+    # It is invalidated if `path` is changed
+    stat = os.stat(path)
+
+    def create(target, args):
+        # Simply touch the file
+        with open(target, "w") as f:
+            if content:
+                f.write(content)
+
+    return cache_file(
+        owner,
+        create,
+        (
+            path,
+            stat.st_ctime,
+            stat.st_mtime,
+            stat.st_size,
+            index,
+        ),
+        extension=extension,
+    )
 
 
 # housekeeping()

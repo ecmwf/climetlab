@@ -42,10 +42,6 @@ class Source(Base):
         # Give a chance to `multi` to change source
         return self
 
-    def flatten(self):
-        # Used by multi-source
-        return [self]
-
     def ignore(self):
         # Used by multi-source
         return False
@@ -86,10 +82,6 @@ class Source(Base):
 
     def _repr_html_(self):
         return table(self)
-
-    @classmethod
-    def multi_merge(cls, sources):
-        return None
 
     def graph(self, depth=0):
         print(" " * depth, self)
@@ -136,7 +128,12 @@ def register_source(module):
 
 
 def load_source(name: str, *args, context=None, **kwargs) -> Source:
-    return source(name, *args, **kwargs).mutate()
+    prev = None
+    src = source(name, *args, **kwargs)
+    while src is not prev:
+        prev = src
+        src = src.mutate()
+    return src
 
 
 def list_entries():

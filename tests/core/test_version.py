@@ -10,11 +10,10 @@
 #
 
 
-from climetlab.testing import check_unsafe_archives
+def test_version():
+    from climetlab import __version__
 
-
-def test_tar_safety():
-    check_unsafe_archives(".tar")
+    assert __version__ is not None
 
 
 if __name__ == "__main__":

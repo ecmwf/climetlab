@@ -197,7 +197,11 @@ class DatasetLoader:
         catalogs = self.settings("datasets-catalogs-urls")
         for catalog in catalogs:
             url = f"{catalog}/{name}.yaml"
-            path = download_and_cache(url, return_none_on_404=True)
+            path = download_and_cache(
+                url,
+                update_if_out_of_date=True,
+                return_none_on_404=True,
+            )
 
             if path:
                 LOG.debug("Found dataset at %s", url)

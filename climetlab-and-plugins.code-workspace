@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../climetlab-meteonet"
+		},
+		{
+			"path": "../climetlab-demo-dataset"
+		},
+		{
+			"path": "../climetlab-demo-source"
+		},
+		{
+			"path": "../climetlab-s2s-ai-challenge"
+		},
+		{
+			"path": "../climetlab-maelstrom-radiation"
+		}
+	],
+	"settings": {
+
+		"cSpell.language": "en-GB",
+
+		"yaml.schemas": {
+			"./schemas/magics.json": ["*.yaml"]
+		}
+	}
+}

@@ -10,31 +10,45 @@
 import logging
 
 from . import Reader
-from .multi import MultiReaders
 
 LOG = logging.getLogger(__name__)
 
 
-class MultiTfRecordReaders(MultiReaders):
-    def to_tfdataset(self, merger=None, **kwargs):
-        if merger is None:
-            import tensorflow as tf
-
-            return tf.data.TFRecordDataset([r.path for r in self.readers], **kwargs)
-        return merger.merge([r.path for r in self.readers], **kwargs)
-
-
 class TfRecordReader(Reader):
-    def to_tfdataset(self, **kwargs):
-        import tensorflow as tf
 
-        tfrecord = tf.data.TFRecordDataset(self.path)
-        return tfrecord
+    _tfrecord = None
+    _len = None
+
+    @property
+    def tfrecord(self):
+        return type(self).to_tfdataset_multi([self.path])
+
+    def to_tfdataset(self, **kwargs):
+        return self.tfrecord
 
     @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, TfRecordReader) for r in readers)
-        return MultiTfRecordReaders(readers)
+    def to_tfdataset_multi(cls, paths, **kwargs):
+        import tensorflow as tf
+
+        files_ds = tf.data.Dataset.list_files(paths)
+        options = tf.data.Options()
+        # options.experimental_deterministic = False
+        files_ds = files_ds.with_options(options)
+        return tf.data.TFRecordDataset(
+            files_ds,
+            num_parallel_reads=tf.data.experimental.AUTOTUNE,
+        )
+
+    def __len__(self):
+        if self._len is None:
+            record = self.tfrecord
+            try:
+                self._len = len(record)
+            except TypeError:
+                self._len = 0
+                for _ in record:
+                    self._len += 1
+        return self._len
 
 
 def reader(source, path, magic, deeper_check):

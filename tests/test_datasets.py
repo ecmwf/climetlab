@@ -25,6 +25,7 @@ def test_dataset_2():
     dataset.sample_bufr_data()
 
 
+@pytest.mark.long_test
 def test_era5_temperature():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
@@ -44,6 +45,7 @@ def test_datetime():
         data.sel(date="1980-12-09 12:00")
 
 
+@pytest.mark.external_download
 def test_pandas_filter():
     data = cml.load_dataset("hurricane-database", bassin="atlantic")
     irma = data.to_pandas(name="irma", year=2017)

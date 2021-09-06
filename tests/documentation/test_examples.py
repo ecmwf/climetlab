@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from climetlab.testing import climetlab_file
+from climetlab.testing import IN_GITHUB, climetlab_file
 
 IGNORE = [
     "conf.py",
@@ -41,6 +41,7 @@ def example_list():
     return sorted(examples)
 
 
+@pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
 @pytest.mark.parametrize("path", example_list())
 def test_example(path):
 

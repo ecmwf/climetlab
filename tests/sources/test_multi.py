@@ -14,9 +14,11 @@ import logging
 import os
 
 import pytest
+import xarray as xr
 
 from climetlab import load_source
 from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.testing import MISSING, TEST_DATA_URL
 
 LOG = logging.getLogger(__name__)
 
@@ -48,6 +50,7 @@ def test_multi_graph_1():
     ds.graph()
 
     assert len(ds) == 8
+    ds.to_xarray()
 
 
 def test_multi_graph_2():
@@ -102,17 +105,7 @@ def test_multi_directory_1():
             assert len(ds) == 2
 
 
-def test_download_zip_1():
-    ds = load_source(
-        "url-pattern",
-        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
-        x=["a", "b"],
-    )
-
-    ds.graph()
-    assert len(ds) == 36, len(ds)
-
-
+@pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_download_zip_2():
     def filter(path_or_url):
         LOG.debug("test_download_zip_2.filter %s", path_or_url)
@@ -122,8 +115,9 @@ def test_download_zip_2():
 
     ds = load_source(
         "url-pattern",
-        "https://datastore.copernicus-climate.eu/climetlab/grib-{x}.zip",
+        "{url}/grib-{x}.zip",
         x=["c", "d"],
+        url=f"{TEST_DATA_URL}/input/",
         filter=filter,
     )
 
@@ -171,34 +165,162 @@ def test_multi_grib_mixed():
 def test_download_tar():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tar",
+        f"{TEST_DATA_URL}/input/grib.tar",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 def test_download_tgz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tgz",
+        f"{TEST_DATA_URL}/input/grib.tgz",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 def test_download_tar_gz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.tar.gz",
+        f"{TEST_DATA_URL}/input/grib.tar.gz",
     )
-    assert len(ds) == 18, len(ds)
+    assert len(ds) == 6, len(ds)
 
 
 @pytest.mark.skipif(True, reason="Not yet implemented")
 def test_download_gz():
     ds = load_source(
         "url",
-        "https://datastore.copernicus-climate.eu/climetlab/grib.gz",
+        f"{TEST_DATA_URL}/input/grib.gz",
     )
     assert len(ds) == 2, len(ds)
+
+
+def test_download_zip_1():
+    ds = load_source(
+        "url",
+        f"{TEST_DATA_URL}/input/grib.zip",
+    )
+
+    assert len(ds) == 6, len(ds)
+
+
+def test_download_zip_3():
+    ds = load_source(
+        "url-pattern",
+        "{url}/grib-{param}.zip",
+        param=["2t", "msl"],
+        url=f"{TEST_DATA_URL}/input/",
+    )
+
+    ds.graph()
+    assert len(ds) == 6, len(ds)
+
+
+@pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
+def test_download_tfdataset():
+    ds = load_source(
+        "url-pattern",
+        "{url}/fixtures/tfrecord/EWCTest0.{n}.tfrecord",
+        n=[0, 1],
+        url=TEST_DATA_URL,
+        # TODO: move adapt test data creation script
+        # url=f"{TEST_DATA_URL}/input/",
+    )
+
+    ds.graph()
+    assert len(ds) == 200, len(ds)
+
+
+# @pytest.mark.long_test()
+def large_multi_1(b, func):
+    with temp_directory() as tmpdir:
+        ilist = list(range(200))
+        pattern = os.path.join(tmpdir, "test-{i}.nc")
+        for i in ilist:
+            source = load_source(
+                "dummy-source",
+                kind="netcdf",
+                dims=["lat", "lon", "time"],
+                coord_values=dict(time=[i + 0.0, i + 0.5]),
+            )
+            filename = pattern.format(i=i)
+            source.save(filename)
+        return b(func, pattern, ilist)
+
+
+@pytest.mark.long_test
+@pytest.mark.skipif(
+    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+)
+def test_large_multi_1_xarray(benchmark):
+    import xarray as xr
+
+    def func(pattern, ilist):
+        return xr.open_mfdataset(
+            pattern.format(i="*"), concat_dim="time", combine="nested"
+        )
+
+    large_multi_1(benchmark, func)
+
+
+@pytest.mark.skipif(
+    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+)
+@pytest.mark.long_test
+def test_large_multi_1_climetlab(benchmark):
+    def func(pattern, ilist):
+        source = load_source(
+            "url-pattern",
+            f"file://{pattern}",
+            {"i": ilist},
+            merger="concat(concat_dim=time)",
+        )
+        ds = source.to_xarray()
+        return ds
+
+    large_multi_1(benchmark, func)
+
+
+def large_multi_2_climetlab():
+    import pandas as pd
+
+    pattern = "https://storage.ecmwf.europeanweather.cloud/MAELSTROM_AP1/{parameter}_{size}/{date}T00Z.nc"
+
+    dates = [
+        i.strftime("%Y%m%d")
+        for i in pd.date_range(start="2017-01-01", end="2017-12-31", freq="1D")
+    ][:200]
+    request = {"size": "5GB", "parameter": "air_temperature", "date": dates}
+
+    s = load_source("url-pattern", pattern, request)
+    return [t.path for t in s.sources]
+
+
+@pytest.mark.long_test
+@pytest.mark.external_download
+@pytest.mark.skipif(
+    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+)
+def test_large_multi_2_climetlab(benchmark):
+    with temp_directory():
+        large_multi_2_climetlab()
+        benchmark(large_multi_2_climetlab)
+
+
+def large_multi_2_xarray(paths):
+    xr.open_mfdataset(paths, combine="nested", concat_dim="record")
+
+
+@pytest.mark.long_test
+@pytest.mark.external_download
+@pytest.mark.skipif(
+    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+)
+def test_large_multi_2_xarray(benchmark):
+
+    with temp_directory():
+        paths = large_multi_2_climetlab()
+        benchmark(large_multi_2_xarray, paths)
 
 
 if __name__ == "__main__":

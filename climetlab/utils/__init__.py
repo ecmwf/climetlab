@@ -8,6 +8,7 @@
 #
 import inspect
 import json
+import re
 
 import requests
 
@@ -20,7 +21,11 @@ except ImportError:
     from tqdm import tqdm  # noqa F401
 
 
-def download_and_cache(url: str, return_none_on_404=False) -> str:
+def download_and_cache(
+    url: str,
+    update_if_out_of_date=False,
+    return_none_on_404=False,
+) -> str:
     """[summary]
 
     :param url: [description]
@@ -47,15 +52,6 @@ def get_json(url: str, cache=False):
     r = requests.get(url)
     r.raise_for_status()
     return r.json()
-
-
-def bytes_to_string(n):
-    u = ["", " KiB", " MiB", " GiB", " TiB", " PiB"]
-    i = 0
-    while n >= 1024:
-        n /= 1024.0
-        i += 1
-    return "%g%s" % (int(n * 10 + 0.5) / 10.0, u[i])
 
 
 def _dummy(**kwargs):
@@ -119,3 +115,40 @@ def consume_args(func1, func2, *args, **kwargs):
 
     # print('<=====', args_1, kwargs_1, args, kwargs)
     return args_1, kwargs_1, args, kwargs
+
+
+def string_to_args(s):
+    def typed(x):
+        try:
+            return int(x)
+        except ValueError:
+            pass
+
+        try:
+            return float(x)
+        except ValueError:
+            pass
+
+        return x
+
+    assert isinstance(s, str), s
+    m = re.match(r"([\w\-]+)(\((.*)\))?", s)
+    if not m:
+        raise ValueError(f"Invalid argument '{s}'")
+
+    name = m.group(1)
+
+    if m.group(2) is None:
+        return name, [], {}
+
+    args = []
+    kwargs = {}
+    bits = [x.strip() for x in m.group(3).split(",") if x.strip()]
+    for bit in bits:
+        if "=" in bit:
+            k, v = bit.split("=")
+            kwargs[k.strip()] = typed(v.strip())
+        else:
+            args.append(typed(bit))
+
+    return name, args, kwargs

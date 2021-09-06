@@ -20,7 +20,6 @@ from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 
 from . import Reader
-from .gridded import GriddedMultiReaders
 
 
 def as_datetime(self, time):
@@ -188,11 +187,15 @@ class NetCDFField(Base):
         )
 
 
-class MultiNetcdfReaders(GriddedMultiReaders):
-    engine = "netcdf4"
+# class MultiNetcdfReaders(GriddedMultiReaders):
+#     engine = "netcdf4"
 
 
 class NetCDFReader(Reader):
+
+    open_mfdataset_backend_kwargs = {}
+    open_mfdataset_engine = None
+
     def __init__(self, source, path):
         super().__init__(source, path)
         self.fields = None
@@ -235,6 +238,7 @@ class NetCDFReader(Reader):
             v = ds[name]
             skip.update(getattr(v, "coordinates", "").split(" "))
             skip.update(getattr(v, "bounds", "").split(" "))
+            skip.update(getattr(v, "grid_mapping", "").split(" "))
 
         for name in ds.data_vars:
 
@@ -313,14 +317,23 @@ class NetCDFReader(Reader):
 
         return fields
 
-    def to_xarray(self, *args, **kwargs):
-        # So we use the same code
-        return MultiNetcdfReaders([self]).to_xarray(*args, **kwargs)
+    def to_xarray(self, **kwargs):
+        return type(self).to_xarray_multi([self.path], **kwargs)
 
     @classmethod
-    def multi_merge(cls, readers):
-        assert all(isinstance(r, NetCDFReader) for r in readers)
-        return MultiNetcdfReaders(readers)
+    def to_xarray_multi(cls, paths, **kwargs):
+        import xarray as xr
+
+        options = dict()
+        options.update(kwargs.get("xarray_open_mfdataset_kwargs", {}))
+
+        return xr.open_mfdataset(
+            paths,
+            **options,
+        )
+
+    def plot_map(self, *args, **kwargs):
+        return self.get_fields()[0].plot_map(*args, **kwargs)
 
 
 def reader(source, path, magic, deeper_check):

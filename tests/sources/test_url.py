@@ -10,13 +10,15 @@
 #
 
 import datetime
+import mimetypes
 import os
 import sys
 
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import climetlab_file
+from climetlab.sources.url import canonical_extension
+from climetlab.testing import TEST_DATA_URL, climetlab_file
 
 
 @pytest.mark.skipif(  # TODO: fix
@@ -29,6 +31,8 @@ def test_url_file_source():
     assert len(s) == 2
 
 
+@pytest.mark.ftp
+@pytest.mark.external_download
 def test_url_ftp_source_anonymous():
     date = datetime.datetime.now() - datetime.timedelta(days=1)
     load_source(
@@ -41,6 +45,7 @@ def test_url_ftp_source_anonymous():
     )
 
 
+@pytest.mark.ftp
 def test_url_ftp_source_with_user_pass():
     import ftplib
 
@@ -71,15 +76,51 @@ def test_url_source_1():
 def test_url_source_2():
     load_source(
         "url",
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib",
+        "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib",
     )
 
 
 def test_url_source_3():
     load_source(
         "url",
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.nc",
+        "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.nc",
     )
+
+
+def test_mimetypes():
+    assert mimetypes.guess_type("x.grib") == ("application/x-grib", None)
+    assert canonical_extension("x.grib") == ".grib"
+    assert canonical_extension("x.grib1") == ".grib"
+    assert canonical_extension("x.grib2") == ".grib"
+
+    assert mimetypes.guess_type("x.nc") == ("application/x-netcdf", None)
+    assert canonical_extension("x.nc") == ".nc"
+    assert canonical_extension("x.nc4") == ".nc"
+    assert canonical_extension("x.cdf") == ".nc"
+    assert canonical_extension("x.netcdf") == ".nc"
+
+
+def test_canonical_extension():
+    assert canonical_extension("x.tar") == ".tar"
+    assert canonical_extension("x.tgz") == ".tar.gz"
+    assert canonical_extension("x.foo") == ".foo"
+    assert canonical_extension("x.csv") == ".csv"
+    assert canonical_extension("x.csv.gz") == ".csv.gz"
+
+
+@pytest.mark.long_test
+def test_extension():
+
+    s = load_source(
+        "url",
+        f"{TEST_DATA_URL}/fixtures/tfrecord/EWCTest0.0.tfrecord",
+    )
+    assert s.path.endswith(".0.tfrecord")
+    s = load_source(
+        "url",
+        f"{TEST_DATA_URL}/fixtures/tfrecord/EWCTest0.1.tfrecord",
+    )
+    assert s.path.endswith(".1.tfrecord")
 
 
 if __name__ == "__main__":

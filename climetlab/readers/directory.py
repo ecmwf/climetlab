@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import fnmatch
 import logging
 import os
 import shutil
@@ -19,8 +20,28 @@ from . import reader as find_reader
 LOG = logging.getLogger(__name__)
 
 
-def _accept_all(*args, **kwargs):
-    return True
+class GlobFilter:
+    def __init__(self, pattern, top):
+        self.pattern = pattern
+        self.skip = len(top) + 1
+
+    def __call__(self, path):
+        match = fnmatch.fnmatch(path[self.skip :], self.pattern)
+        LOG.debug("GlobFilter %s %s %s", path[self.skip :], self.pattern, match)
+        return match
+
+
+def make_file_filter(filter, top):
+    if filter is None:
+        return lambda _: True
+
+    if callable(filter):
+        return filter
+
+    if isinstance(filter, str):
+        return GlobFilter(filter, top)
+
+    raise TypeError(f"Invalid filter {filter}")
 
 
 class DirectoryReader(Reader):
@@ -29,13 +50,12 @@ class DirectoryReader(Reader):
 
         self._content = []
 
-        filter = self.filter
-        if filter is None:
-            filter = _accept_all
+        filter = make_file_filter(self.filter, self.path)
 
         for root, _, files in os.walk(self.path):
             for file in files:
                 full = os.path.join(root, file)
+                LOG.debug("%s", full)
                 if filter(full):
                     self._content.append(full)
 

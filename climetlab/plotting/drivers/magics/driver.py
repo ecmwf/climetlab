@@ -321,7 +321,7 @@ class Driver:
 
         return Display(path, metadata=dict(width=width))
 
-    def save(self, path):  # noqa C901
+    def save(self, path):
 
         self.finalise()
 

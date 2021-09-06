@@ -7,13 +7,17 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+import mimetypes
 import tarfile
 
 from .archive import ArchiveReader
 
+LOG = logging.getLogger(__name__)
+
 
 class TarReader(ArchiveReader):
-    def __init__(self, source, path):
+    def __init__(self, source, path, compression=None):
         super().__init__(source, path)
 
         with tarfile.open(path) as tar:
@@ -25,9 +29,10 @@ class TarReader(ArchiveReader):
 
 
 def reader(source, path, magic, deeper_check):
+    # We don't use tarfile.is_tarfile() because is
+    # returns true given a file of zeros
 
-    # Only check during the second pass as tarfile.is_tarfile()
-    # is potentially slow on large files
-    if deeper_check:
-        if tarfile.is_tarfile(path):
-            return TarReader(source, path)
+    kind, compression = mimetypes.guess_type(path)
+
+    if kind == "application/x-tar":
+        return TarReader(source, path, compression)

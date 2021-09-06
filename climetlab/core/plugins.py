@@ -24,6 +24,7 @@ import entrypoints
 
 import climetlab
 from climetlab import settings
+from climetlab.utils.humanize import did_you_mean
 
 LOG = logging.getLogger(__name__)
 
@@ -152,6 +153,16 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
     module = loader.load_remote(name)
     if module is not None:
         return module
+
+    correction = did_you_mean(name, candidates)
+
+    if correction is not None:
+        LOG.warning(
+            "Cannot find %s '%s', did you mean '%s'?",
+            loader.kind,
+            name,
+            correction,
+        )
 
     candidates = ", ".join(sorted(c for c in candidates if "-" in c))
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")

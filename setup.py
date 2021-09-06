@@ -23,9 +23,9 @@ def read(fname):
 
 
 version = None
-for line in read("climetlab/__init__.py").split("\n"):
-    if line.startswith("__version__"):
-        version = line.split("=")[-1].strip()[1:-1]
+lines = read("climetlab/version").split("\n")
+if lines:
+    version = lines[0]
 
 
 assert version
@@ -52,7 +52,7 @@ install_requires += [
     "requests",
     # "zarr",
     # "s3fs",
-    "xarray>=0.17.0",
+    "xarray>=0.18.2",
     "dask",
     "netcdf4",
     "cfgrib>=0.9.8.4",
@@ -66,8 +66,10 @@ install_requires += [
     "pyodc",
     "psutil",
     "toolz",
+    "filelock",
     "pyyaml",
     "markdown",
+    "jellyfish",
     "entrypoints",
     "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
     "folium>=0.12.1",
