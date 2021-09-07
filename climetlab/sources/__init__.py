@@ -107,7 +107,13 @@ class SourceLoader:
 class SourceMaker:
     def __call__(self, name, *args, **kwargs):
         loader = SourceLoader()
+
         klass = find_plugin(os.path.dirname(__file__), name, loader)
+
+        if os.environ.get("CLIMETLAB_TESTING_ENABLE_MOCKUP_SOURCE", False):
+            from climetlab.mockup import SourceMockup
+
+            klass = SourceMockup
 
         source = klass(*args, **kwargs)
 
