@@ -33,22 +33,42 @@ a pull request to add it.
   Tropical cyclones. In progress.
 
   Datasets provided: ``tc-*``
+  
+- `climetlab-maelstrom-yr <https://github.com/metno/maelstrom-yr>`_:
+  Alpha. Gridded weather data for the Nordics, designed for ML postprocessing. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Dataset provided: ``maelstom-yr``
+   
+- `climetlab-maelstrom-nogwd <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-nogwd>`_:
+  Alpha. Dataset for learning non-orographic gravity wave parametrization. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Dataset provided: ``maelstom-nogwd``
+  
+- `climetlab-maelstrom-radiation <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-radiation>`_:
+  Alpha. Dataset for learning radiative heating parametrization. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Datasets provided: ``maelstom-radiation``, ``maelstom-radiation-tf``
+  
+- `climetlab-maelstrom-ens10 <https://github.com/spcl/climetlab-maelstrom-ens10>`_:
+  Alpha. Dataset for testing ensemble postprocessing techniques. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Datasets provided: ``maelstrom-ens5mini``, ``maelstrom-ens10``
+
+- `climetlab-maelstrom-downscaling <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-downscaling-ap5>`_:
+  Alpha. Dataset for testing downscaling techniques. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Dataset provided: ``maelstrom-downscaling``
+
+- `climetlab-maelstrom-power-production <https://github.com/faemmi/climetlab-plugin-a6>`_:
+  Alpha. Dataset for predicting wind farm power production from weather data. Part of the `MAELSTROM <https://www.maelstrom-eurohpc.eu/>`_ project. 
+
+  Datasets provided: ``maelstrom-power-production``, ``maelstrom-weather-model-level``, ``maelstrom-weather-pressure-level``, ``maelstrom-weather-surface-level``, ``maelstrom-constants-a-b``
 
 .. todo::
   Add other existing plugins
 
 Drafts plugins
 --------------
-
-- `maelstrom-nogwd <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-nogwd>`_:
-  Part of the MAELSTROM project, designed for machine learning emulation of non-orographic gravity wave drag.
-
-  Dataset provided: ``maelstom-nogwd``
-
-- `maelstrom-radiation <https://git.ecmwf.int/projects/MLFET/repos/maelstrom-radiation>`_:
-  Part of the MAELSTROM project, designed for machine learning emulation of radiative heating.
-
-  Dataset provided: ``maelstom-radiation``, ``maelstom-radiation-tf``
 
 - `climetlab-cems-flood <https://github.com/ecmwf-lab/climetlab-cems-flood>`_:
   Glofas data. In progress.
