@@ -8,9 +8,11 @@
 #
 
 import logging
+import os
 
 import yaml
 
+import climetlab
 from climetlab.core.ipython import SVG, Image
 from climetlab.core.metadata import annotation
 from climetlab.core.temporary import temp_file
@@ -20,6 +22,11 @@ from .actions import mcoast, mgrib, minput, mmap, mnetcdf, mtable, mtext, output
 from .apply import apply
 
 LOG = logging.getLogger(__name__)
+
+
+os.environ["MAGICS_UNITS_CONVERSIONS"] = os.path.join(
+    os.path.dirname(climetlab.__file__), "config", "units.yaml"
+)
 
 
 class Layer:

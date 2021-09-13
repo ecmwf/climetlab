@@ -23,7 +23,13 @@ LOG = logging.getLogger(__name__)
 
 YAML_FILES = None
 
-IGNORE = ["magics.yaml", "colours.yaml", "conventions.yaml", "config.yaml"]
+IGNORE = [
+    "magics.yaml",
+    "colours.yaml",
+    "conventions.yaml",
+    "config.yaml",
+    "units.yaml",
+]
 
 
 def _guess(data, path):
@@ -98,6 +104,8 @@ def _load_yaml_files():
                 try:
                     with open(path) as f:
                         data = yaml.load(f.read(), Loader=yaml.SafeLoader)
+                        if not isinstance(data, dict):
+                            continue
                         name, _ = os.path.splitext(os.path.basename(path))
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
