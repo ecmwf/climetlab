@@ -152,7 +152,8 @@ class Client:
     def products(self, *args, **kwargs):
         for feature in self.features(*args, **kwargs):
             pid = urllib.parse.quote(feature["properties"]["identifier"])
-            url = f"https://api.eumetsat.int/data/download/products/{pid}"
+            cid = urllib.parse.quote(feature["properties"]["parentIdentifier"])
+            url = f"https://api.eumetsat.int/data/download/collections/{cid}/products/{pid}"
             size = feature["properties"]["productInformation"]["size"]
             # print(json.dumps(feature, indent=4))
             # break
