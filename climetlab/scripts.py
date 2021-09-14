@@ -25,26 +25,50 @@ def check():
     print("Checking climetlab installation.")
     print(f"Climetlab installed in {os.path.dirname(climetlab.__file__)}")
     print("Checking required compiled dependencies...")
+
     import ecmwflibs
 
     versions = ecmwflibs.versions()
 
     for name in ["eccodes", "magics"]:
-        print(f"{name}: ok {versions[name]} ({ecmwflibs.find(name)})")
+        try:
+            print(
+                f"  {name} from ecwmlibs: ok {versions[name]} ({ecmwflibs.find(name)})"
+            )
+        except Exception as e:  # noqa: F841
+            print(f"  {name} from ecmwflib: Warning: ecmwflibs cannot find {name}")
+
+    for name in ["eccodes", "MagPlus", "netcdf"]:
+        try:
+            import findlibs
+        except Exception as e:  # noqa: F841
+            print(f"    {name} from findlibs: Warning: cannot import findlibs")
+            continue
+        try:
+            print(f"    {name} from findlibs: ({findlibs.find(name)})")
+        except Exception as e:  # noqa: F841
+            print(f"    {name} from findlibs: Warning: findlibs cannot find {name}")
 
     print("Checking required python dependencies...")
-    for name in ["xarray", "eccodes", "ecmwflibs"]:
-        lib = import_module(name)
-        print(f"{name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
+    for name in ["xarray", "Magics", "eccodes", "ecmwflibs"]:
+        more = ""
+        try:
+            lib = import_module(name)
+        except ImportError:
+            print(f"  Error: cannot import {name}.")
+            continue
+        if name == "eccodes":
+            more = f" (using .lib={lib.lib})"
+        print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}")
 
     print("Checking optional dependencies...")
     for name in ["folium", "pdbufr", "pyodc"]:
         try:
             lib = import_module(name)
-            print(f"{name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
+            print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
         except Exception as e:
             print(e)
-            print(f"Warning: cannot import {name}. Limited capabilities.")
+            print(f"  Warning: cannot import {name}. Limited capabilities.")
 
     # TODO: add more
     # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
