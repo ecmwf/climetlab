@@ -26,6 +26,24 @@ VOCABULARIES = {}
 SYNONYMS = (
     (("mars", "2t"), ("cf", "t2m")),
     (("mars", "ci"), ("cf", "siconc")),
+    (("mars", "sst"), ("cf", "sst")),
+    (("mars", "rsn"), ("cf", "rsn")),
+    (("mars", "tcc"), ("cf", "tcc")),
+    (("mars", "tcw"), ("cf", "tcw")),
+    (("mars", "sm20"), ("cf", "sm20")),
+    (("mars", "sm100"), ("cf", "sm100")),
+    (("mars", "st20"), ("cf", "st20")),
+    (("mars", "st100"), ("cf", "st100")),
+    (("mars", "tp"), ("cf", "tp")),
+    (("mars", "ttr"), ("cf", "ttr")),
+    (("mars", "sp"), ("cf", "sp")),
+    (("mars", "msl"), ("cf", "msl")),
+    (("mars", "lsm"), ("cf", "lsm")),
+    (("mars", "u"), ("cf", "u")),
+    (("mars", "v"), ("cf", "v")),
+    (("mars", "gh"), ("cf", "gh")),
+    (("mars", "t"), ("cf", "t")),
+    (("mars", "q"), ("cf", "q")),
 )
 
 
