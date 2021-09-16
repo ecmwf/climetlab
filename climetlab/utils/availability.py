@@ -71,6 +71,36 @@ class Availability:
     def missing(self, *args, **kwargs):
         return Availability(self._tree.missing(*args, **kwargs))
 
+    def check(self, **kwargs):
+        if self.count(**kwargs):
+            return
+
+        reasons = []
+
+        u = self.unique_values()
+        for k, v in kwargs.items():
+            if v is None:
+                continue
+            if k not in u:
+                reasons.append(f"Unknown key {k}")
+                continue
+            if v not in u[k]:
+                reasons.append(f"Invalid value for {k}: {v} must be in {u[k]}")
+                continue
+
+        if not reasons:
+            lst = {}
+            for k, v in kwargs.items():
+                if v is None:
+                    continue
+                lst[k] = v
+            reasons.append(f"Invalid combination {lst}")
+
+        raise ValueError(f"No data ({reasons}).")
+
+    def __len__(self):
+        return self.count()
+
     def __getattr__(self, name):
         return getattr(self._tree, name)
 
