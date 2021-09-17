@@ -124,6 +124,8 @@ jobs:
   deploy:
     if: startsWith(github.ref, 'refs/tags/')
     # add if owner, etc.
+    # Release should be done using the release.sh script
+    # https://github.com/ecmwf-lab/climetlab-private-tools.git
 
     name: Upload to Pypi and release
     needs: checks
@@ -133,7 +135,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check version
+      - name: Check that tag version matches climetlab version
         run: |
           tag=${GITHUB_REF#refs/tags/}
           version=$(python setup.py --version)
