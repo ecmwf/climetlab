@@ -112,7 +112,16 @@ class Downloader:
 
             pbar.close()
 
-        assert os.path.getsize(download) == size
+        if size is not None:
+            if os.path.getsize(download) != size:
+                raise Exception(
+                    "Download size mismatch: downloaded %s bytes out of %s bytes (%s)"
+                    % (
+                        os.path.getsize(download),
+                        size,
+                        download,
+                    ),
+                )
 
         # take care of race condition when two processes
         # download into the same file at the same time
@@ -204,6 +213,9 @@ class HTTPDownloader(Downloader):
         http_headers = dict(**self.owner.http_headers)
         if os.path.exists(download):
             bytes = os.path.getsize(download)
+
+            if size is not None:
+                assert bytes < size, (bytes, size, url, download)
 
             if bytes > 0:
                 if headers.get("accept-ranges") == "bytes":
