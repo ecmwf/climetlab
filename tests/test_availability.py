@@ -9,6 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import pandas
 import pandas as pd
 import pytest
 import yaml
@@ -17,27 +18,19 @@ from climetlab.utils.availability import Availability, availability
 
 s2s_config = """
 ecmwf:
-    param: ['2t', 'ci', 'gh', 'lsm', 'msl', 'q', 'rsn', 'sm100', 'sm20', 'sp', 'sst', 'st100', 'st20', 't', 'tcc', 'tcw', 'tp', 'ttr', 'u', 'v']
+    param: ['2t', 'ci', 'gh', 'lsm', 'msl']
     number: 50
     alldates: {start: '2020-01-02', end: '2020-12-31', freq: 'w-thu'}
 eccc:
-    param: ['2t', 'ci', 'gh', 'lsm', 'msl', 'q', 'rsn', 'sp', 'sst', 't', 'tcc', 'tcw', 'tp', 'ttr', 'u', 'v']
+    param: ['2t', 'ci', 'gh', 'lsm']
     number: 20
     alldates: {start: '2020-01-02', end: '2020-12-31', freq: 'w-thu'}
 ncep:
-    param: ['2t', 'ci', 'gh', 'lsm', 'msl', 'q', 'sm100', 'sm20', 'sp', 'sst', 'st100', 'st20', 't', 'tcc', 'tcw', 'tp', 'ttr', 'u', 'v']
+    param: ['2t', 'ci', 'gh']
     number: 15
     alldates: {start: '2010-01-02', end: '2010-12-31', freq: 'w-thu'}
 """
 
-import os
-
-import pandas
-import yaml
-
-import climetlab as cml
-import climetlab.utils
-import climetlab.utils.conventions
 
 C0 = [
     {"level": "500", "param": "Z", "step": "24"},
@@ -93,13 +86,13 @@ def test_s2s():
     av = Availability(availability_list)
     print(av.tree())
     #
-    #    with pytest.raises(ValueError):
-    #        av.check(number=75)
-    #    av.check(number=7)
-    #
-    #    av.check(number=30, origin='ecmwf')
-    #    with pytest.raises(ValueError):
-    #        av.check(number=30, origin='eccc')
+    with pytest.raises(ValueError):
+        av.check(number=75)
+    av.check(number=7)
+
+    av.check(number=30, origin="ecmwf")
+    with pytest.raises(ValueError):
+        av.check(number=30, origin="eccc")
 
     #   av.check(origin='ncep')
     for i in av.flatten():

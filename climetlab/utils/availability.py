@@ -126,9 +126,9 @@ class Availability:
             lst = sorted(lst, key=lambda x: x[0])
 
             if len(lst) > 0:
-                for l in lst:
-                    if l[0] == lst[0][0]:
-                        ii = dict_to_human(l[1])
+                for x in lst:
+                    if x[0] == lst[0][0]:
+                        ii = dict_to_human(x[1])
                         reasons.append(f"invalid combination ({ii})")
 
         raise ValueError(f"{list_to_human(reasons)}.")
