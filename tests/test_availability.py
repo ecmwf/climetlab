@@ -102,7 +102,31 @@ def test_s2s():
     #        av.check(number=30, origin='eccc')
 
     #   av.check(origin='ncep')
-    av.check(origin="ncep", date="2020-01-09")
+    for i in av.flatten():
+        print(i)
+    # av.check(origin=["unknown"])
+    print(av.tree())
+
+    #    av.check(number=1, date=["2010-01-07","2010-01-14"])
+    #    av.check(number=1, date=["2010-01-07","2010-01-14"], origin=["unknown"])
+    #    av.check(number=1, date=["2010-01-02","2010-01-09"], origin=["ecmwf", "eccc"])
+
+    print("...")
+    print(
+        av.missing(
+            number=1,
+            origin=["ecmwf", "ncep"],
+            date="2020-01-09",
+            # param=['2t', 'ci'],
+        ).tree()
+    )
+    print(
+        av.count(
+            number=1,
+            origin=["ecmwf", "ncep"],
+            date="2020-01-09",
+        )
+    )
 
 
 #    av.check(origin='ncep', date='2020-01-09',number=30 )

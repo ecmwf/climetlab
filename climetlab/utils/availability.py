@@ -17,7 +17,8 @@ import json
 import os
 
 from climetlab.utils.factorise import Tree, factorise
-from .humanize import list_to_human, dict_to_human
+
+from .humanize import dict_to_human, list_to_human
 
 
 def _tidy_dict(query):
@@ -27,7 +28,6 @@ def _tidy_dict(query):
             continue
         result[k] = v
     return result
-
 
 
 class Availability:
@@ -81,6 +81,7 @@ class Availability:
         return Availability(self._tree.select(*args, **kwargs))
 
     def missing(self, *args, **kwargs):
+        # assert kwargs.keys() == self.unique_values().keys(), "kwargs must contain all dimensions"
         return Availability(self._tree.missing(*args, **kwargs))
 
     def check(self, **kwargs):
@@ -89,16 +90,16 @@ class Availability:
 
         reasons = []
 
-        u = self.unique_values()
-        for k, v in kwargs.items():
-            if v is None:
-                continue
-            if k not in u:
-                reasons.append(f"Unknown key {k}")
-                continue
-            if v not in u[k]:
-                reasons.append(f"Invalid value for {k}: {v} must be in {u[k]}")
-                continue
+        #         u = self.unique_values()
+        #         for k, v in kwargs.items():
+        #             if v is None:
+        #                 continue
+        #             if k not in u:
+        #                 reasons.append(f"Unknown key {k}")
+        #                 continue
+        #             if v not in u[k]:
+        #                 reasons.append(f"Invalid value for {k}: {v} must be in {u[k]}")
+        #                 continue
 
         query = kwargs
 
@@ -109,17 +110,26 @@ class Availability:
                     dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
                 )
 
-            r = dict(
-                origin=[None, query["origin"]],
-                number=[None, query["number"]],
-                date=[None, query["date"]],
-            )
+            def build(x):
+                # if isinstance(x, (list, tuple)):
+                #    return [None] + list(x)
+                return [None, x]
 
+            r = {k: build(v) for k, v in query.items()}
+
+            lst = []
             for i in iterate_request(r):
                 if self.count(**i) == 0:
-                    ii = dict_to_human(_tidy_dict(i))
-                    reasons.append(f"invalid combination {ii}")
-                    break
+                    i = _tidy_dict(i)
+                    lst.append((abs(len(i) - 2), i))
+
+            lst = sorted(lst, key=lambda x: x[0])
+
+            if len(lst) > 0:
+                for l in lst:
+                    if l[0] == lst[0][0]:
+                        ii = dict_to_human(l[1])
+                        reasons.append(f"invalid combination ({ii})")
 
         raise ValueError(f"{list_to_human(reasons)}.")
 

@@ -219,20 +219,19 @@ def did_you_mean(word, vocabulary):
     # if distance < min(len(word), len(best)):
     return best
 
+
 def dict_to_human(query):
 
-    txt_list = [f"{k}={v}" for k, v in sorted(query.items())]
+    lst = [f"{k}={v}" for k, v in sorted(query.items())]
 
-    return list_to_human(txt_list)
+    return list_to_human(lst)
 
-def list_to_human(txt_list):
-    if not txt_list:
-        return '??'
 
-    if len(txt_list) > 2:
-        txt = ", ".join(txt_list[:-1])
-        txt += " and " + txt_list[-1]
-    else:
-        txt = " and ".join(txt_list)
+def list_to_human(lst):
+    if not lst:
+        return "??"
 
-    return txt
+    if len(lst) > 2:
+        lst = [", ".join(lst[:-1]), lst[-1]]
+
+    return " and ".join(lst)
