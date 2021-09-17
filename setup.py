@@ -63,7 +63,7 @@ install_requires += [
     "magics>=1.5.6",
     "ecmwflibs>=0.1.2",
     "pdbufr",
-    "pyodc==1.0.0",
+    "pyodc",
     "psutil",
     "toolz",
     "filelock",
