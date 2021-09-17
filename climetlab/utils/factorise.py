@@ -281,6 +281,8 @@ class Tree:
     def _kwargs_to_request(self, **kwargs):
         request = {}
         for k, v in kwargs.items():
+            if v is None:
+                continue
             if k in self._intervals:
                 request[k] = _as_interval(v)
             else:

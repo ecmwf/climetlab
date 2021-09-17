@@ -1,5 +1,6 @@
 # These are the requirements for readthedoc
 ipykernel
+filelock
 nbsphinx
 sphinx_rtd_theme
 pyyaml

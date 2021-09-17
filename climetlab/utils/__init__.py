@@ -25,6 +25,7 @@ def download_and_cache(
     url: str,
     update_if_out_of_date=False,
     return_none_on_404=False,
+    **kwargs,
 ) -> str:
     """[summary]
 
@@ -36,7 +37,7 @@ def download_and_cache(
     from climetlab import load_source
 
     try:
-        return load_source("url", url).path
+        return load_source("url", url, **kwargs).path
     except requests.HTTPError as e:
         if return_none_on_404:
             if e.response is not None and e.response.status_code == 404:

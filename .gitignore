@@ -157,3 +157,5 @@ logs/
 *.index
 *.data-*
 *.out
+test.*
+test

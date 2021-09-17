@@ -77,6 +77,10 @@ jobs:
       - name: Install test tools for notebooks
         run: |
           pip install nbformat nbconvert ipykernel
+
+      - name: Install climetlab[interactive] for the notebooks
+        run: |
+          pip install -e .[interactive]
           pip freeze
 
       - name: Tests notebooks

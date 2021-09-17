@@ -94,7 +94,7 @@ class Downloader:
         download = target + ".download"
         LOG.info("Downloading %s", url)
 
-        size, mode, skip = self.prepare(url, download)
+        size, mode, skip, encoded = self.prepare(url, download)
 
         with tqdm(
             total=size,
@@ -112,24 +112,12 @@ class Downloader:
 
             pbar.close()
 
-        if size is not None:
-            if os.path.getsize(download) != size:
-                raise Exception(
-                    "Download size mismatch: downloaded %s bytes out of %s bytes (%s)"
-                    % (
-                        os.path.getsize(download),
-                        size,
-                        download,
-                    ),
-                )
+        if not encoded and size is not None:
+            assert (
+                os.path.getsize(download) == size
+            ), f"File size mismatch {os.path.getsize(download)} bytes instead of {size}"
 
-        # take care of race condition when two processes
-        # download into the same file at the same time
-        try:
-            os.rename(download, target)
-        except FileNotFoundError as e:
-            if not os.path.exists(target):
-                raise e
+        os.rename(download, target)
 
         self.finalise()
         return total
@@ -156,22 +144,25 @@ class HTTPDownloader(Downloader):
         if self._headers is None or url != self._url:
             self._url = url
             self._headers = {}
-            try:
-                r = requests.head(
-                    url,
-                    headers=self.owner.http_headers,
-                    verify=self.owner.verify,
-                    allow_redirects=True,
-                )
-                r.raise_for_status()
-                for k, v in r.headers.items():
-                    self._headers[k.lower()] = v
-                LOG.debug(
-                    "HTTP headers %s",
-                    json.dumps(self._headers, sort_keys=True, indent=4),
-                )
-            except Exception:
-                LOG.exception("HEAD %s", url)
+            if self.owner.fake_headers is not None:
+                self._headers = dict(**self.owner.fake_headers)
+            else:
+                try:
+                    r = requests.head(
+                        url,
+                        headers=self.owner.http_headers,
+                        verify=self.owner.verify,
+                        allow_redirects=True,
+                    )
+                    r.raise_for_status()
+                    for k, v in r.headers.items():
+                        self._headers[k.lower()] = v
+                    LOG.debug(
+                        "HTTP headers %s",
+                        json.dumps(self._headers, sort_keys=True, indent=4),
+                    )
+                except Exception:
+                    LOG.exception("HEAD %s", url)
         return self._headers
 
     def extension(self, url):
@@ -210,8 +201,13 @@ class HTTPDownloader(Downloader):
             except Exception:
                 LOG.exception("content-length %s", url)
 
+        # content-length is the size of the encoded body
+        # so we cannot rely on it to check the file size
+        encoded = headers.get("content-encoding") is not None
+
         http_headers = dict(**self.owner.http_headers)
-        if os.path.exists(download):
+        if not encoded and os.path.exists(download):
+
             bytes = os.path.getsize(download)
 
             if size is not None:
@@ -245,7 +241,7 @@ class HTTPDownloader(Downloader):
 
         self.request = r
 
-        return size, mode, skip
+        return size, mode, skip, encoded
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -337,7 +333,7 @@ class FTPDownloader(Downloader):
         self.filename = os.path.basename(o.path)
         self.ftp = ftp
 
-        return ftp.size(self.filename), mode, 0
+        return ftp.size(self.filename), mode, 0, False
 
     def transfer(self, f, pbar, watcher):
         total = 0
@@ -393,6 +389,7 @@ class Url(FileSource):
         http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
+        fake_headers=None,  # When HEAD is not allowed but you know the size
         **kwargs,
     ):
         # TODO: re-enable this feature
@@ -407,6 +404,7 @@ class Url(FileSource):
         self.watcher = watcher if watcher else dummy_watcher
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
+        self.fake_headers = fake_headers
 
         if mirror:
             url = mirror(url)

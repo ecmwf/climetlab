@@ -1,0 +1,17 @@
+---
+# This file contains convertion for units that are not cf-compliants
+
+- from: kelvin
+  to: degC
+  scaling: 1
+  offset: -273.15
+
+- from: kelvin
+  to: K
+  scaling: 1
+  offset: 0
+
+- from: Celcius
+  to: degC
+  scaling: 1
+  offset: 0
