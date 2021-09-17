@@ -88,13 +88,32 @@ class Availability:
                 reasons.append(f"Invalid value for {k}: {v} must be in {u[k]}")
                 continue
 
+        query = {}
         if not reasons:
-            lst = {}
             for k, v in kwargs.items():
                 if v is None:
                     continue
-                lst[k] = v
-            reasons.append(f"Invalid combination {lst}")
+                query[k] = v
+
+            def cb(values, depth):
+                n = 0
+                for k, v in query.items():
+                    if k in values and v in values[k]:
+                        n += 1
+
+                common = set(query.keys()).intersection(set(values.keys()))
+
+                if n == len(common):
+                    for k in common:
+                        query.pop(k)
+
+                print(depth, n, values)
+
+            print(f"Query 1 = {query}")
+            self._tree.visit(cb)
+            print(f"Query 2 = {query}")
+
+            reasons.append(f"Invalid combination {query}")
 
         raise ValueError(f"No data ({reasons}).")
 
