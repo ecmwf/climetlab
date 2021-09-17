@@ -17,6 +17,7 @@ import json
 import os
 
 from climetlab.utils.factorise import Tree, factorise
+from .humanize import list_to_human, dict_to_human
 
 
 def _tidy_dict(query):
@@ -27,19 +28,6 @@ def _tidy_dict(query):
         result[k] = v
     return result
 
-
-def _to_human(query):
-    query = _tidy_dict(query)
-
-    txt_list = [f"{k}={v}" for k, v in sorted(query.items())]
-    assert len(txt_list) > 1
-
-    if len(txt_list) > 2:
-        txt = ", ".join(txt_list[:-2])
-        txt += " and " + txt_list[-1]
-    else:
-        txt = " and ".join(txt_list)
-    return txt
 
 
 class Availability:
@@ -129,11 +117,11 @@ class Availability:
 
             for i in iterate_request(r):
                 if self.count(**i) == 0:
-                    ii = _to_human(i)
-                    reasons.append(f"Invalid combination {ii}")
+                    ii = dict_to_human(_tidy_dict(i))
+                    reasons.append(f"invalid combination {ii}")
                     break
 
-        raise ValueError(f"No data ({reasons}).")
+        raise ValueError(f"{list_to_human(reasons)}.")
 
     def __len__(self):
         return self.count()

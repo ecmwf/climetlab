@@ -218,3 +218,21 @@ def did_you_mean(word, vocabulary):
     distance, best = min((levenshtein_distance(word, w), w) for w in vocabulary)
     # if distance < min(len(word), len(best)):
     return best
+
+def dict_to_human(query):
+
+    txt_list = [f"{k}={v}" for k, v in sorted(query.items())]
+
+    return list_to_human(txt_list)
+
+def list_to_human(txt_list):
+    if not txt_list:
+        return '??'
+
+    if len(txt_list) > 2:
+        txt = ", ".join(txt_list[:-1])
+        txt += " and " + txt_list[-1]
+    else:
+        txt = " and ".join(txt_list)
+
+    return txt
