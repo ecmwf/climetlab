@@ -436,7 +436,7 @@ class Tree:
 
         self.visit(V)
 
-        return "".join(x for x in text)
+        return "".join(str(x) for x in text)
 
 
 class Column(object):

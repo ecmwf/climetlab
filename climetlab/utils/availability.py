@@ -12,10 +12,34 @@
 import functools
 import inspect
 import io
+import itertools
 import json
 import os
 
 from climetlab.utils.factorise import Tree, factorise
+
+
+def _tidy_dict(query):
+    result = dict()
+    for k, v in query.items():
+        if v is None:
+            continue
+        result[k] = v
+    return result
+
+
+def _to_human(query):
+    query = _tidy_dict(query)
+
+    txt_list = [f"{k}={v}" for k, v in sorted(query.items())]
+    assert len(txt_list) > 1
+
+    if len(txt_list) > 2:
+        txt = ", ".join(txt_list[:-2])
+        txt += " and " + txt_list[-1]
+    else:
+        txt = " and ".join(txt_list)
+    return txt
 
 
 class Availability:
@@ -88,32 +112,26 @@ class Availability:
                 reasons.append(f"Invalid value for {k}: {v} must be in {u[k]}")
                 continue
 
-        query = {}
+        query = kwargs
+
         if not reasons:
-            for k, v in kwargs.items():
-                if v is None:
-                    continue
-                query[k] = v
 
-            def cb(values, depth):
-                n = 0
-                for k, v in query.items():
-                    if k in values and v in values[k]:
-                        n += 1
+            def iterate_request(r):
+                yield from (
+                    dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
+                )
 
-                common = set(query.keys()).intersection(set(values.keys()))
+            r = dict(
+                origin=[None, query["origin"]],
+                number=[None, query["number"]],
+                date=[None, query["date"]],
+            )
 
-                if n == len(common):
-                    for k in common:
-                        query.pop(k)
-
-                print(depth, n, values)
-
-            print(f"Query 1 = {query}")
-            self._tree.visit(cb)
-            print(f"Query 2 = {query}")
-
-            reasons.append(f"Invalid combination {query}")
+            for i in iterate_request(r):
+                if self.count(**i) == 0:
+                    ii = _to_human(i)
+                    reasons.append(f"Invalid combination {ii}")
+                    break
 
         raise ValueError(f"No data ({reasons}).")
 
