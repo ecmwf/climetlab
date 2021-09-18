@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "../climetlab-maelstrom-radiation"
+		},
+		{
+			"path": "../climetlab-eumetsat"
 		}
 	],
 	"settings": {

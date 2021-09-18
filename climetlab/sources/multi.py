@@ -10,8 +10,10 @@
 import itertools
 import logging
 
+from climetlab.core.thread import SoftThreadPool
 from climetlab.mergers import make_merger
 from climetlab.sources.empty import EmptySource
+from climetlab.utils import tqdm
 
 from . import Source
 
@@ -23,6 +25,8 @@ class MultiSource(Source):
 
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
+
+        sources = self._load_sources(sources)
 
         self.sources = [s.mutate() for s in sources if not s.ignore()]
         self.filter = filter
@@ -94,6 +98,35 @@ class MultiSource(Source):
 
     def to_pandas(self, **kwargs):
         return make_merger(self.merger, self.sources).to_pandas(**kwargs)
+
+    def _load_sources(self, sources):
+        callables = []
+        has_callables = False
+        for s in sources:
+            if callable(s):
+                has_callables = True
+                callables.append(s)
+            else:
+                callables.append(lambda: s)
+
+        if not has_callables:
+            return sources
+
+        nthreads = min(self.settings("number-of-download-threads"), len(callables))
+        if nthreads < 2:
+            return [s() for s in sources]
+
+        def _call(s):
+            return s()
+
+        with SoftThreadPool(nthreads=nthreads) as pool:
+
+            futures = [pool.submit(_call, s) for s in sources]
+
+            iterator = (f.result() for f in futures)
+            sources = list(tqdm(iterator, leave=False, total=len(futures)))
+
+        return sources
 
 
 source = MultiSource

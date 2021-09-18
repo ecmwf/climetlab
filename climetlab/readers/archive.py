@@ -56,9 +56,12 @@ class ArchiveReader(Reader):
 
     def expand(self, archive, members, **kwargs):
         def unpack(target, args):
-            os.mkdir(target)
+            try:
+                os.mkdir(target)
+            except FileExistsError:
+                pass
 
-            for member in tqdm(iterable=members, total=len(members)):
+            for member in tqdm(iterable=members, total=len(members), leave=False):
                 if not self.check(member):
                     continue
                 archive.extract(member=member, path=target, **kwargs)
