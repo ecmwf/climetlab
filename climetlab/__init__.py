@@ -16,7 +16,7 @@ from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_map
 from .readers import Reader
-from .sources import Source, load_source, register_source, source
+from .sources import Source, load_source, load_source_lazily, register_source, source
 from .version import __version__
 from .wrappers import Wrapper
 
@@ -29,6 +29,7 @@ __all__ = [
     "interactive_map",
     "load_dataset",
     "load_source",
+    "load_source_lazily",
     "new_plot",
     "plot_map",
     "plotting_options",

@@ -136,8 +136,7 @@ def register_source(module):
 def load_source(name: str, *args, lazily=False, **kwargs) -> Source:
 
     if lazily:
-        from climetlab.utils.lazy import LazySource
-        return LazySource(name, *args, **kwargs)
+        return load_source_lazily(name, *args, **kwargs)
 
     prev = None
     src = source(name, *args, **kwargs)
@@ -146,8 +145,12 @@ def load_source(name: str, *args, lazily=False, **kwargs) -> Source:
         src = src.mutate()
     return src
 
-def load_source_lazily(name,*args, **kwargs):
-    pass
+
+def load_source_lazily(name, *args, **kwargs):
+    from climetlab.utils.lazy import LazySource
+
+    return LazySource(name, *args, **kwargs)
+
 
 def list_entries():
     here = os.path.realpath(os.path.dirname(__file__))
