@@ -9,38 +9,27 @@
 # nor does it submit to any jurisdiction.
 #
 
-from getpass import getpass
 from io import StringIO
-from unittest.mock import *
+from unittest.mock import patch
+
+import pytest
+
+from climetlab.sources.cds import CDSAPIKeyPrompt
+from climetlab.sources.mars import MARSAPIKeyPrompt
+from climetlab.testing import MISSING
 
 
-# @patch(
-#     "builtins.input",
-#     side_effect=[
-#         "https://api.ecmwf.int/v1",
-#         "joe.user@example.com",
-#     ],
-# )
-# @patch(
-#     "getpass.getpass",
-#     side_effect=[
-#         "b295aad8af30332fad2fa8c963ab7900",
-#     ],
-# )
 def test_mars_api_key():
 
-    shown = ["https://api.ecmwf.int/v1", "joe.user@example.com"]
-    hidden = ["b295aad8af30332fad2fa8c963ab7900"]
+    answers = [
+        "https://api.ecmwf.int/v1",
+        "b295aad8af30332fad2fa8c963ab7900",
+        "joe.user@example.com",
+    ]
 
-    with patch("builtins.input", side_effect=shown):
-        with patch("getpass.getpass", side_effect=hidden) as getpass:
-            print(getpass, getpass.side_effect)
-
-            with patch("sys.stdout", new_callable=StringIO) as stdout:
-
-                from climetlab.sources.mars import MARSAPIKeyPrompt
-
-                prompt = MARSAPIKeyPrompt().ask_user()
+    with patch("climetlab.sources.prompt.Text.ask", side_effect=answers):
+        with patch("sys.stdout", new_callable=StringIO) as stdout:
+            prompt = MARSAPIKeyPrompt().ask_user()
 
     assert prompt == {
         "url": "https://api.ecmwf.int/v1",
@@ -54,22 +43,44 @@ def test_mars_api_key():
 
 def test_cds_api_key():
 
-    shown = ["https://cds.climate.copernicus.eu/api/v2"]
-    hidden = ["123:abcdef01-0000-1111-2222-0123456789ab"]
+    answers = [
+        "https://cds.climate.copernicus.eu/api/v2",
+        "123:abcdef01-0000-1111-2222-0123456789ab",
+    ]
 
-    with patch("builtins.input", side_effect=shown):
-        with patch("getpass.getpass", side_effect=hidden) as getpass:
-            print(getpass, getpass.side_effect)
-
-            with patch("sys.stdout", new_callable=StringIO) as stdout:
-
-                from climetlab.sources.cds import CDSAPIKeyPrompt
-
-                prompt = CDSAPIKeyPrompt().ask_user()
+    with patch("climetlab.sources.prompt.Text.ask", side_effect=answers):
+        with patch("sys.stdout", new_callable=StringIO) as stdout:
+            prompt = CDSAPIKeyPrompt().ask_user()
 
     assert prompt == {
         "url": "https://cds.climate.copernicus.eu/api/v2",
         "key": "123:abcdef01-0000-1111-2222-0123456789ab",
+    }
+
+    printed = stdout.getvalue().strip()
+    assert printed.startswith("An API key is needed to access this dataset.")
+
+
+@pytest.mark.skipif(
+    MISSING("climetlab_eumetsat"),
+    reason="climetlab-eumetsat not installed",
+)
+def test_eumetsat_api_key():
+
+    from climetlab_eumetsat.eumetsat import EumetsatAPIKeyPrompt
+
+    answers = [
+        "aEfX6e1AvizULa48eo9R1v9A56md",
+        "Uiaz51e8XAfmA969o1vR4aELdev6",
+    ]
+
+    with patch("climetlab.sources.prompt.Text.ask", side_effect=answers):
+        with patch("sys.stdout", new_callable=StringIO) as stdout:
+            prompt = EumetsatAPIKeyPrompt().ask_user()
+
+    assert prompt == {
+        "consumer_key": "aEfX6e1AvizULa48eo9R1v9A56md",
+        "consumer_secret": "Uiaz51e8XAfmA969o1vR4aELdev6",
     }
 
     printed = stdout.getvalue().strip()

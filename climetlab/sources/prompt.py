@@ -12,7 +12,6 @@ import logging
 import os
 import re
 import stat
-import sys
 from getpass import getpass
 
 import markdown
@@ -67,9 +66,7 @@ class Prompt:
 
         for p in self.owner.prompts:
             method = getpass if p.get("hidden", False) else input
-            print("ask =>", p, file=sys.stderr)
             value = self.ask(p, method)
-            print("    <=", value, file=sys.stderr)
             value = value.strip() or p.get("default", "")
 
             validate = p.get("validate")
