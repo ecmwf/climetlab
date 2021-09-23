@@ -107,6 +107,16 @@ class FileSource(Source, os.PathLike):
     def __fspath__(self):
         return self.path
 
+    # Used by normalisers
+    def to_datetime(self):
+        return self._reader.to_datetime()
+
+    def to_datetime_list(self):
+        return self._reader.to_datetime_list()
+
+    def to_bounding_box(self):
+        return self._reader.to_bounding_box()
+
 
 class File(FileSource):
     def __init__(

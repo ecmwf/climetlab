@@ -128,5 +128,26 @@ class MultiSource(Source):
 
         return sources
 
+    # Used by normalisers
+    def to_datetime(self):
+        times = self.to_datetime_list()
+        assert len(times) == 1
+        return times[0]
+
+    def to_datetime_list(self):
+        result = set()
+        for s in self.sources:
+            result.update(s.to_datetime_list())
+        return sorted(result)
+
+    def to_bounding_box(self):
+        result = None
+        for s in self.sources:
+            if result is None:
+                result = s.to_bounding_box()
+            else:
+                result = result.merge(s.to_bounding_box())
+        return result
+
 
 source = MultiSource

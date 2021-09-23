@@ -199,6 +199,7 @@ class NetCDFReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
         self.fields = None
+        print(path)
 
     def _scan(self):
         if self.fields is None:
@@ -334,6 +335,29 @@ class NetCDFReader(Reader):
 
     def plot_map(self, *args, **kwargs):
         return self.get_fields()[0].plot_map(*args, **kwargs)
+
+    # Used by normalisers
+    def to_datetime(self):
+        times = self.to_datetime_list()
+        assert len(times) == 1
+        return times[0]
+
+    def to_datetime_list(self):
+        # TODO: check if that can be done faster
+        result = set()
+        for s in self.get_fields():
+            result.add(s.time)
+        return sorted(result)
+
+    def to_bounding_box(self):
+        result = None
+        for s in self.get_fields():
+            print(s)
+            if result is None:
+                result = s.to_bounding_box()
+            else:
+                result = result.merge(s.to_bounding_box())
+        return result
 
 
 def reader(source, path, magic, deeper_check):

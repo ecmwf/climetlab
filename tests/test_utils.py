@@ -11,61 +11,8 @@
 
 import datetime
 
-import pytest
-
 from climetlab.utils import string_to_args
-from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.humanize import bytes, number, plural, seconds, when
-
-
-def test_bbox():
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)
-        assert bbox.width == 10, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i, south=30, east=350 + i)
-        assert bbox.width == 350, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i, south=30, east=(10 + i) % 360)
-        assert bbox.width == 10, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i, south=30, east=(350 + i) % 360)
-        assert bbox.width == 350, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i % 360, south=30, east=10 + i)
-        assert bbox.width == 10, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i % 360, south=30, east=350 + i)
-        assert bbox.width == 350, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i % 360, south=30, east=(10 + i) % 360)
-        assert bbox.width == 10, bbox
-
-    for i in range(-365, 365):
-        bbox = BoundingBox(north=90, west=i % 360, south=30, east=(350 + i) % 360)
-        assert bbox.width == 350, bbox
-
-    for i in range(-365, 365):
-        bbox1 = BoundingBox(north=90, west=150 + i, south=30, east=170 + i)
-        bbox2 = BoundingBox(north=90, west=-170 + i, south=30, east=-150 + i)
-        bbox = bbox1.merge(bbox2)
-        assert bbox.width == 60, (bbox1, bbox2, bbox)
-
-        bbox = bbox2.merge(bbox1)
-        assert bbox.width == 60, (bbox1, bbox2, bbox)
-
-    with pytest.raises(ValueError):
-        BoundingBox(north=-10, west=0, south=30, east=1)
-
-    with pytest.raises(ValueError):
-        BoundingBox(north=90, west=1, south=30, east=1)
 
 
 def test_string_to_args():

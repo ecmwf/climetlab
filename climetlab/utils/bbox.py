@@ -9,39 +9,38 @@
 from climetlab.wrappers import get_wrapper
 
 
+def _normalize(lon, minimum):
+    while lon < minimum:
+        lon += 360
+
+    while lon >= minimum + 360:
+        lon -= 360
+
+    return lon
+
+
 class BoundingBox:
     def __init__(self, *, north, west, south, east):
         # Convert to float as these values may come from Numpy
         self.north = min(float(north), 90.0)
-        self.west = float(west)
+        self.west = _normalize(float(west), -180)  # Or 0?
         self.south = max(float(south), -90.0)
-        self.east = float(east)
+        self.east = _normalize(float(east), self.west)
 
         if self.north <= self.south:
             raise ValueError(
-                "North (%s) must be greater than south (%s)"
-                % (
-                    self.north,
-                    self.south,
-                )
+                f"Invalid bounding box, north={self.north} <= south={self.south}"
             )
 
-        if self.west == self.east:
-            raise ValueError("West (%s) is equal to east (%s)" % (west, east))
+        if self.west >= self.east:
+            raise ValueError(
+                f"Invalid bounding box, west={self.west} >= east={self.east}"
+            )
 
-        while self.east < self.west:
-            self.east += 360
-
-        while self.east - self.west > 360:
-            self.east -= 360
-
-        while self.east >= 360 and self.west >= 360:
-            self.east -= 360
-            self.west -= 360
-
-        while self.east < -180 and self.west < -180:
-            self.east += 360
-            self.west += 360
+        if self.east >= self.west + 360:
+            raise ValueError(
+                f"Invalid bounding box, east={self.east} >= west={self.west}+360"
+            )
 
     def __repr__(self):
         return "BoundingBox(north=%g,west=%g,south=%g,east=%g)" % (
@@ -51,9 +50,16 @@ class BoundingBox:
             self.east,
         )
 
+    @property
+    def is_periodic_west_east(self):
+        return (self.west != self.east) and (
+            self.west == _normalize(self.east, self.west)
+        )
+
     def __eq__(self, other):
         if self.__class__ is not other.__class__:
             return False
+
         return self.as_tuple() == other.as_tuple()
 
     @property
@@ -66,27 +72,18 @@ class BoundingBox:
 
     def merge(self, other):
 
-        west1, east1 = self.west, self.east
-        west2, east2 = other.west, other.east
-
-        while west1 < 0 or east1 < 0:
-            west1 += 360
-            east1 += 360
-
-        while west2 < 0 or east2 < 0:
-            west2 += 360
-            east2 += 360
+        north1, west1, south1, east1 = self.as_tuple()
+        north2, west2, south2, east2 = other.as_tuple()
 
         if abs(west1 - (west2 + 360)) < abs(west1 - west2):
             east2, west2 = east2 + 360, west2 + 360
         elif abs(west2 - (west1 + 360)) < abs(west2 - west1):
             east1, west1 = east1 + 360, west1 + 360
 
-        # print(west1, east1, west2, east2)
         return BoundingBox(
-            north=max(self.north, other.north),
+            north=max(north1, north2),
             west=min(west1, west2),
-            south=min(self.south, other.south),
+            south=min(south1, south2),
             east=max(east1, east2),
         )
 
