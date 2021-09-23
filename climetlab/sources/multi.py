@@ -153,4 +153,5 @@ class MultiSource(Source):
         # TODO: we plot the first one for now
         return self.sources[0].plot_map(*args, **kwargs)
 
+
 source = MultiSource
