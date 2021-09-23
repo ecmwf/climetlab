@@ -149,5 +149,8 @@ class MultiSource(Source):
                 result = result.merge(s.to_bounding_box())
         return result
 
+    def plot_map(self, *args, **kwargs):
+        # TODO: we plot the first one for now
+        return self.sources[0].plot_map(*args, **kwargs)
 
 source = MultiSource
