@@ -352,7 +352,6 @@ class NetCDFReader(Reader):
     def to_bounding_box(self):
         result = None
         for s in self.get_fields():
-            print(s)
             if result is None:
                 result = s.to_bounding_box()
             else:
