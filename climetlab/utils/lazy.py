@@ -6,14 +6,58 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import logging
 
 from climetlab import load_source
 
+LOG = logging.getLogger(__name__)
+
+
+class LazySourceError:
+    def __init__(self, owner, error):
+        self.owner = owner
+        self.error = error
+
 
 class LazySource:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
         self.args = args
         self.kwargs = kwargs
+        self._source = None
 
     def __call__(self):
-        return load_source(*self.args, **self.kwargs)
+        return self.source
+
+    @property
+    def source(self):
+        if self._source is None:
+            try:
+                self._source = load_source(
+                    self.name,
+                    lazily=False,
+                    *self.args,
+                    **self.kwargs,
+                )
+            except Exception:
+                LOG.exception(
+                    "Error loading source %s(%s, %s)",
+                    self.name,
+                    self.args,
+                    self.kwargs,
+                )
+
+        return self._source
+
+    def __getitem__(self, name):
+        return self.source[name]
+
+    def __iter__(self):
+        return iter(self.source)
+
+    def __len__(self):
+        return len(self.source)
+
+    def __getattr__(self, name):
+        assert name != "source"
+        return getattr(self.source, name)

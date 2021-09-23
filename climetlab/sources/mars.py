@@ -7,8 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import json
-
 import ecmwfapi
 
 from climetlab.core.thread import SoftThreadPool
@@ -19,59 +17,42 @@ from .file import FileSource
 from .prompt import APIKeyPrompt
 
 
-class MARSAPI(APIKeyPrompt):
+class MARSAPIKeyPrompt(APIKeyPrompt):
+    register_or_sign_in_url = "https://www.ecmwf.int/user/login/sso"
+    retrieve_api_key_url = "https://api.ecmwf.int/v1/key/"
 
-    text_message = """
-An API key is needed to access this dataset. Please visit
-https://apps.ecmwf.int/registration/ to register or sign-in
-at https://www.ecmwf.int/user/login/sso
-then visit https://api.ecmwf.int/v1/key/ to
-retrieve you API key.
-
-Once this is done, please copy the text that look like:
-
-{
-    "url"   : "https://api.ecmwf.int/v1",
-    "key"   : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "email" : "john.doe@example.com"
-}
-
-paste it the input field below and press ENTER.
-"""
-
-    markdown_message = """
-An API key is needed to access this dataset. Please visit
-<https://apps.ecmwf.int/registration/> to register or sign-in
-at <https://www.ecmwf.int/user/login/sso>
-then visit <https://api.ecmwf.int/v1/key/> to
-retrieve you API key.
-
-Once this is done, please copy the text that look like:
-
-<pre>
-{
-    "url"   : "https://api.ecmwf.int/v1",
-    "key"   : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "email" : "john.doe@example.com"
-}
-</pre>
-
-paste it the input field below and press *ENTER*.
-"""
+    prompts = [
+        dict(
+            name="url",
+            default="https://api.ecmwf.int/v1",
+            title="API url",
+            validate=r"http.?://.*",
+        ),
+        dict(
+            name="key",
+            example="b295aad8af30332fad2fa8c963ab7900",
+            title="API key",
+            hidden=True,
+            validate="[0-9a-z]{32}",
+        ),
+        dict(
+            name="email",
+            title="Your email",
+        ),
+    ]
 
     rcfile = "~/.ecmwfapirc"
-    prompt = "ECMWF api configuration"
-
-    def validate(self, text):
-        return json.dumps(json.loads(text), indent=4)
 
 
 def service(name):
+    prompt = MARSAPIKeyPrompt()
+    prompt.check()
+
     try:
         return ecmwfapi.ECMWFService(name)
     except Exception as e:
         if ".ecmwfapirc" in str(e):
-            MARSAPI().ask_user_and_save()
+            prompt.ask_user_and_save()
             return ecmwfapi.ECMWFService(name)
 
         raise

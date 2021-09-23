@@ -8,6 +8,7 @@
 #
 
 import cdsapi
+import yaml
 
 from climetlab.core.thread import SoftThreadPool
 from climetlab.normalize import normalize_args
@@ -16,39 +17,42 @@ from climetlab.utils import tqdm
 from .file import FileSource
 from .prompt import APIKeyPrompt
 
-APIRC = "key: {key}\nurl: https://cds.climate.copernicus.eu/api/v2"
 
-MESSAGE = """
-An API key is needed to access this dataset. Please visit
-<https://cds.climate.copernicus.eu/> to register or sign-in,
-and visit <https://cds.climate.copernicus.eu/api-how-to> to
-retrieve you API key.
+class CDSAPIKeyPrompt(APIKeyPrompt):
+    register_or_sign_in_url = "https://cds.climate.copernicus.eu/"
+    retrieve_api_key_url = "https://cds.climate.copernicus.eu/api-how-to"
 
-Once this is done, please paste your key in the input field below
-and press *ENTER*.
-"""
-
-
-class CDSAPI(APIKeyPrompt):
-
-    text_message = MESSAGE
-
-    markdown_message = MESSAGE
+    prompts = [
+        dict(
+            name="url",
+            default="c",
+            title="API url",
+            validate=r"http.?://.*",
+        ),
+        dict(
+            name="key",
+            example="123:abcdef01-0000-1111-2222-0123456789ab",
+            title="API key",
+            hidden=True,
+            validate=r"\d+:[\-0-9a-f]+",
+        ),
+    ]
 
     rcfile = "~/.cdsapirc"
-    prompt = "CDS api key"
 
-    def validate(self, text):
-        uid, key = text.strip().split(":")
-        return APIRC.format(key="%s:%s" % (uid, key))
+    def save(self, input, file):
+        yaml.dump(input, file, default_flow_style=False)
 
 
 def client():
+    prompt = CDSAPIKeyPrompt()
+    prompt.check()
+
     try:
         return cdsapi.Client()
     except Exception as e:
         if ".cdsapirc" in str(e):
-            CDSAPI().ask_user_and_save()
+            prompt.ask_user_and_save()
             return cdsapi.Client()
 
         raise

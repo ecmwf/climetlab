@@ -7,10 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-import getpass
+import json
 import logging
 import os
-from abc import ABC, abstractmethod
+import re
+import stat
+import sys
+from getpass import getpass
 
 import markdown
 
@@ -28,54 +31,133 @@ HTML_MESSAGE = """
 </div>
 """
 
+HTML_ASK = """
+<div style='border: 1px solid gray; color: black;
+     background-color: rgb(230, 230, 230);
+     margin: 0.2em; padding: 0.2em; font-weight: bold;'>
+{message}
+</div>
+"""
 
-class APIKeyPrompt(ABC):
-    def ask_user_and_save(self):
-        if ipython_active:
-            text = self.ask_user_markdown()
-        else:
-            text = self.ask_user_text()
+MESSAGE = """
+An API key is needed to access this dataset. Please visit
+{register_or_sign_in_url} to register or sign-in
+then visit {retrieve_api_key_url} to retrieve you API key.
+"""
 
-        try:
-            text = self.validate(text)
-        except Exception:
-            LOG.error("Invalid API key", exc_info=True)
-            return False
 
-        rcfile = os.path.expanduser(self.rcfile)
-        with open(rcfile, "w") as f:
-            print(text, file=f)
+class RegexValidate:
+    def __init__(self, pattern):
+        self.pattern = pattern
 
-        LOG.info("API key saved to '%s'", rcfile)
+    def __call__(self, value):
+        assert re.fullmatch(self.pattern, value), (self.pattern, value)
+        return value
 
-        return True
 
-    def ask_user_text(self) -> str:
-        return getpass.getpass("\n".join([self.text_message, self.prompt + ": "]))
+class Prompt:
+    def __init__(self, owner):
+        self.owner = owner
 
-    def ask_user_markdown(self) -> str:
-        message = markdown.markdown(self.markdown_message)
+    def ask_user(self):
+
+        self.print_message()
+
+        result = {}
+
+        for p in self.owner.prompts:
+            method = getpass if p.get("hidden", False) else input
+            print("ask =>", p, file=sys.stderr)
+            value = self.ask(p, method)
+            print("    <=", value, file=sys.stderr)
+            value = value.strip() or p.get("default", "")
+
+            validate = p.get("validate")
+            if validate:
+                if isinstance(validate, str):
+                    validate = RegexValidate(validate)
+
+                value = validate(value)
+
+            result[p["name"]] = value
+
+        return result
+
+
+class Text(Prompt):
+    def print_message(self):
+        print(
+            MESSAGE.format(
+                register_or_sign_in_url=self.owner.register_or_sign_in_url,
+                retrieve_api_key_url=self.owner.retrieve_api_key_url,
+            )
+        )
+
+    def ask(self, p, method):
+        message = f"Please enter a value for '{p.get('title')}'"
+        if "default" in p:
+            message += f" or leave empty for the default value '{p.get('default')}'"
+        message += ", then press <ENTER>"
+        return method(p.get("title") + ": ").strip()
+
+
+class Markdown(Prompt):
+    def print_message(self):
+        message = markdown.markdown(
+            MESSAGE.format(
+                register_or_sign_in_url=f"<{self.owner.register_or_sign_in_url}>",
+                retrieve_api_key_url=f"<{self.owner.retrieve_api_key_url}>",
+            )
+        )
         # We use Python's markdown instead of IPython's Markdown because
         # jupyter lab/colab/deepnotes all behave differently
         display(HTML(HTML_MESSAGE.format(message=message)))
-        return getpass.getpass(self.prompt + ": ")
 
-    @abstractmethod
-    def prompt(self):
-        pass
+    def ask(self, p, method):
+        message = f"Please enter a value for <span style='color: red;'>{p.get('title')}</span>"
+        if "default" in p:
+            message += f" or leave empty for the default value <span style='color: red;'>{p.get('default')}</span>"
+        message += ", then press *ENTER*"
+        if "example" in p:
+            message += f" The value should look like  <span style='color: red;'>{p.get('example')}</span>"
+        message = markdown.markdown(message)
+        display(HTML(HTML_ASK.format(message=message)))
+        return method(p.get("title") + ": ").strip()
 
-    @abstractmethod
-    def validate(self, text):
-        pass
 
-    @abstractmethod
-    def rcfile(self, text):
-        pass
+class APIKeyPrompt:
+    def check(self):
+        rcfile = os.path.expanduser(self.rcfile)
+        if not os.path.exists(rcfile):
+            self.ask_user_and_save()
 
-    @abstractmethod
-    def text_message(self):
-        pass
+    def ask_user(self):
+        if ipython_active:
+            prompt = Markdown(self)
+        else:
+            prompt = Text(self)
 
-    @abstractmethod
-    def markdown_message(self):
-        pass
+        return self.validate(prompt.ask_user())
+
+    def ask_user_and_save(self):
+
+        input = self.ask_user()
+
+        rcfile = os.path.expanduser(self.rcfile)
+        with open(rcfile, "w") as f:
+            self.save(input, f)
+
+        LOG.info("API key saved to '%s'", rcfile)
+
+        try:
+            os.chmod(rcfile, stat.S_IREAD | stat.S_IWRITE)
+        except OSError:
+            LOG.exception("Cannot change access to rcfile")
+
+        return input
+
+    def save(self, input, file):
+        json.dump(input, file, indent=4)
+
+    def validate(self, input):
+        return input
