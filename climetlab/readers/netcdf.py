@@ -199,7 +199,6 @@ class NetCDFReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
         self.fields = None
-        print(path)
 
     def _scan(self):
         if self.fields is None:
