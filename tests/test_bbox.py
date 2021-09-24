@@ -25,8 +25,12 @@ def test_bbox():
     assert globe2.width == 360
     assert globe2.west == -180
 
-    # assert globe1.merge(globe2) == globe1
-    # assert globe2.merge(globe1) == globe2
+    assert globe1.merge(globe2).width == 360, globe1.merge(globe2).width
+    assert globe2.merge(globe1).width == 360, globe2.merge(globe1).width
+
+
+    # assert globe1.merge(globe2) == globe1,globe1.merge(globe2)
+    # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
 
     for i in range(-365, 365):
         bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)

@@ -94,7 +94,7 @@ class BoundingBox:
                 i += 1
             x.append((i, b[0], b[1]))
 
-        # print(x)
+        print(x)
         # origin = min(x)
         # assert origin[2], origin  # Must be a close/east
         # origin = origin[1]
