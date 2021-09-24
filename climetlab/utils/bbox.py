@@ -95,18 +95,18 @@ class BoundingBox:
             x.append((i, b[0], b[1]))
 
         print(x)
-        # origin = min(x)
-        # assert origin[2], origin  # Must be a close/east
-        # origin = origin[1]
+        origin = min(x)
+        assert origin[2], origin  # Must be a close/east
+        origin = origin[1]
 
-        # for b in bboxes:
-        #     if b.west <= origin < b.east:
-        #         return BoundingBox(
-        #             north=max(z.north for z in bboxes),
-        #             west=bboxes[0].west,
-        #             south=min(z.south for z in bboxes),
-        #             east=bboxes[0].west + 360,
-        #         )
+        for b in bboxes:
+            if b.west <= origin < b.east:
+                return BoundingBox(
+                    north=max(z.north for z in bboxes),
+                    west=bboxes[0].west,
+                    south=min(z.south for z in bboxes),
+                    east=bboxes[0].west + 360,
+                )
 
         # boundaries = list()
         # for b in bboxes:
@@ -143,11 +143,11 @@ class BoundingBox:
         y = max(y)
 
         return BoundingBox(
-                    north=max(z.north for z in bboxes),
-                    west=y[2][0],
-                    south=min(z.south for z in bboxes),
-                    east=y[1][0],
-                )
+            north=max(z.north for z in bboxes),
+            west=y[2][0],
+            south=min(z.south for z in bboxes),
+            east=y[1][0],
+        )
 
     def merge(self, other):
         return self.multi_merge([self, other])

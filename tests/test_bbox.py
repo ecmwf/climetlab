@@ -28,7 +28,6 @@ def test_bbox():
     assert globe1.merge(globe2).width == 360, globe1.merge(globe2).width
     assert globe2.merge(globe1).width == 360, globe2.merge(globe1).width
 
-
     # assert globe1.merge(globe2) == globe1,globe1.merge(globe2)
     # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
 
@@ -85,9 +84,70 @@ def test_bbox():
     b3 = b1.merge(b2)
     assert b0 == b1
     for a, b in zip(b3.as_tuple(), b0.as_tuple()):
-        assert abs(a-b)<1e-14, (a,b,a-b)
-        print(a, b, abs(a-b)<1e-14)
+        assert abs(a - b) < 1e-14, (a, b, a - b)
+        print(a, b, abs(a - b) < 1e-14)
 
+
+def test_overlapping_bbox():
+    for offset in range(-500, 500, 10):
+        one = BoundingBox(north=90, west=offset + 10, east=offset + 20, south=-90)
+        two = BoundingBox(north=90, west=offset + 40, east=offset + 60, south=-90)
+        three = BoundingBox(north=90, west=offset + 15, east=offset + 35, south=-90)
+
+        sets = []
+        sets.append([one, two, three])
+        sets.append([two, one, three])
+        sets.append([one, three, two])
+        sets.append([one, three, two, one, three])
+        sets.append([one, one, one, two, one, two, one, three])
+        for i, s in enumerate(sets):
+            merged = BoundingBox.multi_merge(s)
+            expected = BoundingBox(
+                east=offset + 60, west=offset + 10, north=90, south=-90
+            )
+            assert merged.east == expected.east, (
+                i,
+                merged.east,
+                expected.east,
+                merged,
+                s,
+            )
+            assert merged.west == expected.west, (
+                i,
+                merged.west,
+                expected.west,
+                merged,
+                s,
+            )
+
+        four = BoundingBox(north=90, west=offset - 200, east=offset + 10, south=-90)
+        sets = []
+        sets.append([one, two, three, four])
+        sets.append([two, one, four, three])
+        sets.append([one, three, four, two])
+        sets.append([one, three, two, four, one, three])
+        sets.append([one, one, one, two, four, one, two, one, three])
+        for i, s in enumerate(sets):
+            merged = BoundingBox.multi_merge(s)
+            expected = BoundingBox(
+                east=offset + 60, west=offset - 200, north=90, south=-90
+            )
+            assert merged.east % 360 == expected.east % 360, (
+                i,
+                offset,
+                merged.east,
+                expected.east,
+                merged,
+                s,
+            )
+            assert merged.west % 360 == expected.west % 360, (
+                i,
+                merged.west,
+                expected.west,
+                merged,
+                s,
+            )
+            assert merged.west < merged.east
 
 
 if __name__ == "__main__":
