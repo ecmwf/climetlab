@@ -17,6 +17,17 @@ from climetlab.utils.bbox import BoundingBox
 
 def test_bbox():
 
+    globe1 = BoundingBox(north=90, west=0, east=360, south=-90)
+    assert globe1.width == 360
+    assert globe1.west == 0
+
+    globe2 = BoundingBox(north=90, west=-180, east=180, south=-90)
+    assert globe2.width == 360
+    assert globe2.west == -180
+
+    assert globe1.merge(globe2) == globe1
+    assert globe2.merge(globe1) == globe2
+
     for i in range(-365, 365):
         bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)
         assert bbox.width == 10, bbox
@@ -63,9 +74,6 @@ def test_bbox():
 
     with pytest.raises(ValueError):
         BoundingBox(north=-10, west=0, south=30, east=1)
-
-    with pytest.raises(ValueError):
-        BoundingBox(north=90, west=1, south=30, east=1)
 
     b0 = BoundingBox(north=89.9746, west=-179.975, south=-89.9746, east=179.975)
     b1 = BoundingBox(north=89.9746, west=-179.975, south=-89.9746, east=179.975)

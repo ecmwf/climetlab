@@ -21,23 +21,27 @@ def _normalize(lon, minimum):
 
 class BoundingBox:
     def __init__(self, *, north, west, south, east):
+        globe = (east - west) == 360
         # Convert to float as these values may come from Numpy
         self.north = min(float(north), 90.0)
         self.west = _normalize(float(west), -180)  # Or 0?
         self.south = max(float(south), -90.0)
         self.east = _normalize(float(east), self.west)
 
-        if self.north <= self.south:
+        if globe:
+            self.east = self.west + 360
+
+        if self.north < self.south:
             raise ValueError(
                 f"Invalid bounding box, north={self.north} <= south={self.south}"
             )
 
-        if self.west >= self.east:
+        if self.west > self.east:
             raise ValueError(
                 f"Invalid bounding box, west={self.west} >= east={self.east}"
             )
 
-        if self.east >= self.west + 360:
+        if self.east > self.west + 360:
             raise ValueError(
                 f"Invalid bounding box, east={self.east} >= west={self.west}+360"
             )
@@ -74,6 +78,22 @@ class BoundingBox:
 
         north1, west1, south1, east1 = self.as_tuple()
         north2, west2, south2, east2 = other.as_tuple()
+
+        if self.is_periodic_west_east:
+            return BoundingBox(
+                north=max(north1, north2),
+                west=west1,
+                south=min(south1, south2),
+                east=east1,
+            )
+
+        if other.is_periodic_west_east:
+            return BoundingBox(
+                north=max(north1, north2),
+                west=west2,
+                south=min(south1, south2),
+                east=east2,
+            )
 
         if abs(west1 - (west2 + 360)) < abs(west1 - west2):
             east2, west2 = east2 + 360, west2 + 360
