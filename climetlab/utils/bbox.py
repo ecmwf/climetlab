@@ -19,17 +19,23 @@ def _normalize(lon, minimum):
     return lon
 
 
+ORIGIN_MINUS_180 = object()
+ORIGIN_0 = object()
+
+
 class BoundingBox:
     def __init__(self, *, north, west, south, east):
-        globe = (east - west) == 360
+        self.globe = (east - west) == 360
         # Convert to float as these values may come from Numpy
-        self.north = min(float(north), 90.0)
-        self.west = _normalize(float(west), -180)  # Or 0?
-        self.south = max(float(south), -90.0)
-        self.east = _normalize(float(east), self.west)
+        self._north = min(float(north), 90.0)
+        self._south = max(float(south), -90.0)
 
-        if globe:
-            self.east = self.west + 360
+        assert self.north == self._north
+        assert self.south == self._south
+
+        self._east = _normalize(float(east), 0)
+        self._west = _normalize(float(west), 0)
+        self._convention = ORIGIN_MINUS_180
 
         if self.north < self.south:
             raise ValueError(
@@ -45,6 +51,24 @@ class BoundingBox:
             raise ValueError(
                 f"Invalid bounding box, east={self.east} >= west={self.west}+360"
             )
+
+    @property
+    def west(self):
+        return _normalize(float(self._west), -180)  # Or 0?
+
+    @property
+    def east(self):
+        if self.globe:
+            return self.west + 360
+        return _normalize(float(self._east), self.west)
+
+    @property
+    def north(self):
+        return self._north
+
+    @property
+    def south(self):
+        return self._south
 
     def __repr__(self):
         return "BoundingBox(north=%g,west=%g,south=%g,east=%g)" % (
