@@ -349,13 +349,7 @@ class NetCDFReader(Reader):
         return sorted(result)
 
     def to_bounding_box(self):
-        result = None
-        for s in self.get_fields():
-            if result is None:
-                result = s.to_bounding_box()
-            else:
-                result = result.merge(s.to_bounding_box())
-        return result
+        return BoundingBox.multi_merge([s.to_bounding_box() for s in self.get_fields()])
 
 
 def reader(source, path, magic, deeper_check):

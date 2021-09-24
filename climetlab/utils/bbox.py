@@ -74,7 +74,83 @@ class BoundingBox:
     def height(self):
         return self.north - self.south
 
+    @classmethod
+    def multi_merge(cls, bboxes):
+
+        origin = None
+
+        boundaries = list()
+        for b in bboxes:
+            boundaries.append((_normalize(b.west, 0), False))
+            boundaries.append((_normalize(b.east, 0), True))
+
+        boundaries = sorted(boundaries)
+        i = 0
+        x = []
+        for b in boundaries:
+            if b[1]:
+                i -= 1
+            else:
+                i += 1
+            x.append((i, b[0], b[1]))
+
+        # print(x)
+        # origin = min(x)
+        # assert origin[2], origin  # Must be a close/east
+        # origin = origin[1]
+
+        # for b in bboxes:
+        #     if b.west <= origin < b.east:
+        #         return BoundingBox(
+        #             north=max(z.north for z in bboxes),
+        #             west=bboxes[0].west,
+        #             south=min(z.south for z in bboxes),
+        #             east=bboxes[0].west + 360,
+        #         )
+
+        # boundaries = list()
+        # for b in bboxes:
+        #     w = _normalize(b.west, origin)
+        #     boundaries.append((w, False))
+        #     boundaries.append((_normalize(b.east, w), True))
+
+        boundaries = sorted(boundaries)
+
+        print("===", origin)
+        print(bboxes)
+        print(boundaries)
+
+        i = 0
+        x = []
+        for b in boundaries:
+            if b[1]:
+                i -= 1
+            else:
+                i += 1
+
+            # if i in [1, 0]:
+            x.append((b[0], b[1], i))
+
+        x.append((x[0][0] + 360, x[0][1], x[0][2]))
+        print("=", x)
+
+        y = []
+        for a, b in zip(x, x[1:]):
+            if a[1]:
+                width = b[0] - a[0]
+                y.append((width, a, b))
+
+        y = max(y)
+
+        return BoundingBox(
+                    north=max(z.north for z in bboxes),
+                    west=y[2][0],
+                    south=min(z.south for z in bboxes),
+                    east=y[1][0],
+                )
+
     def merge(self, other):
+        return self.multi_merge([self, other])
 
         north1, west1, south1, east1 = self.as_tuple()
         north2, west2, south2, east2 = other.as_tuple()

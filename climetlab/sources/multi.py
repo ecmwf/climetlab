@@ -14,6 +14,7 @@ from climetlab.core.thread import SoftThreadPool
 from climetlab.mergers import make_merger
 from climetlab.sources.empty import EmptySource
 from climetlab.utils import tqdm
+from climetlab.utils.bounding_box import BoundingBox
 
 from . import Source
 
@@ -141,13 +142,7 @@ class MultiSource(Source):
         return sorted(result)
 
     def to_bounding_box(self):
-        result = None
-        for s in self.sources:
-            if result is None:
-                result = s.to_bounding_box()
-            else:
-                result = result.merge(s.to_bounding_box())
-        return result
+        return BoundingBox.multi_merge([s.to_bounding_box() for s in self.sources])
 
     def plot_map(self, *args, **kwargs):
         # TODO: we plot the first one for now
