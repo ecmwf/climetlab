@@ -90,7 +90,7 @@ def test_bbox():
     assert b0 == b3
 
 
-def test_overlapping_bbox():
+def test_overlapping_bbox_1():
     for offset in range(-500, 500, 10):
         one = BoundingBox(north=90, west=offset + 10, east=offset + 20, south=-90)
         two = BoundingBox(north=90, west=offset + 40, east=offset + 60, south=-90)
@@ -152,14 +152,14 @@ def test_overlapping_bbox():
             assert merged.west < merged.east
 
 
-def test_overlaps():
+def xxxtest_overlaps():
     b1 = BoundingBox(north=90, west=-200, south=-90, east=-130)
     b2 = BoundingBox(north=90, west=-180, south=-90, east=-90)
     b0 = b1.overlaps(b2)
     assert b0
 
 
-def test_overlapping_bbox2():
+def test_overlapping_bbox_2():
 
     b1 = BoundingBox(north=90, west=-200, south=-90, east=-130)
     b2 = BoundingBox(north=90, west=-180, south=-90, east=-90)
@@ -206,6 +206,27 @@ def test_overlapping_bbox2():
         b0 = BoundingBox.multi_merge([b1, b2, b3])
 
         assert b0.width == 310, (b0.width, b0)
+
+
+def test_overlapping_bbox_3():
+
+    for i in range(361):
+
+        b1 = BoundingBox(north=90, west=-45 - i, south=-90, east=45 - i)
+        b2 = BoundingBox(north=90, west=-45 + i, south=-90, east=45 + i)
+        b0 = b1.merge(b2)
+
+        if i <= 90:
+            assert b0.width == 90 + 2 * i, (i, b0.width, b0)
+
+        if i > 90 and i <= 180:
+            assert b0.width == 3 * 90 - 2 * (i - 90), (i, b0.width, b0)
+
+        if i > 180 and i <= 270:
+            assert b0.width == 90 + 2 * (i - 180), (i, b0.width, b0)
+
+        if i > 270:
+            assert b0.width == 3 * 90 - 2 * (i - 270), (i, b0.width, b0)
 
 
 if __name__ == "__main__":

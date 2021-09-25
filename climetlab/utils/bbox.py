@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
 from climetlab.wrappers import get_wrapper
 
 
@@ -19,23 +20,20 @@ def _normalize(lon, minimum):
     return lon
 
 
-ORIGIN_MINUS_180 = object()
-ORIGIN_0 = object()
-
-
 class BoundingBox:
     def __init__(self, *, north, west, south, east):
-        self.globe = (east - west) == 360
+
         # Convert to float as these values may come from Numpy
-        self._north = min(float(north), 90.0)
-        self._south = max(float(south), -90.0)
+        self.north = min(float(north), 90.0)
+        self.south = max(float(south), -90.0)
 
-        assert self.north == self._north
-        assert self.south == self._south
+        self.is_periodic_west_east = (east - west) == 360
+        self.west = _normalize(float(west), -180)  # Or 0?
 
-        self._east = _normalize(float(east), 0)
-        self._west = _normalize(float(west), 0)
-        self._convention = ORIGIN_MINUS_180
+        if self.is_periodic_west_east:
+            self.east = self.west + 360
+        else:
+            self.east = _normalize(float(east), self.west)
 
         if self.north < self.south:
             raise ValueError(
@@ -52,36 +50,12 @@ class BoundingBox:
                 f"Invalid bounding box, east={self.east} >= west={self.west}+360"
             )
 
-    @property
-    def west(self):
-        return _normalize(float(self._west), -180)  # Or 0?
-
-    @property
-    def east(self):
-        if self.globe:
-            return self.west + 360
-        return _normalize(float(self._east), self.west)
-
-    @property
-    def north(self):
-        return self._north
-
-    @property
-    def south(self):
-        return self._south
-
     def __repr__(self):
         return "BoundingBox(north=%g,west=%g,south=%g,east=%g)" % (
             self.north,
             self.west,
             self.south,
             self.east,
-        )
-
-    @property
-    def is_periodic_west_east(self):
-        return (self.west != self.east) and (
-            self.west == _normalize(self.east, self.west)
         )
 
     def __eq__(self, other):
@@ -101,23 +75,21 @@ class BoundingBox:
     @classmethod
     def multi_merge(cls, bboxes):
 
-        origin = bboxes[0].east % 360
+        north = max(z.north for z in bboxes)
+        south = min(z.south for z in bboxes)
+
+        first = bboxes[0]
+
+        origin = first.east % 360
         full = BoundingBox(
-            north=max(z.north for z in bboxes),
-            west=bboxes[0].west,
-            south=min(z.south for z in bboxes),
-            east=bboxes[0].west + 360,
+            north=north,
+            west=first.west,
+            south=south,
+            east=first.west + 360,
         )
 
-        print("- origin ", origin)
-
-        print("- Bbox")
-        for b in bboxes:
-            print("  ", b.west, b.east)
-
-        print("- Building boundaries")
         boundaries = list()
-        layers = set()
+        layers = set()  # To keep track of overlapping intervals
         for i, b in enumerate(bboxes):
 
             if b.east - b.west == 360:
@@ -125,96 +97,51 @@ class BoundingBox:
 
             west = (b.west - origin) % 360
             east = (b.east - origin) % 360
-            print("  ", b.west, b.east, "->", west, east)
 
             if west > east:
                 layers.add(i)
 
-            boundaries.append((west, 1, i))
-            boundaries.append((east, -1, i))
+            boundaries.append((west, True, i))
+            boundaries.append((east, False, i))
 
         boundaries = sorted(boundaries)
 
-        print("- Boundaries")
-        for b in boundaries:
-            print(b)
+        start = 0
+        best = -1
+        west = 0
+        east = 0
 
-        start = 0.0
-        found = (-1.0, 0.0, 0.0)
+        for cursor, entering, layer in boundaries:
 
-        for b in boundaries:
-
-            cursor = b[0]
-
-            print("@cursor=", cursor, layers)
-
-            if b[1] == 1:  # entering
-                print(f" entering {b[2]}", cursor, layers)
-                if len(list(layers)) == 0:
-                    print("  found candidate", (cursor - start, start, cursor))
-                    if cursor - start > found[0]:
-                        found = (cursor - start, start, cursor)
+            if entering:
+                if not layers:
+                    distance = cursor - start
+                    if distance > best:
+                        best = distance
+                        west = cursor
+                        east = start
 
                     start = None
 
-                layers.add(b[2])
+                layers.add(layer)
 
-            elif b[1] == -1:  # exiting
-
-                print(f" exiting {b[2]}", cursor, layers)
-
-                layers.remove(b[2])
-
-                if len(list(layers)) == 0:
-                    print("  start=", start)
+            else:  # exiting
+                layers.remove(layer)
+                if not layers:
                     start = cursor
 
-            else:
-                raise Exception()
-
-        if found[0] == -1:
+        if best <= 0:
             return full
 
         return BoundingBox(
-            north=max(z.north for z in bboxes),
-            west=origin + found[2],
-            south=min(z.south for z in bboxes),
-            east=origin + found[1],
+            north=north,
+            west=origin + west,
+            south=south,
+            east=origin + east,
         )
 
     def merge(self, other):
         return self.multi_merge([self, other])
-
-        north1, west1, south1, east1 = self.as_tuple()
-        north2, west2, south2, east2 = other.as_tuple()
-
-        if self.is_periodic_west_east:
-            return BoundingBox(
-                north=max(north1, north2),
-                west=west1,
-                south=min(south1, south2),
-                east=east1,
-            )
-
-        if other.is_periodic_west_east:
-            return BoundingBox(
-                north=max(north1, north2),
-                west=west2,
-                south=min(south1, south2),
-                east=east2,
-            )
-
-        if abs(west1 - (west2 + 360)) < abs(west1 - west2):
-            east2, west2 = east2 + 360, west2 + 360
-        elif abs(west2 - (west1 + 360)) < abs(west2 - west1):
-            east1, west1 = east1 + 360, west1 + 360
-
-        return BoundingBox(
-            north=max(north1, north2),
-            west=min(west1, west2),
-            south=min(south1, south2),
-            east=max(east1, east2),
-        )
 
     def add_margins(self, margins):
 
