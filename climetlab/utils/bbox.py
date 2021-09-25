@@ -88,6 +88,8 @@ class BoundingBox:
             east=first.west + 360,
         )
 
+        # Build the list of provided [west, east] intervals
+
         boundaries = list()
         stacked_intervals = set()  # To keep track of overlapping intervals
         for i, b in enumerate(bboxes):
@@ -110,6 +112,9 @@ class BoundingBox:
         best = -1
         west = 0
         east = 0
+
+        # Find the longest interval *outside* the provided [west, east] intervals
+        # It's complement will be the result
 
         for cursor, entering, interval in boundaries:
 
