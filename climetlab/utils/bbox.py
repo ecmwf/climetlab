@@ -37,17 +37,17 @@ class BoundingBox:
 
         if self.north < self.south:
             raise ValueError(
-                f"Invalid bounding box, north={self.north} <= south={self.south}"
+                f"Invalid bounding box, north={self.north} < south={self.south}"
             )
 
         if self.west > self.east:
             raise ValueError(
-                f"Invalid bounding box, west={self.west} >= east={self.east}"
+                f"Invalid bounding box, west={self.west} > east={self.east}"
             )
 
         if self.east > self.west + 360:
             raise ValueError(
-                f"Invalid bounding box, east={self.east} >= west={self.west}+360"
+                f"Invalid bounding box, east={self.east} > west={self.west}+360"
             )
 
     def __repr__(self):
