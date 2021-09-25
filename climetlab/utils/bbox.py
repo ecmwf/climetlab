@@ -89,7 +89,7 @@ class BoundingBox:
         )
 
         boundaries = list()
-        layers = set()  # To keep track of overlapping intervals
+        stacked_intervals = set()  # To keep track of overlapping intervals
         for i, b in enumerate(bboxes):
 
             if b.east - b.west == 360:
@@ -99,7 +99,7 @@ class BoundingBox:
             east = (b.east - origin) % 360
 
             if west > east:
-                layers.add(i)
+                stacked_intervals.add(i)
 
             boundaries.append((west, True, i))
             boundaries.append((east, False, i))
@@ -111,10 +111,10 @@ class BoundingBox:
         west = 0
         east = 0
 
-        for cursor, entering, layer in boundaries:
+        for cursor, entering, interval in boundaries:
 
             if entering:
-                if not layers:
+                if not stacked_intervals:
                     distance = cursor - start
                     if distance > best:
                         best = distance
@@ -123,11 +123,11 @@ class BoundingBox:
 
                     start = None
 
-                layers.add(layer)
+                stacked_intervals.add(interval)
 
             else:  # exiting
-                layers.remove(layer)
-                if not layers:
+                stacked_intervals.remove(interval)
+                if not stacked_intervals:
                     start = cursor
 
         if best <= 0:
