@@ -31,6 +31,19 @@ def test_globe():
     # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
 
 
+def test_almost_globe():
+    globe1 = BoundingBox(north=90, west=1, east=360, south=-90)
+
+    globe2 = BoundingBox(north=90, west=-180, east=179, south=-90)
+
+    assert globe1.merge(globe2).width == 360, globe1.merge(globe2).width
+    assert globe2.merge(globe1).width == 360, globe2.merge(globe1).width
+    print(globe1.merge(globe2))
+
+    # assert globe1.merge(globe2) == globe1,globe1.merge(globe2)
+    # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
+
+
 def test_bbox():
 
     for i in range(-365, 365):
