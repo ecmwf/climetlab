@@ -15,8 +15,7 @@ import pytest
 from climetlab.utils.bbox import BoundingBox
 
 
-def test_bbox():
-
+def test_globe():
     globe1 = BoundingBox(north=90, west=0, east=360, south=-90)
     assert globe1.width == 360
     assert globe1.west == 0
@@ -30,6 +29,9 @@ def test_bbox():
 
     # assert globe1.merge(globe2) == globe1,globe1.merge(globe2)
     # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
+
+
+def test_bbox():
 
     for i in range(-365, 365):
         bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)
@@ -84,10 +86,8 @@ def test_bbox():
     b1 = BoundingBox(north=89.9746, west=-179.975, south=-89.9746, east=179.975)
     b2 = BoundingBox(north=89.9746, west=-179.975, south=-89.9746, east=179.975)
     b3 = b1.merge(b2)
-    assert b0 == b1
-    for a, b in zip(b3.as_tuple(), b0.as_tuple()):
-        assert abs(a - b) < 1e-14, (a, b, a - b)
-        print(a, b, abs(a - b) < 1e-14)
+
+    assert b0 == b3
 
 
 def test_overlapping_bbox():
@@ -150,6 +150,62 @@ def test_overlapping_bbox():
                 s,
             )
             assert merged.west < merged.east
+
+
+def test_overlaps():
+    b1 = BoundingBox(north=90, west=-200, south=-90, east=-130)
+    b2 = BoundingBox(north=90, west=-180, south=-90, east=-90)
+    b0 = b1.overlaps(b2)
+    assert b0
+
+
+def test_overlapping_bbox2():
+
+    b1 = BoundingBox(north=90, west=-200, south=-90, east=-130)
+    b2 = BoundingBox(north=90, west=-180, south=-90, east=-90)
+    b0 = b1.merge(b2)
+
+    assert b0.width == 110, b0.width
+    print()
+    b3 = BoundingBox(north=90, west=-210, south=-90, east=-160)
+    b0 = b0.merge(b3)
+    assert b0.width == 120, b0.width
+
+    #      ----------------------
+    #           ---------------------
+    # ---------------------
+
+    for i in range(-365, 365):
+        b1 = BoundingBox(north=90, west=10 + i, south=-90, east=80 + i)
+        b2 = BoundingBox(north=90, west=30 + i, south=-90, east=120 + i)
+        b3 = BoundingBox(north=90, west=0 + i, south=-90, east=50 + i)
+        b0 = BoundingBox.multi_merge([b1, b2, b3])
+        assert b0.width == 120, (b0.width, b0)
+
+    # --------------------------------
+    #           ---------------------
+    #     ---------------------
+
+    for i in range(-365, 365):
+        b1 = BoundingBox(north=90, west=-10 + i, south=-90, east=200 + i)
+        b2 = BoundingBox(north=90, west=30 + i, south=-90, east=120 + i)
+        b3 = BoundingBox(north=90, west=0 + i, south=-90, east=50 + i)
+
+        b0 = BoundingBox.multi_merge([b1, b2, b3])
+        assert b0.width == 210, (b0.width, b0)
+
+    # --------------------------------
+    #           --------------------------
+    #     ---------------------
+
+    for i in range(-365, 365):
+        b1 = BoundingBox(north=90, west=-10 + i, south=-90, east=200 + i)
+        b2 = BoundingBox(north=90, west=30 + i, south=-90, east=300 + i)
+        b3 = BoundingBox(north=90, west=0 + i, south=-90, east=50 + i)
+
+        b0 = BoundingBox.multi_merge([b1, b2, b3])
+
+        assert b0.width == 310, (b0.width, b0)
 
 
 if __name__ == "__main__":
