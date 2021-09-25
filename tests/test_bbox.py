@@ -73,7 +73,9 @@ def test_bbox():
         bbox = bbox2.merge(bbox1)
         assert bbox.width == 60, (bbox1, bbox2, bbox, bbox.width)
 
-        assert bbox1.merge(bbox2) == bbox2.merge(bbox1)
+        merge1 = bbox1.merge(bbox2)
+        merge2 = bbox2.merge(bbox1)
+        assert merge1 == merge2, (bbox1, bbox2, merge1, merge2)
 
     with pytest.raises(ValueError):
         BoundingBox(north=-10, west=0, south=30, east=1)

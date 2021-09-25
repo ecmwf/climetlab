@@ -101,76 +101,85 @@ class BoundingBox:
     @classmethod
     def multi_merge(cls, bboxes):
 
-        origin = None
+        origin = bboxes[0].east % 360
+        full = BoundingBox(
+            north=max(z.north for z in bboxes),
+            west=bboxes[0].west,
+            south=min(z.south for z in bboxes),
+            east=bboxes[0].west + 360,
+        )
 
+        print("- origin ", origin)
+
+        print("- Bbox")
+        for b in bboxes:
+            print("  ", b.west, b.east)
+
+        print("- Building boundaries")
         boundaries = list()
-        for b in bboxes:
-            boundaries.append((_normalize(b.west, 0), False))
-            boundaries.append((_normalize(b.east, 0), True))
+        layers = set()
+        for i, b in enumerate(bboxes):
 
-        boundaries = sorted(boundaries)
-        i = 0
-        x = []
-        for b in boundaries:
-            if b[1]:
-                i -= 1
-            else:
-                i += 1
-            x.append((i, b[0], b[1]))
+            if b.east - b.west == 360:
+                return full
 
-        print(x)
-        origin = min(x)
-        assert origin[2], origin  # Must be a close/east
-        origin = origin[1]
+            west = (b.west - origin) % 360
+            east = (b.east - origin) % 360
+            print("  ", b.west, b.east, "->", west, east)
 
-        for b in bboxes:
-            if b.west <= origin < b.east:
-                return BoundingBox(
-                    north=max(z.north for z in bboxes),
-                    west=bboxes[0].west,
-                    south=min(z.south for z in bboxes),
-                    east=bboxes[0].west + 360,
-                )
+            if west > east:
+                layers.add(i)
 
-        # boundaries = list()
-        # for b in bboxes:
-        #     w = _normalize(b.west, origin)
-        #     boundaries.append((w, False))
-        #     boundaries.append((_normalize(b.east, w), True))
+            boundaries.append((west, 1, i))
+            boundaries.append((east, -1, i))
 
         boundaries = sorted(boundaries)
 
-        print("===", origin)
-        print(bboxes)
-        print(boundaries)
-
-        i = 0
-        x = []
+        print("- Boundaries")
         for b in boundaries:
-            if b[1]:
-                i -= 1
+            print(b)
+
+        start = 0.0
+        found = (-1.0, 0.0, 0.0)
+
+        for b in boundaries:
+
+            cursor = b[0]
+
+            print("@cursor=", cursor, layers)
+
+            if b[1] == 1:  # entering
+                print(f" entering {b[2]}", cursor, layers)
+                if len(list(layers)) == 0:
+                    print("  found candidate", (cursor - start, start, cursor))
+                    if cursor - start > found[0]:
+                        found = (cursor - start, start, cursor)
+
+                    start = None
+
+                layers.add(b[2])
+
+            elif b[1] == -1:  # exiting
+
+                print(f" exiting {b[2]}", cursor, layers)
+
+                layers.remove(b[2])
+
+                if len(list(layers)) == 0:
+                    print("  start=", start)
+                    start = cursor
+
             else:
-                i += 1
+                raise Exception()
 
-            # if i in [1, 0]:
-            x.append((b[0], b[1], i))
-
-        x.append((x[0][0] + 360, x[0][1], x[0][2]))
-        print("=", x)
-
-        y = []
-        for a, b in zip(x, x[1:]):
-            if a[1]:
-                width = b[0] - a[0]
-                y.append((width, a, b))
-
-        y = max(y)
+        if found[0] == -1:
+            return full
 
         return BoundingBox(
             north=max(z.north for z in bboxes),
-            west=y[2][0],
+            west=origin + found[2],
             south=min(z.south for z in bboxes),
-            east=y[1][0],
+            east=origin + found[1],
         )
 
     def merge(self, other):
