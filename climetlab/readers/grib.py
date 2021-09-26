@@ -504,6 +504,22 @@ class GRIBReader(Reader):
             **xarray_open_mfdataset_kwargs,
         )
 
+    # Used by normalisers
+    def to_datetime(self):
+        times = self.to_datetime_list()
+        assert len(times) == 1
+        return times[0]
+
+    def to_datetime_list(self):
+        # TODO: check if that can be done faster
+        result = set()
+        for s in self:
+            result.add(s.valid_datetime())
+        return sorted(result)
+
+    def to_bounding_box(self):
+        return BoundingBox.multi_merge([s.to_bounding_box() for s in self])
+
 
 def reader(source, path, magic, deeper_check):
     if magic[:4] == b"GRIB":

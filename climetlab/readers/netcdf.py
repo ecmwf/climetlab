@@ -18,6 +18,7 @@ import xarray as xr
 
 from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
+from climetlab.utils.dates import to_datetime
 
 from . import Reader
 
@@ -140,7 +141,7 @@ class DataSet:
 
 
 class NetCDFField(Base):
-    def __init__(self, path, ds, variable, slices):
+    def __init__(self, path, ds, variable, slices, non_dim_coords):
 
         data_array = ds[variable]
 
@@ -149,6 +150,7 @@ class NetCDFField(Base):
         self.path = path
         self.variable = variable
         self.slices = slices
+        self.non_dim_coords = non_dim_coords
 
         self.name = self.variable
 
@@ -158,7 +160,9 @@ class NetCDFField(Base):
             getattr(data_array, "standard_name", self.variable),
         )
 
-        self.time = None
+        self.time = non_dim_coords.get("valid_time", non_dim_coords.get("time"))
+
+        # print('====', non_dim_coords)
 
         for s in self.slices:
 
@@ -252,10 +256,11 @@ class NetCDFReader(Reader):
             # self.log.info('Scanning file: %s var=%s coords=%s', self.path, name, v.coords)
 
             info = [value for value in v.coords if value not in v.dims]
-
+            non_dim_coords = {}
             for coord in v.coords:
 
                 if coord not in v.dims:
+                    non_dim_coords[coord] = ds[coord].values
                     continue
 
                 c = ds[coord]
@@ -310,7 +315,7 @@ class NetCDFReader(Reader):
                 for value, coordinate in zip(values, coordinates):
                     slices.append(coordinate.make_slice(value))
 
-                fields.append(NetCDFField(self.path, ds, name, slices))
+                fields.append(NetCDFField(self.path, ds, name, slices, non_dim_coords))
 
         if not fields:
             raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
@@ -345,7 +350,7 @@ class NetCDFReader(Reader):
         # TODO: check if that can be done faster
         result = set()
         for s in self.get_fields():
-            result.add(s.time)
+            result.add(to_datetime(s.time))
         return sorted(result)
 
     def to_bounding_box(self):

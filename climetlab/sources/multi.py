@@ -14,7 +14,7 @@ from climetlab.core.thread import SoftThreadPool
 from climetlab.mergers import make_merger
 from climetlab.sources.empty import EmptySource
 from climetlab.utils import tqdm
-from climetlab.utils.bounding_box import BoundingBox
+from climetlab.utils.bbox import BoundingBox
 
 from . import Source
 

@@ -9,6 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import os
 
 import pytest
@@ -92,6 +93,36 @@ def test_multi():
         print(s)
 
     source.to_xarray()
+
+
+def test_datetime():
+
+    s = load_source("file", climetlab_file("docs/examples/test.nc"))
+    print(s.to_xarray())
+    assert s.to_datetime() == datetime.datetime(2020, 5, 13, 12), s.to_datetime()
+
+    assert s.to_datetime_list() == [
+        datetime.datetime(2020, 5, 13, 12)
+    ], s.to_datetime_list()
+
+    s = load_source(
+        "dummy-source",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a", "b"],
+        coord_values=dict(time=[19900101, 19900102]),
+    )
+    # TODO:
+    with pytest.raises(Exception):
+        assert s.to_datetime_list() == [
+            datetime.datetime(1990, 1, 1, 12, 0),
+            datetime.datetime(1990, 1, 2, 12, 0),
+        ], s.to_datetime_list()
+
+
+def test_bbox():
+    s = load_source("file", climetlab_file("docs/examples/test.nc"))
+    assert s.to_bounding_box().as_tuple() == (73, -27, 33, 45), s.to_bounding_box()
 
 
 if __name__ == "__main__":
