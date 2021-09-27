@@ -250,7 +250,7 @@ def large_multi_1(b, func):
 
 @pytest.mark.long_test
 @pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
 )
 def test_large_multi_1_xarray(benchmark):
     import xarray as xr
@@ -264,7 +264,7 @@ def test_large_multi_1_xarray(benchmark):
 
 
 @pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
 )
 @pytest.mark.long_test
 def test_large_multi_1_climetlab(benchmark):
@@ -299,7 +299,7 @@ def large_multi_2_climetlab():
 @pytest.mark.long_test
 @pytest.mark.external_download
 @pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
 )
 def test_large_multi_2_climetlab(benchmark):
     with temp_directory():
@@ -314,7 +314,7 @@ def large_multi_2_xarray(paths):
 @pytest.mark.long_test
 @pytest.mark.external_download
 @pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="python-benchmark not installed"
+    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
 )
 def test_large_multi_2_xarray(benchmark):
 

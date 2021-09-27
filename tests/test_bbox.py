@@ -30,6 +30,10 @@ def test_globe():
     # assert globe1.merge(globe2) == globe1,globe1.merge(globe2)
     # assert globe2.merge(globe1) == globe2, globe2.merge(globe1)
 
+    b1 = BoundingBox(north=90, west=-180, east=0, south=-90)
+    b2 = BoundingBox(north=90, west=0, east=180, south=-90)
+    b0 = b1.merge(b2)
+    assert b0.width == 360
 
 def test_almost_globe():
     globe1 = BoundingBox(north=90, west=1, east=360, south=-90)
@@ -179,7 +183,7 @@ def test_overlapping_bbox_2():
     b0 = b1.merge(b2)
 
     assert b0.width == 110, b0.width
-    print()
+
     b3 = BoundingBox(north=90, west=-210, south=-90, east=-160)
     b0 = b0.merge(b3)
     assert b0.width == 120, b0.width
