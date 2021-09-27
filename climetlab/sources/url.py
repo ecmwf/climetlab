@@ -37,10 +37,6 @@ def offline(off):
     OFFLINE = off
 
 
-def dummy_watcher():
-    pass
-
-
 def mimetype_to_extension(mimetype, compression, default=".unknown"):
     EXTENSIONS = {
         None: "",
@@ -108,7 +104,7 @@ class Downloader:
         ) as pbar:
 
             with open(download, mode) as f:
-                total = self.transfer(f, pbar, self.owner.watcher)
+                total = self.transfer(f, pbar, self.owner._observer)
 
             pbar.close()
 
@@ -383,7 +379,6 @@ class Url(FileSource):
         filter=None,
         merger=None,
         verify=True,
-        watcher=None,
         force=None,
         # extension=None,
         http_headers=None,
@@ -401,7 +396,6 @@ class Url(FileSource):
         self.filter = filter
         self.merger = merger
         self.verify = verify
-        self.watcher = watcher if watcher else dummy_watcher
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers

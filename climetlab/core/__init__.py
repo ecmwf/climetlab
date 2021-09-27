@@ -7,12 +7,14 @@
 #
 
 
+PRIVATE_ATTRIBUTES = {"_observer": lambda: None}
+
+
 class MetaBase(type):
     def __call__(cls, *args, **kwargs):
         obj = cls.__new__(cls, *args, **kwargs)
-        for k in list(kwargs.keys()):
-            if k.startswith("_"):
-                setattr(obj, k, kwargs.pop(k))
+        for k, v in PRIVATE_ATTRIBUTES.items():
+            setattr(obj, k, kwargs.pop(k, v))
         obj.__init__(*args, **kwargs)
         return obj
 
