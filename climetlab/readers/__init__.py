@@ -18,7 +18,11 @@ from climetlab.decorators import locked
 LOG = logging.getLogger(__name__)
 
 
-class Reader(Base, os.PathLike):
+class ReaderMeta(type(Base), type(os.PathLike)):
+    pass
+
+
+class Reader(Base, os.PathLike, metaclass=ReaderMeta):
 
     appendable = False  # Set to True if the data can be appened to and existing file
     binary = True

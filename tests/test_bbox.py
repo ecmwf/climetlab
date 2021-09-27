@@ -35,6 +35,7 @@ def test_globe():
     b0 = b1.merge(b2)
     assert b0.width == 360
 
+
 def test_almost_globe():
     globe1 = BoundingBox(north=90, west=1, east=360, south=-90)
 

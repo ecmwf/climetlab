@@ -1,4 +1,4 @@
-# (C) Copyright 2020 ECMWF.  #
+# (C) Copyright 2020- ECMWF.  #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
@@ -6,19 +6,18 @@
 # nor does it submit to any jurisdiction.
 #
 
-# This empty __init__.py is there to help find_packages() (in setup.py)
-# to include this folder in the tar uploaded at pip
 
-"""
-Find me
+class MetaBase(type):
+    def __call__(cls, *args, **kwargs):
+        obj = cls.__new__(cls, *args, **kwargs)
+        for k in list(kwargs.keys()):
+            if k.startswith("_"):
+                setattr(obj, k, kwargs.pop(k))
+        obj.__init__(*args, **kwargs)
+        return obj
 
-.. autosummary::
-    climetlab.core.Base
 
-"""
-
-
-class Base:
+class Base(metaclass=MetaBase):
 
     # Convertors
     def to_numpy(self, **kwargs):

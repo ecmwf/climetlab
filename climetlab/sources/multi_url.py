@@ -49,7 +49,7 @@ class MultiUrl(MultiSource):
                         url,
                         filter=filter,
                         merger=merger,
-                        watcher=pool,
+                        observer=pool,
                         force=force,
                     )
                     for url in urls

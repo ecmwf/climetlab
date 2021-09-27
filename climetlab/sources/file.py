@@ -21,7 +21,11 @@ from . import Source
 LOG = logging.getLogger(__name__)
 
 
-class FileSource(Source, os.PathLike):
+class FileSourceMeta(type(Source), type(os.PathLike)):
+    pass
+
+
+class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
 
     _reader_ = None
     path = None
