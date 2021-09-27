@@ -12,7 +12,10 @@
 import os
 from importlib import import_module
 
+import pytest
 import yaml
+
+from climetlab.testing import MISSING
 
 
 def get_precommit_version(key):
@@ -29,6 +32,9 @@ def get_precommit_version(key):
     return None
 
 
+@pytest.mark.skipif(
+    MISSING("black", "isort", "flake8"), reason="QA tools not installed"
+)
 def test_qa_versions():
     for name in ["black", "isort", "flake8"]:
         lib = import_module(name)
