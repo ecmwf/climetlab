@@ -116,6 +116,14 @@ def make_xarray(
 
     ds = xr.Dataset(vars)
 
+    # TODO: this should be removed. The readers should be able to infer.
+    if "lat" in ds.dims:
+        ds["lat"].attrs["standard_name"] = "latitude"
+    if "lon" in ds.dims:
+        ds["lon"].attrs["standard_name"] = "longitude"
+    if "time" in ds.dims:
+        ds["time"].attrs["standard_name"] = "time"
+
     return ds
 
 
