@@ -98,7 +98,7 @@ def test_multi():
 def test_datetime():
 
     s = load_source("file", climetlab_file("docs/examples/test.nc"))
-    print(s.to_xarray())
+
     assert s.to_datetime() == datetime.datetime(2020, 5, 13, 12), s.to_datetime()
 
     assert s.to_datetime_list() == [
@@ -110,14 +110,20 @@ def test_datetime():
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],
-        coord_values=dict(time=[19900101, 19900102]),
+        coord_values=dict(
+            time=[
+                datetime.datetime(1990, 1, 1, 12, 0),
+                datetime.datetime(1990, 1, 2, 12, 0),
+            ]
+        ),
     )
-    # TODO:
-    with pytest.raises(Exception):
-        assert s.to_datetime_list() == [
-            datetime.datetime(1990, 1, 1, 12, 0),
-            datetime.datetime(1990, 1, 2, 12, 0),
-        ], s.to_datetime_list()
+
+    print(s.to_xarray())
+    print(s.to_xarray().time)
+    assert s.to_datetime_list() == [
+        datetime.datetime(1990, 1, 1, 12, 0),
+        datetime.datetime(1990, 1, 2, 12, 0),
+    ], s.to_datetime_list()
 
 
 def test_bbox():
@@ -128,4 +134,5 @@ def test_bbox():
 if __name__ == "__main__":
     from climetlab.testing import main
 
+    # test_datetime()
     main(globals())

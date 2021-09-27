@@ -45,6 +45,22 @@ CONNECTION = None
 CACHE = None
 
 
+def default_serialiser(o):
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return ["__datetime__", o.isoformat()]
+    return json.JSONEncoder.default(o)
+
+
+def default_deserialiser(o):
+    if isinstance(o, list):
+        if o[0] == "__datetime__":
+            return datetime.datetime.fromisoformat(o)
+    return json.JSONDecoder.default(o)
+
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return ["datetime", o.isoformat()]
+
+
 def in_executor(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
@@ -190,7 +206,7 @@ class Cache(threading.Thread):
         with self.connection as db:
             for n in db.execute("SELECT * FROM cache").fetchall():
                 n = dict(n)
-                n["args"] = json.loads(n["args"])
+                n["args"] = json.loads(n["args"], default=default_deserialiser)
                 try:
                     n["owner_data"] = json.loads(n["owner_data"])
                 except Exception:
@@ -218,7 +234,7 @@ class Cache(threading.Thread):
                 (
                     size,
                     kind,
-                    json.dumps(owner_data),
+                    json.dumps(owner_data, default=default_serialiser),
                     path,
                 ),
             )
@@ -315,7 +331,7 @@ class Cache(threading.Thread):
         n = dict(entry)
         for k in ("args", "owner_data"):
             if k in n and isinstance(n[k], str):
-                n[k] = json.loads(n[k])
+                n[k] = json.loads(n[k], default=default_deserialiser)
         return n
 
     def _delete_entry(self, entry):
@@ -340,7 +356,10 @@ class Cache(threading.Thread):
         )
 
         LOG.warning(
-            "Deleting entry %s", json.dumps(self._entry_to_dict(entry), indent=4)
+            "Deleting entry %s",
+            json.dumps(
+                self._entry_to_dict(entry), indent=4, default=default_deserialiser
+            ),
         )
         total = 0
 
@@ -418,7 +437,7 @@ class Cache(threading.Thread):
 
             now = datetime.datetime.utcnow()
 
-            args = json.dumps(args)
+            args = json.dumps(args, default=default_serialiser)
 
             db.execute(
                 """
@@ -510,7 +529,7 @@ class Cache(threading.Thread):
                 n = dict(d)
                 for k in ("args", "owner_data"):
                     if n[k] is not None:
-                        n[k] = json.loads(n[k])
+                        n[k] = json.loads(n[k], default=default_deserialiser)
                 result.append(n)
         return result
 
@@ -558,7 +577,10 @@ def cache_file(
 
     m = hashlib.sha256()
     m.update(owner.encode("utf-8"))
-    m.update(json.dumps(args, sort_keys=True).encode("utf-8"))
+
+    m.update(
+        json.dumps(args, sort_keys=True, default=default_serialiser).encode("utf-8")
+    )
     m.update(json.dumps(hash_extra, sort_keys=True).encode("utf-8"))
     m.update(json.dumps(extension, sort_keys=True).encode("utf-8"))
 
