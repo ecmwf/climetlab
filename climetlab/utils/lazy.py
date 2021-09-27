@@ -26,7 +26,9 @@ class LazySource:
         self.kwargs = kwargs
         self._source = None
 
-    def __call__(self):
+    def __call__(self, **kwargs):
+        assert self._source is None
+        self.kwargs.update(kwargs)
         return self.source
 
     @property

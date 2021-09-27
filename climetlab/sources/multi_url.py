@@ -7,13 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-
-from climetlab.core.thread import SoftThreadPool
-from climetlab.utils import tqdm
+from climetlab import load_source
 
 from .multi import MultiSource
-from .url import Url
 
 
 class MultiUrl(MultiSource):
@@ -26,38 +22,17 @@ class MultiUrl(MultiSource):
 
         assert len(urls)
 
-        urls = sorted(urls)
-
-        nthreads = min(self.settings("number-of-download-threads"), len(urls))
-
-        if nthreads < 2:
-            sources = [
-                Url(
-                    url,
-                    filter=filter,
-                    merger=merger,
-                    force=force,
-                )
-                for url in urls
-            ]
-        else:
-            with SoftThreadPool(nthreads=nthreads) as pool:
-
-                futures = [
-                    pool.submit(
-                        Url,
-                        url,
-                        filter=filter,
-                        merger=merger,
-                        observer=pool,
-                        force=force,
-                    )
-                    for url in urls
-                ]
-
-                iterator = (f.result() for f in futures)
-                sources = list(tqdm(iterator, leave=True, total=len(urls)))
-
-                assert all(os.path.exists(s.path) for s in sources)
+        sources = [
+            load_source(
+                "url",
+                url,
+                filter=filter,
+                merger=merger,
+                force=force,
+                # Load lazily so we can do parallel downloads
+                lazily=True,
+            )
+            for url in sorted(urls)
+        ]
 
         super().__init__(sources, filter=filter, merger=merger)

@@ -108,7 +108,7 @@ class MultiSource(Source):
                 has_callables = True
                 callables.append(s)
             else:
-                callables.append(lambda: s)
+                callables.append(lambda *args, **kwargs: s)
 
         if not has_callables:
             return sources
@@ -117,12 +117,12 @@ class MultiSource(Source):
         if nthreads < 2:
             return [s() for s in sources]
 
-        def _call(s):
-            return s()
+        def _call(s, *args, **kwargs):
+            return s(*args, **kwargs)
 
         with SoftThreadPool(nthreads=nthreads) as pool:
 
-            futures = [pool.submit(_call, s) for s in sources]
+            futures = [pool.submit(_call, s, _observer=pool) for s in sources]
 
             iterator = (f.result() for f in futures)
             sources = list(tqdm(iterator, leave=False, total=len(futures)))
