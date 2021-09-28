@@ -31,7 +31,7 @@ class Cache:
     def __getitem__(self, key):
         LOG.debug("S3 Cache.__getitem__ %s", key)
         data = self._store[key]
-        LOG.debug("S3 Cache.__getitem__ %d", str(len(data)))
+        LOG.debug("S3 Cache.__getitem__ %d", len(data))
         return data
 
     def keys(self):
