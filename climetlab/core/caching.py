@@ -47,18 +47,8 @@ CACHE = None
 
 def default_serialiser(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
-        return ["__datetime__", o.isoformat()]
+        return o.isoformat()
     return json.JSONEncoder.default(o)
-
-
-def default_deserialiser(o):
-    if isinstance(o, list):
-        if o[0] == "__datetime__":
-            return datetime.datetime.fromisoformat(o)
-    return o
-
-    if isinstance(o, (datetime.date, datetime.datetime)):
-        return ["datetime", o.isoformat()]
 
 
 def in_executor(func):
@@ -206,7 +196,7 @@ class Cache(threading.Thread):
         with self.connection as db:
             for n in db.execute("SELECT * FROM cache").fetchall():
                 n = dict(n)
-                n["args"] = json.loads(n["args"], object_hook=default_deserialiser)
+                n["args"] = json.loads(n["args"])
                 try:
                     n["owner_data"] = json.loads(n["owner_data"])
                 except Exception:
@@ -331,7 +321,7 @@ class Cache(threading.Thread):
         n = dict(entry)
         for k in ("args", "owner_data"):
             if k in n and isinstance(n[k], str):
-                n[k] = json.loads(n[k], object_hook=default_deserialiser)
+                n[k] = json.loads(n[k])
         return n
 
     def _delete_entry(self, entry):
@@ -529,7 +519,7 @@ class Cache(threading.Thread):
                 n = dict(d)
                 for k in ("args", "owner_data"):
                     if n[k] is not None:
-                        n[k] = json.loads(n[k], object_hook=default_deserialiser)
+                        n[k] = json.loads(n[k])
                 result.append(n)
         return result
 

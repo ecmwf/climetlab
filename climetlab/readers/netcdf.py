@@ -273,14 +273,18 @@ class NetCDFReader(Reader):
 
                 use = False
 
-                if standard_name in ("longitude", "projection_x_coordinate") or (
-                    long_name == "longitude"
+                if (
+                    standard_name in ("longitude", "projection_x_coordinate")
+                    or (long_name == "longitude")
+                    or (axis == "X")
                 ):
                     has_lon = True
                     use = True
 
-                if standard_name in ("latitude", "projection_y_coordinate") or (
-                    long_name == "latitude"
+                if (
+                    standard_name in ("latitude", "projection_y_coordinate")
+                    or (long_name == "latitude")
+                    or (axis == "Y")
                 ):
                     has_lat = True
                     use = True
