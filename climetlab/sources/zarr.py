@@ -21,20 +21,17 @@ LOG = logging.getLogger(__name__)
 
 
 class Cache:
-    def __init__(self, store, logging=None):
+    def __init__(self, store):
         self._store = store
 
     def __contains__(self, key):
-        if logging:
-            LOG.debug("S3 Cache.__contains__", key)
+        LOG.debug("S3 Cache.__contains__ %s", key)
         return key in self._store
 
     def __getitem__(self, key):
-        if logging:
-            LOG.debug("S3 Cache.__getitem__", key)
+        LOG.debug("S3 Cache.__getitem__ %s", key)
         data = self._store[key]
-        if logging:
-            LOG.debug("S3 Cache.__getitem__", str(len(data)))
+        LOG.debug("S3 Cache.__getitem__ %d", str(len(data)))
         return data
 
     def keys(self):
