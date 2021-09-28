@@ -6,78 +6,65 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
 import os
 import sys
 from importlib import import_module
 
 import climetlab
+import cmd2
+import argparse
+import logging
+from termcolor import colored
+import readline
 
+class ClimetlabApp(cmd2.Cmd):
+    prompt = colored("(climetlab) ", "yellow")
 
-def check():
-    print(
-        (
-            "This script is experimental to help debugging."
-            "Seeing everything to 'ok' does NOT means that you have the right versions installed."
-        )
-    )
-    print("--------------------")
+    rc_file = "~/.climetlab-history"
 
-    print("Checking climetlab installation.")
-    print(f"Climetlab installed in {os.path.dirname(climetlab.__file__)}")
-    print("Checking required compiled dependencies...")
-
-    import ecmwflibs
-
-    versions = ecmwflibs.versions()
-
-    for name in ["eccodes", "magics"]:
+    def postloop(self):
         try:
-            print(
-                f"  {name} from ecwmlibs: ok {versions[name]} ({ecmwflibs.find(name)})"
-            )
-        except Exception as e:  # noqa: F841
-            print(f"  {name} from ecmwflib: Warning: ecmwflibs cannot find {name}")
+            readline.set_history_length(1000)
+            readline.write_history_file(os.path.expanduser(self.rc_file))
+        except Exception:
+            pass
 
-    for name in ["eccodes", "MagPlus", "netcdf"]:
+    def preloop(self):
         try:
-            import findlibs
-        except Exception as e:  # noqa: F841
-            print(f"    {name} from findlibs: Warning: cannot import findlibs")
-            continue
-        try:
-            print(f"    {name} from findlibs: ({findlibs.find(name)})")
-        except Exception as e:  # noqa: F841
-            print(f"    {name} from findlibs: Warning: findlibs cannot find {name}")
-
-    print("Checking required python dependencies...")
-    for name in ["xarray", "Magics", "eccodes", "ecmwflibs"]:
-        more = ""
-        try:
-            lib = import_module(name)
-        except ImportError:
-            print(f"  Error: cannot import {name}.")
-            continue
-        if name == "eccodes":
-            more = f" (using .lib={lib.lib})"
-        print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}")
-
-    print("Checking optional dependencies...")
-    for name in ["folium", "pdbufr", "pyodc"]:
-        try:
-            lib = import_module(name)
-            print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
+            readline.read_history_file(os.path.expanduser(self.rc_file))
+            with open(os.path.expanduser(self.rc_file), "rt") as f:
+                for line in f:
+                    self.history.append(line[:-1])
         except Exception as e:
-            print(e)
-            print(f"  Warning: cannot import {name}. Limited capabilities.")
+            pass
 
-    # TODO: add more
-    # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
+    def empty_line(self):
+        pass
+
+    def do_decache(self):
+        print("decache")
 
 
-def main_climetlab():
-    if sys.argv and sys.argv[1] == "check":
-        check()
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--debug", action="store_true",
+                   help="verbose operation (default: quiet)")
+    p.add_argument("cmdline", type=str, metavar="CMD",
+                   nargs=argparse.REMAINDER)
+    args = p.parse_args()
+    sys.argv[1:] = cmdline = args.cmdline
+
+    logging.basicConfig(level=args.debug and "DEBUG" or "WARN")
+
+
+    app = ClimetlabApp()
+
+    if cmdline:
+        return app.onecmd(" ".join(cmdline))
+    else:
+        app.cmdloop()
 
 
 if __name__ == "__main__":
-    main_climetlab()
+    main()

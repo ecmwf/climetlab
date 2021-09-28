@@ -69,6 +69,8 @@ install_requires += [
     "filelock",
     "pyyaml",
     "markdown",
+    "termcolor",
+    "cmd2",
     "jellyfish",
     "entrypoints",
     "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
@@ -129,5 +131,5 @@ setuptools.setup(
         "climetlab-demo-source",
     ],
     test_suite="tests",
-    entry_points={"console_scripts": ["climetlab = climetlab.scripts:main_climetlab"]},
+    entry_points={"console_scripts": ["climetlab=climetlab.scripts:main"]},
 )
