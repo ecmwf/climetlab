@@ -295,7 +295,7 @@ class Settings:
     @forward
     def dump(self):
         for k, v in sorted(self._settings.items()):
-            print((k, v))  # , SETTINGS_AND_HELP.get(k, (None, "..."))[0]))
+            yield ((k, v, SETTINGS_AND_HELP.get(k)))
 
     def _changed(self):
         self._save()

@@ -7,7 +7,19 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .main import main
+import json
 
-if __name__ == "__main__":
-    main()
+# from termcolor import colored
+
+
+class CacheCmd:
+    def do_cache(self, args):
+        from climetlab.core.caching import dump_cache_database
+
+        for i in dump_cache_database():
+            print(json.dumps(i, sort_keys=True, indent=4))
+
+    def do_decache(self, args):
+        from climetlab.core.caching import purge_cache
+
+        purge_cache()
