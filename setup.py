@@ -52,7 +52,7 @@ install_requires += [
     "requests",
     # "zarr",
     # "s3fs",
-    "xarray>=0.18.2",
+    "xarray>=0.19.0",
     "dask",
     "netcdf4",
     "cfgrib>=0.9.8.4",
