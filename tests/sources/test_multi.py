@@ -230,56 +230,6 @@ def test_download_tfdataset():
     assert len(ds) == 200, len(ds)
 
 
-# @pytest.mark.long_test()
-def large_multi_1(b, func):
-    with temp_directory() as tmpdir:
-        ilist = list(range(200))
-        pattern = os.path.join(tmpdir, "test-{i}.nc")
-        for i in ilist:
-            source = load_source(
-                "dummy-source",
-                kind="netcdf",
-                dims=["lat", "lon", "time"],
-                coord_values=dict(time=[i + 0.0, i + 0.5]),
-            )
-            filename = pattern.format(i=i)
-            source.save(filename)
-        return b(func, pattern, ilist)
-
-
-@pytest.mark.long_test
-@pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
-)
-def test_large_multi_1_xarray(benchmark):
-    import xarray as xr
-
-    def func(pattern, ilist):
-        return xr.open_mfdataset(
-            pattern.format(i="*"), concat_dim="time", combine="nested"
-        )
-
-    large_multi_1(benchmark, func)
-
-
-@pytest.mark.skipif(
-    MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
-)
-@pytest.mark.long_test
-def test_large_multi_1_climetlab(benchmark):
-    def func(pattern, ilist):
-        source = load_source(
-            "url-pattern",
-            f"file://{pattern}",
-            {"i": ilist},
-            merger="concat(concat_dim=time)",
-        )
-        ds = source.to_xarray()
-        return ds
-
-    large_multi_1(benchmark, func)
-
-
 if __name__ == "__main__":
     from climetlab.testing import main
 
