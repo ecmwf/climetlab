@@ -55,7 +55,7 @@ def default_deserialiser(o):
     if isinstance(o, list):
         if o[0] == "__datetime__":
             return datetime.datetime.fromisoformat(o)
-    return json.JSONDecoder.default(o)
+    return o
 
     if isinstance(o, (datetime.date, datetime.datetime)):
         return ["datetime", o.isoformat()]
