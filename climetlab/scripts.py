@@ -7,16 +7,22 @@
 # nor does it submit to any jurisdiction.
 #
 
+import argparse
+import json
+import logging
 import os
+import readline
 import sys
 from importlib import import_module
 
-import climetlab
 import cmd2
-import argparse
-import logging
 from termcolor import colored
-import readline
+
+import climetlab
+
+settings_parser = cmd2.Cmd2ArgumentParser()
+settings_parser.add_argument("words", nargs="*")
+
 
 class ClimetlabApp(cmd2.Cmd):
     prompt = colored("(climetlab) ", "yellow")
@@ -42,9 +48,33 @@ class ClimetlabApp(cmd2.Cmd):
     def empty_line(self):
         pass
 
-    def do_decache(self, args):
-        print("decache")
+    @cmd2.with_argparser(settings_parser)
+    def do_settings(self, args):
+        print(args.words)
+        from climetlab import settings
 
+        if len(args.words) == 0:
+            settings.dump()
+            return
+
+        if len(args.words) == 1:
+            name = args.words[0]
+            print(settings.get(name))
+            return
+
+        if len(args.words) == 2:
+            name = args.words[0]
+            value = args.words[1]
+            settings.set(name, value)
+
+    def do_cache(self, args):
+        from climetlab.core.caching import dump_cache_database
+
+        for i in dump_cache_database():
+            print(json.dumps(i, sort_keys=True, indent=4))
+
+    def do_decache(self, args):
+        print("decache", args, args)
 
     def do_check(self, args):
         print(
@@ -92,13 +122,17 @@ class ClimetlabApp(cmd2.Cmd):
                 continue
             if name == "eccodes":
                 more = f" (using .lib={lib.lib})"
-            print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}")
+            print(
+                f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}"
+            )
 
         print("Checking optional dependencies...")
         for name in ["folium", "pdbufr", "pyodc"]:
             try:
                 lib = import_module(name)
-                print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
+                print(
+                    f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})"
+                )
             except Exception as e:
                 print(e)
                 print(f"  Warning: cannot import {name}. Limited capabilities.")
@@ -109,15 +143,14 @@ class ClimetlabApp(cmd2.Cmd):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--debug", action="store_true",
-                   help="verbose operation (default: quiet)")
-    p.add_argument("cmdline", type=str, metavar="CMD",
-                   nargs=argparse.REMAINDER)
+    p.add_argument(
+        "--debug", action="store_true", help="verbose operation (default: quiet)"
+    )
+    p.add_argument("cmdline", type=str, metavar="CMD", nargs=argparse.REMAINDER)
     args = p.parse_args()
     sys.argv[1:] = cmdline = args.cmdline
 
     logging.basicConfig(level=args.debug and "DEBUG" or "WARN")
-
 
     app = ClimetlabApp()
 

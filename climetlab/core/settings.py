@@ -292,6 +292,11 @@ class Settings:
         html.append("</table>")
         return "".join(html)
 
+    @forward
+    def dump(self):
+        for k, v in sorted(self._settings.items()):
+            print((k, v))  # , SETTINGS_AND_HELP.get(k, (None, "..."))[0]))
+
     def _changed(self):
         self._save()
         self._notify()
