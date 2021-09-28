@@ -206,7 +206,7 @@ class Cache(threading.Thread):
         with self.connection as db:
             for n in db.execute("SELECT * FROM cache").fetchall():
                 n = dict(n)
-                n["args"] = json.loads(n["args"], default=default_deserialiser)
+                n["args"] = json.loads(n["args"], object_hook=default_deserialiser)
                 try:
                     n["owner_data"] = json.loads(n["owner_data"])
                 except Exception:
@@ -331,7 +331,7 @@ class Cache(threading.Thread):
         n = dict(entry)
         for k in ("args", "owner_data"):
             if k in n and isinstance(n[k], str):
-                n[k] = json.loads(n[k], default=default_deserialiser)
+                n[k] = json.loads(n[k], object_hook=default_deserialiser)
         return n
 
     def _delete_entry(self, entry):
@@ -358,7 +358,7 @@ class Cache(threading.Thread):
         LOG.warning(
             "Deleting entry %s",
             json.dumps(
-                self._entry_to_dict(entry), indent=4, default=default_deserialiser
+                self._entry_to_dict(entry), indent=4, default=default_serialiser
             ),
         )
         total = 0
@@ -529,7 +529,7 @@ class Cache(threading.Thread):
                 n = dict(d)
                 for k in ("args", "owner_data"):
                     if n[k] is not None:
-                        n[k] = json.loads(n[k], default=default_deserialiser)
+                        n[k] = json.loads(n[k], object_hook=default_deserialiser)
                 result.append(n)
         return result
 
