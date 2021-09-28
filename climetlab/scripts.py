@@ -42,7 +42,7 @@ class ClimetlabApp(cmd2.Cmd):
     def empty_line(self):
         pass
 
-    def do_decache(self):
+    def do_decache(self, args):
         print("decache")
 
 
