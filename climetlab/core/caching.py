@@ -185,7 +185,9 @@ class Cache(threading.Thread):
     def _purge_cache(self, owner=None, age=None, size=None):
 
         if owner is None and age is None and size is None:
-            self._decache(self._cache_size())
+            self._housekeeping(clean=True)
+            # _update_cache(clean=True)
+            self._decache(self._cache_size(), purge=True)
             return
 
         with self.connection as db:
@@ -258,7 +260,7 @@ class Cache(threading.Thread):
             if update or commit:
                 db.commit()
 
-    def _housekeeping(self):
+    def _housekeeping(self, clean=False):
         top = SETTINGS.get("cache-directory")
         with self.connection as db:
             for name in os.listdir(top):
@@ -303,7 +305,7 @@ class Cache(threading.Thread):
                     None,
                     parent,
                 )
-        self._update_cache()
+        self._update_cache(clean=clean)
 
     def _delete_file(self, path):
 
@@ -373,7 +375,7 @@ class Cache(threading.Thread):
 
         return total + size
 
-    def _decache(self, bytes):
+    def _decache(self, bytes, purge=False):
         # _find_orphans()
         # _update_cache(clean=True)
 
@@ -386,7 +388,7 @@ class Cache(threading.Thread):
 
         with self.connection as db:
 
-            latest = self._latest_date()
+            latest = datetime.datetime.utcnow() if purge else self._latest_date()
 
             for stmt in (
                 "SELECT * FROM cache WHERE size IS NOT NULL AND owner='orphans' AND creation_date < ?",

@@ -42,7 +42,7 @@ class ClimetlabApp(cmd2.Cmd):
             with open(os.path.expanduser(self.rc_file), "rt") as f:
                 for line in f:
                     self.history.append(line[:-1])
-        except Exception as e:
+        except Exception:
             pass
 
     def empty_line(self):
@@ -74,7 +74,9 @@ class ClimetlabApp(cmd2.Cmd):
             print(json.dumps(i, sort_keys=True, indent=4))
 
     def do_decache(self, args):
-        print("decache", args, args)
+        from climetlab.core.caching import purge_cache
+
+        purge_cache()
 
     def do_check(self, args):
         print(
