@@ -89,6 +89,7 @@ class CheckCmd:
         from importlib.metadata import PackageNotFoundError, version
 
         import entrypoints
+
         result = []
         for kind in ("source", "dataset"):
             for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
@@ -97,12 +98,12 @@ class CheckCmd:
                     v = version(module)
                 except PackageNotFoundError:
                     v = "unknown"
-                result . append((kind, e.name, e.module_name, v))
+                result.append((kind, e.name, e.module_name, v))
 
         for n in sorted(result):
             print(n)
 
-    def do_modules(self, args):
+    def do_versions(self, args):
         from importlib.metadata import PackageNotFoundError, version
 
         import entrypoints
@@ -142,3 +143,19 @@ class CheckCmd:
                 print(module, colored(version(module), "green"))
             except PackageNotFoundError:
                 print(module, colored("missing", "red"))
+
+    def do_libraries(self, args):
+
+        try:
+            import Magics
+
+            print("magics", colored(Magics.lib, "green"))
+        except Exception as e:
+            print("magics", colored(e, "red"))
+
+        try:
+            import gribapi
+
+            print("eccodes", colored(gribapi.library_path, "green"))
+        except Exception as e:
+            print("eccodes", colored(e, "red"))
