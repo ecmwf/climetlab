@@ -8,31 +8,30 @@
 #
 
 
-import cmd2
 from termcolor import colored
 
-settings_parser = cmd2.Cmd2ArgumentParser()
-settings_parser.add_argument("words", nargs="*")
 
 
 class SettingsCmd:
-    @cmd2.with_argparser(settings_parser)
+
     def do_settings(self, args):
         from climetlab import settings
+        words = [x.strip() for x in args.split(" ") if x.strip()]
 
-        if len(args.words) == 0:
+
+        if len(words) == 0:
             for f in settings.dump():
                 print(colored(f[0], "blue"), f[1])
             return
 
-        if len(args.words) == 1:
-            name = args.words[0]
+        if len(words) == 1:
+            name = words[0]
             print(settings.get(name))
             return
 
-        if len(args.words) == 2:
-            name = args.words[0]
-            value = args.words[1]
+        if len(words) == 2:
+            name = words[0]
+            value = words[1]
             settings.set(name, value)
 
     def complete_settings(self, text, line, start_index, end_index):

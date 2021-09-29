@@ -107,7 +107,7 @@ class CheckCmd:
         from importlib.metadata import PackageNotFoundError, version
 
         import entrypoints
-
+        plugins = set()
         modules = [x.strip() for x in args.split(" ") if x.strip()]
         if not modules:
             modules = (
@@ -133,16 +133,16 @@ class CheckCmd:
                 "metview",
             )
 
-        plugins = set()
+
         for kind in ("source", "dataset"):
             for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
                 plugins.add(e.module_name.split(".")[0])
 
-        for module in sorted(list(modules) + list(plugins)):
-            try:
-                print(module, colored(version(module), "green"))
-            except PackageNotFoundError:
-                print(module, colored("missing", "red"))
+            for module in sorted(list(modules) + list(plugins)):
+                try:
+                    print(module, colored(version(module), "green"))
+                except PackageNotFoundError:
+                    print(module, colored("missing", "red"))
 
     def do_libraries(self, args):
 

@@ -13,7 +13,7 @@ import os
 import readline
 import sys
 
-import cmd2
+import cmd
 from termcolor import colored
 
 from .cache import CacheCmd
@@ -22,7 +22,7 @@ from .settings import SettingsCmd
 
 
 class ClimetlabApp(
-    cmd2.Cmd,
+    cmd.Cmd,
     SettingsCmd,
     CacheCmd,
     CheckCmd,
@@ -50,6 +50,14 @@ class ClimetlabApp(
     def empty_line(self):
         pass
 
+    def do_quit(self, args):
+        sys.exit(0)
+
+    def do_EOF(self, args):
+        sys.exit(0)
+
+    # def default(self, line):
+    #     print(line)
 
 def main():
     p = argparse.ArgumentParser()
