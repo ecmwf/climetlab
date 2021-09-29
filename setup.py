@@ -59,7 +59,7 @@ install_requires += [
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "tqdm",
-    "eccodes>=0.9.9",
+    "eccodes>=1.3.0",
     "magics>=1.5.6",
     "ecmwflibs>=0.1.2",
     "pdbufr",
