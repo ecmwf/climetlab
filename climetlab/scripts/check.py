@@ -84,3 +84,61 @@ class CheckCmd:
 
         # TODO: add more
         # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
+
+    def do_plugins(self, args):
+        from importlib.metadata import PackageNotFoundError, version
+
+        import entrypoints
+        result = []
+        for kind in ("source", "dataset"):
+            for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
+                module = e.module_name.split(".")[0]
+                try:
+                    v = version(module)
+                except PackageNotFoundError:
+                    v = "unknown"
+                result . append((kind, e.name, e.module_name, v))
+
+        for n in sorted(result):
+            print(n)
+
+    def do_modules(self, args):
+        from importlib.metadata import PackageNotFoundError, version
+
+        import entrypoints
+
+        modules = [x.strip() for x in args.split(" ") if x.strip()]
+        if not modules:
+            modules = (
+                "climetlab",
+                "xarray",
+                "numpy",
+                "tensorflow",
+                "requests",
+                "cdsapi",
+                "cfgrib",
+                "findlibs",
+                "ecmwflibs",
+                "netcdf4",
+                "dask",
+                "zarr",
+                "s3fs",
+                "ecmwf-api-client",
+                "eccodes",
+                "magics",
+                "pdbufr",
+                "pyodc",
+                "pandas",
+                "metview",
+            )
+
+        plugins = set()
+        for kind in ("source", "dataset"):
+            for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
+                plugins.add(e.module_name.split(".")[0])
+
+        for module in sorted(list(modules) + list(plugins)):
+            try:
+                print(module, colored(version(module), "green"))
+            except PackageNotFoundError:
+                print(module, colored("missing", "red"))
