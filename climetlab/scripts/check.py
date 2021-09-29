@@ -65,8 +65,8 @@ class CheckCmd:
             except ImportError:
                 print(f"  Error: cannot import {name}.")
                 continue
-            if name == "eccodes":
-                more = f" (using .lib={lib.lib})"
+            # if name == "eccodes":
+            #     more = f" (using .lib={lib.lib})"
             print(
                 f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}"
             )
