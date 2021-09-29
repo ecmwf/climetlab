@@ -8,12 +8,12 @@
 #
 
 import argparse
+import cmd
 import logging
 import os
 import readline
 import sys
 
-import cmd
 from termcolor import colored
 
 from .cache import CacheCmd
@@ -58,6 +58,7 @@ class ClimetlabApp(
 
     # def default(self, line):
     #     print(line)
+
 
 def main():
     p = argparse.ArgumentParser()

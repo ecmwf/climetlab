@@ -107,6 +107,7 @@ class CheckCmd:
         from importlib.metadata import PackageNotFoundError, version
 
         import entrypoints
+
         plugins = set()
         modules = [x.strip() for x in args.split(" ") if x.strip()]
         if not modules:
@@ -132,7 +133,6 @@ class CheckCmd:
                 "pandas",
                 "metview",
             )
-
 
         for kind in ("source", "dataset"):
             for e in entrypoints.get_group_all(f"climetlab.{kind}s"):

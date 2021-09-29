@@ -11,13 +11,11 @@
 from termcolor import colored
 
 
-
 class SettingsCmd:
-
     def do_settings(self, args):
         from climetlab import settings
-        words = [x.strip() for x in args.split(" ") if x.strip()]
 
+        words = [x.strip() for x in args.split(" ") if x.strip()]
 
         if len(words) == 0:
             for f in settings.dump():
