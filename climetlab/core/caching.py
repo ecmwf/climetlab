@@ -159,6 +159,10 @@ class Cache(threading.Thread):
         cache_directory = SETTINGS.get("cache-directory")
         return path.startswith(cache_directory)
 
+    def _cache_directory(self):
+        cache_directory = SETTINGS.get("cache-directory")
+        return cache_directory
+
     def _ensure_in_cache(self, path):
         assert self._file_in_cache_directory(path), f"File not in cache {path}"
 
@@ -540,6 +544,7 @@ housekeeping = in_executor(CACHE._housekeeping)
 decache_file = in_executor(CACHE._decache_file)
 file_in_cache_directory = in_executor(CACHE._file_in_cache_directory)
 settings_changed = in_executor(CACHE._settings_changed)
+cache_directory = in_executor(CACHE._cache_directory)
 
 
 def cache_file(

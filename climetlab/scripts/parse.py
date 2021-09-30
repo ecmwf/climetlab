@@ -17,7 +17,7 @@ class ArgumentParser(argparse.ArgumentParser):
         raise ValueError(f"{self.prog}: {message}\n\n{self.format_help()}.")
 
 
-def parse_args(json=False, positional=None):
+def parse_args(json=False, positional=None, **kwargs):
     def wrapper(func):
         @wraps(func)
         def wrapped(self, args):
@@ -29,6 +29,9 @@ def parse_args(json=False, positional=None):
                 )
             if positional is not None:
                 p.add_argument("args", metavar="ARG", type=str, nargs=positional)
+
+            for k, v in kwargs.items():
+                p.add_argument(f"--{k}", **v)
 
             args = p.parse_args(shlex.split(args))
 
