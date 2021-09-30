@@ -1,4 +1,4 @@
-# (C) Copyright 2020 ECMWF.
+# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -8,16 +8,27 @@
 #
 
 
+import json
+
 from termcolor import colored
+
+from .parse import parse_args
 
 
 class SettingsCmd:
+    @parse_args(json=True, positional="*")
     def do_settings(self, args):
         from climetlab import settings
 
-        words = [x.strip() for x in args.split(" ") if x.strip()]
+        words = args.args
 
         if len(words) == 0:
+            if args.json:
+                result = {}
+                for f in settings.dump():
+                    result[f[0]] = f[1]
+                print(json.dumps(result, indent=4, sort_keys=True))
+                return
             for f in settings.dump():
                 print(colored(f[0], "blue"), f[1])
             return

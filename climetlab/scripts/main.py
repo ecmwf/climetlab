@@ -1,4 +1,4 @@
-# (C) Copyright 2020 ECMWF.
+# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -13,11 +13,13 @@ import logging
 import os
 import readline
 import sys
+import traceback
 
 from termcolor import colored
 
 from .cache import CacheCmd
 from .check import CheckCmd
+from .parse import parse_args
 from .settings import SettingsCmd
 
 
@@ -27,6 +29,7 @@ class ClimetlabApp(
     CacheCmd,
     CheckCmd,
 ):
+    # intro = 'Welcome to climetlab. Type ? to list commands.\n'
     prompt = colored("(climetlab) ", "yellow")
 
     rc_file = "~/.climetlab-history"
@@ -51,13 +54,32 @@ class ClimetlabApp(
         pass
 
     def do_quit(self, args):
-        sys.exit(0)
+        """Quit climetlab."""
+        return True
 
-    def do_EOF(self, args):
-        sys.exit(0)
+    def default(self, line):
+        if line == "EOF":
+            return True
 
-    # def default(self, line):
-    #     print(line)
+        cmd = colored(line.split()[0], "yellow")
+        help = colored("help", "yellow")
+
+        print(
+            f"Unknown command {cmd}. Type {help} for the list of known command names."
+        )
+
+    @parse_args()
+    def do_parse(self, args):
+        print(args)
+
+    def onecmd(self, line):
+        try:
+            return super().onecmd(line)
+        except ValueError as e:
+            print(colored(str(e), "red"))
+        except Exception:
+            traceback.print_exc()
+        return False
 
 
 def main():
