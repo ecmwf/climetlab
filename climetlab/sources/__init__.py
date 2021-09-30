@@ -8,6 +8,7 @@
 #
 
 import os
+import re
 import weakref
 from importlib import import_module
 
@@ -51,7 +52,7 @@ class Source(Base):
         if self.dataset:
             owner = self.dataset.name
         if owner is None:
-            owner = self.__class__.__name__.lower()
+            owner = re.sub(r"(?!^)([A-Z]+)", r"-\1", self.__class__.__name__).lower()
         return cache_file(owner, *args, **kwargs)
 
     @property
