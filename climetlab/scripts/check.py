@@ -15,7 +15,7 @@ from importlib import import_module
 
 from termcolor import colored
 
-from .parse import parse_args
+from .tools import parse_args
 
 
 class CheckCmd:

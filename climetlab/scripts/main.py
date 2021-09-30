@@ -19,7 +19,6 @@ from termcolor import colored
 
 from .cache import CacheCmd
 from .check import CheckCmd
-from .parse import parse_args
 from .settings import SettingsCmd
 
 
@@ -67,10 +66,6 @@ class ClimetlabApp(
         print(
             f"Unknown command {cmd}. Type {help} for the list of known command names."
         )
-
-    @parse_args()
-    def do_parse(self, args):
-        print(args)
 
     def onecmd(self, line):
         try:

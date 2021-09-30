@@ -14,7 +14,7 @@ from termcolor import colored
 
 from climetlab.utils import humanize
 
-from .parse import parse_args
+from .tools import parse_args
 
 
 class CacheCmd:
