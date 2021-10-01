@@ -8,14 +8,56 @@
 #
 
 
-import itertools
 import json
 import os
+import re
+import sys
 from importlib import import_module
 
 from termcolor import colored
 
-from .tools import parse_args
+from .tools import parse_args, print_table
+
+
+def version(module):
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        return version(module)
+    except PackageNotFoundError:
+        pass
+
+    try:
+
+        module = import_module(module)
+
+        if not hasattr(module, "__file__") or module.__file__ is None:
+
+            if not hasattr(module, "__path__"):
+                return "builtin"
+
+            return "namespace"
+
+        if hasattr(module, "__version__"):
+            return str(module.__version__)
+
+        if hasattr(module, "version"):
+            return str(module.version)
+
+        path = os.path.realpath(module.__file__)
+        if os.path.basename(path) == "__init__.py":
+            path = os.path.dirname(path)
+
+        directory = os.path.basename(os.path.dirname(path))
+        if re.fullmatch(r"python\d+\.\d+", directory):
+            return directory
+
+        return module.__file__
+
+    except ImportError:
+        return "missing"
+    except Exception as e:
+        return e
 
 
 class CheckCmd:
@@ -89,75 +131,105 @@ class CheckCmd:
         # TODO: add more
         # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
 
+    @parse_args(json=True)
     def do_plugins(self, args):
-        from importlib.metadata import PackageNotFoundError, version
 
         import entrypoints
 
-        result = []
+        plugins = []
         for kind in ("source", "dataset"):
             for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
                 module = e.module_name.split(".")[0]
-                try:
-                    v = version(module)
-                except PackageNotFoundError:
-                    v = "unknown"
-                result.append((kind, e.name, e.module_name, v))
+                plugins.append((kind, e.name, e.module_name, version(module)))
 
-        for n in sorted(result):
-            print(n)
+        if args.json:
+            result = {}
+            for n in plugins:
+                result[n[1]] = dict(type=n[0], module=n[2], version=n[3])
+            print(json.dumps(result, indent=4, sort_keys=True))
+            return
 
-    @parse_args(json=True, positional="*")
+        for n in sorted(plugins):
+            print(n[0], n[1])
+            print("  module:", n[2], "version:", n[3])
+            print()
+
+    def _loaded_modules(self, name):
+        import pkgutil
+
+        loader = pkgutil.get_loader(name)
+        path = os.path.realpath(loader.path)
+        if os.path.isfile(path):
+            path = os.path.dirname(path)
+
+        modules = set()
+        for root, _, files in os.walk(path):
+            for file in files:
+                if not file.endswith(".py"):
+                    continue
+                full = os.path.join(root, file)
+                with open(full, "rt") as f:
+                    for line in f.readlines():
+                        line = line.strip()
+                        if line.startswith("import ") or line.startswith("from "):
+                            module = line.split(" ")[1].split(".")[0]
+                            if module:
+                                modules.add(module)
+
+        return modules
+
+    @parse_args(json=True, positional="*", full=dict(action="store_true"))
     def do_versions(self, args):
 
         """List the versions of important Python packages."""
-
-        from importlib.metadata import PackageNotFoundError, version
-
         import entrypoints
 
-        modules = args.args
-        plugins = set()
+        modules = set(args.args)
 
         if not modules:
-            modules = (
-                "climetlab",
-                "xarray",
-                "numpy",
-                "tensorflow",
-                "requests",
-                "cdsapi",
-                "cfgrib",
-                "findlibs",
-                "ecmwflibs",
-                "netcdf4",
-                "dask",
-                "zarr",
-                "s3fs",
-                "ecmwf-api-client",
-                "eccodes",
-                "magics",
-                "pdbufr",
-                "pyodc",
-                "pandas",
-                "metview",
-            )
+            modules = self._loaded_modules("climetlab")
+            seen = set()
             for kind in ("source", "dataset"):
                 for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
-                    plugins.add(e.module_name.split(".")[0])
+                    name = e.module_name.split(".")[0]
+                    if name not in seen:
+                        modules.update(self._loaded_modules(name))
+                        seen.add(name)
+
         result = {}
 
-        for module in itertools.chain(modules, plugins):
-            try:
-                result[module] = version(module)
-            except PackageNotFoundError:
-                result[module] = "missing"
+        if args.full:
+            for module in modules:
+                try:
+                    import_module(module)
+                except Exception:
+                    pass
+            modules.update(sys.modules.keys())
+
+        modules = set(m.split(".")[0] for m in modules if not m.startswith("_"))
+
+        for module in modules:
+            result[module] = version(module)
 
         if args.json:
             print(json.dumps(result, indent=4, sort_keys=True))
         else:
+            COLORS = dict(
+                missing="red", damaged="red", builtin="blue", namespace="magenta"
+            )
+            items = []
+            colours = []
             for k, v in sorted(result.items()):
-                print(k, colored(v, "red" if v == "missing" else "green"))
+                items.append((k, v))
+                if not isinstance(v, str):
+                    v = str(v)
+                    c = "red"
+                else:
+                    c = "yellow" if v.startswith("python") else "green"
+
+                colours.append(COLORS.get(v, c))
+
+            print_table(items, colours)
 
     @parse_args(json=True)
     def do_libraries(self, args):
@@ -180,5 +252,10 @@ class CheckCmd:
         if args.json:
             print(json.dumps(result, indent=4, sort_keys=True))
         else:
+            items = []
+            colours = []
             for k, v in sorted(result.items()):
-                print(k, colored(v, "green" if os.path.exists(v) else "red"))
+                items.append((k, v))
+                colours.append("green" if os.path.exists(v) else "red")
+
+            print_table(items, colours)

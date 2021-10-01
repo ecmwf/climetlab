@@ -10,9 +10,7 @@
 
 import json
 
-from termcolor import colored
-
-from .parse import parse_args
+from .tools import parse_args, print_table
 
 
 class SettingsCmd:
@@ -29,8 +27,8 @@ class SettingsCmd:
                     result[f[0]] = f[1]
                 print(json.dumps(result, indent=4, sort_keys=True))
                 return
-            for f in settings.dump():
-                print(colored(f[0], "blue"), f[1])
+
+            print_table((f[0], f[1]) for f in settings.dump())
             return
 
         if len(words) == 1:

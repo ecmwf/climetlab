@@ -14,7 +14,7 @@ from termcolor import colored
 
 from climetlab.utils import humanize
 
-from .tools import parse_args
+from .tools import parse_args, print_table
 
 
 class CacheCmd:
@@ -55,43 +55,47 @@ class CacheCmd:
 
             return
 
-        youngest_created = None
-        oldest_created = None
-        youngest_accessed = None
-        oldest_accessed = None
-        total = 0
-        for i, entry in enumerate(cache):
-            if entry["size"] is not None:
-                total += entry["size"]
+        def generate_table():
 
-            if i == 0:
-                youngest_accessed = oldest_accessed = entry["last_access"]
-                youngest_created = oldest_created = entry["creation_date"]
+            youngest_created = None
+            oldest_created = None
+            youngest_accessed = None
+            oldest_accessed = None
+            total = 0
+            for i, entry in enumerate(cache):
+                if entry["size"] is not None:
+                    total += entry["size"]
 
-            youngest_accessed = max(youngest_accessed, entry["last_access"])
-            oldest_accessed = min(oldest_accessed, entry["last_access"])
-            youngest_created = max(youngest_created, entry["last_access"])
-            oldest_created = min(oldest_created, entry["last_access"])
-        print("Cache directory:", cache_directory())
-        print("Cache size:", humanize.bytes(total))
-        print("Number of entries in cache:", humanize.number(len(cache)))
-        if youngest_accessed:
-            print(
-                "Most recently accessed:",
-                humanize.when(datetime.datetime.fromisoformat(youngest_accessed)),
-            )
-            print(
-                "Least recently accessed:",
-                humanize.when(datetime.datetime.fromisoformat(oldest_accessed)),
-            )
-            print(
-                "Youngest entry:",
-                humanize.when(datetime.datetime.fromisoformat(youngest_created)),
-            )
-            print(
-                "Oldest entry:",
-                humanize.when(datetime.datetime.fromisoformat(oldest_created)),
-            )
+                if i == 0:
+                    youngest_accessed = oldest_accessed = entry["last_access"]
+                    youngest_created = oldest_created = entry["creation_date"]
+
+                youngest_accessed = max(youngest_accessed, entry["last_access"])
+                oldest_accessed = min(oldest_accessed, entry["last_access"])
+                youngest_created = max(youngest_created, entry["last_access"])
+                oldest_created = min(oldest_created, entry["last_access"])
+            yield ("Cache directory:", cache_directory())
+            yield ("Cache size:", humanize.bytes(total))
+            yield ("Number of entries in cache:", humanize.number(len(cache)))
+            if youngest_accessed:
+                yield (
+                    "Most recently accessed:",
+                    humanize.when(datetime.datetime.fromisoformat(youngest_accessed)),
+                )
+                yield (
+                    "Least recently accessed:",
+                    humanize.when(datetime.datetime.fromisoformat(oldest_accessed)),
+                )
+                yield (
+                    "Youngest entry:",
+                    humanize.when(datetime.datetime.fromisoformat(youngest_created)),
+                )
+                yield (
+                    "Oldest entry:",
+                    humanize.when(datetime.datetime.fromisoformat(oldest_created)),
+                )
+
+        print_table(generate_table())
 
     def do_decache(self, args):
         from climetlab.core.caching import purge_cache

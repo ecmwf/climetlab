@@ -10,6 +10,9 @@
 import argparse
 import shlex
 from functools import wraps
+from itertools import cycle
+
+from termcolor import colored
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -40,3 +43,11 @@ def parse_args(json=False, positional=None, **kwargs):
         return wrapped
 
     return wrapper
+
+
+def print_table(rows, colours=["blue"]):
+    rows = list(rows)
+    colours = list(colours)
+    width = max(len(x[0]) for x in rows)
+    for row, colour in zip(rows, cycle(colours)):
+        print("{0:<{width}} {1}".format(row[0], colored(row[1], colour), width=width))
