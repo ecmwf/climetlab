@@ -52,6 +52,8 @@ def version(module):
             path = os.path.dirname(path)
 
         directory = os.path.basename(os.path.dirname(path))
+        if directory == "lib-dynload":
+            directory = os.path.basename(os.path.dirname(os.path.dirname(path)))
         if re.fullmatch(r"python\d+\.\d+", directory):
             return directory
 
