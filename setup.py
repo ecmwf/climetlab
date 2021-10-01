@@ -40,9 +40,10 @@ if sys.version_info < (3, 7):
         "numpy<1.20",
         "pandas==1.1.5",
         "dataclasses",  # Needed by dask
+        "xarray",
     ]
 else:
-    install_requires += ["numpy", "pandas"]
+    install_requires += ["numpy", "pandas", "xarray>=0.19.0"]
 
 install_requires += [
     # need to install  to avoid conflict between aiohttp (dependency of s3fs) and requests (cdsapi)
@@ -52,7 +53,6 @@ install_requires += [
     "requests",
     # "zarr",
     # "s3fs",
-    "xarray>=0.19.0",
     "dask",
     "netcdf4",
     "cfgrib>=0.9.8.4",
