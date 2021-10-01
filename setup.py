@@ -64,7 +64,6 @@ install_requires += [
     "ecmwflibs>=0.1.2",
     "pdbufr",
     "pyodc",
-    "psutil",
     "toolz",
     "filelock",
     "pyyaml",

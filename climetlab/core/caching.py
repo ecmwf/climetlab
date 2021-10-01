@@ -17,18 +17,19 @@ decide to read it or create it.
 
 """
 
+import ctypes
 import datetime
 import hashlib
 import json
 import logging
 import os
+import platform
 import shutil
 import sqlite3
 import threading
 import time
 from functools import wraps
 
-import psutil
 from filelock import FileLock
 
 from climetlab.core.settings import SETTINGS
@@ -43,6 +44,41 @@ LOG = logging.getLogger(__name__)
 
 CONNECTION = None
 CACHE = None
+
+
+class DiskUsage:
+    def __init__(self, path):
+
+        if platform.system() == "Windows":
+            avail = ctypes.c_ulonglong()
+            total = ctypes.c_ulonglong()
+            free = ctypes.c_ulonglong()
+
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                ctypes.c_wchar_p(path),
+                ctypes.pointer(avail),
+                ctypes.pointer(total),
+                ctypes.pointer(free),
+            )
+            self.avail = avail.value
+            self.total = total.value
+            self.free = free.value
+        else:
+            st = os.statvfs(path)
+            self.free = st.f_bfree * st.f_frsize
+            self.total = st.f_blocks * st.f_frsize
+            self.avail = st.f_bavail * st.f_frsize
+
+        self.percent = int(
+            float(self.total - self.avail) / float(self.total) * 100 + 0.5
+        )
+
+    def __repr__(self):
+        return f"DiskUsage(total={self.total},free={self.free},avail={self.avail},percent={self.percent})"
+
+
+def disk_usage(path):
+    return DiskUsage(path)
 
 
 def default_serialiser(o):
@@ -489,7 +525,7 @@ class Cache(threading.Thread):
         size = self._cache_size()
         usage = SETTINGS.get("maximum-cache-disk-usage")
         cache_directory = SETTINGS.get("cache-directory")
-        df = psutil.disk_usage(cache_directory)
+        df = disk_usage(cache_directory)
         if df.percent > usage:
             LOG.debug("Cache disk usage %s, limit %s", df.percent, usage)
             self._housekeeping()
