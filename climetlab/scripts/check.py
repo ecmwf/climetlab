@@ -20,7 +20,10 @@ from .tools import parse_args, print_table
 
 
 def version(module):
-    from importlib.metadata import PackageNotFoundError, version
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+    except Exception:
+        from importlib_metadata import PackageNotFoundError, version
 
     try:
         return version(module)
