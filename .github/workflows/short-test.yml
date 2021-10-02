@@ -71,6 +71,10 @@ jobs:
 
       - run: climetlab df .
 
+      - run: climetlab versions
+
+      - run: climetlab libraries
+
       - name: Install test tools
         run: |
           pip install pytest pytest-cov
