@@ -49,6 +49,9 @@ CACHE = None
 class DiskUsage:
     def __init__(self, path):
 
+        path = os.path.realpath(path)
+        self.path = path
+
         if platform.system() == "Windows":
             avail = ctypes.c_ulonglong()
             total = ctypes.c_ulonglong()
@@ -74,7 +77,7 @@ class DiskUsage:
         )
 
     def __repr__(self):
-        return f"DiskUsage(total={self.total},free={self.free},avail={self.avail},percent={self.percent})"
+        return f"DiskUsage(total={self.total},free={self.free},avail={self.avail},percent={self.percent},path={self.path})"
 
 
 def disk_usage(path):

@@ -66,10 +66,10 @@ jobs:
           pip install -e .
           pip freeze
 
-      - name: Check climetlab
-        run: |
-          df .
-          climetlab df .
+      - run: df .
+        shell: bash
+
+      - run: climetlab df .
 
       - name: Install test tools
         run: |
