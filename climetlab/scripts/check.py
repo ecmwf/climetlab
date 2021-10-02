@@ -264,3 +264,8 @@ class CheckCmd:
                 colours.append("green" if os.path.exists(v) else "red")
 
             print_table(items, colours)
+
+    def do_df(self, path):
+        from climetlab.core.caching import disk_usage
+
+        print(disk_usage(path))

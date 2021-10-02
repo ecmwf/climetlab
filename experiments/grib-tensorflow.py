@@ -20,8 +20,8 @@ from tensorflow.keras.models import Sequential
 from climetlab import load_source
 from climetlab.utils.tensorflow import make_label_one_hot, make_labels_hash_table
 
-# years = list(range(1979, 1979 + 4))
-years = list(range(1979, 2021))
+years = list(range(1979, 1979 + 4))
+# years = list(range(1979, 2021))
 # years = list(range(1979, 1979 + 1))
 
 PARAMS = (
