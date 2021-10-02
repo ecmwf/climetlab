@@ -11,7 +11,6 @@ import argparse
 import cmd
 import logging
 import os
-import readline
 import sys
 import traceback
 
@@ -20,6 +19,20 @@ from termcolor import colored
 from .cache import CacheCmd
 from .check import CheckCmd
 from .settings import SettingsCmd
+
+try:
+    import readline
+except ImportError:  # Not availabe on win32
+
+    class readline:
+        def set_history_length(*args, **kwargs):
+            pass
+
+        def write_history_file(*args, **kwargs):
+            pass
+
+        def read_history_file(*args, **kwargs):
+            pass
 
 
 class ClimetlabApp(
