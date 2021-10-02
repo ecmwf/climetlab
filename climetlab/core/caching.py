@@ -77,7 +77,10 @@ class DiskUsage:
         )
 
     def __repr__(self):
-        return f"DiskUsage(total={self.total},free={self.free},avail={self.avail},percent={self.percent},path={self.path})"
+        return (
+            f"DiskUsage(total={self.total},free={self.free},"
+            f"avail={self.avail},percent={self.percent},path={self.path})"
+        )
 
 
 def disk_usage(path):
