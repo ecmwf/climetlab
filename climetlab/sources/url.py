@@ -129,7 +129,7 @@ class HTTPDownloader(Downloader):
     _headers = None
     _url = None
 
-    def headers(self, url, dont_fail_if_offline=False):
+    def headers(self, url):
         if self._headers is None or url != self._url:
             self._url = url
             self._headers = {}
@@ -137,18 +137,12 @@ class HTTPDownloader(Downloader):
                 self._headers = dict(**self.owner.fake_headers)
             else:
                 try:
-                    try:
-                        r = requests.head(
-                            url,
-                            headers=self.owner.http_headers,
-                            verify=self.owner.verify,
-                            allow_redirects=True,
-                        )
-                    except requests.exceptions.ConnectionError:
-                        if dont_fail_if_offline:
-                            self._url = None
-                            return {}
-                        raise
+                    r = requests.head(
+                        url,
+                        headers=self.owner.http_headers,
+                        verify=self.owner.verify,
+                        allow_redirects=True,
+                    )
                     r.raise_for_status()
                     for k, v in r.headers.items():
                         self._headers[k.lower()] = v
@@ -157,6 +151,8 @@ class HTTPDownloader(Downloader):
                         json.dumps(self._headers, sort_keys=True, indent=4),
                     )
                 except Exception:
+                    self._url = None
+                    self._headers = {}
                     LOG.exception("HEAD %s", url)
         return self._headers
 
@@ -164,13 +160,18 @@ class HTTPDownloader(Downloader):
 
         ext = super().extension(url)
 
-        headers = self.headers(url, dont_fail_if_offline=True)
+        if ext == ".unknown":
+            # Only check for "content-disposition" if
+            # the URL does not end with an extension
+            # so we avoid fetching the headers unesseraly
 
-        if "content-disposition" in headers:
-            value, params = cgi.parse_header(headers["content-disposition"])
-            assert value == "attachment", value
-            if "filename" in params:
-                ext = super().extension(params["filename"])
+            headers = self.headers(url, dont_fail_if_offline=True)
+
+            if "content-disposition" in headers:
+                value, params = cgi.parse_header(headers["content-disposition"])
+                assert value == "attachment", value
+                if "filename" in params:
+                    ext = super().extension(params["filename"])
 
         return ext
 
