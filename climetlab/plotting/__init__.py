@@ -13,6 +13,7 @@ from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
 from .drivers.magics.driver import Driver
+from .drivers.matplotlib.driver import Driver as MatplotlibDriver
 from .options import Options
 
 OPTIONS = {}
@@ -55,7 +56,8 @@ class Plot:
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        self.driver = Driver(Options(options))
+        DRIVERS = {None: Driver, 'matplotlib': MatplotlibDriver}
+        self.driver = DRIVERS[kwargs.get('driver', None)](Options(options))
 
     def plot_graph(self, data=None, **kwargs):
 
