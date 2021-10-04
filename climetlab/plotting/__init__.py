@@ -12,6 +12,7 @@ from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
+from .drivers.bokeh.driver import Driver as BokehDriver
 from .drivers.magics.driver import Driver
 from .drivers.matplotlib.driver import Driver as MatplotlibDriver
 from .options import Options
@@ -56,8 +57,13 @@ class Plot:
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        DRIVERS = {None: Driver, 'matplotlib': MatplotlibDriver}
-        self.driver = DRIVERS[kwargs.get('driver', None)](Options(options))
+        DRIVERS = {
+            None: Driver,
+            "magics": Driver,
+            "matplotlib": MatplotlibDriver,
+            "bokeh": BokehDriver,
+        }
+        self.driver = DRIVERS[kwargs.get("driver", None)](Options(options))
 
     def plot_graph(self, data=None, **kwargs):
 
@@ -93,7 +99,7 @@ class Plot:
         return self.driver.wms_layers()
 
     def show(self):
-        return display(self.driver.show())
+        return self.driver.show(display=display)
 
     def macro(self) -> list:
         return self.driver.macro()
@@ -120,7 +126,7 @@ def plot_graph(data=None, **kwargs):
 
     p = new_plot(**kwargs)
     p.plot_graph(data)
-    p.show()
+    return p.show()
 
 
 def plot_map(data=None, **kwargs):

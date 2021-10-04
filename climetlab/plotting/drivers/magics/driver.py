@@ -310,7 +310,7 @@ class Driver:
                 map_cities=True, map_label=False, map_grid=False, map_coastline=False
             )
 
-    def show(self):
+    def show(self, display):
         width = self._options("width", 680)
 
         path = self._options(
@@ -326,7 +326,7 @@ class Driver:
         else:
             Display = Image  # noqa: N806
 
-        return Display(path, metadata=dict(width=width))
+        return display(Display(path, metadata=dict(width=width)))
 
     def save(self, path):
 
