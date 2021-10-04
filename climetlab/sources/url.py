@@ -29,13 +29,6 @@ from .file import FileSource
 
 LOG = logging.getLogger(__name__)
 
-OFFLINE = False  # For use with pytest
-
-
-def offline(off):
-    global OFFLINE
-    OFFLINE = off
-
 
 def mimetype_to_extension(mimetype, compression, default=".unknown"):
     EXTENSIONS = {
@@ -136,7 +129,7 @@ class HTTPDownloader(Downloader):
     _headers = None
     _url = None
 
-    def headers(self, url):
+    def headers(self, url, dont_fail_if_offline=False):
         if self._headers is None or url != self._url:
             self._url = url
             self._headers = {}
@@ -144,12 +137,18 @@ class HTTPDownloader(Downloader):
                 self._headers = dict(**self.owner.fake_headers)
             else:
                 try:
-                    r = requests.head(
-                        url,
-                        headers=self.owner.http_headers,
-                        verify=self.owner.verify,
-                        allow_redirects=True,
-                    )
+                    try:
+                        r = requests.head(
+                            url,
+                            headers=self.owner.http_headers,
+                            verify=self.owner.verify,
+                            allow_redirects=True,
+                        )
+                    except requests.exceptions.ConnectionError:
+                        if dont_fail_if_offline:
+                            self._url = None
+                            return {}
+                        raise
                     r.raise_for_status()
                     for k, v in r.headers.items():
                         self._headers[k.lower()] = v
@@ -163,9 +162,9 @@ class HTTPDownloader(Downloader):
 
     def extension(self, url):
 
-        headers = self.headers(url)
-
         ext = super().extension(url)
+
+        headers = self.headers(url, dont_fail_if_offline=True)
 
         if "content-disposition" in headers:
             value, params = cgi.parse_header(headers["content-disposition"])
@@ -277,11 +276,15 @@ class HTTPDownloader(Downloader):
                             cache_data["expires"],
                         )
 
-            headers = self.headers(url)
+            try:
+                headers = self.headers(url)
+            except requests.exceptions.ConnectionError:
+                return False
+
             cached_etag = cache_data.get("etag")
             remote_etag = headers.get("etag")
 
-            if cached_etag != remote_etag:
+            if cached_etag != remote_etag and remote_etag is not None:
                 LOG.warning("Remote content of URL %s has changed", url)
                 if (
                     SETTINGS.get("download-out-of-date-urls")
@@ -420,7 +423,6 @@ class Url(FileSource):
             force = downloader.out_of_date
 
         def download(target, url):
-            assert not OFFLINE
             downloader.download(url, target)
             return downloader.cache_data(url)
 

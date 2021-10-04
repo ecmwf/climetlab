@@ -11,19 +11,57 @@
 
 
 import logging
+import sys
 
 import pytest
 
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
-from climetlab.sources.url import offline
 
 LOG = logging.getLogger(__name__)
 
 
+class OfflineError(Exception):
+    pass
+
+
+class OfflineRequests:
+    def __init__(self):
+        import requests as original_requests
+
+        self.original_requests = original_requests
+        self.offline = False
+
+    def __getattr__(self, name):
+        if self.offline:
+            raise OfflineError(name)
+        return getattr(self.original_requests, name)
+
+
+sys.modules["requests"] = OfflineRequests()
+
+
+def offline(off):
+    sys.modules["requests"].offline = off
+
+
 @pytest.mark.long_test
 def test_unpack_zip():
+
+    offline(False)
+
     try:
+
+        offline(True)
+        with pytest.raises(OfflineError):
+            ds = load_source(
+                "url",
+                "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
+                force=True,
+            )
+
+        offline(False)
+
         with temp_directory() as tmpdir:
             with settings.temporary("cache-directory", tmpdir):
                 ds = load_source(
