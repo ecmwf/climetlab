@@ -14,7 +14,7 @@ from .datasets import Dataset, dataset, load_dataset, register_dataset
 from .normalize import ALL
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
-from .plotting import plot_map
+from .plotting import plot_graph, plot_map
 from .readers import Reader
 from .sources import Source, load_source, load_source_lazily, register_source, source
 from .version import __version__
@@ -31,6 +31,7 @@ __all__ = [
     "load_source",
     "load_source_lazily",
     "new_plot",
+    "plot_graph",
     "plot_map",
     "plotting_options",
     "Reader",

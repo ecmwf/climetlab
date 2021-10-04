@@ -57,6 +57,21 @@ class Plot:
         options.update(kwargs)
         self.driver = Driver(Options(options))
 
+    def plot_graph(self, data=None, **kwargs):
+
+        if not isinstance(data, (list, tuple)):
+            data = [data]
+
+        for d in data:
+            d = get_wrapper(d)
+            d.plot_graph(self.driver)
+
+        options = Options(kwargs)
+        self.driver.apply_options(options)
+        options.check_unused()
+
+        return self
+
     def plot_map(self, data=None, **kwargs):
 
         if not isinstance(data, (list, tuple)):
@@ -92,6 +107,18 @@ def new_plot(**kwargs) -> Plot:
     :rtype: Plot
     """
     return Plot(kwargs)
+
+
+def plot_graph(data=None, **kwargs):
+    """Plot other-than-map data
+
+    Args:
+        data ([any]): [description]
+    """
+
+    p = new_plot(**kwargs)
+    p.plot_graph(data)
+    p.show()
 
 
 def plot_map(data=None, **kwargs):

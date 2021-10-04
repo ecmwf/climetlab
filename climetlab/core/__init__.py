@@ -45,6 +45,9 @@ class Base(metaclass=MetaBase):
     def plot_map(self, driver):
         self._not_implemented()
 
+    def plot_graph(self, driver):
+        self._not_implemented()
+
     def field_metadata(self):
         self._not_implemented()
 

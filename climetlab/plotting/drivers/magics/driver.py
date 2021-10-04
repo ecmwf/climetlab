@@ -217,6 +217,9 @@ class Driver:
         if style is not None:
             self.style(style)
 
+    def plot_graph_pandas(self, frame, time: str, variable: str):
+        frame.plot()
+
     def background(self, background):
         self._background = apply(
             value=background,

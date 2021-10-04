@@ -27,11 +27,18 @@ class PandasFrameWrapper(Wrapper):
         self.lon = "cannot-find-longitude-column"
 
         self.time = "time"
+        if "time" not in self.frame:
+            self.time = "date"
 
         for lat, lon in LATLON:
             if lat in self.frame:
                 self.lat, self.lon = lat, lon
                 break
+
+    def plot_graph(self, driver):
+        column = driver.option("column", self.time)
+
+        driver.plot_graph_pandas(self.frame, self.time, column)
 
     def plot_map(self, driver):
 
