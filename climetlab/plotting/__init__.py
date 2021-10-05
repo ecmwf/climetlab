@@ -13,11 +13,18 @@ from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
 from .drivers.bokeh.driver import Driver as BokehDriver
-from .drivers.magics.driver import Driver
+from .drivers.magics.driver import Driver as MagicsDriver
 from .drivers.matplotlib.driver import Driver as MatplotlibDriver
 from .options import Options
 
 OPTIONS = {}
+
+DRIVERS = {
+    None: MagicsDriver,
+    "magics": MagicsDriver,
+    "matplotlib": MatplotlibDriver,
+    "bokeh": BokehDriver,
+}
 
 
 def options(**kwargs):
@@ -57,13 +64,9 @@ class Plot:
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        DRIVERS = {
-            None: Driver,
-            "magics": Driver,
-            "matplotlib": MatplotlibDriver,
-            "bokeh": BokehDriver,
-        }
-        self.driver = DRIVERS[kwargs.get("driver", None)](Options(options))
+        driver = SETTINGS.get(f"{kwargs['kind']}-plotting-backend", None)
+        driver = kwargs.get("driver", driver)
+        self.driver = DRIVERS[driver](Options(options))
 
     def plot_graph(self, data=None, **kwargs):
 
@@ -99,7 +102,7 @@ class Plot:
         return self.driver.wms_layers()
 
     def show(self):
-        return self.driver.show(display=display)
+        self.driver.show(display=display)
 
     def macro(self) -> list:
         return self.driver.macro()
@@ -124,9 +127,10 @@ def plot_graph(data=None, **kwargs):
         data ([any]): [description]
     """
 
-    p = new_plot(**kwargs)
+    p = new_plot(kind="graph", **kwargs)
     p.plot_graph(data)
-    return p.show()
+    p.show()
+    return p
 
 
 def plot_map(data=None, **kwargs):
@@ -136,9 +140,10 @@ def plot_map(data=None, **kwargs):
         data ([any]): [description]
     """
 
-    p = new_plot(**kwargs)
+    p = new_plot(kind="map", **kwargs)
     p.plot_map(data)
     p.show()
+    return p
 
 
 Plot.plot_map.__doc__ = plot_map.__doc__
