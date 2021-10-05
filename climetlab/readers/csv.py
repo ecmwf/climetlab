@@ -196,7 +196,9 @@ class CSVReader(Reader):
     def to_metview(self):
         from climetlab.metview import mv_read_table
 
-        return mv_read_table(self.path)
+        assert self.compression is None
+        # TODO: use dialect
+        return mv_read_table(table_filename=self.path)
 
 
 def reader(source, path, magic, deeper_check):

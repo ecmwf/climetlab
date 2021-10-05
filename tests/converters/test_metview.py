@@ -41,6 +41,26 @@ def test_metview_netcdf():
     assert fs.url() == s.path
 
 
+@pytest.mark.skipif(
+    MISSING("metview"),
+    reason="Metview not installed",
+)
+def test_metview_csv():
+    s = cml.load_source(
+        "dummy-source",
+        "csv",
+        headers=["a", "b", "c"],
+        lines=[
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ],
+    )
+    fs = s.to_metview()
+
+    assert fs.url() == s.path
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
