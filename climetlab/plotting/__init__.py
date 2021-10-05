@@ -67,7 +67,6 @@ class Plot:
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-
         self.backend = DRIVERS[backend](Options(options))
 
     def plot_graph(self, data=None, **kwargs):

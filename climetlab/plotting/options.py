@@ -40,3 +40,6 @@ class Options:
         for k, v in kwargs.items():
             if k not in self._options:
                 self._options[k] = v
+
+    def __repr__(self) -> str:
+        return f'Options({str(self._options)})'

@@ -12,12 +12,6 @@ class Backend:
     def __init__(self, options):
 
         self._options = options
-        # self._actions = []
-
-        # def finalize(self):
-        #    fig = figure()
-        #    for a in self._actions:
-        #        a.execute(fig)
 
         from matplotlib.pyplot import figure
 
@@ -31,8 +25,11 @@ class Backend:
     #         state = a.tranform(state)
 
     def plot_graph_pandas(self, frame, time: str, variable: str):
-        print(time, variable)
-        frame.plot(ax=self.ax)
+        # TODO: need to set variable ?
+        # print(time, variable)
+        kwargs = self._options("pandas_dataframe_plot_kwargs", {})
+
+        frame.plot(ax=self.ax, **kwargs)
 
     def option(self, name, default=None):
         return self._options(name, default)
