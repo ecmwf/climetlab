@@ -7,16 +7,25 @@
 #
 
 
-PRIVATE_ATTRIBUTES = {"_observer": lambda: None}
+PRIVATE_ATTRIBUTES = {"observer": lambda: None}
 
 
 class MetaBase(type):
     def __call__(cls, *args, **kwargs):
         obj = cls.__new__(cls, *args, **kwargs)
-        for k, v in PRIVATE_ATTRIBUTES.items():
-            setattr(obj, k, kwargs.pop(k, v))
+        args, kwargs = cls.patch(obj, *args, **kwargs)
         obj.__init__(*args, **kwargs)
         return obj
+
+    def patch(cls, obj, *args, **kwargs):
+        private_attributes = {}
+        private_attributes.update(PRIVATE_ATTRIBUTES)
+        private_attributes.update(kwargs.pop("_PRIVATE_ATTRIBUTES", {}))
+
+        for k, v in private_attributes.items():
+            setattr(obj, k, kwargs.pop(k, v))
+
+        return args, kwargs
 
 
 class Base(metaclass=MetaBase):

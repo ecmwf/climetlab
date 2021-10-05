@@ -122,7 +122,7 @@ class MultiSource(Source):
 
         with SoftThreadPool(nthreads=nthreads) as pool:
 
-            futures = [pool.submit(_call, s, _observer=pool) for s in sources]
+            futures = [pool.submit(_call, s, observer=pool) for s in sources]
 
             iterator = (f.result() for f in futures)
             sources = list(tqdm(iterator, leave=False, total=len(futures)))

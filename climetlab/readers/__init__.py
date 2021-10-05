@@ -99,6 +99,10 @@ def _readers():
                     module = import_module(f".{name}", package=__name__)
                     if hasattr(module, "reader"):
                         _READERS[name] = module.reader
+                        if hasattr(module, "aliases"):
+                            for a in module.aliases:
+                                assert a not in _READERS
+                                _READERS[a] = module.reader
                 except Exception:
                     LOG.exception("Error loading reader %s", name)
     return _READERS
@@ -107,6 +111,18 @@ def _readers():
 def reader(source, path):
 
     assert isinstance(path, str), source
+
+    if hasattr(source, "reader"):
+        reader = source.reader
+        LOG.debug("Looking for a reader for %s (%s)", path, reader)
+        if callable(reader):
+            return reader(source, path)
+        if isinstance(reader, str):
+            return _readers()[reader.replace("-", "_")](source, path, None, False)
+
+        raise TypeError(
+            "Provided reader must be a callable or a string, not %s" % type(reader)
+        )
 
     if os.path.isdir(path):
         from .directory import DirectoryReader

@@ -201,7 +201,7 @@ class CSVReader(Reader):
         return mv_read_table(table_filename=self.path)
 
 
-def reader(source, path, magic, deeper_check):
+def reader(source, path, magic, deeper_check, fwf=False):
     kind, compression = mimetypes.guess_type(path)
 
     if kind == "text/csv":

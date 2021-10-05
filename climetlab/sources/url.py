@@ -97,7 +97,7 @@ class Downloader:
         ) as pbar:
 
             with open(download, mode) as f:
-                total = self.transfer(f, pbar, self.owner._observer)
+                total = self.transfer(f, pbar, self.owner.observer)
 
             pbar.close()
 
