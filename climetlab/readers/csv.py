@@ -193,6 +193,11 @@ class CSVReader(Reader):
     def plot_map(self, driver):
         get_wrapper(self.to_pandas()).plot_map(driver)
 
+    def to_metview(self):
+        from climetlab.metview import mv_read_table
+
+        return mv_read_table(self.path)
+
 
 def reader(source, path, magic, deeper_check):
     kind, compression = mimetypes.guess_type(path)

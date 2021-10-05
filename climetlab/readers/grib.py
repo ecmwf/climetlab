@@ -504,6 +504,14 @@ class GRIBReader(Reader):
             **xarray_open_mfdataset_kwargs,
         )
 
+    def to_metview(self):
+        from climetlab.metview import mv_read
+
+        return mv_read(self.path)
+
+    def plot_map(self, driver):
+        return self.first.plot_map(driver)
+
     # Used by normalisers
     def to_datetime(self):
         times = self.to_datetime_list()

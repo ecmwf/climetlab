@@ -341,6 +341,11 @@ class NetCDFReader(Reader):
             **options,
         )
 
+    def to_metview(self):
+        from climetlab.metview import mv_read
+
+        return mv_read(self.path)
+
     def plot_map(self, *args, **kwargs):
         return self.get_fields()[0].plot_map(*args, **kwargs)
 
