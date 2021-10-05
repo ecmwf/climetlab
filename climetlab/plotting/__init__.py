@@ -12,18 +12,34 @@ from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
-from .backends.bokeh.backend import Backend as BokehBackend
-from .backends.magics.backend import Backend as MagicsBackend
-from .backends.matplotlib.backend import Backend as MatplotlibBackend
 from .options import Options
 
 OPTIONS = {}
 
+
+def magics(*args, **kwargs):
+    from .backends.magics.backend import Backend as MagicsBackend
+
+    return MagicsBackend(*args, **kwargs)
+
+
+def bokeh(*args, **kwargs):
+    from .backends.bokeh.backend import Backend as BokehBackend
+
+    return BokehBackend(*args, **kwargs)
+
+
+def matplotlib(*args, **kwargs):
+    from .backends.matplotlib.backend import Backend as MatplotlibBackend
+
+    return MatplotlibBackend(*args, **kwargs)
+
+
 DRIVERS = {
-    None: MagicsBackend,
-    "magics": MagicsBackend,
-    "matplotlib": MatplotlibBackend,
-    "bokeh": BokehBackend,
+    None: magics,
+    "magics": magics,
+    "matplotlib": matplotlib,
+    "bokeh": bokeh,
 }
 
 
@@ -60,7 +76,7 @@ class Plot:
     """[summary]"""
 
     def __init__(self, kwargs):
-        backend = SETTINGS.get(f"{kwargs.pop('kind')}-plotting-backend", None)
+        backend = SETTINGS.get(f"{self.kind}-plotting-backend", None)
         backend = kwargs.pop("backend", backend)
 
         options = {}
@@ -112,13 +128,30 @@ class Plot:
         return self.backend.save(path)
 
 
+class MapPlot(Plot):
+    kind = "map"
+
+
+class GraphPlot(Plot):
+    king = "graph"
+
+
 def new_plot(**kwargs) -> Plot:
     """[summary]
 
     :return: [description]
     :rtype: Plot
     """
-    return Plot(kwargs)
+    return MapPlot(kwargs)
+
+
+def new_graph(**kwargs) -> Plot:
+    """[summary]
+
+    :return: [description]
+    :rtype: Plot
+    """
+    return GraphPlot(kwargs)
 
 
 def plot_graph(data=None, **kwargs):
@@ -128,10 +161,9 @@ def plot_graph(data=None, **kwargs):
         data ([any]): [description]
     """
 
-    p = new_plot(kind="graph", **kwargs)
+    p = new_graph(**kwargs)
     p.plot_graph(data)
     p.show()
-    return p
 
 
 def plot_map(data=None, **kwargs):
@@ -141,10 +173,9 @@ def plot_map(data=None, **kwargs):
         data ([any]): [description]
     """
 
-    p = new_plot(kind="map", **kwargs)
+    p = new_plot(**kwargs)
     p.plot_map(data)
     p.show()
-    return p
 
 
 Plot.plot_map.__doc__ = plot_map.__doc__
