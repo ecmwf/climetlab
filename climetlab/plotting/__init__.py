@@ -60,12 +60,14 @@ class Plot:
     """[summary]"""
 
     def __init__(self, kwargs):
+        backend = SETTINGS.get(f"{kwargs.pop('kind')}-plotting-backend", None)
+        backend = kwargs.pop("backend", backend)
+
         options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        backend = SETTINGS.get(f"{kwargs['kind']}-plotting-backend", None)
-        backend = kwargs.get("backend", backend)
+
         self.backend = DRIVERS[backend](Options(options))
 
     def plot_graph(self, data=None, **kwargs):

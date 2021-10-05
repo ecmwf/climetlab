@@ -1,4 +1,11 @@
-from matplotlib.pyplot import figure
+# (C) Copyright 2020 ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+#
 
 
 class Backend:
@@ -11,6 +18,8 @@ class Backend:
         #    fig = figure()
         #    for a in self._actions:
         #        a.execute(fig)
+
+        from matplotlib.pyplot import figure
 
         self.figure = figure()
         self.ax = self.figure.add_subplot(1, 1, 1)
