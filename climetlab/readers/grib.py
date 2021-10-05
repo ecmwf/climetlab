@@ -512,6 +512,22 @@ class GRIBReader(Reader):
     def plot_map(self, backend):
         return self.first.plot_map(backend)
 
+    def plot_graph(self, backend):
+        import numpy as np
+
+        what = backend._options("what", "global_average")
+        what = dict(
+            global_average=np.mean,
+        )[what]
+
+        # initialize list of lists
+        data = [[s.valid_datetime(), what(s.to_numpy())] for s in self]
+        import pandas as pd
+
+        df = pd.DataFrame(data, columns=["date", "param"])
+
+        backend.plot_graph_add_timeserie(df)
+
     # Used by normalisers
     def to_datetime(self):
         times = self.to_datetime_list()

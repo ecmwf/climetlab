@@ -23,13 +23,30 @@ class Backend:
     #     state = State(self)
     #     for a in self._actions:
     #         state = a.tranform(state)
+    def plot_graph_add_timeserie(self, frame):
+        frame.plot(x="date", ax=self.ax)
 
     def plot_graph_pandas(self, frame, time: str, variable: str):
+        k = self._options("k", "pandas")
+
+        import pandas
+
+        frame.date = pandas.to_datetime(frame.date)
+
         # TODO: need to set variable ?
         # print(time, variable)
-        kwargs = self._options("pandas_dataframe_plot_kwargs", {})
 
-        frame.plot(ax=self.ax, **kwargs)
+        if k == "seaborn":
+            import seaborn as sns
+            sns.lineplot(data=frame, x="date", y="value")
+
+            return
+
+        if k == "pandas":
+            kwargs = self._options("pandas_dataframe_plot_kwargs", {})
+
+            frame.plot(x="date", ax=self.ax, **kwargs)
+            return
 
     def option(self, name, default=None):
         return self._options(name, default)

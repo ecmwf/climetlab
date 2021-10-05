@@ -42,4 +42,4 @@ class Options:
                 self._options[k] = v
 
     def __repr__(self) -> str:
-        return f'Options({str(self._options)})'
+        return f"Options({str(self._options)})"
