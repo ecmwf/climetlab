@@ -38,6 +38,7 @@ class Backend:
 
         if k == "seaborn":
             import seaborn as sns
+
             sns.lineplot(data=frame, x="date", y="value")
 
             return

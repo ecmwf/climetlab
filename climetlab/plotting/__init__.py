@@ -59,8 +59,8 @@ def styles():
 class Plot:
     """[summary]"""
 
-    def __init__(self, kwargs):
-        backend = SETTINGS.get(f"{kwargs.pop('kind')}-plotting-backend", None)
+    def __init__(self, kind, kwargs):
+        backend = SETTINGS.get(f"{kind}-plotting-backend", None)
         backend = kwargs.pop("backend", backend)
 
         options = {}
@@ -112,13 +112,21 @@ class Plot:
         return self.backend.save(path)
 
 
-def new_plot(**kwargs) -> Plot:
+def new_plot(kind="map", **kwargs) -> Plot:
     """[summary]
 
     :return: [description]
     :rtype: Plot
     """
-    return Plot(kwargs)
+    return Plot(kind, kwargs)
+
+
+def new_plot_graph(**kwargs) -> Plot:
+    return Plot("graph", kwargs)
+
+
+def new_plot_map(**kwargs) -> Plot:
+    return Plot("map", kwargs)
 
 
 def plot_graph(data=None, **kwargs):
@@ -144,10 +152,10 @@ def plot_map(data=None, **kwargs):
     p = new_plot(kind="map", **kwargs)
     p.plot_map(data)
     p.show()
-    return p
 
 
 Plot.plot_map.__doc__ = plot_map.__doc__
+Plot.plot_graph.__doc__ = plot_graph.__doc__
 
 
 def interactive_map(data=None, **kwargs):
