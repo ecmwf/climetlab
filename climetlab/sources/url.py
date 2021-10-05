@@ -389,7 +389,6 @@ class Url(FileSource):
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
         fake_headers=None,  # When HEAD is not allowed but you know the size
-        **kwargs,
     ):
         # TODO: re-enable this feature
         extension = None
