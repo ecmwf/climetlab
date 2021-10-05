@@ -82,8 +82,8 @@ class XArrayDatasetWrapper(Wrapper):
         self.east = np.amax(self.longitude.data)
         self.west = np.amin(self.longitude.data)
 
-    def plot_map(self, driver):
-        driver.bounding_box(
+    def plot_map(self, backend):
+        backend.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
@@ -101,7 +101,7 @@ class XArrayDatasetWrapper(Wrapper):
         assert self.data[self.latitude.name].attrs["standard_name"] == "latitude"
         assert self.data[self.longitude.name].attrs["standard_name"] == "longitude"
 
-        driver.plot_xarray(self.data, self.name, dimension_settings)
+        backend.plot_xarray(self.data, self.name, dimension_settings)
 
     def field_metadata(self):
         shape = self.var.shape

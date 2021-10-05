@@ -172,15 +172,15 @@ class NetCDFField(Base):
             if s.is_info:
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
 
-    def plot_map(self, driver):
+    def plot_map(self, backend):
 
         dimensions = dict((s.name, s.index) for s in self.slices)
 
-        driver.bounding_box(
+        backend.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
-        driver.plot_netcdf(self.path, self.variable, dimensions)
+        backend.plot_netcdf(self.path, self.variable, dimensions)
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)

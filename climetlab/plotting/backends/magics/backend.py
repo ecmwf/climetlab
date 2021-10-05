@@ -54,7 +54,7 @@ class WMSLayer:
         self.temp_files = temp_files
 
 
-class Driver:
+class Backend:
     """TODO: Docscting"""
 
     def __init__(self, options):

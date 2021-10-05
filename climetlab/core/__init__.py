@@ -42,10 +42,10 @@ class Base(metaclass=MetaBase):
         return self
 
     # Used when plotting
-    def plot_map(self, driver):
+    def plot_map(self, backend):
         self._not_implemented()
 
-    def plot_graph(self, driver):
+    def plot_graph(self, backend):
         self._not_implemented()
 
     def field_metadata(self):

@@ -35,25 +35,25 @@ class PandasFrameWrapper(Wrapper):
                 self.lat, self.lon = lat, lon
                 break
 
-    def plot_graph(self, driver):
-        column = driver.option("column", self.time)
+    def plot_graph(self, backend):
+        column = backend.option("column", self.time)
 
-        driver.plot_graph_pandas(self.frame, self.time, column)
+        backend.plot_graph_pandas(self.frame, self.time, column)
 
-    def plot_map(self, driver):
+    def plot_map(self, backend):
 
-        column = driver.option("column", self.lat)
+        column = backend.option("column", self.lat)
 
         north, west, south, east = self.bounding_box()
 
-        driver.bounding_box(
+        backend.bounding_box(
             north=north,
             south=south,
             west=west,
             east=east,
         )
 
-        driver.plot_pandas(self.frame, self.lat, self.lon, column)
+        backend.plot_pandas(self.frame, self.lat, self.lon, column)
 
     def bounding_box(self):
 

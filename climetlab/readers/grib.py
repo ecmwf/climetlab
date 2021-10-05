@@ -219,14 +219,14 @@ class GribField(Base):
     def shape(self):
         return self.handle.get("Nj"), self.handle.get("Ni")
 
-    def plot_map(self, driver):
-        driver.bounding_box(
+    def plot_map(self, backend):
+        backend.bounding_box(
             north=self.handle.get("latitudeOfFirstGridPointInDegrees"),
             south=self.handle.get("latitudeOfLastGridPointInDegrees"),
             west=self.handle.get("longitudeOfFirstGridPointInDegrees"),
             east=self.handle.get("longitudeOfLastGridPointInDegrees"),
         )
-        driver.plot_grib(self.path, self.handle.get("offset"))
+        backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
     def to_numpy(self):
@@ -509,8 +509,8 @@ class GRIBReader(Reader):
 
         return mv_read(self.path)
 
-    def plot_map(self, driver):
-        return self.first.plot_map(driver)
+    def plot_map(self, backend):
+        return self.first.plot_map(backend)
 
     # Used by normalisers
     def to_datetime(self):

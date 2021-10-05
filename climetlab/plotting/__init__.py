@@ -12,18 +12,18 @@ from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
-from .drivers.bokeh.driver import Driver as BokehDriver
-from .drivers.magics.driver import Driver as MagicsDriver
-from .drivers.matplotlib.driver import Driver as MatplotlibDriver
+from .backends.bokeh.backend import Backend as BokehBackend
+from .backends.magics.backend import Backend as MagicsBackend
+from .backends.matplotlib.backend import Backend as MatplotlibBackend
 from .options import Options
 
 OPTIONS = {}
 
 DRIVERS = {
-    None: MagicsDriver,
-    "magics": MagicsDriver,
-    "matplotlib": MatplotlibDriver,
-    "bokeh": BokehDriver,
+    None: MagicsBackend,
+    "magics": MagicsBackend,
+    "matplotlib": MatplotlibBackend,
+    "bokeh": BokehBackend,
 }
 
 
@@ -64,9 +64,9 @@ class Plot:
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        driver = SETTINGS.get(f"{kwargs['kind']}-plotting-backend", None)
-        driver = kwargs.get("driver", driver)
-        self.driver = DRIVERS[driver](Options(options))
+        backend = SETTINGS.get(f"{kwargs['kind']}-plotting-backend", None)
+        backend = kwargs.get("backend", backend)
+        self.backend = DRIVERS[backend](Options(options))
 
     def plot_graph(self, data=None, **kwargs):
 
@@ -75,10 +75,10 @@ class Plot:
 
         for d in data:
             d = get_wrapper(d)
-            d.plot_graph(self.driver)
+            d.plot_graph(self.backend)
 
         options = Options(kwargs)
-        self.driver.apply_options(options)
+        self.backend.apply_options(options)
         options.check_unused()
 
         return self
@@ -90,25 +90,25 @@ class Plot:
 
         for d in data:
             d = get_wrapper(d)
-            d.plot_map(self.driver)
+            d.plot_map(self.backend)
 
         options = Options(kwargs)
-        self.driver.apply_options(options)
+        self.backend.apply_options(options)
         options.check_unused()
 
         return self
 
     def wms_layers(self):
-        return self.driver.wms_layers()
+        return self.backend.wms_layers()
 
     def show(self):
-        self.driver.show(display=display)
+        self.backend.show(display=display)
 
     def macro(self) -> list:
-        return self.driver.macro()
+        return self.backend.macro()
 
     def save(self, path):
-        return self.driver.save(path)
+        return self.backend.save(path)
 
 
 def new_plot(**kwargs) -> Plot:

@@ -33,13 +33,13 @@ class MeteonetGroundStations(Meteonet):
     def to_pandas(self):
         return self._pandas
 
-    def plot_map(self, driver):
+    def plot_map(self, backend):
 
         north, east = self._pandas[["lat", "lon"]].max()
         south, west = self._pandas[["lat", "lon"]].min()
 
-        driver.bounding_box(north, west, south, east)
-        driver.plot_pandas(self._pandas, "lat", "lon", "t")
+        backend.bounding_box(north, west, south, east)
+        backend.plot_pandas(self._pandas, "lat", "lon", "t")
 
 
 dataset = MeteonetGroundStations

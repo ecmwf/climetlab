@@ -31,7 +31,7 @@ Function
 Plotting
 --------
 
-.. autoclass:: climetlab.plotting.Driver
+.. autoclass:: climetlab.plotting.Backend
    :members:
 
 

@@ -1,7 +1,7 @@
 from matplotlib.pyplot import figure
 
 
-class Driver:
+class Backend:
     def __init__(self, options):
 
         self._options = options

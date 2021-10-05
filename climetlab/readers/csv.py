@@ -187,11 +187,11 @@ class CSVReader(Reader):
             **options,
         )
 
-    def plot_graph(self, driver):
-        get_wrapper(self.to_pandas()).plot_graph(driver)
+    def plot_graph(self, backend):
+        get_wrapper(self.to_pandas()).plot_graph(backend)
 
-    def plot_map(self, driver):
-        get_wrapper(self.to_pandas()).plot_map(driver)
+    def plot_map(self, backend):
+        get_wrapper(self.to_pandas()).plot_map(backend)
 
     def to_metview(self):
         from climetlab.metview import mv_read_table

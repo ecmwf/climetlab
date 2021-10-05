@@ -15,19 +15,19 @@ class NumpyArrayWrapper(Wrapper):
     def __init__(self, data, *args, **kwargs):
         self.data = data
 
-    def plot_map(self, driver):
+    def plot_map(self, backend):
 
-        metadata = get_wrapper(driver.option("metadata"))
+        metadata = get_wrapper(backend.option("metadata"))
         metadata = metadata.field_metadata()
 
-        driver.bounding_box(
+        backend.bounding_box(
             north=metadata["north"],
             south=metadata["south"],
             west=metadata["west"],
             east=metadata["east"],
         )
 
-        driver.plot_numpy(
+        backend.plot_numpy(
             self.data.reshape(metadata.get("shape", self.data.shape)),
             metadata=metadata,
         )

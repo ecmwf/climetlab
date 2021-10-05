@@ -13,7 +13,7 @@ class NoneWrapper(Wrapper):
     def __init__(self, data):
         pass
 
-    def plot_map(self, driver):
+    def plot_map(self, backend):
         pass
 
     def field_metadata(self):

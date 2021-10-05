@@ -86,13 +86,13 @@ class MeteonetRadar(Meteonet):
     def to_xarray(self, *args, **kwargs):
         return self._xarray
 
-    def plot_map(self, driver):
-        driver.bounding_box(self.north, self.west, self.south, self.east)
+    def plot_map(self, backend):
+        backend.bounding_box(self.north, self.west, self.south, self.east)
 
         dimensions = {"time": 0}
 
-        driver.plot_xarray(self._xarray, self.variable, dimensions)
-        driver.style("meteonet-radar-{}".format(self.variable))
+        backend.plot_xarray(self._xarray, self.variable, dimensions)
+        backend.style("meteonet-radar-{}".format(self.variable))
 
 
 dataset = MeteonetRadar
