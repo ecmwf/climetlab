@@ -90,6 +90,14 @@ SETTINGS_AND_HELP = {
         """Dictionary of default plotting options.
         See :ref:`plotting` for more information.""",
     ),
+    "map-plotting-backend": _(
+        "magics",
+        """Default backend for plotting maps.""",
+    ),
+    "graph-plotting-backend": _(
+        "matplotlib",
+        """Default backend for plotting graphs.""",
+    ),
     "number-of-download-threads": _(
         5,
         """Number of threads used to download data.""",
