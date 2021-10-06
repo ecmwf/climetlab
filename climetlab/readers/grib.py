@@ -545,6 +545,6 @@ class GRIBReader(Reader):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self])
 
 
-def reader(source, path, magic, deeper_check):
-    if magic[:4] == b"GRIB":
+def reader(source, path, magic=None, deeper_check=False):
+    if magic is None or magic[:4] == b"GRIB":
         return GRIBReader(source, path)

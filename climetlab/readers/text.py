@@ -42,7 +42,10 @@ class TextReader(Reader):
         return self
 
 
-def reader(source, path, magic, deeper_check):
+def reader(source, path, magic=None, deeper_check=False):
+    if magic is None:  # Bypass check and force
+        return TextReader(source, path)
+
     if deeper_check:
         if is_text(path):
             return TextReader(source, path)

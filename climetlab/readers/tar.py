@@ -28,11 +28,11 @@ class TarReader(ArchiveReader):
             )
 
 
-def reader(source, path, magic, deeper_check):
+def reader(source, path, magic=None, deeper_check=False):
     # We don't use tarfile.is_tarfile() because is
     # returns true given a file of zeros
 
     kind, compression = mimetypes.guess_type(path)
 
-    if kind == "application/x-tar":
+    if magic is None or kind == "application/x-tar":
         return TarReader(source, path, compression)

@@ -40,14 +40,12 @@ class FWFReader(Reader):
         get_wrapper(self.to_pandas()).plot_map(backend)
 
 
-def reader(source, path, magic, deeper_check):
+def reader(source, path, magic=None, deeper_check=False):
 
-    if magic is None:
+    if magic is None:  # Bypass check and force
         return FWFReader(source, path)
 
-    # For now, empty
-    if deeper_check:
-        pass
+    # For now, only created if magic is None
 
 
 aliases = ["fix_width_format"]

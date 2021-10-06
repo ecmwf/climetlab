@@ -366,6 +366,6 @@ class NetCDFReader(Reader):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self.get_fields()])
 
 
-def reader(source, path, magic, deeper_check):
-    if magic[:4] in (b"\x89HDF", b"CDF\x01", b"CDF\x02"):
+def reader(source, path, magic=None, deeper_check=False):
+    if magic is None or magic[:4] in (b"\x89HDF", b"CDF\x01", b"CDF\x02"):
         return NetCDFReader(source, path)

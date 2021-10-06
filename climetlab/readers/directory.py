@@ -90,6 +90,6 @@ class DirectoryReader(Reader):
         raise NotImplementedError()
 
 
-def reader(source, path, magic, deeper_check):
-    if os.path.isdir(path):
+def reader(source, path, magic=None, deeper_check=False):
+    if magic is not None or os.path.isdir(path):
         return DirectoryReader(source, path)

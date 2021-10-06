@@ -51,6 +51,6 @@ class TfRecordReader(Reader):
         return self._len
 
 
-def reader(source, path, magic, deeper_check):
-    if path.endswith(".tfrecord"):
+def reader(source, path, magic=None, deeper_check=False):
+    if magic is None or path.endswith(".tfrecord"):
         return TfRecordReader(source, path)
