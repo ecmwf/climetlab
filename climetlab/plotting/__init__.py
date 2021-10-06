@@ -133,7 +133,7 @@ class MapPlot(Plot):
 
 
 class GraphPlot(Plot):
-    king = "graph"
+    kind = "graph"
 
 
 def new_plot(**kwargs) -> Plot:
