@@ -26,7 +26,12 @@ class FWFReader(Reader):
 
         pandas_read_fwf_kwargs = kwargs.get("pandas_read_fwf_kwargs", {})
 
-        LOG.debug("pandas.read_fwf(%s,%s)", self.path, pandas_read_fwf_kwargs)
+        LOG.debug(
+            "pandas.read_fwf(%s,header=%s,%s)",
+            self.path,
+            self.header,
+            pandas_read_fwf_kwargs,
+        )
         return pandas.read_fwf(
             self.path,
             header=self.header,

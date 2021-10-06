@@ -92,7 +92,7 @@ _READERS = {}
 def _readers():
     if not _READERS:
         here = os.path.dirname(__file__)
-        for path in os.listdir(here):
+        for path in sorted(os.listdir(here)):
             if path.endswith(".py") and path[0] not in ("_", "."):
                 name, _ = os.path.splitext(path)
                 try:
