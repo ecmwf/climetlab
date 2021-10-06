@@ -8,9 +8,6 @@
 #
 
 import logging
-import mimetypes
-import os
-import zipfile
 
 from climetlab.wrappers import get_wrapper
 
