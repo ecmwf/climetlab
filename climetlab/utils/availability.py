@@ -16,6 +16,8 @@ import itertools
 import json
 import os
 
+import yaml
+
 from climetlab.utils.factorise import Tree, factorise
 
 from .humanize import dict_to_human, list_to_human
@@ -30,12 +32,41 @@ def _tidy_dict(query):
     return result
 
 
+def load_str(avail):
+    try:
+        return json.loads(avail)
+    except json.decoder.JSONDecodeError:
+        return yaml.safe_load(avail)
+
+
+def load_json(avail):
+    with open(avail) as f:
+        return json.loads(f.read())
+
+
+def load_yaml(avail):
+    with open(avail) as f:
+        return yaml.load(f, Loader=yaml.SafeLoader)
+
+
+CONFIG_LOADERS = {
+    ".json": load_json,
+    ".yaml": load_yaml,
+}
+
+
 class Availability:
-    def __init__(self, avail, intervals=None):
+    def __init__(self, avail, intervals=None, parser=None):
         if not isinstance(avail, Tree):
             if isinstance(avail, str):
-                with open(avail) as f:
-                    avail = json.loads(f.read())
+                config_loader = load_json
+                if len(avail) > 5:
+                    config_loader = CONFIG_LOADERS.get(avail[-5:], load_str)
+                    avail = config_loader(avail)
+
+            if parser is not None:
+                avail = [parser(item) for item in avail]
+
             avail = factorise(avail, intervals=intervals)
         self._tree = avail
 
