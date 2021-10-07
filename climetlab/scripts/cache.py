@@ -97,7 +97,10 @@ class CacheCmd:
 
         print_table(generate_table())
 
+    @parse_args(
+        match=dict(type=str),
+    )
     def do_decache(self, args):
         from climetlab.core.caching import purge_cache
 
-        purge_cache()
+        purge_cache(match=args.match)

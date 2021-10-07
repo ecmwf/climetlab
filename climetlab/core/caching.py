@@ -46,6 +46,20 @@ CONNECTION = None
 CACHE = None
 
 
+def _match(e, m):
+
+    if isinstance(e, (list, tuple)):
+        return any(_match(x, m) for x in e)
+
+    if isinstance(e, dict):
+        return any(_match(x, m) for x in e.values())
+
+    if isinstance(e, str):
+        return m in e
+
+    return False
+
+
 class DiskUsage:
     def __init__(self, path):
 
@@ -228,16 +242,18 @@ class Cache(threading.Thread):
                 latest = datetime.datetime.utcnow()
             return latest
 
-    def _purge_cache(self, owner=None, age=None, size=None):
+    def _purge_cache(self, match=None):
 
-        if owner is None and age is None and size is None:
+        if match is None:
             self._housekeeping(clean=True)
             # _update_cache(clean=True)
             self._decache(self._cache_size(), purge=True)
             return
 
-        with self.connection as db:
-            db.execute("DELETE FROM cache WHERE owner=?", (owner,))
+        dump = self._dump_cache_database()
+        for entry in dump:
+            if _match(entry, match):
+                self._delete_entry(entry)
 
     def _cache_entries(self):
         result = []
@@ -369,7 +385,11 @@ class Cache(threading.Thread):
         n = dict(entry)
         for k in ("args", "owner_data"):
             if k in n and isinstance(n[k], str):
-                n[k] = json.loads(n[k])
+                try:
+                    n[k] = json.loads(n[k])
+                except Exception:
+                    LOG.debug("Cannot decode JSON %s", n[k])
+                    pass
         return n
 
     def _delete_entry(self, entry):
