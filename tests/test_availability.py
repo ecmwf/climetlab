@@ -179,10 +179,21 @@ def parser(v):
         # not using: v["alldates"]['freq']
         # but this does not work:
         # v["alldates"] = list(pd.date_range(**v["alldates"]))
+        v["date"] = v.pop("alldates")
 
     if "number" in v:
         s, _, e = v["number"].split("/")
         v["number"] = [x for x in range(int(s), int(e) + 1)]
+
+    for remove in [
+        "grid",
+        "stream",
+        "step",
+        "stepintervals",
+        "level",
+        "levelbis",
+    ]:
+        v.pop(remove, None)
 
     return v
 
@@ -191,14 +202,14 @@ def test_availability_4():
     av = Availability(
         s2s_bis,
         parser=parser,
-        intervals="alldates",
+        intervals="date",
     )
     av.check(number=30, origin="eccc")
     with pytest.raises(ValueError):
         av.check(number=100, fctype="hindcast", origin="ecmwf")
-    av.check(number=30, alldates="2020-01-02", origin="eccc")
+    av.check(number=30, date="2020-01-02", origin="eccc")
     with pytest.raises(ValueError):
-        av.check(number=30, alldates="2111-01-02", origin="eccc")
+        av.check(number=30, date="2111-01-02", origin="eccc")
 
     # this should raise a ValueError
     # with pytest.raises(ValueError):
@@ -209,7 +220,7 @@ def test_availability_4():
 #     av = Availability(
 #         s2s_bis,
 #         parser=parser,
-#         intervals=["number", "alldates"],
+#         intervals=["number", "date"],
 #     )
 #     print(av)
 #     assert False, av
