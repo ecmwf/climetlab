@@ -117,8 +117,14 @@ def test_humanize():
 
 
 def test_as_timedelta():
-    print(as_timedelta("a1sec"))
+    assert as_timedelta("1s") == datetime.timedelta(seconds=1)
+    assert as_timedelta("1S") == datetime.timedelta(seconds=1)
+    assert as_timedelta("1 s") == datetime.timedelta(seconds=1)
+    assert as_timedelta(" 1s") == datetime.timedelta(seconds=1)
     assert as_timedelta("1sec") == datetime.timedelta(seconds=1)
+    assert as_timedelta("1second") == datetime.timedelta(seconds=1)
+
+    assert as_timedelta("s") == datetime.timedelta(seconds=1)
 
 
 if __name__ == "__main__":

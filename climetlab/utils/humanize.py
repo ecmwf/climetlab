@@ -281,11 +281,9 @@ def as_bytes(value, name=None, none_ok=False):
 
 def as_timedelta(value, name=None, none_ok=False):
     value = re.sub(r"[^a-zA-Z0-9]", "", value.lower())
-    # value = value.replace("mo", "MO")  # Months
     value = re.sub(r"([a-zA-Z])[a-zA-Z]*", r"\1", value)
-    # bits = re.split(r"([dmMhs])", value)
-    value = re.sub(r"[^dmhs0-9]", "", value)
-    bits = [b for b in re.split(r"([dmhs])", value) if b != ""]
+    value = re.sub(r"[^dmhsw0-9]", "", value)
+    bits = [b for b in re.split(r"([dmhsw])", value) if b != ""]
 
     times = defaultdict(int)
 
@@ -294,11 +292,12 @@ def as_timedelta(value, name=None, none_ok=False):
         m="minutes",
         h="hours",
         s="seconds",
+        w="weeks",
     )
 
     val = None
     for n in bits:
-        if n in "dmhs":
+        if n in "dmhsw":
             if val is None:
                 raise ValueError(f"Missing number before the '{TIME[n]}'")
             times[n] = val
@@ -312,3 +311,10 @@ def as_timedelta(value, name=None, none_ok=False):
         minutes=times["m"],
         seconds=times["s"],
     )
+
+
+def rounded_datetime(d):
+    if float(d.microsecond) / 1000.0 / 1000.0 >= 0.5:
+        d = d + datetime.timedelta(seconds=1)
+    d = d.replace(microsecond=0)
+    return d

@@ -225,7 +225,7 @@ class Cache(threading.Thread):
                     "SELECT MAX(creation_date) FROM cache WHERE size IS NOT NULL"
                 ).fetchone()[0]
             if latest is None:
-                latest = datetime.datetime.utcnow()
+                latest = datetime.datetime.now()
             return latest
 
     def _purge_cache(self, matcher=None):
@@ -439,7 +439,7 @@ class Cache(threading.Thread):
 
         with self.connection as db:
 
-            latest = datetime.datetime.utcnow() if purge else self._latest_date()
+            latest = datetime.datetime.now() if purge else self._latest_date()
 
             for stmt in (
                 "SELECT * FROM cache WHERE size IS NOT NULL AND owner='orphans' AND creation_date < ?",
@@ -478,7 +478,7 @@ class Cache(threading.Thread):
 
         with self.connection as db:
 
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now()
 
             args = json.dumps(args, default=default_serialiser)
 

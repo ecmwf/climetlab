@@ -32,31 +32,40 @@ def parse_size(txt):
 
 def parse_user_date(value):
     try:
-        return datetime.datetime.utcnow() - humanize.as_timedelta(value)
-    except ValueError:
         return parse_date(value)
+    except ValueError:
+        return datetime.datetime.utcnow() - humanize.as_timedelta(value)
 
 
 class Matcher:
     def __init__(self, args):
-        self.undefined = all(getattr(args, k) is None for k in MATCHER.keys())
-        # self.undefined = [x for x in MATCHER.keys() if x not in args.keys()]
+        self.message = []
 
         for k in MATCHER.keys():
             setattr(self, k, getattr(args, k))
-            # self[k] = args.pop(k)
 
-        if self.newer:
+        if self.match is not None:
+            self.message.append(f"matching '{self.match}'")
+
+        if self.newer is not None:
             self.newer = parse_user_date(self.newer)
+            value = humanize.rounded_datetime(self.newer)
+            self.message.append(f"newer than '{value}'")
 
-        if self.older:
+        if self.older is not None:
             self.older = parse_user_date(self.older)
+            value = humanize.rounded_datetime(self.older)
+            self.message.append(f"older than '{value}'")
 
-        if self.smaller:
+        if self.smaller is not None:
             self.smaller = parse_size(self.smaller)
+            self.message.append(f"smaller than {self.smaller}")
 
-        if self.larger:
+        if self.larger is not None:
             self.larger = parse_size(self.larger)
+            self.message.append(f"larger than {self.larger}")
+
+        self.undefined = len(self.message) == 0
 
     def __call__(self, entry):
         if self.undefined:
@@ -118,7 +127,12 @@ class CacheCmd:
             print(cache_directory())
             return
 
-        cache = dump_cache_database(matcher=Matcher(args))
+        matcher = Matcher(args)
+        if not args.json and not matcher.undefined:
+            message = humanize.list_to_human(matcher.message)
+            print(colored(f"Entries {message}.", "green"))
+
+        cache = dump_cache_database(matcher=matcher)
 
         if args.sort:
             kind = None
@@ -214,6 +228,8 @@ class CacheCmd:
 
         matcher = Matcher(args)
         if not matcher.undefined:
+            message = humanize.list_to_human(matcher.message)
+            print(colored(f"Purging cache entries {message}.", "green"))
             purge_cache(matcher=matcher)
             return
 
