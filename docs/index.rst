@@ -55,6 +55,7 @@ Documentation
 * :doc:`guide/caching`
 * :doc:`guide/settings`
 * :doc:`guide/pluginlist`
+* :doc:`guide/climetlabscripts`
 
 .. toctree::
    :maxdepth: 1
@@ -70,6 +71,7 @@ Documentation
    guide/caching
    guide/settings
    guide/pluginlist
+   guide/climetlabscripts
 
 **Contributor Guide**
 
