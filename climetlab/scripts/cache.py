@@ -18,11 +18,11 @@ from climetlab.utils.dates import parse_date
 from .tools import parse_args, print_table
 
 MATCHER = dict(
-    match=dict(type=str),
-    newer=dict(type=str),
-    older=dict(type=str),
-    larger=dict(type=str),
-    smaller=dict(type=str),
+    match=dict(type=str, metavar="STRING"),
+    newer=dict(type=str, metavar="DATE"),
+    older=dict(type=str, metavar="DATE"),
+    larger=dict(type=str, metavar="SIZE"),
+    smaller=dict(type=str, metavar="SIZE"),
 )
 
 
@@ -56,17 +56,19 @@ class Matcher:
             return True
 
         if self.smaller is not None:
-            if entry["size"] >= self.smaller:
-                return False
+            if entry["size"] is not None:
+                if entry["size"] > self.smaller:
+                    return False
 
         if self.larger is not None:
-            if entry["size"] < self.larger:
-                return False
+            if entry["size"] is not None:
+                if entry["size"] < self.larger:
+                    return False
 
         creation_date = parse_date(entry["creation_date"])
 
         if self.newer is not None:
-            if creation_date <= self.newer:
+            if creation_date < self.newer:
                 return False
 
         if self.older is not None:
@@ -98,7 +100,7 @@ class CacheCmd:
         json=dict(action="store_true"),
         full=dict(action="store_true"),
         path=dict(action="store_true"),
-        sort=dict(type=str),
+        sort=dict(type=str, metavar="KEY"),
         reverse=dict(action="store_true"),
         **MATCHER,
     )

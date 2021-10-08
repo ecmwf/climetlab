@@ -18,7 +18,7 @@ from typing import Callable
 import yaml
 
 from climetlab.utils.html import css
-from climetlab.utils.humanize import as_bytes, as_number, as_percent, as_seconds
+from climetlab.utils.humanize import as_bytes, as_percent, as_seconds
 from climetlab.version import __version__ as VERSION
 
 LOG = logging.getLogger(__name__)
@@ -331,16 +331,16 @@ class Settings:
             )
 
     def _as_bytes(self, name, value, none_ok):
-        return as_bytes(name, value, none_ok)
+        return as_bytes(value, name=name, none_ok=none_ok)
 
     def _as_percent(self, name, value, none_ok):
-        return as_percent(name, value, none_ok)
+        return as_percent(value, name=name, none_ok=none_ok)
 
     def _as_seconds(self, name, value, none_ok):
-        return as_seconds(name, value, none_ok)
+        return as_seconds(value, name=name, none_ok=none_ok)
 
-    def _as_number(self, name, value, units, none_ok):
-        return as_number(name, value, units, none_ok)
+    # def _as_number(self, name, value, units, none_ok):
+    #     return as_number(name, value, units, none_ok)
 
     @forward
     def temporary(self, name=None, *args, **kwargs):

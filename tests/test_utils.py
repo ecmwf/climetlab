@@ -12,7 +12,7 @@
 import datetime
 
 from climetlab.utils import string_to_args
-from climetlab.utils.humanize import bytes, number, plural, seconds, when
+from climetlab.utils.humanize import as_timedelta, bytes, number, plural, seconds, when
 
 
 def test_string_to_args():
@@ -114,6 +114,10 @@ def test_humanize():
         when(now, now - datetime.timedelta(days=3660), short=False)
         == "on Monday 6 October 2021"
     )
+
+
+def test_as_timedelta():
+    assert as_timedelta("1s") is None
 
 
 if __name__ == "__main__":
