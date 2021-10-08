@@ -20,16 +20,12 @@ class ArgumentParser(argparse.ArgumentParser):
         raise ValueError(f"{self.prog}: {message}\n\n{self.format_help()}.")
 
 
-def parse_args(json=False, positional=None, **kwargs):
+def parse_args(positional=None, **kwargs):
     def wrapper(func):
         @wraps(func)
         def wrapped(self, args):
             p = ArgumentParser(func.__name__.replace("do_", ""))
-            if json:
-                p.add_argument(
-                    "--json",
-                    action="store_true",
-                )
+
             if positional is not None:
                 p.add_argument("args", metavar="ARG", type=str, nargs=positional)
 

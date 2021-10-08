@@ -14,7 +14,7 @@ from .tools import parse_args, print_table
 
 
 class SettingsCmd:
-    @parse_args(json=True, positional="*")
+    @parse_args(json=dict(action="store_true"), positional="*")
     def do_settings(self, args):
         from climetlab import settings
 

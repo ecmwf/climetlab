@@ -136,7 +136,7 @@ class CheckCmd:
         # TODO: add more
         # TODO: automate this from requirements.txt. Create a pip install climetlab[extra] or climetlab-light.
 
-    @parse_args(json=True)
+    @parse_args(json=dict(action="store_true"))
     def do_plugins(self, args):
 
         import entrypoints
@@ -183,7 +183,11 @@ class CheckCmd:
 
         return modules
 
-    @parse_args(json=True, positional="*", full=dict(action="store_true"))
+    @parse_args(
+        positional="*",
+        json=dict(action="store_true"),
+        full=dict(action="store_true"),
+    )
     def do_versions(self, args):
 
         """List the versions of important Python packages."""
@@ -236,7 +240,7 @@ class CheckCmd:
 
             print_table(items, colours)
 
-    @parse_args(json=True)
+    @parse_args(json=dict(action="store_true"))
     def do_libraries(self, args):
 
         result = {}

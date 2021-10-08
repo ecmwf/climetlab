@@ -46,20 +46,6 @@ CONNECTION = None
 CACHE = None
 
 
-def _match(e, m):
-
-    if isinstance(e, (list, tuple)):
-        return any(_match(x, m) for x in e)
-
-    if isinstance(e, dict):
-        return any(_match(x, m) for x in e.values())
-
-    if isinstance(e, str):
-        return m in e
-
-    return False
-
-
 class DiskUsage:
     def __init__(self, path):
 
@@ -242,18 +228,17 @@ class Cache(threading.Thread):
                 latest = datetime.datetime.utcnow()
             return latest
 
-    def _purge_cache(self, match=None):
+    def _purge_cache(self, matcher=None):
 
-        if match is None:
+        if matcher is None:
             self._housekeeping(clean=True)
             # _update_cache(clean=True)
             self._decache(self._cache_size(), purge=True)
             return
 
-        dump = self._dump_cache_database()
+        dump = self._dump_cache_database(matcher)
         for entry in dump:
-            if _match(entry, match):
-                self._delete_entry(entry)
+            self._delete_entry(entry)
 
     def _cache_entries(self):
         result = []
@@ -580,7 +565,7 @@ class Cache(threading.Thread):
                 html.append("<br>")
         return "".join(html)
 
-    def _dump_cache_database(self):
+    def _dump_cache_database(self, matcher=lambda x: True):
         result = []
         with self.connection as db:
             for d in db.execute("SELECT * FROM cache"):
@@ -588,7 +573,8 @@ class Cache(threading.Thread):
                 for k in ("args", "owner_data"):
                     if n[k] is not None:
                         n[k] = json.loads(n[k])
-                result.append(n)
+                if matcher(n):
+                    result.append(n)
         return result
 
 

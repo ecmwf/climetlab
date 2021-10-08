@@ -16,24 +16,65 @@ from climetlab.utils import humanize
 
 from .tools import parse_args, print_table
 
+MATCHER = dict(
+    match=dict(type=str),
+    newer=dict(type=str),
+    older=dict(type=str),
+    larger=dict(type=str),
+    smaller=dict(type=str),
+)
+
+
+class Matcher:
+    def __init__(self, args):
+        self.undefined = all(getattr(args, k) is None for k in MATCHER.keys())
+
+        for k in MATCHER.keys():
+            setattr(self, k, getattr(args, k))
+
+    def __call__(self, entry):
+        if self.undefined:
+            return True
+
+        if self.match is not None:
+            if not self._match(entry):
+                return False
+
+        # creation_date
+        # last_access
+        # accesses
+
+        return True
+
+    def _match(self, entry):
+
+        if isinstance(entry, (list, tuple)):
+            return any(self._match(x) for x in entry)
+
+        if isinstance(entry, dict):
+            return any(self._match(x) for x in entry.values())
+
+        return self.match in str(entry)
+
 
 class CacheCmd:
     @parse_args(
-        json=True,
+        json=dict(action="store_true"),
         full=dict(action="store_true"),
         path=dict(action="store_true"),
+        **MATCHER,
     )
     def do_cache(self, args):
         from climetlab.core.caching import cache_directory, dump_cache_database
 
-        cache = dump_cache_database()
+        if args.path:
+            print(cache_directory())
+            return
+
+        cache = dump_cache_database(matcher=Matcher(args))
 
         if args.json:
             print(json.dumps(cache, sort_keys=True, indent=4))
-            return
-
-        if args.path:
-            print(cache_directory())
             return
 
         if args.full:
@@ -98,9 +139,24 @@ class CacheCmd:
         print_table(generate_table())
 
     @parse_args(
-        match=dict(type=str),
+        all=dict(action="store_true"),
+        **MATCHER,
     )
     def do_decache(self, args):
         from climetlab.core.caching import purge_cache
 
-        purge_cache(match=args.match)
+        matcher = Matcher(args)
+        if not matcher.undefined:
+            purge_cache(matcher=matcher)
+            return
+
+        if args.all:
+            purge_cache()
+            return
+
+        print(
+            colored(
+                "To wipe the cache completely, please use the --all flag. Use --help for more information.",
+                "red",
+            )
+        )
