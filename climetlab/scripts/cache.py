@@ -13,6 +13,7 @@ import json
 from termcolor import colored
 
 from climetlab.utils import humanize
+from climetlab.utils.dates import parse_date
 
 from .tools import parse_args, print_table
 
@@ -25,24 +26,59 @@ MATCHER = dict(
 )
 
 
+def parse_size(txt):
+    return int(txt)
+
+
 class Matcher:
     def __init__(self, args):
         self.undefined = all(getattr(args, k) is None for k in MATCHER.keys())
+        # self.undefined = [x for x in MATCHER.keys() if x not in args.keys()]
 
         for k in MATCHER.keys():
             setattr(self, k, getattr(args, k))
+            # self[k] = args.pop(k)
+
+        if self.newer:
+            self.newer = parse_date(self.newer)
+
+        if self.older:
+            self.older = parse_date(self.older)
+
+        if self.smaller:
+            self.smaller = parse_size(self.smaller)
+
+        if self.larger:
+            self.larger = parse_size(self.larger)
 
     def __call__(self, entry):
         if self.undefined:
             return True
 
+        if self.smaller is not None:
+            if entry["size"] >= self.smaller:
+                return False
+
+        if self.larger is not None:
+            if entry["size"] < self.larger:
+                return False
+
+        creation_date = parse_date(entry["creation_date"])
+
+        if self.newer is not None:
+            if creation_date <= self.newer:
+                return False
+
+        if self.older is not None:
+            if creation_date > self.older:
+                return False
+
         if self.match is not None:
             if not self._match(entry):
                 return False
 
-        # creation_date
-        # last_access
         # accesses
+        # last_access
 
         return True
 
