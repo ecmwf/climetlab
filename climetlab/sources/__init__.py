@@ -127,7 +127,7 @@ class SourceMaker:
         return self(name.replace("_", "-"))
 
 
-source = SourceMaker()
+get_source = SourceMaker()
 
 
 def register_source(module):
@@ -140,7 +140,7 @@ def load_source(name: str, *args, lazily=False, **kwargs) -> Source:
         return load_source_lazily(name, *args, **kwargs)
 
     prev = None
-    src = source(name, *args, **kwargs)
+    src = get_source(name, *args, **kwargs)
     while src is not prev:
         prev = src
         src = src.mutate()

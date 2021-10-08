@@ -8,6 +8,7 @@
 #
 
 import datetime
+import re
 
 
 def bytes(n):
@@ -235,3 +236,43 @@ def list_to_human(lst):
         lst = [", ".join(lst[:-1]), lst[-1]]
 
     return " and ".join(lst)
+
+
+def as_number(name, value, units, none_ok):
+    if value is None and none_ok:
+        return None
+
+    value = str(value)
+    # TODO: support floats
+    m = re.search(r"^\s*(\d+)\s*([%\w]+)?\s*$", value)
+    if m is None:
+        raise ValueError(f"{name}: invalid number/unit {value}")
+    value = int(m.group(1))
+    if m.group(2) is None:
+        return value
+    unit = m.group(2)[0]
+    if unit not in units:
+        valid = ", ".join(units.keys())
+        raise ValueError(f"{name}: invalid unit '{unit}', valid values are {valid}")
+    return value * units[unit]
+
+
+def as_seconds(name, value, none_ok):
+    units = dict(s=1, m=60, h=3600, d=86400)
+    return as_number(name, value, units, none_ok)
+
+
+def as_percent(name, value, none_ok):
+    units = {"%": 1}
+    return as_number(name, value, units, none_ok)
+
+
+def as_bytes(name, value, none_ok):
+    units = {}
+    n = 1
+    for u in "KMGTP":
+        n *= 1024
+        units[u] = n
+        units[u.lower()] = n
+
+    return as_number(name, value, units, none_ok)

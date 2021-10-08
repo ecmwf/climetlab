@@ -10,7 +10,6 @@
 import getpass
 import logging
 import os
-import re
 import tempfile
 from contextlib import contextmanager
 from functools import wraps
@@ -19,6 +18,7 @@ from typing import Callable
 import yaml
 
 from climetlab.utils.html import css
+from climetlab.utils.humanize import as_bytes, as_number, as_percent, as_seconds
 from climetlab.version import __version__ as VERSION
 
 LOG = logging.getLogger(__name__)
@@ -330,41 +330,17 @@ class Settings:
                 exc_info=True,
             )
 
-    def _as_number(self, name, value, units, none_ok):
-        if value is None and none_ok:
-            return None
-
-        value = str(value)
-        # TODO: support floats
-        m = re.search(r"^\s*(\d+)\s*([%\w]+)?\s*$", value)
-        if m is None:
-            raise ValueError(f"{name}: invalid number/unit {value}")
-        value = int(m.group(1))
-        if m.group(2) is None:
-            return value
-        unit = m.group(2)[0]
-        if unit not in units:
-            valid = ", ".join(units.keys())
-            raise ValueError(f"{name}: invalid unit '{unit}', valid values are {valid}")
-        return value * units[unit]
-
-    def _as_seconds(self, name, value, none_ok):
-        units = dict(s=1, m=60, h=3600, d=86400)
-        return self._as_number(name, value, units, none_ok)
+    def _as_bytes(self, name, value, none_ok):
+        return as_bytes(name, value, none_ok)
 
     def _as_percent(self, name, value, none_ok):
-        units = {"%": 1}
-        return self._as_number(name, value, units, none_ok)
+        return as_percent(name, value, none_ok)
 
-    def _as_bytes(self, name, value, none_ok):
-        units = {}
-        n = 1
-        for u in "KMGTP":
-            n *= 1024
-            units[u] = n
-            units[u.lower()] = n
+    def _as_seconds(self, name, value, none_ok):
+        return as_seconds(name, value, none_ok)
 
-        return self._as_number(name, value, units, none_ok)
+    def _as_number(self, name, value, units, none_ok):
+        return as_number(name, value, units, none_ok)
 
     @forward
     def temporary(self, name=None, *args, **kwargs):
