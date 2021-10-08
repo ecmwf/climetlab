@@ -16,24 +16,28 @@ This cache location does not matter when you are using a unique disk (this is th
 Linux system are different, the default location is assigned by the system for temporary files. If this default location is ``/tmp`` and if ``/tmp`` is mounted separately, it may have size to small for the data you intent to download.
 Changing the cache location is detailed in the :doc:`settings` documentation.
 
-.. todo::
 
-    Implement cache invalidation, and checking if there is enough space on disk.
-
-The **cache-minimum-disk-space** option ensures that CliMetLab does not fill your disk.
-Its values sets the minimum disk space that must be left on the filesystem.
-When the disk space goes below this limit, CliMetLab triggers its cache cleaning mechanism before downloading additional data.
-The value of cache-minimum-disk-space can be absolute (such as "10G", "10M", "1K") or relative (such as "10%").
-
-The **cache-maximum-size** option ensures that CliMetLab does not use to much disk space.
+The **maximum-cache-size** option ensures that CliMetLab does not use to much disk space.
 Its value sets the maximum disk space used by CliMetLab cache.
 When CliMetLab cache disk usage goes above this limit, CliMetLab triggers its cache cleaning mechanism  before downloading additional data.
-The value of cache-maximum-size can be absolute (such as "10G", "10M", "1K") or relative (such as "10%").
+The value of cache-maximum-size is absolute (such as "10G", "10M", "1K").
 
-Notice how the caching options interact:
+The **maximum-cache-disk-usage** option ensures that CliMetLab leaves does not fill your disk.
+Its values sets the maximum disk usage space that must be left on the filesystem.
+When the disk space goes below this limit, CliMetLab triggers its cache cleaning mechanism before downloading additional data.
+The value of maximum-cache-disk-usage is relative (such as "90%" or "100%").
 
-- Setting `cache-minimum-disk-space=10%` implies `cache-maximum-size=90%`.
-- But setting `cache-maximum-size` does not ensure any `cache-minimum-disk-space` because the disk can be filled by data otherwise.
+.. warning::
+    Notice that the value of `maximum-cache-disk-usage` should not be too small.
+    indeed, your disk may be filled by another application, leading to disk usage higher than the value
+    specified in your `maximum-cache-disk-usage` setting. In such case, CliMetLab will happily delete the
+    data in its cache to make room for the other application.
+
+    For instance, setting `maximum-cache-disk-usage` to 80% on a 1T disk already 70% full,
+    CliMetLab will not cache more than 100G of data.
+    When this 80% limit is reached, running an external script which writes 100G of data with make it 90%.
+    On the next run, CliMetLab will delete its cache completely.
+
 
 .. warning::
 
