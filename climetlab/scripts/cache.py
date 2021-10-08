@@ -112,7 +112,24 @@ class CacheCmd:
         cache = dump_cache_database(matcher=Matcher(args))
 
         if args.sort:
-            cache = sorted(cache, key=lambda x: x[args.sort], reverse=args.reverse)
+            kind = None
+            for e in cache:
+                if e[args.sort] is not None:
+                    kind = type(e[args.sort])
+                    break
+
+            if kind is not None:
+                _ = {
+                    dict: lambda x: tuple() if x is None else tuple(sorted(x.items())),
+                    str: lambda x: "" if x is None else x,
+                    int: lambda x: 0 if x is None else x,
+                }[kind]
+
+                cache = sorted(
+                    cache,
+                    key=lambda x: _(x[args.sort]),
+                    reverse=args.reverse,
+                )
 
         if args.json:
             print(json.dumps(cache, sort_keys=True, indent=4))
