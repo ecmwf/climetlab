@@ -9,6 +9,7 @@
 
 import datetime
 import re
+from collections import defaultdict
 
 
 def bytes(n):
@@ -279,7 +280,35 @@ def as_bytes(value, name=None, none_ok=False):
 
 
 def as_timedelta(value, name=None, none_ok=False):
-    value = re.sub(r"\s", "", value.lower())
-    value = re.sub(r"([a-z])[a-z]*", r"\1", value)
-    # bits = re.split(r"(dmhs)", value)
-    # s = as_seconds(value, name=None, none_ok=False)
+    value = re.sub(r"[^a-zA-Z0-9]", "", value.lower())
+    # value = value.replace("mo", "MO")  # Months
+    value = re.sub(r"([a-zA-Z])[a-zA-Z]*", r"\1", value)
+    # bits = re.split(r"([dmMhs])", value)
+    value = re.sub(r"[^dmhs0-9]", "", value)
+    bits = [b for b in re.split(r"([dmhs])", value) if b != ""]
+
+    times = defaultdict(int)
+
+    TIME = dict(
+        d="days",
+        m="minutes",
+        h="hours",
+        s="seconds",
+    )
+
+    val = None
+    for n in bits:
+        if n in "dmhs":
+            if val is None:
+                raise ValueError(f"Missing number before the '{TIME[n]}'")
+            times[n] = val
+            val = None
+        else:
+            val = int(n)
+
+    return datetime.timedelta(
+        days=times["d"],
+        hours=times["h"],
+        minutes=times["m"],
+        seconds=times["s"],
+    )

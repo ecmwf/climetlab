@@ -30,6 +30,13 @@ def parse_size(txt):
     return int(txt)
 
 
+def parse_user_date(value):
+    try:
+        return datetime.datetime.utcnow() - humanize.as_timedelta(value)
+    except ValueError:
+        return parse_date(value)
+
+
 class Matcher:
     def __init__(self, args):
         self.undefined = all(getattr(args, k) is None for k in MATCHER.keys())
@@ -40,10 +47,10 @@ class Matcher:
             # self[k] = args.pop(k)
 
         if self.newer:
-            self.newer = parse_date(self.newer)
+            self.newer = parse_user_date(self.newer)
 
         if self.older:
-            self.older = parse_date(self.older)
+            self.older = parse_user_date(self.older)
 
         if self.smaller:
             self.smaller = parse_size(self.smaller)
