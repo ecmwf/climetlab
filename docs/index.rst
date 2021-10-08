@@ -119,7 +119,6 @@ Documentation
    developer/datasets
    developer/sources
    developer/api
-   developer/caching
    developer/plotting
    developer/gallery
    developer/plugins

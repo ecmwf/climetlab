@@ -31,14 +31,5 @@ Function
 Plotting
 --------
 
-.. autoclass:: climetlab.plotting.Backend
+.. autoclass:: climetlab.plotting
    :members:
-
-
-Other
------
-
-.. autosummary::
-
-   climetlab.Dataset
-   climetlab.DataSource
