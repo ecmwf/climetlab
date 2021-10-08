@@ -62,6 +62,8 @@ class CacheCmd:
         json=dict(action="store_true"),
         full=dict(action="store_true"),
         path=dict(action="store_true"),
+        sort=dict(type=str),
+        reverse=dict(action="store_true"),
         **MATCHER,
     )
     def do_cache(self, args):
@@ -72,6 +74,9 @@ class CacheCmd:
             return
 
         cache = dump_cache_database(matcher=Matcher(args))
+
+        if args.sort:
+            cache = sorted(cache, key=lambda x: x[args.sort], reverse=args.reverse)
 
         if args.json:
             print(json.dumps(cache, sort_keys=True, indent=4))
