@@ -124,7 +124,7 @@ def test_as_timedelta():
     assert as_timedelta("1sec") == datetime.timedelta(seconds=1)
     assert as_timedelta("1second") == datetime.timedelta(seconds=1)
 
-    assert as_timedelta("s") == datetime.timedelta(seconds=1)
+    # assert as_timedelta("s") == datetime.timedelta(seconds=1)
 
 
 if __name__ == "__main__":
