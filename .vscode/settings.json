@@ -5,7 +5,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
-    "restructuredtext.confPath": "${workspaceFolder}/docs",
     "cSpell.words": [
         "BUFR",
         "ECMWF",

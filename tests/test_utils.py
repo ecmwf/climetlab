@@ -11,6 +11,8 @@
 
 import datetime
 
+import pytest
+
 from climetlab.utils import string_to_args
 from climetlab.utils.humanize import as_timedelta, bytes, number, plural, seconds, when
 
@@ -124,7 +126,35 @@ def test_as_timedelta():
     assert as_timedelta("1sec") == datetime.timedelta(seconds=1)
     assert as_timedelta("1second") == datetime.timedelta(seconds=1)
 
-    # assert as_timedelta("s") == datetime.timedelta(seconds=1)
+    with pytest.raises(ValueError):
+        as_timedelta("s")
+
+    assert as_timedelta("2m") == datetime.timedelta(minutes=2)
+    assert as_timedelta("10min") == datetime.timedelta(minutes=10)
+    assert as_timedelta("30 minute") == datetime.timedelta(minutes=30)
+    assert as_timedelta("120 minute") == datetime.timedelta(minutes=120)
+
+    assert as_timedelta("1h") == datetime.timedelta(hours=1)
+    assert as_timedelta("25hour") == datetime.timedelta(hours=25)
+
+    assert as_timedelta("1d") == datetime.timedelta(days=1)
+    assert as_timedelta("1day") == datetime.timedelta(days=1)
+
+    assert as_timedelta("1w") == datetime.timedelta(days=7)
+    assert as_timedelta("1week") == datetime.timedelta(days=7)
+
+    with pytest.raises(ValueError):
+        print(as_timedelta("1a"))
+
+    with pytest.raises(ValueError):
+        print(as_timedelta("1a1h"))
+
+    assert as_timedelta("1w 2d 3h 4m 5s") == datetime.timedelta(
+        days=9,
+        hours=3,
+        minutes=4,
+        seconds=5,
+    )
 
 
 if __name__ == "__main__":

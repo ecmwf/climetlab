@@ -280,32 +280,29 @@ def as_bytes(value, name=None, none_ok=False):
 
 
 def as_timedelta(value, name=None, none_ok=False):
+    save = value
     value = re.sub(r"[^a-zA-Z0-9]", "", value.lower())
     value = re.sub(r"([a-zA-Z])[a-zA-Z]*", r"\1", value)
-    value = re.sub(r"[^dmhsw0-9]", "", value)
+    # value = re.sub(r"[^dmhsw0-9]", "", value)
     bits = [b for b in re.split(r"([dmhsw])", value) if b != ""]
 
     times = defaultdict(int)
 
-    TIME = dict(
-        d="days",
-        m="minutes",
-        h="hours",
-        s="seconds",
-        w="weeks",
-    )
-
     val = None
-    for n in bits:
-        if n in "dmhsw":
-            if val is None:
-                raise ValueError(f"Missing number before the '{TIME[n]}'")
+
+    for i, n in enumerate(bits):
+        if i % 2 == 0:
+            val = int(n)
+        else:
+            assert n in ("d", "m", "h", "s", "w")
             times[n] = val
             val = None
-        else:
-            val = int(n)
+
+    if val is not None:
+        raise ValueError(f"Invalid period '{save}'")
 
     return datetime.timedelta(
+        weeks=times["w"],
         days=times["d"],
         hours=times["h"],
         minutes=times["m"],

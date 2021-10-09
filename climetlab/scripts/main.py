@@ -35,7 +35,7 @@ except ImportError:  # Not availabe on win32
             pass
 
 
-class ClimetlabApp(
+class CliMetLabApp(
     cmd.Cmd,
     SettingsCmd,
     CacheCmd,
@@ -108,7 +108,7 @@ def main():
 
     logging.basicConfig(level=args.debug and "DEBUG" or "WARN")
 
-    app = ClimetlabApp()
+    app = CliMetLabApp()
 
     if cmdline:
         return app.onecmd(" ".join(cmdline))

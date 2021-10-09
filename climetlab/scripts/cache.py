@@ -27,7 +27,7 @@ MATCHER = dict(
 
 
 def parse_size(txt):
-    return int(txt)
+    return humanize.as_bytes(txt)
 
 
 def parse_user_date(value):
@@ -72,14 +72,12 @@ class Matcher:
             return True
 
         if self.smaller is not None:
-            if entry["size"] is not None:
-                if entry["size"] > self.smaller:
-                    return False
+            if entry["size"] is None or entry["size"] > self.smaller:
+                return False
 
         if self.larger is not None:
-            if entry["size"] is not None:
-                if entry["size"] < self.larger:
-                    return False
+            if entry["size"] is None or entry["size"] < self.larger:
+                return False
 
         creation_date = parse_date(entry["creation_date"])
 
@@ -113,14 +111,17 @@ class Matcher:
 
 class CacheCmd:
     @parse_args(
-        json=dict(action="store_true"),
+        json=dict(action="store_true", help="produce a JSON output"),
         full=dict(action="store_true"),
-        path=dict(action="store_true"),
+        path=dict(
+            action="store_true", help="print the path of cache directory and exit"
+        ),
         sort=dict(type=str, metavar="KEY"),
         reverse=dict(action="store_true"),
         **MATCHER,
     )
     def do_cache(self, args):
+        """Text"""
         from climetlab.core.caching import cache_directory, dump_cache_database
 
         if args.path:

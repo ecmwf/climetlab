@@ -22,18 +22,23 @@ class ArgumentParser(argparse.ArgumentParser):
 
 def parse_args(positional=None, **kwargs):
     def wrapper(func):
+
+        p = ArgumentParser(
+            func.__name__.replace("do_", ""),
+            description=func.__doc__,
+        )
+
+        if positional is not None:
+            p.add_argument("args", metavar="ARG", type=str, nargs=positional)
+
+        for k, v in kwargs.items():
+            p.add_argument(f"--{k}", **v)
+
+        func._argparser = p
+
         @wraps(func)
         def wrapped(self, args):
-            p = ArgumentParser(func.__name__.replace("do_", ""))
-
-            if positional is not None:
-                p.add_argument("args", metavar="ARG", type=str, nargs=positional)
-
-            for k, v in kwargs.items():
-                p.add_argument(f"--{k}", **v)
-
             args = p.parse_args(shlex.split(args))
-
             return func(self, args)
 
         return wrapped
