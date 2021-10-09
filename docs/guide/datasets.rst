@@ -103,12 +103,9 @@ It often includ a column for the latitude and longitude of the data.
 Generic options
 ---------------
 
-Some arguments in the ``options`` dictionary are always included in
-``climetlab.load_dataset`` or ``climetlab.Dataset.to_xarray()`` or
-``climetlab.Dataset.to_pandas()`` (see :ref:`developer/dataset-options`).
-
 .. todo::
     Currently no options are added by CliMetLab.
+    Add documentation on merger and filter.
 
 Other arguments are defined by the plugin maintainer, and are be
 documented in the plugin documentation.
