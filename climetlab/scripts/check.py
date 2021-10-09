@@ -138,6 +138,7 @@ class CheckCmd:
 
     @parse_args(json=dict(action="store_true"))
     def do_plugins(self, args):
+        """List the available plugins"""
 
         import entrypoints
 
@@ -184,16 +185,16 @@ class CheckCmd:
         return modules
 
     @parse_args(
-        positional="*",
-        json=dict(action="store_true"),
-        full=dict(action="store_true"),
+        modules=dict(metavar="MODULE", type=str, nargs="*"),
+        json=dict(action="store_true", help="produce a JSON output"),
+        all=dict(action="store_true"),
     )
     def do_versions(self, args):
 
         """List the versions of important Python packages."""
         import entrypoints
 
-        modules = set(args.args)
+        modules = set(args.modules)
 
         if not modules:
             modules = self._loaded_modules("climetlab")
@@ -207,7 +208,7 @@ class CheckCmd:
 
         result = {}
 
-        if args.full:
+        if args.all:
             for module in modules:
                 try:
                     import_module(module)
