@@ -1,5 +1,5 @@
-Climetlab command line
-======================
+Command line tool
+=================
 
 Installing climetlab also make available the :code:`climetlab` utility command line interface.
 

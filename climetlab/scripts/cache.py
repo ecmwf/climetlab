@@ -17,12 +17,42 @@ from climetlab.utils.dates import parse_date
 
 from .tools import parse_args, print_table
 
+EPILOG = """
+SIZE can be expressed using suffixes such a K, M, G, etc. For example
+``--larger 1G`` will match all cache entries larger than 1 GiB.
+
+DATE can be expressed as absolute time YYYY-MM-DDTHH:MM:SS or relative such
+as ``1h`` (one hour ago) or ``2d`` (two days ago).
+
+The ``--older`` and ``--newer`` consider the *creation date* of
+cache entries, unless ``--accessed`` is specified. In this case the time of
+*last access* is used.
+
+Example, to remove large files not accessed for one week:
+
+   ``decache --accessed --older 1w --larger 1G``
+
+"""
+
 MATCHER = dict(
-    match=dict(type=str, metavar="STRING"),
-    newer=dict(type=str, metavar="DATE"),
-    older=dict(type=str, metavar="DATE"),
-    larger=dict(type=str, metavar="SIZE"),
-    smaller=dict(type=str, metavar="SIZE"),
+    epilog=EPILOG,
+    match=dict(type=str, metavar="STRING", help="TODO"),
+    newer=dict(type=str, metavar="DATE", help="TODO"),
+    older=dict(type=str, metavar="DATE", help="TODO"),
+    accessed=dict(
+        action="store_true",
+        help="use the date of last access instead of the creation date",
+    ),
+    larger=dict(
+        type=str,
+        metavar="SIZE",
+        help="consider only cache entries that are larger than SIZE bytes",
+    ),
+    smaller=dict(
+        type=str,
+        metavar="SIZE",
+        help="consider only cache entries that are smaller than SIZE bytes",
+    ),
 )
 
 
@@ -116,12 +146,21 @@ class CacheCmd:
         path=dict(
             action="store_true", help="print the path of cache directory and exit"
         ),
-        sort=dict(type=str, metavar="KEY"),
-        reverse=dict(action="store_true"),
+        sort=dict(
+            type=str,
+            metavar="KEY",
+            help="sort output according to increasing values of KEY.",
+        ),
+        reverse=dict(
+            action="store_true",
+            help="reverse the order of the sort, from larger to smaller",
+        ),
         **MATCHER,
     )
     def do_cache(self, args):
-        """Text"""
+        """
+        cache command
+        """
         from climetlab.core.caching import cache_directory, dump_cache_database
 
         if args.path:
@@ -197,9 +236,11 @@ class CacheCmd:
                 oldest_accessed = min(oldest_accessed, entry["last_access"])
                 youngest_created = max(youngest_created, entry["last_access"])
                 oldest_created = min(oldest_created, entry["last_access"])
+
             yield ("Cache directory:", cache_directory())
             yield ("Cache size:", humanize.bytes(total))
             yield ("Number of entries in cache:", humanize.number(len(cache)))
+
             if youngest_accessed:
                 yield (
                     "Most recently accessed:",
@@ -225,6 +266,10 @@ class CacheCmd:
         **MATCHER,
     )
     def do_decache(self, args):
+        """
+        decache command
+        """
+
         from climetlab.core.caching import purge_cache
 
         matcher = Matcher(args)
@@ -244,3 +289,6 @@ class CacheCmd:
                 "red",
             )
         )
+
+
+CacheCmd.do_decache.__doc__ += "Hello"

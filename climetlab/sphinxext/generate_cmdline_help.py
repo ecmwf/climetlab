@@ -26,10 +26,12 @@ def execute(*args):
         print()
 
         # Not garanteed to work with future versions of Python
-        func._argparser.formatter_class = lambda prog: argparse.HelpFormatter(
-            prog,
-            width=90,
-            max_help_position=10000,
+        func._argparser.formatter_class = (
+            lambda prog: argparse.RawDescriptionHelpFormatter(
+                prog,
+                width=90,
+                max_help_position=10000,
+            )
         )
 
         for n in func._argparser.format_help().split("\n"):

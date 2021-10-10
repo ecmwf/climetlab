@@ -9,6 +9,7 @@
 
 import argparse
 import shlex
+import textwrap
 from functools import wraps
 from itertools import cycle
 
@@ -20,12 +21,14 @@ class ArgumentParser(argparse.ArgumentParser):
         raise ValueError(f"{self.prog}: {message}\n\n{self.format_help()}.")
 
 
-def parse_args(**kwargs):
+def parse_args(epilog="", **kwargs):
     def wrapper(func):
+        doc = "" if func.__doc__ is None else func.__doc__
 
         p = ArgumentParser(
             func.__name__.replace("do_", ""),
-            description=func.__doc__,
+            description=textwrap.dedent(doc),
+            epilog=textwrap.dedent(epilog),
         )
 
         for k, v in kwargs.items():
