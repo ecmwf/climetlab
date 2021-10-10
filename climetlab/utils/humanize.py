@@ -131,7 +131,7 @@ def when(then, now=None, short=True):
     last = "last"
 
     if now is None:
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now()
 
     diff = (now - then).total_seconds()
 

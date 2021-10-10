@@ -64,7 +64,7 @@ def parse_user_date(value):
     try:
         return parse_date(value)
     except ValueError:
-        return datetime.datetime.utcnow() - humanize.as_timedelta(value)
+        return datetime.datetime.now() - humanize.as_timedelta(value)
 
 
 class Matcher:
@@ -72,7 +72,8 @@ class Matcher:
         self.message = []
 
         for k in MATCHER.keys():
-            setattr(self, k, getattr(args, k))
+            if k != "epilog":
+                setattr(self, k, getattr(args, k))
 
         if self.match is not None:
             self.message.append(f"matching '{self.match}'")
