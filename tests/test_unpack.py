@@ -12,6 +12,7 @@
 
 import logging
 import sys
+import time
 
 import pytest
 
@@ -56,8 +57,7 @@ def test_unpack_zip():
         with pytest.raises(OfflineError):
             ds = load_source(
                 "url",
-                "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                force=True,
+                f"https://get.ecmwf.int/test-data/climetlab/input/grib.zip?time={time.time()}",
             )
 
         offline(False)
