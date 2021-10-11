@@ -21,6 +21,8 @@ def execute(*args):
             continue
 
         print()
+        print(f".. _{cmd[3:]}_cmd:")
+        print()
         print(cmd[3:])
         print("^" * len(cmd[3:]))
         print()

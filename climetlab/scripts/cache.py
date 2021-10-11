@@ -21,7 +21,7 @@ EPILOG = """
 SIZE can be expressed using suffixes such a K, M, G, etc. For example
 ``--larger 1G`` will match all cache entries larger than 1 GiB.
 
-DATE can be expressed as absolute time YYYY-MM-DDTHH:MM:SS or relative such
+DATE can be expressed as absolute time like ``2021-10-10T22:59:00``` or relative such
 as ``1h`` (one hour ago) or ``2d`` (two days ago).
 
 The ``--older`` and ``--newer`` consider the *creation date* of
@@ -90,11 +90,13 @@ class Matcher:
 
         if self.smaller is not None:
             self.smaller = parse_size(self.smaller)
-            self.message.append(f"smaller than {self.smaller}")
+            value = humanize.bytes(self.smaller)
+            self.message.append(f"smaller than {value}")
 
         if self.larger is not None:
             self.larger = parse_size(self.larger)
-            self.message.append(f"larger than {self.larger}")
+            value = humanize.bytes(self.larger)
+            self.message.append(f"larger than {value}")
 
         self.undefined = len(self.message) == 0
 

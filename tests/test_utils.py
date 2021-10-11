@@ -14,7 +14,16 @@ import datetime
 import pytest
 
 from climetlab.utils import string_to_args
-from climetlab.utils.humanize import as_timedelta, bytes, number, plural, seconds, when
+from climetlab.utils.humanize import (
+    as_bytes,
+    as_seconds,
+    as_timedelta,
+    bytes,
+    number,
+    plural,
+    seconds,
+    when,
+)
 
 
 def test_string_to_args():
@@ -155,6 +164,27 @@ def test_as_timedelta():
         minutes=4,
         seconds=5,
     )
+
+
+def test_as_bytes():
+    assert as_bytes("1") == 1
+    assert as_bytes("1k") == 1024
+    assert as_bytes("2K") == 2048
+    assert as_bytes("1m") == 1024 * 1024
+    assert as_bytes("1g") == 1024 * 1024 * 1024
+    assert as_bytes("1t") == 1024 * 1024 * 1024 * 1024
+
+
+# def test_as_percent():
+#     assert as_percent("1") == 1
+#     assert as_percent("1%") == 1
+
+
+def test_as_seconds():
+    assert as_seconds("1") == 1
+    assert as_seconds("2s") == 2
+    assert as_seconds("1m") == 60
+    assert as_seconds("2h") == 2 * 60 * 60
 
 
 if __name__ == "__main__":

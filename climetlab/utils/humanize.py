@@ -259,7 +259,7 @@ def as_number(value, name, units, none_ok):
 
 
 def as_seconds(value, name=None, none_ok=False):
-    units = dict(s=1, m=60, h=3600, d=86400)
+    units = dict(s=1, m=60, h=3600, d=86400, w=86400 * 7)
     return as_number(value, name, units, none_ok)
 
 
@@ -280,6 +280,9 @@ def as_bytes(value, name=None, none_ok=False):
 
 
 def as_timedelta(value, name=None, none_ok=False):
+    if value is None and none_ok:
+        return None
+
     save = value
     value = re.sub(r"[^a-zA-Z0-9]", "", value.lower())
     value = re.sub(r"([a-zA-Z])[a-zA-Z]*", r"\1", value)
@@ -299,6 +302,8 @@ def as_timedelta(value, name=None, none_ok=False):
             val = None
 
     if val is not None:
+        if name:
+            raise ValueError(f"{name}: invalid period '{save}'")
         raise ValueError(f"Invalid period '{save}'")
 
     return datetime.timedelta(
