@@ -1,7 +1,7 @@
 Command line tool
 =================
 
-Installing climetlab also make available the :code:`climetlab` utility command line interface.
+Installing climetlab also make available the ``climetlab`` utility command line interface.
 
 Usage
 ------
@@ -19,7 +19,9 @@ Interactive prompt
 ------------------
 :code:`climetlab`
 
-Running the :code:`climetlab` command with no argument starts the interactive prompt. Autocompletion is enabled on the interactive prompt.
+Running the ``climetlab`` command with no argument starts the
+interactive prompt. Autocompletion is enabled on the interactive
+prompt.
 
     .. code:: bash
 

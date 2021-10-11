@@ -54,5 +54,6 @@
         "markdown",
         "latex",
         "plaintext"
-    ]
+    ],
+    "restructuredtext.confPath": "${workspaceFolder}/docs"
 }

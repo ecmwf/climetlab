@@ -1,6 +1,7 @@
 .. _caching:
 
-Caching =======
+Caching
+=======
 
 .. warning::
 
@@ -65,8 +66,7 @@ maximum-cache-disk-usage is relative (such as "90%" or "100%").
 
 
 
-Caching options ---------------
+Caching options
+---------------
 
 .. module-output:: generate_settings_rst .*-cache-.*
-
-

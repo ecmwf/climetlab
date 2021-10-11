@@ -89,7 +89,7 @@ will print:
 then,
 
 .. literalinclude:: dataset-example.py
-  :lines: 7-9
+  :lines: 6-7
 
 
 will plot:

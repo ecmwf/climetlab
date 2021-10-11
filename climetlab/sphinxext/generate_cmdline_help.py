@@ -23,7 +23,7 @@ def execute(*args):
         cmd = cmd[3:]  # remove "do_"
 
         print()
-        print(f".. _{cmd}_cmd:")
+        print(f".. _{cmd}-command:")
         print()
         print(cmd)
         print("^" * len(cmd))

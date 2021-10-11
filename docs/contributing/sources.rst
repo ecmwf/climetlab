@@ -8,7 +8,7 @@ given location. CliMetLab has build-in sources (the most common being the "url"
 source) and a plugin can add more sources capabilities.
 A Source provides access to data, the code performing the actual reading can either be
 located in the Source itself or delegated to a Reader class.
-See details in :ref:`Source class <reference/source>`.
+.. See details in :ref:`Source class <reference/source>`.
 
 Adding a new source as a pip plugin
 -----------------------------------

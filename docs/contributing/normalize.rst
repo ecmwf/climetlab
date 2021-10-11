@@ -137,7 +137,7 @@ element of the list provided.
     def f(self, option):
         assert option in ["a", "b"]
         print(option)
-    
+
     >>> f("a")
     "a"
     >>> f(None)
@@ -171,7 +171,7 @@ value to the function. It ensures the following:
         for o in option:
             assert o in ["a", "b"]
         print(option)
-    
+
     >>> f("a")
     ["a"]
     >>> f(None)
@@ -229,6 +229,13 @@ starting with "date-list(" is assigned to a parameter in @normalize_args.
 
     @normalize_args(date="date-list(%Y%m%d)")
 
+
+.. _bounding-box-normalizer:
+
+BoundingBox
+-----------
+
+TODO
 
 .. todo::
 
