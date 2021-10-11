@@ -20,11 +20,13 @@ def execute(*args):
         if not hasattr(func, "_argparser"):
             continue
 
+        cmd = cmd[3:]  # remove "do_"
+
         print()
-        print(f".. _{cmd[3:]}_cmd:")
+        print(f".. _{cmd}_cmd:")
         print()
-        print(cmd[3:])
-        print("^" * len(cmd[3:]))
+        print(cmd)
+        print("^" * len(cmd))
         print()
 
         # Not garanteed to work with future versions of Python
