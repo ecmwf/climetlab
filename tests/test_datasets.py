@@ -14,21 +14,14 @@ import os
 import pytest
 
 import climetlab as cml
-from climetlab import load_dataset
-
-
-@pytest.fixture()
-def dataset():
-    from climetlab import dataset
-
-    return dataset
+from climetlab import dataset, load_dataset
 
 
 def test_dataset_1():
     load_dataset("sample-bufr-data")
 
 
-def test_dataset_2(dataset):
+def test_dataset_2():
     dataset.sample_bufr_data()
 
 

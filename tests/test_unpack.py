@@ -11,8 +11,8 @@
 
 
 import logging
-import sys
 import time
+from unittest.mock import patch
 
 import pytest
 
@@ -26,24 +26,14 @@ class OfflineError(Exception):
     pass
 
 
-class OfflineRequests:
-    def __init__(self):
-        import requests as original_requests
-
-        self.original_requests = original_requests
-        self.offline = False
-
-    def __getattr__(self, name):
-        if self.offline:
-            raise OfflineError(name)
-        return getattr(self.original_requests, name)
-
-
-sys.modules["requests"] = OfflineRequests()
+patcher = patch("socket.socket", side_effect=OfflineError)
 
 
 def offline(off):
-    sys.modules["requests"].offline = off
+    if off:
+        patcher.start()
+    else:
+        patcher.stop()
 
 
 def test_unpack_zip():
