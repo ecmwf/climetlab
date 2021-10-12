@@ -78,18 +78,9 @@ jobs:
         run: |
           # -E flag is defined in conftest.py
           # notebooks are tested below, as they need more dependencies
-          pytest --cov=climetlab --durations=0 -E long -k 'not test_notebooks and not test_unpack'
+          pytest --cov=climetlab --durations=0 -E long -k 'not test_notebooks'
         env:
           CLIMETLAB_DEBUG: 1
-
-
-      - name: Tests unpack
-        run: |
-          climetlab decache --all
-          pytest tests/test_unpack.py
-        env:
-          CLIMETLAB_DEBUG: 1
-
 
       - name: Install test tools for notebooks
         run: |
