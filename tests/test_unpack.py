@@ -12,96 +12,48 @@
 
 import logging
 import time
-from unittest.mock import patch
 
 import pytest
 
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
+from climetlab.testing import OfflineError, network_off
 
 LOG = logging.getLogger(__name__)
 
 
-class OfflineError(Exception):
-    pass
+def test_unpack_zip():
+    TEST_URL = "https://get.ecmwf.int/test-data/climetlab/input/grib.zip"
 
+    # Make sure we fail if not cached
+    with pytest.raises(OfflineError), network_off():
+        ds = load_source("url", f"{TEST_URL}?time={time.time()}")
 
-class NetworkPatcher:
-    def __init__(self):
-        self.patcher = patch("socket.socket", side_effect=OfflineError)
+    with temp_directory() as tmpdir:
+        with settings.temporary("cache-directory", tmpdir):
+            ds = load_source("url", TEST_URL)
+            assert len(ds) == 6, len(ds)
 
-    def off(self):
-        self.patcher.start()
-
-    def on(self):
-        self.patcher.stop()
-
-
-@pytest.fixture()
-def network():
-    network = NetworkPatcher()
-    yield network
-    # network.on() # Teardown cleanup code see https://docs.pytest.org/en/6.2.x/fixture.html
-
-
-def test_unpack_zip(network):
-
-    network.on()
-
-    try:
-
-        network.off()
-        with pytest.raises(OfflineError):
-            ds = load_source(
-                "url",
-                f"https://get.ecmwf.int/test-data/climetlab/input/grib.zip?time={time.time()}",
-            )
-
-        network.on()
-
-        with temp_directory() as tmpdir:
-            with settings.temporary("cache-directory", tmpdir):
-                ds = load_source(
-                    "url",
-                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                )
+            with network_off():
+                # Check cache is used
+                ds = load_source("url", TEST_URL)
                 assert len(ds) == 6, len(ds)
 
-                network.off()  # Make sure we fail if not cached
-
-                # Check cache
-                ds = load_source(
-                    "url",
-                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                )
+            with pytest.raises(OfflineError), network_off():
+                # check force
+                ds = load_source("url", TEST_URL, force=True)
                 assert len(ds) == 6, len(ds)
 
-                network.on()
+            ds = load_source("url", TEST_URL, force=True)
+            assert len(ds) == 6, len(ds)
 
-                LOG.debug("Use the force")
-                ds = load_source(
-                    "url",
-                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                    force=True,
-                )
-                assert len(ds) == 6, len(ds)
-
-                network.off()  # Make sure we fail if not cached
-
-                ds = load_source(
-                    "url",
-                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                )
+            with network_off():
+                ds = load_source("url", TEST_URL)
                 assert len(ds) == 6, len(ds)
 
                 # Again
-                ds = load_source(
-                    "url",
-                    "https://get.ecmwf.int/test-data/climetlab/input/grib.zip",
-                )
+                ds = load_source("url", TEST_URL)
                 assert len(ds) == 6, len(ds)
-    finally:
-        network.on()
 
 
 if __name__ == "__main__":

@@ -10,13 +10,31 @@
 import logging
 import os
 import pathlib
+from contextlib import contextmanager
 from importlib import import_module
+from unittest.mock import patch
 
 from climetlab import load_source
 from climetlab.readers.text import TextReader
 from climetlab.sources.empty import EmptySource
 
 LOG = logging.getLogger(__name__)
+
+
+class OfflineError(Exception):
+    pass
+
+
+_NETWORK_PATCHER = patch("socket.socket", side_effect=OfflineError)
+
+
+@contextmanager
+def network_off():
+    try:
+        _NETWORK_PATCHER.start()
+        yield None
+    finally:
+        _NETWORK_PATCHER.stop()
 
 
 def climetlab_file(*args):
