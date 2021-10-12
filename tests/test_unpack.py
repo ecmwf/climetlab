@@ -46,7 +46,6 @@ def offline(off):
     sys.modules["requests"].offline = off
 
 
-@pytest.mark.long_test
 def test_unpack_zip():
 
     offline(False)
