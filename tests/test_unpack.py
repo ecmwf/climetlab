@@ -26,30 +26,38 @@ class OfflineError(Exception):
     pass
 
 
-patcher = patch("socket.socket", side_effect=OfflineError)
+class NetworkPatcher:
+    def __init__(self):
+        self.patcher = patch("socket.socket", side_effect=OfflineError)
+
+    def off(self):
+        self.patcher.start()
+
+    def on(self):
+        self.patcher.stop()
 
 
-def offline(off):
-    if off:
-        patcher.start()
-    else:
-        patcher.stop()
+@pytest.fixture(autouse=True)
+def network():
+    network = NetworkPatcher()
+    yield network
+    # network.on() # Teardown cleanup code see https://docs.pytest.org/en/6.2.x/fixture.html
 
 
 def test_unpack_zip():
 
-    offline(False)
+    network.on()
 
     try:
 
-        offline(True)
+        network.off()
         with pytest.raises(OfflineError):
             ds = load_source(
                 "url",
                 f"https://get.ecmwf.int/test-data/climetlab/input/grib.zip?time={time.time()}",
             )
 
-        offline(False)
+        network.on()
 
         with temp_directory() as tmpdir:
             with settings.temporary("cache-directory", tmpdir):
@@ -59,7 +67,7 @@ def test_unpack_zip():
                 )
                 assert len(ds) == 6, len(ds)
 
-                offline(True)  # Make sure we fail if not cached
+                network.off()  # Make sure we fail if not cached
 
                 # Check cache
                 ds = load_source(
@@ -68,7 +76,7 @@ def test_unpack_zip():
                 )
                 assert len(ds) == 6, len(ds)
 
-                offline(False)
+                network.on()
 
                 LOG.debug("Use the force")
                 ds = load_source(
@@ -78,7 +86,7 @@ def test_unpack_zip():
                 )
                 assert len(ds) == 6, len(ds)
 
-                offline(True)  # Make sure we fail if not cached
+                network.off()  # Make sure we fail if not cached
 
                 ds = load_source(
                     "url",
@@ -93,7 +101,7 @@ def test_unpack_zip():
                 )
                 assert len(ds) == 6, len(ds)
     finally:
-        offline(False)
+        network.on()
 
 
 if __name__ == "__main__":
