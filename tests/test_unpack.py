@@ -37,14 +37,14 @@ class NetworkPatcher:
         self.patcher.stop()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def network():
     network = NetworkPatcher()
     yield network
     # network.on() # Teardown cleanup code see https://docs.pytest.org/en/6.2.x/fixture.html
 
 
-def test_unpack_zip():
+def test_unpack_zip(network):
 
     network.on()
 
