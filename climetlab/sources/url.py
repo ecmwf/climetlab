@@ -165,7 +165,7 @@ class HTTPDownloader(Downloader):
             # the URL does not end with an extension
             # so we avoid fetching the headers unesseraly
 
-            headers = self.headers(url, dont_fail_if_offline=True)
+            headers = self.headers(url)
 
             if "content-disposition" in headers:
                 value, params = cgi.parse_header(headers["content-disposition"])
