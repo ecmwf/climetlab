@@ -27,7 +27,7 @@ class MeteonetMasks(Meteonet):
             url=self.URL,
             domain=domain,
         )
-        self.source = load_source("url", url, styles=["land-sea-mask", "orography"])
+        self.source = load_source("url", url)
 
 
 dataset = MeteonetMasks
