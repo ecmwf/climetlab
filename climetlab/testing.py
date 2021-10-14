@@ -79,6 +79,7 @@ TEST_DATA_URL = "https://get.ecmwf.int/repository/test-data/climetlab"
 def empty(ds):
     LOG.debug("%s", ds)
     assert isinstance(ds, EmptySource)
+    assert len(ds) == 0
 
 
 def text(ds):
