@@ -14,6 +14,7 @@ import os
 
 import pytest
 
+import climetlab as cml
 from climetlab import load_source, plot_map
 from climetlab.readers.netcdf import NetCDFField
 from climetlab.testing import climetlab_file
@@ -43,6 +44,11 @@ def test_dummy_netcdf_reader_2():
     assert "lat" in ds.dims
     # s.to_datetime_list()
     s.to_bounding_box()
+
+
+def test_dummy_netcdf_reader_plot():
+    s = load_source("dummy-source", kind="netcdf")
+    cml.plot_map(s)
 
 
 def test_dummy_netcdf():
