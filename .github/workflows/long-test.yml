@@ -71,7 +71,6 @@ jobs:
       - name: Install test tools
         run: |
           pip install pytest pytest-cov
-          pip install nbformat nbconvert # to test notebooks
           pip freeze
 
       - name: Tests
@@ -79,8 +78,6 @@ jobs:
           # -E flag is defined in conftest.py
           # notebooks are tested below, as they need more dependencies
           pytest --cov=climetlab --durations=0 -E long -k 'not test_notebooks'
-        env:
-          CLIMETLAB_DEBUG: 1
 
       - name: Install test tools for notebooks
         run: |
@@ -94,8 +91,6 @@ jobs:
       - name: Tests notebooks
         run: |
           pytest --durations=0 -E long tests/documentation/test_notebooks.py
-        env:
-          CLIMETLAB_DEBUG: 1
 
       - name: Install packages needed to build the documentation
         if: ${{ matrix.platform == 'ubuntu-latest' }}

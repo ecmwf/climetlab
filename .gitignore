@@ -160,4 +160,5 @@ logs/
 test.*
 test
 *.back
-tests/test_breaker.py
+*.swn
+*.swo
