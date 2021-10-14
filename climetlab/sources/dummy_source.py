@@ -81,6 +81,7 @@ def make_xarray(
     dims=["lat", "lon"],
     size=2,
     coord_values=None,
+    attributes=None,
     **kwargs,
 ):
     import numpy as np
@@ -122,6 +123,11 @@ def make_xarray(
         ds["lon"].attrs["standard_name"] = "longitude"
     if "time" in ds.dims:
         ds["time"].attrs["standard_name"] = "time"
+
+    if attributes:
+        for d, attrs in attributes.items():
+            for k, v in attrs.items():
+                ds[d].attrs[k] = v
 
     return ds
 

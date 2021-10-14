@@ -15,6 +15,7 @@ import os
 import pytest
 
 from climetlab import load_source, plot_map
+from climetlab.readers.netcdf import NetCDFField
 from climetlab.testing import climetlab_file
 
 
@@ -23,11 +24,29 @@ def test_netcdf():
         plot_map(s)
 
 
-def test_dummy_netcdf():
+def test_dummy_netcdf_reader_1():
+    s = load_source("file", climetlab_file("docs/examples/test.nc"))
+    r = s._reader
+    assert str(r).startswith("NetCDFReader"), r
+    assert len(r) == 2
+    assert isinstance(r[1], NetCDFField), r
+
+
+def test_dummy_netcdf_reader_2():
     s = load_source(
         "dummy-source",
         kind="netcdf",
+        attributes={"a": {"bounds": "bounds_of_a"}},
+        variables=["a", "bounds_of_a"],
     )
+    ds = s.to_xarray()
+    assert "lat" in ds.dims
+    # s.to_datetime_list()
+    s.to_bounding_box()
+
+
+def test_dummy_netcdf():
+    s = load_source("dummy-source", kind="netcdf")
     ds = s.to_xarray()
     assert "lat" in ds.dims
 
