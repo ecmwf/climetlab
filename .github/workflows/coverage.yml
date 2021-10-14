@@ -64,5 +64,4 @@ jobs:
           pytest --cov=climetlab --cov-report=xml -E release
 
       - name: Codecov Upload
-          # if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
-          uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v2
