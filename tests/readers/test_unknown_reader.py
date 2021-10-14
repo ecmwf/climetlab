@@ -9,17 +9,25 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+
 import climetlab as cml
 
 
 def test_unknown_reader():
-    s = cml.load_source("file", "unknown_file.unknown_ext")
+    s = cml.load_source(
+        "file",
+        os.path.join(os.path.dirname(__file__), "unknown_file.unknown_ext"),
+    )
     print(s)
     assert isinstance(s._reader, cml.readers.unknown.Unknown)
 
 
 def test_text_reader():
-    s = cml.load_source("file", "unknown_text_file.unknown_ext")
+    s = cml.load_source(
+        "file",
+        os.path.join(os.path.dirname(__file__), "unknown_text_file.unknown_ext"),
+    )
     print(s)
     assert isinstance(s._reader, cml.readers.text.TextReader)
 
