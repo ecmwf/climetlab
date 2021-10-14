@@ -61,4 +61,5 @@ jobs:
       - name: Tests
         run: |
           # -E flag is defined in conftest.py
-          pytest --cov=climetlab --durations=0 -E long
+          # pytest --cov=climetlab --durations=0 -E long
+          pytest --cov=climetlab --durations=0 -E release
