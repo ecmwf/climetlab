@@ -58,6 +58,25 @@ def test_zenodo_3():
 
 
 @pytest.mark.external_download
+def test_zenodo_error_1():
+    with pytest.raises(ValueError, match=r"No .*"):
+        cml.load_source(
+            "zenodo",
+            record_id=4707154,
+        )
+
+
+@pytest.mark.external_download
+def test_zenodo_error_2():
+    with pytest.raises(ValueError, match=r"Invalid zenodo key.*"):
+        cml.load_source(
+            "zenodo",
+            record_id=4707154,
+            file_key="unknown_",
+        )
+
+
+@pytest.mark.external_download
 def test_zenodo_read_nc():
     def file_filter(path):
         return path.endswith("analysis_2t_2013-01-02.nc")
