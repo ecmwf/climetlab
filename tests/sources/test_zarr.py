@@ -121,7 +121,7 @@ def test_zarr_from_zip_file():
 
 # @pytest.skip(reason="The test http server does not allow zarr hosting from outside of ECMWF.")
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")
-def test_http_does_not_support_zarr():
+def test_http_does_support_zarr():
     source = load_source(
         "zarr-s3",
         f"{NOT_S3_URL}/mini-rt-20200102.zarr",
