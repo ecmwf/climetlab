@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-name: coverage
+name: Coverage
 
 on:
   # schedule:
@@ -58,8 +58,11 @@ jobs:
           pip install nbformat nbconvert ipykernel
           pip freeze
 
-      - name: Tests
+      - name: Tests with code coverage
         run: |
           # -E flag is defined in conftest.py
-          # pytest --cov=climetlab --durations=0 -E long
-          pytest --cov=climetlab --durations=0 -E release
+          pytest --cov=climetlab --cov-report=xml -E release
+
+      - name: Codecov Upload
+          # if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+          uses: codecov/codecov-action@v2
