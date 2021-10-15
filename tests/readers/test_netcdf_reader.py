@@ -33,12 +33,13 @@ def test_dummy_netcdf_reader_1():
     assert isinstance(r[1], NetCDFField), r
 
 
-def test_dummy_netcdf_reader_2():
+@pytest.mark.parametrize("attribute", ["coordinates", "bounds", "grid_mapping"])
+def test_dummy_netcdf_reader_2(attribute):
     s = load_source(
         "dummy-source",
         kind="netcdf",
-        attributes={"a": {"bounds": "bounds_of_a"}},
-        variables=["a", "bounds_of_a"],
+        attributes={"a": {attribute: f"{attribute}_of_a"}},
+        variables=["a", f"{attribute}_of_a"],
     )
     ds = s.to_xarray()
     assert "lat" in ds.dims

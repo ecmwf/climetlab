@@ -112,6 +112,7 @@ def main(globals):
     if not (len(sys.argv) > 1 and sys.argv[1] != "--no-debug"):
         logging.basicConfig(level=logging.DEBUG)
 
+    skipped = 0
     for k, f in sorted(globals.items()):
         if k.startswith("test_") and callable(f):
             skip = None
@@ -119,8 +120,14 @@ def main(globals):
                 for m in f.pytestmark:
                     if m.name == "skipif" and m.args[0] is True:
                         skip = m.kwargs.get("reason", "?")
+                    if m.name == "parametrize":
+                        skip = "@pytest.parametrize not supported when running out of pytest."
+                        skipped += 1
             if skip:
                 LOG.debug("========= Skipping '%s' %s", k, skip)
             else:
                 LOG.debug("========= Running '%s'", k)
                 f()
+
+    if skipped:
+        LOG.debug("--------- %d test(s) skipped", skipped)
