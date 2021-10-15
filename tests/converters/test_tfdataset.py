@@ -114,4 +114,4 @@ def test_tfdataset_2():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

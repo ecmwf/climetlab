@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 def test_cache_1():
 
-    purge_cache(matcher=lambda e: e["owner"] == "test_cache")
+    purge_cache(matcher=lambda e: ["owner"] == "test_cache")
 
     def touch(target, args):
         assert args["foo"] in (1, 2)
@@ -141,4 +141,4 @@ def test_cache_4():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

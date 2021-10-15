@@ -106,28 +106,12 @@ def check_unsafe_archives(extension):
         check(ds)
 
 
-def main(globals):
+def main(path):
     import sys
 
-    if not (len(sys.argv) > 1 and sys.argv[1] != "--no-debug"):
-        logging.basicConfig(level=logging.DEBUG)
+    import pytest
 
-    skipped = 0
-    for k, f in sorted(globals.items()):
-        if k.startswith("test_") and callable(f):
-            skip = None
-            if hasattr(f, "pytestmark"):
-                for m in f.pytestmark:
-                    if m.name == "skipif" and m.args[0] is True:
-                        skip = m.kwargs.get("reason", "?")
-                    if m.name == "parametrize":
-                        skip = "@pytest.parametrize not supported when running out of pytest."
-                        skipped += 1
-            if skip:
-                LOG.debug("========= Skipping '%s' %s", k, skip)
-            else:
-                LOG.debug("========= Running '%s'", k)
-                f()
-
-    if skipped:
-        LOG.debug("--------- %d test(s) skipped", skipped)
+    # Parallel does not work on darwin, gets RuntimeError: context has already been set
+    # because pytest-parallel changes the context from `spawn` to `fork`
+    # logging.basicConfig(level=logging.DEBUG)
+    sys.exit(pytest.main(["-s", "-p", "no:parallel", "--log-level=DEBUG", path,]))

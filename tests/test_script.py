@@ -108,10 +108,6 @@ def test_cli_df(capsys):
 
 
 if __name__ == "__main__":
+    from climetlab.testing import main
 
-    LOG.debug(
-        f"Skipping {__file__} tests: must run with pytest because they use capsys fixture."
-    )
-
-    # from climetlab.testing import main
-    # main(globals())
+    main(__file__)

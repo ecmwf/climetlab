@@ -408,4 +408,4 @@ if __name__ == "__main__":
     # test_merge_pangeo_1()
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

@@ -33,4 +33,4 @@ def test_download_tfdataset():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

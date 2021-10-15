@@ -79,4 +79,4 @@ def test_ambiguous():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

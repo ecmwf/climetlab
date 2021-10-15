@@ -64,4 +64,4 @@ def test_metview_csv():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

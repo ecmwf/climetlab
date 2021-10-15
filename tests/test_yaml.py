@@ -23,4 +23,4 @@ def test_yaml():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)
