@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import inspect
 import logging
 
 import pytest
@@ -18,11 +17,11 @@ LOG = logging.getLogger(__name__)
 
 
 def command_list():
-    commands = [
-        name
-        for name, _ in inspect.getmembers(CliMetLabApp(), predicate=inspect.ismethod)
+    return [
+        func[3:]
+        for func in dir(CliMetLabApp)
+        if callable(getattr(CliMetLabApp, func)) and func.startswith("do_")
     ]
-    return [name[3:] for name in commands if name.startswith("do_")]
 
 
 @pytest.mark.parametrize("command", command_list())
@@ -53,6 +52,8 @@ def test_cli_cache(capsys):
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    LOG.debug(f"Skipping {__file__} tests: must run with pytest because they use capsys fixture.")
+    LOG.debug(
+        f"Skipping {__file__} tests: must run with pytest because they use capsys fixture."
+    )
 
     # main(globals())
