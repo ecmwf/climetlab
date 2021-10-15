@@ -117,10 +117,10 @@ def main(path):
     args = ["-p", "no:parallel", "-E", "release"]
 
     if len(sys.argv) > 1 and sys.argv[1] == "--no-debug":
-        args = args + ["-o", "log_cli=False"]
+        args += ["-o", "log_cli=False"]
     else:
         logging.basicConfig(level=logging.DEBUG)
-        args = args + ["-o", "log_cli=True"]
+        args += ["-o", "log_cli=True"]
 
     args += [path]
 
