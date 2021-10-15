@@ -42,6 +42,7 @@ def test_dummy_netcdf_reader_2():
     )
     ds = s.to_xarray()
     assert "lat" in ds.dims
+    assert len(s) == 1
     # s.to_datetime_list()
     s.to_bounding_box()
 
