@@ -49,7 +49,7 @@ jobs:
 
       - name: Install climetlab
         run: |
-          pip install -e .[interactive]
+          pip install -e .[interactive,zarr,tensorflow]
           pip freeze
 
       - name: Install test tools
@@ -61,7 +61,7 @@ jobs:
       - name: Tests with code coverage
         run: |
           # -E flag is defined in conftest.py
-          pytest --cov=climetlab --cov-report=xml -E release
+          pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
 
       - name: Codecov Upload
         uses: codecov/codecov-action@v2
