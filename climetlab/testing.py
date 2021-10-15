@@ -113,9 +113,8 @@ def main(path):
 
     # Parallel does not work on darwin, gets RuntimeError: context has already been set
     # because pytest-parallel changes the context from `spawn` to `fork`
-    # logging.basicConfig(level=logging.DEBUG)
 
-    args = ["-p", "no:parallel"]
+    args = ["-p", "no:parallel", "-E", "release"]
 
     if len(sys.argv) > 1 and sys.argv[1] == "--no-debug":
         args = args + ["-o", "log_cli=False"]
