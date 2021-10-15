@@ -250,4 +250,4 @@ def test_overlapping_bbox_3():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

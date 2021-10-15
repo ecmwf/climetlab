@@ -56,4 +56,4 @@ def test_thread():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

@@ -117,4 +117,4 @@ if __name__ == "__main__":
     # print("ok")
     # test_wrapper_xarray_plot_map("lat,lon,time")
 
-    main(globals())
+    main(__file__)

@@ -155,4 +155,4 @@ def test_zenodo_from_yaml_1():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

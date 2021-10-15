@@ -162,4 +162,4 @@ if __name__ == "__main__":
     from climetlab.testing import main
 
     # test_datetime()
-    main(globals())
+    main(__file__)

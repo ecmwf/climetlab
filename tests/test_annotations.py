@@ -108,4 +108,4 @@ def test_xarray_annotations():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

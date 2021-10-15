@@ -103,4 +103,4 @@ def test_pandas_dates():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(globals())
+    main(__file__)

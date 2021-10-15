@@ -106,28 +106,18 @@ def check_unsafe_archives(extension):
         check(ds)
 
 
-def main(globals):
+def main(filename):
     import sys
 
-    if not (len(sys.argv) > 1 and sys.argv[1] != "--no-debug"):
+    import pytest
+
+    args = [filename]
+
+    if len(sys.argv) > 1 and sys.argv[1] == "--no-debug":
+        args = args + ["-o", "log_cli=False"]
+    else:
         logging.basicConfig(level=logging.DEBUG)
+        args = args + ["-o", "log_cli=True"]
 
-    skipped = 0
-    for k, f in sorted(globals.items()):
-        if k.startswith("test_") and callable(f):
-            skip = None
-            if hasattr(f, "pytestmark"):
-                for m in f.pytestmark:
-                    if m.name == "skipif" and m.args[0] is True:
-                        skip = m.kwargs.get("reason", "?")
-                    if m.name == "parametrize":
-                        skip = "@pytest.parametrize not supported when running out of pytest."
-                        skipped += 1
-            if skip:
-                LOG.debug("========= Skipping '%s' %s", k, skip)
-            else:
-                LOG.debug("========= Running '%s'", k)
-                f()
-
-    if skipped:
-        LOG.debug("--------- %d test(s) skipped", skipped)
+    retcode = pytest.main(args)
+    sys.exit(retcode)

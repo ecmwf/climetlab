@@ -134,4 +134,4 @@ if __name__ == "__main__":
     from climetlab.testing import main
 
     # test_http_does_not_support_zarr()
-    main(globals())
+    main(__file__)
