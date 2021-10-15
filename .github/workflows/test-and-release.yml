@@ -93,9 +93,9 @@ jobs:
         run: |
           pip install nbformat nbconvert ipykernel
 
-      - name: Install climetlab[interactive] for the notebooks
+      - name: Install climetlab full
         run: |
-          pip install -e .[interactive]
+          pip install -e .[interactive,tensorflow,zarr]
           pip freeze
 
       - name: Tests notebooks

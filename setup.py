@@ -82,6 +82,10 @@ extras_require = {
     "tensorflow": [
         "tensorflow",
     ],
+    "zarr": [
+        "zarr",
+        "s3fs",
+    ],
 }
 
 
