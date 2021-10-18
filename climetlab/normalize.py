@@ -178,6 +178,8 @@ def _find_normaliser(v):
 def normalize_args(**kwargs):
     normalizers = {}
 
+    availability = kwargs.pop("_availability", None)
+
     for k, v in kwargs.items():
         normalizers[k] = _find_normaliser(v)
 
@@ -195,6 +197,10 @@ def normalize_args(**kwargs):
             for arg, value in provided.items():
                 normalizer = normalizers.get(arg, _identity)
                 normalized[arg] = normalizer(value)
+
+            if availability is not None:
+                availability.check(**normalized)
+
             return func(**normalized)
 
         return inner

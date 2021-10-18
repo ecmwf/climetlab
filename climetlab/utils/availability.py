@@ -183,6 +183,8 @@ def availability(avail):
     def outer(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
+            avail.check(**kwargs)
+            # TODO: implement avail.check here with *args also?
             return func(*args, **kwargs)
 
         return inner
