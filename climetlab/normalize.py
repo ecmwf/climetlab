@@ -12,6 +12,7 @@ import inspect
 import logging
 import re
 
+from climetlab.arg_manager import ArgsManager, NormalizerWrapper
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
@@ -206,17 +207,31 @@ def _find_normaliser(v, alias=None):
 
 
 def normalize_args(**kwargs):
-    normalizers = {}
+    # normalizers = {}
+    normalizer_wrappers = []
 
     availability = kwargs.pop("_availability", None)
     alias = kwargs.pop("_alias", {})
 
     for k, v in kwargs.items():
-        normalizers[k] = _find_normaliser(v)
-        if hasattr(normalizers[k], "alias"):
-            normalizers[k].alias = alias.get(k, None)
+        norm = _find_normaliser(v)
+        if hasattr(norm, "alias"):
+            norm.alias = alias.get(k, None)
+        normalizer_wrappers.append(NormalizerWrapper(k, norm))
+
+        # normalizers[k] = norm
 
     def outer(func):
+
+        if hasattr(func, "_args_manager"):
+            args_manager = func.args_manager.clone()
+            func.args_manager.disable()
+        else:
+            args_manager = ArgsManager()
+
+        for w in normalizer_wrappers:
+            args_manager.append(w)
+
         @functools.wraps(func)
         def inner(*args, **kwargs):
             provided = inspect.getcallargs(func, *args, **kwargs)
@@ -226,22 +241,27 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            normalized = {}
-            for arg, value in provided.items():
-                normalizer = normalizers.get(arg, _identity)
-                normalized[arg] = normalizer(value)
-
-            # TODO: fix this 'self'
-            _self_arg = normalized.pop("self", None)
+            normalized = provided
+            # normalized = {}
+            # for arg, value in provided.items():
+            #     normalizer = normalizers.get(arg, _identity)
+            #     normalized[arg] = value
+            #     #normalized[arg] = normalizer(value)
+            #
 
             if availability is not None:
+                # TODO: fix this 'self'
+                _self_arg = normalized.pop("self", None)
                 LOG.debug("Checking availability for normalized=%s", normalized)
                 availability.check(**normalized)
+                if _self_arg is not None:
+                    normalized["self"] = _self_arg
 
-            if _self_arg is not None:
-                normalized["self"] = _self_arg
+            args, kwargs = args_manager.apply((), normalized)
+            return func(*args, **kwargs)
 
-            return func(**normalized)
+            # args, kwargs = args_manager.apply(args, kwargs)
+            # return func(*args, **kwargs)
 
         return inner
 
