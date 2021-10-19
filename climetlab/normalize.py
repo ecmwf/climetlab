@@ -241,11 +241,15 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            args, kwargs = args_manager.apply((), provided)
-            return func(*args, **kwargs)
+            # TODO: fix this self
+            _other = kwargs.pop("self", None)
 
-            # args, kwargs = args_manager.apply(args, kwargs)
-            # return func(*args, **kwargs)
+            args, kwargs = args_manager.apply((), provided)
+
+            if _other is not None:
+                kwargs["self"] = _other
+
+            return func(*args, **kwargs)
 
         return inner
 

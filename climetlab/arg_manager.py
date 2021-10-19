@@ -60,15 +60,6 @@ class AvailabilityWrapper(ArgsCmd):
         self.availability = availability
 
     def apply(self, args, kwargs):
-
         LOG.debug("Checking availability for normalized=%s", kwargs)
-
-        # TODO: fix this self
-        _other = kwargs.pop("self", None)
-
         self.availability.check(**kwargs)
-
-        if _other is not None:
-            kwargs["self"] = _other
-
         return args, kwargs
