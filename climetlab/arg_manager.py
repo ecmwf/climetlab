@@ -8,6 +8,11 @@
 #
 
 
+import logging
+
+LOG = logging.getLogger(__name__)
+
+
 class ArgsManager:
     def __init__(self, *args, **kwargs):
         self.commands = []
@@ -46,5 +51,24 @@ class NormalizerWrapper(ArgsCmd):
             return args, kwargs
 
         kwargs[self.key] = self.norm(kwargs[self.key])
+
+        return args, kwargs
+
+
+class AvailabilityWrapper(ArgsCmd):
+    def __init__(self, availability):
+        self.availability = availability
+
+    def apply(self, args, kwargs):
+
+        LOG.debug("Checking availability for normalized=%s", kwargs)
+
+        # TODO: fix this self
+        _other = kwargs.pop("self", None)
+
+        self.availability.check(**kwargs)
+
+        if _other is not None:
+            kwargs["self"] = _other
 
         return args, kwargs

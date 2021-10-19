@@ -12,7 +12,7 @@ import inspect
 import logging
 import re
 
-from climetlab.arg_manager import ArgsManager, NormalizerWrapper
+from climetlab.arg_manager import ArgsManager, AvailabilityWrapper, NormalizerWrapper
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
@@ -207,19 +207,19 @@ def _find_normaliser(v, alias=None):
 
 
 def normalize_args(**kwargs):
-    # normalizers = {}
-    normalizer_wrappers = []
+    args_wrappers = []
 
     availability = kwargs.pop("_availability", None)
+    if availability is not None:
+        args_wrappers.append(AvailabilityWrapper(availability))
+
     alias = kwargs.pop("_alias", {})
 
     for k, v in kwargs.items():
         norm = _find_normaliser(v)
         if hasattr(norm, "alias"):
             norm.alias = alias.get(k, None)
-        normalizer_wrappers.append(NormalizerWrapper(k, norm))
-
-        # normalizers[k] = norm
+        args_wrappers.append(NormalizerWrapper(k, norm))
 
     def outer(func):
 
@@ -229,7 +229,7 @@ def normalize_args(**kwargs):
         else:
             args_manager = ArgsManager()
 
-        for w in normalizer_wrappers:
+        for w in args_wrappers:
             args_manager.append(w)
 
         @functools.wraps(func)
@@ -241,23 +241,7 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            normalized = provided
-            # normalized = {}
-            # for arg, value in provided.items():
-            #     normalizer = normalizers.get(arg, _identity)
-            #     normalized[arg] = value
-            #     #normalized[arg] = normalizer(value)
-            #
-
-            if availability is not None:
-                # TODO: fix this 'self'
-                _self_arg = normalized.pop("self", None)
-                LOG.debug("Checking availability for normalized=%s", normalized)
-                availability.check(**normalized)
-                if _self_arg is not None:
-                    normalized["self"] = _self_arg
-
-            args, kwargs = args_manager.apply((), normalized)
+            args, kwargs = args_manager.apply((), provided)
             return func(*args, **kwargs)
 
             # args, kwargs = args_manager.apply(args, kwargs)
