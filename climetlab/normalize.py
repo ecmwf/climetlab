@@ -9,11 +9,14 @@
 
 import functools
 import inspect
+import logging
 import re
 
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
+
+LOG = logging.getLogger(__name__)
 
 
 class _all:
@@ -102,8 +105,13 @@ class _EnumNormaliser:
             values = values[0]
 
         self.values = values
+        self.alias = None
 
     def normalize_one_value(self, x):
+        if self.alias and x in self.alias:
+            _x = self.alias[x]
+            assert x != _x, f"Cannot alias {x} to itself."
+            return self.normalize_one_value(_x)
         for v in self.values:
             if self.compare(x, v):
                 return v
@@ -115,7 +123,12 @@ class _EnumNormaliser:
         return x == value
 
     def raise_error(self, x):
-        raise ValueError(f'Invalid value "{x}", possible values are {self.values}')
+        alias_str = ""
+        if self.alias:
+            alias_str = f" and aliases are {self.alias}"
+        raise ValueError(
+            f'Invalid value "{x}", possible values are {self.values}{alias_str}'
+        )
 
 
 class EnumNormaliser(_EnumNormaliser):
@@ -137,6 +150,12 @@ class EnumListNormaliser(_EnumNormaliser):
             return self.values
 
         if not isinstance(x, (list, tuple)):
+            if self.alias and x in self.alias:
+                _x = self.alias[x]
+                assert x != _x, f"Cannot alias {x} to itself."
+                return self(_x)
+
+        if not isinstance(x, (list, tuple)):
             x = [x]
 
         return [self.normalize_one_value(y) for y in x]
@@ -153,7 +172,7 @@ NORMALISERS = {
 }
 
 
-def _find_normaliser(v):
+def _find_normaliser(v, alias=None):
 
     if callable(v):
         return v
@@ -179,9 +198,12 @@ def normalize_args(**kwargs):
     normalizers = {}
 
     availability = kwargs.pop("_availability", None)
+    alias = kwargs.pop("_alias", {})
 
     for k, v in kwargs.items():
         normalizers[k] = _find_normaliser(v)
+        if hasattr(normalizers[k], "alias"):
+            normalizers[k].alias = alias.get(k, None)
 
     def outer(func):
         @functools.wraps(func)

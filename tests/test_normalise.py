@@ -176,6 +176,47 @@ def enum_list_number(name=1):
     return name
 
 
+@normalize_args(
+    name=["a", "b", "c"],
+    _alias=dict(
+        name={
+            "ab": ["a", "b"],
+            "z": "a",
+            "i": ["a", "b"],
+            "j": "ab",
+            "bad": ["a", "ab"],
+        }
+    ),
+)
+def enum_list_alias(name=1):
+    return name
+
+
+def test_enum_list_alias():
+    assert enum_list_alias("a") == ["a"]
+    assert enum_list_alias("b") == ["b"]
+    assert enum_list_alias("ab") == ["a", "b"]
+    assert enum_list_alias("z") == ["a"]
+    assert enum_list_alias(["z", "b"]) == ["a", "b"]
+    assert enum_list_alias("i") == ["a", "b"]
+    assert enum_list_alias("j") == ["a", "b"]
+    with pytest.raises(TypeError):
+        enum_list_alias("bad")
+
+
+@normalize_args(name=["a", "b", "c"], _alias=dict(name={"x": "y", "y": "z", "z": "a"}))
+def enum_alias(name=1):
+    return name
+
+
+def test_enum_alias():
+    assert enum_alias("a") == ["a"]
+    assert enum_alias("b") == ["b"]
+    assert enum_alias("x") == ["a"]
+    assert enum_alias("y") == ["a"]
+    assert enum_alias("z") == ["a"]
+
+
 # for k, v in vars().items():
 #    globals()[k] = v
 
