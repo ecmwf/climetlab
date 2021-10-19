@@ -231,8 +231,15 @@ def normalize_args(**kwargs):
                 normalizer = normalizers.get(arg, _identity)
                 normalized[arg] = normalizer(value)
 
+            # TODO: fix this 'self'
+            _self_arg = normalized.pop("self", None)
+
             if availability is not None:
+                LOG.debug("Checking availability for normalized=%s", normalized)
                 availability.check(**normalized)
+
+            if _self_arg is not None:
+                normalized["self"] = _self_arg
 
             return func(**normalized)
 
