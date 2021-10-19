@@ -18,80 +18,77 @@ at stake, for instance to use a ``xarray.Dataset`` as a list
 of dates.  TODO: elaborate on this.
 
 
-CliMetLab offer predefined shortcuts to
+CliMetLab offers predefined shortcuts to
 implement this. The short API aims to address 80% of
 the use cases using the ``@normalize_args`` decorator.
 The longer forms aims to tackle specific needs.
 
-Compare the following four codes snippets:
+Compare the following codes snippets:
 
 
-Boilerplate code
-~~~~~~~~~~~~~~~~
+.. dropdown:: Boilerplate code
+    :open:
 
-.. code-block:: python
-
-    # Boilerplate code (extract)
-    def __init__(self, date, option):
-        if date is None:
-          date = DEFAULT_DATE_LIST
-        if isinstance(date, tuple):
-           date = list(date)
-        if not isinstance(date, list):
-           date = [date]
-        for d in date:
-            check_date_is_sunday(d)
-        if not option in VALID_OPTIONS:
-            raise ValueError(f"option={option} invalid")
-        (...)
-        (more check and transformations)
-        (...)
-        do_stuff(date, option)
-
-
-Using CliMetLab short form API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from climetlab.normalize import normalize_args
-    @normalize_args(date="date(%Y%m%d)", option=["foo", "bar"])
-    def __init__(self, date, option):
-        do_suff(date, option)
+    Tedious and error-prone python code is needed to check
+    and normalize the values of the function arguments given
+    by the user.
+    
+    .. code-block:: python
+    
+        def __init__(self, date, option):
+            if date is None:
+              date = DEFAULT_DATE_LIST
+            if isinstance(date, tuple):
+               date = list(date)
+            if not isinstance(date, list):
+               date = [date]
+            for d in date:
+                check_date_is_sunday(d)
+            if not option in VALID_OPTIONS:
+                raise ValueError(f"option={option} invalid")
+            (...)
+            (more check and transformations)
+            (...)
+            do_stuff(date, option)
 
 
-Using CliMetLab medium-range API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. dropdown:: Using CliMetLab short form API
+    :open:
 
-.. code-block:: python
+    The decorator `@normalize_args` provides generic default behaviour
+    to handle domain specific arguments (for dates, meteorological and climate
+    parameters, bounding boxes, etc.)
 
-    from climetlab.normalize import normalize_args, Date, Enum
-    @normalize_args(date=Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST),
-    		    option=Enum(["foo", "bar"])
-    def __init__(self, date, option):
-        do_suff(date, option)
+    .. code-block:: python
+
+        from climetlab.normalize import normalize_args
+        @normalize_args(date="date(%Y%m%d)", option=["foo", "bar"])
+        def __init__(self, date, option):
+            do_suff(date, option)
 
 
-Using CliMetLab fine-control API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo::
 
-    The fine-control API is not implemented.
+.. dropdown:: Using CliMetLab fine-control API
+    :open:
 
-.. code-block:: python
+    .. todo::
 
-    from climetlab.normalize import ArgNormalizer, Date, Enum
-    norm = ArgNormalizer()
-    norm.add_argument("date", Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST))
-    norm.add_argument("option", Enum(["foo", "bar"])
-    norm.available(date=DEFAULT_DATE_LIST, option=["foo", "bar"])
-    norm.not_available(date="20211231", option="bar"])
-    @norm
-    def __init__(self, date, option):
-        do_suff(date, option)
+        The fine-control API is not implemented.
 
-The following table lists the available normalizer:
+        .. code-block:: python
+
+            from climetlab.normalize import ArgNormalizer, Date, Enum
+            norm = ArgNormalizer()
+            norm.add_argument("date", Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST))
+            norm.add_argument("option", Enum(["foo", "bar"])
+            norm.available(date=DEFAULT_DATE_LIST, option=["foo", "bar"])
+            norm.not_available(date="20211231", option="bar"])
+            @norm
+            def __init__(self, date, option):
+                do_suff(date, option)
+
+The following table lists the available normalizers:
 
 .. list-table::
    :widths: 10 80 10
