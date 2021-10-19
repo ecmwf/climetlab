@@ -107,11 +107,22 @@ class _EnumNormaliser:
         self.values = values
         self.alias = None
 
+    def get_alias(self, x):
+        if self.alias is None:
+            return x
+        if isinstance(self.alias, dict):
+            return self.alias.get(x, x)
+        if callable(self.alias):
+            return self.alias(x)
+
+        raise NotImplementedError(
+            "Unknown alias of type {class(self.alias): {self.alias}"
+        )
+
     def normalize_one_value(self, x):
-        if self.alias and x in self.alias:
-            _x = self.alias[x]
-            assert x != _x, f"Cannot alias {x} to itself."
-            return self.normalize_one_value(_x)
+        if self.alias:
+            x = self.get_alias(x)
+
         for v in self.values:
             if self.compare(x, v):
                 return v
@@ -150,10 +161,10 @@ class EnumListNormaliser(_EnumNormaliser):
             return self.values
 
         if not isinstance(x, (list, tuple)):
-            if self.alias and x in self.alias:
-                _x = self.alias[x]
-                assert x != _x, f"Cannot alias {x} to itself."
-                return self(_x)
+            if self.alias:
+                _x = self.get_alias(x)
+                if x != _x:
+                    return self(_x)
 
         if not isinstance(x, (list, tuple)):
             x = [x]

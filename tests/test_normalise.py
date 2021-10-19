@@ -185,23 +185,39 @@ def enum_list_number(name=1):
             "i": ["a", "b"],
             "j": "ab",
             "bad": ["a", "ab"],
-        }
+        },
     ),
 )
-def enum_list_alias(name=1):
+def enum_list_alias_1(name=1):
     return name
 
 
-def test_enum_list_alias():
-    assert enum_list_alias("a") == ["a"]
-    assert enum_list_alias("b") == ["b"]
-    assert enum_list_alias("ab") == ["a", "b"]
-    assert enum_list_alias("z") == ["a"]
-    assert enum_list_alias(["z", "b"]) == ["a", "b"]
-    assert enum_list_alias("i") == ["a", "b"]
-    assert enum_list_alias("j") == ["a", "b"]
-    with pytest.raises(TypeError):
-        enum_list_alias("bad")
+def test_enum_list_alias_1():
+    assert enum_list_alias_1("a") == ["a"]
+    assert enum_list_alias_1("b") == ["b"]
+    assert enum_list_alias_1("ab") == ["a", "b"]
+    assert enum_list_alias_1("z") == ["a"]
+    assert enum_list_alias_1(["z", "b"]) == ["a", "b"]
+    assert enum_list_alias_1("i") == ["a", "b"]
+    assert enum_list_alias_1("j") == ["a", "b"]
+    with pytest.raises(ValueError):
+        enum_list_alias_1("bad")
+
+
+@normalize_args(
+    name=[1, 2, 3],
+    _alias=dict(
+        name=lambda x: {"one": 1}.get(x, x),
+    ),
+)
+def enum_list_alias_2(name=1):
+    return name
+
+
+def test_enum_list_alias_2():
+    assert enum_list_alias_2(1) == [1]
+    assert enum_list_alias_2("one") == [1]
+    assert enum_list_alias_2(["one"]) == [1]
 
 
 @normalize_args(name=["a", "b", "c"], _alias=dict(name={"x": "y", "y": "z", "z": "a"}))
