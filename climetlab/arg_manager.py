@@ -32,14 +32,13 @@ class ArgsManager:
         self.commands = []
 
     def append(self, cmd):
-        if isinstance(cmd, (list, tuple)):
-            for c in cmd:
-                self.append(c)
-            return
+        if not isinstance(cmd, (list, tuple)):
+            cmd = [cmd]
 
-        for c in self.commands:
-            c.consistency(cmd)
-        self.commands.append(cmd)
+        for new_c in cmd:
+            for c in self.commands:
+                c.consistency(new_c)
+            self.commands.append(new_c)
 
     def apply(self, args, kwargs):
         for cmd in self.commands:
@@ -69,7 +68,7 @@ class NormalizerWrapper(ArgsCmd):
     def consistency(self, cmd):
         if isinstance(cmd, NormalizerWrapper):
             # assert self.key != cmd.key, f"Multiple normalizer for {self.key}"
-            if self.key != cmd.key:
+            if self.key == cmd.key:
                 raise NotImplementedError(f"Multiple normalizer for {self.key}")
 
         if isinstance(cmd, AvailabilityWrapper):
@@ -77,7 +76,7 @@ class NormalizerWrapper(ArgsCmd):
             for value in av.unique_values()[self.key]:
                 _value = self.norm(value)
                 # assert _value == value or _value == [value]
-                if not (_value == value or _value == [value]):
+                if _value != value and _value != [value]:
                     raise ValueError(
                         f"Mismatch between availability and normalizer {_value} != {value}"
                     )

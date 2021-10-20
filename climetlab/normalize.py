@@ -225,6 +225,7 @@ def normalize_args(**kwargs):
 
         args_manager = ArgsManager.from_func(func, disable=True)
         args_manager.append(args_wrappers)
+        LOG.debug("Normalizers: %s", args_manager)
 
         @functools.wraps(func)
         def inner(*args, **kwargs):
