@@ -22,6 +22,7 @@ class ArgsManager:
 
     def append(self, cmd):
         self.commands.append(cmd)
+        print(self)
 
     def apply(self, args, kwargs):
         for cmd in self.commands:
@@ -50,6 +51,7 @@ class NormalizerWrapper(ArgsCmd):
         if self.key not in kwargs:
             return args, kwargs
 
+        print(self.norm)
         kwargs[self.key] = self.norm(kwargs[self.key])
 
         return args, kwargs
