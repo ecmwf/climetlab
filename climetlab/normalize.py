@@ -242,12 +242,12 @@ def normalize_args(**kwargs):
                     provided.update(provided.pop(name, {}))
 
             # TODO: fix this self
-            _other = kwargs.pop("self", None)
+            _other = provided.pop("self", None)
 
             args, kwargs = args_manager.apply((), provided)
 
             if _other is not None:
-                kwargs["self"] = _other
+                provided["self"] = _other
 
             return func(*args, **kwargs)
 
