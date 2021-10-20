@@ -223,14 +223,8 @@ def normalize_args(**kwargs):
 
     def outer(func):
 
-        if hasattr(func, "_args_manager"):
-            args_manager = func.args_manager.clone()
-            func.args_manager.disable()
-        else:
-            args_manager = ArgsManager()
-
-        for w in args_wrappers:
-            args_manager.append(w)
+        args_manager = ArgsManager.from_func(func, disable=True)
+        args_manager.append(args_wrappers)
 
         @functools.wraps(func)
         def inner(*args, **kwargs):
@@ -244,12 +238,14 @@ def normalize_args(**kwargs):
             # TODO: fix this self
             _other = provided.pop("self", None)
 
-            args, kwargs = args_manager.apply((), provided)
+            args, provided = args_manager.apply((), provided)
 
             if _other is not None:
                 provided["self"] = _other
 
-            return func(*args, **kwargs)
+            return func(*args, **provided)
+
+        inner._args_manager = args_manager
 
         return inner
 

@@ -15,7 +15,7 @@ import os
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
-import climetlab as cml
+# import climetlab as cml
 
 # Your client credentials
 with open(os.path.expanduser("~/.sentinelhubrc")) as f:

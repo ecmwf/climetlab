@@ -137,21 +137,54 @@ def test_norm(func):
         func(level="1000", param="zz", step="24")
 
 
-def test_dev():
-    func_n_av(level="1000", param="a", step="24")
-    # func_n_av(level="jkl", param="a", step="24")
-
-
-@pytest.mark.skip("Not implemeted yet")
 def test_avail_norm_setup():
+    @normalize_args(param=["a", "b"], _availability=av)
+    def func1(param):
+        return param
+
     with pytest.raises(ValueError):
 
-        @normalize_args(param=["x", "y"], _availability=av)
-        def func_setup(level, param, step):
+        @normalize_args(param=["unk1", "unk2"], _availability=av)
+        def func2(param):
+            return param
+
+    with pytest.raises(NotImplementedError):
+
+        @normalize_args(param=["a", "b"])
+        @normalize_args(step=[24, 36])
+        @normalize_args(param=["A", "B"])
+        def func3(param, step):
+            return param
+
+    with pytest.raises(NotImplementedError):
+
+        @normalize_args(param=["a", "b"])
+        @normalize_args(step=[24, 36])
+        @normalize_args(param=["A", "B"])
+        def func4(param, step):
+            return param
+
+    with pytest.raises(ValueError):
+
+        @normalize_args(param=["A", "B"], _availability=av)
+        def func5(param, step):
+            return param
+
+    with pytest.raises(NotImplementedError):
+
+        @av_decorator
+        @normalize_args(param=["a", "b"], _availability=av)
+        def func6(param, step):
             return param
 
 
+def test_dev():
+    func = Klass_a
+    func(level="1000", param="a", step="24")
+
+
 if __name__ == "__main__":
+    # test_dev()
     from climetlab.testing import main
 
     main(__file__)
