@@ -11,7 +11,7 @@ import cdsapi
 import yaml
 
 from climetlab.core.thread import SoftThreadPool
-from climetlab.normalize import normalize_args
+from climetlab.decorators import normalize
 from climetlab.utils import tqdm
 
 from .file import FileSource
@@ -104,7 +104,8 @@ class CDSRetriever(FileSource):
             extension=EXTENSIONS.get(request.get("format"), ".cache"),
         )
 
-    @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
+    @normalize("date", "date-list(%Y-%m-%d)")
+    @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
         split_on = kwargs.pop("split_on", None)
         if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):

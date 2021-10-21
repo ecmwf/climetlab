@@ -15,22 +15,18 @@ import numpy as np
 import pytest
 
 from climetlab import ALL, load_source
-from climetlab.normalize import (
-    DateListNormaliser,
-    EnumListNormaliser,
-    EnumNormaliser,
-    normalize_args,
-)
+from climetlab.decorators import normalize
+from climetlab.normalize import DateListNormaliser, EnumListNormaliser, EnumNormaliser
 from climetlab.testing import climetlab_file
 from climetlab.utils.bbox import BoundingBox
 
 
-@normalize_args(parameter=("variable-list(mars)"))
+@normalize("parameter", ("variable-list(mars)"))
 def values_mars(parameter):
     return parameter
 
 
-@normalize_args(parameter=("variable-list(cf)"))
+@normalize("parameter", ("variable-list(cf)"))
 def values_cf(parameter):
     return parameter
 
@@ -49,12 +45,12 @@ def test_param_convention_cf():
     assert values_cf(parameter="t2m") == "t2m"
 
 
-@normalize_args(date="date")
+@normalize("date", "date")
 def dates_1(date):
     return date
 
 
-@normalize_args(date="date-list")
+@normalize("date", "date-list")
 def dates_list_1(date):
     return date
 
@@ -100,48 +96,48 @@ def test_dates_3():
     ]
 
 
-@normalize_args(area="bounding-box")
+@normalize("area", "bounding-box")
 def bbox_list(ignore, area):
     return area
 
 
-@normalize_args(area="bounding-box(tuple)")
+@normalize("area", "bounding-box(tuple)")
 def bbox_tuple(area, ignore=None):
     return area
 
 
-@normalize_args(area="bounding-box(list)")
+@normalize("area", "bounding-box(list)")
 def bbox_bbox(area):
     return area
 
 
-@normalize_args(area="bounding-box(dict)")
+@normalize("area", "bounding-box(dict)")
 def bbox_dict(area):
     return area
 
 
-@normalize_args(area="bounding-box")
+@normalize("area", "bounding-box")
 def bbox_defaults(area=None):
     return area
 
 
 # def test_enum_definition():
-@normalize_args(name=("a", "b", "c"))
+@normalize("name", ("a", "b", "c"))
 def enum_1(name="a"):
     return name
 
 
-@normalize_args(name=("a", "b", "c"))
+@normalize("name", ("a", "b", "c"))
 def enum_no_default(name):
     return name
 
 
-@normalize_args(name=("a", "b", "c"))
+@normalize("name", ("a", "b", "c"))
 def enum_default_is_none(name=None):
     return name
 
 
-@normalize_args(name=(1, 0.5, 3))
+@normalize("name", (1, 0.5, 3))
 def enum_number(name=1):
     return name
 
@@ -151,42 +147,41 @@ def enum_number(name=1):
 
 
 # def test_enum_list_definition():
-@normalize_args(name=["a", "b", "c"])
+@normalize("name", ["a", "b", "c"])
 def enum_list_1(name="a"):
     return name
 
 
-@normalize_args(name=["a", "b", "c"])
+@normalize("name", ["a", "b", "c"])
 def enum_list_no_default(name):
     return name
 
 
-@normalize_args(name=["a", "b", "c"])
+@normalize("name", ["a", "b", "c"])
 def enum_list_default_is_none(name=None):
     return name
 
 
-@normalize_args(name=["a", "b", "c"])
+@normalize("name", ["a", "b", "c"])
 def enum_list_default_is_all(name=ALL):
     return name
 
 
-@normalize_args(name=[1, 0.5, 3])
+@normalize("name", [1, 0.5, 3])
 def enum_list_number(name=1):
     return name
 
 
-@normalize_args(
-    name=["a", "b", "c"],
-    _alias=dict(
-        name={
-            "ab": ["a", "b"],
-            "z": "a",
-            "i": ["a", "b"],
-            "j": "ab",
-            "bad": ["a", "ab"],
-        },
-    ),
+@normalize(
+    "name",
+    ["a", "b", "c"],
+    alias={
+        "ab": ["a", "b"],
+        "z": "a",
+        "i": ["a", "b"],
+        "j": "ab",
+        "bad": ["a", "ab"],
+    },
 )
 def enum_list_alias_1(name=1):
     return name
@@ -204,11 +199,10 @@ def test_enum_list_alias_1():
         enum_list_alias_1("bad")
 
 
-@normalize_args(
-    name=[1, 2, 3],
-    _alias=dict(
-        name=lambda x: {"one": 1}.get(x, x),
-    ),
+@normalize(
+    "name",
+    [1, 2, 3],
+    alias=lambda x: {"one": 1}.get(x, x),
 )
 def enum_list_alias_2(name=1):
     return name
@@ -220,7 +214,7 @@ def test_enum_list_alias_2():
     assert enum_list_alias_2(["one"]) == [1]
 
 
-@normalize_args(name=["a", "b", "c"], _alias=dict(name={"x": "y", "y": "z", "z": "a"}))
+@normalize("name", ["a", "b", "c"], alias={"x": "y", "y": "z", "z": "a"})
 def enum_alias(name=1):
     return name
 
