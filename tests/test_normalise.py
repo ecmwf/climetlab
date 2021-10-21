@@ -317,6 +317,22 @@ def test_bbox():
     assert bbox_tuple(source[0]) == (73.0, -27.0, 33.0, 45.0)
 
 
+def test_normalize_kwargs():
+    class Klass:
+        @normalize("param", ["a", "b", "c"])
+        def ok(self, param):
+            pass
+
+        @normalize("param", ["a", "b", "c"])
+        def f(self, **kwargs):
+            # def f(self, param, **kwargs):
+            assert "param" in kwargs
+
+    Klass().ok(param="a")
+
+    Klass().f(param="a")
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
