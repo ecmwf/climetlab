@@ -172,6 +172,17 @@ def enum_list_number(name=1):
     return name
 
 
+@normalize("a", [1, 2])
+@normalize("b", [3, 4])
+def enum_2_normalizers(a, b):
+    return a
+
+
+def test_enum_2_normalizers():
+    enum_2_normalizers(a=1, b=4)
+    # enum_2_normalizers(1,4)
+
+
 @normalize(
     "name",
     ["a", "b", "c"],

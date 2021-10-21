@@ -92,38 +92,21 @@ def normalize(name, values=None, **kwargs):
 
     args_wrapper = NormalizerWrapper(name, norm)
 
-    def outer(func):
+    def wrapped(func):
 
-        args_manager = ArgsManager.from_func(func, disable=True)
+        if isinstance(func, ArgsManager):
+            args_manager = func
+        else:
+            func = wraps(func)
+            args_manager = ArgsManager(func)
+
         args_manager.append(args_wrapper)
         LOG.debug("Normalizers: %s", args_manager)
 
-        @wraps(func)
-        def inner(*args, **kwargs):
-            provided = inspect.getcallargs(func, *args, **kwargs)
-            for name, param in inspect.signature(func).parameters.items():
-                # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
-                assert param.kind is not param.VAR_POSITIONAL
-                if param.kind is param.VAR_KEYWORD:
-                    provided.update(provided.pop(name, {}))
+        return args_manager
 
-            # if hasattr(func, '__self__'):
 
-            # TODO: fix this self
-            #            _other = provided.pop("self", None)
-
-            args, provided = args_manager.apply((), provided)
-
-            #            if _other is not None:
-            #                provided["self"] = _other
-
-            return func(*args, **provided)
-
-        inner._args_manager = args_manager
-
-        return inner
-
-    return outer
+    return wrapped  
 
 
 def normalize_args(**kwargs):

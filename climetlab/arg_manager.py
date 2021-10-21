@@ -7,29 +7,27 @@
 # nor does it submit to any jurisdiction.
 #
 
-
+import inspect
 import logging
+import functools
 
 LOG = logging.getLogger(__name__)
 
 
 class ArgsManager:
-    def __init__(self, commands=None):
+    def __init__(self, func, commands=None):
+        #func = functools.wraps(func)
+        self.func = func
+        print("argmanager: ", func)
         if commands is None:
             commands = []
         self.commands = commands
 
     @classmethod
-    def from_func(cls, func, disable=False):
-        args_manager = ArgsManager()
-        if hasattr(func, "_args_manager"):
-            args_manager.commands = func._args_manager.commands
-            if disable:
-                func._args_manager.disable()
-        return args_manager
-
-    def disable(self):
-        self.commands = []
+    def from_func(cls, func):
+        if not hasattr(func, "_args_manager"):
+            func._args_manager = ArgsManager(func)
+        return func._args_manager
 
     def append(self, cmd):
         if not isinstance(cmd, (list, tuple)):
@@ -40,10 +38,34 @@ class ArgsManager:
                 c.consistency(new_c)
             self.commands.append(new_c)
 
-    def apply(self, args, kwargs):
-        for cmd in self.commands:
-            args, kwargs = cmd.apply(args, kwargs)
-        return args, kwargs
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+        print("func", self.func, args, kwargs)
+        provided = inspect.getcallargs(self.func, *args, **kwargs)
+        for name, param in inspect.signature(self.func).parameters.items():
+            # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
+            assert param.kind is not param.VAR_POSITIONAL, param
+            if param.kind is param.VAR_KEYWORD:
+                provided.update(provided.pop(name, {}))
+
+        assert not "self" in provided
+
+        # if hasattr(func, '__self__'):
+
+        # TODO: fix this self
+        # _other = provided.pop("self", None)
+
+        for c in self.commands:
+            args, provided = c.apply(args, provided)
+
+        # if _other is not None:
+        #     provided["self"] = _other
+        # if self.func.__self__:
+        #     provided["self"] = self.func.__self__
+
+        print("out", args, provided)
+        return self.func(*args, **provided)
 
     def __str__(self):
         s = "ArgManager\n"
