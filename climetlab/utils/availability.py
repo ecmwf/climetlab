@@ -9,8 +9,6 @@
 # does it submit to any jurisdiction.
 #
 
-import functools
-import inspect
 import io
 import itertools
 import json
@@ -18,7 +16,6 @@ import os
 
 import yaml
 
-from climetlab.arg_manager import ArgsManager, AvailabilityWrapper
 from climetlab.utils.factorise import Tree, factorise
 
 from .humanize import dict_to_human, list_to_human
@@ -170,33 +167,6 @@ class Availability:
 
     def __getattr__(self, name):
         return getattr(self._tree, name)
-
-
-def availability(avail):
-
-    if isinstance(avail, str):
-        if not os.path.isabs(avail):
-            caller = os.path.dirname(inspect.stack()[1].filename)
-            avail = os.path.join(caller, avail)
-
-    avail = Availability(avail)
-    wrapper = AvailabilityWrapper(avail)
-
-    def outer(func):
-        args_manager = ArgsManager.from_func(func, disable=True)
-        args_manager.append(wrapper)
-
-        @functools.wraps(func)
-        def inner(*args, **kwargs):
-            # TODO: implement avail.check here with *args also?
-            _, kwargs = args_manager.apply((), kwargs)
-            return func(*args, **kwargs)
-
-        inner._args_manager = args_manager
-
-        return inner
-
-    return outer
 
 
 if __name__ == "__main__":

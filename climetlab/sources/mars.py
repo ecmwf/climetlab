@@ -10,7 +10,7 @@
 import ecmwfapi
 
 from climetlab.core.thread import SoftThreadPool
-from climetlab.normalize import normalize_args
+from climetlab.decorators import normalize
 from climetlab.utils import tqdm
 
 from .file import FileSource
@@ -86,11 +86,9 @@ class MARSRetriever(FileSource):
             request,
         )
 
-    @normalize_args(
-        param="variable-list(mars)",
-        date="date-list(%Y-%m-%d)",
-        area="bounding-box(list)",
-    )
+    @normalize("param", "variable-list(mars)")
+    @normalize("date", "date-list(%Y-%m-%d)")
+    @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
         split_on = kwargs.pop("split_on", None)
         if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):

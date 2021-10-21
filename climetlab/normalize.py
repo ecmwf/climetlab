@@ -7,12 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import functools
-import inspect
 import logging
 import re
 
-from climetlab.arg_manager import ArgsManager, AvailabilityWrapper, NormalizerWrapper
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
 from climetlab.utils.dates import to_date_list
@@ -204,50 +201,3 @@ def _find_normaliser(v, alias=None):
     args = m.group(2).split(",")
     name = m.group(1)
     return NORMALISERS[name](*args)
-
-
-def normalize_args(**kwargs):
-    args_wrappers = []
-
-    availability = kwargs.pop("_availability", None)
-    if availability is not None:
-        args_wrappers.append(AvailabilityWrapper(availability))
-
-    alias = kwargs.pop("_alias", {})
-
-    for k, v in kwargs.items():
-        norm = _find_normaliser(v)
-        if hasattr(norm, "alias"):
-            norm.alias = alias.get(k, None)
-        args_wrappers.append(NormalizerWrapper(k, norm))
-
-    def outer(func):
-
-        args_manager = ArgsManager.from_func(func, disable=True)
-        args_manager.append(args_wrappers)
-        LOG.debug("Normalizers: %s", args_manager)
-
-        @functools.wraps(func)
-        def inner(*args, **kwargs):
-            provided = inspect.getcallargs(func, *args, **kwargs)
-            for name, param in inspect.signature(func).parameters.items():
-                # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
-                assert param.kind is not param.VAR_POSITIONAL
-                if param.kind is param.VAR_KEYWORD:
-                    provided.update(provided.pop(name, {}))
-
-            # TODO: fix this self
-            _other = provided.pop("self", None)
-
-            args, provided = args_manager.apply((), provided)
-
-            if _other is not None:
-                provided["self"] = _other
-
-            return func(*args, **provided)
-
-        inner._args_manager = args_manager
-
-        return inner
-
-    return outer

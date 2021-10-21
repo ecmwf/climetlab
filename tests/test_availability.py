@@ -13,7 +13,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from climetlab.utils.availability import Availability, availability
+from climetlab.decorators import availability
+from climetlab.utils.availability import Availability
 
 
 @pytest.fixture

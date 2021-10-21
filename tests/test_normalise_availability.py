@@ -12,8 +12,8 @@
 import pytest
 from test_availability import C1
 
-from climetlab.normalize import normalize_args
-from climetlab.utils.availability import Availability, availability
+from climetlab.decorators import availability, normalize
+from climetlab.utils.availability import Availability
 
 av_decorator = availability(C1)
 av = Availability(C1)
@@ -31,13 +31,13 @@ class Klass_a:
 
 
 class Klass_n:
-    @normalize_args(param=["a", "b", "c"])
+    @normalize("param", ["a", "b", "c"])
     def __init__(self, level, param, step):
         pass
 
 
 class Klass_a_n:
-    @normalize_args(param=["a", "b", "c"])
+    @normalize("param", ["a", "b", "c"])
     @av_decorator
     def __init__(self, level, param, step):
         pass
@@ -45,43 +45,25 @@ class Klass_a_n:
 
 class Klass_n_a:
     @av_decorator
-    @normalize_args(param=["a", "b", "c"])
+    @normalize("param", ["a", "b", "c"])
     def __init__(self, level, param, step):
         pass
 
 
-class Klass_n_av:
-    @normalize_args(param=["a", "b", "c"], _availability=av)
-    def __init__(self, level, param, step):
-        pass
-
-
-@normalize_args(param=["a", "b", "c"], _availability=av)
-class Klass_na:
-    @av_decorator
-    def __init__(self, level, param, step):
-        pass
-
-
-@normalize_args(param=["a", "b", "c"])
+@normalize("param", ["a", "b", "c"])
 def func_n(level, param, step):
     return param
 
 
-@normalize_args(param=["a", "b", "c"])
+@normalize("param", ["a", "b", "c"])
 @av_decorator
 def func_a_n(level, param, step):
     return param
 
 
 @av_decorator
-@normalize_args(param=["a", "b", "c"])
+@normalize("param", ["a", "b", "c"])
 def func_n_a(level, param, step):
-    return param
-
-
-@normalize_args(param=["a", "b", "c"], _availability=av)
-def func_n_av(level, param, step):
     return param
 
 
@@ -92,12 +74,10 @@ def func_n_av(level, param, step):
         # func_n is excluded.
         func_n_a,
         # func_a_n, # TODO
-        func_n_av,
         Klass_a,
         # Klass_n is excluded.
         Klass_n_a,
         # Klass_a_n, # TODO
-        Klass_n_av,
     ],
 )
 def test_avail_1(func):
@@ -122,12 +102,10 @@ def test_avail_n(func):
         func_n,
         func_n_a,
         # func_a_n,
-        func_n_av,
         Klass_a,
         Klass_n,
         Klass_n_a,
         # Klass_a_n,
-        Klass_n_av,
     ],
 )
 def test_norm(func):
@@ -138,42 +116,46 @@ def test_norm(func):
 
 
 def test_avail_norm_setup():
-    @normalize_args(param=["a", "b"], _availability=av)
+    @normalize("param", ["a", "b"])
+    @availability(C1)
     def func1(param):
         return param
 
     with pytest.raises(ValueError):
 
-        @normalize_args(param=["unk1", "unk2"], _availability=av)
+        @normalize("param", ["unk1", "unk2"])
+        @availability(C1)
         def func2(param):
             return param
 
     with pytest.raises(NotImplementedError):
 
-        @normalize_args(param=["a", "b"])
-        @normalize_args(step=[24, 36])
-        @normalize_args(param=["A", "B"])
+        @normalize("param", ["a", "b"])
+        @normalize("step", [24, 36])
+        @normalize("param", ["A", "B"])
         def func3(param, step):
             return param
 
     with pytest.raises(NotImplementedError):
 
-        @normalize_args(param=["a", "b"])
-        @normalize_args(step=[24, 36])
-        @normalize_args(param=["A", "B"])
+        @normalize("param", ["a", "b"])
+        @normalize("step", [24, 36])
+        @normalize("param", ["A", "B"])
         def func4(param, step):
             return param
 
     with pytest.raises(ValueError):
 
-        @normalize_args(param=["A", "B"], _availability=av)
+        @normalize("param", ["A", "B"])
+        @availability(C1)
         def func5(param, step):
             return param
 
     with pytest.raises(NotImplementedError):
 
         @av_decorator
-        @normalize_args(param=["a", "b"], _availability=av)
+        @normalize("param", ["a", "b"])
+        @availability(C1)
         def func6(param, step):
             return param
 
