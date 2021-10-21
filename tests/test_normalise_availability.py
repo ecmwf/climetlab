@@ -10,7 +10,19 @@
 #
 
 import pytest
-from test_availability import C1
+
+C1 = [
+    {"level": "500", "param": "a", "step": "24"},
+    {"level": "500", "param": "a", "step": "36"},
+    {"level": "500", "param": "a", "step": "48"},
+    {"level": "500", "param": "b", "step": "24"},
+    {"level": "500", "param": "b", "step": "36"},
+    {"level": "500", "param": "b", "step": "48"},
+    {"level": "850", "param": "b", "step": "36"},
+    {"level": "850", "param": "b", "step": "48"},
+    {"level": "1000", "param": "a", "step": "24"},
+    {"level": "1000", "param": "a", "step": "48"},
+]
 
 from climetlab.decorators import availability, normalize
 from climetlab.utils.availability import Availability
@@ -152,9 +164,21 @@ def test_avail_norm_setup():
             return param
 
 
+def test_availability_1():
+    @availability(C1)
+    def func7(param, step=24):
+        return param
+
+    func7("a", step="36")
+    with pytest.raises(ValueError, match=r"Invalid value .*"):
+        # with pytest.raises(ValueError, match=r"invalid combination .*"):
+        func7(3, step="36")
+
+
 def test_dev():
-    func = Klass_a
-    func(level="1000", param="a", step="24")
+    @availability(C1)
+    def func7(param, step="24"):
+        return param
 
 
 if __name__ == "__main__":

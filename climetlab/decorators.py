@@ -91,7 +91,7 @@ def args_to_kwargs(args, kwargs, func):
 
 def normalize(name, values=None, **kwargs):
 
-    transform = _make_norm_wrapper(name, values, **kwargs)
+    transforms = [_make_norm_wrapper(name, values, **kwargs)]
 
     def outer(func):
         if hasattr(func, "_args_manager"):
@@ -101,7 +101,7 @@ def normalize(name, values=None, **kwargs):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
-        args_manager.append(transform)
+        args_manager.append_list(transforms)
 
         @wraps(func)
         def inner(*args, **kwargs):
@@ -115,6 +115,7 @@ def normalize(name, values=None, **kwargs):
 
 
 def availability(avail):
+    from climetlab.normalize import _find_normaliser
 
     if isinstance(avail, str):
         if not os.path.isabs(avail):
@@ -123,7 +124,14 @@ def availability(avail):
 
     avail = Availability(avail)
 
-    transform = AvailabilityWrapper(avail)
+    transforms = []
+
+    for key, value in avail.unique_values().items():
+        print(key, value)
+        norm = _find_normaliser(value)
+        transforms.append(NormalizerWrapper(key, norm))
+
+    transforms.append(AvailabilityWrapper(avail))
 
     def outer(func):
         if hasattr(func, "_args_manager"):
@@ -133,7 +141,7 @@ def availability(avail):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
-        args_manager.append(transform)
+        args_manager.append_list(transforms)
 
         @wraps(func)
         def inner(*args, **kwargs):

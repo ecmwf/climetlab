@@ -24,6 +24,10 @@ class ArgsManager:
     def remove(self, cmd):
         self.commands.remove(cmd)
 
+    def append_list(self, cmds):
+        for c in cmds:
+            self.append(c)
+
     def append(self, cmd):
         for old in self.commands:
             cmd.consistency(old)
