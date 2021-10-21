@@ -21,10 +21,14 @@ class ArgsManager:
             commands = []
         self.commands = commands
 
+    def remove(self, cmd):
+        self.commands.remove(cmd)
+
     def append(self, cmd):
-        for c in self.commands:
-            c.consistency(cmd)
+        for old in self.commands:
+            cmd.consistency(old)
         self.commands.append(cmd)
+        cmd.args_manager = self
 
     def __call__(self, *args, **kwargs):
         for c in self.commands:
@@ -39,10 +43,10 @@ class ArgsManager:
 
 
 class ArgsCmd:
-    def apply(self, args, kwargs):
-        return args, kwargs
+    def __init__(self) -> None:
+        self.args_manager = None
 
-    def consistency(self, cmd):
+    def consistency(self, old):
         pass
 
 
@@ -50,15 +54,19 @@ class NormalizerWrapper(ArgsCmd):
     def __init__(self, key, norm):
         self.key = key
         self.norm = norm
+        super().__init__()
 
-    def consistency(self, cmd):
-        if isinstance(cmd, NormalizerWrapper):
-            # assert self.key != cmd.key, f"Multiple normalizer for {self.key}"
-            if self.key == cmd.key:
-                raise NotImplementedError(f"Multiple normalizer for {self.key}")
+    def destroy(self):
+        self.args_manager.remove(self)
 
-        if isinstance(cmd, AvailabilityWrapper):
-            av = cmd.availability
+    def consistency(self, old):
+        if isinstance(old, NormalizerWrapper):
+            if self.key == old.key:
+                LOG.warning(f"Multiple normalizer for arg {self.key}")
+                old.destroy()
+
+        if isinstance(old, AvailabilityWrapper):
+            av = old.availability
             for value in av.unique_values()[self.key]:
                 _value = self.norm(value)
                 # assert _value == value or _value == [value]
@@ -80,15 +88,16 @@ class NormalizerWrapper(ArgsCmd):
 class AvailabilityWrapper(ArgsCmd):
     def __init__(self, availability):
         self.availability = availability
+        super().__init__()
 
     def apply(self, args, kwargs):
         LOG.debug("Checking availability for %s", kwargs)
         self.availability.check(**kwargs)
         return args, kwargs
 
-    def consistency(self, cmd):
-        if isinstance(cmd, AvailabilityWrapper):
+    def consistency(self, old):
+        if isinstance(old, AvailabilityWrapper):
             raise NotImplementedError("Multiple availabilities were provided")
 
-        if isinstance(cmd, NormalizerWrapper):
-            cmd.consistency(self)
+        if isinstance(old, NormalizerWrapper):
+            old.consistency(self)

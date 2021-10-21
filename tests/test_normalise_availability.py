@@ -128,21 +128,13 @@ def test_avail_norm_setup():
         def func2(param):
             return param
 
-    with pytest.raises(NotImplementedError):
+    @normalize("param", ["a", "b"])
+    @normalize("step", [24, 36])
+    @normalize("param", ["A", "B"])
+    def func3(param, step):
+        return param
 
-        @normalize("param", ["a", "b"])
-        @normalize("step", [24, 36])
-        @normalize("param", ["A", "B"])
-        def func3(param, step):
-            return param
-
-    with pytest.raises(NotImplementedError):
-
-        @normalize("param", ["a", "b"])
-        @normalize("step", [24, 36])
-        @normalize("param", ["A", "B"])
-        def func4(param, step):
-            return param
+    assert func3("a", 24) == ["a"]
 
     with pytest.raises(ValueError):
 
