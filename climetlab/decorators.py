@@ -46,34 +46,6 @@ def locked(func):
     return wrapped
 
 
-def availability(avail):
-
-    if isinstance(avail, str):
-        if not os.path.isabs(avail):
-            caller = os.path.dirname(inspect.stack()[1].filename)
-            avail = os.path.join(caller, avail)
-
-    avail = Availability(avail)
-
-    wrapper = AvailabilityWrapper(avail)
-
-    def outer(func):
-        args_manager = ArgsManager.from_func(func, disable=True)
-        args_manager.append(wrapper)
-
-        @wraps(func)
-        def inner(*args, **kwargs):
-            # TODO: implement avail.check here with *args also?
-            _, kwargs = args_manager.apply((), kwargs)
-            return func(*args, **kwargs)
-
-        inner._args_manager = args_manager
-
-        return inner
-
-    return outer
-
-
 def _make_norm_wrapper(name, values, **kwargs):
     from climetlab.normalize import _find_normaliser
 
@@ -94,20 +66,32 @@ def _make_norm_wrapper(name, values, **kwargs):
 
 
 def args_to_kwargs(args, kwargs, func):
-    print("func", func, args, kwargs)
     provided = inspect.getcallargs(func, *args, **kwargs)
+
     for name, param in inspect.signature(func).parameters.items():
+        LOG.debug(f"  {provided}")
+        LOG.debug(f"  considering {name} {param}")
+
         # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
         assert param.kind is not param.VAR_POSITIONAL, param
         if param.kind is param.VAR_KEYWORD:
+            LOG.debug(f"  ok -> adding {param} in kwargs")
             provided.update(provided.pop(name, {}))
-    assert not "self" in provided
+
+    if "self" in provided.keys():
+        # TODO: if hasattr(func, '__self__'):
+        LOG.debug("Stolen self")
+        args = [provided.pop("self")]
+    else:
+        args = ()
+
+    LOG.debug("return", args, provided)
     return args, provided
 
 
 def normalize(name, values=None, **kwargs):
 
-    norm = _make_norm_wrapper(name, values, **kwargs)
+    transform = _make_norm_wrapper(name, values, **kwargs)
 
     def outer(func):
         if hasattr(func, "_args_manager"):
@@ -117,28 +101,44 @@ def normalize(name, values=None, **kwargs):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
-        args_manager.append(norm)
+        args_manager.append(transform)
 
         @wraps(func)
         def inner(*args, **kwargs):
-            if args:
-                print("  self? = ", args[0])
-            print("  -> ", args, kwargs)
-
-            #            args, kwargs = args_to_kwargs(args, kwargs, func)
-
-            # if hasattr(func, '__self__'):
-            # TODO: fix this self
-            # _other = provided.pop("self", None)
-
+            args, kwargs = args_to_kwargs(args, kwargs, func)
             args, kwargs = args_manager(*args, **kwargs)
-            # LOG.debug("Normalizers: %s", args_manager)
+            return func(*args, **kwargs)
 
-            # if _other is not None:
-            #     provided["self"] = _other
-            # if self.func.__self__:
-            #     provided["self"] = self.func.__self__
+        return inner
 
+    return outer
+
+
+def availability(avail):
+
+    if isinstance(avail, str):
+        if not os.path.isabs(avail):
+            caller = os.path.dirname(inspect.stack()[1].filename)
+            avail = os.path.join(caller, avail)
+
+    avail = Availability(avail)
+
+    transform = AvailabilityWrapper(avail)
+
+    def outer(func):
+        if hasattr(func, "_args_manager"):
+            args_manager = func._args_manager
+            func = func.__wrapped__
+        else:
+            args_manager = ArgsManager(func)
+            func._args_manager = args_manager
+
+        args_manager.append(transform)
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            args, kwargs = args_to_kwargs(args, kwargs, func)
+            args, kwargs = args_manager(*args, **kwargs)
             return func(*args, **kwargs)
 
         return inner
@@ -147,6 +147,11 @@ def normalize(name, values=None, **kwargs):
 
 
 def normalize_args(**kwargs):
+    # TODO: dead code
+
+    LOG.error("@normalize_arg is obsolete")
+    print("@normalize_arg is obsolete")
+
     from climetlab.normalize import _find_normaliser
 
     args_wrappers = []
@@ -178,9 +183,6 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            # if hasattr(func, '__self__'):
-
-            # TODO: fix this self
             _other = provided.pop("self", None)
 
             args, provided = args_manager.apply((), provided)

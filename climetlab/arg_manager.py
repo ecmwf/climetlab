@@ -7,8 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import functools
-import inspect
 import logging
 
 LOG = logging.getLogger(__name__)
@@ -24,45 +22,14 @@ class ArgsManager:
         self.commands = commands
 
     def append(self, cmd):
-        if not isinstance(cmd, (list, tuple)):
-            cmd = [cmd]
-
-        for new_c in cmd:
-            for c in self.commands:
-                c.consistency(new_c)
-            self.commands.append(new_c)
+        for c in self.commands:
+            c.consistency(cmd)
+        self.commands.append(cmd)
 
     def __call__(self, *args, **kwargs):
         for c in self.commands:
-            print(f"apply {c}")
             args, kwargs = c.apply(args, kwargs)
         return args, kwargs
-
-        print("func", self.func, args, kwargs)
-        provided = inspect.getcallargs(self.func, *args, **kwargs)
-        for name, param in inspect.signature(self.func).parameters.items():
-            # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
-            assert param.kind is not param.VAR_POSITIONAL, param
-            if param.kind is param.VAR_KEYWORD:
-                provided.update(provided.pop(name, {}))
-
-        assert not "self" in provided
-
-        # if hasattr(func, '__self__'):
-
-        # TODO: fix this self
-        # _other = provided.pop("self", None)
-
-        for c in self.commands:
-            args, provided = c.apply(args, provided)
-
-        # if _other is not None:
-        #     provided["self"] = _other
-        # if self.func.__self__:
-        #     provided["self"] = self.func.__self__
-
-        print("out", args, provided)
-        return self.func(*args, **provided)
 
     def __str__(self):
         s = "ArgManager\n"

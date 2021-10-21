@@ -13,6 +13,7 @@ import datetime
 
 import pytest
 
+from climetlab.decorators import args_to_kwargs
 from climetlab.utils import string_to_args
 from climetlab.utils.humanize import (
     as_bytes,
@@ -185,6 +186,43 @@ def test_as_seconds():
     assert as_seconds("2s") == 2
     assert as_seconds("1m") == 60
     assert as_seconds("2h") == 2 * 60 * 60
+
+
+def test_args_to_kwargs_func():
+    def f(a, x=1, y=3):
+        return a, x, y
+
+    args, kwargs = args_to_kwargs(["A", "B", "C"], {}, f)
+    assert args == (), args
+    assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
+
+    args, kwargs = args_to_kwargs(["A", "B"], {}, f)
+    assert args == (), args
+    assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
+
+    args, kwargs = args_to_kwargs(["A", "B"], dict(y=5), f)
+    assert args == (), args
+    assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
+
+
+def test_args_to_kwargs_method():
+    class A:
+        def f(self, a, x=1, y=3):
+            return self, a, x, y
+
+    obj = A()
+
+    args, kwargs = args_to_kwargs(["A", "B", "C"], {}, obj.f)
+    assert len(args) == 1, args
+    assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
+
+    args, kwargs = args_to_kwargs(["A", "B"], {}, obj.f)
+    assert len(args) == 1, args
+    assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
+
+    args, kwargs = args_to_kwargs(["A", "B"], dict(y=5), obj.f)
+    assert len(args) == 1, args
+    assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
 
 
 if __name__ == "__main__":
