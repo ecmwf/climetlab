@@ -7,27 +7,21 @@
 # nor does it submit to any jurisdiction.
 #
 
+import functools
 import inspect
 import logging
-import functools
 
 LOG = logging.getLogger(__name__)
 
 
 class ArgsManager:
     def __init__(self, func, commands=None):
-        #func = functools.wraps(func)
+        # func = functools.wraps(func)
         self.func = func
         print("argmanager: ", func)
         if commands is None:
             commands = []
         self.commands = commands
-
-    @classmethod
-    def from_func(cls, func):
-        if not hasattr(func, "_args_manager"):
-            func._args_manager = ArgsManager(func)
-        return func._args_manager
 
     def append(self, cmd):
         if not isinstance(cmd, (list, tuple)):
@@ -39,7 +33,10 @@ class ArgsManager:
             self.commands.append(new_c)
 
     def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+        for c in self.commands:
+            print(f"apply {c}")
+            args, kwargs = c.apply(args, kwargs)
+        return args, kwargs
 
         print("func", self.func, args, kwargs)
         provided = inspect.getcallargs(self.func, *args, **kwargs)

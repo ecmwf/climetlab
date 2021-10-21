@@ -74,7 +74,7 @@ def availability(avail):
     return outer
 
 
-def normalize(name, values=None, **kwargs):
+def _make_norm_wrapper(name, values, **kwargs):
     from climetlab.normalize import _find_normaliser
 
     values = kwargs.pop("values", values)
@@ -90,23 +90,60 @@ def normalize(name, values=None, **kwargs):
             raise ValueError(f"Normalizer {norm} does not accept argument alias")
         norm.alias = alias
 
-    args_wrapper = NormalizerWrapper(name, norm)
+    return NormalizerWrapper(name, norm)
 
-    def wrapped(func):
 
-        if isinstance(func, ArgsManager):
-            args_manager = func
+def args_to_kwargs(args, kwargs, func):
+    print("func", func, args, kwargs)
+    provided = inspect.getcallargs(func, *args, **kwargs)
+    for name, param in inspect.signature(func).parameters.items():
+        # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
+        assert param.kind is not param.VAR_POSITIONAL, param
+        if param.kind is param.VAR_KEYWORD:
+            provided.update(provided.pop(name, {}))
+    assert not "self" in provided
+    return args, provided
+
+
+def normalize(name, values=None, **kwargs):
+
+    norm = _make_norm_wrapper(name, values, **kwargs)
+
+    def outer(func):
+        if hasattr(func, "_args_manager"):
+            args_manager = func._args_manager
+            func = func.__wrapped__
         else:
-            func = wraps(func)
             args_manager = ArgsManager(func)
+            func._args_manager = args_manager
 
-        args_manager.append(args_wrapper)
-        LOG.debug("Normalizers: %s", args_manager)
+        args_manager.append(norm)
 
-        return args_manager
+        @wraps(func)
+        def inner(*args, **kwargs):
+            if args:
+                print("  self? = ", args[0])
+            print("  -> ", args, kwargs)
 
+            #            args, kwargs = args_to_kwargs(args, kwargs, func)
 
-    return wrapped  
+            # if hasattr(func, '__self__'):
+            # TODO: fix this self
+            # _other = provided.pop("self", None)
+
+            args, kwargs = args_manager(*args, **kwargs)
+            # LOG.debug("Normalizers: %s", args_manager)
+
+            # if _other is not None:
+            #     provided["self"] = _other
+            # if self.func.__self__:
+            #     provided["self"] = self.func.__self__
+
+            return func(*args, **kwargs)
+
+        return inner
+
+    return outer
 
 
 def normalize_args(**kwargs):
