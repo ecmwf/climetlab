@@ -166,7 +166,7 @@ MERGERS = {
 }
 
 
-def args_to_kwargs(args):
+def add_default_values(args):
     kwargs = dict()
     for a in args:
         k, v = a.split("=")

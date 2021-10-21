@@ -65,35 +65,45 @@ def _make_norm_wrapper(name, values, **kwargs):
     return NormalizerWrapper(name, norm)
 
 
-def args_to_kwargs(args, kwargs, func):
+def add_default_values(args, kwargs, func):
     provided = inspect.getcallargs(func, *args, **kwargs)
+    print()
+    print(1, provided)
 
+    # add default values
     for name, param in inspect.signature(func).parameters.items():
-        LOG.debug(f"  {provided}")
-        LOG.debug(f"  considering {name} {param}")
-
-        # See https://docs.python.org/3.5/library/inspect.html#inspect.signature
+        if name in provided:
+            continue  # value provided by user
+        if param.default is inspect.Parameter.empty:
+            continue  # no default value
         assert param.kind is not param.VAR_POSITIONAL, param
-        if param.kind is param.VAR_KEYWORD:
-            LOG.debug(f"  ok -> adding {param} in kwargs")
-            provided.update(provided.pop(name, {}))
+        assert param.kind is param.VAR_KEYWORD
+        provided[name] = param.default
+        LOG.debug(f"  ok -> adding {param} in kwargs")
+
+    print(2, provided, func)
 
     if "self" in provided.keys():
-        # TODO: if hasattr(func, '__self__'):
+        # if hasattr(func, '__self__'):
+        #    assert hasattr(func, '__self__'), func
+        print("stolen self")
         LOG.debug("Stolen self")
         args = [provided.pop("self")]
+    #      args = [func.__self__]
     else:
+        assert not hasattr(func, "__self__"), func
         args = ()
 
+    print(3, provided)
     LOG.debug("return", args, provided)
     return args, provided
 
 
-def normalize(name, values=None, **kwargs):
+class NormalizeDecorator(object):
+    def __init__(self, name, values, **kwargs):
+        self.transforms = [_make_norm_wrapper(name, values, **kwargs)]
 
-    transforms = [_make_norm_wrapper(name, values, **kwargs)]
-
-    def outer(func):
+    def __call__(self, func):
         if hasattr(func, "_args_manager"):
             args_manager = func._args_manager
             func = func.__wrapped__
@@ -101,39 +111,44 @@ def normalize(name, values=None, **kwargs):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
-        args_manager.append_list(transforms)
+        args_manager.append_list(self.transforms)
 
         @wraps(func)
         def inner(*args, **kwargs):
-            args, kwargs = args_to_kwargs(args, kwargs, func)
+            print("  arg_manager", args_manager)
+            args, kwargs = add_default_values(args, kwargs, func)
             args, kwargs = args_manager(*args, **kwargs)
+            print(f"calling {func} kwargs={kwargs}")
+            # kwargs = kwargs['kwargs']
             return func(*args, **kwargs)
 
         return inner
 
-    return outer
+
+normalize = NormalizeDecorator
 
 
-def availability(avail):
-    from climetlab.normalize import _find_normaliser
+class AvailabilityDecorator(object):
+    def __init__(self, avail):
+        from climetlab.normalize import _find_normaliser
 
-    if isinstance(avail, str):
-        if not os.path.isabs(avail):
-            caller = os.path.dirname(inspect.stack()[1].filename)
-            avail = os.path.join(caller, avail)
+        if isinstance(avail, str):
+            if not os.path.isabs(avail):
+                caller = os.path.dirname(inspect.stack()[1].filename)
+                avail = os.path.join(caller, avail)
 
-    avail = Availability(avail)
+        avail = Availability(avail)
 
-    transforms = []
+        self.transforms = []
 
-    for key, value in avail.unique_values().items():
-        print(key, value)
-        norm = _find_normaliser(value)
-        transforms.append(NormalizerWrapper(key, norm))
+        for key, value in avail.unique_values().items():
+            print(key, value)
+            norm = _find_normaliser(value)
+            self.transforms.append(NormalizerWrapper(key, norm))
 
-    transforms.append(AvailabilityWrapper(avail))
+        self.transforms.append(AvailabilityWrapper(avail))
 
-    def outer(func):
+    def __call__(self, func):
         if hasattr(func, "_args_manager"):
             args_manager = func._args_manager
             func = func.__wrapped__
@@ -141,17 +156,18 @@ def availability(avail):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
-        args_manager.append_list(transforms)
+        args_manager.append_list(self.transforms)
 
         @wraps(func)
         def inner(*args, **kwargs):
-            args, kwargs = args_to_kwargs(args, kwargs, func)
+            args, kwargs = add_default_values(args, kwargs, func)
             args, kwargs = args_manager(*args, **kwargs)
             return func(*args, **kwargs)
 
         return inner
 
-    return outer
+
+availability = AvailabilityDecorator
 
 
 def normalize_args(**kwargs):
