@@ -69,6 +69,7 @@ class NormalizerAction(Action):
             assert not k.startswith("_")
 
         alias = kwargs.pop("alias", {})
+
         assert (
             not kwargs
         ), f"Unknown argument(s): {', '.join([str(k) for k in kwargs.keys()])}"
