@@ -13,8 +13,8 @@ import datetime
 
 import pytest
 
-from climetlab.decorators import add_default_values_and_kwargs
 from climetlab.utils import string_to_args
+from climetlab.utils.args import add_default_values_and_kwargs
 from climetlab.utils.humanize import (
     as_bytes,
     as_seconds,

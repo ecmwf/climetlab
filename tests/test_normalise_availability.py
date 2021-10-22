@@ -11,6 +11,9 @@
 
 import pytest
 
+from climetlab.decorators import availability, normalize
+from climetlab.utils.availability import Availability
+
 C1 = [
     {"level": "500", "param": "a", "step": "24"},
     {"level": "500", "param": "a", "step": "36"},
@@ -24,8 +27,6 @@ C1 = [
     {"level": "1000", "param": "a", "step": "48"},
 ]
 
-from climetlab.decorators import availability, normalize
-from climetlab.utils.availability import Availability
 
 av_decorator = availability(C1)
 av = Availability(C1)
