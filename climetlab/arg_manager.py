@@ -34,7 +34,7 @@ class ArgsManager:
         self.commands.append(cmd)
         cmd.args_manager = self
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, args, kwargs):
         for c in self.commands:
             args, kwargs = c.apply(args, kwargs)
         return args, kwargs

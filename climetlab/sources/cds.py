@@ -107,8 +107,6 @@ class CDSRetriever(FileSource):
     @normalize("date", "date-list(%Y-%m-%d)")
     @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
-        if "kwargs" in kwargs:
-            kwargs = kwargs["kwargs"]
         split_on = kwargs.pop("split_on", None)
         if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):
             return [kwargs]

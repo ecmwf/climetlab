@@ -65,38 +65,75 @@ def _make_norm_wrapper(name, values, **kwargs):
     return NormalizerWrapper(name, norm)
 
 
-def add_default_values(args, kwargs, func):
+def add_default_values_and_kwargs(args, kwargs, func):
+    sig = inspect.signature(func)
+    bnd = sig.bind(*args, **kwargs)
+
+    print("bb", bnd.arguments)
+    bnd.apply_defaults()
+    print("bb", bnd.arguments)
+
+    print("a", args)
+    print("a", bnd.args)
+
+    print("k", kwargs)
+    print("k", bnd.kwargs)
+
     provided = inspect.getcallargs(func, *args, **kwargs)
     print()
-    print(1, provided)
+    print(1, args, kwargs, func)
+    print(provided)
 
-    # add default values
-    for name, param in inspect.signature(func).parameters.items():
+    new_kwargs = {}
+
+    for name, param in sig.parameters.items():
+        # We don't support *args
+        # for example this is not allowed
+        # @normalize(...)
+        # def foo(a, b, *args):
+        #   pass
+        msg = f"Positional *{name} not supported"
+        assert param.kind is not param.VAR_POSITIONAL, msg
+
+        # We support **kwargs
+        # for example this is ok
+        # @normalize(...)
+        # def foo(a, b, **kwargs):
+        #   pass
+        if param.kind is param.VAR_KEYWORD:
+            print("  Adding {param} because it is the VAR_KEYWORD")
+            new_kwargs.update(provided.pop(name, {}))
+            continue
+
+        # value provided by user
         if name in provided:
-            continue  # value provided by user
+            new_kwargs[name] = provided.pop(name)
+            continue
+
+        # do nothing if no default value
         if param.default is inspect.Parameter.empty:
-            continue  # no default value
-        assert param.kind is not param.VAR_POSITIONAL, param
-        assert param.kind is param.VAR_KEYWORD
-        provided[name] = param.default
+            continue
+
+        # add default values
+        new_kwargs[name] = param.default
         LOG.debug(f"  ok -> adding {param} in kwargs")
 
-    print(2, provided, func)
+    print(2, args, new_kwargs, func)
 
-    if "self" in provided.keys():
-        # if hasattr(func, '__self__'):
-        #    assert hasattr(func, '__self__'), func
-        print("stolen self")
-        LOG.debug("Stolen self")
-        args = [provided.pop("self")]
-    #      args = [func.__self__]
-    else:
-        assert not hasattr(func, "__self__"), func
-        args = ()
+    # if "self" in new_kwargs.keys():
+    # if hasattr(func, '__self__'):
+    #    #    assert hasattr(func, '__self__'), func
+    #    print("stolen self")
+    #    LOG.debug("Stolen self")
+    ##    args = [new_kwargs.pop("self")]
+    #    args = [func.__self__]
+    # else:
+    #    assert not hasattr(func, "__self__"), func
+    args = ()
 
-    print(3, provided)
-    LOG.debug("return", args, provided)
-    return args, provided
+    print(3, args, new_kwargs, func)
+    LOG.debug("return", args, new_kwargs)
+    return args, new_kwargs
 
 
 class NormalizeDecorator(object):
@@ -116,8 +153,8 @@ class NormalizeDecorator(object):
         @wraps(func)
         def inner(*args, **kwargs):
             print("  arg_manager", args_manager)
-            args, kwargs = add_default_values(args, kwargs, func)
-            args, kwargs = args_manager(*args, **kwargs)
+            args, kwargs = add_default_values_and_kwargs(args, kwargs, func)
+            args, kwargs = args_manager(args, kwargs)
             print(f"calling {func} kwargs={kwargs}")
             # kwargs = kwargs['kwargs']
             return func(*args, **kwargs)
@@ -160,8 +197,8 @@ class AvailabilityDecorator(object):
 
         @wraps(func)
         def inner(*args, **kwargs):
-            args, kwargs = add_default_values(args, kwargs, func)
-            args, kwargs = args_manager(*args, **kwargs)
+            args, kwargs = add_default_values_and_kwargs(args, kwargs, func)
+            args, kwargs = args_manager(args, kwargs)
             return func(*args, **kwargs)
 
         return inner
@@ -207,12 +244,12 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            _other = provided.pop("self", None)
+            #_other = provided.pop("self", None)
 
             args, provided = args_manager.apply((), provided)
 
-            if _other is not None:
-                provided["self"] = _other
+            #if _other is not None:
+            #    provided["self"] = _other
 
             return func(*args, **provided)
 

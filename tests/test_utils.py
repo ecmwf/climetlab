@@ -13,7 +13,7 @@ import datetime
 
 import pytest
 
-from climetlab.decorators import add_default_values
+from climetlab.decorators import add_default_values_and_kwargs
 from climetlab.utils import string_to_args
 from climetlab.utils.humanize import (
     as_bytes,
@@ -188,39 +188,39 @@ def test_as_seconds():
     assert as_seconds("2h") == 2 * 60 * 60
 
 
-def test_add_default_values_func():
+def test_add_default_values_and_kwargs_func():
     def f(a, x=1, y=3):
         return a, x, y
 
-    args, kwargs = add_default_values(["A", "B", "C"], {}, f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B", "C"], {}, f)
     assert args == (), args
     assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
 
-    args, kwargs = add_default_values(["A", "B"], {}, f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B"], {}, f)
     assert args == (), args
     assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
 
-    args, kwargs = add_default_values(["A", "B"], dict(y=5), f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B"], dict(y=5), f)
     assert args == (), args
     assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
 
 
-def test_add_default_values_method():
+def test_add_default_values_and_kwargs_method():
     class A:
         def f(self, a, x=1, y=3):
             return self, a, x, y
 
     obj = A()
 
-    args, kwargs = add_default_values(["A", "B", "C"], {}, obj.f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B", "C"], {}, obj.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
 
-    args, kwargs = add_default_values(["A", "B"], {}, obj.f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B"], {}, obj.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
 
-    args, kwargs = add_default_values(["A", "B"], dict(y=5), obj.f)
+    args, kwargs = add_default_values_and_kwargs(["A", "B"], dict(y=5), obj.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
 
