@@ -80,51 +80,32 @@ def add_default_values_and_kwargs(args, kwargs, func):
     new_args = ()
 
     sig = inspect.signature(func)
-    print("signature=", sig)
     info("ADD_DEF..", func)
     bnd = sig.bind(*args, **kwargs)
-    print("bnd=", bnd)
-    bnd.apply_defaults()
-
-    if True:
-        print("in", args, kwargs)
-
-        print("A", args)
-        print("a", bnd.args)
-
-        print("K", kwargs)
-        print("k", bnd.kwargs)
-    new_kwargs.update(bnd.kwargs)
-
     parameters_names = list(sig.parameters)
 
+    bnd.apply_defaults()
+
+    new_kwargs.update(bnd.kwargs)
+
     first = parameters_names[0]
-
     if first == "self":
-
-        LOG.debug('Skipping parameter "%s"', first)
-        # this must be method, store self in new_args
-        new_args = (args[0],)
-        # and skip this parameter
-        args = args[1:]
-        parameters_names = parameters_names[1:]
+        # func must be method. Store first argument and skip it latter
+        LOG.debug('Skipping parameter "%s" because it is called "self"', first)
+        new_args = (args.pop(),)
+        parameters_names = parameters_names.pop()
 
     for name in parameters_names:
         param = sig.parameters[name]
 
-        if param.kind is param.VAR_POSITIONAL:
-            # param is *args
+        if param.kind is param.VAR_POSITIONAL:  # param is *args
             new_args = new_args + tuple(args)
             continue
 
-        if param.kind is param.VAR_KEYWORD:
-            # param is **kwargs
-            var_keyword = bnd.arguments[name]
-            print("VAR_KEYWORD", var_keyword)
-            new_kwargs.update(var_keyword)
+        if param.kind is param.VAR_KEYWORD:  # param is **kwargs
+            new_kwargs.update(bnd.arguments[name])
             continue
 
-        print("adding ", name)
         new_kwargs[name] = bnd.arguments[name]
 
     print("out", new_args, new_kwargs)
