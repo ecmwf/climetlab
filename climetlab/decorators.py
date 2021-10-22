@@ -98,11 +98,14 @@ def add_default_values_and_kwargs(args, kwargs, func):
 
     parameters_names = list(sig.parameters)
 
-    print("first:", parameters_names[0])
-    if parameters_names[0] in "self":
-        # if this must be method
-        # store self in new_args
+    first = parameters_names[0]
+
+    if first == "self":
+
+        LOG.debug('Skipping parameter "%s"', first)
+        # this must be method, store self in new_args
         new_args = (args[0],)
+        # and skip this parameter
         args = args[1:]
         parameters_names = parameters_names[1:]
 
@@ -110,21 +113,12 @@ def add_default_values_and_kwargs(args, kwargs, func):
         param = sig.parameters[name]
 
         if param.kind is param.VAR_POSITIONAL:
-            # We don't support *args
-            # for example this is not allowed
-            # @normalize(...)
-            # def foo(a, b, *args):
-            #   pass
-            new_args = new_args + args  # untested
-            raise NotImplementedError("*args not supported")
+            # param is *args
+            new_args = new_args + tuple(args)
             continue
 
         if param.kind is param.VAR_KEYWORD:
-            # We support **kwargs
-            # for example this is ok
-            # @normalize(...)
-            # def foo(a, b, **kargs):
-            #   pass
+            # param is **kwargs
             var_keyword = bnd.arguments[name]
             print("VAR_KEYWORD", var_keyword)
             new_kwargs.update(var_keyword)
@@ -134,7 +128,7 @@ def add_default_values_and_kwargs(args, kwargs, func):
         new_kwargs[name] = bnd.arguments[name]
 
     print("out", new_args, new_kwargs)
-    LOG.debug("return", new_args, new_kwargs)
+    LOG.debug("Fixed input arguments", new_args, new_kwargs)
     return new_args, new_kwargs
 
 

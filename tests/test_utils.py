@@ -205,6 +205,41 @@ def test_add_default_values_and_kwargs_func():
     assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
 
 
+def test_add_default_values_and_args_func():
+    def f(a, *args, x=1, y=3):
+        return a, args, x, y
+
+    args, kwargs = add_default_values_and_kwargs(["A", "B", "C", "D", "E", "F"], {}, f)
+    assert len(args) == 6, args
+    assert kwargs == {"a": "A", "x": 1, "y": 3}, kwargs
+
+    args, kwargs = add_default_values_and_kwargs(
+        ["A", "B", "C", "D", "E", "F"], {"y": 7}, f
+    )
+    assert len(args) == 6, args
+    assert kwargs == {"a": "A", "x": 1, "y": 7}, kwargs
+
+
+def test_add_default_values_and_args_method():
+    class A:
+        def f(self, a, *args, x=1, y=3):
+            return self, a, args, x, y
+
+    obj = A()
+
+    args, kwargs = add_default_values_and_kwargs(
+        [obj, "A", "B", "C", "D", "E", "F"], {}, A.f
+    )
+    assert len(args) == 7, args
+    assert kwargs == {"a": "A", "x": 1, "y": 3}, kwargs
+
+    args, kwargs = add_default_values_and_kwargs(
+        [obj, "A", "B", "C", "D", "E", "F"], {"y": 7}, A.f
+    )
+    assert len(args) == 7, args
+    assert kwargs == {"a": "A", "x": 1, "y": 7}, kwargs
+
+
 def test_add_default_values_and_kwargs_method():
     class A:
         def f(self, a, x=1, y=3):
@@ -212,15 +247,15 @@ def test_add_default_values_and_kwargs_method():
 
     obj = A()
 
-    args, kwargs = add_default_values_and_kwargs(["A", "B", "C"], {}, obj.f)
+    args, kwargs = add_default_values_and_kwargs([obj, "A", "B", "C"], {}, A.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
 
-    args, kwargs = add_default_values_and_kwargs(["A", "B"], {}, obj.f)
+    args, kwargs = add_default_values_and_kwargs([obj, "A", "B"], {}, A.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
 
-    args, kwargs = add_default_values_and_kwargs(["A", "B"], dict(y=5), obj.f)
+    args, kwargs = add_default_values_and_kwargs([obj, "A", "B"], dict(y=5), A.f)
     assert len(args) == 1, args
     assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
 
