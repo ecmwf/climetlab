@@ -76,10 +76,11 @@ def info(a, func):
 def add_default_values_and_kwargs(args, kwargs, func):
     assert isinstance(args, (list, tuple))
     assert isinstance(kwargs, dict)
-    args = tuple(args)
+
+    args = list(args)
 
     new_kwargs = {}
-    new_args = ()
+    new_args = []
 
     sig = inspect.signature(func)
     info("ADD_DEF..", func)
@@ -90,19 +91,17 @@ def add_default_values_and_kwargs(args, kwargs, func):
 
     new_kwargs.update(bnd.kwargs)
 
-    first = parameters_names[0]
-    if first == "self":
+    if parameters_names[0] == "self":
         # func must be method. Store first argument and skip it latter
-        new_args = (args[0],)
-        LOG.debug('Skipping parameter "%s" because it is called "self"', first)
-        parameters_names = parameters_names[1:]
-        args = args[1:]
+        LOG.debug('Skipping first parameter because it is called "self"')
+        new_args = [args.pop(0)]
+        parameters_names.pop(0)
 
     for name in parameters_names:
         param = sig.parameters[name]
 
         if param.kind is param.VAR_POSITIONAL:  # param is *args
-            new_args = new_args + tuple(args)
+            new_args = new_args + args
             continue
 
         if param.kind is param.VAR_KEYWORD:  # param is **kwargs
@@ -112,8 +111,8 @@ def add_default_values_and_kwargs(args, kwargs, func):
         new_kwargs[name] = bnd.arguments[name]
 
     print("out", new_args, new_kwargs)
-    assert isinstance(new_args, tuple), new_args
-    #new_args = tuple(new_args)
+    assert isinstance(new_args, list), new_args
+    new_args = tuple(new_args)
     LOG.debug("Fixed input arguments", new_args, new_kwargs)
     return new_args, new_kwargs
 
