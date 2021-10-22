@@ -333,6 +333,30 @@ def test_normalize_kwargs():
     Klass().f(param="a")
 
 
+def test_normalize_advanced_1():
+    # def f(a,/, b, c=4,*, x=3):
+    #    return a,b,c,x
+    # args = ['A']
+    # kwargs=dict(b=2, c=4)
+
+    @normalize("b", ["B", "BB"])
+    def f(a, /, b, c=4, *, x=3):
+        return a, b, c, x
+
+    out = f("A", b="B", c=7, x=8)
+    assert out == ("A", ["B"], 7, 8)
+
+
+def test_normalize_advanced_2():
+    @normalize("b", ["B", "BB"])
+    @normalize("a", ["A", "AA"])
+    def g(a, /, b, c=4, *, x=3):
+        return a, b, c, x
+
+    out = g("A", b="B", c=7, x=8)
+    assert out == (["A"], ["B"], 7, 8)
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

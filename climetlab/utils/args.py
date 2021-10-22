@@ -13,11 +13,33 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
-def add_default_values_and_kwargs(args, kwargs, func):
-    assert isinstance(args, (list, tuple))
-    assert isinstance(kwargs, dict)
+class ArgsKwargs:
+    def __init__(self, args, kwargs, func=None, positionals=None):
+        assert isinstance(kwargs, dict)
+        assert isinstance(args, (list, tuple))
+        args = list(args)
 
-    args = list(args)
+        if positionals is None:
+            positionals = []
+
+        self.args = args
+        self.kwargs = kwargs
+        self.positionals = positionals
+        self.func = func
+
+    def ensure_positionals(self):
+        for name in self.positionals:
+            value = self.kwargs.pop(name)
+            self.args.append(value)
+
+
+def add_default_values_and_kwargs(args_kwargs):
+
+    args_kwargs.ensure_positionals()
+
+    args = args_kwargs.args
+    kwargs = args_kwargs.kwargs
+    func = args_kwargs.func
 
     new_kwargs = {}
     new_args = []
@@ -36,6 +58,7 @@ def add_default_values_and_kwargs(args, kwargs, func):
         new_args = [args.pop(0)]
         parameters_names.pop(0)
 
+    positionals = []
     for name in parameters_names:
         param = sig.parameters[name]
 
@@ -47,11 +70,13 @@ def add_default_values_and_kwargs(args, kwargs, func):
             new_kwargs.update(bnd.arguments[name])
             continue
 
-        new_kwargs[name] = bnd.arguments[name]
+        if param.kind is param.POSITIONAL_ONLY:
+            # new_args = new_args + [bnd.arguments[name]]
+            # continue
+            positionals.append(name)
 
-    assert isinstance(new_args, list), new_args
-    new_args = tuple(new_args)
+        new_kwargs[name] = bnd.arguments[name]
 
     LOG.debug("Fixed input arguments", new_args, new_kwargs)
 
-    return new_args, new_kwargs
+    return ArgsKwargs(new_args, new_kwargs, positionals=positionals, func=func)

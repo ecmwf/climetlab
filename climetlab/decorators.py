@@ -51,13 +51,7 @@ def locked(func):
     return wrapped
 
 
-class NormalizeDecorator(object):
-    def __init__(self, name, values, **kwargs):
-        self.actions = [
-            FixKwargsAction(),
-            NormalizerAction(name, values, **kwargs),
-        ]
-
+class Decorator(object):
     def __call__(self, func):
         if hasattr(func, "_args_manager"):
             action_stack = func._args_manager
@@ -71,16 +65,30 @@ class NormalizeDecorator(object):
         @wraps(func)
         def inner(*args, **kwargs):
             LOG.debug("Applying arg_manager: %s", action_stack)
+            print("CALLING manager", args, kwargs)
             args, kwargs = action_stack(args, kwargs)
+            print("CALLING func", args, kwargs)
             return func(*args, **kwargs)
 
         return inner
 
 
-normalize = NormalizeDecorator
+class FixKwargsDecorator(Decorator):
+    def __init__(self):
+        self.actions = [
+            FixKwargsAction(),
+        ]
 
 
-class AvailabilityDecorator(object):
+class NormalizeDecorator(Decorator):
+    def __init__(self, name, values, **kwargs):
+        self.actions = [
+            FixKwargsAction(),
+            NormalizerAction(name, values, **kwargs),
+        ]
+
+
+class AvailabilityDecorator(Decorator):
     def __init__(self, avail):
 
         if isinstance(avail, str):
@@ -98,22 +106,7 @@ class AvailabilityDecorator(object):
 
         self.actions.append(AvailabilityAction(avail))
 
-    def __call__(self, func):
-        if hasattr(func, "_args_manager"):
-            action_stack = func._args_manager
-            func = func.__wrapped__
-        else:
-            action_stack = ActionsStack(func)
-            func._args_manager = action_stack
 
-        action_stack.append_list(self.actions)
-
-        @wraps(func)
-        def inner(*args, **kwargs):
-            args, kwargs = action_stack(args, kwargs)
-            return func(*args, **kwargs)
-
-        return inner
-
-
+_fix_kwargs = FixKwargsDecorator
+normalize = NormalizeDecorator
 availability = AvailabilityDecorator

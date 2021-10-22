@@ -9,7 +9,7 @@
 
 import logging
 
-from climetlab.utils.args import add_default_values_and_kwargs
+from climetlab.utils.args import ArgsKwargs, add_default_values_and_kwargs
 
 LOG = logging.getLogger(__name__)
 
@@ -48,9 +48,15 @@ class ActionsStack:
         action.actions_stack = self
 
     def __call__(self, args, kwargs):
+        args_kwargs = ArgsKwargs(args, kwargs, func=self.func)
         for c in self._actions:
-            args, kwargs = c(args, kwargs, self.func)
-        return args, kwargs
+            args_kwargs = c(args_kwargs)
+
+        args_kwargs.ensure_positionals()
+        args = args_kwargs.args
+        kwargs = args_kwargs.kwargs
+
+        return tuple(args), kwargs
 
     def __str__(self):
         s = "ArgManager\n"
@@ -107,16 +113,17 @@ class NormalizerAction(Action):
     def merge_with(self, old):
         old.merge_with_normalizer(self)
 
-    def __call__(self, args, kwargs, func):
+    def __call__(self, args_kwargs):
+        kwargs = args_kwargs.kwargs
         if self.key in kwargs:
             kwargs[self.key] = self.norm(kwargs[self.key])
 
-        return args, kwargs
+        return args_kwargs
 
 
 class FixKwargsAction(Action):
-    def __call__(self, args, kwargs, func):
-        return add_default_values_and_kwargs(args, kwargs, func)
+    def __call__(self, args_kwargs):
+        return add_default_values_and_kwargs(args_kwargs)
 
     def merge_with_normalizer(self, norm):
         pass
@@ -133,10 +140,10 @@ class AvailabilityAction(Action):
         self.availability = availability
         super().__init__()
 
-    def __call__(self, args, kwargs, func):
-        LOG.debug("Checking availability for %s", kwargs)
-        self.availability.check(**kwargs)
-        return args, kwargs
+    def __call__(self, args_kwargs):
+        LOG.debug("Checking availability for %s", args_kwargs.kwargs)
+        self.availability.check(**args_kwargs.kwargs)
+        return args_kwargs
 
     def merge_with_normalizer(self, norm):
         norm.merge_with_availability(self)
