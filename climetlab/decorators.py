@@ -65,75 +65,77 @@ def _make_norm_wrapper(name, values, **kwargs):
     return NormalizerWrapper(name, norm)
 
 
-def add_default_values_and_kwargs(args, kwargs, func):
-    sig = inspect.signature(func)
-    bnd = sig.bind(*args, **kwargs)
-
-    print("bb", bnd.arguments)
-    bnd.apply_defaults()
-    print("bb", bnd.arguments)
-
-    print("a", args)
-    print("a", bnd.args)
-
-    print("k", kwargs)
-    print("k", bnd.kwargs)
-
-    provided = inspect.getcallargs(func, *args, **kwargs)
+def info(a, func):
+    return
+    print(a, "func", func)
+    if hasattr(func, "__self__"):
+        print("__self__", func.__self__)
+    print("ismethod", inspect.ismethod(func))
     print()
-    print(1, args, kwargs, func)
-    print(provided)
+
+
+def add_default_values_and_kwargs(args, kwargs, func):
 
     new_kwargs = {}
+    new_args = ()
 
-    for name, param in sig.parameters.items():
-        # We don't support *args
-        # for example this is not allowed
-        # @normalize(...)
-        # def foo(a, b, *args):
-        #   pass
-        msg = f"Positional *{name} not supported"
-        assert param.kind is not param.VAR_POSITIONAL, msg
+    sig = inspect.signature(func)
+    print("signature=", sig)
+    info("ADD_DEF..", func)
+    bnd = sig.bind(*args, **kwargs)
+    print("bnd=", bnd)
+    bnd.apply_defaults()
 
-        # We support **kwargs
-        # for example this is ok
-        # @normalize(...)
-        # def foo(a, b, **kwargs):
-        #   pass
+    if True:
+        print("in", args, kwargs)
+
+        print("A", args)
+        print("a", bnd.args)
+
+        print("K", kwargs)
+        print("k", bnd.kwargs)
+    new_kwargs.update(bnd.kwargs)
+
+    parameters_names = list(sig.parameters)
+
+    print("first:", parameters_names[0])
+    if parameters_names[0] in "self":
+        # if this must be method
+        # store self in new_args
+        new_args = (args[0],)
+        args = args[1:]
+        parameters_names = parameters_names[1:]
+
+    for name in parameters_names:
+        param = sig.parameters[name]
+
+        if param.kind is param.VAR_POSITIONAL:
+            # We don't support *args
+            # for example this is not allowed
+            # @normalize(...)
+            # def foo(a, b, *args):
+            #   pass
+            new_args = new_args + args  # untested
+            raise NotImplementedError("*args not supported")
+            continue
+
         if param.kind is param.VAR_KEYWORD:
-            print("  Adding {param} because it is the VAR_KEYWORD")
-            new_kwargs.update(provided.pop(name, {}))
+            # We support **kwargs
+            # for example this is ok
+            # @normalize(...)
+            # def foo(a, b, **kargs):
+            #   pass
+            var_keyword = bnd.arguments[name]
+            print("VAR_KEYWORD", var_keyword)
+            new_kwargs.update(var_keyword)
             continue
 
-        # value provided by user
-        if name in provided:
-            new_kwargs[name] = provided.pop(name)
-            continue
+        print("adding ", name)
+        new_kwargs[name] = bnd.arguments[name]
 
-        # do nothing if no default value
-        if param.default is inspect.Parameter.empty:
-            continue
-
-        # add default values
-        new_kwargs[name] = param.default
-        LOG.debug(f"  ok -> adding {param} in kwargs")
-
-    print(2, args, new_kwargs, func)
-
-    # if "self" in new_kwargs.keys():
-    # if hasattr(func, '__self__'):
-    #    #    assert hasattr(func, '__self__'), func
-    #    print("stolen self")
-    #    LOG.debug("Stolen self")
-    ##    args = [new_kwargs.pop("self")]
-    #    args = [func.__self__]
-    # else:
-    #    assert not hasattr(func, "__self__"), func
-    args = ()
-
-    print(3, args, new_kwargs, func)
-    LOG.debug("return", args, new_kwargs)
-    return args, new_kwargs
+    print("out", new_args, new_kwargs)
+    LOG.debug("return", new_args, new_kwargs)
+    return new_args, new_kwargs
 
 
 class NormalizeDecorator(object):
@@ -141,6 +143,7 @@ class NormalizeDecorator(object):
         self.transforms = [_make_norm_wrapper(name, values, **kwargs)]
 
     def __call__(self, func):
+        info("CALL 1", func)
         if hasattr(func, "_args_manager"):
             args_manager = func._args_manager
             func = func.__wrapped__
@@ -148,15 +151,19 @@ class NormalizeDecorator(object):
             args_manager = ArgsManager(func)
             func._args_manager = args_manager
 
+        info("CALL 2", func)
         args_manager.append_list(self.transforms)
 
         @wraps(func)
         def inner(*args, **kwargs):
             print("  arg_manager", args_manager)
             args, kwargs = add_default_values_and_kwargs(args, kwargs, func)
+            print("--------")
+            print(args_manager)
             args, kwargs = args_manager(args, kwargs)
-            print(f"calling {func} kwargs={kwargs}")
+            print(f"calling {func} args={args} kwargs={kwargs}")
             # kwargs = kwargs['kwargs']
+            info("inner", func)
             return func(*args, **kwargs)
 
         return inner
@@ -244,11 +251,11 @@ def normalize_args(**kwargs):
                 if param.kind is param.VAR_KEYWORD:
                     provided.update(provided.pop(name, {}))
 
-            #_other = provided.pop("self", None)
+            # _other = provided.pop("self", None)
 
             args, provided = args_manager.apply((), provided)
 
-            #if _other is not None:
+            # if _other is not None:
             #    provided["self"] = _other
 
             return func(*args, **provided)
