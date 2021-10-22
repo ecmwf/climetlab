@@ -80,11 +80,8 @@ class NormalizerWrapper(ArgsCmd):
                     )
 
     def apply(self, args, kwargs):
-        # TODO: implement in args also
-        if self.key not in kwargs:
-            return args, kwargs
-
-        kwargs[self.key] = self.norm(kwargs[self.key])
+        if self.key in kwargs:
+            kwargs[self.key] = self.norm(kwargs[self.key])
 
         return args, kwargs
 

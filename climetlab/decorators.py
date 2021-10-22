@@ -66,7 +66,6 @@ def _make_norm_wrapper(name, values, **kwargs):
 
 
 def info(a, func):
-    return
     print(a, "func", func)
     if hasattr(func, "__self__"):
         print("__self__", func.__self__)
@@ -75,6 +74,9 @@ def info(a, func):
 
 
 def add_default_values_and_kwargs(args, kwargs, func):
+    assert isinstance(args, (list, tuple))
+    assert isinstance(kwargs, dict)
+    args = tuple(args)
 
     new_kwargs = {}
     new_args = ()
@@ -91,9 +93,10 @@ def add_default_values_and_kwargs(args, kwargs, func):
     first = parameters_names[0]
     if first == "self":
         # func must be method. Store first argument and skip it latter
+        new_args = (args[0],)
         LOG.debug('Skipping parameter "%s" because it is called "self"', first)
-        new_args = (args.pop(),)
-        parameters_names = parameters_names.pop()
+        parameters_names = parameters_names[1:]
+        args = args[1:]
 
     for name in parameters_names:
         param = sig.parameters[name]
@@ -109,6 +112,8 @@ def add_default_values_and_kwargs(args, kwargs, func):
         new_kwargs[name] = bnd.arguments[name]
 
     print("out", new_args, new_kwargs)
+    assert isinstance(new_args, tuple), new_args
+    #new_args = tuple(new_args)
     LOG.debug("Fixed input arguments", new_args, new_kwargs)
     return new_args, new_kwargs
 
