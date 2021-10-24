@@ -357,7 +357,16 @@ def test_normalize_advanced_2():
     assert out == (["A"], ["B"], 7, 8)
 
 
-if __name__ == "__main__":
-    from climetlab.testing import main
+def test_normalize_advanced_3():
+    from climetlab.normalize import _find_normaliser as normaliser
 
-    main(__file__)
+    assert normaliser((1, 2), type=str, multiple=True)(1) == ["1"]
+    assert normaliser((1, 2), type=str, multiple=True)((1, 2)) == ["1", "2"]
+
+
+if __name__ == "__main__":
+    test_normalize_advanced_3()
+
+    # from climetlab.testing import main
+
+    # main(__file__)

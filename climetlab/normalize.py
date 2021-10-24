@@ -84,8 +84,19 @@ class DateNormaliser:
         return dates[0]
 
 
+ENUM_FORMATTER = {
+    int: int,
+    str: str,
+    float: float,
+    None: _identity,
+    "int": int,
+    "str": str,
+    "float": float,
+}
+
+
 class _EnumNormaliser:
-    def __init__(self, *values):
+    def __init__(self, values, format=None):
         """Initialize the parameter instance .
 
         Parameters
@@ -99,11 +110,15 @@ class _EnumNormaliser:
             Ret[description]
         """
 
+        if values is None:
+            values = []
+
         if len(values) == 1 and isinstance(values[0], (list, tuple)):
             values = values[0]
 
         self.values = values
         self.alias = None
+        self.format = ENUM_FORMATTER[format]
 
     def get_alias(self, x):
         if self.alias is None:
@@ -141,22 +156,16 @@ class _EnumNormaliser:
 
 
 class EnumNormaliser(_EnumNormaliser):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __call__(self, x):
-        return self.normalize_one_value(x)
+        return self.format(self.normalize_one_value(x))
 
 
 class EnumListNormaliser(_EnumNormaliser):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __call__(self, x):
         if x is ALL:
-            return self.values
+            return self.format_all(self.values)
         if x is None:  # TODO: To be discussed
-            return self.values
+            return self.format_all(self.values)
 
         if not isinstance(x, (list, tuple)):
             if self.alias:
@@ -167,7 +176,10 @@ class EnumListNormaliser(_EnumNormaliser):
         if not isinstance(x, (list, tuple)):
             x = [x]
 
-        return [self.normalize_one_value(y) for y in x]
+        return self.format_all([self.normalize_one_value(y) for y in x])
+
+    def format_all(self, values):
+        return [self.format(x) for x in values]
 
 
 NORMALISERS = {
@@ -185,29 +197,36 @@ NORMALISERS = {
 }
 
 
-def _kwargs_to_normalizer(type=str, multiple=True, **kwargs):
+def _kwargs_to_normalizer(**kwargs):
+
+    type = kwargs.pop("type", str)
+    multiple = kwargs.pop("multiple", True)
+
+    # TODO: check
+    kwargs.setdefault("format", type)
+
     return NORMALISERS[(type, multiple)](**kwargs)
 
 
-def _find_normaliser(v, **kwargs):
+def _find_normaliser(values, **kwargs):
 
-    if v is None:
-        return _kwargs_to_normalizer(**kwargs)
+    if kwargs:
+        return _kwargs_to_normalizer(values=values, **kwargs)
 
-    if callable(v):
-        return v
+    if callable(values):
+        return values
 
-    if isinstance(v, tuple):
-        return EnumNormaliser(v)
+    if isinstance(values, tuple):
+        return EnumNormaliser(values)
 
-    if isinstance(v, list):
-        return EnumListNormaliser(v)
+    if isinstance(values, list):
+        return EnumListNormaliser(values)
 
-    assert isinstance(v, str), v
-    m = re.match(r"(.+)\((.+)\)", v)
+    assert isinstance(values, str), values
+    m = re.match(r"(.+)\((.+)\)", values)
 
     if not m:
-        return NORMALISERS[v]()
+        return NORMALISERS[values]()
 
     args = m.group(2).split(",")
     name = m.group(1)
