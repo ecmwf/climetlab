@@ -178,10 +178,21 @@ NORMALISERS = {
     "variable-list": VariableNormaliser,
     "bounding-box": BoundingBoxNormaliser,
     "bbox": BoundingBoxNormaliser,
+    (str, False): EnumNormaliser,
+    (str, True): EnumListNormaliser,
+    (int, False): EnumNormaliser,
+    (int, True): EnumListNormaliser,
 }
 
 
-def _find_normaliser(v, alias=None):
+def _kwargs_to_normalizer(type=str, multiple=True, **kwargs):
+    return NORMALISERS[(type, multiple)](**kwargs)
+
+
+def _find_normaliser(v, **kwargs):
+
+    if v is None:
+        return _kwargs_to_normalizer(**kwargs)
 
     if callable(v):
         return v

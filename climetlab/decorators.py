@@ -81,7 +81,7 @@ class FixKwargsDecorator(Decorator):
 
 
 class NormalizeDecorator(Decorator):
-    def __init__(self, name, values, **kwargs):
+    def __init__(self, name, values=None, **kwargs):
         self.actions = [
             FixKwargsAction(),
             NormalizerAction(name, values, **kwargs),

@@ -176,14 +176,20 @@ def test_availability_1():
         func7(3, step="36")
 
 
+@availability(C1)
+@normalize("level", type=int, multiple=False)
+@normalize("param", type=str, multiple=True)
+@normalize("step", type=int, multiple=True)
+def param_values(level, param, step):
+    return (level, param, step)
+
+
 def test_dev():
-    @availability(C1)
-    def func7(param, step="24"):
-        return param
+    assert param_values("1000", "a", "24") == (1000, "a", [24])
 
 
 if __name__ == "__main__":
-    # test_dev()
-    from climetlab.testing import main
+    test_dev()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)

@@ -76,18 +76,12 @@ class NormalizerAction(Action):
 
         alias = kwargs.pop("alias", {})
 
-        assert (
-            not kwargs
-        ), f"Unknown argument(s): {', '.join([str(k) for k in kwargs.keys()])}"
-
-        norm = _find_normaliser(values)
+        norm = _find_normaliser(values, **kwargs)
 
         if alias:
             if not hasattr(norm, "alias"):
                 raise ValueError(f"Normalizer {norm} does not accept argument alias")
             norm.alias = alias
-
-        from climetlab.normalize import _find_normaliser
 
         self.key = key
         self.norm = norm
