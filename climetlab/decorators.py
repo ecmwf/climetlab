@@ -186,6 +186,12 @@ class AvailabilityDecorator(Decorator):
         self.availability.check(**args_kwargs.kwargs)
         return args_kwargs
 
+    def __repr__(self):
+        txt = "AvailabilityDecorator(\n"
+        txt += f"{self.availability.tree()}"
+        txt += ")"
+        return txt
+
 
 _fix_kwargs = FixKwargsDecorator
 normalize = NormalizeDecorator
@@ -222,12 +228,6 @@ class DecoratorStack:
                 self._normalizers[action.key] = []
             self._normalizers[action.key].append(action)
 
-        if isinstance(action, AvailabilityDecorator):
-            if self._availability:
-                raise NotImplementedError("Multiple availabilities were provided")
-            self._availablity = action
-            self._av_values = action.availability.unique_values()
-
     def get_norms(self, key):
         if key not in self._normalizers:
             return None
@@ -244,6 +244,16 @@ class DecoratorStack:
             if key is not None and a.key != key:
                 continue
             yield a
+
+    def get_availability(self):
+        availabilities = [
+            a for a in self._actions if isinstance(a, AvailabilityDecorator)
+        ]
+        if len(availabilities) > 1:
+            raise NotImplementedError("Multiple availabilities were provided")
+        if availabilities:
+            return availabilities[0]
+        return None
 
     def get_keys(self):
         keys = []
@@ -264,8 +274,11 @@ class DecoratorStack:
         for a in self.get_aliases():
             new_actions.append(a)
 
-        av_values = self._av_values
-        availability = self._availability
+        availability_deco = self.get_availability()
+        if availability_deco:
+            av_values = availability_deco.availability.unique_values()
+        else:
+            av_values = {}
 
         for key in self.get_keys():
             norm_deco = self.get_norms(key)
@@ -296,8 +309,8 @@ class DecoratorStack:
 
             new_actions.append(norm_deco)
 
-        if availability:
-            new_actions.append(availability)
+        if availability_deco:
+            new_actions.append(availability_deco)
 
         self._actions = new_actions
         self._compiled = True
