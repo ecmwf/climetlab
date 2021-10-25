@@ -87,8 +87,8 @@ class ActionsStack:
 
             if not norms:
                 values = av_values_key
-                assert values, values
-                norm = NormalizerAction(key, values=values)
+                assert av_values_key, values
+                norm = NormalizerAction(key, values=av_values_key)
                 new_actions.append(norm)
                 continue
 

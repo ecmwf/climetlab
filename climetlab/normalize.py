@@ -165,6 +165,9 @@ class EnumNormaliser(_EnumNormaliser):
 
 class EnumListNormaliser(_EnumNormaliser):
     def __call__(self, x):
+        return self.format_all(self.normalize_multiple_values(x))
+
+    def normalize_multiple_values(self, x):
         if x is ALL:
             return self.format_all(self.values)
         if x is None:  # TODO: To be discussed
@@ -179,7 +182,7 @@ class EnumListNormaliser(_EnumNormaliser):
         if not isinstance(x, (list, tuple)):
             x = [x]
 
-        return self.format_all([self.normalize_one_value(y) for y in x])
+        return [self.normalize_one_value(y) for y in x]
 
     def format_all(self, values):
         return [self.format(x) for x in values]
