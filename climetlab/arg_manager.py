@@ -100,7 +100,7 @@ class ActionsStack:
                 continue
 
             for value in av_values_key:
-                _value = norm.norm(value)
+                _value = norm.norm.normalize_one_value(value)
                 if _value != value and _value != [value]:
                     raise ValueError(
                         f"Mismatch between availability and normalizer {str(_value)}({type(_value)}) != {value}({type(value)})"

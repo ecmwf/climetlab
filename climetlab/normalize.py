@@ -162,10 +162,16 @@ class EnumNormaliser(_EnumNormaliser):
     def __call__(self, x):
         return self.format(self.normalize_one_value(x))
 
+    def normalize(self, x):
+        return self.normalize_one_value(x)
+
 
 class EnumListNormaliser(_EnumNormaliser):
     def __call__(self, x):
         return self.format_all(self.normalize_multiple_values(x))
+
+    def normalize(self, x):
+        return self.normalize_multiple_values(x)
 
     def normalize_multiple_values(self, x):
         if x is ALL:

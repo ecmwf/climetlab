@@ -154,13 +154,13 @@ def test_avail_norm_setup():
         def func5(param, step):
             return param
 
-    with pytest.raises(NotImplementedError):
+        assert func5(param="A") == ["A"]
 
-        @av_decorator
-        @normalize("param", ["a", "b"])
-        @availability(C1)
-        def func6(param, step):
-            return param
+    @av_decorator
+    @normalize("param", ["a", "b"])
+    @availability(C1)
+    def func6(param, step):
+        return param
 
 
 def test_availability_1():
@@ -192,10 +192,10 @@ def param_values_2(level, param, step):
 
 def test_dev():
     print(param_values_1("1000", "a", "24"))
-    assert param_values_1("1000", "a", "24") == (1000, "a", [24])
+    assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
 
     print(param_values_2("1000", "a", "24"))
-    assert param_values_2("1000", "a", "24") == (1000, "a", [24])
+    assert param_values_2("1000", "a", "24") == (1000, ["a"], [24])
 
 
 if __name__ == "__main__":
