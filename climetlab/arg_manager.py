@@ -37,6 +37,7 @@ class ActionsStack:
         self._actions.remove(a)
 
     def append(self, action):
+        # assert isinstance(action, Decorator), action
         self._compiled = False
 
         assert not isinstance(action, (tuple, list))
@@ -58,6 +59,15 @@ class ActionsStack:
     def get_norms(self, key):
         return self._normalizers.get(key, [])
 
+    def get_keys(self):
+        keys = []
+        for a in self._actions:
+            if isinstance(a, NormalizerAction):
+                keys.append(a.key)
+            if isinstance(a, AvailabilityAction):
+                keys += list(a.availability.unique_values().keys())
+        return list(set(keys))
+
     def compile(self):
         new_actions = []
 
@@ -66,16 +76,7 @@ class ActionsStack:
         av_values = self._av_values
         availability = self._availability
 
-        def find_keys(_actions):
-            keys = []
-            for a in _actions:
-                if isinstance(a, NormalizerAction):
-                    keys.append(a.key)
-                if isinstance(a, AvailabilityAction):
-                    keys += list(a.availability.unique_values().keys())
-            return list(set(keys))
-
-        for key in find_keys(self._actions):
+        for key in self.get_keys():
             norms = self.get_norms(key)
             av_values_key = av_values.get(key, None)
 
@@ -119,8 +120,8 @@ class ActionsStack:
         self.compile()
 
         args_kwargs = ArgsKwargs(args, kwargs, func=self.func)
-        for c in self._actions:
-            args_kwargs = c(args_kwargs)
+        for a in self._actions:
+            args_kwargs = a.apply_to_args_kwargs(args_kwargs)
 
         args_kwargs.ensure_positionals()
         args = args_kwargs.args
@@ -157,7 +158,7 @@ class NormalizerAction(Action):
         self.norm = norm
         super().__init__()
 
-    def __call__(self, args_kwargs):
+    def apply_to_args_kwargs(self, args_kwargs):
         kwargs = args_kwargs.kwargs
         if self.key in kwargs:
             kwargs[self.key] = self.norm(kwargs[self.key])
@@ -166,7 +167,7 @@ class NormalizerAction(Action):
 
 
 class FixKwargsAction(Action):
-    def __call__(self, args_kwargs):
+    def apply_to_args_kwargs(self, args_kwargs):
         return add_default_values_and_kwargs(args_kwargs)
 
 
@@ -175,7 +176,7 @@ class AvailabilityAction(Action):
         self.availability = availability
         super().__init__()
 
-    def __call__(self, args_kwargs):
+    def apply_to_args_kwargs(self, args_kwargs):
         LOG.debug("Checking availability for %s", args_kwargs.kwargs)
         self.availability.check(**args_kwargs.kwargs)
         return args_kwargs
