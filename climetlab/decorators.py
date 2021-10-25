@@ -60,7 +60,7 @@ class Decorator(object):
             action_stack = ActionsStack(func)
             func._args_manager = action_stack
 
-        action_stack.append_list(self.actions)
+        action_stack.append(self.action)
 
         @wraps(func)
         def inner(*args, **kwargs):
@@ -75,16 +75,12 @@ class Decorator(object):
 
 class FixKwargsDecorator(Decorator):
     def __init__(self):
-        self.actions = [
-            FixKwargsAction(),
-        ]
+        self.action = FixKwargsAction()
 
 
 class NormalizeDecorator(Decorator):
     def __init__(self, name, values=None, **kwargs):
-        self.actions = [
-            NormalizerAction(name, values, **kwargs),
-        ]
+        self.action = NormalizerAction(name, values, **kwargs)
 
 
 class AvailabilityDecorator(Decorator):
@@ -97,9 +93,7 @@ class AvailabilityDecorator(Decorator):
 
         avail = Availability(avail)
 
-        self.actions = []
-
-        self.actions.append(AvailabilityAction(avail))
+        self.action = AvailabilityAction(avail)
 
 
 _fix_kwargs = FixKwargsDecorator

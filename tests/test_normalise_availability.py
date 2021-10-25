@@ -134,12 +134,10 @@ def test_avail_norm_setup():
     def func1(param):
         return param
 
-    with pytest.raises(ValueError):
-
-        @normalize("param", ["unk1", "unk2"])
-        @availability(C1)
-        def func2(param):
-            return param
+    @normalize("param", ["unk1", "unk2"])
+    @availability(C1)
+    def func2(param):
+        return param
 
     @normalize("param", ["a", "b"])
     @normalize("step", [24, 36])
