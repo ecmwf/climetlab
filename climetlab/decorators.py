@@ -94,19 +94,36 @@ class AliasDecorator(Decorator):
 
         self.key = name
 
+    def _resolve_alias(self, value):
+        if isinstance(value, (tuple, list)):
+            return [self._resolve_alias(v) for v in value]
+
+        if callable(self.data):
+            return self.data(value)
+
+        if isinstance(self.data, dict):
+            try:
+                return self.data[value]
+            except KeyError:  # No alias for this value
+                pass
+            except TypeError:  # if value is not hashable
+                pass
+            return value
+
+        assert False, (self.key, self.data)
+
     def apply_to_args_kwargs(self, args_kwargs):
         kwargs = args_kwargs.kwargs
-        if self.key in kwargs:
-            value = kwargs[self.key]
-            if isinstance(self.data, dict):
-                while value in self.data:
-                    value = self.data[value]
-                kwargs[self.key] = value
 
-            elif callable(self.data):
-                kwargs[self.key] = self.data(value)
-            else:
-                raise Exception
+        if self.key not in kwargs:
+            return args_kwargs
+
+        old = object()
+        value = kwargs[self.key]
+        while old != value:
+            old = value
+            value = self._resolve_alias(old)
+        kwargs[self.key] = value
 
         return args_kwargs
 
