@@ -117,25 +117,9 @@ class _EnumNormaliser:
             values = values[0]
 
         self.values = values
-        self.alias = None
         self.format = ENUM_FORMATTER[format]
 
-    def get_alias(self, x):
-        if self.alias is None:
-            return x
-        if isinstance(self.alias, dict):
-            return self.alias.get(x, x)
-        if callable(self.alias):
-            return self.alias(x)
-
-        raise NotImplementedError(
-            "Unknown alias of type {class(self.alias): {self.alias}"
-        )
-
     def normalize_one_value(self, x):
-        if self.alias:
-            x = self.get_alias(x)
-
         if not self.values:
             return x
 
@@ -150,12 +134,7 @@ class _EnumNormaliser:
         return x == value
 
     def raise_error(self, x):
-        alias_str = ""
-        if self.alias:
-            alias_str = f" and aliases are {self.alias}"
-        raise ValueError(
-            f'Invalid value "{x}", possible values are {self.values}{alias_str}'
-        )
+        raise ValueError(f'Invalid value "{x}", possible values are {self.values}')
 
 
 class EnumNormaliser(_EnumNormaliser):
@@ -178,12 +157,6 @@ class EnumListNormaliser(_EnumNormaliser):
             return self.format_all(self.values)
         if x is None:  # TODO: To be discussed
             return self.format_all(self.values)
-
-        if not isinstance(x, (list, tuple)):
-            if self.alias:
-                _x = self.get_alias(x)
-                if x != _x:
-                    return self(_x)
 
         if not isinstance(x, (list, tuple)):
             x = [x]
