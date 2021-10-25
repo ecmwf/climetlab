@@ -47,30 +47,27 @@ def locked(func):
 
 
 class Decorator(object):
-    def __init__(self):
-        self.actions_stack = None
-
-    def _get_action_stack(self, func):
-        if hasattr(func, "_args_manager"):
-            action_stack = func._args_manager
+    def _get_decorators_stack(self, func):
+        if hasattr(func, "_decorators_stack"):
+            decorators_stack = func._decorators_stack
             func = func.__wrapped__
         else:
-            action_stack = DecoratorStack(func)
-            func._args_manager = action_stack
-        return action_stack
+            decorators_stack = DecoratorStack(func)
+            func._decorators_stack = decorators_stack
+        return decorators_stack
 
-    def register_to_action_stack(self, action_stack):
-        action_stack.append(self)
+    def register_to_decorators_stack(self, decorators_stack):
+        decorators_stack.append(self)
 
     def __call__(self, func):
-        action_stack = self._get_action_stack(func)
-        self.register_to_action_stack(action_stack)
+        decorators_stack = self._get_decorators_stack(func)
+        self.register_to_decorators_stack(decorators_stack)
 
         @wraps(func)
         def inner(*args, **kwargs):
-            LOG.debug("Applying decorator stack: %s", action_stack)
+            LOG.debug("Applying decorator stack: %s", decorators_stack)
             print("CALLING decorator stack", args, kwargs)
-            args, kwargs = action_stack(args, kwargs)
+            args, kwargs = decorators_stack(args, kwargs)
             print("CALLING func", args, kwargs)
             return func(*args, **kwargs)
 
@@ -147,11 +144,12 @@ class NormalizeDecorator(Decorator):
         self.key = name
         self.norm = norm
 
-    def register_to_action_stack(self, action_stack):
+    def register_to_decorators_stack(self, decorators_stack):
+        # order does not matter
         if self.alias:
             assert isinstance(self.alias, AliasDecorator)
-            action_stack.append(self.alias)
-        action_stack.append(self)
+            decorators_stack.append(self.alias)
+        decorators_stack.append(self)
 
     def apply_to_args_kwargs(self, ak: ArgsKwargs):
         kwargs = ak.kwargs
@@ -218,7 +216,6 @@ class DecoratorStack:
         assert not isinstance(action, (tuple, list))
 
         self._actions.append(action)
-        action.actions_stack = self
 
         if isinstance(action, NormalizeDecorator):
             if action.key not in self._normalizers:
@@ -232,7 +229,7 @@ class DecoratorStack:
             self._av_values = action.availability.unique_values()
 
     def get_norms(self, key):
-        if not key in self._normalizers:
+        if key not in self._normalizers:
             return None
 
         norms = self._normalizers[key]
@@ -260,6 +257,7 @@ class DecoratorStack:
     def compile(self):
         new_actions = []
         LOG.debug("Compiling decorator stack: %s", self._actions)
+        print("A", self)
 
         new_actions.append(FixKwargsDecorator())
 
@@ -291,8 +289,8 @@ class DecoratorStack:
                 if _value != value and _value != [value]:
                     raise ValueError(
                         (
-                            f"Mismatch between availability and normalizer "
-                            "{str(_value)}({type(_value)}) != {value}({type(value)})"
+                            "Mismatch between availability and normalizer "
+                            f"{str(_value)}({type(_value)}) != {value}({type(value)})"
                         )
                     )
 
@@ -304,6 +302,7 @@ class DecoratorStack:
         self._actions = new_actions
         self._compiled = True
         LOG.debug("Compiled decorator stack: %s", self._actions)
+        print("Z", self)
 
     def __call__(self, args, kwargs):
         if not self._compiled:
