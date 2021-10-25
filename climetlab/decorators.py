@@ -46,7 +46,10 @@ def locked(func):
 
 
 class Decorator(object):
-    def __call__(self, func):
+    def __init__(self):
+        self.actions_stack = None
+
+    def _get_action_stack(self, func):
         if hasattr(func, "_args_manager"):
             action_stack = func._args_manager
             func = func.__wrapped__
@@ -55,8 +58,14 @@ class Decorator(object):
 
             action_stack = ActionsStack(func)
             func._args_manager = action_stack
+        return action_stack
 
+    def register_to_action_stack(self, action_stack):
         action_stack.append(self)
+
+    def __call__(self, func):
+        action_stack = self._get_action_stack(func)
+        self.register_to_action_stack(action_stack)
 
         @wraps(func)
         def inner(*args, **kwargs):
@@ -76,29 +85,61 @@ class FixKwargsDecorator(Decorator):
         return add_default_values_and_kwargs(args_kwargs)
 
 
+class AliasDecorator(Decorator):
+    def __init__(self, name, data):
+        super().__init__()
+        assert isinstance(data, dict) or callable(data), data
+
+        self.data = data
+
+        self.key = name
+
+    def apply_to_args_kwargs(self, args_kwargs):
+        kwargs = args_kwargs.kwargs
+        if self.key in kwargs:
+            value = kwargs[self.key]
+            if isinstance(self.data, dict):
+                while value in self.data:
+                    value = self.data[value]
+                kwargs[self.key] = value
+
+            elif callable(self.data):
+                kwargs[self.key] = self.data(value)
+            else:
+                raise Exception
+
+        return args_kwargs
+
+
 class NormalizeDecorator(Decorator):
     def __init__(self, name, values=None, **kwargs):
-        from climetlab.normalize import _find_normaliser
-
-        self.actions_stack = None
-
-        values = kwargs.pop("values", values)
+        super().__init__()
 
         for k, v in kwargs.items():
             assert not k.startswith("_")
 
-        alias = kwargs.pop("alias", {})
+        alias = kwargs.pop("alias", None)
+        if alias:
+            alias = AliasDecorator(name, data=alias)
 
+        from climetlab.normalize import _find_normaliser
+
+        values = kwargs.pop("values", values)
         norm = _find_normaliser(values, **kwargs)
 
-        if alias:
-            if not hasattr(norm, "alias"):
-                raise ValueError(f"Normalizer {norm} does not accept argument alias")
-            norm.alias = alias
+        # if hasattr(norm, "alias"):
+        #    norm.alias = alias
+        #    raise ValueError(f"Normalizer {norm} does not accept argument alias")
 
+        self.alias = alias
         self.key = name
         self.norm = norm
-        super().__init__()
+
+    def register_to_action_stack(self, action_stack):
+        if self.alias:
+            assert isinstance(self.alias, AliasDecorator)
+            action_stack.append(self.alias)
+        action_stack.append(self)
 
     def apply_to_args_kwargs(self, args_kwargs):
         kwargs = args_kwargs.kwargs
@@ -110,6 +151,7 @@ class NormalizeDecorator(Decorator):
 
 class AvailabilityDecorator(Decorator):
     def __init__(self, avail):
+        super().__init__()
 
         if isinstance(avail, str):
             if not os.path.isabs(avail):

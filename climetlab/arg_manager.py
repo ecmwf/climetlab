@@ -10,6 +10,7 @@
 import logging
 
 from climetlab.decorators import (
+    AliasDecorator,
     AvailabilityDecorator,
     Decorator,
     FixKwargsDecorator,
@@ -64,6 +65,14 @@ class ActionsStack:
     def get_norms(self, key):
         return self._normalizers.get(key, [])
 
+    def get_aliases(self, key=None):
+        for a in self._actions:
+            if not isinstance(a, AliasDecorator):
+                continue
+            if key is not None and a.key != key:
+                continue
+            yield a
+
     def get_keys(self):
         keys = []
         for a in self._actions:
@@ -75,8 +84,12 @@ class ActionsStack:
 
     def compile(self):
         new_actions = []
+        LOG.debug("Compiling decorator stack: %s", self._actions)
 
         new_actions.append(FixKwargsDecorator())
+
+        for a in self.get_aliases():
+            new_actions.append(a)
 
         av_values = self._av_values
         availability = self._availability
@@ -119,13 +132,16 @@ class ActionsStack:
 
         self._actions = new_actions
         self._compiled = True
+        LOG.debug("Compiled decorator stack: %s", self._actions)
 
     def __call__(self, args, kwargs):
-        # if not self._compiled:
-        self.compile()
+        if not self._compiled:
+            self.compile()
 
         args_kwargs = ArgsKwargs(args, kwargs, func=self.func)
+        print(self._actions)
         for a in self._actions:
+            print(f"Applying decorator {a}")
             args_kwargs = a.apply_to_args_kwargs(args_kwargs)
 
         args_kwargs.ensure_positionals()
