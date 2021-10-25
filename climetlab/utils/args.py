@@ -52,11 +52,13 @@ def add_default_values_and_kwargs(args_kwargs):
 
     new_kwargs.update(bnd.kwargs)
 
-    if parameters_names[0] == "self":
-        # func must be method. Store first argument and skip it latter
-        LOG.debug('Skipping first parameter because it is called "self"')
-        new_args = [args.pop(0)]
-        parameters_names.pop(0)
+    # TODO: delete this (sic!)
+    #
+    # if parameters_names[0] == "self":
+    #     # func must be method. Store first argument and skip it latter
+    #     LOG.debug('Skipping first parameter because it is called "self"')
+    #     new_args = new_args + [args.pop(0)]
+    #     parameters_names.pop(0)
 
     positionals = []
     for name in parameters_names:

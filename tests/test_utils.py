@@ -245,16 +245,16 @@ def test_add_default_values_and_args_method():
     )
     args = ak.args
     kwargs = ak.kwargs
-    assert len(args) == 7, args
-    assert kwargs == {"a": "A", "x": 1, "y": 3}, kwargs
+    assert len(args) == 7, (args, kwargs)
+    assert kwargs == {"self": obj, "a": "A", "x": 1, "y": 3}, (args, kwargs)
 
     ak = add_default_values_and_kwargs(
         ArgsKwargs([obj, "A", "B", "C", "D", "E", "F"], {"y": 7}, A.f)
     )
     args = ak.args
     kwargs = ak.kwargs
-    assert len(args) == 7, args
-    assert kwargs == {"a": "A", "x": 1, "y": 7}, kwargs
+    assert len(args) == 7, (args, kwargs)
+    assert kwargs == {"self": obj, "a": "A", "x": 1, "y": 7}, (args, kwargs)
 
 
 def test_add_default_values_and_kwargs_method():
@@ -267,20 +267,20 @@ def test_add_default_values_and_kwargs_method():
     ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B", "C"], {}, func=A.f))
     args = ak.args
     kwargs = ak.kwargs
-    assert len(args) == 1, args
-    assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
+    assert len(args) == 0, (args, kwargs)
+    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": "C"}, kwargs
 
     ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B"], {}, func=A.f))
     args = ak.args
     kwargs = ak.kwargs
-    assert len(args) == 1, args
-    assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
+    assert len(args) == 0, (args, kwargs)
+    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": 3}, kwargs
 
     ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B"], dict(y=5), func=A.f))
     args = ak.args
     kwargs = ak.kwargs
-    assert len(args) == 1, args
-    assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
+    assert len(args) == 0, args
+    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": 5}, kwargs
 
 
 def test_add_default_values_and_args_function_2():
