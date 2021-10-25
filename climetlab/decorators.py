@@ -83,7 +83,6 @@ class FixKwargsDecorator(Decorator):
 class NormalizeDecorator(Decorator):
     def __init__(self, name, values=None, **kwargs):
         self.actions = [
-            FixKwargsAction(),
             NormalizerAction(name, values, **kwargs),
         ]
 
@@ -99,10 +98,6 @@ class AvailabilityDecorator(Decorator):
         avail = Availability(avail)
 
         self.actions = []
-        self.actions.append(FixKwargsAction())
-
-        for name, values in avail.unique_values().items():
-            self.actions.append(NormalizerAction(name, values=values))
 
         self.actions.append(AvailabilityAction(avail))
 

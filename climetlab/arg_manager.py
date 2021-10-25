@@ -18,12 +18,6 @@ class Action:
     def __init__(self) -> None:
         self.actions_stack = None
 
-    def merge_with(self, old):
-        pass
-
-    def destroy(self):
-        pass
-
 
 class ActionsStack:
     def __init__(self, func, actions=None):
@@ -31,23 +25,104 @@ class ActionsStack:
         if actions is None:
             actions = []
         self._actions = actions
+        self._compiled = False
+        self._normalizers = {}
 
     def remove(self, a):
+        self._compiled = False
         self._actions.remove(a)
 
     def append_list(self, actions):
+        self._compiled = False
         for c in actions:
             self.append(c)
 
     def append(self, action):
+        self._compiled = False
 
-        for old in self._actions:
-            action.merge_with(old)
+        assert not isinstance(action, (tuple, list))
 
         self._actions.append(action)
         action.actions_stack = self
 
+        if isinstance(action, NormalizerAction):
+            if action.key not in self._normalizers:
+                self._normalizers[action.key] = []
+            self._normalizers[action.key].append(action)
+
+    def get_norms(self, key):
+        return self._normalizers.get(key, [])
+
+    def compile(self):
+        new_actions = []
+
+        new_actions.append(FixKwargsAction())
+
+        availabilities = list(
+            filter(lambda a: isinstance(a, AvailabilityAction), self._actions)
+        )
+
+        if len(availabilities) > 1:
+            raise NotImplementedError("Multiple availabilities were provided")
+
+        av_values = {}
+        availability = None
+        if availabilities:
+            availability = availabilities[0]
+            av_values = availability.availability.unique_values()
+
+        def find_keys(_actions):
+            keys = []
+            for a in _actions:
+                if isinstance(a, NormalizerAction):
+                    keys.append(a.key)
+                if isinstance(a, AvailabilityAction):
+                    keys += list(a.availability.unique_values().keys())
+            return list(set(keys))
+
+        for key in find_keys(self._actions):
+            norms = self.get_norms(key)
+            av_values_key = av_values.get(key, None)
+
+            assert norms or av_values_key, (norms, av_values_key)
+
+            if len(norms) > 1:
+                LOG.warning(f"Multiple normalizers for arg {key}")
+                norms = [norms[0]]  # choose only one
+
+            if not norms:
+                values = availability.availability.unique_values()[key]
+                assert values, values
+                norm = NormalizerAction(key, values=values)
+                new_actions.append(norm)
+                continue
+
+            assert len(norms) == 1, norms
+            norm = norms[0]
+
+            if not av_values_key:
+                new_actions.append(norm)
+                continue
+
+            for value in av_values_key:
+                _value = norm.norm(value)
+                if _value != value and _value != [value]:
+                    raise ValueError(
+                        f"Mismatch between availability and normalizer {str(_value)}({type(_value)}) != {value}({type(value)})"
+                    )
+
+                new_actions.append(norm)
+
+        if availability:
+            new_actions.append(availability)
+
+        self._actions = new_actions
+        self._compiled = True
+
     def __call__(self, args, kwargs):
+        # if not self._compiled:
+        self.compile()
+
         args_kwargs = ArgsKwargs(args, kwargs, func=self.func)
         for c in self._actions:
             args_kwargs = c(args_kwargs)
@@ -87,26 +162,6 @@ class NormalizerAction(Action):
         self.norm = norm
         super().__init__()
 
-    def destroy(self):
-        self.actions_stack.remove(self)
-
-    def merge_with_normalizer(self, norm):
-        if self.key == norm.key:
-            LOG.warning(f"Multiple normalizer for arg {self.key}")
-            self.destroy()
-
-    def merge_with_availability(self, action):
-        av = action.availability
-        for value in av.unique_values()[self.key]:
-            _value = self.norm(value)
-            if _value != value and _value != [value]:
-                raise ValueError(
-                    f"Mismatch between availability and normalizer {_value} != {value}"
-                )
-
-    def merge_with(self, old):
-        old.merge_with_normalizer(self)
-
     def __call__(self, args_kwargs):
         kwargs = args_kwargs.kwargs
         if self.key in kwargs:
@@ -119,15 +174,6 @@ class FixKwargsAction(Action):
     def __call__(self, args_kwargs):
         return add_default_values_and_kwargs(args_kwargs)
 
-    def merge_with_normalizer(self, norm):
-        pass
-
-    def merge_with_availability(self, a):
-        pass
-
-    def merge_with(self, a):
-        pass
-
 
 class AvailabilityAction(Action):
     def __init__(self, availability):
@@ -138,12 +184,3 @@ class AvailabilityAction(Action):
         LOG.debug("Checking availability for %s", args_kwargs.kwargs)
         self.availability.check(**args_kwargs.kwargs)
         return args_kwargs
-
-    def merge_with_normalizer(self, norm):
-        norm.merge_with_availability(self)
-
-    def merge_with_availability(self, a):
-        raise NotImplementedError("Multiple availabilities were provided")
-
-    def merge_with(self, old):
-        old.merge_with_availability(self)

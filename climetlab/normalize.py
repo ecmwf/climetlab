@@ -136,6 +136,9 @@ class _EnumNormaliser:
         if self.alias:
             x = self.get_alias(x)
 
+        if not self.values:
+            return x
+
         for v in self.values:
             if self.compare(x, v):
                 return v
