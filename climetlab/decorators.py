@@ -12,12 +12,6 @@ import os
 import threading
 from functools import wraps
 
-from climetlab.arg_manager import (
-    ActionsStack,
-    AvailabilityAction,
-    FixKwargsAction,
-    NormalizerAction,
-)
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -57,10 +51,12 @@ class Decorator(object):
             action_stack = func._args_manager
             func = func.__wrapped__
         else:
+            from climetlab.arg_manager import ActionsStack
+
             action_stack = ActionsStack(func)
             func._args_manager = action_stack
 
-        action_stack.append(self.action)
+        action_stack.append(self)
 
         @wraps(func)
         def inner(*args, **kwargs):
@@ -74,13 +70,42 @@ class Decorator(object):
 
 
 class FixKwargsDecorator(Decorator):
-    def __init__(self):
-        self.action = FixKwargsAction()
+    def apply_to_args_kwargs(self, args_kwargs):
+        from climetlab.utils.args import add_default_values_and_kwargs
+
+        return add_default_values_and_kwargs(args_kwargs)
 
 
 class NormalizeDecorator(Decorator):
     def __init__(self, name, values=None, **kwargs):
-        self.action = NormalizerAction(name, values, **kwargs)
+        from climetlab.normalize import _find_normaliser
+
+        self.actions_stack = None
+
+        values = kwargs.pop("values", values)
+
+        for k, v in kwargs.items():
+            assert not k.startswith("_")
+
+        alias = kwargs.pop("alias", {})
+
+        norm = _find_normaliser(values, **kwargs)
+
+        if alias:
+            if not hasattr(norm, "alias"):
+                raise ValueError(f"Normalizer {norm} does not accept argument alias")
+            norm.alias = alias
+
+        self.key = name
+        self.norm = norm
+        super().__init__()
+
+    def apply_to_args_kwargs(self, args_kwargs):
+        kwargs = args_kwargs.kwargs
+        if self.key in kwargs:
+            kwargs[self.key] = self.norm(kwargs[self.key])
+
+        return args_kwargs
 
 
 class AvailabilityDecorator(Decorator):
@@ -92,8 +117,13 @@ class AvailabilityDecorator(Decorator):
                 avail = os.path.join(caller, avail)
 
         avail = Availability(avail)
+        self.availability = avail
+        super().__init__()
 
-        self.action = AvailabilityAction(avail)
+    def apply_to_args_kwargs(self, args_kwargs):
+        LOG.debug("Checking availability for %s", args_kwargs.kwargs)
+        self.availability.check(**args_kwargs.kwargs)
+        return args_kwargs
 
 
 _fix_kwargs = FixKwargsDecorator

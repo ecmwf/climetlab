@@ -9,8 +9,13 @@
 
 import logging
 
-from climetlab.utils.args import ArgsKwargs, add_default_values_and_kwargs
-from climetlab.utils.availability import Availability
+from climetlab.decorators import (
+    AvailabilityDecorator,
+    Decorator,
+    FixKwargsDecorator,
+    NormalizeDecorator,
+)
+from climetlab.utils.args import ArgsKwargs
 
 LOG = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ class ActionsStack:
         self._actions.remove(a)
 
     def append(self, action):
-        # assert isinstance(action, Decorator), action
+        assert isinstance(action, Decorator), action
         self._compiled = False
 
         assert not isinstance(action, (tuple, list))
@@ -45,12 +50,12 @@ class ActionsStack:
         self._actions.append(action)
         action.actions_stack = self
 
-        if isinstance(action, NormalizerAction):
+        if isinstance(action, NormalizeDecorator):
             if action.key not in self._normalizers:
                 self._normalizers[action.key] = []
             self._normalizers[action.key].append(action)
 
-        if isinstance(action, AvailabilityAction):
+        if isinstance(action, AvailabilityDecorator):
             if self._availability:
                 raise NotImplementedError("Multiple availabilities were provided")
             self._availablity = action
@@ -62,16 +67,16 @@ class ActionsStack:
     def get_keys(self):
         keys = []
         for a in self._actions:
-            if isinstance(a, NormalizerAction):
+            if isinstance(a, NormalizeDecorator):
                 keys.append(a.key)
-            if isinstance(a, AvailabilityAction):
+            if isinstance(a, AvailabilityDecorator):
                 keys += list(a.availability.unique_values().keys())
         return list(set(keys))
 
     def compile(self):
         new_actions = []
 
-        new_actions.append(FixKwargsAction())
+        new_actions.append(FixKwargsDecorator())
 
         av_values = self._av_values
         availability = self._availability
@@ -89,7 +94,7 @@ class ActionsStack:
             if not norms:
                 values = av_values_key
                 assert av_values_key, values
-                norm = NormalizerAction(key, values=av_values_key)
+                norm = NormalizeDecorator(key, values=av_values_key)
                 new_actions.append(norm)
                 continue
 
@@ -134,49 +139,3 @@ class ActionsStack:
         for i, a in enumerate(self._actions):
             s += f"  {i}: {a}\n"
         return s
-
-
-class NormalizerAction(Action):
-    def __init__(self, key, values=None, **kwargs):
-        from climetlab.normalize import _find_normaliser
-
-        values = kwargs.pop("values", values)
-
-        for k, v in kwargs.items():
-            assert not k.startswith("_")
-
-        alias = kwargs.pop("alias", {})
-
-        norm = _find_normaliser(values, **kwargs)
-
-        if alias:
-            if not hasattr(norm, "alias"):
-                raise ValueError(f"Normalizer {norm} does not accept argument alias")
-            norm.alias = alias
-
-        self.key = key
-        self.norm = norm
-        super().__init__()
-
-    def apply_to_args_kwargs(self, args_kwargs):
-        kwargs = args_kwargs.kwargs
-        if self.key in kwargs:
-            kwargs[self.key] = self.norm(kwargs[self.key])
-
-        return args_kwargs
-
-
-class FixKwargsAction(Action):
-    def apply_to_args_kwargs(self, args_kwargs):
-        return add_default_values_and_kwargs(args_kwargs)
-
-
-class AvailabilityAction(Action):
-    def __init__(self, availability):
-        self.availability = availability
-        super().__init__()
-
-    def apply_to_args_kwargs(self, args_kwargs):
-        LOG.debug("Checking availability for %s", args_kwargs.kwargs)
-        self.availability.check(**args_kwargs.kwargs)
-        return args_kwargs
