@@ -183,7 +183,7 @@ class AvailabilityDecorator(Decorator):
 
     def apply_to_args_kwargs(self, args_kwargs):
         LOG.debug("Checking availability for %s", args_kwargs.kwargs)
-        self.availability.check(**args_kwargs.kwargs)
+        self.availability.check(args_kwargs.kwargs)
         return args_kwargs
 
     def __repr__(self):

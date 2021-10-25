@@ -278,7 +278,11 @@ class Tree:
         for c in self._children:
             c.visit(visitor, depth + 1)
 
-    def _kwargs_to_request(self, **kwargs):
+    def _kwargs_to_request(self, _kwargs=None, **kwargs):
+        if _kwargs is not None and not kwargs:
+            assert isinstance(_kwargs, dict)
+            kwargs = _kwargs
+
         request = {}
         for k, v in kwargs.items():
             if v is None:
@@ -289,8 +293,9 @@ class Tree:
                 request[k] = _as_tuple(v)
         return request
 
-    def count(self, **kwargs):
-        return self._count(self._kwargs_to_request(**kwargs))
+    def count(self, _kwargs=None, **kwargs):
+
+        return self._count(self._kwargs_to_request(_kwargs, **kwargs))
 
     def _count(self, request):
 

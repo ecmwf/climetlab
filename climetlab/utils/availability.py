@@ -113,8 +113,12 @@ class Availability:
         # assert kwargs.keys() == self.unique_values().keys(), "kwargs must contain all dimensions"
         return Availability(self._tree.missing(*args, **kwargs))
 
-    def check(self, **kwargs):
-        if self.count(**kwargs):
+    def check(self, _kwargs=None, **kwargs):
+        if _kwargs is not None and not kwargs:
+            assert isinstance(_kwargs, dict)
+            kwargs = _kwargs
+
+        if self.count(kwargs):
             return
 
         reasons = []
@@ -148,7 +152,7 @@ class Availability:
 
             lst = []
             for i in iterate_request(r):
-                if self.count(**i) == 0:
+                if self.count(i) == 0:
                     i = _tidy_dict(i)
                     lst.append((abs(len(i) - 2), i))
 
