@@ -143,10 +143,6 @@ class NormalizeDecorator(Decorator):
         values = kwargs.pop("values", values)
         norm = _find_normaliser(values, **kwargs)
 
-        # if hasattr(norm, "alias"):
-        #    norm.alias = alias
-        #    raise ValueError(f"Normalizer {norm} does not accept argument alias")
-
         self.alias = alias
         self.key = name
         self.norm = norm
@@ -157,12 +153,21 @@ class NormalizeDecorator(Decorator):
             action_stack.append(self.alias)
         action_stack.append(self)
 
-    def apply_to_args_kwargs(self, args_kwargs):
-        kwargs = args_kwargs.kwargs
+    def apply_to_args_kwargs(self, ak: ArgsKwargs):
+        kwargs = ak.kwargs
         if self.key in kwargs:
             kwargs[self.key] = self.norm(kwargs[self.key])
 
-        return args_kwargs
+        return ak
+
+    def __repr__(self):
+        txt = "NormalizeDecorator("
+        txt += self.key
+        if self.alias:
+            txt += f", alias={self.alias}"
+        txt += f", norm={self.norm}"
+        txt += ")"
+        return txt
 
 
 class AvailabilityDecorator(Decorator):
@@ -227,7 +232,13 @@ class DecoratorStack:
             self._av_values = action.availability.unique_values()
 
     def get_norms(self, key):
-        return self._normalizers.get(key, [])
+        if not key in self._normalizers:
+            return None
+
+        norms = self._normalizers[key]
+        if len(norms) > 1:
+            LOG.warning(f"Multiple normalizers for arg {key}")
+        return norms[-1]
 
     def get_aliases(self, key=None):
         for a in self._actions:
@@ -259,37 +270,33 @@ class DecoratorStack:
         availability = self._availability
 
         for key in self.get_keys():
-            norms = self.get_norms(key)
+            norm_deco = self.get_norms(key)
             av_values_key = av_values.get(key, None)
 
-            assert norms or av_values_key, (norms, av_values_key)
+            assert norm_deco or av_values_key, (norm_deco, av_values_key)
 
-            if len(norms) > 1:
-                LOG.warning(f"Multiple normalizers for arg {key}")
-                norms = [norms[-1]]  # choose only one
-
-            if not norms:
+            if norm_deco is None:
                 values = av_values_key
                 assert av_values_key, values
-                norm = NormalizeDecorator(key, values=av_values_key)
-                new_actions.append(norm)
+                norm_deco = NormalizeDecorator(key, values=av_values_key)
+                new_actions.append(norm_deco)
                 continue
 
-            assert len(norms) == 1, norms
-            norm = norms[0]
-
-            if not av_values_key:
-                new_actions.append(norm)
+            if av_values_key is None:
+                new_actions.append(norm_deco)
                 continue
 
             for value in av_values_key:
-                _value = norm.norm.normalize_one_value(value)
+                _value = norm_deco.norm.normalize_one_value(value)
                 if _value != value and _value != [value]:
                     raise ValueError(
-                        f"Mismatch between availability and normalizer {str(_value)}({type(_value)}) != {value}({type(value)})"
+                        (
+                            f"Mismatch between availability and normalizer "
+                            "{str(_value)}({type(_value)}) != {value}({type(value)})"
+                        )
                     )
 
-                new_actions.append(norm)
+            new_actions.append(norm_deco)
 
         if availability:
             new_actions.append(availability)
@@ -303,9 +310,7 @@ class DecoratorStack:
             self.compile()
 
         args_kwargs = ArgsKwargs(args, kwargs, func=self.func)
-        print(self._actions)
         for a in self._actions:
-            print(f"Applying decorator {a}")
             args_kwargs = a.apply_to_args_kwargs(args_kwargs)
 
         args_kwargs.ensure_positionals()
@@ -315,7 +320,7 @@ class DecoratorStack:
         return tuple(args), kwargs
 
     def __str__(self):
-        s = "ArgManager\n"
+        s = "DecoratorStack\n"
         for i, a in enumerate(self._actions):
             s += f"  {i}: {a}\n"
         return s

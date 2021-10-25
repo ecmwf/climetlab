@@ -194,8 +194,9 @@ def test_dev():
     print(param_values_1("1000", "a", "24"))
     assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
 
-    print(param_values_2("1000", "a", "24"))
     assert param_values_2("1000", "a", "24") == (1000, ["a"], [24])
+
+    assert param_values_2("1000", "a", 24) == (1000, ["a"], [24])
 
 
 if __name__ == "__main__":

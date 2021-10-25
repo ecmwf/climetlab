@@ -119,6 +119,13 @@ class _EnumNormaliser:
         self.values = values
         self.format = ENUM_FORMATTER[format]
 
+    def __repr__(self):
+        txt = f"{type(self)}("
+        txt += ",".join([str(k) for k in self.values])
+        txt += f", format={self.format}"
+        txt += ")"
+        return txt
+
     def normalize_one_value(self, x):
         if not self.values:
             return x

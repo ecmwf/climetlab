@@ -213,7 +213,7 @@ def test_enum_list_alias_1():
 @normalize(
     "name",
     [1, 2, 3],
-    alias=lambda x: {"one": 1}.get(x, x),
+    alias=lambda x: {"one": 1, "o": "one"}.get(x, x),
 )
 def enum_list_alias_2(name=1):
     return name
@@ -223,6 +223,7 @@ def test_enum_list_alias_2():
     assert enum_list_alias_2(1) == [1]
     assert enum_list_alias_2("one") == [1]
     assert enum_list_alias_2(["one"]) == [1]
+    assert enum_list_alias_2(["o"]) == [1]
 
 
 @normalize("name", ["a", "b", "c"], alias={"x": "y", "y": "z", "z": "a"})
