@@ -182,15 +182,14 @@ def param_values_1(level, param, step):
     return (level, param, step)
 
 
-@normalize("level", type=int, multiple=False)
-@normalize("param", type=str, multiple=True)
-@normalize("step", type=int, multiple=True)
-@availability(C1)
-def param_values_2(level, param, step):
-    return (level, param, step)
-
-
 def test_dev():
+    @normalize("level", type=int, multiple=False)
+    @normalize("param", type=str, multiple=True)
+    @normalize("step", type=int, multiple=True)
+    @availability(C1)
+    def param_values_2(level, param, step):
+        return (level, param, step)
+
     print(param_values_1("1000", "a", "24"))
     assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
     print(param_values_2("1000", "a", "24"))
@@ -198,7 +197,7 @@ def test_dev():
 
 
 if __name__ == "__main__":
-    test_dev()
-    # from climetlab.testing import main
+    # test_dev()
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

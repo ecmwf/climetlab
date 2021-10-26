@@ -10,6 +10,7 @@
 #
 
 import datetime
+import sys
 
 import numpy as np
 import pytest
@@ -334,28 +335,38 @@ def test_normalize_kwargs():
     Klass().f(param="a")
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python < 3.8")
 def test_normalize_advanced_1():
-    # def f(a,/, b, c=4,*, x=3):
-    #    return a,b,c,x
-    # args = ['A']
-    # kwargs=dict(b=2, c=4)
+    exec(
+        """
+# def f(a,/, b, c=4,*, x=3):
+#    return a,b,c,x
+# args = ['A']
+# kwargs=dict(b=2, c=4)
 
-    @normalize("b", ["B", "BB"])
-    def f(a, /, b, c=4, *, x=3):
-        return a, b, c, x
+@normalize("b", ["B", "BB"])
+def f(a, /, b, c=4, *, x=3):
+    return a, b, c, x
 
-    out = f("A", b="B", c=7, x=8)
-    assert out == ("A", ["B"], 7, 8)
+out = f("A", b="B", c=7, x=8)
+assert out == ("A", ["B"], 7, 8)
+"""
+    )
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python < 3.8")
 def test_normalize_advanced_2():
-    @normalize("b", ["B", "BB"])
-    @normalize("a", ["A", "AA"])
-    def g(a, /, b, c=4, *, x=3):
-        return a, b, c, x
+    exec(
+        """
+@normalize("b", ["B", "BB"])
+@normalize("a", ["A", "AA"])
+def g(a, /, b, c=4, *, x=3):
+    return a, b, c, x
 
-    out = g("A", b="B", c=7, x=8)
-    assert out == (["A"], ["B"], 7, 8)
+out = g("A", b="B", c=7, x=8)
+assert out == (["A"], ["B"], 7, 8)
+"""
+    )
 
 
 def test_normalize_advanced_3():
@@ -366,8 +377,8 @@ def test_normalize_advanced_3():
 
 
 if __name__ == "__main__":
-    test_normalize_advanced_3()
+    # test_normalize_advanced_3()
 
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
