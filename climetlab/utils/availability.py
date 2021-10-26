@@ -118,20 +118,6 @@ class Availability:
             assert isinstance(_kwargs, dict)
             kwargs = _kwargs
 
-        def stringify(s):
-            if isinstance(s, (list, tuple)):
-                return [stringify(x) for x in s]
-
-            if isinstance(s, dict):
-                r = {}
-                for k, v in s.items():
-                    r[k] = stringify(v)
-                return r
-
-            return str(s)
-
-        kwargs = stringify(kwargs)
-
         if self.count(kwargs):
             return
 

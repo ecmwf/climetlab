@@ -183,7 +183,20 @@ class AvailabilityDecorator(Decorator):
 
     def apply_to_args_kwargs(self, args_kwargs):
         LOG.debug("Checking availability for %s", args_kwargs.kwargs)
-        self.availability.check(args_kwargs.kwargs)
+
+        def stringify(s):
+            if isinstance(s, (list, tuple)):
+                return [stringify(x) for x in s]
+
+            if isinstance(s, dict):
+                r = {}
+                for k, v in s.items():
+                    r[k] = stringify(v)
+                return r
+
+            return str(s)
+
+        self.availability.check(stringify(args_kwargs.kwargs))
         return args_kwargs
 
     def __repr__(self):
