@@ -10,9 +10,10 @@ import inspect
 import logging
 import os
 import threading
+import weakref
 from functools import wraps
 
-from climetlab.utils.args import ArgsKwargs
+from climetlab.arguments.args_kwargs import ArgsKwargs
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -47,109 +48,104 @@ def locked(func):
 
 
 class Decorator(object):
-    def _get_decorators_stack(self, func):
-        if hasattr(func, "_decorators_stack"):
-            decorators_stack = func._decorators_stack
-            func = func.__wrapped__
-        else:
-            decorators_stack = DecoratorStack(func)
-            func._decorators_stack = decorators_stack
-        return decorators_stack
+    def __init__(self, kind, **kwargs):
+        self.arguments = None
+        self.kind = kind
+        self.init_kwargs = kwargs
+        if "name" in kwargs:
+            self.name = kwargs["name"]
 
-    def register_to_decorators_stack(self, decorators_stack):
-        decorators_stack.append(self)
+    def unwrap(self, f):
+        decorators = [self]
+        while hasattr(f, "__wrapped__") and hasattr(f, "_climetlab_deco"):
+            decorators = [f._climetlab_deco] + decorators
+            f = f.__wrapped__
+        return f, decorators
 
     def __call__(self, func):
-        decorators_stack = self._get_decorators_stack(func)
-        self.register_to_decorators_stack(decorators_stack)
+        from climetlab.arguments import Arguments
+        from climetlab.arguments.args_kwargs import add_default_values_and_kwargs
 
-        @wraps(func)
-        def inner(*args, **kwargs):
-            LOG.debug("Applying decorator stack: %s", decorators_stack)
-            print("CALLING decorator stack", args, kwargs)
-            args, kwargs = decorators_stack(args, kwargs)
-            print("CALLING func", args, kwargs)
-            return func(*args, **kwargs)
+        unwrapped, decorators = self.unwrap(func)
 
-        return inner
+        @wraps(unwrapped)
+        def newfunc(*args, **kwargs):
+            if self.arguments is None:
+                self.arguments = Arguments(decorators)
+
+            LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
+
+            args_kwargs = ArgsKwargs(args, kwargs, func=unwrapped)
+            args_kwargs = add_default_values_and_kwargs(args_kwargs)
+            if args_kwargs.args:
+                raise ValueError(f"There should not be anything in {args_kwargs.args}")
+
+            args_kwargs.kwargs = self.arguments.apply_to_kwargs(args_kwargs.kwargs)
+
+            args_kwargs.ensure_positionals()
+
+            args, kwargs = args_kwargs.args, args_kwargs.kwargs
+
+            LOG.debug("CALLING func %s %s", args, kwargs)
+            return unwrapped(*args, **kwargs)
+
+        newfunc._climetlab_deco = self
+
+        return newfunc
 
 
 class FixKwargsDecorator(Decorator):
     def apply_to_args_kwargs(self, args_kwargs):
-        from climetlab.utils.args import add_default_values_and_kwargs
+        from climetlab.arguments.args_kwargs import add_default_values_and_kwargs
 
         return add_default_values_and_kwargs(args_kwargs)
 
 
+class MultipleDecorator(Decorator):
+    def __init__(self, name, multiple):
+        assert multiple in [True, False]
+        super().__init__("multiple", name=name, multiple=multiple)
+
+
 class AliasDecorator(Decorator):
-    def __init__(self, name, data):
-        super().__init__()
-        assert isinstance(data, dict) or callable(data), data
-
-        self.data = data
-
-        self.key = name
-
-    def _resolve_alias(self, value):
-        if isinstance(value, (tuple, list)):
-            return [self._resolve_alias(v) for v in value]
-
-        if callable(self.data):
-            return self.data(value)
-
-        if isinstance(self.data, dict):
-            try:
-                return self.data[value]
-            except KeyError:  # No alias for this value
-                pass
-            except TypeError:  # if value is not hashable
-                pass
-            return value
-
-        assert False, (self.key, self.data)
-
-    def apply_to_args_kwargs(self, args_kwargs):
-        kwargs = args_kwargs.kwargs
-
-        if self.key not in kwargs:
-            return args_kwargs
-
-        old = object()
-        value = kwargs[self.key]
-        while old != value:
-            old = value
-            value = self._resolve_alias(old)
-        kwargs[self.key] = value
-
-        return args_kwargs
+    def __init__(self, name, alias):
+        assert isinstance(alias, dict) or callable(alias), alias
+        super().__init__("alias", name=name, alias=alias)
 
 
 class NormalizeDecorator(Decorator):
-    def __init__(self, name, values=None, **kwargs):
-        super().__init__()
+    def __init__(self, name, values=None, alias=None, multiple=None):
+        super().__init__(
+            "normalize",
+            name=name,
+            values=values,
+            alias=alias,
+            multiple=multiple,
+        )
+        return
 
-        for k, v in kwargs.items():
-            assert not k.startswith("_")
-
-        alias = kwargs.pop("alias", None)
         if alias:
-            alias = AliasDecorator(name, data=alias)
+            self.alias = AliasDecorator(name, data=alias)
+        else:
+            self.alias = None
+
+        def _multiple():
+            if "multiple" in kwargs:
+                return kwargs["multiple"]
+            if isinstance(values, list):
+                return True
+            if isinstance(values, tuple):
+                return False
+
+            return False
 
         from climetlab.normalize import _find_normaliser
 
         values = kwargs.pop("values", values)
         norm = _find_normaliser(values, **kwargs)
 
-        self.alias = alias
         self.key = name
         self.norm = norm
-
-    def register_to_decorators_stack(self, decorators_stack):
-        # order does not matter
-        if self.alias:
-            assert isinstance(self.alias, AliasDecorator)
-            decorators_stack.append(self.alias)
-        decorators_stack.append(self)
 
     def apply_to_args_kwargs(self, ak: ArgsKwargs):
         kwargs = ak.kwargs
@@ -170,7 +166,6 @@ class NormalizeDecorator(Decorator):
 
 class AvailabilityDecorator(Decorator):
     def __init__(self, avail):
-        super().__init__()
 
         if isinstance(avail, str):
             if not os.path.isabs(avail):
@@ -179,7 +174,6 @@ class AvailabilityDecorator(Decorator):
 
         avail = Availability(avail)
         self.availability = avail
-        super().__init__()
 
     def apply_to_args_kwargs(self, args_kwargs):
         LOG.debug("Checking availability for %s", args_kwargs.kwargs)
@@ -213,34 +207,26 @@ alias = AliasDecorator
 
 
 class DecoratorStack:
-    def __init__(self, func, actions=None):
+    def __init__(self, func, decorators=None):
         self.func = func
-        if actions is None:
-            actions = []
-        self._actions = actions
-        self._compiled = False
+        if decorators is None:
+            decorators = []
+        self.decorators = decorators
+        self.arguments = None
 
-        self._normalizers = {}
-        self._availability = None
-        self._av_values = {}
+    def append(self, decorator):
+        assert isinstance(decorator, Decorator), decorator
+        self.decorators.append(decorator)
 
-    def remove(self, a):
-        self._compiled = False
-        self._actions.remove(a)
+    def __str__(self):
+        s = "DecoratorStack(\n"
+        for i, a in enumerate(self.decorators):
+            s += f"  decorator {i}: {a}\n"
+        s += ")"
+        return s
 
-    def append(self, action):
-        assert isinstance(action, Decorator), action
-        self._compiled = False
 
-        assert not isinstance(action, (tuple, list))
-
-        self._actions.append(action)
-
-        if isinstance(action, NormalizeDecorator):
-            if action.key not in self._normalizers:
-                self._normalizers[action.key] = []
-            self._normalizers[action.key].append(action)
-
+class Old:
     def get_norms(self, key):
         if key not in self._normalizers:
             return None
@@ -251,8 +237,16 @@ class DecoratorStack:
         return norms[-1]
 
     def get_aliases(self, key=None):
+        for a in self.get_decorators(AliasDecorator, key):
+            yield a
+
+    def get_multiples(self, key=None):
+        for a in self.get_decorators(MultipleDecorator, key):
+            yield a
+
+    def get_decorators(self, klass, key=None):
         for a in self._actions:
-            if not isinstance(a, AliasDecorator):
+            if not isinstance(a, klass):
                 continue
             if key is not None and a.key != key:
                 continue
@@ -325,6 +319,9 @@ class DecoratorStack:
         if availability_deco:
             new_actions.append(availability_deco)
 
+        for a in self.get_multiples():
+            new_actions.append(a)
+
         self._actions = new_actions
         self._compiled = True
         LOG.debug("Compiled decorator stack: %s", self._actions)
@@ -343,9 +340,3 @@ class DecoratorStack:
         kwargs = args_kwargs.kwargs
 
         return tuple(args), kwargs
-
-    def __str__(self):
-        s = "DecoratorStack\n"
-        for i, a in enumerate(self._actions):
-            s += f"  {i}: {a}\n"
-        return s

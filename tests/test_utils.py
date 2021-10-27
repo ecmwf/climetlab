@@ -13,9 +13,9 @@ import datetime
 
 import pytest
 
+from climetlab.arguments.args_kwargs import ArgsKwargs, add_default_values_and_kwargs
 from climetlab.decorators import _fix_kwargs
 from climetlab.utils import string_to_args
-from climetlab.utils.args import ArgsKwargs, add_default_values_and_kwargs
 from climetlab.utils.humanize import (
     as_bytes,
     as_seconds,

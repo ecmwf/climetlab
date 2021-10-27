@@ -79,6 +79,6 @@ def add_default_values_and_kwargs(args_kwargs):
 
         new_kwargs[name] = bnd.arguments[name]
 
-    LOG.debug("Fixed input arguments", new_args, new_kwargs)
+    LOG.debug("Fixed input arguments args=%s, kwargs=%s", new_args, new_kwargs)
 
     return ArgsKwargs(new_args, new_kwargs, positionals=positionals, func=func)

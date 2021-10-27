@@ -208,10 +208,10 @@ def _find_normaliser(values, **kwargs):
     if callable(values):
         return values
 
-    if isinstance(values, tuple):
-        return EnumNormaliser(values)
+    # if isinstance(values, tuple):
+    #    return EnumNormaliser(values)
 
-    if isinstance(values, list):
+    if isinstance(values, (tuple, list)):
         return EnumListNormaliser(values)
 
     assert isinstance(values, str), values
