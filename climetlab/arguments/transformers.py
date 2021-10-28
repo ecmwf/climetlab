@@ -56,7 +56,8 @@ class MultipleTransformer(ArgumentTransformer):
         if self.multiple and not is_list:
             return [value]
         if not self.multiple and is_list:
-            assert len(value) == 1, (self.name, value)
+            if len(value) > 1:
+                raise ValueError(f"Cannot provide non-multiple value for {value}.")
             return value[0]
         return value
 
@@ -67,7 +68,7 @@ class MultipleTransformer(ArgumentTransformer):
 class AliasTransformer(ArgumentTransformer):
     def __init__(self, name, alias) -> None:
         super().__init__(name)
-        assert isinstance(alias, dict) or callable(alias)
+        assert isinstance(alias, dict) or callable(alias) or alias is None
         self.alias = alias
 
     @property
@@ -139,12 +140,20 @@ class NormalizeTransformer(ArgumentTransformer):
     def __init__(self, name, values) -> None:
         super().__init__(name)
         self.values = values
+        self.norm = None
 
-        from climetlab.normalize import _find_normaliser
+        if not values is None:
+            from climetlab.normalize import _find_normaliser
 
-        self.norm = _find_normaliser(values)
+            self.norm = _find_normaliser(values)
+
+    @property
+    def enabled(self):
+        return not self.values is None
 
     def apply_to_value(self, value):
+        if not self.enabled:
+            return value
         return self.norm(value)
 
     def __repr__(self) -> str:

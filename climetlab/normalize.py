@@ -127,6 +127,7 @@ class _EnumNormaliser:
         return txt
 
     def normalize_one_value(self, x):
+        x = str(x)
         if not self.values:
             return x
 
@@ -136,14 +137,13 @@ class _EnumNormaliser:
         self.raise_error(x)
 
     def compare(self, x, value):
-        x = str(x)
         if isinstance(x, str) and isinstance(value, str):
             return x.upper() == value.upper()
         return x == value
 
     def raise_error(self, x):
         raise ValueError(
-            f'Invalid value "{x}({type(x)})", possible values are {self.values}'
+            f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
 
 

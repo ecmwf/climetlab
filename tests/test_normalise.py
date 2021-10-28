@@ -370,11 +370,13 @@ assert out == (["A"], ["B"], 7, 8)
 
 
 def test_normalize_advanced_3():
-    from climetlab.normalize import _find_normaliser as normaliser
+    from climetlab.arguments import normaliser
 
-    assert normaliser((1, 2), type=str, multiple=True)(1) == ["1"]
-    assert normaliser((1, 2), type=str, multiple=True)((1, 2)) == ["1", "2"]
+    assert normaliser(("1", "2"), type=str, multiple=True)(1) == ["1"]
+    assert normaliser(("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
 
+
+#    assert normaliser((1, 2), type=int, multiple=True)(1) == [1]
 
 if __name__ == "__main__":
     # test_normalize_advanced_3()

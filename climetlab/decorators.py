@@ -10,8 +10,7 @@ import inspect
 import logging
 import os
 import threading
-import weakref
-from functools import partial, wraps
+from functools import wraps
 
 LOG = logging.getLogger(__name__)
 
@@ -84,12 +83,12 @@ class Decorator(object):
         if hasattr(func, "_climetlab_decorators"):
             decorators = decorators + func._climetlab_decorators
 
+        LOG.debug("Building arguments from decorators:\n %s", decorators)
+        arguments = Arguments(decorators=decorators)
+        LOG.debug("Built arguments: %s", self.arguments)
+
         @wraps(unwrapped)
         def newfunc(*args, **kwargs):
-            if self.arguments is None:
-                LOG.debug("Building arguments from decorators:\n %s", decorators)
-                self.arguments = Arguments(decorators=decorators)
-                LOG.debug("Built arguments: %s", self.arguments)
 
             LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
 
@@ -100,7 +99,7 @@ class Decorator(object):
             if args_kwargs.args:
                 raise ValueError(f"There should not be anything in {args_kwargs.args}")
 
-            args_kwargs.kwargs = self.arguments.apply_to_kwargs(args_kwargs.kwargs)
+            args_kwargs.kwargs = arguments.apply_to_kwargs(args_kwargs.kwargs)
 
             args_kwargs.ensure_positionals()
 

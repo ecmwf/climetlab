@@ -24,34 +24,13 @@ LOG = logging.getLogger(__name__)
 KEYWORDS = ["alias", "normalize", "availability", "multiple", "format", "type"]
 
 
-class Block:
-    def apply_to_one_value(self, name, value):
-        for t in self.transformers:
-            kwargs = t.apply_to_kwargs(kwargs)
-        return kwargs
-
-
-class MultipleBlock(Block):
-    key = "multiple"
-
-
-class AliasBlock(Block):
-    key = "alias"
-
-
-class NormBlock(Block):
-    needs = "normalizer"
-
-
-class AvailabilityBlock(Block):
-    needs = "availability"
-
-
 class Argument:
     def __init__(
         self, name, values=None, alias=None, multiple=None, format=None, type=None
     ):
         self.name = name
+        if alias is None:
+            alias = {}
 
         self._data = {k: None for k in KEYWORDS}
         self._decorators = []
@@ -61,8 +40,11 @@ class Argument:
         elif isinstance(values, list):
             self._data["multiple"] = True
 
-        if alias:
-            self._data["alias"] = alias
+        self._data["alias"] = alias
+        self._data["values"] = values
+        self._data["multiple"] = multiple
+        self._data["format"] = format
+        self._data["type"] = type
 
         # self.validate()
 
@@ -77,6 +59,10 @@ class Argument:
         self._data["multiple"] = self.merged_multiple("multiple")
         self._data["format"] = self.merged_format("format")
         self._data["type"] = self.merged_type("type")
+        self._data["values"] = self.merged_values("values")
+
+    def merged_values(self, key):
+        return self.merged_generic(key)
 
     def merged_format(self, key):
         return self.merged_generic(key)
@@ -97,7 +83,7 @@ class Argument:
                 out = x
                 continue
             if x != out:
-                raise Exception(f"Inconsistent values for {key}")
+                raise Exception(f"Inconsistent values for {key}: {x} != {out}")
         return out
 
     def merged_alias(self, key):
@@ -107,9 +93,16 @@ class Argument:
             return out
         for deco in many:
             v = deco.get(key)
-            if v is None:
+            if v is None or v == {}:
                 continue
-            out.update(v)
+            if isinstance(v, dict) and isinstance(out, dict):
+                LOG.debug(f"Multiple alias values. Merging {out} and {v}.")
+                out.update(v)
+                continue
+            if out is None or out == {}:
+                out = v
+                continue
+            raise ValueError(f"Multiple alias values. Cannot merge {out} and {v}.")
         return out
 
     def merged_multiple(self, key):
@@ -147,7 +140,7 @@ class Argument:
         return None
 
     def __repr__(self) -> str:
-        txt = "-- " + self.name + "\n"
+        txt = "-- " + str(self.name) + "\n"
         for k, v in self._data.items():
             if v is None:
                 continue
@@ -165,8 +158,9 @@ class Argument:
         # if self.count_decorators("alias") > 1:
         #    LOG.warn(f"Multiple value for 'alias' provided for {self.name}")
 
-    def apply_to_kwargs(self, kwargs):
-        return Arguments([self]).apply_to_kwargs(kwargs)
+    def __call__(self, value):
+        arguments = Arguments([self])
+        return arguments.apply_to_kwargs({self.name: value})[self.name]
 
 
 class Arguments:
@@ -177,12 +171,6 @@ class Arguments:
         availability=None,
     ):
         self.decorators = []
-        self._blocks = dict(
-            alias=AliasBlock(),
-            norm=NormBlock(),
-            availability=AvailabilityBlock(),
-            multiple=MultipleBlock(),
-        )
         self.pipeline = []
 
         self.availabilities = []
@@ -202,12 +190,19 @@ class Arguments:
         self.build_pipeline()
 
     def build_pipeline(self):
+        print("Arguments :-------------------------")
+        print(self)
+
         for a in self.arguments:
             transform = AliasTransformer(a.name, a._data["alias"])
             self.pipeline.append(transform)
 
         for a in self.arguments:
             transform = FormatTransformer(a.name, a._data["type"])
+            self.pipeline.append(transform)
+
+        for a in self.arguments:
+            transform = NormalizeTransformer(a.name, a._data["values"])
             self.pipeline.append(transform)
 
         for av in self.availabilities:
@@ -289,14 +284,10 @@ class Arguments:
             a.validate()
             a.merge_decorators()
 
-        print("Arguments built:-------------------------")
-        print(self)
-
         # self.validate_arguments()
 
-    def validate_blocks(self):
-        if self._alias and self.multiple:
-            self._alias[0].valid_with_multiple(self._multiple[0])
+        # if self._alias and self.multiple:
+        #     self._alias[0].valid_with_multiple(self._multiple[0])
 
     def validate(self):
         for a in self.arguments:
@@ -329,3 +320,7 @@ class Arguments:
         print(kwargs)
 
         return kwargs
+
+
+def normaliser(*args, **kwargs):
+    return Argument("no-name", *args, **kwargs)

@@ -139,19 +139,21 @@ def test_avail_norm_setup():
     def func2(param):
         return param
 
-    @normalize("param", ["a", "b"])
-    @normalize("step", [24, 36])
-    @normalize("param", ["A", "B"])
-    def func3(param, step):
-        return param
+    with pytest.raises(Exception):
 
-    assert func3("a", 24) == ["a"]
+        @normalize("param", ["A", "B"])
+        @normalize("step", [24, 36])
+        @normalize("param", ["a", "b"])
+        def func3(param, step):
+            return param
+
+        assert func3("a", 24) == ["a"]
 
     with pytest.raises(ValueError):
 
         @normalize("param", ["A", "B"])
         @availability(C1)
-        def func5(param, step):
+        def func5(param):
             return param
 
         assert func5(param="A") == ["A"]
@@ -159,8 +161,10 @@ def test_avail_norm_setup():
     @av_decorator
     @normalize("param", ["a", "b"])
     @availability(C1)
-    def func6(param, step):
+    def func6(param):
         return param
+
+    assert func6(param="A") == ["a"]
 
 
 def test_availability_1():
@@ -169,8 +173,8 @@ def test_availability_1():
         return param
 
     func7("a", step="36")
-    with pytest.raises(ValueError, match=r"Invalid value .*"):
-        # with pytest.raises(ValueError, match=r"invalid combination .*"):
+    # with pytest.raises(ValueError, match=r"Invalid value .*"):
+    with pytest.raises(ValueError, match=r"invalid combination .*"):
         func7(3, step="36")
 
 
