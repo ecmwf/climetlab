@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from climetlab import ALL, load_source
-from climetlab.arguments import Argument, Arguments
+from climetlab.arguments import Argument, InputManager
 from climetlab.decorators import _alias, _multiple, normalize
 from climetlab.normalize import DateListNormaliser, EnumListNormaliser, EnumNormaliser
 from climetlab.testing import climetlab_file
@@ -52,7 +52,7 @@ def test_argument_1():
     arg_a = Argument("a", multiple=False)
     arg_b = Argument("b", multiple=True, alias=dict(z=[1, 2, 3]))
     arg_c = Argument("c", values=("x", "y"))
-    args = Arguments([arg_a, arg_c, arg_b])
+    args = InputManager([arg_a, arg_c, arg_b])
 
     print(args.arguments)
     kwargs = dict(a="A", b="B", c="x")

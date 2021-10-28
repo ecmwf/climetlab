@@ -69,7 +69,7 @@ class Decorator(object):
         return key in self.init_kwargs
 
     def __call__(self, func):
-        from climetlab.arguments import Arguments
+        from climetlab.arguments import InputManager
         from climetlab.arguments.args_kwargs import add_default_values_and_kwargs
 
         def unwrap(f):
@@ -84,7 +84,7 @@ class Decorator(object):
             decorators = decorators + func._climetlab_decorators
 
         LOG.debug("Building arguments from decorators:\n %s", decorators)
-        arguments = Arguments(decorators=decorators)
+        arguments = InputManager(decorators=decorators)
         LOG.debug("Built arguments: %s", self.arguments)
 
         @wraps(unwrapped)
