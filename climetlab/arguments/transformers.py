@@ -6,9 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import inspect
 import logging
-import os
 
 from climetlab.utils.availability import Availability
 
@@ -49,7 +47,7 @@ class MultipleTransformer(ArgumentTransformer):
 
     @property
     def enabled(self):
-        return not self.multiple is None
+        return self.multiple is not None
 
     def apply_to_value(self, value):
         is_list = isinstance(value, (list, tuple))
@@ -120,7 +118,7 @@ class FormatTransformer(ArgumentTransformer):
 
     @property
     def enabled(self):
-        return not self.type is None
+        return self.type is not None
 
     def apply_to_value(self, value):
         if isinstance(value, (list, tuple)):
@@ -142,14 +140,14 @@ class NormalizeTransformer(ArgumentTransformer):
         self.values = values
         self.norm = None
 
-        if not values is None:
+        if values is not None:
             from climetlab.normalize import _find_normaliser
 
             self.norm = _find_normaliser(values)
 
     @property
     def enabled(self):
-        return not self.values is None
+        return self.values is not None
 
     def apply_to_value(self, value):
         if not self.enabled:
@@ -187,7 +185,7 @@ class AvailabilityTransformer(Transformer):
 
     def __repr__(self) -> str:
         txt = "Availability:"
-        for l in self._availability.tree().split("\n"):
-            if l:
-                txt += "\n    " + l
+        for line in self._availability.tree().split("\n"):
+            if line:
+                txt += "\n    " + line
         return txt

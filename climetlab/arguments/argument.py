@@ -108,7 +108,7 @@ class Argument:
                 continue
             if x != out:
                 raise Exception(f"Inconsistent values for {key}")
-        if not out is None:
+        if out is not None:
             return out
 
         for deco in many:
@@ -124,7 +124,7 @@ class Argument:
                 continue
             if x != out:
                 raise Exception(f"Inconsistent implicit values for {key}")
-        if not out is None:
+        if out is not None:
             return out
         return None
 
@@ -149,5 +149,6 @@ class Argument:
 
     def __call__(self, value):
         from .input_manager import InputManager
+
         arguments = InputManager([self])
         return arguments.apply_to_kwargs({self.name: value})[self.name]

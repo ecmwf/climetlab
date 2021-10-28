@@ -8,10 +8,10 @@
 #
 import logging
 
-from climetlab.decorators import Decorator, availability
+from climetlab.decorators import Decorator
 from climetlab.utils.availability import Availability
-from .argument import Argument
 
+from .argument import Argument
 from .transformers import (
     AliasTransformer,
     AvailabilityTransformer,
@@ -46,7 +46,6 @@ class InputManager:
         self.arguments = arguments
 
         if decorators:
-            assert all(isinstance(a, Decorator) for a in decorators), decorators
             self.add_decorators(decorators)
 
         self.build_pipeline()
@@ -87,8 +86,8 @@ class InputManager:
         print("----------------------------")
 
     def __repr__(self) -> str:
-        txt = f"ARGUMENTS:[\n"
-        txt += f" availability >>>\n"
+        txt = "ARGUMENTS:[\n"
+        txt += " availability >>>\n"
         if self.availabilities:
             txt += f"{self.availabilities}<<<"
         else:
@@ -97,7 +96,7 @@ class InputManager:
         for a in self.arguments:
             txt += f"  {a}\n"
         txt += "]"
-        txt += f"Pipeline:[\n"
+        txt += "Pipeline:[\n"
         for t in self.pipeline:
             txt += f"  {t}\n"
         txt += "]"
@@ -132,6 +131,8 @@ class InputManager:
         return list(names - old)
 
     def add_decorators(self, decorators):
+        assert all(isinstance(a, Decorator) for a in decorators), decorators
+
         self.decorators += decorators
 
         for deco in self.get_decorators("availability"):
@@ -151,11 +152,7 @@ class InputManager:
         # if self._alias and self.multiple:
         #     self._alias[0].valid_with_multiple(self._multiple[0])
 
-    def validate(self):
-        for a in self.arguments:
-            a.validate()
-        # availability.validate
-
+    # def validate(self):
     # for deco in self.get_decorators(self._decorators, "normalize"):
     #     arg = self.get(deco.name)
     #     if "alias" in deco.init_kwargs:
