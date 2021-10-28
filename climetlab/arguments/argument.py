@@ -24,10 +24,11 @@ class Argument:
         self._data = {k: None for k in KEYWORDS}
         self._decorators = []
 
-        if isinstance(values, tuple):
-            self._data["multiple"] = False
-        elif isinstance(values, list):
-            self._data["multiple"] = True
+        if multiple is None:
+            if isinstance(values, tuple):
+                multiple = False
+            elif isinstance(values, list):
+                multiple = True
 
         self._data["alias"] = alias
         self._data["values"] = values
