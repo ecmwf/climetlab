@@ -14,7 +14,6 @@ import datetime
 import pytest
 
 from climetlab.arguments.args_kwargs import ArgsKwargs, add_default_values_and_kwargs
-from climetlab.decorators import _fix_kwargs
 from climetlab.utils import string_to_args
 from climetlab.utils.humanize import (
     as_bytes,
@@ -283,20 +282,20 @@ def test_add_default_values_and_kwargs_method():
     assert kwargs == {"self": obj, "a": "A", "x": "B", "y": 5}, kwargs
 
 
-def test_add_default_values_and_args_function_2():
-    @_fix_kwargs()
-    def f(a, b, c=4, *, x=3):
-        return a, b, c, x
-
-    out = f("A", "B", 7, x=8)
-    assert out == ("A", "B", 7, 8)
-
-    @_fix_kwargs()
-    def f(a, /, b, c=4, *, x=3):
-        return a, b, c, x
-
-    out = f("A", b="B", c=7, x=8)
-    assert out == ("A", "B", 7, 8)
+# def test_add_default_values_and_args_function_2():
+#     @_fix_kwargs()
+#     def f(a, b, c=4, *, x=3):
+#         return a, b, c, x
+#
+#     out = f("A", "B", 7, x=8)
+#     assert out == ("A", "B", 7, 8)
+#
+#     @_fix_kwargs()
+#     def f(a, /, b, c=4, *, x=3):
+#         return a, b, c, x
+#
+#     out = f("A", b="B", c=7, x=8)
+#     assert out == ("A", "B", 7, 8)
 
 
 if __name__ == "__main__":

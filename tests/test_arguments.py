@@ -17,7 +17,7 @@ import pytest
 
 from climetlab import ALL, load_source
 from climetlab.arguments import Argument, Arguments
-from climetlab.decorators import AliasDecorator, MultipleDecorator, normalize
+from climetlab.decorators import _alias, _multiple, normalize
 from climetlab.normalize import DateListNormaliser, EnumListNormaliser, EnumNormaliser
 from climetlab.testing import climetlab_file
 from climetlab.utils.bbox import BoundingBox
@@ -32,19 +32,19 @@ def f():
 
 
 def test_deco_1(f):
-    g = MultipleDecorator("a", multiple=True)(f)
+    g = _multiple("a", multiple=True)(f)
     assert g(1, 2, 3) == ([1], 2, 3)
     assert f(1, 2, 3) == (1, 2, 3)
 
 
 def test_deco_reuse_function(f):
-    g = MultipleDecorator("a", multiple=True)(f)
-    g = MultipleDecorator("a", multiple=True)(f)
+    g = _multiple("a", multiple=True)(f)
+    g = _multiple("a", multiple=True)(f)
     assert g(1, 2, 3) == ([1], 2, 3)
 
 
 def test_deco_2(f):
-    g = AliasDecorator("b", alias=dict(z=[1, 2, 3]))(f)
+    g = _alias("b", alias=dict(z=[1, 2, 3]))(f)
     assert g(1, "z", 3) == (1, [1, 2, 3], 3)
 
 
@@ -69,8 +69,19 @@ def test_argument_2():
 
 
 def test_bad_decorator():
-    with pytest.raises(ValueError):
-        arg_b = Argument("b", multiple=False, alias=dict(z=[1, 2, 3]))
+    arg_b = Argument("b", multiple=False, alias=dict(z=[1, 2, 3]))
+    d = arg_b.apply_to_kwargs(dict(b=1))
+    assert d == dict(b=1)
+
+    d = arg_b.apply_to_kwargs(dict(b=["a"]))
+    assert d == dict(b="a")
+
+
+def test_deco_3(f):
+    g = _multiple("a", multiple=True)(f)
+    g = _multiple("a", multiple=True)(g)
+    assert g(1, 2, 3) == ([1], 2, 3)
+    assert f(1, 2, 3) == (1, 2, 3)
 
 
 if __name__ == "__main__":

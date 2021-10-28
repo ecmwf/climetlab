@@ -136,12 +136,15 @@ class _EnumNormaliser:
         self.raise_error(x)
 
     def compare(self, x, value):
+        x = str(x)
         if isinstance(x, str) and isinstance(value, str):
             return x.upper() == value.upper()
         return x == value
 
     def raise_error(self, x):
-        raise ValueError(f'Invalid value "{x}", possible values are {self.values}')
+        raise ValueError(
+            f'Invalid value "{x}({type(x)})", possible values are {self.values}'
+        )
 
 
 class EnumNormaliser(_EnumNormaliser):
@@ -200,10 +203,7 @@ def _kwargs_to_normalizer(**kwargs):
     return NORMALISERS[(type, multiple)](**kwargs)
 
 
-def _find_normaliser(values, **kwargs):
-
-    if kwargs:
-        return _kwargs_to_normalizer(values=values, **kwargs)
+def _find_normaliser(values):
 
     if callable(values):
         return values
