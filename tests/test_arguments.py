@@ -9,18 +9,10 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
-import sys
-
-import numpy as np
 import pytest
 
-from climetlab import ALL, load_source
 from climetlab.arguments import Argument, InputManager
-from climetlab.decorators import _alias, _multiple, normalize
-from climetlab.normalize import DateListNormaliser, EnumListNormaliser, EnumNormaliser
-from climetlab.testing import climetlab_file
-from climetlab.utils.bbox import BoundingBox
+from climetlab.decorators import _alias, _multiple
 
 
 @pytest.fixture
