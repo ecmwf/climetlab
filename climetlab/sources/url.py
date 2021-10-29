@@ -455,6 +455,7 @@ class Url(FileSource):
             url,
             extension=extension,
             force=force,
+            hash_extra=self.parts,
         )
 
     def __repr__(self) -> str:
