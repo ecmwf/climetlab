@@ -138,6 +138,28 @@ def test_cache_4():
             load_source("dummy-source", "zeros", size=100 * 1024 * 1024, n=n)
 
 
+@pytest.mark.skip("Not implemented yet")
+def test_multiprocessing():
+    import multiprocessing
+
+    import climetlab as cml
+
+    def func(val):
+        # import climetlab as cml
+        source = cml.load_source(
+            "url", "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib"
+        )
+        ds = source.to_xarray()
+        return val + 1
+
+    func(0)
+
+    procs = 2
+    pool = multiprocessing.Pool(processes=procs)
+    for res in pool.imap(func, range(4)):
+        print(f"Processed val: {res}")
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
