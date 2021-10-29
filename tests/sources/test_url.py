@@ -123,6 +123,18 @@ def test_extension():
     assert s.path.endswith(".1.tfrecord")
 
 
+def test_part_url():
+    ds = load_source(
+        "url",
+        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        offsets=(0,),
+        lengths=(4,),
+    )
+
+    with open(ds.path, "rb") as f:
+        assert f.read() == b"BUFR"
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

@@ -190,6 +190,8 @@ class HTTPDownloader(Downloader):
         mode = "wb"
         skip = 0
 
+        parts = self.owner.parts
+
         headers = self.headers(url)
         if "content-length" in headers:
             try:
@@ -202,7 +204,8 @@ class HTTPDownloader(Downloader):
         encoded = headers.get("content-encoding") is not None
 
         http_headers = dict(**self.owner.http_headers)
-        if not encoded and os.path.exists(download):
+
+        if not parts and not encoded and os.path.exists(download):
 
             bytes = os.path.getsize(download)
 
@@ -225,6 +228,17 @@ class HTTPDownloader(Downloader):
                         download,
                         bytes,
                     )
+
+        if parts:
+            if headers.get("accept-ranges") != "bytes":
+                raise ValueError(f"Server for {url} does not support byte ranges")
+            # We can trust the size
+            encoded = None
+            size = sum(p[1] for p in parts)
+            ranges = []
+            for offset, length in parts:
+                ranges.append(f"{offset}-{offset+length-1}")
+            http_headers["range"] = f"bytes={','.join(ranges)}"
 
         r = requests.get(
             url,
@@ -307,6 +321,7 @@ class FTPDownloader(Downloader):
     def prepare(self, url, download):
 
         mode = "wb"
+        assert not url.parts
 
         o = urlparse(url)
         assert o.scheme == "ftp"
@@ -380,6 +395,8 @@ class Url(FileSource):
     def __init__(
         self,
         url,
+        offsets=None,
+        lengths=None,
         filter=None,
         merger=None,
         verify=True,
@@ -403,7 +420,14 @@ class Url(FileSource):
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
 
+        self.parts = None
+        if offsets is not None or lengths is not None:
+
+            assert len(offsets) == len(lengths)
+            self.parts = tuple(zip(offsets, lengths))
+
         if mirror:
+            assert self.parts is None
             url = mirror(url)
 
         o = urlparse(url)
