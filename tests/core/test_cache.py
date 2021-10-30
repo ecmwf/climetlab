@@ -149,7 +149,7 @@ def test_multiprocessing():
         source = cml.load_source(
             "url", "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib"
         )
-        ds = source.to_xarray()
+        source.to_xarray()
         return val + 1
 
     func(0)
