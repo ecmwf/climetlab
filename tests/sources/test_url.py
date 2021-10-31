@@ -124,6 +124,12 @@ def test_extension():
 
 
 def test_part_url():
+
+    ds = load_source(
+        "url",
+        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+    )
+
     ds = load_source(
         "url",
         "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
@@ -131,8 +137,24 @@ def test_part_url():
         lengths=(4,),
     )
 
+    assert os.path.getsize(ds.path) == 4
+
     with open(ds.path, "rb") as f:
         assert f.read() == b"BUFR"
+
+    ds = load_source(
+        "url",
+        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        offsets=(0, 50, 60),
+        lengths=(10, 10, 10),
+    )
+
+    print(ds.path)
+
+    assert os.path.getsize(ds.path) == 30
+
+    with open(ds.path, "rb") as f:
+        assert f.read()[:4] == b"BUFR"
 
 
 if __name__ == "__main__":

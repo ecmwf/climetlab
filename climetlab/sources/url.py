@@ -13,6 +13,7 @@ import json
 import logging
 import mimetypes
 import os
+import re
 import sys
 from ftplib import FTP
 from urllib.parse import urlparse
@@ -59,6 +60,9 @@ class Downloader:
     def __init__(self, owner):
         # TODO: use weakref instead
         self.owner = owner
+
+        if self.owner.parts:
+            assert self.supports_parts
 
     def local_path(self, url):
         return None
@@ -124,7 +128,97 @@ class Downloader:
         return False
 
 
+class DecodeMultipart:
+    def __init__(self, request, parts):
+        self.request = request
+        assert request.status_code == 206, request.status_code
+
+        kind, self.boundary = request.headers["content-type"].split("=")
+        assert kind == "multipart/byteranges; boundary", kind
+
+        self.size = int(request.headers["content-length"])
+        self.encoding = "utf-8"
+        self.parts = parts
+
+    def __call__(self, chunk_size):
+        return self.stream(chunk_size)
+
+    def stream(self, chunk_size):
+        from email.parser import HeaderParser
+
+        from requests.structures import CaseInsensitiveDict
+
+        iter_content = self.request.iter_content(chunk_size)
+
+        header_parser = HeaderParser()
+        marker = f"--{self.boundary}\r\n".encode(self.encoding)
+        end_header = b"\r\n\r\n"
+        end_data = b"\r\n"
+        chunk = next(iter_content)
+        end_of_input = f"--{self.boundary}--\r\n".encode(self.encoding)
+
+        LOG.debug("MARKER %s", marker)
+        part = 0
+        while True:
+            while len(chunk) < max(len(marker), len(end_of_input)):
+                more = next(iter_content)
+                assert more is not None
+                chunk += more
+
+            if chunk.find(end_of_input) == 0:
+                assert part == len(self.parts)
+                break
+
+            pos = chunk.find(marker)
+            assert pos == 0, (pos, chunk)
+
+            chunk = chunk[pos + len(marker) :]
+            while True:
+                pos = chunk.find(end_header)
+                if pos != -1:
+                    break
+                more = next(iter_content)
+                assert more is not None
+                chunk += more
+                assert len(chunk) < 1024 * 16
+
+            pos += len(end_header)
+            header = chunk[:pos].decode(self.encoding)
+            header = CaseInsensitiveDict(header_parser.parsestr(header))
+            chunk = chunk[pos:]
+            # kind = header["content-type"]
+            bytes = header["content-range"]
+            LOG.debug("HEADERS %s", header)
+            m = re.match(r"^bytes (\d+)d?-(\d+)d?/(\d+)d?$", bytes)
+            assert m, header
+            start, end, total = int(m.group(1)), int(m.group(2)), int(m.group(3))
+
+            assert end >= start
+            assert start < total
+            assert end < total
+
+            size = end - start + 1
+
+            assert start == self.parts[part][0]
+            assert end == self.parts[part][0] + self.parts[part][1] - 1
+
+            while size > 0:
+                if len(chunk) >= size:
+                    yield chunk[:size]
+                    chunk = chunk[size:]
+                    size = 0
+                else:
+                    yield chunk
+                    size -= len(chunk)
+                    chunk = next(iter_content)
+
+            assert chunk.find(end_data) == 0
+            chunk = chunk[len(end_data) :]
+            part += 1
+
+
 class HTTPDownloader(Downloader):
+    supports_parts = True
 
     _headers = None
     _url = None
@@ -249,13 +343,15 @@ class HTTPDownloader(Downloader):
         )
         r.raise_for_status()
 
-        self.request = r
+        self.stream = r.iter_content
+        if parts and len(parts) > 1:
+            self.stream = DecodeMultipart(r, parts)
 
         return size, mode, skip, encoded
 
     def transfer(self, f, pbar, watcher):
         total = 0
-        for chunk in self.request.iter_content(chunk_size=1024 * 1024):
+        for chunk in self.stream(chunk_size=1024 * 1024):
             watcher()
             if chunk:
                 f.write(chunk)
@@ -318,10 +414,12 @@ class HTTPDownloader(Downloader):
 
 
 class FTPDownloader(Downloader):
+
+    supports_parts = False
+
     def prepare(self, url, download):
 
         mode = "wb"
-        assert not url.parts
 
         o = urlparse(url)
         assert o.scheme == "ftp"
@@ -367,7 +465,10 @@ class FTPDownloader(Downloader):
 
 
 class FileDownloader(Downloader):
+    supports_parts = False
+
     def local_path(self, url):
+
         o = urlparse(url)
         path = o.path
 
@@ -422,9 +523,26 @@ class Url(FileSource):
 
         self.parts = None
         if offsets is not None or lengths is not None:
-
             assert len(offsets) == len(lengths)
-            self.parts = tuple(zip(offsets, lengths))
+            self.parts = []
+            last = -1
+            # Compress and check
+            for offset, length in zip(offsets, lengths):
+                assert offset >= 0 and length > 0
+                assert offset >= last, (
+                    f"Offsets and lengths must be in order, and not overlapping:"
+                    f" offset={offset}, end of previous part={last}"
+                )
+                if offset == last:
+                    # Compress
+                    offset, prev_length = self.parts.pop()
+                    length += prev_length
+
+                self.parts.append((offset, length))
+                last = offset + length
+
+            if len(self.parts) == 0:
+                self.parts = None
 
         if mirror:
             assert self.parts is None

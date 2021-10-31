@@ -21,7 +21,7 @@ def _index_grib_file(path):
 
         while h:
             try:
-                field = {}
+                field = dict(_path=path)
 
                 i = eccodes.codes_keys_iterator_new(h, "mars")
                 try:
