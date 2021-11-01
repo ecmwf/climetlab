@@ -157,6 +157,29 @@ def test_part_url():
         assert f.read()[:4] == b"BUFR"
 
 
+@pytest.mark.skipif(  # TODO: fix
+    sys.platform == "win32",
+    reason="file:// not working on Windows yet",
+)
+def test_url_part_file_source():
+    filename = os.path.abspath(climetlab_file("docs/examples/test.grib"))
+    ds = load_source(
+        "url",
+        f"file://{filename}",
+        parts=[
+            (0, 4),
+            (522, 4),
+            (526, 4),
+            (1048, 4),
+        ],
+    )
+
+    assert os.path.getsize(ds.path) == 16
+
+    with open(ds.path, "rb") as f:
+        assert f.read() == b"GRIB7777GRIB7777"
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

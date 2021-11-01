@@ -465,7 +465,7 @@ class FTPDownloader(Downloader):
 
 
 class FileDownloader(Downloader):
-    supports_parts = False
+    supports_parts = True
 
     def local_path(self, url):
 
@@ -481,7 +481,33 @@ class FileDownloader(Downloader):
         if sys.platform == "win32" and path[0] == "/" and path[2] == ":":
             path = path[1:]
 
-        return path
+        self.path = path
+
+        # If parts is given, we cannot use the original path
+        return path if self.owner.parts is None else None
+
+    def prepare(self, url, download):
+        parts = self.owner.parts
+        size = sum(p[1] for p in parts)
+        mode = "wb"
+        skip = 0
+        encoded = None
+        return size, mode, skip, encoded
+
+    def transfer(self, f, pbar, watcher):
+        with open(self.path, "rb") as g:
+            total = 0
+            for offset, length in self.owner.parts:
+                g.seek(offset)
+                watcher()
+                while length > 0:
+                    chunk = g.read(min(length, 1024 * 1024))
+                    assert chunk
+                    f.write(chunk)
+                    length -= len(chunk)
+                    total += len(chunk)
+                    pbar.update(len(chunk))
+        return total
 
 
 DOWNLOADERS = dict(
@@ -496,6 +522,7 @@ class Url(FileSource):
     def __init__(
         self,
         url,
+        parts=None,
         offsets=None,
         lengths=None,
         filter=None,
@@ -520,6 +547,11 @@ class Url(FileSource):
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
+
+        if parts is not None:
+            assert offsets is None and lengths is None
+            offsets = [p[0] for p in parts]
+            lengths = [p[1] for p in parts]
 
         self.parts = None
         if offsets is not None or lengths is not None:
