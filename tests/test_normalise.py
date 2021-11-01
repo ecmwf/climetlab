@@ -17,9 +17,10 @@ import pytest
 
 from climetlab import ALL, load_source
 from climetlab.decorators import normalize
-from climetlab.normalize import DateListNormaliser, EnumListNormaliser, EnumNormaliser
+from climetlab.normalize import DateListNormaliser, EnumListNormaliser
 from climetlab.testing import climetlab_file
 from climetlab.utils.bbox import BoundingBox
+from climetlab.arguments import normaliser
 
 
 @normalize("parameter", ("variable-list(mars)"))
@@ -264,7 +265,8 @@ def test_enum_decorator_default():
 
 
 def test_enum():
-    enum_3 = EnumNormaliser(["a", "b", "c"])
+
+    enum_3 = normaliser(["a", "b", "c"], multiple=False)
     assert enum_3("a") == "a"
     assert enum_3("b") == "b"
     with pytest.raises(ValueError):

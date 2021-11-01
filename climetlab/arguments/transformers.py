@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
+from copy import deepcopy
 
 from climetlab.utils.availability import Availability
 
@@ -167,6 +168,7 @@ class AvailabilityTransformer(Transformer):
 
     def _apply_to_kwargs(self, kwargs):
         LOG.debug("Checking availability for %s", kwargs)
+        kwargs2 = deepcopy(kwargs)
 
         def stringify(s):
             if isinstance(s, (list, tuple)):
@@ -180,7 +182,7 @@ class AvailabilityTransformer(Transformer):
 
             return str(s)
 
-        self._availability.check(stringify(kwargs))
+        self._availability.check(stringify(kwargs2))
         return kwargs
 
     def __repr__(self) -> str:

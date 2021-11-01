@@ -9,6 +9,7 @@
 
 import logging
 import re
+from typing import cast
 
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
@@ -53,35 +54,25 @@ CONVERT = {
 
 
 class BoundingBoxNormaliser:
-    def __init__(self, format=BoundingBox):
-        self.format = format
+    def __init__(self, cast_type=BoundingBox):
+        self.cast_type = cast_type
 
     def __call__(self, bbox):
         bbox = to_bounding_box(bbox)
-        return CONVERT[self.format](bbox)
+        return CONVERT[self.cast_type](bbox)
 
 
 class DateListNormaliser:
-    def __init__(self, format=None):
-        self.format = format
+    def __init__(self, cast_type=None):
+        self.cast_type = cast_type
 
     def __call__(self, dates):
         dates = to_date_list(dates)
-        if self.format is not None:
-            dates = [d.strftime(self.format) for d in dates]
+        if self.cast_type is not None:
+            dates = [d.strftime(self.cast_type) for d in dates]
         return dates
 
 
-class DateNormaliser:
-    def __init__(self, format=None):
-        self.format = format
-
-    def __call__(self, dates):
-        dates = to_date_list(dates)
-        if self.format is not None:
-            dates = [d.strftime(self.format) for d in dates]
-        assert len(dates) == 1
-        return dates[0]
 
 
 ENUM_FORMATTER = {
@@ -96,7 +87,7 @@ ENUM_FORMATTER = {
 
 
 class _EnumNormaliser:
-    def __init__(self, values, format=None):
+    def __init__(self, values, cast_type=None):
         """Initialize the parameter instance .
 
         Parameters
@@ -109,6 +100,8 @@ class _EnumNormaliser:
         ValueError
             Ret[description]
         """
+        if cast_type is None:
+            cast_type = str
 
         if values is None:
             values = []
@@ -117,17 +110,19 @@ class _EnumNormaliser:
             values = values[0]
 
         self.values = values
-        self.format = ENUM_FORMATTER[format]
+        self.cast_type = ENUM_FORMATTER[cast_type]
 
     def __repr__(self):
         txt = f"{type(self)}("
         txt += ",".join([str(k) for k in self.values])
-        txt += f", format={self.format}"
+        txt += f", cast_type={self.cast_type}"
         txt += ")"
         return txt
 
     def normalize_one_value(self, x):
-        x = str(x)
+        if not isinstance(x, self.cast_type):
+            x = self.cast_type(x)
+
         if not self.values:
             return x
 
@@ -147,60 +142,50 @@ class _EnumNormaliser:
         )
 
 
-class EnumNormaliser(_EnumNormaliser):
-    def __call__(self, x):
-        return self.format(self.normalize_one_value(x))
-
-    def normalize(self, x):
-        return self.normalize_one_value(x)
-
 
 class EnumListNormaliser(_EnumNormaliser):
     def __call__(self, x):
-        return self.format_all(self.normalize_multiple_values(x))
+        return self.cast_type_all(self.normalize_multiple_values(x))
 
     def normalize(self, x):
         return self.normalize_multiple_values(x)
 
     def normalize_multiple_values(self, x):
         if x is ALL:
-            return self.format_all(self.values)
+            return self.cast_type_all(self.values)
         if x is None:  # TODO: To be discussed
-            return self.format_all(self.values)
+            return self.cast_type_all(self.values)
 
         if not isinstance(x, (list, tuple)):
             x = [x]
 
         return [self.normalize_one_value(y) for y in x]
 
-    def format_all(self, values):
-        return [self.format(x) for x in values]
+    def cast_type_all(self, values):
+        return [self.cast_type(x) for x in values]
 
 
 NORMALISERS = {
-    "enum": EnumNormaliser,
+    "enum": EnumListNormaliser,
     "enum-list": EnumListNormaliser,
     "date-list": DateListNormaliser,
-    "date": DateNormaliser,
+    "date": DateListNormaliser,
     "variable-list": VariableNormaliser,
     "bounding-box": BoundingBoxNormaliser,
     "bbox": BoundingBoxNormaliser,
-    (str, False): EnumNormaliser,
-    (str, True): EnumListNormaliser,
-    (int, False): EnumNormaliser,
-    (int, True): EnumListNormaliser,
+    str: EnumListNormaliser,
+    int: EnumListNormaliser,
 }
 
 
 def _kwargs_to_normalizer(**kwargs):
 
     type = kwargs.pop("type", str)
-    multiple = kwargs.pop("multiple", True)
 
     # TODO: check
-    kwargs.setdefault("format", type)
+    kwargs.setdefault("cast_type", type)
 
-    return NORMALISERS[(type, multiple)](**kwargs)
+    return NORMALISERS[type](**kwargs)
 
 
 def _find_normaliser(values):

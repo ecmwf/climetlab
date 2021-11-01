@@ -59,10 +59,6 @@ class InputManager:
             self.pipeline.append(transform)
 
         for a in self.arguments:
-            transform = FormatTransformer(a.name, a._data["type"])
-            self.pipeline.append(transform)
-
-        for a in self.arguments:
             transform = NormalizeTransformer(a.name, a._data["values"])
             self.pipeline.append(transform)
 
