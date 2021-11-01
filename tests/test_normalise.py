@@ -16,11 +16,11 @@ import numpy as np
 import pytest
 
 from climetlab import ALL, load_source
+from climetlab.arguments import normaliser
 from climetlab.decorators import normalize
 from climetlab.normalize import DateListNormaliser, EnumListNormaliser
 from climetlab.testing import climetlab_file
 from climetlab.utils.bbox import BoundingBox
-from climetlab.arguments import normaliser
 
 
 @normalize("parameter", ("variable-list(mars)"))

@@ -72,8 +72,6 @@ class DateListNormaliser:
         return dates
 
 
-
-
 ENUM_FORMATTER = {
     int: int,
     str: str,
@@ -139,7 +137,6 @@ class _EnumNormaliser:
         raise ValueError(
             f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
-
 
 
 class EnumListNormaliser(_EnumNormaliser):
