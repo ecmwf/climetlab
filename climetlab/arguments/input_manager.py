@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
+from collections import defaultdict
 
 from climetlab.decorators import Decorator
 from climetlab.utils.availability import Availability
@@ -35,12 +36,13 @@ class InputManager:
 
         self.availabilities = []
 
-        self.names = set()
+        self.parameters = defaultdict(list)
         for decorator in self.decorators:
             decorator.visit(self)
 
-        self.arguments = [Argument(name) for name in self.names]
-
+        self.arguments = [
+            Argument(name, decorators) for name, decorators in self.parameters.items()
+        ]
 
         self.build_pipeline()
 
@@ -49,30 +51,28 @@ class InputManager:
         print(self)
 
         for a in self.arguments:
-            transform = AliasTransformer(a.name, a._data["alias"])
+            a.add_alias_transformers(self)
+
+        for a in self.arguments:
+            a.add_normalize_transformers(self.pipeline)
+
+        for a in self.arguments:
+            a.add_type_transformers(self.pipeline)
+
+        for availability in self.availabilities:
+            transform = AvailabilityTransformer(availability)
             self.pipeline.append(transform)
 
         for a in self.arguments:
-            transform = NormalizeTransformer(a.name, a._data["values"])
-            self.pipeline.append(transform)
-
-        for av in self.availabilities:
-            transform = AvailabilityTransformer(_availability=av)
-            self.pipeline.append(transform)
+            a.add_format_transformers(self.pipeline)
 
         for a in self.arguments:
-            transform = FormatTransformer(a.name, a._data["format"])
-            self.pipeline.append(transform)
-
-        for a in self.arguments:
-            transform = MultipleTransformer(a.name, a._data["multiple"])
-            self.pipeline.append(transform)
+            a.add_multiple_transformers(self.pipeline)
 
         print("----------------------------")
         print("Pipeline built")
         for t in self.pipeline:
-            if t.enabled:
-                print(" ", t)
+            print(" ", t)
         print("----------------------------")
 
     def __repr__(self) -> str:
@@ -92,80 +92,13 @@ class InputManager:
         txt += "]"
         return txt
 
-    def get(self, name, auto_create=True):
-        for a in self.arguments:
-            if a.name == name:
-                return a
-        a = Argument(name)
-        self.arguments.append(a)
-        return a
-
-    def get_decorator(self, kind):
-        for deco in self.decorators:
-            if deco.kind == kind:
-                return deco
-
-    def get_decorators(self, kind):
-        lst = []
-        for deco in self.decorators:
-            if deco.kind == kind:
-                lst.append(deco)
-        return lst
-
-    def _get_new_names(self):
-        names = [deco.name for deco in self.decorators if deco.name]
-        for av in self.availabilities:
-            names += list(av.unique_values().keys())
-        names = set(names)
-        old = set([a.name for a in self.arguments])
-        return list(names - old)
-
-    def add_decorators(self, decorators):
-        assert all(isinstance(a, Decorator) for a in decorators), decorators
-
-        self.decorators += decorators
-
-        for deco in self.get_decorators("availability"):
-            av = deco.get("availability")
-            self.availabilities.append(Availability(av))
-
-        self.arguments += [Argument(name) for name in self._get_new_names()]
-
-        for a in self.arguments:
-            for deco in decorators:
-                a.add_deco(deco)
-            a.validate()
-            a.merge_decorators()
-
-        # self.validate_arguments()
-
-        # if self._alias and self.multiple:
-        #     self._alias[0].valid_with_multiple(self._multiple[0])
-
-    # def validate(self):
-    # for deco in self.get_decorators(self._decorators, "normalize"):
-    #     arg = self.get(deco.name)
-    #     if "alias" in deco.init_kwargs:
-    #         arg.add_alias(alias=deco.init_kwargs["alias"], _who=1)
-
-    # def _set_normalize(self):
-    #     for deco in self.get_decorators(self._decorators, "normalize"):
-    #         arg = self.get(deco.name)
-    #         arg.add_normalize(values=deco.init_kwargs["values"], _who=0)
-    #     for deco in self.get_decorators(self._decorators, "availability"):
-    #         av = Availability(deco.init_kwargs["availability"])
-    #         for name, values in av.unique_values().items():
-    #             arg = self.get(name)
-    #             arg.add_normalize(values=values, _who=-1)
-
     def apply_to_kwargs(self, kwargs):
         print("Apply pipeline")
         print(f"   kwargs: {kwargs}")
         for t in self.pipeline:
-            if t.enabled:
-                print(f" - applying {t}")
-                kwargs = t.__call__(kwargs)
-                print(f"   kwargs: {kwargs}")
+            print(f" - applying {t}")
+            kwargs = t.__call__(kwargs)
+            print(f"   kwargs: {kwargs}")
         print(kwargs)
 
         return kwargs

@@ -163,7 +163,7 @@ class EnumListNormaliser(_EnumNormaliser):
 
 NORMALISERS = {
     "enum": EnumListNormaliser,
-    "enum-list": EnumListNormaliser,
+    "enum-list": (EnumListNormaliser, {multi: True}),
     "date-list": DateListNormaliser,
     "date": DateListNormaliser,
     "variable-list": VariableNormaliser,

@@ -8,153 +8,109 @@
 #
 import logging
 
-LOG = logging.getLogger(__name__)
+from climetlab.arguments.transformers import (
+    AliasTransformer,
+    AvailabilityTransformer,
+    FormatTransformer,
+    MultipleTransformer,
+    NormalizeTransformer,
+    TypeTransformer,
+)
 
-KEYWORDS = ["alias", "normalize", "availability", "multiple", "format", "type"]
+LOG = logging.getLogger(__name__)
 
 
 class Argument:
     def __init__(
         self,
         name,
-        values=None,
-        alias=None,
-        multiple=None,
-        format=None,
-        type=None,
+        decorators,
     ):
         self.name = name
-        if alias is None:
-            alias = {}
+        self.decorators = decorators
 
-        self._data = {k: None for k in KEYWORDS}
-        self._decorators = []
+    def add_alias_transformers(self, pipeline):
+        aliases = dict()
+        for decorator in self.decorators:
+            a = decorator.get_aliases()
+            # assert a not incompatible with aliases
+            if a is not None:
+                aliases.update(a)
 
-        if multiple is None:
-            if isinstance(values, tuple):
-                multiple = False
-            elif isinstance(values, list):
-                multiple = True
+        if aliases:
+            pipeline.append(AliasTransformer(self.name, aliases))
 
-        self._data["alias"] = alias
-        self._data["values"] = values
-        self._data["multiple"] = multiple
-        self._data["format"] = format
-        self._data["type"] = type
+    def add_normalize_transformers(self, pipeline):
 
-        # self.validate()
+        norm = [d for d in self.decorators if not d.is_availability]
+        avail = [d for d in self.decorators if d.is_availability]
 
-    def add_deco(self, deco):
-        print("Adding decorator ", deco)
-        if deco.match(self.name):
-            self._decorators.append(deco)
+        assert len(norm) <= 1
+        assert len(avail) <= 1
 
-    def merge_decorators(self):
-        self._data["alias"] = self.merged_alias("alias")
-        self._data["multiple"] = self.merged_multiple("multiple")
-        self._data["format"] = self.merged_format("format")
-        self._data["type"] = self.merged_type("type")
-        self._data["values"] = self.merged_values("values")
+        if avail and not norm:
+            pipeline.append(
+                NormalizeTransformer(
+                    self.name,
+                    avail[0].get_values(self.name),
+                )
+            )
+            return
 
-    def merged_values(self, key):
-        return self.merged_generic(key)
+        if norm and not avail:
+            pipeline.append(
+                NormalizeTransformer(
+                    self.name,
+                    norm[0].get_values(self.name),
+                )
+            )
+            return
 
-    def merged_format(self, key):
-        return self.merged_generic(key)
+        if norm and avail:
+            nv = norm[0].get_values(self.name)
+            av = avail[0].get_values(self.name)
+            # assert nv < av
+            vals = nv if nv is not None else av
+            if nv is None:
+                pipeline.append(
+                    NormalizeTransformer(
+                        self.name,
+                        vals,
+                    )
+                )
+            return
 
-    def merged_type(self, key):
-        return self.merged_generic(key)
+        assert False
 
-    def merged_generic(self, key):
-        many = self._decorators
-        out = None
-        if not many:
-            return out
-        for deco in many:
-            x = deco.get(key)
-            if x is None:
-                continue
-            if out is None:
-                out = x
-                continue
-            if x != out:
-                raise Exception(f"Inconsistent values for {key}: {x} != {out}")
-        return out
+    def add_type_transformers(self, pipeline):
+        type = None
+        for decorator in self.decorators:
+            a = decorator.get_type()
+            # assert a not incompatible with types
+            if a is not None:
+                type = a
 
-    def merged_alias(self, key):
-        many = self._decorators
-        out = {}
-        if not many:
-            return out
-        for deco in many:
-            v = deco.get(key)
-            if v is None or v == {}:
-                continue
-            if isinstance(v, dict) and isinstance(out, dict):
-                LOG.debug(f"Multiple alias values. Merging {out} and {v}.")
-                out.update(v)
-                continue
-            if out is None or out == {}:
-                out = v
-                continue
-            raise ValueError(f"Multiple alias values. Cannot merge {out} and {v}.")
-        return out
+        if type is not None:
+            pipeline.append(TypeTransformer(self.name, type))
 
-    def merged_multiple(self, key):
-        many = self._decorators
-        out = None
-        if not many:
-            return out
-        for deco in many:
-            x = deco.get("multiple")
-            if x is None:
-                continue
-            if out is None:
-                out = x
-                continue
-            if x != out:
-                raise Exception(f"Inconsistent values for {key}")
-        if out is not None:
-            return out
+    def add_format_transformers(self, pipeline):
+        format = None
+        for decorator in self.decorators:
+            a = decorator.get_format()
+            # assert a not incompatible with formats
+            if a is not None:
+                format = a
 
-        for deco in many:
-            values = deco.get("values")
-            if isinstance(values, tuple):
-                x = False
-            if isinstance(values, list):
-                x = True
-            if x is None:
-                continue
-            if out is None:
-                out = x
-                continue
-            if x != out:
-                raise Exception(f"Inconsistent implicit values for {key}")
-        if out is not None:
-            return out
-        return None
+        if format is not None:
+            pipeline.append(FormatTransformer(self.name, format))
 
-    def __repr__(self) -> str:
-        txt = "-- " + str(self.name) + "\n"
-        for k, v in self._data.items():
-            if v is None:
-                continue
-            txt += f"    {k}={v}\n"
-        txt += "  decorators:\n"
-        for d in self._decorators:
-            txt += f"    {d}\n"
-        return txt
+    def add_multiple_transformers(self, pipeline):
+        multiple = None
+        for decorator in self.decorators:
+            a = decorator.get_multiple()
+            # assert a not incompatible with multiples
+            if a is not None:
+                multiple = a
 
-    def validate(self):
-        pass
-        # if self.count_decorators("multiple") > 1:
-        #    LOG.warn(f"Multiple value for 'multiple' provided for {self.name}")
-
-        # if self.count_decorators("alias") > 1:
-        #    LOG.warn(f"Multiple value for 'alias' provided for {self.name}")
-
-    def __call__(self, value):
-        from .input_manager import InputManager
-
-        arguments = InputManager([self])
-        return arguments.apply_to_kwargs({self.name: value})[self.name]
+        if multiple is not None:
+            pipeline.append(MultipleTransformer(self.name, multiple))

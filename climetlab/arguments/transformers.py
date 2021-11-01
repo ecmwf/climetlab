@@ -15,14 +15,10 @@ LOG = logging.getLogger(__name__)
 
 
 class Transformer:
-    enabled = True
-
     def valid_with_multiple(self, multiple_transformer):
         pass
 
     def __call__(self, kwargs):
-        if not self.enabled:
-            return kwargs
         return self._apply_to_kwargs(kwargs)
 
 
@@ -46,10 +42,6 @@ class MultipleTransformer(ArgumentTransformer):
         assert multiple in [True, False, None]
         self.multiple = multiple
 
-    @property
-    def enabled(self):
-        return self.multiple is not None
-
     def apply_to_value(self, value):
         is_list = isinstance(value, (list, tuple))
         if self.multiple and not is_list:
@@ -69,10 +61,6 @@ class AliasTransformer(ArgumentTransformer):
         super().__init__(name)
         assert isinstance(alias, dict) or callable(alias) or alias is None
         self.alias = alias
-
-    @property
-    def enabled(self):
-        return self.alias
 
     def _apply_to_value_once(self, value):
         if isinstance(value, (tuple, list)):
@@ -113,13 +101,28 @@ class AliasTransformer(ArgumentTransformer):
 
 
 class FormatTransformer(ArgumentTransformer):
+    def __init__(self, name, format=None) -> None:
+        super().__init__(name)
+        self.format = format
+
+    def apply_to_value(self, value):
+        if isinstance(value, (list, tuple)):
+            return [self.format(v) for v in value]
+        return self.format(value)
+
+    def __repr__(self) -> str:
+        txt = "Format("
+        txt += f"{self.name}"
+        if self.format is not None:
+            txt += f",{self.format}"
+        txt += ")"
+        return txt
+
+
+class TypeTransformer(ArgumentTransformer):
     def __init__(self, name, type=None) -> None:
         super().__init__(name)
         self.type = type
-
-    @property
-    def enabled(self):
-        return self.type is not None
 
     def apply_to_value(self, value):
         if isinstance(value, (list, tuple)):
@@ -127,7 +130,7 @@ class FormatTransformer(ArgumentTransformer):
         return self.type(value)
 
     def __repr__(self) -> str:
-        txt = "Format("
+        txt = "Type("
         txt += f"{self.name}"
         if self.type is not None:
             txt += f",{self.type}"
@@ -136,23 +139,18 @@ class FormatTransformer(ArgumentTransformer):
 
 
 class NormalizeTransformer(ArgumentTransformer):
-    def __init__(self, name, values) -> None:
+    def __init__(self, name, values, type=None) -> None:
         super().__init__(name)
         self.values = values
         self.norm = None
+        self.type = type
 
         if values is not None:
             from climetlab.normalize import _find_normaliser
 
             self.norm = _find_normaliser(values)
 
-    @property
-    def enabled(self):
-        return self.values is not None
-
     def apply_to_value(self, value):
-        if not self.enabled:
-            return value
         return self.norm(value)
 
     def __repr__(self) -> str:
@@ -160,15 +158,12 @@ class NormalizeTransformer(ArgumentTransformer):
 
 
 class AvailabilityTransformer(Transformer):
-    def __init__(self, availability=None, _availability=None) -> None:
+    def __init__(self, availability) -> None:
         self.availability = availability
-        if _availability is None:
-            _availability = Availability(availability)
-        self._availability = _availability
 
     def _apply_to_kwargs(self, kwargs):
         LOG.debug("Checking availability for %s", kwargs)
-        kwargs2 = deepcopy(kwargs)
+        # kwargs2 = deepcopy(kwargs)
 
         def stringify(s):
             if isinstance(s, (list, tuple)):
@@ -182,12 +177,13 @@ class AvailabilityTransformer(Transformer):
 
             return str(s)
 
-        self._availability.check(stringify(kwargs2))
+        print('---------')
+        self.availability.check(stringify(kwargs))
         return kwargs
 
     def __repr__(self) -> str:
         txt = "Availability:"
-        for line in self._availability.tree().split("\n"):
+        for line in self.availability.tree().split("\n"):
             if line:
                 txt += "\n    " + line
         return txt

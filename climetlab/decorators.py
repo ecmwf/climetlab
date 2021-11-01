@@ -11,6 +11,7 @@ import logging
 import os
 import threading
 from functools import wraps
+
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -45,23 +46,8 @@ def locked(func):
 
 
 class Decorator:
-    def __init__(self, kind, **kwargs):
-        self.arguments = None
-        self.kind = kind
-        self.init_kwargs = kwargs
 
-    @property
-    def name(self):
-        return self.init_kwargs.get("name", None)
-
-    def get(self, key):
-        return self.init_kwargs.get(key, None)
-
-    def has(self, key):
-        return key in self.init_kwargs
-
-    def match(self, name):
-        return self.name == name
+    is_availability = False
 
     def __call__(self, func):
         from climetlab.arguments import InputManager
@@ -79,8 +65,8 @@ class Decorator:
             decorators = decorators + func._climetlab_decorators
 
         LOG.debug("Building arguments from decorators:\n %s", decorators)
-        arguments = InputManager(decorators=decorators)
-        LOG.debug("Built arguments: %s", self.arguments)
+        manager = InputManager(decorators=decorators)
+        LOG.debug("Built manager: %s", manager)
 
         @wraps(unwrapped)
         def newfunc(*args, **kwargs):
@@ -94,7 +80,7 @@ class Decorator:
             if args_kwargs.args:
                 raise ValueError(f"There should not be anything in {args_kwargs.args}")
 
-            args_kwargs.kwargs = arguments.apply_to_kwargs(args_kwargs.kwargs)
+            args_kwargs.kwargs = manager.apply_to_kwargs(args_kwargs.kwargs)
 
             args_kwargs.ensure_positionals()
 
@@ -107,71 +93,68 @@ class Decorator:
 
         return newfunc
 
-    def __repr__(self):
-        txt = f"{self.kind}("
-        if hasattr(self, "name"):
-            txt += str(self.name)
-        for k, v in self.init_kwargs.items():
-            if k == "name":
-                continue
-            if k == "availability":
-                txt += f", {k}=..."
-                continue
-            if v is None:
-                continue
-            txt += f", {k}={v}"
-        txt += ")"
-        return txt
+    def get_aliases(self):
+        return None
 
+    def get_multiple(self):
+        return None
 
-class _multiple(Decorator):
-    def __init__(self, name, multiple):
-        super().__init__("multiple", name=name, multiple=multiple)
-        self.name = name
+    def get_format(self):
+        return None
 
-
-    def visit(self, manager):
-        manager.names.add(self.name)
-
-
-class _alias(Decorator):
-    def __init__(self, name, alias):
-        super().__init__("alias", name=name, alias=alias)
-        self.name = name
-
-    def visit(self, manager):
-       manager.names.add(self.name)
+    def get_type(self):
+        return None
 
 
 class normalize(Decorator):
-    def __init__(self, name, values=None, alias=None, multiple=None, type=None):
-        super().__init__(
-            "normalize",
-            name=name,
-            values=values,
-            alias=alias,
-            multiple=multiple,
-            type=type,
-        )
-
+    def __init__(
+        self,
+        name,
+        values=None,
+        alias=None,
+        multiple=None,
+        type=None,
+        format=None,
+    ):
         self.name = name
+        self.values = values
+        self.alias = alias
+        self.multiple = multiple
+        self.type = type
+        self.format = format
 
     def visit(self, manager):
-        manager.names.add(self.name)
+        manager.parameters[self.name].append(self)
 
+    def get_values(self, name):
+        assert self.name == name
+        return self.values
 
+    def get_multiple(self):
+        return self.multiple
+
+    def get_format(self):
+        return self.format
+
+    def get_type(self):
+        return self.type
 
 
 class availability(Decorator):
+    is_availability = True
+
     def __init__(self, availability):
         if isinstance(availability, str):
             if not os.path.isabs(availability):
                 caller = os.path.dirname(inspect.stack()[1].filename)
                 availability = os.path.join(caller, availability)
 
-        self._availability = Availability(availability)
-
+        self.availability = Availability(availability)
 
     def visit(self, manager):
-        manager.names.update(self._availability.unique_values().keys())
-        manager.availability.append(self._availability)
+        for name in self.availability.unique_values().keys():
+            manager.parameters[name].append(self)
+        manager.availabilities.append(self.availability)
+
+    def get_values(self, name):
+        return self.availability.unique_values()[name]
