@@ -34,42 +34,52 @@ class VariableNormaliser:
         self.convention = convention
 
     def __call__(self, parameter):
+        return parameter
+
+
+class VariableFormatter:
+    def __init__(self, convention=None):
+        self.convention = convention
+
+    def __call__(self, parameter):
         if isinstance(parameter, (list, tuple)):
             return [normalise_string(p, convention=self.convention) for p in parameter]
         else:
             return normalise_string(parameter, convention=self.convention)
 
 
-CONVERT = {
-    list: lambda x: x.as_list(),
-    tuple: lambda x: x.as_tuple(),
-    dict: lambda x: x.as_dict(),
-    BoundingBox: _identity,
-    "list": lambda x: x.as_list(),
-    "tuple": lambda x: x.as_tuple(),
-    "dict": lambda x: x.as_dict(),
-    "BoundingBox": _identity,
-}
-
-
 class BoundingBoxNormaliser:
-    def __init__(self, cast_type=BoundingBox):
-        self.cast_type = cast_type
+    def __call__(self, bbox):
+        return to_bounding_box(bbox)
+
+
+class BoundingBoxFormatter:
+    def __init__(self, format=None) -> None:
+        FORMATS = {
+            list: lambda x: x.as_list(),
+            tuple: lambda x: x.as_tuple(),
+            dict: lambda x: x.as_dict(),
+            BoundingBox: _identity,
+            "list": lambda x: x.as_list(),
+            "tuple": lambda x: x.as_tuple(),
+            "dict": lambda x: x.as_dict(),
+            "BoundingBox": _identity,
+            None: _identity,
+        }
+        self.format = FORMATS[format]
 
     def __call__(self, bbox):
-        bbox = to_bounding_box(bbox)
-        return CONVERT[self.cast_type](bbox)
+        return [self.format(bbox) for b in bbox]
 
 
-class DateListNormaliser:
-    def __init__(self, cast_type=None):
-        self.cast_type = cast_type
-
+class DateNormaliser:
     def __call__(self, dates):
-        dates = to_date_list(dates)
-        if self.cast_type is not None:
-            dates = [d.strftime(self.cast_type) for d in dates]
-        return dates
+        return to_date_list(dates)
+
+
+class DateFormatter:
+    def __call__(self, dates):
+        return [d.strftime(self.cast_type) for d in dates]
 
 
 ENUM_FORMATTER = {
@@ -83,23 +93,8 @@ ENUM_FORMATTER = {
 }
 
 
-class _EnumNormaliser:
-    def __init__(self, values, cast_type=None):
-        """Initialize the parameter instance .
-
-        Parameters
-        ----------
-        values : [type]
-            [description]
-
-        Raises
-        ------
-        ValueError
-            Ret[description]
-        """
-        if cast_type is None:
-            cast_type = str
-
+class EnumNormaliser:
+    def __init__(self, values):
         if values is None:
             values = []
 
@@ -107,26 +102,12 @@ class _EnumNormaliser:
             values = values[0]
 
         self.values = values
-        self.cast_type = ENUM_FORMATTER[cast_type]
 
     def __repr__(self):
         txt = f"{type(self)}("
         txt += ",".join([str(k) for k in self.values])
-        txt += f", cast_type={self.cast_type}"
         txt += ")"
         return txt
-
-    def normalize_one_value(self, x):
-        if not isinstance(x, self.cast_type):
-            x = self.cast_type(x)
-
-        if not self.values:
-            return x
-
-        for v in self.values:
-            if self.compare(x, v):
-                return v
-        self.raise_error(x)
 
     def compare(self, x, value):
         if isinstance(x, str) and isinstance(value, str):
@@ -138,50 +119,22 @@ class _EnumNormaliser:
             f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
 
-
-class EnumListNormaliser(_EnumNormaliser):
     def __call__(self, x):
-        return self.cast_type_all(self.normalize_multiple_values(x))
-
-    def normalize(self, x):
-        return self.normalize_multiple_values(x)
-
-    def normalize_multiple_values(self, x):
         if x is ALL:
-            return self.cast_type_all(self.values)
+            return self.values
         if x is None:  # TODO: To be discussed
-            return self.cast_type_all(self.values)
-
-        if not isinstance(x, (list, tuple)):
-            x = [x]
+            return self.values
 
         return [self.normalize_one_value(y) for y in x]
 
-    def cast_type_all(self, values):
-        return [self.cast_type(x) for x in values]
+    def normalize_one_value(self, x):
+        if not self.values:
+            return x
 
-
-NORMALISERS = {
-    "enum": EnumListNormaliser,
-    "enum-list": (EnumListNormaliser, {multi: True}),
-    "date-list": DateListNormaliser,
-    "date": DateListNormaliser,
-    "variable-list": VariableNormaliser,
-    "bounding-box": BoundingBoxNormaliser,
-    "bbox": BoundingBoxNormaliser,
-    str: EnumListNormaliser,
-    int: EnumListNormaliser,
-}
-
-
-def _kwargs_to_normalizer(**kwargs):
-
-    type = kwargs.pop("type", str)
-
-    # TODO: check
-    kwargs.setdefault("cast_type", type)
-
-    return NORMALISERS[type](**kwargs)
+        for v in self.values:
+            if self.compare(x, v):
+                return v
+        self.raise_error(x)
 
 
 def _find_normaliser(values):
@@ -189,11 +142,8 @@ def _find_normaliser(values):
     if callable(values):
         return values
 
-    # if isinstance(values, tuple):
-    #    return EnumNormaliser(values)
-
     if isinstance(values, (tuple, list)):
-        return EnumListNormaliser(values)
+        return EnumNormaliser(values)
 
     assert isinstance(values, str), values
     m = re.match(r"(.+)\((.+)\)", values)

@@ -9,21 +9,10 @@
 import logging
 from collections import defaultdict
 
-from climetlab.decorators import Decorator
-from climetlab.utils.availability import Availability
-
 from .argument import Argument
-from .transformers import (
-    AliasTransformer,
-    AvailabilityTransformer,
-    FormatTransformer,
-    MultipleTransformer,
-    NormalizeTransformer,
-)
+from .transformers import AvailabilityTransformer
 
 LOG = logging.getLogger(__name__)
-
-KEYWORDS = ["alias", "normalize", "availability", "multiple", "format", "type"]
 
 
 class InputManager:

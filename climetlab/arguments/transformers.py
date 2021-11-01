@@ -139,22 +139,16 @@ class TypeTransformer(ArgumentTransformer):
 
 
 class NormalizeTransformer(ArgumentTransformer):
-    def __init__(self, name, values, type=None) -> None:
+    def __init__(self, name, norm, type=None) -> None:
         super().__init__(name)
-        self.values = values
-        self.norm = None
+        self.norm = norm
         self.type = type
-
-        if values is not None:
-            from climetlab.normalize import _find_normaliser
-
-            self.norm = _find_normaliser(values)
 
     def apply_to_value(self, value):
         return self.norm(value)
 
     def __repr__(self) -> str:
-        return f"{self.norm} ({self.values})"
+        return f"{self.norm} ({self.type})"
 
 
 class AvailabilityTransformer(Transformer):
@@ -177,7 +171,7 @@ class AvailabilityTransformer(Transformer):
 
             return str(s)
 
-        print('---------')
+        print("---------")
         self.availability.check(stringify(kwargs))
         return kwargs
 

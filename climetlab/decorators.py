@@ -9,6 +9,7 @@
 import inspect
 import logging
 import os
+import re
 import threading
 from functools import wraps
 
@@ -123,6 +124,54 @@ class normalize(Decorator):
         self.type = type
         self.format = format
 
+        self.parse_values(values)
+
+    def parse_values(self, values):
+        from climetlab.normalize import (
+            BoundingBoxNormaliser,
+            DateNormaliser,
+            EnumNormaliser,
+            VariableNormaliser,
+        )
+
+        NORMALISERS = {
+            "enum": EnumNormaliser,
+            "enum-list": EnumNormaliser,
+            "date-list": DateNormaliser,
+            "date": DateNormaliser,
+            "variable-list": VariableNormaliser,
+            "bounding-box": BoundingBoxNormaliser,
+            "bbox": BoundingBoxNormaliser,
+        }
+
+        if callable(values):
+            self.norm = values
+            return
+
+        if isinstance(values, (tuple, list)):
+            self.values = list(values)
+            if self.multiple is None:
+                if isinstance(values, tuple):
+                    self.multiple = False
+                if isinstance(values, list):
+                    self.multiple = True
+            self.norm = EnumNormaliser(values)
+
+        assert isinstance(values, str), values
+        if values.endswith("-list"):
+            self.multiple = True
+
+        m = re.match(r"(.+)\((.+)\)", values)
+
+        if not m:
+            self.norm = NORMALISERS[values]()
+            return
+
+        args = m.group(2).split(",")
+        name = m.group(1)
+        self.norm = NORMALISERS[name](*args)
+        return
+
     def visit(self, manager):
         manager.parameters[self.name].append(self)
 
@@ -138,6 +187,9 @@ class normalize(Decorator):
 
     def get_type(self):
         return self.type
+
+    def get_format(self):
+        return self.format
 
 
 class availability(Decorator):
