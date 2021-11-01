@@ -9,7 +9,6 @@
 
 import logging
 import re
-from typing import cast
 
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
