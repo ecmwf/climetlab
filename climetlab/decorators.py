@@ -11,6 +11,7 @@ import logging
 import os
 import threading
 from functools import wraps
+from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
 
@@ -43,20 +44,11 @@ def locked(func):
     return wrapped
 
 
-class Decorator(object):
+class Decorator:
     def __init__(self, kind, **kwargs):
         self.arguments = None
         self.kind = kind
         self.init_kwargs = kwargs
-
-    def priority(self, key):
-        return dict(
-            multiple=5,
-            alias=5,
-            availability=1,
-            normalize=2,
-            format=5,
-        )[self.kind]
 
     @property
     def name(self):
@@ -67,6 +59,9 @@ class Decorator(object):
 
     def has(self, key):
         return key in self.init_kwargs
+
+    def match(self, name):
+        return self.name == name
 
     def __call__(self, func):
         from climetlab.arguments import InputManager
@@ -132,11 +127,20 @@ class Decorator(object):
 class _multiple(Decorator):
     def __init__(self, name, multiple):
         super().__init__("multiple", name=name, multiple=multiple)
+        self.name = name
+
+
+    def visit(self, manager):
+        manager.names.add(self.name)
 
 
 class _alias(Decorator):
     def __init__(self, name, alias):
         super().__init__("alias", name=name, alias=alias)
+        self.name = name
+
+    def visit(self, manager):
+       manager.names.add(self.name)
 
 
 class normalize(Decorator):
@@ -150,6 +154,13 @@ class normalize(Decorator):
             type=type,
         )
 
+        self.name = name
+
+    def visit(self, manager):
+        manager.names.add(self.name)
+
+
+
 
 class availability(Decorator):
     def __init__(self, availability):
@@ -158,4 +169,9 @@ class availability(Decorator):
                 caller = os.path.dirname(inspect.stack()[1].filename)
                 availability = os.path.join(caller, availability)
 
-        super().__init__("availability", availability=availability)
+        self._availability = Availability(availability)
+
+
+    def visit(self, manager):
+        manager.names.update(self._availability.unique_values().keys())
+        manager.availability.append(self._availability)

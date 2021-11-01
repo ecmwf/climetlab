@@ -15,7 +15,13 @@ KEYWORDS = ["alias", "normalize", "availability", "multiple", "format", "type"]
 
 class Argument:
     def __init__(
-        self, name, values=None, alias=None, multiple=None, format=None, type=None
+        self,
+        name,
+        values=None,
+        alias=None,
+        multiple=None,
+        format=None,
+        type=None,
     ):
         self.name = name
         if alias is None:
@@ -40,9 +46,8 @@ class Argument:
 
     def add_deco(self, deco):
         print("Adding decorator ", deco)
-        if deco.name != self.name:
-            return
-        self._decorators.append(deco)
+        if deco.match(self.name):
+            self._decorators.append(deco)
 
     def merge_decorators(self):
         self._data["alias"] = self.merged_alias("alias")

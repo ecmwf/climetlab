@@ -8,7 +8,9 @@
 #
 
 from .argument import Argument
-from .input_manager import InputManager  # noqa: F401
+from .input_manager import InputManager
+
+__all__ = ["InputManager", "normaliser"]
 
 
 def normaliser(*args, **kwargs):

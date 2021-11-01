@@ -28,25 +28,19 @@ KEYWORDS = ["alias", "normalize", "availability", "multiple", "format", "type"]
 class InputManager:
     def __init__(
         self,
-        arguments=None,
-        decorators=None,
-        availability=None,
+        decorators,
     ):
-        self.decorators = []
+        self.decorators = decorators
         self.pipeline = []
 
         self.availabilities = []
-        if availability:
-            self.availabilities = [availability]
 
-        if not arguments:
-            arguments = []
+        self.names = set()
+        for decorator in self.decorators:
+            decorator.visit(self)
 
-        assert all(isinstance(a, Argument) for a in arguments), arguments
-        self.arguments = arguments
+        self.arguments = [Argument(name) for name in self.names]
 
-        if decorators:
-            self.add_decorators(decorators)
 
         self.build_pipeline()
 
