@@ -15,25 +15,16 @@ import sys
 import numpy as np
 import pytest
 
-from climetlab import ALL, load_source
-from climetlab.arguments import normaliser
+from climetlab import load_source
 from climetlab.decorators import normalize
-from climetlab.normalize import DateNormaliser, EnumNormaliser
 from climetlab.testing import climetlab_file
-from climetlab.utils.bbox import BoundingBox
-
-
-@normalize("parameter", ("variable-list(mars)"))
-def values_mars(parameter):
-    return parameter
-
-
-@normalize("parameter", ("variable-list(cf)"))
-def values_cf(parameter):
-    return parameter
 
 
 def test_param_convention_mars():
+    @normalize("parameter", ("variable-list(mars)"))
+    def values_mars(parameter):
+        return parameter
+
     assert values_mars(parameter="tp") == "tp"
     assert values_mars(parameter="2t") == "2t"
     assert values_mars(parameter="t2m") == "2t"
@@ -42,60 +33,32 @@ def test_param_convention_mars():
 
 
 def test_param_convention_cf():
+    @normalize("parameter", ("variable-list(cf)"))
+    def values_cf(parameter):
+        return parameter
+
     assert values_cf(parameter="tp") == "tp"
     assert values_cf(parameter="2t") == "t2m"
     assert values_cf(parameter="t2m") == "t2m"
 
 
-@normalize("date", "date")
-def dates_1(date):
-    return date
+def test_normalize_dates_multiple():
+    @normalize("date", "date")
+    def dates_1(date):
+        return date
 
+    @normalize("date", "date-list")
+    def dates_list_1(date):
+        return date
 
-@normalize("date", "date-list")
-def dates_list_1(date):
-    return date
+    @normalize("date", "date", multiple=True)
+    def dates_list_2(date):
+        return date
 
-
-def test_dates():
     npdate = np.datetime64("2016-01-01")
     assert dates_1(date=npdate) == datetime.datetime(2016, 1, 1)
     assert dates_list_1(date=npdate) == [datetime.datetime(2016, 1, 1)]
-
-    source = load_source("file", climetlab_file("docs/examples/test.grib"))
-    assert dates_1(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
-    assert dates_list_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
-
-    source = load_source("file", climetlab_file("docs/examples/test.nc"))
-
-    #  For now
-    with pytest.raises(NotImplementedError):
-        assert dates_1(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
-        assert dates_list_1(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
-
-
-def test_dates_no_list():
-    norm = DateNormaliser("%Y.%m.%d")
-    assert norm("20200513") == ["2020.05.13"]
-    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
-    assert norm([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
-
-
-# def test_dates_with_list():
-#     norm = DateNormaliser("%Y.%m.%d", valid=["2020.05.13"] )
-#     assert norm("20200513") == ["2020.05.13"]
-#     assert norm([datetime.datetime(2020, 5, 13, 12, 0)]) == ["2020.05.13"]
-#
-#     with pytest.raises(ValueError):
-#         assert norm("19991231")
-
-
-def test_dates_3():
-    norm = DateNormaliser()
-    assert norm("20200513") == [datetime.datetime(2020, 5, 13, 0, 0)]
-    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == [
-        datetime.datetime(2020, 5, 13, 0, 0)
-    ]
+    assert dates_list_2(date=npdate) == [datetime.datetime(2016, 1, 1)]
 
 
 @normalize("area", "bounding-box")
@@ -382,8 +345,8 @@ def test_normalize_advanced_3():
 
 if __name__ == "__main__":
     # test_normalize_advanced_3()
-    test_param_convention_mars()
+    # test_param_convention_mars()
 
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
