@@ -19,15 +19,13 @@ from climetlab import load_source
 from climetlab.decorators import normalize
 from climetlab.testing import climetlab_file
 
+def f(date):
+    return date
 
 def test_normalize_dates_from_source():
-    @normalize("date", "date")
-    def dates_3(date):
-        return date
 
-    @normalize("date", "date", multiple=True)
-    def dates_list_3(date):
-        return date
+    dates_3 = normalize("date", "date")(f)
+    dates_list_3 = normalize("date", "date", multiple=True)(f)
 
     source = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert dates_3(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
@@ -41,28 +39,13 @@ def test_normalize_dates_from_source():
         assert dates_list_3(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
-def test_dates_no_list():
-    norm = DateNormaliser("%Y.%m.%d")
-    assert norm("20200513") == ["2020.05.13"]
-    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
-    assert norm([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
+def test_dates_formated():
+    date_formated = normalize("date-list", "date(%Y.%m.%d)")(f)
 
+    assert date_formated("20200513") == ["2020.05.13"]
+    assert date_formated([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
+    assert date_formated([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
 
-# def test_dates_with_list():
-#     norm = DateNormaliser("%Y.%m.%d", valid=["2020.05.13"] )
-#     assert norm("20200513") == ["2020.05.13"]
-#     assert norm([datetime.datetime(2020, 5, 13, 12, 0)]) == ["2020.05.13"]
-#
-#     with pytest.raises(ValueError):
-#         assert norm("19991231")
-
-
-def test_dates_3():
-    norm = DateNormaliser()
-    assert norm("20200513") == [datetime.datetime(2020, 5, 13, 0, 0)]
-    assert norm([datetime.datetime(2020, 5, 13, 0, 0)]) == [
-        datetime.datetime(2020, 5, 13, 0, 0)
-    ]
 
 
 if __name__ == "__main__":
