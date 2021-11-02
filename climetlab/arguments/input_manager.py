@@ -82,15 +82,17 @@ class InputManager:
         return txt
 
     def apply_to_kwargs(self, kwargs):
-        print("Apply pipeline")
-        print(f"   kwargs: {kwargs}")
+        print("Apply pipeline to kwargs: {kwargs}")
         for t in self.pipeline:
-            print(f" - applying {t}")
+            if t.name:
+                print(f" - {t.name}: apply {t}.")
+            else:
+                print(f" - apply {t}.")
             for t in self.pipeline:
                 assert isinstance(t, Transformer), t
             kwargs = t.__call__(kwargs)
-            print(f"   kwargs: {kwargs}")
-        print(kwargs)
+            print(f"       kwargs: {kwargs}")
+        print("Applied pipeline: {kwargs}")
 
         return kwargs
 
