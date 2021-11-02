@@ -53,7 +53,7 @@ class Argument:
             pipeline.append(
                 NormalizeTransformer(
                     self.name,
-                        avail[0].get_values(self.name),
+                    avail[0].get_values(self.name),
                 )
             )
             return
@@ -62,7 +62,7 @@ class Argument:
             pipeline.append(
                 NormalizeTransformer(
                     self.name,
-                        norm[0].get_values(self.name),
+                    norm[0].norm,
                 )
             )
             return
@@ -79,7 +79,7 @@ class Argument:
                 pipeline.append(
                     NormalizeTransformer(
                         self.name,
-                            vals,
+                        vals,
                     )
                 )
             return

@@ -28,8 +28,12 @@ def _identity(x):
     return x
 
 
-class VariableNormaliser:
-    def visit(self, decorator, name, convention=None) -> None:
+class Normaliser:
+    pass
+
+
+class VariableNormaliser(Normaliser):
+    def visit(self, decorator, convention=None) -> None:
         def format(parameter):
             if isinstance(parameter, (list, tuple)):
                 return [normalise_string(p, convention=convention) for p in parameter]
@@ -40,8 +44,8 @@ class VariableNormaliser:
         decorator.norm = _identity
 
 
-class BoundingBoxNormaliser:
-    def visit(self, decorator, name, format=None) -> None:
+class BoundingBoxNormaliser(Normaliser):
+    def visit(self, decorator, format=None) -> None:
         FORMATS = {
             list: lambda x: x.as_list(),
             tuple: lambda x: x.as_tuple(),
@@ -62,8 +66,8 @@ class BoundingBoxNormaliser:
         decorator.norm = to_bounding_box
 
 
-class DateNormaliser:
-    def visit(self, decorator, name, format=None) -> None:
+class DateNormaliser(Normaliser):
+    def visit(self, decorator, format=None) -> None:
         def format(dates):
             return [d.strftime(format) for d in dates]
 
@@ -71,18 +75,7 @@ class DateNormaliser:
         decorator.norm = to_date_list
 
 
-ENUM_FORMATTER = {
-    int: int,
-    str: str,
-    float: float,
-    None: _identity,
-    "int": int,
-    "str": str,
-    "float": float,
-}
-
-
-class EnumNormaliser:
+class EnumNormaliser(Normaliser):
     def __init__(self, values):
         if values is None:
             values = []
@@ -108,7 +101,17 @@ class EnumNormaliser:
             f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
 
-    def visit(self, decorator, name, format=None) -> None:
+    def visit(self, decorator, format=None) -> None:
+        ENUM_FORMATTER = {
+            int: int,
+            str: str,
+            float: float,
+            None: _identity,
+            "int": int,
+            "str": str,
+            "float": float,
+        }
+
         def norm(x):
             if x is ALL:
                 return self.values
@@ -117,7 +120,7 @@ class EnumNormaliser:
 
             return [self.normalize_one_value(y) for y in x]
 
-        decorator.format = ENUM_FORMATTER[name]
+        decorator.format = ENUM_FORMATTER[format]
         decorator.norm = norm
 
     def normalize_one_value(self, x):

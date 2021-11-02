@@ -144,7 +144,7 @@ class TypeTransformer(ArgumentTransformer):
 class NormalizeTransformer(ArgumentTransformer):
     def __init__(self, name, norm, type=None) -> None:
         super().__init__(name)
-        assert callable(norm)
+        assert callable(norm), norm
         self.norm = norm
         self.type = type
 

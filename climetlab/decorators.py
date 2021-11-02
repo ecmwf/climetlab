@@ -173,7 +173,7 @@ class normalize(Decorator):
             name = name[:-5]  # remove '-list' suffix
 
         norm_format_builder = NORMALISERS[name]()
-        norm_format_builder.visit(self, name, *args)
+        norm_format_builder.visit(self, *args)
         return
 
     def visit(self, manager):
