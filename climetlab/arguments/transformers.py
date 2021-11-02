@@ -13,6 +13,7 @@ LOG = logging.getLogger(__name__)
 
 class Transformer:
     name = None
+
     def valid_with_multiple(self, multiple_transformer):
         pass
 
@@ -21,6 +22,7 @@ class Transformer:
 
     def __repr__(self) -> str:
         return f"{self.__class__}"
+
 
 class ArgumentTransformer(Transformer):
     def __init__(self, name) -> None:

@@ -63,7 +63,7 @@ class Klass_n:
 
 
 class Klass_a_n:
-    @normalize("param", ["a", "b", "c"])
+    @normalize("param", ["a", "b"])
     @av_decorator
     def __init__(self, level, param, step):
         pass
@@ -71,7 +71,7 @@ class Klass_a_n:
 
 class Klass_n_a:
     @av_decorator
-    @normalize("param", ["a", "b", "c"])
+    @normalize("param", ["a", "b"])
     def __init__(self, level, param, step):
         pass
 
@@ -81,14 +81,14 @@ def func_n(level, param, step):
     return param
 
 
-@normalize("param", ["a", "b", "c"])
+@normalize("param", ["a", "b"])
 @av_decorator
 def func_a_n(level, param, step):
     return param
 
 
 @av_decorator
-@normalize("param", ["a", "b", "c"])
+@normalize("param", ["a", "b"])
 def func_n_a(level, param, step):
     return param
 
@@ -191,17 +191,18 @@ def test_availability_1():
         func7(3, step="36")
 
 
-@availability(C1)
+# @availability(C1)
 @normalize("level", type=int, multiple=False)
 @normalize("param", type=str, multiple=True)
 @normalize("step", type=int, multiple=True)
 def param_values_1(level, param, step):
     return (level, param, step)
 
+
 @normalize("level", type=int, multiple=False)
 @normalize("param", type=str, multiple=True)
 @normalize("step", type=int, multiple=True)
-@availability(C1)
+# @availability(C1)
 def param_values_2(level, param, step):
     return (level, param, step)
 
@@ -214,6 +215,7 @@ def param_values_2(level, param, step):
 def param_values_3(level, param, step):
     return (level, param, step)
 
+
 @availability(C2)
 @normalize("level", multiple=False)
 @normalize("param", multiple=True)
@@ -221,19 +223,21 @@ def param_values_3(level, param, step):
 def param_values_4(level, param, step):
     return (level, param, step)
 
+
 def test_dev():
 
-    print(param_values_1("1000", "a", "24"))
+    print("---", param_values_1("1000", "a", "24"))
     assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
 
-    print(param_values_2("1000", "a", "24"))
+    print("---", param_values_2("1000", "a", "24"))
     assert param_values_2("1000", "a", "24") == (1000, ["a"], [24])
 
-    print(param_values_3("1000", "a", "24"))
-    assert param_values_3("1000", "a", "24") == ('1000', ["a"], ['24'])
+    print("---", param_values_3("1000", "a", "24"))
+    assert param_values_3("1000", "a", "24") == ("1000", ["a"], ["24"])
 
-    print(param_values_4("1000", "a", "24"))
+    print("---", param_values_4("1000", "a", "24"))
     assert param_values_4("1000", "a", "24") == (1000, ["a"], [24])
+
 
 if __name__ == "__main__":
     test_dev()
