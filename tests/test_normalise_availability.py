@@ -240,7 +240,7 @@ def test_dev():
 
 
 if __name__ == "__main__":
-    test_dev()
-    # from climetlab.testing import main
+    # test_dev()
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

@@ -19,8 +19,10 @@ from climetlab import load_source
 from climetlab.decorators import normalize
 from climetlab.testing import climetlab_file
 
+
 def f(date):
     return date
+
 
 def test_normalize_dates_from_source():
 
@@ -46,6 +48,18 @@ def test_dates_formated():
     assert date_formated([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
     assert date_formated([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
 
+
+def test_dates_multiple():
+    date_1 = normalize("date-list", "date(%Y.%m.%d)")(f)
+    date_2 = normalize("date", "date(%Y.%m.%d)", multiple=True)(f)
+    date_3 = normalize("date", "date(%Y.%m.%d)", multiple=False)(f)
+    date_4 = normalize("date-list", "date(%Y.%m.%d)", multiple=False)(f)
+
+    assert date_1("20200513") == ["2020.05.13"]
+    assert date_2("20200513") == ["2020.05.13"]
+    assert date_3("20200513") == "2020.05.13"
+    with pytest.raises(ValueError):
+        date_4("20200513")
 
 
 if __name__ == "__main__":
