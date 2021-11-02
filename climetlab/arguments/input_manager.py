@@ -25,6 +25,7 @@ class InputManager:
 
         self.availabilities = []
 
+        LOG.debug("Building arguments from decorators:\n %s", decorators)
         self.parameters = defaultdict(list)
         for decorator in self.decorators:
             decorator.visit(self)
@@ -34,6 +35,7 @@ class InputManager:
         ]
 
         self.build_pipeline()
+        LOG.debug("Built manager: %s", self)
 
     def build_pipeline(self):
         print("InputManager :-------------------------")
@@ -81,6 +83,26 @@ class InputManager:
         txt += "]"
         return txt
 
+    def apply_to_arg_kwargs(self, args, kwargs, func):
+        from climetlab.arguments.args_kwargs import (
+            ArgsKwargs,
+            add_default_values_and_kwargs,
+        )
+
+        args_kwargs = ArgsKwargs(args, kwargs, func=func)
+        args_kwargs = add_default_values_and_kwargs(args_kwargs)
+        if args_kwargs.args:
+            raise ValueError(f"There should not be anything in {args_kwargs.args}")
+
+        LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
+        args_kwargs.kwargs = self.apply_to_kwargs(args_kwargs.kwargs)
+
+        args_kwargs.ensure_positionals()
+
+        args, kwargs = args_kwargs.args, args_kwargs.kwargs
+
+        LOG.debug("CALLING func %s %s", args, kwargs)
+
     def apply_to_kwargs(self, kwargs):
         print("Apply pipeline to kwargs: {kwargs}")
         for t in self.pipeline:
@@ -88,20 +110,20 @@ class InputManager:
                 print(f" - {t.name}: apply {t}.")
             else:
                 print(f" - apply {t}.")
-            if isinstance(t, FormatTransformer):
-                print("lkjlj")
-                kwargs = t.__call__(kwargs)
-                print(kwargs)
 
             for t in self.pipeline:
                 if not isinstance(t, Transformer):
                     raise f"Unknown transformer: {t}"
             kwargs = t.__call__(kwargs)
-            print(t)
             print(f"       kwargs: {kwargs}")
         print("Applied pipeline: {kwargs}")
 
         return kwargs
+
+    def apply_to_value(self, value):
+        for t in self.pipeline:
+            value = t.__call__(value)
+        return value
 
 
 def normaliser(*args, **kwargs):

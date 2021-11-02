@@ -25,16 +25,19 @@ class ArgumentTransformer(Transformer):
     def __init__(self, name) -> None:
         self.name = name
 
-    def __call__(self, kwargs):
-        if self.name not in kwargs:
-            return kwargs
-        kwargs[self.name] = self.apply_to_value_or_list(kwargs[self.name])
-        return kwargs
+    def __call__(self, data):
+        if isinstance(data, dict):
+            if self.name not in data:
+                return data
+            data[self.name] = self.__call__(data[self.name])
+            return data
 
-    def apply_to_value_or_list(self, value):
-        if isinstance(value, (list, tuple)):
-            return [self.apply_to_value(v) for v in value]
-        return self.apply_to_value(value)
+        return self.apply_to_value_or_list(data)
+
+    def apply_to_value_or_list(self, data):
+        if isinstance(data, (tuple, list)):
+            return [self.apply_to_value(v) for v in data]
+        return self.apply_to_value(data)
 
     def apply_to_value(self, value):
         raise NotImplementedError()
@@ -43,7 +46,6 @@ class ArgumentTransformer(Transformer):
 class MultipleTransformer(ArgumentTransformer):
     def __init__(self, name, multiple) -> None:
         super().__init__(name)
-        assert isinstance(name, str), name
         assert multiple in [True, False, None]
         self.multiple = multiple
 
@@ -142,6 +144,7 @@ class TypeTransformer(ArgumentTransformer):
 class NormalizeTransformer(ArgumentTransformer):
     def __init__(self, name, norm, type=None) -> None:
         super().__init__(name)
+        assert callable(norm)
         self.norm = norm
         self.type = type
 
@@ -157,6 +160,8 @@ class AvailabilityTransformer(Transformer):
         self.availability = availability
 
     def __call__(self, kwargs):
+        if not isinstance(kwargs, dict):
+            return kwargs
         LOG.debug("Checking availability for %s", kwargs)
         # kwargs2 = deepcopy(kwargs)
 

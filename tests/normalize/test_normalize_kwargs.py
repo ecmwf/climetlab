@@ -71,7 +71,7 @@ assert out == (["A"], ["B"], 7, 8)
 
 
 def test_normalize_advanced_3():
-    assert normalize(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
+    out = normalize(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
     assert normalize(values=("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
 
     assert normalize(values=("1", "2"), type=int, multiple=True)(1) == [1]

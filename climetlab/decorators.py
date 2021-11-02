@@ -13,6 +13,7 @@ import re
 import threading
 from functools import wraps
 
+from climetlab.arguments.guess import guess_type_list
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -51,11 +52,13 @@ class Decorator:
     is_availability = False
 
     def __call__(self, func):
-        if not callable(func):
-            return self(lambda no_name: no_name)(func)
-
         from climetlab.arguments import InputManager
-        from climetlab.arguments.args_kwargs import add_default_values_and_kwargs
+
+        if not callable(func):
+            manager = InputManager(decorators=[self])
+            return manager.apply_to_value(func)
+
+        decorators = [self]
 
         def unwrap(f):
             if not hasattr(f, "_climetlab_decorators"):
@@ -64,33 +67,14 @@ class Decorator:
 
         unwrapped = unwrap(func)
 
-        decorators = [self]
         if hasattr(func, "_climetlab_decorators"):
             decorators = decorators + func._climetlab_decorators
 
-        LOG.debug("Building arguments from decorators:\n %s", decorators)
         manager = InputManager(decorators=decorators)
-        LOG.debug("Built manager: %s", manager)
 
         @wraps(unwrapped)
         def newfunc(*args, **kwargs):
-
-            LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
-
-            from climetlab.arguments.args_kwargs import ArgsKwargs
-
-            args_kwargs = ArgsKwargs(args, kwargs, func=unwrapped)
-            args_kwargs = add_default_values_and_kwargs(args_kwargs)
-            if args_kwargs.args:
-                raise ValueError(f"There should not be anything in {args_kwargs.args}")
-
-            args_kwargs.kwargs = manager.apply_to_kwargs(args_kwargs.kwargs)
-
-            args_kwargs.ensure_positionals()
-
-            args, kwargs = args_kwargs.args, args_kwargs.kwargs
-
-            LOG.debug("CALLING func %s %s", args, kwargs)
+            manager.apply_to_arg_kwargs(args, kwargs, func=unwrapped)
             return unwrapped(*args, **kwargs)
 
         newfunc._climetlab_decorators = decorators
@@ -113,14 +97,15 @@ class Decorator:
 class normalize(Decorator):
     def __init__(
         self,
-        name="no_name",
+        name=None,
         values=None,
         alias=None,
         multiple=None,
         type=None,
         format=None,
     ):
-        assert isinstance(name, str)
+        if name is not None:
+            assert isinstance(name, str)
 
         self.name = name
         self.values = values
@@ -163,6 +148,8 @@ class normalize(Decorator):
 
         if isinstance(values, (tuple, list)):
             self.values = list(values)
+            if self.type is None:
+                self.type = guess_type_list(values)
             if self.multiple is None:
                 if isinstance(values, tuple):
                     self.multiple = False
