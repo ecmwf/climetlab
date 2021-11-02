@@ -235,6 +235,7 @@ def test_availability_4(availability_s2s_2):
     # with pytest.raises(ValueError):
     #     av.check(number=30, alldates='2020-01-03', origin="eccc")
 
+
 from climetlab.decorators import availability, normalize
 from climetlab.utils.availability import Availability
 
@@ -461,6 +462,7 @@ def test_dev():
 
     print("---", param_values_4("1000", "a", "24"))
     assert param_values_4("1000", "a", "24") == (1000, ["a"], [24])
+
 
 if __name__ == "__main__":
     from climetlab.testing import main

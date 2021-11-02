@@ -11,141 +11,121 @@
 
 import datetime
 import sys
+from typing import MutableMapping
 
 import numpy as np
 import pytest
 
-from climetlab import load_source
+from climetlab import ALL, load_source
 from climetlab.decorators import normalize
 from climetlab.testing import climetlab_file
 
 
-# def test_enum_definition():
-@normalize("name", ("a", "b", "c"))
-def enum_1(name="a"):
+def name_no_default(name):
     return name
 
 
-@normalize("name", ("a", "b", "c"))
-def enum_no_default(name):
+def name_default_is_none(name=None):
     return name
 
 
-@normalize("name", ("a", "b", "c"))
-def enum_default_is_none(name=None):
+def name_default_is_1(name=1):
     return name
 
 
-@normalize("name", (1, 0.5, 3))
-def enum_number(name=1):
+def name_default_is_str_1(name="1"):
     return name
 
 
-# def test_enum_list_definition():
-@normalize("name", ["a", "b", "c"])
-def enum_list_1(name="a"):
+def name_default_is_str_a(name="1"):
     return name
 
 
-@normalize("name", ["a", "b", "c"])
-def enum_list_no_default(name):
+def name_default_is_all(name=ALL):
     return name
 
 
-@normalize("name", ["a", "b", "c"])
-def enum_list_default_is_none(name=None):
-    return name
-
-
-@normalize("name", ["a", "b", "c"])
-def enum_list_default_is_all(name=ALL):
-    return name
-
-
-@normalize("name", [1, 0.5, 3])
-def enum_list_number(name=1):
-    return name
-
-
-@normalize("a", [1, 2])
-@normalize("b", [3, 4])
-def enum_2_normalizers(a, b):
-    return a
+def a_b_no_default(a, b):
+    return a, b
 
 
 def test_enum_2_normalizers():
-    enum_2_normalizers(a=1, b=4)
-    # enum_2_normalizers(1,4)
+    g = a_b_no_default
+    g = normalize("a", [1, 2])(g)
+    g = normalize("b", [3, 4])(g)
+    assert g(a=1, b=4) == (1, 4)
+    with pytest.raises(ValueError):
+        g(a=1)
 
 
 def test_enum_decorator():
-    assert enum_1("a") == "a"
-    assert enum_1("b") == "b"
-    assert enum_1() == "a"
+    g = normalize("name", ("a", "b", "c"))(name_default_is_str_a)
+    assert g("a") == "a"
+    assert g("b") == "b"
+    assert g() == "a"
     with pytest.raises(ValueError):
-        enum_1("z")
+        g("z")
     with pytest.raises(ValueError):
-        enum_1(["a", "b"])
+        g(["a", "b"])
 
 
-def test_enum_decorator_default():
-    assert enum_no_default("a") == "a"
-    assert enum_default_is_none("a") == "a"
+def test_enum_multiple():
+    g = normalize("name", ["a", "b", "c"], multiple=False)(name_default_is_str_a)
     with pytest.raises(ValueError):
-        enum_default_is_none()
-    with pytest.raises(TypeError):
-        enum_no_default()
-
-
-def test_enum():
-
-    enum_3 = normaliser(["a", "b", "c"], multiple=False)
-    assert enum_3("a") == "a"
-    assert enum_3("b") == "b"
+        g(["a", "b"])
     with pytest.raises(ValueError):
-        enum_3("z")
-    with pytest.raises(ValueError):
-        enum_3(ALL)
+        g(ALL)
+
+    g = normalize("name", ["a", "b", "c"], multiple=True)(name_default_is_str_a)
+    assert (
+        g(
+            (
+                "a",
+                "b",
+            )
+        )
+        == ["a", "b"]
+    )
+    assert g(ALL) == ["a", "b", "c"]
 
 
-def test_enum_list_decorator_default():
-    assert enum_list_no_default("a") == ["a"]
-    assert enum_list_default_is_none("a") == ["a"]
-    assert enum_list_default_is_none() == ["a", "b", "c"]
-    assert enum_list_default_is_all() == ["a", "b", "c"]
-    assert enum_list_number(1.0) == [1]
-    with pytest.raises(ValueError):
-        enum_list_number("1")
-    #    with pytest.raises(ValueError):
-    #        enum_list_default_is_none()
-    with pytest.raises(TypeError):
-        enum_list_no_default()
+def test_enum_int():
+    g = normalize("name", [1, 0.5, 3], type=int, multiple=True)(name_default_is_1)
+    assert g(1) == [1]
+    assert g(1.0) == [1]
+    assert g("1.0") == [1]
+    assert g("1") == [1]
+    assert g() == [1]
+
+    g = normalize("name", (1, 0.5, 3))(name_no_default)
+    assert g(1) == 1
+    assert g("1") == 1
+
+    g = normalize("name", [1, 0.5, 3], multiple=True)(name_no_default)
+    assert g("1") == 1
+    assert g("1.0") == [1]
 
 
 def test_enum_list_case_sensitive():
-    enum_5 = EnumNormaliser(["A", "b", "c"])
-    assert enum_5(ALL) == ["A", "b", "c"]
-    assert enum_5("a") == ["A"]
-    assert enum_5("A") == ["A"]
-    assert enum_5(["a", "B"]) == ["A", "b"]
-
-
-@normalize(
-    "name",
-    ["a", "b", "c"],
-    alias={
-        "ab": ["a", "b"],
-        "z": "a",
-        "i": ["a", "b"],
-        "j": "ab",
-        "bad": ["a", "ab"],
-    },
-)
-def enum_list_alias_1(name=1):
-    return name
+    g = normalize("name", ["A", "b", "c"], multiple=True)(name_no_default)
+    assert g(ALL) == ["A", "b", "c"]
+    assert g("a") == ["A"]
+    assert g("A") == ["A"]
+    assert g(["a", "B"]) == ["A", "b"]
 
 
 def test_enum_list_alias_1():
+    enum_list_alias_1 = normalize(
+        "name",
+        ["a", "b", "c"],
+        alias={
+            "ab": ["a", "b"],
+            "z": "a",
+            "i": ["a", "b"],
+            "j": "ab",
+            "bad": ["a", "ab"],
+        },
+    )(name_no_default)
     assert enum_list_alias_1("a") == ["a"]
     assert enum_list_alias_1("b") == ["b"]
     assert enum_list_alias_1("ab") == ["a", "b"]
@@ -157,28 +137,24 @@ def test_enum_list_alias_1():
         enum_list_alias_1("bad")
 
 
-@normalize(
-    "name",
-    [1, 2, 3],
-    alias=lambda x: {"one": 1, "o": "one"}.get(x, x),
-)
-def enum_list_alias_2(name=1):
-    return name
-
-
 def test_enum_list_alias_2():
+    enum_list_alias_2 = normalize(
+        "name",
+        [1, 2, 3],
+        alias=lambda x: {"one": 1, "o": "one"}.get(x, x),
+    )(name_no_default)
     assert enum_list_alias_2(1) == [1]
     assert enum_list_alias_2("one") == [1]
     assert enum_list_alias_2(["one"]) == [1]
     assert enum_list_alias_2(["o"]) == [1]
 
 
-@normalize("name", ["a", "b", "c"], alias={"x": "y", "y": "z", "z": "a"})
-def enum_alias(name=1):
-    return name
-
-
 def test_enum_alias():
+    enum_alias = normalize(
+        "name",
+        ["a", "b", "c"],
+        alias={"x": "y", "y": "z", "z": "a"},
+    )(name_no_default)
     assert enum_alias("a") == ["a"]
     assert enum_alias("b") == ["b"]
     assert enum_alias("x") == ["a"]
