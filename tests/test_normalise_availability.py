@@ -27,6 +27,19 @@ C1 = [
     {"level": "1000", "param": "a", "step": "48"},
 ]
 
+C2 = [
+    {"level": 500, "param": "a", "step": 24},
+    {"level": 500, "param": "a", "step": 36},
+    {"level": 500, "param": "a", "step": 48},
+    {"level": 500, "param": "b", "step": 24},
+    {"level": 500, "param": "b", "step": 36},
+    {"level": 500, "param": "b", "step": 48},
+    {"level": 850, "param": "b", "step": 36},
+    {"level": 850, "param": "b", "step": 48},
+    {"level": 1000, "param": "a", "step": 24},
+    {"level": 1000, "param": "a", "step": 48},
+]
+
 
 av_decorator = availability(C1)
 av = Availability(C1)
@@ -185,20 +198,42 @@ def test_availability_1():
 def param_values_1(level, param, step):
     return (level, param, step)
 
+@normalize("level", type=int, multiple=False)
+@normalize("param", type=str, multiple=True)
+@normalize("step", type=int, multiple=True)
+@availability(C1)
+def param_values_2(level, param, step):
+    return (level, param, step)
+
+
+# No type
+@availability(C1)
+@normalize("level", multiple=False)
+@normalize("param", multiple=True)
+@normalize("step", multiple=True)
+def param_values_3(level, param, step):
+    return (level, param, step)
+
+@availability(C2)
+@normalize("level", multiple=False)
+@normalize("param", multiple=True)
+@normalize("step", multiple=True)
+def param_values_4(level, param, step):
+    return (level, param, step)
 
 def test_dev():
-    @normalize("level", type=int, multiple=False)
-    @normalize("param", type=str, multiple=True)
-    @normalize("step", type=int, multiple=True)
-    @availability(C1)
-    def param_values_2(level, param, step):
-        return (level, param, step)
 
     print(param_values_1("1000", "a", "24"))
     assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
+
     print(param_values_2("1000", "a", "24"))
     assert param_values_2("1000", "a", "24") == (1000, ["a"], [24])
 
+    print(param_values_3("1000", "a", "24"))
+    assert param_values_3("1000", "a", "24") == ('1000', ["a"], ['24'])
+
+    print(param_values_4("1000", "a", "24"))
+    assert param_values_4("1000", "a", "24") == (1000, ["a"], [24])
 
 if __name__ == "__main__":
     test_dev()
