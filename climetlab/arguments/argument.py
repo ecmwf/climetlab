@@ -68,7 +68,10 @@ class Argument:
         if norm and avail:
             nv = norm[0].get_values(self.name)
             av = avail[0].get_values(self.name)
-            # assert nv < av
+            if av and nv:
+                for x in nv:
+                    if not x in av:
+                        raise ValueError(f'{x} is not in {av}')
             vals = nv if nv is not None else av
             if nv is None:
                 pipeline.append(
