@@ -10,7 +10,6 @@ import logging
 
 from climetlab.arguments.transformers import (
     AliasTransformer,
-    AvailabilityTransformer,
     FormatTransformer,
     MultipleTransformer,
     NormalizeTransformer,

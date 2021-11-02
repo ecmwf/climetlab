@@ -127,6 +127,9 @@ class normalize(Decorator):
         self.parse_values(values)
 
     def parse_values(self, values):
+        if not values:
+            return
+
         from climetlab.normalize import (
             BoundingBoxNormaliser,
             DateNormaliser,
@@ -137,8 +140,9 @@ class normalize(Decorator):
         NORMALISERS = {
             "enum": EnumNormaliser,
             "enum-list": EnumNormaliser,
-            "date-list": DateNormaliser,
             "date": DateNormaliser,
+            "date-list": DateNormaliser,
+            "variable": VariableNormaliser,
             "variable-list": VariableNormaliser,
             "bounding-box": BoundingBoxNormaliser,
             "bbox": BoundingBoxNormaliser,
@@ -156,20 +160,24 @@ class normalize(Decorator):
                 if isinstance(values, list):
                     self.multiple = True
             self.norm = EnumNormaliser(values)
-
-        assert isinstance(values, str), values
-        if values.endswith("-list"):
-            self.multiple = True
-
-        m = re.match(r"(.+)\((.+)\)", values)
-
-        if not m:
-            self.norm = NORMALISERS[values]()
             return
 
-        args = m.group(2).split(",")
-        name = m.group(1)
-        self.norm = NORMALISERS[name](*args)
+        assert isinstance(values, str), values
+
+        if "(" in values:
+            m = re.match(r"(.+)\((.+)\)", values)
+            name = m.group(1)
+            args = m.group(2).split(",")
+        else:
+            name = values
+            args = []
+
+        if values.endswith("-list"):
+            self.multiple = True
+            name = name[:-5]  # remove '-list' suffix
+
+        norm_format_builder = NORMALISERS[name]()
+        norm_format_builder.visit(self, name, *args)
         return
 
     def visit(self, manager):
@@ -187,9 +195,6 @@ class normalize(Decorator):
 
     def get_type(self):
         return self.type
-
-    def get_format(self):
-        return self.format
 
 
 class availability(Decorator):

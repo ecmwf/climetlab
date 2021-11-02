@@ -7,9 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
-from copy import deepcopy
-
-from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
 
@@ -106,6 +103,7 @@ class FormatTransformer(ArgumentTransformer):
         self.format = format
 
     def apply_to_value(self, value):
+        print(self.format)
         if isinstance(value, (list, tuple)):
             return [self.format(v) for v in value]
         return self.format(value)

@@ -8,7 +8,6 @@
 #
 
 import logging
-import re
 
 from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
@@ -30,31 +29,19 @@ def _identity(x):
 
 
 class VariableNormaliser:
-    def __init__(self, convention=None):
-        self.convention = convention
+    def visit(self, decorator, name, convention=None) -> None:
+        def format(parameter):
+            if isinstance(parameter, (list, tuple)):
+                return [normalise_string(p, convention=convention) for p in parameter]
+            else:
+                return normalise_string(parameter, convention=convention)
 
-    def __call__(self, parameter):
-        return parameter
-
-
-class VariableFormatter:
-    def __init__(self, convention=None):
-        self.convention = convention
-
-    def __call__(self, parameter):
-        if isinstance(parameter, (list, tuple)):
-            return [normalise_string(p, convention=self.convention) for p in parameter]
-        else:
-            return normalise_string(parameter, convention=self.convention)
+        decorator.format = format
+        decorator.norm = _identity
 
 
 class BoundingBoxNormaliser:
-    def __call__(self, bbox):
-        return to_bounding_box(bbox)
-
-
-class BoundingBoxFormatter:
-    def __init__(self, format=None) -> None:
+    def visit(self, decorator, name, format=None) -> None:
         FORMATS = {
             list: lambda x: x.as_list(),
             tuple: lambda x: x.as_tuple(),
@@ -66,20 +53,22 @@ class BoundingBoxFormatter:
             "BoundingBox": _identity,
             None: _identity,
         }
-        self.format = FORMATS[format]
+        format_one = FORMATS[format]
 
-    def __call__(self, bbox):
-        return [self.format(bbox) for b in bbox]
+        def format(bbox):
+            return [format_one(bbox) for b in bbox]
+
+        decorator.format = format
+        decorator.norm = to_bounding_box
 
 
 class DateNormaliser:
-    def __call__(self, dates):
-        return to_date_list(dates)
+    def visit(self, decorator, name, format=None) -> None:
+        def format(dates):
+            return [d.strftime(format) for d in dates]
 
-
-class DateFormatter:
-    def __call__(self, dates):
-        return [d.strftime(self.cast_type) for d in dates]
+        decorator.format = format
+        decorator.norm = to_date_list
 
 
 ENUM_FORMATTER = {
@@ -119,13 +108,17 @@ class EnumNormaliser:
             f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
 
-    def __call__(self, x):
-        if x is ALL:
-            return self.values
-        if x is None:  # TODO: To be discussed
-            return self.values
+    def visit(self, decorator, name, format=None) -> None:
+        def norm(x):
+            if x is ALL:
+                return self.values
+            if x is None:  # TODO: To be discussed
+                return self.values
 
-        return [self.normalize_one_value(y) for y in x]
+            return [self.normalize_one_value(y) for y in x]
+
+        decorator.format = ENUM_FORMATTER[name]
+        decorator.norm = norm
 
     def normalize_one_value(self, x):
         if not self.values:
@@ -135,22 +128,3 @@ class EnumNormaliser:
             if self.compare(x, v):
                 return v
         self.raise_error(x)
-
-
-def _find_normaliser(values):
-
-    if callable(values):
-        return values
-
-    if isinstance(values, (tuple, list)):
-        return EnumNormaliser(values)
-
-    assert isinstance(values, str), values
-    m = re.match(r"(.+)\((.+)\)", values)
-
-    if not m:
-        return NORMALISERS[values]()
-
-    args = m.group(2).split(",")
-    name = m.group(1)
-    return NORMALISERS[name](*args)

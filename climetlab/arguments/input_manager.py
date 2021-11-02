@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 
 from .argument import Argument
-from .transformers import AvailabilityTransformer
+from .transformers import AvailabilityTransformer, Transformer
 
 LOG = logging.getLogger(__name__)
 
@@ -86,6 +86,8 @@ class InputManager:
         print(f"   kwargs: {kwargs}")
         for t in self.pipeline:
             print(f" - applying {t}")
+            for t in self.pipeline:
+                assert isinstance(t, Transformer), t
             kwargs = t.__call__(kwargs)
             print(f"   kwargs: {kwargs}")
         print(kwargs)

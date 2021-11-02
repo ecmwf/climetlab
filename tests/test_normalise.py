@@ -382,7 +382,8 @@ def test_normalize_advanced_3():
 
 if __name__ == "__main__":
     # test_normalize_advanced_3()
+    test_param_convention_mars()
 
-    from climetlab.testing import main
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)
