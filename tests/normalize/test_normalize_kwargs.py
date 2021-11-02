@@ -28,7 +28,6 @@ def test_normalize_kwargs():
 
         @normalize("param", ["a", "b", "c"])
         def f(self, **kwargs):
-            # def f(self, param, **kwargs):
             assert "param" in kwargs
 
     Klass().ok(param="a")
@@ -65,19 +64,19 @@ def g(a, /, b, c=4, *, x=3):
     return a, b, c, x
 
 out = g("A", b="B", c=7, x=8)
+print(out)
 assert out == (["A"], ["B"], 7, 8)
 """
     )
 
 
 def test_normalize_advanced_3():
-    from climetlab.arguments import normaliser
+    assert normalize(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
+    assert normalize(values=("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
 
-    assert normaliser(("1", "2"), type=str, multiple=True)(1) == ["1"]
-    assert normaliser(("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
+    assert normalize(values=("1", "2"), type=int, multiple=True)(1) == [1]
+    assert normalize(values=("1", "2"), type=int, multiple=True)(1.0) == [1]
 
-
-#    assert normaliser((1, 2), type=int, multiple=True)(1) == [1]
 
 if __name__ == "__main__":
     from climetlab.testing import main

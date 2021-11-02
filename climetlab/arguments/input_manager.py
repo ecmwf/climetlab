@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 
 from .argument import Argument
-from .transformers import AvailabilityTransformer, Transformer
+from .transformers import AvailabilityTransformer, FormatTransformer, Transformer
 
 LOG = logging.getLogger(__name__)
 
@@ -88,9 +88,16 @@ class InputManager:
                 print(f" - {t.name}: apply {t}.")
             else:
                 print(f" - apply {t}.")
+            if isinstance(t, FormatTransformer):
+                print("lkjlj")
+                kwargs = t.__call__(kwargs)
+                print(kwargs)
+
             for t in self.pipeline:
-                assert isinstance(t, Transformer), t
+                if not isinstance(t, Transformer):
+                    raise f"Unknown transformer: {t}"
             kwargs = t.__call__(kwargs)
+            print(t)
             print(f"       kwargs: {kwargs}")
         print("Applied pipeline: {kwargs}")
 

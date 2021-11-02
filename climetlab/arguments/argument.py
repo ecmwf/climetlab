@@ -25,6 +25,8 @@ class Argument:
         name,
         decorators,
     ):
+        if name is not None:
+            assert isinstance(name, str), name
         self.name = name
         self.decorators = decorators
 

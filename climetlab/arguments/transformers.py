@@ -17,9 +17,6 @@ class Transformer:
     def valid_with_multiple(self, multiple_transformer):
         pass
 
-    def __call__(self, kwargs):
-        return self._apply_to_kwargs(kwargs)
-
     def __repr__(self) -> str:
         return f"{self.__class__}"
 
@@ -28,11 +25,16 @@ class ArgumentTransformer(Transformer):
     def __init__(self, name) -> None:
         self.name = name
 
-    def _apply_to_kwargs(self, kwargs):
+    def __call__(self, kwargs):
         if self.name not in kwargs:
             return kwargs
-        kwargs[self.name] = self.apply_to_value(kwargs[self.name])
+        kwargs[self.name] = self.apply_to_value_or_list(kwargs[self.name])
         return kwargs
+
+    def apply_to_value_or_list(self, value):
+        if isinstance(value, (list, tuple)):
+            return [self.apply_to_value(v) for v in value]
+        return self.apply_to_value(value)
 
     def apply_to_value(self, value):
         raise NotImplementedError()
@@ -41,10 +43,11 @@ class ArgumentTransformer(Transformer):
 class MultipleTransformer(ArgumentTransformer):
     def __init__(self, name, multiple) -> None:
         super().__init__(name)
+        assert isinstance(name, str), name
         assert multiple in [True, False, None]
         self.multiple = multiple
 
-    def apply_to_value(self, value):
+    def apply_to_value_or_list(self, value):
         is_list = isinstance(value, (list, tuple))
         if self.multiple and not is_list:
             return [value]
@@ -108,9 +111,6 @@ class FormatTransformer(ArgumentTransformer):
         self.format = format
 
     def apply_to_value(self, value):
-        print(self.format)
-        if isinstance(value, (list, tuple)):
-            return [self.format(v) for v in value]
         return self.format(value)
 
     def __repr__(self) -> str:
@@ -128,8 +128,6 @@ class TypeTransformer(ArgumentTransformer):
         self.type = type
 
     def apply_to_value(self, value):
-        if isinstance(value, (list, tuple)):
-            return [self.type(v) for v in value]
         return self.type(value)
 
     def __repr__(self) -> str:
@@ -158,7 +156,7 @@ class AvailabilityTransformer(Transformer):
     def __init__(self, availability) -> None:
         self.availability = availability
 
-    def _apply_to_kwargs(self, kwargs):
+    def __call__(self, kwargs):
         LOG.debug("Checking availability for %s", kwargs)
         # kwargs2 = deepcopy(kwargs)
 

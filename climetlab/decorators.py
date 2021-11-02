@@ -51,6 +51,9 @@ class Decorator:
     is_availability = False
 
     def __call__(self, func):
+        if not callable(func):
+            return self(lambda no_name: no_name)(func)
+
         from climetlab.arguments import InputManager
         from climetlab.arguments.args_kwargs import add_default_values_and_kwargs
 
@@ -110,13 +113,15 @@ class Decorator:
 class normalize(Decorator):
     def __init__(
         self,
-        name,
+        name="no_name",
         values=None,
         alias=None,
         multiple=None,
         type=None,
         format=None,
     ):
+        assert isinstance(name, str)
+
         self.name = name
         self.values = values
         self.alias = alias
@@ -125,6 +130,10 @@ class normalize(Decorator):
         self.format = format
 
         self.parse_values(values)
+
+        if self.format is None:
+            if self.type is str:
+                self.format = str
 
     def parse_values(self, values):
         if not values:
