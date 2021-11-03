@@ -186,7 +186,6 @@ def test_enum_alias():
 
 if __name__ == "__main__":
 
-    test_enum_multiple()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
