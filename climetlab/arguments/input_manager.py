@@ -21,7 +21,7 @@ class InputManager:
         decorators,
     ):
         self.decorators = decorators
-        self._pipeline = []
+        self._pipeline = None
 
         self.availabilities = []
 

@@ -28,7 +28,7 @@ class ArgumentTransformer(Transformer):
         self.name = name
 
     def __call__(self, data):
-        data[self.name] = self.__call__(data[self.name])
+        data[self.name] = self.apply_to_value_or_list(data[self.name])
         return data
 
     def apply_to_value_or_list(self, data):
