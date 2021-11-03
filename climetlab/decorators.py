@@ -115,7 +115,7 @@ class normalize(Decorator):
         self.format = format
 
         self.parse_values(values)
-        print(f"Parsed values {values}. type = {type}")
+        print(f"Parsed values {values}. type = {self.type}")
 
         if self.format is None:
             if self.type is str:
@@ -186,6 +186,7 @@ class normalize(Decorator):
         return self.format
 
     def get_type(self):
+        self.type = _normalize_type(self.type)
         return self.type
 
     def get_aliases(self):
@@ -215,4 +216,14 @@ class availability(Decorator):
         if name is None:
             return None
         type = guess_type_list(self.get_values(name))
+        type = _normalize_type(type)
         return type
+
+def _normalize_type(type):
+        NORMALIZE_TYPES = {
+            str: 'str',
+            int:'int',
+            float:'float',
+            # datetime.datetime: 'date',
+        }
+        return NORMALIZE_TYPES.get(type, type)

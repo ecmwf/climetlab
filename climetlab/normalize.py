@@ -41,7 +41,6 @@ class VariableNormaliser(Normaliser):
                 return normalise_string(parameter, convention=convention)
 
         decorator.format = format
-        decorator.norm = _identity
 
 
 class BoundingBoxNormaliser(Normaliser):
@@ -65,7 +64,6 @@ class BoundingBoxNormaliser(Normaliser):
             return [format_one(bbox) for b in bbox]
 
         decorator.formatter = format
-        decorator.normalizer = to_bounding_box
 
 
 class DateNormaliser(Normaliser):
@@ -74,7 +72,6 @@ class DateNormaliser(Normaliser):
             return [d.strftime(format) for d in dates]
 
         decorator.format = format
-        decorator.norm = to_date_list
 
 
 class EnumNormaliser(Normaliser):

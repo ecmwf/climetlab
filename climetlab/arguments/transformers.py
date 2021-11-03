@@ -113,10 +113,53 @@ class AliasTransformer(ArgumentTransformer):
         return f"Alias({self.name}, {self.alias})"
 
 
+class Formatter:
+    def __init__(self, *args, **kwargs):
+        pass
+    def __call__(self, value):
+        raise NotImplementedError()
+
+class IdentityFormatter(Formatter):
+    def __call__(self, value):
+        print(f'{self.__class__} is formatting {value}')
+        return value
+class EnumFormatter(Formatter):
+    def __call__(self, value):
+        print(f'{self.__class__} is formatting {value}')
+        return value
+class DateFormatter(Formatter):
+    def __call__(self, value):
+        print(f'{self.__class__} is formatting {value}')
+        return value
+class BoundingBoxFormatter(Formatter):
+    def __call__(self, value):
+        print(f'{self.__class__} is formatting {value}')
+        return value
+class VariableFormatter(Formatter):
+    def __call__(self, value):
+        print(f'{self.__class__} is formatting {value}')
+        return value
+
+
+def _find_formatter(type=type, *args, **kwargs):
+    FORMATTERS = {
+        "enum": EnumFormatter,
+        "enum-list": EnumFormatter,
+        "date": DateFormatter,
+        "date-list": DateFormatter,
+        "variable": VariableFormatter,
+        "variable-list": VariableFormatter,
+        "bounding-box": BoundingBoxFormatter,
+        "bbox": BoundingBoxFormatter,
+        "str": IdentityFormatter,
+    }
+    return FORMATTERS[type](*args, **kwargs)
+
+
 class FormatTransformer(ArgumentTransformer):
-    def __init__(self, name, format=None) -> None:
+    def __init__(self, name, *args, **kwargs) -> None:
         super().__init__(name)
-        self.format = format
+        self.format = _find_formatter(*args, **kwargs)
 
     def apply_to_value(self, value):
         return self.format(value)
@@ -167,49 +210,46 @@ class TypeTransformer(ArgumentTransformer):
 
 
 class CanonicalTransformer(ArgumentTransformer):
-    def __init__(self, name, norm, values=None, type=None) -> None:
+    def __init__(self, name, values=None, type=None) -> None:
         super().__init__(name)
-        assert callable(norm), norm
-        self.norm = norm
+        self.values = values
+        self.type = type # None
+
+        if values is None:
+            values = []
+
+        if len(values) == 1 and isinstance(values[0], (list, tuple)):
+            values = values[0]
+
+        self.values = values
+        self.canonicalizer = _identity
         self.type = type
 
-        from climetlab.normalize import (
-            BoundingBoxNormaliser,
-            DateNormaliser,
-            EnumNormaliser,
-            VariableNormaliser,
+    def compare(self, value, v):
+        if isinstance(value, str) and isinstance(v, str):
+            return value.upper() == v.upper()
+        return value == v
+
+    def apply_to_value(self, value):
+        print(f'{self.__class__} is canonicalizing {value}')
+
+        if not self.values:
+            return value
+
+        for v in self.values:
+            if self.compare(value, v):
+                return v
+
+        self.raise_error(value)
+
+    def raise_error(self, x):
+        raise ValueError(
+            f'Invalid value "{x}"({type(x)}), possible values are {self.values}'
         )
 
-        NORMALISERS = {
-            "enum": EnumNormaliser,
-            "enum-list": EnumNormaliser,
-            "date": DateNormaliser,
-            "date-list": DateNormaliser,
-            "variable": VariableNormaliser,
-            "variable-list": VariableNormaliser,
-            "bounding-box": BoundingBoxNormaliser,
-            "bbox": BoundingBoxNormaliser,
-        }
-
-    def apply_to_value(self, value):
-        return self.norm(value)
-
     def __repr__(self) -> str:
-        return f"Normalize({self.name}, {self.norm}, type={self.type})"
+        return f"Normalize({self.name}, {self.canonicalizer}, type={self.type})"
 
-
-class NormalizeTransformer(ArgumentTransformer):
-    def __init__(self, name, norm, type=None) -> None:
-        super().__init__(name)
-        assert callable(norm), norm
-        self.norm = norm
-        self.type = type
-
-    def apply_to_value(self, value):
-        return self.norm(value)
-
-    def __repr__(self) -> str:
-        return f"Normalize({self.name}, {self.norm}, type={self.type})"
 
 
 class AvailabilityTransformer(Transformer):

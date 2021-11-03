@@ -120,14 +120,24 @@ class Argument:
 
     def add_format_transformers(self, pipeline):
         format = None
+        type = None
         for decorator in self.decorators:
             a = decorator.get_format()
+            t = decorator.get_type()
             # assert a not incompatible with formats
             if a is not None:
                 format = a
+            if t is not None:
+                type = t
 
         if format is not None:
-            pipeline.append(FormatTransformer(self.name, format))
+            pipeline.append(
+                FormatTransformer(
+                    self.name,
+                    format=format,
+                    type=type,
+                )
+            )
 
     def add_multiple_transformers(self, pipeline):
         multiple = None
