@@ -19,6 +19,10 @@ from climetlab.utils.availability import Availability
 LOG = logging.getLogger(__name__)
 
 
+def _identity(x):
+    return x
+
+
 def dict_args(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
@@ -87,17 +91,17 @@ class Decorator:
     def get_multiple(self):
         return None
 
-    def get_format(self):
+    def get_type(self):
         return None
 
-    def get_type(self):
+    def get_cml_type(self, name):
         return None
 
 
 class normalize(Decorator):
     def __init__(
         self,
-        name=None,
+        name,
         values=None,
         alias=None,
         multiple=None,
@@ -107,8 +111,9 @@ class normalize(Decorator):
         if name is not None:
             assert isinstance(name, str)
 
+        self._cml_type_from_values = None
+
         self.name = name
-        self.values = values
         self.alias = alias
         self.multiple = multiple
         self.type = type
@@ -123,25 +128,8 @@ class normalize(Decorator):
 
     def parse_values(self, values):
         if not values:
+            self.values = None
             return
-
-        from climetlab.normalize import (
-            BoundingBoxNormaliser,
-            DateNormaliser,
-            EnumNormaliser,
-            VariableNormaliser,
-        )
-
-        NORMALISERS = {
-            "enum": EnumNormaliser,
-            "enum-list": EnumNormaliser,
-            "date": DateNormaliser,
-            "date-list": DateNormaliser,
-            "variable": VariableNormaliser,
-            "variable-list": VariableNormaliser,
-            "bounding-box": BoundingBoxNormaliser,
-            "bbox": BoundingBoxNormaliser,
-        }
 
         if isinstance(values, (tuple, list)):
             self.values = list(values)
@@ -155,42 +143,150 @@ class normalize(Decorator):
             return
 
         assert isinstance(values, str), values
+        self.values = None
 
         if "(" in values:
             m = re.match(r"(.+)\((.+)\)", values)
-            name = m.group(1)
+            cml_type_str = m.group(1)
             args = m.group(2).split(",")
         else:
-            name = values
+            cml_type_str = values
             args = []
 
-        if values.endswith("-list"):
+        if cml_type_str.endswith("-list"):
             self.multiple = True
-            name = name[:-5]  # remove '-list' suffix
 
-        norm = NORMALISERS[name](*args)
-        self.formatter = norm.formatter
-        self.canonicalizer = norm.canonicalizer
+        STR_TO_CMLTYPE = {
+            "enum": StrType,
+            "enum-list": StrType,
+            "date": DateType,
+            "date-list": DateType,
+            "variable": VariableType,
+            "variable-list": VariableType,
+            "bounding-box": BoundingBoxType,
+            "bbox": BoundingBoxType,
+        }
+        self._cml_type_from_values = STR_TO_CMLTYPE[cml_type_str]
+        self._cml_type_args = args
 
     def visit(self, manager):
         manager.parameters[self.name].append(self)
 
-    def get_values(self, name):
-        assert self.name == name
+    def get_values(self, name=None):
         return self.values
 
     def get_multiple(self):
         return self.multiple
 
-    def get_format(self):
-        return self.format
-
     def get_type(self):
-        self.type = _normalize_type(self.type)
         return self.type
 
     def get_aliases(self):
         return self.alias
+
+    def get_cml_type(self):
+        import datetime
+
+        NORMALIZE_TYPES = {
+            str: StrType,
+            int: IntType,
+            float: FloatType,
+            datetime.datetime: DateType,
+        }
+
+        # explicitely given in values='type(...)'
+        type = self._cml_type_from_values
+        if type:
+            return type(self._cml_type_args)
+
+        # explicitely given in type=
+        type = self.type
+        if type:
+            type = NORMALIZE_TYPES.get(type, None)
+        if type:
+            return type()
+
+        # infer from values
+        if type:
+            type = guess_type_list(self.get_values())
+            type = NORMALIZE_TYPES.get(type, None)
+        if type:
+            return type()
+
+        return None
+
+
+class Type:
+    def cast_to_type(self, value):
+        return value
+
+    def apply_format(self, value):
+        print(f"{self.__class__} is formatting {value}")
+        return value
+
+
+
+
+class StrType(Type):
+    def cast_to_type(self, value):
+        return str(value)
+
+
+class IntType(Type):
+    def cast_to_type(self, value):
+        return int(value)
+
+
+class FloatType(Type):
+    def cast_to_type(self, value):
+        return float(value)
+
+
+class DateType(Type):
+    def __init__(self, format) -> None:
+        self.format = format
+
+    def cast_to_type(self, value):
+        from climetlab.utils.dates import to_date_list
+        return to_date_list(value)
+
+    def apply_format(self, value):
+        return value.strftime(self.format)
+
+
+class VariableType(Type):
+    def __init__(self, convention) -> None:
+        self.convention = convention
+
+    def apply_format(self, value):
+        from climetlab.utils.conventions import normalise_string
+        return normalise_string(value, convention=self.convention)
+
+
+class BoundingBoxType(Type):
+    def __init__(self, format) -> None:
+        self.format = format
+        from climetlab.utils.bbox import BoundingBox
+
+        FORMATTERS = {
+            list: lambda x: x.as_list(),
+            tuple: lambda x: x.as_tuple(),
+            dict: lambda x: x.as_dict(),
+            BoundingBox: _identity,
+            "list": lambda x: x.as_list(),
+            "tuple": lambda x: x.as_tuple(),
+            "dict": lambda x: x.as_dict(),
+            "BoundingBox": _identity,
+            None: _identity,
+        }
+        self.formatter = FORMATTERS[format]
+
+    def cast_to_type(self, value):
+        from climetlab.utils.bbox import to_bounding_box
+        return to_bounding_box(value)
+
+    def apply_format(self, value):
+        return self.formatter(value)
 
 
 class availability(Decorator):
@@ -215,15 +311,7 @@ class availability(Decorator):
     def get_type(self, name):
         if name is None:
             return None
-        type = guess_type_list(self.get_values(name))
-        type = _normalize_type(type)
-        return type
+        return None
 
-def _normalize_type(type):
-        NORMALIZE_TYPES = {
-            str: 'str',
-            int:'int',
-            float:'float',
-            # datetime.datetime: 'date',
-        }
-        return NORMALIZE_TYPES.get(type, type)
+    def get_cml_type(self, name):
+        return None

@@ -17,6 +17,8 @@ import pytest
 
 from climetlab import load_source
 from climetlab.decorators import normalize
+
+# from climetlab.decorators import Normalizer # TODO: write it.
 from climetlab.testing import climetlab_file
 
 
@@ -70,12 +72,13 @@ assert out == (["A"], ["B"], 7, 8)
     )
 
 
+@pytest.mark.skip(reason="Not implemented yet")
 def test_normalize_advanced_3():
-    out = normalize(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
-    assert normalize(values=("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
+    out = Normalizer(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
+    assert Normalizer(values=("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
 
-    assert normalize(values=("1", "2"), type=int, multiple=True)(1) == [1]
-    assert normalize(values=("1", "2"), type=int, multiple=True)(1.0) == [1]
+    assert Normalizer(values=("1", "2"), type=int, multiple=True)(1) == [1]
+    assert Normalizer(values=("1", "2"), type=int, multiple=True)(1.0) == [1]
 
 
 if __name__ == "__main__":

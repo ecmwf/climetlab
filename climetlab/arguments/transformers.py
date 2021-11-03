@@ -113,92 +113,32 @@ class AliasTransformer(ArgumentTransformer):
         return f"Alias({self.name}, {self.alias})"
 
 
-class Formatter:
-    def __init__(self, *args, **kwargs):
-        pass
-    def __call__(self, value):
-        raise NotImplementedError()
-
-class IdentityFormatter(Formatter):
-    def __call__(self, value):
-        print(f'{self.__class__} is formatting {value}')
-        return value
-class EnumFormatter(Formatter):
-    def __call__(self, value):
-        print(f'{self.__class__} is formatting {value}')
-        return value
-class DateFormatter(Formatter):
-    def __call__(self, value):
-        print(f'{self.__class__} is formatting {value}')
-        return value
-class BoundingBoxFormatter(Formatter):
-    def __call__(self, value):
-        print(f'{self.__class__} is formatting {value}')
-        return value
-class VariableFormatter(Formatter):
-    def __call__(self, value):
-        print(f'{self.__class__} is formatting {value}')
-        return value
-
-
-def _find_formatter(type=type, *args, **kwargs):
-    FORMATTERS = {
-        "enum": EnumFormatter,
-        "enum-list": EnumFormatter,
-        "date": DateFormatter,
-        "date-list": DateFormatter,
-        "variable": VariableFormatter,
-        "variable-list": VariableFormatter,
-        "bounding-box": BoundingBoxFormatter,
-        "bbox": BoundingBoxFormatter,
-        "str": IdentityFormatter,
-    }
-    return FORMATTERS[type](*args, **kwargs)
-
-
 class FormatTransformer(ArgumentTransformer):
-    def __init__(self, name, *args, **kwargs) -> None:
+    def __init__(self, name, type) -> None:
         super().__init__(name)
-        self.format = _find_formatter(*args, **kwargs)
+        self.type = type
 
     def apply_to_value(self, value):
-        return self.format(value)
+        return self.type.apply_format(value)
 
     def __repr__(self) -> str:
         txt = "Format("
         txt += f"{self.name}"
-        if self.format is not None:
-            txt += f",{self.format}"
+        if self.type is not None:
+            txt += f",{self.type}"
+            if hasattr(self.type, 'format'):
+                txt += f",{self.type.format}"
         txt += ")"
         return txt
 
 
 class TypeTransformer(ArgumentTransformer):
-    def __init__(self, name, type=None) -> None:
+    def __init__(self, name, type) -> None:
         super().__init__(name)
         self.type = type
-        from climetlab.utils.bbox import to_bounding_box
-        from climetlab.utils.conventions import normalise_string
-        from climetlab.utils.dates import to_date_list
-
-        def to_int(x):
-            return int(x)
-
-        TYPES = {
-            int: to_int,
-            str: str,
-            float: float,
-            None: _identity,
-            "int": to_int,
-            "str": str,
-            "float": float,
-            "date": to_date_list,
-            "bbox": to_bounding_box,
-        }
-        self.transform = TYPES[type]
 
     def apply_to_value(self, value):
-        return self.transform(value)
+        return self.type.cast_to_type(value)
 
     def __repr__(self) -> str:
         txt = "TypeTransformer("
@@ -213,7 +153,12 @@ class CanonicalTransformer(ArgumentTransformer):
     def __init__(self, name, values=None, type=None) -> None:
         super().__init__(name)
         self.values = values
-        self.type = type # None
+        self.type = type  # None
+
+        if values is not None:
+            # assert isinstance(values, (list, tuple))
+            print(f"Vocabulary not supported {values}")
+            values = []
 
         if values is None:
             values = []
@@ -231,7 +176,7 @@ class CanonicalTransformer(ArgumentTransformer):
         return value == v
 
     def apply_to_value(self, value):
-        print(f'{self.__class__} is canonicalizing {value}')
+        print(f"{self.__class__} is canonicalizing {value}")
 
         if not self.values:
             return value
@@ -249,7 +194,6 @@ class CanonicalTransformer(ArgumentTransformer):
 
     def __repr__(self) -> str:
         return f"Normalize({self.name}, {self.canonicalizer}, type={self.type})"
-
 
 
 class AvailabilityTransformer(Transformer):

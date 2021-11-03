@@ -21,7 +21,7 @@ from climetlab.testing import climetlab_file
 
 
 def test_param_convention_mars():
-    @normalize("parameter", ("variable-list(mars)"))
+    @normalize("parameter", "variable-list(mars)")
     def values_mars(parameter):
         return parameter
 
@@ -33,7 +33,7 @@ def test_param_convention_mars():
 
 
 def test_param_convention_cf():
-    @normalize("parameter", ("variable-list(cf)"))
+    @normalize("parameter", "variable-list(cf)")
     def values_cf(parameter):
         return parameter
 

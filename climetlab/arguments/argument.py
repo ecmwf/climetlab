@@ -36,6 +36,20 @@ class Argument:
             assert isinstance(name, str), name
         self.name = name
         self.decorators = decorators
+        self._cmltype = None
+
+    @property
+    def cmltype(self):
+        if self._cmltype:
+            return self._cmltype
+
+        if self.norm_deco:
+            self._cmltype = self.norm_deco.get_cml_type()
+
+        if self.av_deco:
+            self._cmltype = self.av_deco.get_cml_type(self.name)
+
+        return self._cmltype
 
     def add_alias_transformers(self, pipeline):
         aliases = dict()
@@ -77,14 +91,14 @@ class Argument:
     def add_type_transformers(self, pipeline):
         type = None
         if self.norm_deco and not self.av_deco:
-            type = self.norm_deco.get_type()
+            type = self.norm_deco.get_cml_type()
 
         if not self.norm_deco and self.av_deco:
-            type = self.av_deco.get_type(self.name)
+            type = self.av_deco.get_cml_type(self.name)
 
         if self.norm_deco and self.av_deco:
-            type1 = self.av_deco.get_type()
-            type2 = self.av_deco.get_type(self.name)
+            type1 = self.av_deco.get_cml_type()
+            type2 = self.av_deco.get_cml_type(self.name)
             if type1 and type2:
                 assert type1 == type2, (type1, type2)
             if type1:
@@ -119,22 +133,16 @@ class Argument:
                 return
 
     def add_format_transformers(self, pipeline):
-        format = None
         type = None
         for decorator in self.decorators:
-            a = decorator.get_format()
-            t = decorator.get_type()
-            # assert a not incompatible with formats
-            if a is not None:
-                format = a
+            t = decorator.get_cml_type()
             if t is not None:
                 type = t
 
-        if format is not None:
+        if type is not None:
             pipeline.append(
                 FormatTransformer(
                     self.name,
-                    format=format,
                     type=type,
                 )
             )
