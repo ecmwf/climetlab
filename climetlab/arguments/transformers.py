@@ -7,8 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
+from climetlab.arguments.climetlab_types import Type
 
 LOG = logging.getLogger(__name__)
+
 
 class _all:
     def __repr__(self):
@@ -16,6 +18,7 @@ class _all:
 
 
 ALL = _all()
+
 
 def _identity(x):
     return x
@@ -120,6 +123,7 @@ class AliasTransformer(ArgumentTransformer):
 class FormatTransformer(ArgumentTransformer):
     def __init__(self, name, type) -> None:
         super().__init__(name)
+        assert isinstance(type, Type), type
         self.type = type
 
     def apply_to_value(self, value):
@@ -130,7 +134,7 @@ class FormatTransformer(ArgumentTransformer):
         txt += f"{self.name}"
         if self.type is not None:
             txt += f",{self.type}"
-            if hasattr(self.type, 'format'):
+            if hasattr(self.type, "format"):
                 txt += f",{self.type.format}"
         txt += ")"
         return txt

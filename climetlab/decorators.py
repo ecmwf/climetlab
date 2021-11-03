@@ -13,14 +13,18 @@ import re
 import threading
 from functools import wraps
 
+from climetlab.arguments.climetlab_types import (
+    BoundingBoxType,
+    DateType,
+    FloatType,
+    IntType,
+    StrType,
+    VariableType,
+)
 from climetlab.arguments.guess import guess_type_list
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
-
-
-def _identity(x):
-    return x
 
 
 def dict_args(func):
@@ -208,83 +212,6 @@ class normalize(Decorator):
             return type()
 
         return None
-
-
-class Type:
-    def cast_to_type(self, value):
-        return value
-
-    def apply_format(self, value):
-        print(f"{self.__class__} is formatting {value}")
-        return value
-
-
-
-
-class StrType(Type):
-    def cast_to_type(self, value):
-        return str(value)
-
-
-class IntType(Type):
-    def cast_to_type(self, value):
-        return int(value)
-
-
-class FloatType(Type):
-    def cast_to_type(self, value):
-        return float(value)
-
-
-class DateType(Type):
-    def __init__(self, format=None) -> None:
-        self.format = format
-
-    def cast_to_type(self, value):
-        from climetlab.utils.dates import to_date_list
-        return to_date_list(value)[0] # TODO: to a todate() function
-
-    def apply_format(self, value):
-        if self.format is None:
-            return value
-        assert not isinstance(value, (list, tuple)), value
-        return value.strftime(self.format)
-
-
-class VariableType(Type):
-    def __init__(self, convention) -> None:
-        assert isinstance(convention, str), convention
-        self.convention = convention
-
-    def apply_format(self, value):
-        from climetlab.utils.conventions import normalise_string
-        return normalise_string(value, convention=self.convention)
-
-
-class BoundingBoxType(Type):
-    def __init__(self, format) -> None:
-        self.format = format
-        from climetlab.utils.bbox import BoundingBox
-
-        FORMATTERS = {
-            list: lambda x: x.as_list(),
-            tuple: lambda x: x.as_tuple(),
-            dict: lambda x: x.as_dict(),
-            BoundingBox: _identity,
-            "list": lambda x: x.as_list(),
-            "tuple": lambda x: x.as_tuple(),
-            "dict": lambda x: x.as_dict(),
-            "BoundingBox": _identity,
-            None: _identity,
-        }
-        self.formatter = FORMATTERS[format]
-
-    def cast_to_type(self, value):
-        from climetlab.utils.bbox import to_bounding_box
-        return to_bounding_box(value)
-
-    def apply_format(self, value):
-        return self.formatter(value)
 
 
 class availability(Decorator):

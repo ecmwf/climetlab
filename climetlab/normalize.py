@@ -14,8 +14,6 @@ from climetlab.utils.conventions import normalise_string
 LOG = logging.getLogger(__name__)
 
 
-
-
 def _identity(x):
     return x
 
