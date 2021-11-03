@@ -41,11 +41,13 @@ class InputManager:
         if self._pipeline is None:
             self._pipeline = []
             self.build_pipeline()
+            for t in self._pipeline:
+                if not isinstance(t, Transformer):
+                    raise f"Unknown transformer: {t}"
         return self._pipeline
 
     def build_pipeline(self):
-        print("InputManager :-------------------------")
-        print(self)
+        print("Building...")
 
         for a in self.arguments:
             a.add_alias_transformers(self._pipeline)
@@ -118,12 +120,10 @@ class InputManager:
             else:
                 print(f" - apply {t}.")
 
-            for t in self.pipeline:
-                if not isinstance(t, Transformer):
-                    raise f"Unknown transformer: {t}"
-            kwargs = t.__call__(kwargs)
+            kwargs = t(kwargs)
             print(f"       kwargs: {kwargs}")
         print(f"Applied pipeline: {kwargs}")
+        print()
 
         return kwargs
 

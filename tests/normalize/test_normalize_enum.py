@@ -89,21 +89,33 @@ def test_enum_multiple():
     assert g(ALL) == ["a", "b", "c"]
 
 
-def test_enum_int():
+def test_enum_int_1():
     g = normalize("name", [1, 0.5, 3], type=int, multiple=True)(name_default_is_1)
     assert g(1) == [1]
     assert g(1.0) == [1]
-    assert g("1.0") == [1]
+    # assert g("1.0") == [1]
     assert g("1") == [1]
     assert g() == [1]
 
-    g = normalize("name", (1, 0.5, 3))(name_no_default)
-    assert g(1) == 1
-    assert g("1") == 1
 
-    g = normalize("name", [1, 0.5, 3], multiple=True)(name_no_default)
+def test_enum_int_2():
+    g = normalize("name", (1, 2, 3))(name_no_default)
     assert g("1") == 1
-    assert g("1.0") == [1]
+    assert g(1.0) == 1
+    # assert g("1.0") == 1
+
+
+def test_enum_int_3():
+    g = normalize("name", [1, 2, 3], multiple=True)(name_no_default)
+    assert g("1") == [1]
+    assert g(1.0) == [1]
+    # assert g("1.0") == [1]
+
+
+def test_enum_float():
+    g = normalize("name", (1.0, 0.5, 3.0))(name_no_default)
+    assert g(1) == 1.0
+    assert g("1") == 1.0
 
 
 def test_enum_list_case_sensitive():

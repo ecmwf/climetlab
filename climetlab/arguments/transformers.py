@@ -129,11 +129,6 @@ class TypeTransformer(ArgumentTransformer):
         from climetlab.utils.conventions import normalise_string
         from climetlab.utils.dates import to_date_list
         def to_int(x):
-            print(x)
-            print(x)
-            print(x)
-            print(x)
-            print(x)
             return int(x)
         TYPES = {
             int: to_int,
@@ -149,11 +144,10 @@ class TypeTransformer(ArgumentTransformer):
         self.transform = TYPES[type]
 
     def apply_to_value(self, value):
-        print('v',value, self.transform)
         return self.transform(value)
 
     def __repr__(self) -> str:
-        txt = "Type("
+        txt = "TypeTransformer("
         txt += f"{self.name}"
         if self.type is not None:
             txt += f",{self.type}"

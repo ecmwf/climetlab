@@ -115,6 +115,7 @@ class normalize(Decorator):
         self.format = format
 
         self.parse_values(values)
+        print(f'Parsed values {values}. type = {type}')
 
         if self.format is None:
             if self.type is str:
