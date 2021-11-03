@@ -148,9 +148,6 @@ class DecodeMultipart:
 
         from requests.structures import CaseInsensitiveDict
 
-
-
-
         header_parser = HeaderParser()
         marker = f"--{self.boundary}\r\n".encode(self.encoding)
         end_header = b"\r\n\r\n"

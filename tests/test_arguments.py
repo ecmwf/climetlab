@@ -12,6 +12,7 @@
 import pytest
 
 from climetlab.arguments import Argument, InputManager
+
 # from climetlab.decorators import _alias, _multiple
 
 
