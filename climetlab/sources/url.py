@@ -148,14 +148,25 @@ class DecodeMultipart:
 
         from requests.structures import CaseInsensitiveDict
 
-        iter_content = self.request.iter_content(chunk_size)
+
+
 
         header_parser = HeaderParser()
         marker = f"--{self.boundary}\r\n".encode(self.encoding)
         end_header = b"\r\n\r\n"
         end_data = b"\r\n"
-        chunk = next(iter_content)
+
         end_of_input = f"--{self.boundary}--\r\n".encode(self.encoding)
+
+        if chunk_size < len(end_data):
+            chunk_size = len(end_data)
+
+        iter_content = self.request.iter_content(chunk_size)
+        chunk = next(iter_content)
+
+        # Some servers start with \r\n
+        if chunk[:2] == end_data:
+            chunk = chunk[2:]
 
         LOG.debug("MARKER %s", marker)
         part = 0
