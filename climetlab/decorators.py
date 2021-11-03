@@ -91,9 +91,6 @@ class Decorator:
     def get_multiple(self):
         return None
 
-    def get_type(self):
-        return None
-
     def get_cml_type(self, name):
         return None
 
@@ -178,9 +175,6 @@ class normalize(Decorator):
     def get_multiple(self):
         return self.multiple
 
-    def get_type(self):
-        return self.type
-
     def get_aliases(self):
         return self.alias
 
@@ -197,7 +191,7 @@ class normalize(Decorator):
         # explicitely given in values='type(...)'
         type = self._cml_type_from_values
         if type:
-            return type(self._cml_type_args)
+            return type(*self._cml_type_args)
 
         # explicitely given in type=
         type = self.type
@@ -256,6 +250,7 @@ class DateType(Type):
 
 class VariableType(Type):
     def __init__(self, convention) -> None:
+        assert isinstance(convention, str), convention
         self.convention = convention
 
     def apply_format(self, value):
@@ -307,11 +302,6 @@ class availability(Decorator):
 
     def get_values(self, name):
         return self.availability.unique_values()[name]
-
-    def get_type(self, name):
-        if name is None:
-            return None
-        return None
 
     def get_cml_type(self, name):
         return None

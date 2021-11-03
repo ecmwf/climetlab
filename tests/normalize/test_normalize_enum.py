@@ -73,9 +73,9 @@ def test_enum_multiple():
     g = normalize("name", ["a", "b", "c"], multiple=False)(name_default_is_str_a)
     with pytest.raises(ValueError):
         g(["a", "b"])
-    with pytest.raises(ValueError):
-        g(ALL)
 
+
+def test_enum_multiple_2():
     g = normalize("name", ["a", "b", "c"], multiple=True)(name_default_is_str_a)
     assert (
         g(
@@ -88,7 +88,15 @@ def test_enum_multiple():
     )
 
 
-# TODO:    assert g(ALL) == ["a", "b", "c"]
+def test_enum_multiple_ALL_1():
+    g = normalize("name", ["a", "b", "c"], multiple=False)(name_default_is_str_a)
+    with pytest.raises(ValueError):
+        g(ALL)
+
+
+def test_enum_multiple_ALL_2():
+    g = normalize("name", ["a", "b", "c"], multiple=True)(name_default_is_str_a)
+    assert g(ALL) == ["a", "b", "c"]
 
 
 def test_enum_int_1():
@@ -178,6 +186,7 @@ def test_enum_alias():
 
 if __name__ == "__main__":
 
-    from climetlab.testing import main
+    test_enum_multiple()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)

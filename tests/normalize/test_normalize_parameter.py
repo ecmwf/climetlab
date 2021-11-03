@@ -25,15 +25,25 @@ def test_param_convention_mars():
     def values_mars(parameter):
         return parameter
 
-    assert values_mars(parameter="tp") == "tp"
-    assert values_mars(parameter="2t") == "2t"
-    assert values_mars(parameter="t2m") == "2t"
+    assert values_mars(parameter="tp") == ["tp"]
+    assert values_mars(parameter="2t") == ["2t"]
+    assert values_mars(parameter="t2m") == ["2t"]
     assert values_mars(parameter=["t2m", "tp"]) == ["2t", "tp"]
-    assert values_mars(parameter="whatever") == "whatever"
+    assert values_mars(parameter="whatever") == ["whatever"]
+
+
+def test_param_convention_cf_list():
+    @normalize("parameter", "variable-list(cf)")
+    def values_cf(parameter):
+        return parameter
+
+    assert values_cf(parameter="tp") == ["tp"]
+    assert values_cf(parameter="2t") == ["t2m"]
+    assert values_cf(parameter="t2m") == ["t2m"]
 
 
 def test_param_convention_cf():
-    @normalize("parameter", "variable-list(cf)")
+    @normalize("parameter", "variable(cf)")
     def values_cf(parameter):
         return parameter
 

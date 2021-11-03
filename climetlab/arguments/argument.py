@@ -43,11 +43,25 @@ class Argument:
         if self._cmltype:
             return self._cmltype
 
+        type1 = None
+        type2 = None
+
         if self.norm_deco:
-            self._cmltype = self.norm_deco.get_cml_type()
+            type1 = self.norm_deco.get_cml_type()
 
         if self.av_deco:
-            self._cmltype = self.av_deco.get_cml_type(self.name)
+            type2 = self.av_deco.get_cml_type(self.name)
+
+        if type1 and type2:
+            assert type1 == type2
+        else:
+            if type1:
+                type = type1
+            else:
+                type = type2
+
+        if type:
+            self._cmltype = type
 
         return self._cmltype
 
@@ -89,25 +103,8 @@ class Argument:
         return None
 
     def add_type_transformers(self, pipeline):
-        type = None
-        if self.norm_deco and not self.av_deco:
-            type = self.norm_deco.get_cml_type()
-
-        if not self.norm_deco and self.av_deco:
-            type = self.av_deco.get_cml_type(self.name)
-
-        if self.norm_deco and self.av_deco:
-            type1 = self.av_deco.get_cml_type()
-            type2 = self.av_deco.get_cml_type(self.name)
-            if type1 and type2:
-                assert type1 == type2, (type1, type2)
-            if type1:
-                type = type1
-            if type2:
-                type = type2
-
-        if type:
-            pipeline.append(TypeTransformer(self.name, type))
+        if self.cmltype:
+            pipeline.append(TypeTransformer(self.name, self.cmltype))
 
     def add_canonicalize_transformers(self, pipeline):
         if self.norm_deco and not self.av_deco:
@@ -133,17 +130,11 @@ class Argument:
                 return
 
     def add_format_transformers(self, pipeline):
-        type = None
-        for decorator in self.decorators:
-            t = decorator.get_cml_type()
-            if t is not None:
-                type = t
-
-        if type is not None:
+        if self.cmltype is not None:
             pipeline.append(
                 FormatTransformer(
                     self.name,
-                    type=type,
+                    type=self.cmltype,
                 )
             )
 
