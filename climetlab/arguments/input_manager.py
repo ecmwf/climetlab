@@ -21,7 +21,7 @@ class InputManager:
         decorators,
     ):
         self.decorators = decorators
-        self.pipeline = []
+        self._pipeline = []
 
         self.availabilities = []
 
@@ -34,35 +34,41 @@ class InputManager:
             Argument(name, decorators) for name, decorators in self.parameters.items()
         ]
 
-        self.build_pipeline()
         LOG.debug("Built manager: %s", self)
+
+    @property
+    def pipeline(self):
+        if self._pipeline is None:
+            self._pipeline = []
+            self.build_pipeline()
+        return self._pipeline
 
     def build_pipeline(self):
         print("InputManager :-------------------------")
         print(self)
 
         for a in self.arguments:
-            a.add_alias_transformers(self)
+            a.add_alias_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_normalize_transformers(self.pipeline)
+            a.add_normalize_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_type_transformers(self.pipeline)
+            a.add_type_transformers(self._pipeline)
 
         for availability in self.availabilities:
             transform = AvailabilityTransformer(availability)
-            self.pipeline.append(transform)
+            self._pipeline.append(transform)
 
         for a in self.arguments:
-            a.add_format_transformers(self.pipeline)
+            a.add_format_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_multiple_transformers(self.pipeline)
+            a.add_multiple_transformers(self._pipeline)
 
         print("----------------------------")
         print("Pipeline built")
-        for t in self.pipeline:
+        for t in self._pipeline:
             print(" ", t)
         print("----------------------------")
 
@@ -77,10 +83,13 @@ class InputManager:
         for a in self.arguments:
             txt += f"  {a}\n"
         txt += "]"
-        txt += "Pipeline:[\n"
-        for t in self.pipeline:
-            txt += f"  {t}\n"
-        txt += "]"
+        if self._pipeline is None:
+            txt += "Pipeline[not-ready]"
+        else:
+            txt += "Pipeline:[\n"
+            for t in self._pipeline:
+                txt += f"  {t}\n"
+            txt += "]"
         return txt
 
     def apply_to_arg_kwargs(self, args, kwargs, func):

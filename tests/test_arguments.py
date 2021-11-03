@@ -12,7 +12,7 @@
 import pytest
 
 from climetlab.arguments import Argument, InputManager
-from climetlab.decorators import _alias, _multiple
+# from climetlab.decorators import _alias, _multiple
 
 
 @pytest.fixture
@@ -23,21 +23,21 @@ def f():
     return func
 
 
-def test_deco_1(f):
-    g = _multiple("a", multiple=True)(f)
-    assert g(1, 2, 3) == ([1], 2, 3)
-    assert f(1, 2, 3) == (1, 2, 3)
+# def test_deco_1(f):
+#     g = _multiple("a", multiple=True)(f)
+#     assert g(1, 2, 3) == ([1], 2, 3)
+#     assert f(1, 2, 3) == (1, 2, 3)
 
 
-def test_deco_reuse_function(f):
-    g = _multiple("a", multiple=True)(f)
-    g = _multiple("a", multiple=True)(f)
-    assert g(1, 2, 3) == ([1], 2, 3)
+# def test_deco_reuse_function(f):
+#     g = _multiple("a", multiple=True)(f)
+#     g = _multiple("a", multiple=True)(f)
+#     assert g(1, 2, 3) == ([1], 2, 3)
 
 
-def test_deco_2(f):
-    g = _alias("b", alias=dict(z=[1, 2, 3]))(f)
-    assert g(1, "z", 3) == (1, [1, 2, 3], 3)
+# def test_deco_2(f):
+#     g = _alias("b", alias=dict(z=[1, 2, 3]))(f)
+#     assert g(1, "z", 3) == (1, [1, 2, 3], 3)
 
 
 def test_argument_1():
@@ -69,11 +69,11 @@ def test_bad_decorator():
     assert d == dict(b="a")
 
 
-def test_deco_3(f):
-    g = _multiple("a", multiple=True)(f)
-    g = _multiple("a", multiple=True)(g)
-    assert g(1, 2, 3) == ([1], 2, 3)
-    assert f(1, 2, 3) == (1, 2, 3)
+# def test_deco_3(f):
+#     g = _multiple("a", multiple=True)(f)
+#     g = _multiple("a", multiple=True)(g)
+#     assert g(1, 2, 3) == ([1], 2, 3)
+#     assert f(1, 2, 3) == (1, 2, 3)
 
 
 if __name__ == "__main__":
