@@ -149,6 +149,11 @@ class normalize(Decorator):
 
         if isinstance(values, (tuple, list)):
             self.values = list(values)
+            from climetlab.normalize import ALL
+            if self.alias is None:
+                self.alias = {}
+            if ALL not in self.alias:
+                self.alias[ALL] = values
             if self.type is None:
                 self.type = guess_type_list(values)
             if self.multiple is None:
@@ -193,6 +198,8 @@ class normalize(Decorator):
     def get_type(self):
         return self.type
 
+    def get_aliases(self):
+        return self.alias
 
 class availability(Decorator):
     is_availability = True

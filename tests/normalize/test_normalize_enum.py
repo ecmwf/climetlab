@@ -53,7 +53,7 @@ def test_enum_2_normalizers():
     g = a_b_no_default
     g = normalize("a", [1, 2])(g)
     g = normalize("b", [3, 4])(g)
-    assert g(a=1, b=4) == (1, 4)
+    assert g(a=1, b=4) == ([1], [4])
     with pytest.raises(TypeError):
         g(a=1)
 

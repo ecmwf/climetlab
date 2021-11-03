@@ -144,6 +144,9 @@ class TypeTransformer(ArgumentTransformer):
         self.transform = TYPES[type]
 
     def apply_to_value(self, value):
+        from climetlab import ALL
+        if value == ALL:
+            return value
         return self.transform(value)
 
     def __repr__(self) -> str:
