@@ -10,13 +10,20 @@ import logging
 
 from climetlab.arguments.transformers import (
     AliasTransformer,
+    CanonicalTransformer,
     FormatTransformer,
     MultipleTransformer,
-    NormalizeTransformer,
     TypeTransformer,
 )
 
 LOG = logging.getLogger(__name__)
+
+
+def check_consistency(values1, values2):
+    if isinstance(values1, (list, tuple)) and isinstance(values2, (list, tuple)):
+        for x in values1:
+            if x not in values2:
+                raise ValueError(f"'{x}' is not in {values2}")
 
 
 class Argument:
@@ -32,14 +39,24 @@ class Argument:
 
     def add_alias_transformers(self, pipeline):
         aliases = dict()
+        _all = None
         for decorator in self.decorators:
             a = decorator.get_aliases()
-            # assert a not incompatible with aliases
-            if a is not None:
+            if a is None:
+                continue
+            if not aliases:
+                aliases = a
+                multiple = decorator.get_multiple()
+                if multiple:
+                    _all = decorator.get_values(self.name)
+                continue
+            if isinstance(aliases, dict) and isinstance(a, dict):
                 aliases.update(a)
+                continue
+            raise ValueError(f"Cannot merge aliases {a} and {aliases}.")
 
         if aliases:
-            pipeline.append(AliasTransformer(self.name, aliases))
+            pipeline.append(AliasTransformer(self.name, aliases, _all))
 
     @property
     def norm_deco(self):
@@ -79,49 +96,27 @@ class Argument:
             pipeline.append(TypeTransformer(self.name, type))
 
     def add_canonicalize_transformers(self, pipeline):
+        if self.norm_deco and not self.av_deco:
+            values = self.norm_deco.get_values(self.name)
+            pipeline.append(CanonicalTransformer(self.name, values))
 
-        norm = [d for d in self.decorators if not d.is_availability]
-        avail = [d for d in self.decorators if d.is_availability]
+        if not self.norm_deco and self.av_deco:
+            values = self.norm_av.get_values()
+            pipeline.append(CanonicalTransformer(self.name, values))
 
-        assert len(norm) <= 1
-        assert len(avail) <= 1
-
-        if avail and not norm:
-            pipeline.append(
-                NormalizeTransformer(
-                    self.name,
-                    avail[0].get_values(self.name),
-                )
-            )
-            return
-
-        if norm and not avail:
-            pipeline.append(
-                NormalizeTransformer(
-                    self.name,
-                    norm[0].norm,
-                )
-            )
-            return
-
-        if norm and avail:
-            nv = norm[0].get_values(self.name)
-            av = avail[0].get_values(self.name)
-            if av and nv:
-                for x in nv:
-                    if x not in av:
-                        raise ValueError(f"'{x}' is not in {av}")
-            vals = nv if nv is not None else av
-            if nv is None:
-                pipeline.append(
-                    NormalizeTransformer(
-                        self.name,
-                        vals,
-                    )
-                )
-            return
-
-        assert False
+        if self.norm_deco and self.av_deco:
+            values1 = self.norm_deco.get_values()
+            values2 = self.norm_av.get_values()
+            if values1 and values2:
+                check_consistency(values1, values2)
+                pipeline.append(CanonicalTransformer(self.name, values1))
+                return
+            if values1:
+                pipeline.append(CanonicalTransformer(self.name, values1))
+                return
+            if values2:
+                pipeline.append(CanonicalTransformer(self.name, values2))
+                return
 
     def add_format_transformers(self, pipeline):
         format = None

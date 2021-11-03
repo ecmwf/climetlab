@@ -45,7 +45,9 @@ class VariableNormaliser(Normaliser):
 
 
 class BoundingBoxNormaliser(Normaliser):
-    def visit(self, decorator, format=None) -> None:
+    def __init__(self, decorator, format=None) -> None:
+        self.format = format
+
         FORMATS = {
             list: lambda x: x.as_list(),
             tuple: lambda x: x.as_tuple(),
@@ -59,11 +61,11 @@ class BoundingBoxNormaliser(Normaliser):
         }
         format_one = FORMATS[format]
 
-        def format(bbox):
+        def formatter(bbox):
             return [format_one(bbox) for b in bbox]
 
-        decorator.format = format
-        decorator.norm = to_bounding_box
+        decorator.formatter = format
+        decorator.normalizer = to_bounding_box
 
 
 class DateNormaliser(Normaliser):

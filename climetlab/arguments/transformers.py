@@ -13,6 +13,8 @@ LOG = logging.getLogger(__name__)
 
 def _identity(x):
     return x
+
+
 class Transformer:
     name = None
 
@@ -61,12 +63,19 @@ class MultipleTransformer(ArgumentTransformer):
 
 
 class AliasTransformer(ArgumentTransformer):
-    def __init__(self, name, alias) -> None:
+    def __init__(self, name, alias, _all=None) -> None:
         super().__init__(name)
         assert isinstance(alias, dict) or callable(alias) or alias is None
         self.alias = alias
+        self._all = _all
 
     def _apply_to_value_once(self, value):
+        from climetlab import ALL
+
+        if value == ALL:
+            assert self._all, f'Cannot find values for "ALL"'
+            return self._all
+
         if isinstance(value, (tuple, list)):
             return [self.apply_to_value(v) for v in value]
 
@@ -128,8 +137,10 @@ class TypeTransformer(ArgumentTransformer):
         from climetlab.utils.bbox import to_bounding_box
         from climetlab.utils.conventions import normalise_string
         from climetlab.utils.dates import to_date_list
+
         def to_int(x):
             return int(x)
+
         TYPES = {
             int: to_int,
             str: str,
@@ -144,9 +155,6 @@ class TypeTransformer(ArgumentTransformer):
         self.transform = TYPES[type]
 
     def apply_to_value(self, value):
-        from climetlab import ALL
-        if value == ALL:
-            return value
         return self.transform(value)
 
     def __repr__(self) -> str:
@@ -156,6 +164,38 @@ class TypeTransformer(ArgumentTransformer):
             txt += f",{self.type}"
         txt += ")"
         return txt
+
+
+class CanonicalTransformer(ArgumentTransformer):
+    def __init__(self, name, norm, values=None, type=None) -> None:
+        super().__init__(name)
+        assert callable(norm), norm
+        self.norm = norm
+        self.type = type
+
+        from climetlab.normalize import (
+            BoundingBoxNormaliser,
+            DateNormaliser,
+            EnumNormaliser,
+            VariableNormaliser,
+        )
+
+        NORMALISERS = {
+            "enum": EnumNormaliser,
+            "enum-list": EnumNormaliser,
+            "date": DateNormaliser,
+            "date-list": DateNormaliser,
+            "variable": VariableNormaliser,
+            "variable-list": VariableNormaliser,
+            "bounding-box": BoundingBoxNormaliser,
+            "bbox": BoundingBoxNormaliser,
+        }
+
+    def apply_to_value(self, value):
+        return self.norm(value)
+
+    def __repr__(self) -> str:
+        return f"Normalize({self.name}, {self.norm}, type={self.type})"
 
 
 class NormalizeTransformer(ArgumentTransformer):

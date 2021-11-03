@@ -115,7 +115,7 @@ class normalize(Decorator):
         self.format = format
 
         self.parse_values(values)
-        print(f'Parsed values {values}. type = {type}')
+        print(f"Parsed values {values}. type = {type}")
 
         if self.format is None:
             if self.type is str:
@@ -143,17 +143,8 @@ class normalize(Decorator):
             "bbox": BoundingBoxNormaliser,
         }
 
-        if callable(values):
-            self.norm = values
-            return
-
         if isinstance(values, (tuple, list)):
             self.values = list(values)
-            from climetlab.normalize import ALL
-            if self.alias is None:
-                self.alias = {}
-            if ALL not in self.alias:
-                self.alias[ALL] = values
             if self.type is None:
                 self.type = guess_type_list(values)
             if self.multiple is None:
@@ -161,7 +152,6 @@ class normalize(Decorator):
                     self.multiple = False
                 if isinstance(values, list):
                     self.multiple = True
-            self.norm = EnumNormaliser(values)
             return
 
         assert isinstance(values, str), values
@@ -178,9 +168,9 @@ class normalize(Decorator):
             self.multiple = True
             name = name[:-5]  # remove '-list' suffix
 
-        norm_format_builder = NORMALISERS[name]()
-        norm_format_builder.visit(self, *args)
-        return
+        norm = NORMALISERS[name](*args)
+        self.formatter = norm.formatter
+        self.canonicalizer = norm.canonicalizer
 
     def visit(self, manager):
         manager.parameters[self.name].append(self)
@@ -200,6 +190,7 @@ class normalize(Decorator):
 
     def get_aliases(self):
         return self.alias
+
 
 class availability(Decorator):
     is_availability = True

@@ -55,6 +55,9 @@ class InputManager:
         for a in self.arguments:
             a.add_type_transformers(self._pipeline)
 
+        for a in self.arguments:
+            a.add_canonicalize_transformers(self._pipeline)
+
         for availability in self.availabilities:
             transform = AvailabilityTransformer(availability)
             self._pipeline.append(transform)
