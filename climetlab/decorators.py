@@ -74,7 +74,7 @@ class Decorator:
 
         @wraps(unwrapped)
         def newfunc(*args, **kwargs):
-            manager.apply_to_arg_kwargs(args, kwargs, func=unwrapped)
+            args, kwargs = manager.apply_to_arg_kwargs(args, kwargs, func=unwrapped)
             return unwrapped(*args, **kwargs)
 
         newfunc._climetlab_decorators = decorators
@@ -211,3 +211,9 @@ class availability(Decorator):
 
     def get_values(self, name):
         return self.availability.unique_values()[name]
+
+    def get_type(self, name):
+        if name is None:
+            return None
+        type = guess_type_list(self.get_values(name))
+        return type

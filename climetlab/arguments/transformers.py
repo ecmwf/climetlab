@@ -11,6 +11,8 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
+def _identity(x):
+    return x
 class Transformer:
     name = None
 
@@ -26,13 +28,8 @@ class ArgumentTransformer(Transformer):
         self.name = name
 
     def __call__(self, data):
-        if isinstance(data, dict):
-            if self.name not in data:
-                return data
-            data[self.name] = self.__call__(data[self.name])
-            return data
-
-        return self.apply_to_value_or_list(data)
+        data[self.name] = self.__call__(data[self.name])
+        return data
 
     def apply_to_value_or_list(self, data):
         if isinstance(data, (tuple, list)):
@@ -128,9 +125,32 @@ class TypeTransformer(ArgumentTransformer):
     def __init__(self, name, type=None) -> None:
         super().__init__(name)
         self.type = type
+        from climetlab.utils.bbox import to_bounding_box
+        from climetlab.utils.conventions import normalise_string
+        from climetlab.utils.dates import to_date_list
+        def to_int(x):
+            print(x)
+            print(x)
+            print(x)
+            print(x)
+            print(x)
+            return int(x)
+        TYPES = {
+            int: to_int,
+            str: str,
+            float: float,
+            None: _identity,
+            "int": to_int,
+            "str": str,
+            "float": float,
+            "date": to_date_list,
+            "bbox": to_bounding_box,
+        }
+        self.transform = TYPES[type]
 
     def apply_to_value(self, value):
-        return self.type(value)
+        print('v',value, self.transform)
+        return self.transform(value)
 
     def __repr__(self) -> str:
         txt = "Type("

@@ -37,7 +37,7 @@ def name_default_is_str_1(name="1"):
     return name
 
 
-def name_default_is_str_a(name="1"):
+def name_default_is_str_a(name="a"):
     return name
 
 
@@ -54,7 +54,7 @@ def test_enum_2_normalizers():
     g = normalize("a", [1, 2])(g)
     g = normalize("b", [3, 4])(g)
     assert g(a=1, b=4) == (1, 4)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         g(a=1)
 
 

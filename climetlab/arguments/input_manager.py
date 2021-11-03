@@ -51,9 +51,6 @@ class InputManager:
             a.add_alias_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_normalize_transformers(self._pipeline)
-
-        for a in self.arguments:
             a.add_type_transformers(self._pipeline)
 
         for availability in self.availabilities:
@@ -111,9 +108,10 @@ class InputManager:
         args, kwargs = args_kwargs.args, args_kwargs.kwargs
 
         LOG.debug("CALLING func %s %s", args, kwargs)
+        return args, kwargs
 
     def apply_to_kwargs(self, kwargs):
-        print("Apply pipeline to kwargs: {kwargs}")
+        print(f"Apply pipeline to kwargs: {kwargs}")
         for t in self.pipeline:
             if t.name:
                 print(f" - {t.name}: apply {t}.")
@@ -125,7 +123,7 @@ class InputManager:
                     raise f"Unknown transformer: {t}"
             kwargs = t.__call__(kwargs)
             print(f"       kwargs: {kwargs}")
-        print("Applied pipeline: {kwargs}")
+        print(f"Applied pipeline: {kwargs}")
 
         return kwargs
 

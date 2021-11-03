@@ -41,7 +41,44 @@ class Argument:
         if aliases:
             pipeline.append(AliasTransformer(self.name, aliases))
 
-    def add_normalize_transformers(self, pipeline):
+    @property
+    def norm_deco(self):
+        decos = [d for d in self.decorators if not d.is_availability]
+        if decos:
+            assert len(decos) == 1, decos
+            return decos[0]
+        return None
+
+    @property
+    def av_deco(self):
+        decos = [d for d in self.decorators if d.is_availability]
+        if decos:
+            assert len(decos) == 1, decos
+            return decos[0]
+        return None
+
+    def add_type_transformers(self, pipeline):
+        type = None
+        if self.norm_deco and not self.av_deco:
+            type = self.norm_deco.get_type()
+
+        if not self.norm_deco and self.av_deco:
+            type = self.av_deco.get_type(self.name)
+
+        if self.norm_deco and self.av_deco:
+            type1 = self.av_deco.get_type()
+            type2 = self.av_deco.get_type(self.name)
+            if type1 and type2:
+                assert type1 == type2, (type1, type2)
+            if type1:
+                type = type1
+            if type2:
+                type = type2
+
+        if type:
+            pipeline.append(TypeTransformer(self.name, type))
+
+    def add_canonicalize_transformers(self, pipeline):
 
         norm = [d for d in self.decorators if not d.is_availability]
         avail = [d for d in self.decorators if d.is_availability]
@@ -85,17 +122,6 @@ class Argument:
             return
 
         assert False
-
-    def add_type_transformers(self, pipeline):
-        type = None
-        for decorator in self.decorators:
-            a = decorator.get_type()
-            # assert a not incompatible with types
-            if a is not None:
-                type = a
-
-        if type is not None:
-            pipeline.append(TypeTransformer(self.name, type))
 
     def add_format_transformers(self, pipeline):
         format = None
