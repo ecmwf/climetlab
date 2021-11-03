@@ -237,14 +237,17 @@ class FloatType(Type):
 
 
 class DateType(Type):
-    def __init__(self, format) -> None:
+    def __init__(self, format=None) -> None:
         self.format = format
 
     def cast_to_type(self, value):
         from climetlab.utils.dates import to_date_list
-        return to_date_list(value)
+        return to_date_list(value)[0] # TODO: to a todate() function
 
     def apply_format(self, value):
+        if self.format is None:
+            return value
+        assert not isinstance(value, (list, tuple)), value
         return value.strftime(self.format)
 
 

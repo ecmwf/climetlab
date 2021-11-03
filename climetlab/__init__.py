@@ -13,7 +13,7 @@ from .core.settings import SETTINGS as settings
 from .datasets import Dataset
 from .datasets import get_dataset as dataset  # so the user can do: cml.dataset(...)
 from .datasets import load_dataset, register_dataset
-from .normalize import ALL
+from .arguments.transformers import ALL
 from .plotting import interactive_map, new_plot
 from .plotting import options as plotting_options
 from .plotting import plot_graph, plot_map

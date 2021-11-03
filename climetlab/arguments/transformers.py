@@ -10,6 +10,12 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+class _all:
+    def __repr__(self):
+        return "climetlab.ALL"
+
+
+ALL = _all()
 
 def _identity(x):
     return x
@@ -70,8 +76,6 @@ class AliasTransformer(ArgumentTransformer):
         self._all = _all
 
     def _apply_to_value_once(self, value):
-        from climetlab import ALL
-
         if value == ALL:
             assert self._all, f'Cannot find values for "ALL"'
             return self._all
@@ -176,7 +180,7 @@ class CanonicalTransformer(ArgumentTransformer):
         return value == v
 
     def apply_to_value(self, value):
-        print(f"{self.__class__} is canonicalizing {value}")
+        print(f"       canonicalizing {value}")
 
         if not self.values:
             return value
@@ -193,7 +197,7 @@ class CanonicalTransformer(ArgumentTransformer):
         )
 
     def __repr__(self) -> str:
-        return f"Normalize({self.name}, {self.canonicalizer}, type={self.type})"
+        return f"Canonicalize({self.name}, {self.canonicalizer}, type={self.type})"
 
 
 class AvailabilityTransformer(Transformer):

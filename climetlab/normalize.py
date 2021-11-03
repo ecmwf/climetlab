@@ -9,19 +9,11 @@
 
 import logging
 
-from climetlab.utils.bbox import BoundingBox, to_bounding_box
 from climetlab.utils.conventions import normalise_string
-from climetlab.utils.dates import to_date_list
 
 LOG = logging.getLogger(__name__)
 
 
-class _all:
-    def __repr__(self):
-        return "climetlab.normalize.ALL"
-
-
-ALL = _all()
 
 
 def _identity(x):

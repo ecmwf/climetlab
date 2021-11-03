@@ -9,16 +9,10 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
-import sys
-from typing import MutableMapping
-
-import numpy as np
 import pytest
 
-from climetlab import ALL, load_source
+from climetlab import ALL
 from climetlab.decorators import normalize
-from climetlab.testing import climetlab_file
 
 
 def name_no_default(name):

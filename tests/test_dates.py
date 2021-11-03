@@ -81,6 +81,22 @@ def test_to_datetimes_list():
 
     assert len(to_datetime_list((-10, "to", -1))) == 10
 
+    assert to_datetime_list(datetime.datetime(2000, 1, 7)) == [
+        datetime.datetime(2000, 1, 7)
+    ]
+    assert to_datetime_list([datetime.datetime(2000, 1, 7)]) == [
+        datetime.datetime(2000, 1, 7)
+    ]
+    assert to_datetime_list(
+        [
+            datetime.datetime(2000, 1, 4),
+            datetime.datetime(2000, 1, 7),
+        ]
+    ) == [
+        datetime.datetime(2000, 1, 4),
+        datetime.datetime(2000, 1, 7),
+    ]
+
 
 def test_to_datetimes_list_grib():
     source = load_source("file", climetlab_file("docs/examples/test.grib"))

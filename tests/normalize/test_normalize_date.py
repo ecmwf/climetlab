@@ -20,14 +20,14 @@ from climetlab.decorators import normalize
 from climetlab.testing import climetlab_file
 
 
-def f(date):
-    return date
+def f(d):
+    return d
 
 
 def test_normalize_dates_from_source():
 
-    dates_3 = normalize("date", "date")(f)
-    dates_list_3 = normalize("date", "date", multiple=True)(f)
+    dates_3 = normalize("d", "date")(f)
+    dates_list_3 = normalize("d", "date", multiple=True)(f)
 
     source = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert dates_3(source[0]) == datetime.datetime(2020, 5, 13, 12, 0)
@@ -42,18 +42,19 @@ def test_normalize_dates_from_source():
 
 
 def test_dates_formated():
-    date_formated = normalize("date-list", "date(%Y.%m.%d)")(f)
+    date_formated = normalize("d", "date-list(%Y.%m.%d)")(f)
 
+    assert date_formated(["20200513", "20200514"]) == ["2020.05.13", "2020.05.14"]
     assert date_formated("20200513") == ["2020.05.13"]
     assert date_formated([datetime.datetime(2020, 5, 13, 0, 0)]) == ["2020.05.13"]
     assert date_formated([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
 
 
 def test_dates_multiple():
-    date_1 = normalize("date-list", "date(%Y.%m.%d)")(f)
-    date_2 = normalize("date", "date(%Y.%m.%d)", multiple=True)(f)
-    date_3 = normalize("date", "date(%Y.%m.%d)", multiple=False)(f)
-    date_4 = normalize("date-list", "date(%Y.%m.%d)", multiple=False)(f)
+    date_1 = normalize("d", "date-list(%Y.%m.%d)")(f)
+    date_2 = normalize("d", "date(%Y.%m.%d)", multiple=True)(f)
+    date_3 = normalize("d", "date(%Y.%m.%d)", multiple=False)(f)
+    date_4 = normalize("d", "date-list(%Y.%m.%d)", multiple=False)(f)
 
     assert date_1("20200513") == ["2020.05.13"]
     assert date_2("20200513") == ["2020.05.13"]
@@ -63,7 +64,8 @@ def test_dates_multiple():
 
 
 if __name__ == "__main__":
+    test_normalize_dates_from_source()
 
-    from climetlab.testing import main
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)
