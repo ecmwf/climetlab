@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
+
 from climetlab.arguments.climetlab_types import Type
 
 LOG = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ class AliasTransformer(ArgumentTransformer):
 
     def _apply_to_value_once(self, value):
         if value == ALL:
-            assert self._all, f'Cannot find values for "ALL"'
+            assert self._all, "Cannot find values for 'ALL'"
             return self._all
 
         if isinstance(value, (tuple, list)):

@@ -123,10 +123,14 @@ class Markdown(Prompt):
 
 
 class APIKeyPrompt:
-    def check(self):
+    def check(self, load=False):
         rcfile = os.path.expanduser(self.rcfile)
         if not os.path.exists(rcfile):
             self.ask_user_and_save()
+
+        if load:
+            with open(rcfile) as f:
+                return self.load(f)
 
     def ask_user(self):
         if ipython_active:
@@ -155,6 +159,9 @@ class APIKeyPrompt:
 
     def save(self, input, file):
         json.dump(input, file, indent=4)
+
+    def load(self, file):
+        return json.load(file)
 
     def validate(self, input):
         return input

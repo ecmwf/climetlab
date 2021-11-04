@@ -7,16 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import cdsapi
-import yaml
-
-from climetlab.core.thread import SoftThreadPool
-from climetlab.decorators import normalize
 from climetlab.sources.multi_url import MultiUrl
-from climetlab.utils import tqdm
 from climetlab.utils.patterns import Pattern
 
-from .file import FileSource
 from .prompt import APIKeyPrompt
 
 
@@ -66,14 +59,6 @@ class EODRetriever(MultiUrl):
         urls = self.requests(**options)
 
         super().__init__(urls)
-
-    def _retrieve(self, request):
-        def retrieve(target, args):
-            import url
-
-            print(args)
-
-        return self.cache_file(retrieve, request)
 
     # @normalize("date", "date-list(%Y-%m-%d)")
     # @normalize("area", "bounding-box(list)")

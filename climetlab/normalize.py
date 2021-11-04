@@ -10,7 +10,7 @@
 import logging
 
 from climetlab.utils.conventions import normalise_string
-
+from climetlab.utils.bbox import BoundingBox
 LOG = logging.getLogger(__name__)
 
 
