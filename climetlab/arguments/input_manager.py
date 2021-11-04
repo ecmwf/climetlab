@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 
 from .argument import Argument
-from .transformers import AvailabilityTransformer, FormatTransformer, Transformer
+from .transformers import AvailabilityTransformer, Transformer
 
 LOG = logging.getLogger(__name__)
 

@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from climetlab.decorators import availability
+from climetlab.decorators import availability, normalize
 from climetlab.utils.availability import Availability
 
 
@@ -236,9 +236,6 @@ def test_availability_4(availability_s2s_2):
     #     av.check(number=30, alldates='2020-01-03', origin="eccc")
 
 
-from climetlab.decorators import availability, normalize
-from climetlab.utils.availability import Availability
-
 C1 = [
     {"level": "500", "param": "a", "step": "24"},
     {"level": "500", "param": "a", "step": "36"},
@@ -405,7 +402,7 @@ def test_avail_norm_setup():
     assert func6(param="A") == ["a"]
 
 
-def test_availability_1():
+def test_availability_5():
     @availability(C1)
     def func7(param, step=24):
         return param

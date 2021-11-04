@@ -9,8 +9,11 @@
 
 import logging
 
-from climetlab.utils.conventions import normalise_string
 from climetlab.utils.bbox import BoundingBox
+from climetlab.utils.conventions import normalise_string
+
+from .arguments.transformers import ALL
+
 LOG = logging.getLogger(__name__)
 
 

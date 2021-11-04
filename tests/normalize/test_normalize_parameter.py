@@ -9,15 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
-import sys
-
-import numpy as np
-import pytest
-
-from climetlab import load_source
 from climetlab.decorators import normalize
-from climetlab.testing import climetlab_file
 
 
 def test_param_convention_mars():

@@ -172,7 +172,7 @@ class BoundingBoxType(Type):
 def _find_cml_type(input_type, multiple):
 
     if isinstance(input_type, Type):
-        if not multiple is None and hasattr(input_type, "multiple"):
+        if multiple is not None and hasattr(input_type, "multiple"):
             assert input_type.multiple == multiple, (input_type, multiple)
         return Type
 

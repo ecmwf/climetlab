@@ -10,9 +10,7 @@
 #
 
 import datetime
-import sys
 
-import numpy as np
 import pytest
 
 from climetlab import load_source

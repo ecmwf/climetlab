@@ -355,6 +355,13 @@ class HTTPDownloader(Downloader):
         if parts and len(parts) > 1:
             self.stream = DecodeMultipart(r, parts)
 
+        LOG.debug(
+            "url prepare size=%s mode=%s skip=%s encoded=%s",
+            size,
+            mode,
+            skip,
+            encoded,
+        )
         return size, mode, skip, encoded
 
     def transfer(self, f, pbar, watcher):
