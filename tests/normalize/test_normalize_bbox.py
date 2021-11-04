@@ -18,6 +18,7 @@ import pytest
 from climetlab import load_source
 from climetlab.decorators import normalize
 from climetlab.testing import climetlab_file
+from climetlab.utils.bbox import BoundingBox
 
 
 @normalize("area", "bounding-box")
