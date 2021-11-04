@@ -169,20 +169,21 @@ class BoundingBoxType(Type):
         return self.formatter(value)
 
 
-def _find_cml_type(string, multiple):
-    if isinstance(string, Type):
-        if not multiple is None and hasattr(string, "multiple"):
-            assert string.multiple == multiple, (string, multiple)
+def _find_cml_type(input_type, multiple):
+
+    if isinstance(input_type, Type):
+        if not multiple is None and hasattr(input_type, "multiple"):
+            assert input_type.multiple == multiple, (input_type, multiple)
         return Type
 
-    if not isinstance(string, str):
-        cml_type = {
+    if not isinstance(input_type, str):
+        str_type = {
             int: "int",
             float: "float",
             str: "str",
             datetime.datetime: "date",
-        }[string]
-        return _find_cml_type(cml_type, multiple=multiple)
+        }[input_type]
+        return _find_cml_type(str_type, multiple=multiple)
 
     NON_LIST_TYPES = {
         "int": IntType,
@@ -204,18 +205,19 @@ def _find_cml_type(string, multiple):
     }
 
     if multiple is None:
-        return {**LIST_TYPES, **NON_LIST_TYPES}[string]
+        return {**LIST_TYPES, **NON_LIST_TYPES}[input_type]
 
     if multiple is False:
-        if string in LIST_TYPES:
-            raise ValueError(f"Cannot set multiple={multiple} and type={string}.")
-        return NON_LIST_TYPES[string]
+        if input_type in LIST_TYPES:
+            raise ValueError(f"Cannot set multiple={multiple} and type={input_type}.")
+        return NON_LIST_TYPES[input_type]
 
     if multiple is True:
-        if string in LIST_TYPES:
-            return LIST_TYPES[string]
-        if string + "-list" in LIST_TYPES:
-            return LIST_TYPES[string + "-list"]
+        if input_type in LIST_TYPES:
+            return LIST_TYPES[input_type]
+        if input_type + "-list" in LIST_TYPES:
+            return LIST_TYPES[input_type + "-list"]
         raise ValueError(
-            f"Cannot set multiple={multiple} and type={string}. Type must be in {list(LIST_TYPES.keys())}"
+            f"Cannot set multiple={multiple} and type={input_type}. Type must be in {list(LIST_TYPES.keys())}"
         )
+    return None
