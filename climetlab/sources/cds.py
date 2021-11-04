@@ -25,7 +25,7 @@ class CDSAPIKeyPrompt(APIKeyPrompt):
     prompts = [
         dict(
             name="url",
-            default="c",
+            default="https://cds.climate.copernicus.eu/api/v2",
             title="API url",
             validate=r"http.?://.*",
         ),
