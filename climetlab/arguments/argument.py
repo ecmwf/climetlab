@@ -107,27 +107,37 @@ class Argument:
             pipeline.append(TypeTransformer(self.name, self.cmltype))
 
     def add_canonicalize_transformers(self, pipeline):
+        values = None
         if self.norm_deco and not self.av_deco:
             values = self.norm_deco.get_values(self.name)
-            pipeline.append(CanonicalTransformer(self.name, values))
 
         if not self.norm_deco and self.av_deco:
             values = self.norm_av.get_values()
-            pipeline.append(CanonicalTransformer(self.name, values))
 
         if self.norm_deco and self.av_deco:
             values1 = self.norm_deco.get_values()
             values2 = self.norm_av.get_values()
-            if values1 and values2:
-                check_consistency(values1, values2)
-                pipeline.append(CanonicalTransformer(self.name, values1))
-                return
-            if values1:
-                pipeline.append(CanonicalTransformer(self.name, values1))
-                return
-            if values2:
-                pipeline.append(CanonicalTransformer(self.name, values2))
-                return
+
+            def merge_values(value1, value2):
+                if values1 and values2:
+                    check_consistency(values1, values2)
+                    return values1
+                if values1:
+                    return value1
+                if values2:
+                    return value2
+                return None
+
+            values = merge_values(values1, values2)
+
+        if values or self.cmltype:
+            pipeline.append(
+                CanonicalTransformer(
+                    self.name,
+                    values,
+                    type=self.cmltype,
+                )
+            )
 
     def add_format_transformers(self, pipeline):
         if self.cmltype is not None:

@@ -40,13 +40,14 @@ class ArgumentTransformer(Transformer):
         self.name = name
 
     def __call__(self, data):
-        data[self.name] = self.apply_to_value_or_list(data[self.name])
+        data[self.name] = self.apply_to_list(data[self.name])
         return data
 
-    def apply_to_value_or_list(self, data):
-        if isinstance(data, (tuple, list)):
-            return [self.apply_to_value(v) for v in data]
-        return self.apply_to_value(data)
+    def apply_to_list(self, data):
+        # if self.type is None or self.type.multiple:
+        #     return [self.apply_to_value(v) for v in data]
+        # return self.apply_to_value(data)
+        return [self.apply_to_value(v) for v in data]
 
     def apply_to_value(self, value):
         raise NotImplementedError()
@@ -58,15 +59,12 @@ class MultipleTransformer(ArgumentTransformer):
         assert multiple in [True, False, None]
         self.multiple = multiple
 
-    def apply_to_value_or_list(self, value):
-        is_list = isinstance(value, (list, tuple))
-        if self.multiple and not is_list:
-            return [value]
-        if not self.multiple and is_list:
-            if len(value) > 1:
-                raise ValueError(f"Cannot provide non-multiple value for {value}.")
-            return value[0]
-        return value
+    def apply_to_list(self, value):
+        if self.multiple:
+            return value
+        assert isinstance(value, list), value
+        assert len(value) == 1, value
+        return value[0]
 
     def __repr__(self) -> str:
         return f"MutipleTransformer({self.name}, {self.multiple})"
@@ -146,8 +144,8 @@ class TypeTransformer(ArgumentTransformer):
         super().__init__(name)
         self.type = type
 
-    def apply_to_value(self, value):
-        return self.type.cast_to_type(value)
+    def apply_to_list(self, value):
+        return self.type.cast_to_type_list(value)
 
     def __repr__(self) -> str:
         txt = "TypeTransformer("
@@ -162,27 +160,15 @@ class CanonicalTransformer(ArgumentTransformer):
     def __init__(self, name, values=None, type=None) -> None:
         super().__init__(name)
         self.values = values
-        self.type = type  # None
-
-        if values is not None:
-            # assert isinstance(values, (list, tuple))
-            print(f"Vocabulary not supported {values}")
-            values = []
+        self.type = type
 
         if values is None:
             values = []
 
-        if len(values) == 1 and isinstance(values[0], (list, tuple)):
-            values = values[0]
+        # if len(values) == 1 and isinstance(values[0], (list, tuple)):
+        #     values = values[0]
 
         self.values = values
-        self.canonicalizer = _identity
-        self.type = type
-
-    def compare(self, value, v):
-        if isinstance(value, str) and isinstance(v, str):
-            return value.upper() == v.upper()
-        return value == v
 
     def apply_to_value(self, value):
         print(f"       canonicalizing {value}")
@@ -191,7 +177,7 @@ class CanonicalTransformer(ArgumentTransformer):
             return value
 
         for v in self.values:
-            if self.compare(value, v):
+            if self.type.compare(value, v):
                 return v
 
         self.raise_error(value)
@@ -202,7 +188,7 @@ class CanonicalTransformer(ArgumentTransformer):
         )
 
     def __repr__(self) -> str:
-        return f"Canonicalize({self.name}, {self.canonicalizer}, type={self.type})"
+        return f"Canonicalize({self.name}, {self.values}, type={self.type})"
 
 
 class AvailabilityTransformer(Transformer):

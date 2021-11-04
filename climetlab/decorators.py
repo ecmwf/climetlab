@@ -14,12 +14,11 @@ import threading
 from functools import wraps
 
 from climetlab.arguments.climetlab_types import (
-    BoundingBoxType,
     DateType,
     FloatType,
     IntType,
     StrType,
-    VariableType,
+    _find_cml_type,
 )
 from climetlab.arguments.guess import guess_type_list
 from climetlab.utils.availability import Availability
@@ -112,7 +111,7 @@ class normalize(Decorator):
         if name is not None:
             assert isinstance(name, str)
 
-        self._cml_type_from_values = None
+        self._type_from_values = None
 
         self.name = name
         self.alias = alias
@@ -134,13 +133,7 @@ class normalize(Decorator):
 
         if isinstance(values, (tuple, list)):
             self.values = list(values)
-            if self.type is None:
-                self.type = guess_type_list(values)
-            if self.multiple is None:
-                if isinstance(values, tuple):
-                    self.multiple = False
-                if isinstance(values, list):
-                    self.multiple = True
+            self._type_guessed_from_values = guess_type_list(values)
             return
 
         assert isinstance(values, str), values
@@ -154,20 +147,7 @@ class normalize(Decorator):
             cml_type_str = values
             args = []
 
-        if cml_type_str.endswith("-list"):
-            self.multiple = True
-
-        STR_TO_CMLTYPE = {
-            "enum": StrType,
-            "enum-list": StrType,
-            "date": DateType,
-            "date-list": DateType,
-            "variable": VariableType,
-            "variable-list": VariableType,
-            "bounding-box": BoundingBoxType,
-            "bbox": BoundingBoxType,
-        }
-        self._cml_type_from_values = STR_TO_CMLTYPE[cml_type_str]
+        self._type_from_values = cml_type_str
         self._cml_type_args = args
 
     def visit(self, manager):
@@ -177,38 +157,31 @@ class normalize(Decorator):
         return self.values
 
     def get_multiple(self):
+        if self.cml_type:
+            return self.cml_type.multiple
         return self.multiple
 
     def get_aliases(self):
         return self.alias
 
+    @property
+    def cml_type(self):
+        return self.get_cml_type()
+
     def get_cml_type(self):
-        import datetime
-
-        NORMALIZE_TYPES = {
-            str: StrType,
-            int: IntType,
-            float: FloatType,
-            datetime.datetime: DateType,
-        }
-
-        # explicitely given in values='type(...)'
-        type = self._cml_type_from_values
-        if type:
+        # explicitely given as a string in values='type(...)'
+        if self._type_from_values:
+            type = _find_cml_type(self._type_from_values, self.multiple)
             return type(*self._cml_type_args)
 
         # explicitely given in type=
-        type = self.type
-        if type:
-            type = NORMALIZE_TYPES.get(type, None)
-        if type:
+        if self.type:
+            type = _find_cml_type(self.type, self.multiple)
             return type()
 
         # infer from values
-        if type:
-            type = guess_type_list(self.get_values())
-            type = NORMALIZE_TYPES.get(type, None)
-        if type:
+        if self._type_guessed_from_values:
+            type = _find_cml_type(self._type_guessed_from_values, self.multiple)
             return type()
 
         return None
