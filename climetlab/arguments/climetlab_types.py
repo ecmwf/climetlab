@@ -47,6 +47,10 @@ class NonListMixin:
 class Type:
     multiple = None
 
+    def include_args(self, decorator, args):
+        if args:
+            raise NotImplementedError(f"Cannot process additional arguments '{args}'")
+
     def cast_to_type_list(self, value) -> list:
         if isinstance(value, (tuple, list)):
             return [self.cast_to_type(v) for v in value]
@@ -150,6 +154,12 @@ class _DateType(Type):
     def _format(self, value, format):
         return value.strftime(format)
 
+    def include_args(self, decorator, args):
+        if not args:
+            return
+        assert len(args) == 1, args
+        decorator.format = args[0]
+
 
 class DateType(_DateType, NonListMixin):
     pass
@@ -160,6 +170,12 @@ class DateListType(_DateType, ListMixin):
 
 
 class _VariableType(Type):
+    def include_args(self, decorator, args):
+        if not args:
+            return
+        assert len(args) == 1, args
+        decorator.format = args[0]
+
     def _cast(self, value):
         return str(value)
 
@@ -206,7 +222,7 @@ def _find_cml_type(input_type, multiple):
     if isinstance(input_type, Type):
         if multiple is not None and hasattr(input_type, "multiple"):
             assert input_type.multiple == multiple, (input_type, multiple)
-        return Type
+        return input_type
 
     if not isinstance(input_type, str):
         str_type = {
@@ -237,19 +253,20 @@ def _find_cml_type(input_type, multiple):
     }
 
     if multiple is None:
-        return {**LIST_TYPES, **NON_LIST_TYPES}[input_type]
+        return {**LIST_TYPES, **NON_LIST_TYPES}[input_type]()
 
     if multiple is False:
         if input_type in LIST_TYPES:
             raise ValueError(f"Cannot set multiple={multiple} and type={input_type}.")
-        return NON_LIST_TYPES[input_type]
+        return NON_LIST_TYPES[input_type]()
 
     if multiple is True:
         if input_type in LIST_TYPES:
-            return LIST_TYPES[input_type]
+            return LIST_TYPES[input_type]()
         if input_type + "-list" in LIST_TYPES:
-            return LIST_TYPES[input_type + "-list"]
+            return LIST_TYPES[input_type + "-list"]()
         raise ValueError(
             f"Cannot set multiple={multiple} and type={input_type}. Type must be in {list(LIST_TYPES.keys())}"
         )
+    print(f"Cannot find cml_type for {input_type}")
     return None

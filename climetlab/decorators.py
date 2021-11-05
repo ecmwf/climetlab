@@ -133,7 +133,7 @@ class normalize(Decorator):
             args = []
 
         self._type_from_values = cml_type_str
-        self._cml_type_args = args
+        self._type_args = args
 
     def visit(self, manager):
         manager.parameters[self.name].append(self)
@@ -150,17 +150,16 @@ class normalize(Decorator):
         # explicitely given as a string in values='type(...)'
         if self._type_from_values:
             type = _find_cml_type(self._type_from_values, self.multiple)
-            return type(*self._cml_type_args)
+            type.include_args(self, self._type_args)
+            return type
 
         # explicitely given in type=
         if self.type:
-            type = _find_cml_type(self.type, self.multiple)
-            return type()
+            return _find_cml_type(self.type, self.multiple)
 
         # infer from values
         if self._type_guessed_from_values:
-            type = _find_cml_type(self._type_guessed_from_values, self.multiple)
-            return type()
+            return _find_cml_type(self._type_guessed_from_values, self.multiple)
 
         return None
 
