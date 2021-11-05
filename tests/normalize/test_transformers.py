@@ -10,14 +10,46 @@
 #
 
 
+import datetime
+
+from climetlab.arguments.climetlab_types import (
+    BoundingBoxType,
+    DateType,
+    FloatType,
+    IntType,
+    StrType,
+)
 from climetlab.arguments.transformers import FormatTransformer
+from climetlab.utils.bbox import BoundingBox
 
 
 def test_format():
-
-    assert FormatTransformer("noname", int)([1]) == [1]
-    assert FormatTransformer("noname", str)([1]) == ["1"]
-    assert FormatTransformer("noname", float)([1]) == [1.0]
+    assert (
+        FormatTransformer("noname", DateType, format="%Y:%m:%d").transform(
+            datetime.datetime(2020, 1, 1)
+        )
+        == "2020:01:01"
+    )
+    assert FormatTransformer("noname", IntType, format="%04d").transform(42) == "0042"
+    assert (
+        FormatTransformer("noname", FloatType, format="%.1f").transform(3.14) == "3.1"
+    )
+    b1 = BoundingBox(north=90, west=-45, south=-90, east=45)
+    assert FormatTransformer("noname", BoundingBoxType, format=tuple).transform(b1) == (
+        90.0,
+        -45.0,
+        -90.0,
+        45.0,
+    )
+    assert FormatTransformer("noname", BoundingBoxType, format="dict").transform(
+        b1
+    ) == {"east": 45.0, "north": 90.0, "south": -90.0, "west": -45.0}
+    assert FormatTransformer("noname", BoundingBoxType, format=list).transform(b1) == [
+        90.0,
+        -45.0,
+        -90.0,
+        45.0,
+    ]
 
 
 if __name__ == "__main__":

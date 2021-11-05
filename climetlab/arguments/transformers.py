@@ -83,8 +83,7 @@ class AliasTransformer(ArgumentTransformer):
 class FormatTransformer(ArgumentTransformer):
     def __init__(self, name, type, format) -> None:
         self.name = name
-        assert isinstance(type, Type), type
-        self.type = type
+        self.type = type if isinstance(type, Type) else type()
         self.format = format
 
     def transform(self, value):

@@ -125,6 +125,9 @@ class _IntType(Type):
     def _cast(self, value):
         return int(value)
 
+    def _format(self, value, format):
+        return format % value
+
 
 class IntType(_IntType, NonListMixin):
     pass
@@ -138,10 +141,12 @@ class _FloatType(Type):
     def _cast(self, value):
         return float(value)
 
+    def _format(self, value, format):
+        return format % value
+
 
 class FloatType(_FloatType, NonListMixin):
-    def format(self, value, format):
-        return format % value
+    pass
 
 
 class FloatListType(_FloatType, ListMixin):
