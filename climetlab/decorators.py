@@ -150,7 +150,8 @@ class normalize(Decorator):
         # explicitely given as a string in values='type(...)'
         if self._type_from_values:
             type = _find_cml_type(self._type_from_values, self.multiple)
-            type.include_args(self, self._type_args)
+            if self._type_args:
+                type.include_args(self, self._type_args)
             return type
 
         # explicitely given in type=

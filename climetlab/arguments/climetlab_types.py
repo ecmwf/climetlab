@@ -48,8 +48,10 @@ class Type:
     multiple = None
 
     def include_args(self, decorator, args):
-        if args:
-            raise NotImplementedError(f"Cannot process additional arguments '{args}'")
+        args = [f" '{v}'" for v in args]
+        raise NotImplementedError(
+            f"Cannot process additional arguments:{','.join([v for v in args])}."
+        )
 
     def cast_to_type_list(self, value) -> list:
         if isinstance(value, (tuple, list)):
@@ -155,8 +157,6 @@ class _DateType(Type):
         return value.strftime(format)
 
     def include_args(self, decorator, args):
-        if not args:
-            return
         assert len(args) == 1, args
         decorator.format = args[0]
 
@@ -171,8 +171,6 @@ class DateListType(_DateType, ListMixin):
 
 class _VariableType(Type):
     def include_args(self, decorator, args):
-        if not args:
-            return
         assert len(args) == 1, args
         decorator.format = args[0]
 
@@ -194,6 +192,10 @@ class VariableListType(_VariableType, ListMixin):
 
 
 class BoundingBoxType(Type, NonListMixin):
+    def include_args(self, decorator, args):
+        assert len(args) == 1, args
+        decorator.format = args[0]
+
     def cast(self, value):
         from climetlab.utils.bbox import to_bounding_box
 
