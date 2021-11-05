@@ -24,6 +24,7 @@ class ArgsKwargs:
         self.func = func
 
         self.positionals = []
+        self.defaults = {}
 
     def add_default_values_and_kwargs(self):
 
@@ -48,6 +49,9 @@ class ArgsKwargs:
 
         for name in parameters_names:
             param = sig.parameters[name]
+
+            if param.default != inspect.Parameter.empty:
+                self.defaults[name] = param.default
 
             if param.kind is param.VAR_POSITIONAL:  # param is *args
                 new_args = new_args + self.args
