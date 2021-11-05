@@ -112,13 +112,10 @@ class InputManager:
         return txt
 
     def apply_to_arg_kwargs(self, args, kwargs, func):
-        from climetlab.arguments.args_kwargs import (
-            ArgsKwargs,
-            add_default_values_and_kwargs,
-        )
+        from climetlab.arguments.args_kwargs import ArgsKwargs
 
         args_kwargs = ArgsKwargs(args, kwargs, func=func)
-        args_kwargs = add_default_values_and_kwargs(args_kwargs)
+        args_kwargs.add_default_values_and_kwargs()
         if args_kwargs.args:
             raise ValueError(f"There should not be anything in {args_kwargs.args}")
 

@@ -32,53 +32,52 @@ class ArgsKwargs:
             value = self.kwargs.pop(name)
             self.args.append(value)
 
+    def add_default_values_and_kwargs(self):
+        self.ensure_positionals()
 
-def add_default_values_and_kwargs(args_kwargs):
+        args = self.args
+        kwargs = self.kwargs
 
-    args_kwargs.ensure_positionals()
+        new_kwargs = {}
+        new_args = []
 
-    args = args_kwargs.args
-    kwargs = args_kwargs.kwargs
-    func = args_kwargs.func
+        sig = inspect.signature(self.func)
+        bnd = sig.bind(*args, **kwargs)
+        parameters_names = list(sig.parameters)
 
-    new_kwargs = {}
-    new_args = []
+        bnd.apply_defaults()
 
-    sig = inspect.signature(func)
-    bnd = sig.bind(*args, **kwargs)
-    parameters_names = list(sig.parameters)
+        new_kwargs.update(bnd.kwargs)
 
-    bnd.apply_defaults()
+        # TODO: delete this (sic!)
+        #
+        # if parameters_names[0] == "self":
+        #     # func must be method. Store first argument and skip it latter
+        #     LOG.debug('Skipping first parameter because it is called "self"')
+        #     new_args = new_args + [args.pop(0)]
+        #     parameters_names.pop(0)
 
-    new_kwargs.update(bnd.kwargs)
+        positionals = []
+        for name in parameters_names:
+            param = sig.parameters[name]
 
-    # TODO: delete this (sic!)
-    #
-    # if parameters_names[0] == "self":
-    #     # func must be method. Store first argument and skip it latter
-    #     LOG.debug('Skipping first parameter because it is called "self"')
-    #     new_args = new_args + [args.pop(0)]
-    #     parameters_names.pop(0)
+            if param.kind is param.VAR_POSITIONAL:  # param is *args
+                new_args = new_args + args
+                continue
 
-    positionals = []
-    for name in parameters_names:
-        param = sig.parameters[name]
+            if param.kind is param.VAR_KEYWORD:  # param is **kwargs
+                new_kwargs.update(bnd.arguments[name])
+                continue
 
-        if param.kind is param.VAR_POSITIONAL:  # param is *args
-            new_args = new_args + args
-            continue
+            if param.kind is param.POSITIONAL_ONLY:
+                # new_args = new_args + [bnd.arguments[name]]
+                # continue
+                positionals.append(name)
 
-        if param.kind is param.VAR_KEYWORD:  # param is **kwargs
-            new_kwargs.update(bnd.arguments[name])
-            continue
+            new_kwargs[name] = bnd.arguments[name]
 
-        if param.kind is param.POSITIONAL_ONLY:
-            # new_args = new_args + [bnd.arguments[name]]
-            # continue
-            positionals.append(name)
+        LOG.debug("Fixed input arguments args=%s, kwargs=%s", new_args, new_kwargs)
 
-        new_kwargs[name] = bnd.arguments[name]
-
-    LOG.debug("Fixed input arguments args=%s, kwargs=%s", new_args, new_kwargs)
-
-    return ArgsKwargs(new_args, new_kwargs, positionals=positionals, func=func)
+        self.args = new_args
+        self.kwargs = new_kwargs
+        self.positionals = positionals
