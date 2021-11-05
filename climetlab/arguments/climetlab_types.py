@@ -8,10 +8,41 @@
 #
 
 import datetime
+from typing import List
 
 
 def _identity(x):
     return x
+
+
+class ListMixin:
+    def cast(self, value):
+        if not isinstance(value, (tuple, list)):
+            return self.cast([value])
+        return [self._cast(v) for v in value]
+
+    def canonicalize(self, value, values):
+        return [self._canonicalize(v, values) for v in value]
+
+    def contains(self, value, values):
+        return all([self._contains(v, values) for v in value])
+
+    def format(self, value, format):
+        return [self._format(v, format) for v in value]
+
+
+class NonListMixin:
+    def cast(self, value):
+        return self._cast(value)
+
+    def canonicalize(self, value, values):
+        return self._canonicalize(self, value, values)
+
+    def contains(self, value, values):
+        return self._contains(value, values)
+
+    def format(self, value, format):
+        return self._format(value, format)
 
 
 class Type:
@@ -32,21 +63,32 @@ class Type:
     def compare(self, value, v):
         return value == v
 
+    def _contains(self, value, values):
+        return value in values
+
+    def check_aliases(self, aliases, name=None):
+        if self.multiple is False:
+            for k, v in aliases.items():
+                if isinstance(v, (tuple, list)):
+                    raise ValueError(
+                        f"Cannot alias to a list for '{name}' of type {self.__class__} with alias {k}={v}."
+                    )
+
 
 class _EnumType(Type):
     pass
 
 
 class EnumType(_EnumType):
-    multiple = False
+    pass
 
 
 class EnumListType(_EnumType):
-    multiple = True
+    pass
 
 
 class _StrType(Type):
-    def cast_to_type(self, value):
+    def _cast(self, value):
         return str(value)
 
     def compare(self, value, v):
@@ -54,92 +96,89 @@ class _StrType(Type):
             return value.upper() == v.upper()
         return value == v
 
+    def _canonicalize(self, value, values):
+        for v in values:
+            if self.compare(v, value):
+                return v
+        raise ValueError(
+            f'Invalid value "{value}"({type(value)}), possible values are {values}'
+        )
 
-class StrType(_StrType):
-    multiple = False
+
+class StrType(_StrType, NonListMixin):
+    pass
 
 
-class StrListType(_StrType):
-    multiple = True
+class StrListType(_StrType, ListMixin):
+    pass
 
 
 class _IntType(Type):
-    def cast_to_type(self, value):
+    def _cast(self, value):
         return int(value)
 
 
-class IntType(_IntType):
-    multiple = False
+class IntType(_IntType, NonListMixin):
+    pass
 
 
-class IntListType(_IntType):
-    multiple = True
+class IntListType(_IntType, ListMixin):
+    pass
 
 
 class _FloatType(Type):
-    def cast_to_type(self, value):
+    def _cast(self, value):
         return float(value)
 
 
-class FloatType(_FloatType):
-    multiple = False
+class FloatType(_FloatType, NonListMixin):
+    def format(self, value, format):
+        return format % value
 
 
-class FloatListType(_FloatType):
-    multiple = True
+class FloatListType(_FloatType, ListMixin):
+    pass
 
 
 class _DateType(Type):
-    def __init__(self, format=None) -> None:
-        self.format = format
-
-    def apply_format(self, value):
-        if self.format is None:
-            return value
-        assert not isinstance(value, (list, tuple)), value
-        return value.strftime(self.format)
-
-
-class DateType(_DateType):
-    multiple = False
-
-    def cast_to_type(self, value):
+    def _cast(self, value):
         from climetlab.utils.dates import to_date_list
 
-        return to_date_list(value)[0]
+        lst = to_date_list(value)
+        assert len(lst) == 1, lst
+        return lst[0]
+
+    def _format(self, value, format):
+        return value.strftime(format)
 
 
-class DateListType(_DateType):
-    multiple = True
+class DateType(_DateType, NonListMixin):
+    pass
 
-    def cast_to_type(self, value):
-        from climetlab.utils.dates import to_date_list
 
-        return to_date_list(value)[0]  # TODO: to a todate() function
+class DateListType(_DateType, ListMixin):
+    pass
 
 
 class _VariableType(Type):
-    def __init__(self, convention) -> None:
-        assert isinstance(convention, str), convention
-        self.convention = convention
+    def _cast(self, value):
+        return str(value)
 
-    def apply_format(self, value):
+    def _format(self, value, convention):
         from climetlab.utils.conventions import normalise_string
 
-        return normalise_string(value, convention=self.convention)
+        return normalise_string(value, convention=convention)
 
 
-class VariableType(_VariableType):
-    multiple = False
+class VariableType(_VariableType, NonListMixin):
+    pass
 
 
-class VariableListType(_VariableType):
-    multiple = True
+class VariableListType(_VariableType, ListMixin):
+    pass
 
 
-class BoundingBoxType(Type):
-    multiple = False
-
+class BoundingBoxType(Type, NonListMixin):
     def __init__(self, format=None) -> None:
         self.format = format
         from climetlab.utils.bbox import BoundingBox
@@ -157,10 +196,10 @@ class BoundingBoxType(Type):
         }
         self.formatter = FORMATTERS[format]
 
-    def cast_to_type_list(self, value) -> list:
-        return [self.cast_to_type(value)]
+    def check_aliases(self, aliases, name=None):
+        pass
 
-    def cast_to_type(self, value):
+    def cast(self, value):
         from climetlab.utils.bbox import to_bounding_box
 
         return to_bounding_box(value)

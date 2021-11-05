@@ -93,6 +93,11 @@ def test_enum_multiple_ALL_2():
     assert g(ALL) == ["a", "b", "c"]
 
 
+def test_enum_float_1():
+    g = normalize("name", [1, 0.5, 3], type=float, format="%03f")(name_default_is_1)
+    assert g(1) == "1.000000"
+
+
 def test_enum_int_1():
     g = normalize("name", [1, 0.5, 3], type=int, multiple=True)(name_default_is_1)
     assert g(1) == [1]

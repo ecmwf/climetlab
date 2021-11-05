@@ -10,7 +10,7 @@ import logging
 
 from climetlab.arguments.transformers import (
     AliasTransformer,
-    CanonicalTransformer,
+    EnumChecker,
     FormatTransformer,
     MultipleTransformer,
     TypeTransformer,
@@ -46,11 +46,11 @@ class Argument:
         type1 = None
         type2 = None
 
-        if self.norm_deco:
-            type1 = self.norm_deco.get_cml_type()
+        if self.normalize_decorator:
+            type1 = self.normalize_decorator.get_cml_type()
 
-        if self.av_deco:
-            type2 = self.av_deco.get_cml_type(self.name)
+        if self.availability_decorator:
+            type2 = self.availability_decorator.get_cml_type(self.name)
 
         if type1 and type2:
             assert type1 == type2
@@ -65,29 +65,34 @@ class Argument:
 
         return self._cmltype
 
-    def add_alias_transformers(self, pipeline):
+    @property
+    def format(self):
+        if not self.normalize_decorator:
+            return None
+        return self.normalize_decorator.format
+
+    @property
+    def aliases(self):
         aliases = dict()
-        _all = None
         for decorator in self.decorators:
             a = decorator.get_aliases()
             if a is None:
                 continue
             if not aliases:
                 aliases = a
-                multiple = decorator.get_multiple()
-                if multiple:
-                    _all = decorator.get_values(self.name)
                 continue
             if isinstance(aliases, dict) and isinstance(a, dict):
                 aliases.update(a)
                 continue
             raise ValueError(f"Cannot merge aliases {a} and {aliases}.")
+        return aliases
 
-        if aliases:
-            pipeline.append(AliasTransformer(self.name, aliases, _all))
+    def add_alias_transformers(self, pipeline):
+        if self.aliases:
+            pipeline.append(AliasTransformer(self.name, self.cmltype, self.aliases))
 
     @property
-    def norm_deco(self):
+    def normalize_decorator(self):
         decos = [d for d in self.decorators if not d.is_availability]
         if decos:
             assert len(decos) == 1, decos
@@ -95,7 +100,7 @@ class Argument:
         return None
 
     @property
-    def av_deco(self):
+    def availability_decorator(self):
         decos = [d for d in self.decorators if d.is_availability]
         if decos:
             assert len(decos) == 1, decos
@@ -103,19 +108,18 @@ class Argument:
         return None
 
     def add_type_transformers(self, pipeline):
-        if self.cmltype:
-            pipeline.append(TypeTransformer(self.name, self.cmltype))
+        pipeline.append(TypeTransformer(self.name, self.cmltype))
 
     def add_canonicalize_transformers(self, pipeline):
         values = None
-        if self.norm_deco and not self.av_deco:
-            values = self.norm_deco.get_values(self.name)
+        if self.normalize_decorator and not self.availability_decorator:
+            values = self.normalize_decorator.get_values(self.name)
 
-        if not self.norm_deco and self.av_deco:
+        if not self.normalize_decorator and self.availability_decorator:
             values = self.norm_av.get_values()
 
-        if self.norm_deco and self.av_deco:
-            values1 = self.norm_deco.get_values()
+        if self.normalize_decorator and self.availability_decorator:
+            values1 = self.normalize_decorator.get_values()
             values2 = self.norm_av.get_values()
 
             def merge_values(value1, value2):
@@ -130,9 +134,9 @@ class Argument:
 
             values = merge_values(values1, values2)
 
-        if values or self.cmltype:
+        if values:
             pipeline.append(
-                CanonicalTransformer(
+                EnumChecker(
                     self.name,
                     values,
                     type=self.cmltype,
@@ -140,13 +144,8 @@ class Argument:
             )
 
     def add_format_transformers(self, pipeline):
-        if self.cmltype is not None:
-            pipeline.append(
-                FormatTransformer(
-                    self.name,
-                    type=self.cmltype,
-                )
-            )
+        if self.format is not None:
+            pipeline.append(FormatTransformer(self.name, self.cmltype, self.format))
 
     def add_multiple_transformers(self, pipeline):
         multiple = None

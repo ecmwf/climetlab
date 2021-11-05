@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 
 from .argument import Argument
-from .transformers import AvailabilityTransformer, Transformer
+from .transformers import Action, AvailabilityChecker, FormatTransformer
 
 LOG = logging.getLogger(__name__)
 
@@ -42,24 +42,26 @@ class InputManager:
             self._pipeline = []
             self.build_pipeline()
             for t in self._pipeline:
-                if not isinstance(t, Transformer):
-                    raise f"Unknown transformer: {t}"
+                if not isinstance(t, Action):
+                    raise f"Unknown action: {t}"
         return self._pipeline
 
     def build_pipeline(self):
         print("Building...")
 
         for a in self.arguments:
-            a.add_alias_transformers(self._pipeline)
+            a.add_type_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_type_transformers(self._pipeline)
+            a.add_alias_transformers(self._pipeline)
+            # if a.alias:
+            #     self._pipeline.append(AliasTransformer(a.name, a.alias))
 
         for a in self.arguments:
             a.add_canonicalize_transformers(self._pipeline)
 
         for availability in self.availabilities:
-            transform = AvailabilityTransformer(availability)
+            transform = AvailabilityChecker(availability)
             self._pipeline.append(transform)
 
         for a in self.arguments:
@@ -73,6 +75,26 @@ class InputManager:
         for t in self._pipeline:
             print(" ", t)
         print("----------------------------")
+
+    def apply_to_kwargs(self, kwargs):
+        print(f"Apply pipeline to kwargs: {kwargs}")
+        for t in self.pipeline:
+            if t.name:
+                print(f" - {t.name}: apply {t}.")
+            else:
+                print(f" - apply {t}.")
+
+            kwargs = t.execute(kwargs)
+            print(f"       kwargs: {kwargs}")
+        print(f"Applied pipeline: {kwargs}")
+        print()
+
+        return kwargs
+
+    def apply_to_value(self, value):
+        for t in self.pipeline:
+            value = t.__call__(value)
+        return value
 
     def __repr__(self) -> str:
         txt = "ARGUMENTS:[\n"
@@ -114,26 +136,6 @@ class InputManager:
 
         LOG.debug("CALLING func %s %s", args, kwargs)
         return args, kwargs
-
-    def apply_to_kwargs(self, kwargs):
-        print(f"Apply pipeline to kwargs: {kwargs}")
-        for t in self.pipeline:
-            if t.name:
-                print(f" - {t.name}: apply {t}.")
-            else:
-                print(f" - apply {t}.")
-
-            kwargs = t(kwargs)
-            print(f"       kwargs: {kwargs}")
-        print(f"Applied pipeline: {kwargs}")
-        print()
-
-        return kwargs
-
-    def apply_to_value(self, value):
-        for t in self.pipeline:
-            value = t.__call__(value)
-        return value
 
 
 def normaliser(*args, **kwargs):

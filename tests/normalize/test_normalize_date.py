@@ -39,6 +39,12 @@ def test_normalize_dates_from_source():
         assert dates_list_3(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
+def test_dates_formated_1():
+    date_formated = normalize("d", "date", format="%Y.%m.%d")(f)
+
+    assert date_formated("20200513") == "2020.05.13"
+
+
 def test_dates_formated():
     date_formated = normalize("d", "date-list(%Y.%m.%d)")(f)
 

@@ -12,7 +12,19 @@
 from climetlab.decorators import normalize
 
 
-def test_param_convention_mars():
+def test_param_convention_mars_1():
+    @normalize("parameter", "variable-list", format="mars")
+    def values_mars(parameter):
+        return parameter
+
+    assert values_mars(parameter="tp") == ["tp"]
+    assert values_mars(parameter="2t") == ["2t"]
+    assert values_mars(parameter="t2m") == ["2t"]
+    assert values_mars(parameter=["t2m", "tp"]) == ["2t", "tp"]
+    assert values_mars(parameter="whatever") == ["whatever"]
+
+
+def test_param_convention_mars_2():
     @normalize("parameter", "variable-list(mars)")
     def values_mars(parameter):
         return parameter
