@@ -136,3 +136,6 @@ class Argument:
     def add_format_transformers(self, pipeline):
         if self.format is not None:
             pipeline.append(FormatTransformer(self.name, self.cmltype, self.format))
+
+    def set_default(self, default):
+        raise NotImplementedError("default TODO")

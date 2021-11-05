@@ -111,11 +111,24 @@ class InputManager:
             txt += "]"
         return txt
 
+    def get_argument(self, name):
+        for a in self.arguments:
+            if a == name:
+                return a
+        return None
+
+    def consolidate_defaults(self, defaults):
+        for k, default in defaults.items():
+            a = self.get_argument(k)
+            if a:
+                a.set_default(default)
+
     def apply_to_arg_kwargs(self, args, kwargs, func):
         from climetlab.arguments.args_kwargs import ArgsKwargs
 
         args_kwargs = ArgsKwargs(args, kwargs, func=func)
         args_kwargs.add_default_values_and_kwargs()
+        self.consolidate_defaults(args_kwargs.defaults)
 
         LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
         args_kwargs.kwargs = self.apply_to_kwargs(args_kwargs.kwargs)
