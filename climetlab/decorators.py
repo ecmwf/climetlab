@@ -82,15 +82,6 @@ class Decorator:
 
         return newfunc
 
-    def get_aliases(self):
-        return None
-
-    def get_multiple(self):
-        return None
-
-    def get_cml_type(self, name):
-        return None
-
 
 class normalize(Decorator):
     def __init__(
@@ -150,19 +141,12 @@ class normalize(Decorator):
     def get_values(self, name=None):
         return self.values
 
-    def get_multiple(self):
-        if self.cml_type:
-            return self.cml_type.multiple
-        return self.multiple
-
-    def get_aliases(self):
+    @property
+    def aliases(self):
         return self.alias
 
     @property
     def cml_type(self):
-        return self.get_cml_type()
-
-    def get_cml_type(self):
         # explicitely given as a string in values='type(...)'
         if self._type_from_values:
             type = _find_cml_type(self._type_from_values, self.multiple)
@@ -200,5 +184,6 @@ class availability(Decorator):
     def get_values(self, name):
         return self.availability.unique_values()[name]
 
-    def get_cml_type(self, name):
+    def gess_cml_type(self, name):
+        # TODO: get type from availability values
         return None

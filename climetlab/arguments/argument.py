@@ -12,14 +12,13 @@ from climetlab.arguments.transformers import (
     AliasTransformer,
     EnumChecker,
     FormatTransformer,
-    MultipleTransformer,
     TypeTransformer,
 )
 
 LOG = logging.getLogger(__name__)
 
 
-def check_consistency(values1, values2):
+def check_included(values1, values2):
     if isinstance(values1, (list, tuple)) and isinstance(values2, (list, tuple)):
         for x in values1:
             if x not in values2:
@@ -47,10 +46,10 @@ class Argument:
         type2 = None
 
         if self.normalize_decorator:
-            type1 = self.normalize_decorator.get_cml_type()
+            return self.normalize_decorator.cml_type
 
         if self.availability_decorator:
-            type2 = self.availability_decorator.get_cml_type(self.name)
+            type2 = self.availability_decorator.gess_cml_type(self.name)
 
         if type1 and type2:
             assert type1 == type2
@@ -73,23 +72,9 @@ class Argument:
 
     @property
     def aliases(self):
-        aliases = dict()
-        for decorator in self.decorators:
-            a = decorator.get_aliases()
-            if a is None:
-                continue
-            if not aliases:
-                aliases = a
-                continue
-            if isinstance(aliases, dict) and isinstance(a, dict):
-                aliases.update(a)
-                continue
-            raise ValueError(f"Cannot merge aliases {a} and {aliases}.")
-        return aliases
-
-    def add_alias_transformers(self, pipeline):
-        if self.aliases:
-            pipeline.append(AliasTransformer(self.name, self.cmltype, self.aliases))
+        if self.normalize_decorator:
+            return self.normalize_decorator.aliases
+        return {}
 
     @property
     def normalize_decorator(self):
@@ -107,10 +92,14 @@ class Argument:
             return decos[0]
         return None
 
+    def add_alias_transformers(self, pipeline):
+        if self.aliases:
+            pipeline.append(AliasTransformer(self.name, self.cmltype, self.aliases))
+
     def add_type_transformers(self, pipeline):
         pipeline.append(TypeTransformer(self.name, self.cmltype))
 
-    def add_canonicalize_transformers(self, pipeline):
+    def add_enum_transformers(self, pipeline):
         values = None
         if self.normalize_decorator and not self.availability_decorator:
             values = self.normalize_decorator.get_values(self.name)
@@ -124,7 +113,7 @@ class Argument:
 
             def merge_values(value1, value2):
                 if values1 and values2:
-                    check_consistency(values1, values2)
+                    check_included(values1, values2)
                     return values1
                 if values1:
                     return value1
@@ -135,25 +124,8 @@ class Argument:
             values = merge_values(values1, values2)
 
         if values:
-            pipeline.append(
-                EnumChecker(
-                    self.name,
-                    values,
-                    type=self.cmltype,
-                )
-            )
+            pipeline.append(EnumChecker(self.name, values, type=self.cmltype))
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:
             pipeline.append(FormatTransformer(self.name, self.cmltype, self.format))
-
-    def add_multiple_transformers(self, pipeline):
-        multiple = None
-        for decorator in self.decorators:
-            a = decorator.get_multiple()
-            # assert a not incompatible with multiples
-            if a is not None:
-                multiple = a
-
-        if multiple is not None:
-            pipeline.append(MultipleTransformer(self.name, multiple))

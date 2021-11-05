@@ -35,27 +35,7 @@ class ArgumentTransformer(Action):
         return kwargs
 
     def transform(self, value):
-        raise NotImplementedError(self.__class__)
-
-
-class MultipleTransformer(ArgumentTransformer):
-    def __init__(self, name, multiple) -> None:
-        self.name = name
-        assert multiple in [True, False, None]
-        self.multiple = multiple
-
-    def apply_to_list(self, value):
-        if self.multiple:
-            return value
-        assert isinstance(value, list), value
-        if len(value) > 1:
-            raise ValueError("Value should not be a list for '{self.name}' :{value}.")
-        if not value:
-            raise ValueError("Cannot provide empty value for '{self.name}.")
-        return value[0]
-
-    def __repr__(self) -> str:
-        return f"MutipleTransformer({self.name}, {self.multiple})"
+        raise NotImplementedError(self.__class__.__name__)
 
 
 class AliasTransformer(ArgumentTransformer):
@@ -113,9 +93,7 @@ class FormatTransformer(ArgumentTransformer):
     def __repr__(self) -> str:
         txt = "Format("
         txt += f"{self.name}"
-        txt += f",{self.type}"
-        txt += f",format={self.format}"
-        txt += ")"
+        txt += f",{self.type},format={self.format})"
         return txt
 
 
@@ -155,7 +133,7 @@ class AvailabilityChecker(Action):
     def __init__(self, availability) -> None:
         self.availability = availability
 
-    def __call__(self, kwargs):
+    def execute(self, kwargs):
         if not isinstance(kwargs, dict):
             return kwargs
         LOG.debug("Checking availability for %s", kwargs)

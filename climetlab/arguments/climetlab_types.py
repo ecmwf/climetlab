@@ -8,7 +8,6 @@
 #
 
 import datetime
-from typing import List
 
 
 def _identity(x):
@@ -179,8 +178,12 @@ class VariableListType(_VariableType, ListMixin):
 
 
 class BoundingBoxType(Type, NonListMixin):
-    def __init__(self, format=None) -> None:
-        self.format = format
+    def cast(self, value):
+        from climetlab.utils.bbox import to_bounding_box
+
+        return to_bounding_box(value)
+
+    def format(self, value, format):
         from climetlab.utils.bbox import BoundingBox
 
         FORMATTERS = {
@@ -194,18 +197,8 @@ class BoundingBoxType(Type, NonListMixin):
             "BoundingBox": _identity,
             None: _identity,
         }
-        self.formatter = FORMATTERS[format]
-
-    def check_aliases(self, aliases, name=None):
-        pass
-
-    def cast(self, value):
-        from climetlab.utils.bbox import to_bounding_box
-
-        return to_bounding_box(value)
-
-    def apply_format(self, value):
-        return self.formatter(value)
+        formatter = FORMATTERS[format]
+        return formatter(value)
 
 
 def _find_cml_type(input_type, multiple):

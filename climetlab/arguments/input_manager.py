@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 
 from .argument import Argument
-from .transformers import Action, AvailabilityChecker, FormatTransformer
+from .transformers import Action, AvailabilityChecker
 
 LOG = logging.getLogger(__name__)
 
@@ -54,11 +54,9 @@ class InputManager:
 
         for a in self.arguments:
             a.add_alias_transformers(self._pipeline)
-            # if a.alias:
-            #     self._pipeline.append(AliasTransformer(a.name, a.alias))
 
         for a in self.arguments:
-            a.add_canonicalize_transformers(self._pipeline)
+            a.add_enum_transformers(self._pipeline)
 
         for availability in self.availabilities:
             transform = AvailabilityChecker(availability)
@@ -66,9 +64,6 @@ class InputManager:
 
         for a in self.arguments:
             a.add_format_transformers(self._pipeline)
-
-        for a in self.arguments:
-            a.add_multiple_transformers(self._pipeline)
 
         print("----------------------------")
         print("Pipeline built")
