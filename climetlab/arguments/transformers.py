@@ -120,13 +120,26 @@ class EnumChecker(ArgumentTransformer):
         self.type = type
 
     def transform(self, value):
-        print(f"       canonicalizing {value}")
         if not self.type.contains(value, self.values):
             raise ValueError(f"Value {value} is not in {self.values}")
         return value
 
     def __repr__(self) -> str:
         return f"EnumChecker({self.name}, {self.values}, type={self.type})"
+
+
+class CanonicalizeTransformer(ArgumentTransformer):
+    def __init__(self, name, values, type) -> None:
+        self.name = name
+        self.values = values
+        self.type = type
+
+    def transform(self, value):
+        print(f"       canonicalizing {value}")
+        return self.type.canonicalize(value, self.values)
+
+    def __repr__(self) -> str:
+        return f"Canonicalizer({self.name}, {self.values}, type={self.type})"
 
 
 class AvailabilityChecker(Action):

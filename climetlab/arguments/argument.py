@@ -10,6 +10,7 @@ import logging
 
 from climetlab.arguments.transformers import (
     AliasTransformer,
+    CanonicalizeTransformer,
     EnumChecker,
     FormatTransformer,
     TypeTransformer,
@@ -99,17 +100,17 @@ class Argument:
     def add_type_transformers(self, pipeline):
         pipeline.append(TypeTransformer(self.name, self.cmltype))
 
-    def add_enum_transformers(self, pipeline):
-        values = None
+    @property
+    def values(self):
         if self.normalize_decorator and not self.availability_decorator:
-            values = self.normalize_decorator.get_values(self.name)
+            return self.normalize_decorator.get_values()
 
         if not self.normalize_decorator and self.availability_decorator:
-            values = self.norm_av.get_values()
+            return self.availability_decorator.get_values(self.name)
 
         if self.normalize_decorator and self.availability_decorator:
             values1 = self.normalize_decorator.get_values()
-            values2 = self.norm_av.get_values()
+            values2 = self.availability_decorator.get_values(self.name)
 
             def merge_values(value1, value2):
                 if values1 and values2:
@@ -121,10 +122,16 @@ class Argument:
                     return value2
                 return None
 
-            values = merge_values(values1, values2)
+            return merge_values(values1, values2)
+        return None
 
-        if values:
-            pipeline.append(EnumChecker(self.name, values, type=self.cmltype))
+    def add_enum_transformers(self, pipeline):
+        if self.values:
+            pipeline.append(
+                CanonicalizeTransformer(self.name, self.values, type=self.cmltype)
+            )
+        if self.values:
+            pipeline.append(EnumChecker(self.name, self.values, type=self.cmltype))
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:

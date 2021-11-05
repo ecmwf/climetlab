@@ -138,7 +138,7 @@ class normalize(Decorator):
     def visit(self, manager):
         manager.parameters[self.name].append(self)
 
-    def get_values(self, name=None):
+    def get_values(self):
         return self.values
 
     @property

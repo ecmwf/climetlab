@@ -35,7 +35,7 @@ class NonListMixin:
         return self._cast(value)
 
     def canonicalize(self, value, values):
-        return self._canonicalize(self, value, values)
+        return self._canonicalize(value, values)
 
     def contains(self, value, values):
         return self._contains(value, values)
@@ -70,6 +70,9 @@ class Type:
 
     def _contains(self, value, values):
         return value in values
+
+    def _canonicalize(self, value, values):
+        return value
 
     def check_aliases(self, aliases, name=None):
         if self.multiple is False:
