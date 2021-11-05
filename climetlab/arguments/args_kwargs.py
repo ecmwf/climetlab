@@ -14,35 +14,24 @@ LOG = logging.getLogger(__name__)
 
 
 class ArgsKwargs:
-    def __init__(self, args, kwargs, func=None, positionals=None):
+    def __init__(self, args, kwargs, func=None):
         assert isinstance(kwargs, dict)
         assert isinstance(args, (list, tuple))
         args = list(args)
 
-        if positionals is None:
-            positionals = []
-
         self.args = args
         self.kwargs = kwargs
-        self.positionals = positionals
         self.func = func
 
-    def ensure_positionals(self):
-        for name in self.positionals:
-            value = self.kwargs.pop(name)
-            self.args.append(value)
+        self.positionals = []
 
     def add_default_values_and_kwargs(self):
-        self.ensure_positionals()
 
-        args = self.args
-        kwargs = self.kwargs
-
-        new_kwargs = {}
         new_args = []
+        new_kwargs = {}
 
         sig = inspect.signature(self.func)
-        bnd = sig.bind(*args, **kwargs)
+        bnd = sig.bind(*self.args, **self.kwargs)
         parameters_names = list(sig.parameters)
 
         bnd.apply_defaults()
@@ -54,15 +43,14 @@ class ArgsKwargs:
         # if parameters_names[0] == "self":
         #     # func must be method. Store first argument and skip it latter
         #     LOG.debug('Skipping first parameter because it is called "self"')
-        #     new_args = new_args + [args.pop(0)]
+        #     new_args = new_args + [self.args.pop(0)]
         #     parameters_names.pop(0)
 
-        positionals = []
         for name in parameters_names:
             param = sig.parameters[name]
 
             if param.kind is param.VAR_POSITIONAL:  # param is *args
-                new_args = new_args + args
+                new_args = new_args + self.args
                 continue
 
             if param.kind is param.VAR_KEYWORD:  # param is **kwargs
@@ -72,7 +60,7 @@ class ArgsKwargs:
             if param.kind is param.POSITIONAL_ONLY:
                 # new_args = new_args + [bnd.arguments[name]]
                 # continue
-                positionals.append(name)
+                self.positionals.append(name)
 
             new_kwargs[name] = bnd.arguments[name]
 
@@ -80,4 +68,9 @@ class ArgsKwargs:
 
         self.args = new_args
         self.kwargs = new_kwargs
-        self.positionals = positionals
+
+    def ensure_positionals(self):
+        """Move positional arguments from self.kwargs into self.args"""
+        for name in self.positionals:
+            value = self.kwargs.pop(name)
+            self.args.append(value)
