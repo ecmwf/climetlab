@@ -23,7 +23,7 @@ class ArgsKwargs:
         self.kwargs = kwargs
         self.func = func
 
-        self.positionals = []
+        self.positionals_only = []
         self.defaults = {}
 
     def add_default_values_and_kwargs(self):
@@ -64,7 +64,7 @@ class ArgsKwargs:
             if param.kind is param.POSITIONAL_ONLY:
                 # new_args = new_args + [bnd.arguments[name]]
                 # continue
-                self.positionals.append(name)
+                self.positionals_only.append(name)
 
             new_kwargs[name] = bnd.arguments[name]
 
@@ -73,8 +73,8 @@ class ArgsKwargs:
         self.args = new_args
         self.kwargs = new_kwargs
 
-    def ensure_positionals(self):
+    def ensure_positionals_only(self):
         """Move positional arguments from self.kwargs into self.args"""
-        for name in self.positionals:
+        for name in self.positionals_only:
             value = self.kwargs.pop(name)
             self.args.append(value)

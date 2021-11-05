@@ -13,9 +13,22 @@ import sys
 
 import pytest
 
+from climetlab.arguments.args_kwargs import ArgsKwargs
 from climetlab.decorators import normalize
 
-# from climetlab.decorators import Normalizer # TODO: write it.
+
+def test_normalize_args_kwargs():
+    def f(a, *args, x=1, **kwargs):
+        return a, args, x, kwargs
+
+    args = [1, 2]
+    kwargs = dict(y="Y")
+    ak = ArgsKwargs(args, kwargs, f)
+    assert ak.positionals_only == []
+    assert ak.defaults == {}
+    ak.add_default_values_and_kwargs()
+    assert ak.positionals_only == []
+    assert ak.defaults == dict(x=1)
 
 
 def test_normalize_kwargs():
@@ -66,15 +79,6 @@ print(out)
 assert out == ("A", "B", 7, 8)
 """
     )
-
-
-# @pytest.mark.skip(reason="Not implemented yet")
-# def test_normalize_advanced_3():
-#     out = Normalizer(values=("1", "2"), type=str, multiple=True)(1) == ["1"]
-#     assert Normalizer(values=("1", "2"), type=str, multiple=True)((1, 2)) == ["1", "2"]
-
-#     assert Normalizer(values=("1", "2"), type=int, multiple=True)(1) == [1]
-#     assert Normalizer(values=("1", "2"), type=int, multiple=True)(1.0) == [1]
 
 
 if __name__ == "__main__":

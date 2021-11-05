@@ -122,7 +122,7 @@ class InputManager:
         LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
         args_kwargs.kwargs = self.apply_to_kwargs(args_kwargs.kwargs)
 
-        args_kwargs.ensure_positionals()
+        args_kwargs.ensure_positionals_only()
 
         args, kwargs = args_kwargs.args, args_kwargs.kwargs
 
