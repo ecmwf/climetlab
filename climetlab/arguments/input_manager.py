@@ -116,8 +116,6 @@ class InputManager:
 
         args_kwargs = ArgsKwargs(args, kwargs, func=func)
         args_kwargs.add_default_values_and_kwargs()
-        if args_kwargs.args:
-            raise ValueError(f"There should not be anything in {args_kwargs.args}")
 
         LOG.debug("Applying decorator stack to: %s %s", args, kwargs)
         args_kwargs.kwargs = self.apply_to_kwargs(args_kwargs.kwargs)
