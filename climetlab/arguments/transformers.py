@@ -30,17 +30,29 @@ class Action:
 
 
 class ArgumentTransformer(Action):
+    def __init__(self, owner):
+        self.owner = owner
+
     def execute(self, kwargs):
-        kwargs[self.name] = self.transform(kwargs[self.name])
+        if self.name in kwargs:  # TODO: discuss that
+            kwargs[self.name] = self.transform(kwargs[self.name])
         return kwargs
 
     def transform(self, value):
         raise NotImplementedError(self.__class__.__name__)
 
+    @property
+    def name(self):
+        if self.owner is None:
+            return "-"
+        if isinstance(self.owner, str):
+            return self.owner
+        return self.owner.name
+
 
 class AliasTransformer(ArgumentTransformer):
-    def __init__(self, name, cmltype, alias, _all=None) -> None:
-        self.name = name
+    def __init__(self, owner, alias, cmltype, _all=None) -> None:
+        super().__init__(owner)
         assert isinstance(alias, dict) or callable(alias) or alias is None
         self.alias = alias
         self._all = _all
@@ -77,12 +89,12 @@ class AliasTransformer(ArgumentTransformer):
         return value
 
     def __repr__(self) -> str:
-        return f"Alias({self.name}, {self.alias})"
+        return f"AliasTransformer({self.owner},{self.alias},{self.owner})"
 
 
 class FormatTransformer(ArgumentTransformer):
-    def __init__(self, name, type, format) -> None:
-        self.name = name
+    def __init__(self, owner, format, type) -> None:
+        super().__init__(owner)
         self.type = type if isinstance(type, Type) else type()
         self.format = format
 
@@ -90,31 +102,25 @@ class FormatTransformer(ArgumentTransformer):
         return self.type.format(value, self.format)
 
     def __repr__(self) -> str:
-        txt = "Format("
-        txt += f"{self.name}"
-        txt += f",{self.type},format={self.format})"
-        return txt
+        return f"FormatTransformer({self.owner},{self.format},{self.type})"
 
 
 class TypeTransformer(ArgumentTransformer):
-    def __init__(self, name, type) -> None:
-        self.name = name
+    def __init__(self, owner, type) -> None:
+        super().__init__(owner)
         self.type = type
 
     def transform(self, value):
         return self.type.cast(value)
 
     def __repr__(self) -> str:
-        txt = "TypeTransformer("
-        txt += f"{self.name}"
-        txt += f",{self.type}"
-        txt += ")"
-        return txt
+        return f"TypeTransformer({self.owner},{self.type}"
 
 
 class EnumChecker(ArgumentTransformer):
-    def __init__(self, name, values, type) -> None:
-        self.name = name
+    def __init__(self, owner, values, type) -> None:
+        super().__init__(owner)
+        self.owner = owner
         self.values = values
         self.type = type
 
@@ -124,12 +130,12 @@ class EnumChecker(ArgumentTransformer):
         return value
 
     def __repr__(self) -> str:
-        return f"EnumChecker({self.name}, {self.values}, type={self.type})"
+        return f"EnumChecker({self.owner},{self.values},{self.type})"
 
 
 class CanonicalizeTransformer(ArgumentTransformer):
-    def __init__(self, name, values, type) -> None:
-        self.name = name
+    def __init__(self, owner, values, type) -> None:
+        super().__init__(owner)
         self.values = values
         self.type = type
 
@@ -138,7 +144,7 @@ class CanonicalizeTransformer(ArgumentTransformer):
         return self.type.canonicalize(value, self.values)
 
     def __repr__(self) -> str:
-        return f"Canonicalizer({self.name}, {self.values}, type={self.type})"
+        return f"CanonicalizeTransformer({self.owner},{self.values},{self.type})"
 
 
 class AvailabilityChecker(Action):

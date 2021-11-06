@@ -31,7 +31,7 @@ def test_normalize_args_kwargs():
     assert ak.defaults == dict(x=1)
 
 
-def test_normalize_kwargs():
+def test_normalize_kwargs_1():
     class Klass:
         @normalize("param", ["a", "b", "c"])
         def ok(self, param):
@@ -44,6 +44,14 @@ def test_normalize_kwargs():
     Klass().ok(param="a")
 
     Klass().f(param="a")
+
+
+def test_normalize_kwargs_2():
+    @normalize("date", "date-list", optional=True)
+    def f(**kwargs):
+        pass
+
+    f()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="Python < 3.8")

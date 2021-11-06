@@ -92,6 +92,7 @@ class normalize(Decorator):
         multiple=None,
         type=None,
         format=None,
+        optional=False,
     ):
         if name is not None:
             assert isinstance(name, str)
@@ -103,6 +104,7 @@ class normalize(Decorator):
         self.multiple = multiple
         self.type = type
         self.format = format
+        self.optional = optional
 
         self.parse_values(values)
         print(f"Parsed values {values}. type = {self.type}")

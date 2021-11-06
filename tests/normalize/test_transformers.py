@@ -17,7 +17,6 @@ from climetlab.arguments.climetlab_types import (
     DateType,
     FloatType,
     IntType,
-    StrType,
 )
 from climetlab.arguments.transformers import FormatTransformer
 from climetlab.utils.bbox import BoundingBox

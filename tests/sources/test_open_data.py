@@ -21,6 +21,7 @@ def test_open_data():
     load_source(
         "ecmwf-open-data",
         step=24,
+        date=20211103,
     )
 
 

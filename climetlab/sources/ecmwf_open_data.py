@@ -49,12 +49,13 @@ class EODRetriever(MultiUrl):
             url=self.config["url"],
             date=-1,
             step=0,
-            resol="0p40",
+            resol="0p4",
             stream="oper",
             type="fc",
             extension=".grib2",
         )
         options.update(kwargs)
+        # assert False, (kwargs, options)
 
         urls = self.requests(**options)
 

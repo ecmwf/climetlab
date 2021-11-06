@@ -13,7 +13,6 @@ import datetime
 
 import pytest
 
-from climetlab.arguments.args_kwargs import ArgsKwargs, add_default_values_and_kwargs
 from climetlab.utils import string_to_args
 from climetlab.utils.humanize import (
     as_bytes,
@@ -186,116 +185,6 @@ def test_as_seconds():
     assert as_seconds("2s") == 2
     assert as_seconds("1m") == 60
     assert as_seconds("2h") == 2 * 60 * 60
-
-
-def test_add_default_values_and_kwargs_func():
-    def f(a, x=1, y=3):
-        return a, x, y
-
-    ak = add_default_values_and_kwargs(ArgsKwargs(["A", "B", "C"], {}, func=f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert args == [], args
-    assert kwargs == {"a": "A", "x": "B", "y": "C"}, kwargs
-
-    ak = add_default_values_and_kwargs(ArgsKwargs(["A", "B"], {}, func=f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert args == [], args
-    assert kwargs == {"a": "A", "x": "B", "y": 3}, kwargs
-
-    ak = add_default_values_and_kwargs(ArgsKwargs(["A", "B"], dict(y=5), func=f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert args == [], args
-    assert kwargs == {"a": "A", "x": "B", "y": 5}, kwargs
-
-
-def test_add_default_values_and_args_func():
-    def f(a, *args, x=1, y=3):
-        return a, args, x, y
-
-    ak = add_default_values_and_kwargs(
-        ArgsKwargs(["A", "B", "C", "D", "E", "F"], {}, func=f)
-    )
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 6, args
-    assert kwargs == {"a": "A", "x": 1, "y": 3}, kwargs
-
-    ak = add_default_values_and_kwargs(
-        ArgsKwargs(["A", "B", "C", "D", "E", "F"], {"y": 7}, f)
-    )
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 6, args
-    assert kwargs == {"a": "A", "x": 1, "y": 7}, kwargs
-
-
-def test_add_default_values_and_args_method():
-    class A:
-        def f(self, a, *args, x=1, y=3):
-            return self, a, args, x, y
-
-    obj = A()
-
-    ak = add_default_values_and_kwargs(
-        ArgsKwargs([obj, "A", "B", "C", "D", "E", "F"], {}, A.f)
-    )
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 7, (args, kwargs)
-    assert kwargs == {"self": obj, "a": "A", "x": 1, "y": 3}, (args, kwargs)
-
-    ak = add_default_values_and_kwargs(
-        ArgsKwargs([obj, "A", "B", "C", "D", "E", "F"], {"y": 7}, A.f)
-    )
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 7, (args, kwargs)
-    assert kwargs == {"self": obj, "a": "A", "x": 1, "y": 7}, (args, kwargs)
-
-
-def test_add_default_values_and_kwargs_method():
-    class A:
-        def f(self, a, x=1, y=3):
-            return self, a, x, y
-
-    obj = A()
-
-    ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B", "C"], {}, func=A.f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 0, (args, kwargs)
-    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": "C"}, kwargs
-
-    ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B"], {}, func=A.f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 0, (args, kwargs)
-    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": 3}, kwargs
-
-    ak = add_default_values_and_kwargs(ArgsKwargs([obj, "A", "B"], dict(y=5), func=A.f))
-    args = ak.args
-    kwargs = ak.kwargs
-    assert len(args) == 0, args
-    assert kwargs == {"self": obj, "a": "A", "x": "B", "y": 5}, kwargs
-
-
-# def test_add_default_values_and_args_function_2():
-#     @_fix_kwargs()
-#     def f(a, b, c=4, *, x=3):
-#         return a, b, c, x
-#
-#     out = f("A", "B", 7, x=8)
-#     assert out == ("A", "B", 7, 8)
-#
-#     @_fix_kwargs()
-#     def f(a, /, b, c=4, *, x=3):
-#         return a, b, c, x
-#
-#     out = f("A", b="B", c=7, x=8)
-#     assert out == ("A", "B", 7, 8)
 
 
 if __name__ == "__main__":

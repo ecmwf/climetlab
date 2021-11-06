@@ -95,10 +95,10 @@ class Argument:
 
     def add_alias_transformers(self, pipeline):
         if self.aliases:
-            pipeline.append(AliasTransformer(self.name, self.cmltype, self.aliases))
+            pipeline.append(AliasTransformer(self, self.aliases, self.cmltype))
 
     def add_type_transformers(self, pipeline):
-        pipeline.append(TypeTransformer(self.name, self.cmltype))
+        pipeline.append(TypeTransformer(self, self.cmltype))
 
     @property
     def values(self):
@@ -128,14 +128,17 @@ class Argument:
     def add_enum_transformers(self, pipeline):
         if self.values:
             pipeline.append(
-                CanonicalizeTransformer(self.name, self.values, type=self.cmltype)
+                CanonicalizeTransformer(self, self.values, type=self.cmltype)
             )
         if self.values:
-            pipeline.append(EnumChecker(self.name, self.values, type=self.cmltype))
+            pipeline.append(EnumChecker(self, self.values, type=self.cmltype))
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:
-            pipeline.append(FormatTransformer(self.name, self.cmltype, self.format))
+            pipeline.append(FormatTransformer(self, self.format, self.cmltype))
 
     def set_default(self, default):
         raise NotImplementedError("default TODO")
+
+    def __repr__(self) -> str:
+        return f"Argument({self.name})"
