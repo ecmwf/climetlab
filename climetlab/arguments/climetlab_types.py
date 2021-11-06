@@ -82,22 +82,45 @@ class Type:
                         f"Cannot alias to a list for '{name}' of type {self.__class__} with alias {k}={v}."
                     )
 
+    def __repr__(self):
+        return self.__class__.__name
+
 
 class _EnumType(Type):
-    pass
+    def __init__(self, values):
+        self.values = values
+
+    def _cast(self, value):
+        # TODO:
+        return value
+
+    def _format(self, value, format):
+        # TODO:
+        return format % value
 
 
 class EnumType(_EnumType):
-    pass
+    def cast(self, value):
+        return self._cast(value)
+
+    def format(self, value, format):
+        return self._format(value, format)
 
 
 class EnumListType(_EnumType):
-    pass
+    def cast(self, value):
+        return [self._cast(v) for v in value]
+
+    def format(self, value, format):
+        return [self._format(v, format) for v in value]
 
 
 class _StrType(Type):
     def _cast(self, value):
         return str(value)
+
+    def _format(self, value, format):
+        return format % value
 
     def compare(self, value, v):
         if isinstance(value, str) and isinstance(v, str):

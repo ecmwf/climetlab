@@ -51,13 +51,13 @@ class ArgumentTransformer(Action):
 
 
 class AliasTransformer(ArgumentTransformer):
-    def __init__(self, owner, alias, cmltype, _all=None) -> None:
+    def __init__(self, owner, alias, type, _all=None) -> None:
         super().__init__(owner)
         assert isinstance(alias, dict) or callable(alias) or alias is None
         self.alias = alias
         self._all = _all
-        self.cmltype = cmltype
-        self.cmltype.check_aliases(self.alias, name=self.name)
+        self.type = type if isinstance(type, Type) else type()
+        self.type.check_aliases(self.alias, name=self.name)
 
     def _apply_to_value_once(self, value):
         if value == ALL:
@@ -108,7 +108,7 @@ class FormatTransformer(ArgumentTransformer):
 class TypeTransformer(ArgumentTransformer):
     def __init__(self, owner, type) -> None:
         super().__init__(owner)
-        self.type = type
+        self.type = type if isinstance(type, Type) else type()
 
     def transform(self, value):
         return self.type.cast(value)
@@ -122,7 +122,7 @@ class EnumChecker(ArgumentTransformer):
         super().__init__(owner)
         self.owner = owner
         self.values = values
-        self.type = type
+        self.type = type if isinstance(type, Type) else type()
 
     def transform(self, value):
         if not self.type.contains(value, self.values):
@@ -137,7 +137,7 @@ class CanonicalizeTransformer(ArgumentTransformer):
     def __init__(self, owner, values, type) -> None:
         super().__init__(owner)
         self.values = values
-        self.type = type
+        self.type = type if isinstance(type, Type) else type()
 
     def transform(self, value):
         print(f"       canonicalizing {value}")
