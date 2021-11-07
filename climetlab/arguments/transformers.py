@@ -50,52 +50,63 @@ class ArgumentTransformer(Action):
         return self.owner.name
 
 
-class AliasTransformer(ArgumentTransformer):
-    def __init__(self, owner, alias, type, _all=None) -> None:
+class _TypedTransformer(ArgumentTransformer):
+    def __init__(self, owner, type) -> None:
         super().__init__(owner)
-        assert isinstance(alias, dict) or callable(alias) or alias is None
-        self.alias = alias
-        self._all = _all
         self.type = type if isinstance(type, Type) else type()
-        self.type.check_aliases(self.alias, name=self.name)
 
-    def _apply_to_value_once(self, value):
-        if value == ALL:
-            assert self._all, "Cannot find values for 'ALL'"
-            return self._all
 
-        if isinstance(value, (tuple, list)):
-            return [self.transform(v) for v in value]
+class AliasTransformer(_TypedTransformer):
+    def __init__(self, owner, type, aliases) -> None:
+        super().__init__(owner, type)
+        self.aliases = aliases
 
-        if callable(self.alias):
-            return self.alias(value)
+        if isinstance(self.aliases, dict):
+            self.unalias = self.from_dict
+            return
 
-        if isinstance(self.alias, dict):
-            try:
-                return self.alias[value]
-            except KeyError:  # No alias for this value
-                pass
-            except TypeError:  # if value is not hashable
-                pass
-            return value
+        if callable(self.aliases):
+            self.unalias = self.aliases
+            return
 
-        assert False, (self.name, self.alias)
+        self.unalias = self.unsupported
+
+    def unsupported(self, value):
+        raise NotImplementedError(self.aliases)
+
+    def from_dict(self, value):
+        # if value == ALL:
+        #     assert self._all, "Cannot find values for 'ALL'"
+        #     return self._all
+
+        # if isinstance(value, (tuple, list)):
+        #     return [self.transform(v) for v in value]
+
+        # if callable(self.alias):
+        #     return self.alias(value)
+
+        try:
+            return self.aliases[value]
+        except KeyError:  # No alias for this value
+            pass
+        except TypeError:  # if value is not hashable
+            pass
+        return value
 
     def transform(self, value):
         old = object()
         while old != value:
             old = value
-            value = self._apply_to_value_once(old)
+            value = self.unalias(old)
         return value
 
     def __repr__(self) -> str:
-        return f"AliasTransformer({self.owner},{self.alias},{self.owner})"
+        return f"AliasTransformer({self.owner},{self.aliases},{self.type})"
 
 
-class FormatTransformer(ArgumentTransformer):
+class FormatTransformer(_TypedTransformer):
     def __init__(self, owner, format, type) -> None:
-        super().__init__(owner)
-        self.type = type if isinstance(type, Type) else type()
+        super().__init__(owner, type)
         self.format = format
 
     def transform(self, value):
@@ -105,46 +116,15 @@ class FormatTransformer(ArgumentTransformer):
         return f"FormatTransformer({self.owner},{self.format},{self.type})"
 
 
-class TypeTransformer(ArgumentTransformer):
-    def __init__(self, owner, type) -> None:
-        super().__init__(owner)
-        self.type = type if isinstance(type, Type) else type()
+class TypeTransformer(_TypedTransformer):
+    def __init__(self, owner, type):
+        super().__init__(owner, type)
 
     def transform(self, value):
         return self.type.cast(value)
 
     def __repr__(self) -> str:
         return f"TypeTransformer({self.owner},{self.type}"
-
-
-class EnumChecker(ArgumentTransformer):
-    def __init__(self, owner, values, type) -> None:
-        super().__init__(owner)
-        self.owner = owner
-        self.values = values
-        self.type = type if isinstance(type, Type) else type()
-
-    def transform(self, value):
-        if not self.type.contains(value, self.values):
-            raise ValueError(f"Value {value} is not in {self.values}")
-        return value
-
-    def __repr__(self) -> str:
-        return f"EnumChecker({self.owner},{self.values},{self.type})"
-
-
-class CanonicalizeTransformer(ArgumentTransformer):
-    def __init__(self, owner, values, type) -> None:
-        super().__init__(owner)
-        self.values = values
-        self.type = type if isinstance(type, Type) else type()
-
-    def transform(self, value):
-        print(f"       canonicalizing {value}")
-        return self.type.canonicalize(value, self.values)
-
-    def __repr__(self) -> str:
-        return f"CanonicalizeTransformer({self.owner},{self.values},{self.type})"
 
 
 class AvailabilityChecker(Action):

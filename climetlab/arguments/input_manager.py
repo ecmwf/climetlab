@@ -50,13 +50,10 @@ class InputManager:
         print("Building...")
 
         for a in self.arguments:
-            a.add_type_transformers(self._pipeline)
-
-        for a in self.arguments:
             a.add_alias_transformers(self._pipeline)
 
         for a in self.arguments:
-            a.add_enum_transformers(self._pipeline)
+            a.add_type_transformers(self._pipeline)
 
         for availability in self.availabilities:
             transform = AvailabilityChecker(availability)

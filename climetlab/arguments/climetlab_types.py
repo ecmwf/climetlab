@@ -16,15 +16,12 @@ def _identity(x):
 
 class ListMixin:
     def cast(self, value):
-        if not isinstance(value, (tuple, list)):
-            return self.cast([value])
+        if isinstance(value, tuple):  # We choose list over tuple
+            value = list(value)
+        if not isinstance(value, list):
+            value = [value]
+
         return [self._cast(v) for v in value]
-
-    def canonicalize(self, value, values):
-        return [self._canonicalize(v, values) for v in value]
-
-    def contains(self, value, values):
-        return all([self._contains(v, values) for v in value])
 
     def format(self, value, format):
         return [self._format(v, format) for v in value]
@@ -34,56 +31,19 @@ class NonListMixin:
     def cast(self, value):
         return self._cast(value)
 
-    def canonicalize(self, value, values):
-        return self._canonicalize(value, values)
-
-    def contains(self, value, values):
-        return self._contains(value, values)
-
     def format(self, value, format):
         return self._format(value, format)
 
 
 class Type:
-    multiple = None
+    def _cast(self, value):
+        raise NotImplementedError(self.__class__)
 
-    def include_args(self, decorator, args):
-        args = [f" '{v}'" for v in args]
-        raise NotImplementedError(
-            f"Cannot process additional arguments:{','.join([v for v in args])}."
-        )
-
-    def cast_to_type_list(self, value) -> list:
-        if isinstance(value, (tuple, list)):
-            return [self.cast_to_type(v) for v in value]
-        return [self.cast_to_type(value)]
-
-    def cast_to_type(self, value):
-        return value
-
-    def apply_format(self, value):
-        print(f"{self.__class__} is formatting {value}")
-        return value
-
-    def compare(self, value, v):
-        return value == v
-
-    def _contains(self, value, values):
-        return value in values
-
-    def _canonicalize(self, value, values):
-        return value
-
-    def check_aliases(self, aliases, name=None):
-        if self.multiple is False:
-            for k, v in aliases.items():
-                if isinstance(v, (tuple, list)):
-                    raise ValueError(
-                        f"Cannot alias to a list for '{name}' of type {self.__class__} with alias {k}={v}."
-                    )
+    def _format(self, value, format):
+        return format % (value,)
 
     def __repr__(self):
-        return self.__class__.__name
+        return self.__class__.__name__
 
 
 class _EnumType(Type):
@@ -91,28 +51,31 @@ class _EnumType(Type):
         self.values = values
 
     def _cast(self, value):
-        # TODO:
-        return value
+        def same(a, b):
+            if isinstance(a, str) and isinstance(b, str):
+                return a.upper() == b.upper()
+            return a == b
 
-    def _format(self, value, format):
-        # TODO:
-        return format % value
+        for v in self.values:
+            if same(value, v):
+                return v
+
+        raise ValueError(
+            f"Invalid value '{value}', possible values are {self.values} ({self.type})"
+        )
 
 
-class EnumType(_EnumType):
+class EnumType(_EnumType, NonListMixin):
+    pass
+
+
+class EnumListType(_EnumType, ListMixin):
     def cast(self, value):
-        return self._cast(value)
+        from climetlab.arguments.transformers import ALL
 
-    def format(self, value, format):
-        return self._format(value, format)
-
-
-class EnumListType(_EnumType):
-    def cast(self, value):
-        return [self._cast(v) for v in value]
-
-    def format(self, value, format):
-        return [self._format(v, format) for v in value]
+        if value is ALL:
+            return self.values
+        return super().cast(value)
 
 
 class _StrType(Type):
@@ -121,19 +84,6 @@ class _StrType(Type):
 
     def _format(self, value, format):
         return format % value
-
-    def compare(self, value, v):
-        if isinstance(value, str) and isinstance(v, str):
-            return value.upper() == v.upper()
-        return value == v
-
-    def _canonicalize(self, value, values):
-        for v in values:
-            if self.compare(v, value):
-                return v
-        raise ValueError(
-            f'Invalid value "{value}"({type(value)}), possible values are {values}'
-        )
 
 
 class StrType(_StrType, NonListMixin):
@@ -201,17 +151,20 @@ class DateListType(_DateType, ListMixin):
 
 
 class _VariableType(Type):
+    def __init__(self, convention):
+        self.convention = convention
+
     def include_args(self, decorator, args):
         assert len(args) == 1, args
         decorator.format = args[0]
 
     def _cast(self, value):
-        return str(value)
-
-    def _format(self, value, convention):
         from climetlab.utils.conventions import normalise_string
 
-        return normalise_string(value, convention=convention)
+        return normalise_string(str(value), convention=self.convention)
+
+    def _format(self, value, format):
+        return format % value
 
 
 class VariableType(_VariableType, NonListMixin):
@@ -303,3 +256,16 @@ def _find_cml_type(input_type, multiple):
         )
     print(f"Cannot find cml_type for {input_type}")
     return None
+
+
+def infer_type(values, type, multiple):
+
+    if type is None and multiple is None:
+        if (isinstance(values, tuple) and multiple is None) or (isinstance(values, list, tuple) and not multiple):
+            return EnumType(values)
+
+        if (isinstance(values, list) and multiple is None) or (isinstance(values, list, tuple) and multiple):
+            return EnumListType(values)
+
+    if type is not None:
+        return type

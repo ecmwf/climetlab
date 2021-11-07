@@ -10,8 +10,6 @@ import logging
 
 from climetlab.arguments.transformers import (
     AliasTransformer,
-    CanonicalizeTransformer,
-    EnumChecker,
     FormatTransformer,
     TypeTransformer,
 )
@@ -95,7 +93,7 @@ class Argument:
 
     def add_alias_transformers(self, pipeline):
         if self.aliases:
-            pipeline.append(AliasTransformer(self, self.aliases, self.cmltype))
+            pipeline.append(AliasTransformer(self, self.cmltype, self.aliases))
 
     def add_type_transformers(self, pipeline):
         pipeline.append(TypeTransformer(self, self.cmltype))
@@ -124,14 +122,6 @@ class Argument:
 
             return merge_values(values1, values2)
         return None
-
-    def add_enum_transformers(self, pipeline):
-        if self.values:
-            pipeline.append(
-                CanonicalizeTransformer(self, self.values, type=self.cmltype)
-            )
-        if self.values:
-            pipeline.append(EnumChecker(self, self.values, type=self.cmltype))
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:

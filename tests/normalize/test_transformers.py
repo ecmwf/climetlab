@@ -70,10 +70,10 @@ def test_types():
     ]
 
     with pytest.raises(AssertionError):  # FIXME: Not sure what this should be
-        assert TypeTransformer(None, type=VariableType).transform(42) == 0
+        assert TypeTransformer(None, type=VariableType("cf")).transform(42) == 0
 
     with pytest.raises(AssertionError):  # FIXME: Not sure what this should be
-        assert TypeTransformer(None, type=VariableListType).transform(42) == 0
+        assert TypeTransformer(None, type=VariableListType("cf")).transform(42) == 0
 
     assert TypeTransformer(None, type=BoundingBoxType).transform(
         (1, -1, -1, 1)
@@ -171,6 +171,7 @@ def test_formats():
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    test_types()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)
