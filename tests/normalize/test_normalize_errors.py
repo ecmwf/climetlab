@@ -53,6 +53,18 @@ def test_enum_cannot_find_type():
         g(["a", "b"])
 
 
+# def test_enum_cannot_find_type_2():
+#     g = normalize("name", type="zzz")(name_no_default)
+#     with pytest.raises(ValueError, match="Cannot infer type .*"):
+#         g(["a", "b"])
+#
+#
+# def test_enum_cannot_find_type_3():
+#     g = normalize("name", type="zzz", multiple=True)(name_no_default)
+#     with pytest.raises(ValueError, match="Cannot infer type .*"):
+#         g(["a", "b"])
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

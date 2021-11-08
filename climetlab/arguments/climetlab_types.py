@@ -8,6 +8,7 @@
 #
 
 import datetime
+import inspect
 import logging
 
 LOG = logging.getLogger(__name__)
@@ -246,8 +247,15 @@ def _infer_type(**kwargs):
     values = kwargs.pop("values", None)
     multiple = kwargs.pop("multiple", None)
 
-    # TODO:
-    assert not isinstance(_type, Type), f"IMPLEMENT infer_type({_type})"
+    if inspect.isclass(_type) and issubclass(_type, Type):
+        if (multiple is False and _type in LIST_TYPES.values()) or (
+            multiple is True and _type in NON_LIST_TYPES.values()
+        ):
+            raise ValueError(f"Cannot set multiple={multiple} and type={_type}.")
+        try:
+            return _type(values=values, **kwargs)
+        except Exception as e:
+            raise ValueError(f"Error building {_type}({kwargs}): {e}")
 
     # Take care of builtin types and others
     if _type in GIVEN_TYPES:
@@ -273,7 +281,14 @@ def _infer_type(**kwargs):
 
         if multiple is None:
             try:
-                return {**LIST_TYPES, **NON_LIST_TYPES}[_type](**kwargs)
+                _type = {**LIST_TYPES, **NON_LIST_TYPES}[_type]
+            except KeyError as e:
+                raise ValueError(
+                    f"Cannot find type '{_type}'. Type must be in { list({**LIST_TYPES, **NON_LIST_TYPES}.keys()) }"
+                )
+
+            try:
+                _type = _type(**kwargs)
             except Exception as e:
                 raise ValueError(f"Error building {_type}({kwargs}): {e}")
 
