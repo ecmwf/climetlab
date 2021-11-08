@@ -9,12 +9,12 @@
 import inspect
 import logging
 import os
-import re
 import threading
 from functools import wraps
 
-from climetlab.arguments.climetlab_types import _find_cml_type
-from climetlab.arguments.guess import guess_type_list
+from climetlab.arguments.climetlab_types import infer_type
+
+# from climetlab.arguments.guess import guess_type_list
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -88,83 +88,37 @@ class normalize(Decorator):
         self,
         name,
         values=None,
-        alias=None,
+        aliases=None,
         multiple=None,
         type=None,
         format=None,
         optional=False,
     ):
-        if name is not None:
-            assert isinstance(name, str)
-
-        self._type_from_values = None
+        assert name is None or isinstance(name, str)
 
         self.name = name
-        self.alias = alias
+        self.aliases = aliases
         self.multiple = multiple
-        self.type = type
         self.format = format
         self.optional = optional
 
-        self.parse_values(values)
-        print(f"Parsed values {values}. type = {self.type}")
+        options = {}
+        self.cml_type = infer_type(values, type, multiple, options)
 
+        # In case the infer_type changes anynthing, e.g. format
+        for k, v in options.items():
+            setattr(self, k, v)
+
+        # TODO: check if still needed
         if self.format is None:
-            if self.type is str:
+            if self.cml_type is str:
                 self.format = str
-
-    def parse_values(self, values):
-        if not values:
-            self.values = None
-            return
-
-        if isinstance(values, (tuple, list)):
-            self.values = list(values)
-            self._type_guessed_from_values = guess_type_list(values)
-            return
-
-        assert isinstance(values, str), values
-        self.values = None
-
-        if "(" in values:
-            m = re.match(r"(.+)\((.+)\)", values)
-            cml_type_str = m.group(1)
-            args = m.group(2).split(",")
-        else:
-            cml_type_str = values
-            args = []
-
-        self._type_from_values = cml_type_str
-        self._type_args = args
 
     def visit(self, manager):
         manager.parameters[self.name].append(self)
 
     def get_values(self):
         return self.values
-
-    @property
-    def aliases(self):
-        return self.alias
-
-    @property
-    def cml_type(self):
-        # explicitely given as a string in values='type(...)'
-        if self._type_from_values:
-            type = _find_cml_type(self._type_from_values, self.multiple)
-            if self._type_args:
-                type.include_args(self, self._type_args)
-            return type
-
-        # explicitely given in type=
-        if self.type:
-            return _find_cml_type(self.type, self.multiple)
-
-        # infer from values
-        if self._type_guessed_from_values:
-            return _find_cml_type(self._type_guessed_from_values, self.multiple)
-
-        return None
 
 
 class availability(Decorator):

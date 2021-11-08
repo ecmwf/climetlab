@@ -75,30 +75,29 @@ class AliasTransformer(_TypedTransformer):
         raise NotImplementedError(self.aliases)
 
     def from_dict(self, value):
-        # if value == ALL:
-        #     assert self._all, "Cannot find values for 'ALL'"
-        #     return self._all
-
-        # if isinstance(value, (tuple, list)):
-        #     return [self.transform(v) for v in value]
-
-        # if callable(self.alias):
-        #     return self.alias(value)
-
         try:
             return self.aliases[value]
         except KeyError:  # No alias for this value
             pass
         except TypeError:  # if value is not hashable
             pass
+
         return value
 
-    def transform(self, value):
+    def _transform_one(self, value):
         old = object()
         while old != value:
             old = value
             value = self.unalias(old)
+            print("Unalias -------->", old, value)
         return value
+
+    def transform(self, value):
+        if isinstance(value, list):
+            return [self._transform_one(v) for v in value]
+        if isinstance(value, tuple):
+            return tuple([self._transform_one(v) for v in value])
+        return self._transform_one(value)
 
     def __repr__(self) -> str:
         return f"AliasTransformer({self.owner},{self.aliases},{self.type})"

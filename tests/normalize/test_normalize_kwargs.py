@@ -68,7 +68,7 @@ def f(a, /, b, c=4, *, x=3):
     return a, b, c, x
 
 out = f("A", b="B", c=7, x=8)
-assert out == ("A", "B", 7, 8)
+assert out == ("A", "B", 7, 8), out
 """
     )
 
@@ -84,7 +84,7 @@ def g(a, /, b, c=4, *, x=3):
 
 out = g("A", b="B", c=7, x=8)
 print(out)
-assert out == ("A", "B", 7, 8)
+assert out == ("A", "B", 7, 8), out
 """
     )
 

@@ -8,6 +8,10 @@
 #
 
 import datetime
+import logging
+import re
+
+LOG = logging.getLogger(__name__)
 
 
 def _identity(x):
@@ -52,16 +56,24 @@ class _EnumType(Type):
 
     def _cast(self, value):
         def same(a, b):
-            if isinstance(a, str) and isinstance(b, str):
+            if a == b:
+                return True
+            try:
                 return a.upper() == b.upper()
-            return a == b
+            except AttributeError:
+                pass
+            try:
+                return float(a) == float(b)
+            except TypeError:
+                pass
+            return False
 
         for v in self.values:
             if same(value, v):
                 return v
 
         raise ValueError(
-            f"Invalid value '{value}', possible values are {self.values} ({self.type})"
+            f"Invalid value '{value}', possible values are {self.values} ({self.__class__.__name__})"
         )
 
 
@@ -203,69 +215,108 @@ class BoundingBoxType(Type, NonListMixin):
         return formatter(value)
 
 
-def _find_cml_type(input_type, multiple):
+GIVEN_TYPES = {
+    int: "int",
+    float: "float",
+    str: "str",
+    datetime.datetime: "date",
+    bool: "bool",  # TODO: implement me
+}
 
-    if isinstance(input_type, Type):
-        if multiple is not None and hasattr(input_type, "multiple"):
-            assert input_type.multiple == multiple, (input_type, multiple)
-        return input_type
+NON_LIST_TYPES = {
+    "int": IntType,
+    "float": FloatType,
+    "str": StrType,
+    "enum": EnumType,
+    "date": DateType,
+    "variable": VariableType,
+    "bounding-box": BoundingBoxType,
+    "bbox": BoundingBoxType,
+}
+LIST_TYPES = {
+    "int-list": IntListType,
+    "float-list": FloatListType,
+    "str-list": StrListType,
+    "enum-list": EnumListType,
+    "date-list": DateListType,
+    "variable-list": VariableListType,
+}
 
-    if not isinstance(input_type, str):
-        str_type = {
-            int: "int",
-            float: "float",
-            str: "str",
-            datetime.datetime: "date",
-        }[input_type]
-        return _find_cml_type(str_type, multiple=multiple)
-
-    NON_LIST_TYPES = {
-        "int": IntType,
-        "float": FloatType,
-        "str": StrType,
-        "enum": EnumType,
-        "date": DateType,
-        "variable": VariableType,
-        "bounding-box": BoundingBoxType,
-        "bbox": BoundingBoxType,
-    }
-    LIST_TYPES = {
-        "int-list": IntListType,
-        "float-list": FloatListType,
-        "str-list": StrListType,
-        "enum-list": EnumListType,
-        "date-list": DateListType,
-        "variable-list": VariableListType,
-    }
-
-    if multiple is None:
-        return {**LIST_TYPES, **NON_LIST_TYPES}[input_type]()
-
-    if multiple is False:
-        if input_type in LIST_TYPES:
-            raise ValueError(f"Cannot set multiple={multiple} and type={input_type}.")
-        return NON_LIST_TYPES[input_type]()
-
-    if multiple is True:
-        if input_type in LIST_TYPES:
-            return LIST_TYPES[input_type]()
-        if input_type + "-list" in LIST_TYPES:
-            return LIST_TYPES[input_type + "-list"]()
-        raise ValueError(
-            f"Cannot set multiple={multiple} and type={input_type}. Type must be in {list(LIST_TYPES.keys())}"
-        )
-    print(f"Cannot find cml_type for {input_type}")
-    return None
+OPTIONS = {
+    "date": ("format",),
+    "date-list": ("format",),
+    "bounding-box": ("format",),
+    "bbox": ("format",),
+}
 
 
-def infer_type(values, type, multiple):
+def infer_type(values, type, multiple, options, *args):
 
-    if type is None and multiple is None:
-        if (isinstance(values, tuple) and multiple is None) or (isinstance(values, list, tuple) and not multiple):
+    # TODO:
+    assert not isinstance(type, Type), f"IMPLEMENT infer_type({type})"
+
+    # Take care of builtin types and others
+    if type in GIVEN_TYPES:
+        return infer_type(values, GIVEN_TYPES[type], multiple, options)
+
+    # normalize("name", ["a", "b", "c"]) and similar
+    if isinstance(values, (list, tuple)):  # and type is None:
+        if type is not None:
+            LOG.warning(
+                f"Type ignored with enums, values={values}, type={type} and multiple={multiple}"
+            )
+        if multiple is False or (isinstance(values, tuple) and multiple is None):
             return EnumType(values)
 
-        if (isinstance(values, list) and multiple is None) or (isinstance(values, list, tuple) and multiple):
+        if multiple is True or (isinstance(values, list) and multiple is None):
             return EnumListType(values)
 
-    if type is not None:
-        return type
+    if isinstance(values, str) and type is None:
+        if "(" in values:
+            m = re.match(r"(.+)\((.+)\)", values)
+            type = m.group(1)
+            args = m.group(2).split(",")
+        else:
+            type = values
+            args = []
+
+        if args:
+            # Remove
+            for a, o in zip(args, OPTIONS.get(type, [])):
+                options[o] = a
+            args = args[len(OPTIONS.get(type, [])) :]
+
+        return infer_type(None, type, multiple, options, *args)
+
+    if values is None and isinstance(type, str):
+        print("----->", type, args)
+        if multiple is None:
+            try:
+                return {**LIST_TYPES, **NON_LIST_TYPES}[type](*args)
+            except Exception as e:
+                raise ValueError(f"Error building {type}({args}): {e}")
+
+        if multiple is False:
+            if type in LIST_TYPES:
+                raise ValueError(f"Cannot set multiple={multiple} and type={type}.")
+            return NON_LIST_TYPES[type](*args)
+
+        if multiple is True:
+            if type in LIST_TYPES:
+                return LIST_TYPES[type]()
+            if type + "-list" in LIST_TYPES:
+                return LIST_TYPES[type + "-list"](*args)
+            raise ValueError(
+                f"Cannot set multiple={multiple} and type={type}. Type must be in {list(LIST_TYPES.keys())}"
+            )
+
+    # Place older for availability, assuming Enum
+    if values is None and type is None and multiple is not None:
+        if multiple:
+            return EnumListType(values)
+        else:
+            return EnumType(values)
+
+    raise ValueError(
+        f"Cannot infer type from values={values}, type={type} and multiple={multiple}"
+    )
