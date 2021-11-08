@@ -242,17 +242,17 @@ def infer_type(**kwargs):
 
 
 def _infer_type(**kwargs):
-    type = kwargs.pop("type", None)
+    _type = kwargs.pop("type", None)
     values = kwargs.pop("values", None)
     multiple = kwargs.pop("multiple", None)
 
     # TODO:
-    assert not isinstance(type, Type), f"IMPLEMENT infer_type({type})"
+    assert not isinstance(_type, Type), f"IMPLEMENT infer_type({_type})"
 
     # Take care of builtin types and others
-    if type in GIVEN_TYPES:
+    if _type in GIVEN_TYPES:
         return infer_type(
-            type=GIVEN_TYPES[type],
+            type=GIVEN_TYPES[_type],
             values=values,
             multiple=multiple,
             **kwargs,
@@ -260,37 +260,37 @@ def _infer_type(**kwargs):
 
     # normalize("name", ["a", "b", "c"]) and similar
     if isinstance(values, (list, tuple)):  # and type is None:
-        if type is not None:
+        if _type is not None:
             LOG.warning(
-                f"Type ignored with enums, values={values}, type={type} and multiple={multiple}"
+                f"Type ignored with enums, values={values}, type={_type} and multiple={multiple}"
             )
         if multiple:
             return EnumListType(values)
         else:
             return EnumType(values)
 
-    if values is None and isinstance(type, str):
+    if values is None and isinstance(_type, str):
 
         if multiple is None:
             try:
-                return {**LIST_TYPES, **NON_LIST_TYPES}[type](**kwargs)
+                return {**LIST_TYPES, **NON_LIST_TYPES}[_type](**kwargs)
             except Exception as e:
-                raise ValueError(f"Error building {type}({kwargs}): {e}")
+                raise ValueError(f"Error building {_type}({kwargs}): {e}")
 
         if multiple is False:
-            if type in LIST_TYPES:
-                raise ValueError(f"Cannot set multiple={multiple} and type={type}.")
-            return NON_LIST_TYPES[type](**kwargs)
+            if _type in LIST_TYPES:
+                raise ValueError(f"Cannot set multiple={multiple} and type={_type}.")
+            return NON_LIST_TYPES[_type](**kwargs)
 
         if multiple is True:
-            if type in LIST_TYPES:
-                return LIST_TYPES[type]()
-            if type + "-list" in LIST_TYPES:
-                return LIST_TYPES[type + "-list"](**kwargs)
+            if _type in LIST_TYPES:
+                return LIST_TYPES[_type]()
+            if _type + "-list" in LIST_TYPES:
+                return LIST_TYPES[_type + "-list"](**kwargs)
             raise ValueError(
-                f"Cannot set multiple={multiple} and type={type}. Type must be in {list(LIST_TYPES.keys())}"
+                f"Cannot set multiple={multiple} and type={_type}. Type must be in {list(LIST_TYPES.keys())}"
             )
 
     raise ValueError(
-        f"Cannot infer type from values={values}, type={type} and multiple={multiple}"
+        f"Cannot infer type from values={values}, type={_type} and multiple={multiple}"
     )
