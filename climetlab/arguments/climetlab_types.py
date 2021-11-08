@@ -94,9 +94,6 @@ class _StrType(Type):
     def _cast(self, value):
         return str(value)
 
-    def _format(self, value, format):
-        return format % value
-
 
 class StrType(_StrType, NonListMixin):
     pass
@@ -110,9 +107,6 @@ class _IntType(Type):
     def _cast(self, value):
         return int(value)
 
-    def _format(self, value, format):
-        return format % value
-
 
 class IntType(_IntType, NonListMixin):
     pass
@@ -125,9 +119,6 @@ class IntListType(_IntType, ListMixin):
 class _FloatType(Type):
     def _cast(self, value):
         return float(value)
-
-    def _format(self, value, format):
-        return format % value
 
 
 class FloatType(_FloatType, NonListMixin):
@@ -174,9 +165,6 @@ class _VariableType(Type):
         from climetlab.utils.conventions import normalise_string
 
         return normalise_string(str(value), convention=self.convention)
-
-    def _format(self, value, format):
-        return format % value
 
 
 class VariableType(_VariableType, NonListMixin):
