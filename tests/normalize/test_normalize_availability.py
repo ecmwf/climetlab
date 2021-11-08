@@ -363,7 +363,7 @@ def test_norm(func):
         func(level="1000", param="zz", step="24")
 
 
-def test_avail_norm_setup():
+def test_avail_norm_1():
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func1(param):
@@ -384,14 +384,14 @@ def test_avail_norm_setup():
 
         assert func3("a", 24) == ["a"]
 
-    with pytest.raises(ValueError):
+def test_avail_norm_2():
 
-        @normalize("param", ["A", "B"])
-        @availability(C1)
-        def func5(param):
-            return param
+    @normalize("param", ["A", "B"])
+    @availability(C1)
+    def func5(param):
+        return param
 
-        assert func5(param="A") == ["A"]
+    assert func5(param="A") == "A"
 
     @availability_decoratorrator
     @normalize("param", ["a", "b"])
@@ -399,7 +399,7 @@ def test_avail_norm_setup():
     def func6(param):
         return param
 
-    assert func6(param="A") == ["a"]
+    assert func6(param="A") == "a"
 
 
 def test_availability_5():
