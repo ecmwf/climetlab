@@ -93,6 +93,7 @@ class normalize(Decorator):
         type=None,
         format=None,
         optional=False,
+        **kwargs,
     ):
         assert name is None or isinstance(name, str)
 
@@ -103,7 +104,7 @@ class normalize(Decorator):
         self.optional = optional
 
         options = {}
-        self.cml_type = infer_type(values, type, multiple, options)
+        self.cml_type = infer_type(values, type, multiple, options, **kwargs)
 
         # In case the infer_type changes anynthing, e.g. format
         for k, v in options.items():

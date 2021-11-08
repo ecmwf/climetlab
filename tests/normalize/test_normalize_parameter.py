@@ -13,7 +13,7 @@ from climetlab.decorators import normalize
 
 
 def test_param_convention_mars_1():
-    @normalize("parameter", "variable-list", format="mars")
+    @normalize("parameter", "variable-list", convention="mars")
     def values_mars(parameter):
         return parameter
 

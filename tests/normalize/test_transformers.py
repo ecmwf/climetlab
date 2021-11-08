@@ -171,7 +171,6 @@ def test_formats():
 
 
 if __name__ == "__main__":
-    test_types()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

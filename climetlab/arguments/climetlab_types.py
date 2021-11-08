@@ -250,7 +250,7 @@ OPTIONS = {
 }
 
 
-def infer_type(values, type, multiple, options, *args):
+def infer_type(values, type, multiple, options, *args, **kwargs):
 
     # TODO:
     assert not isinstance(type, Type), f"IMPLEMENT infer_type({type})"
@@ -286,26 +286,26 @@ def infer_type(values, type, multiple, options, *args):
                 options[o] = a
             args = args[len(OPTIONS.get(type, [])) :]
 
-        return infer_type(None, type, multiple, options, *args)
+        return infer_type(None, type, multiple, options, *args, **kwargs)
 
     if values is None and isinstance(type, str):
         print("----->", type, args)
         if multiple is None:
             try:
-                return {**LIST_TYPES, **NON_LIST_TYPES}[type](*args)
+                return {**LIST_TYPES, **NON_LIST_TYPES}[type](*args, **kwargs)
             except Exception as e:
-                raise ValueError(f"Error building {type}({args}): {e}")
+                raise ValueError(f"Error building {type}({args}{kwargs}): {e}")
 
         if multiple is False:
             if type in LIST_TYPES:
                 raise ValueError(f"Cannot set multiple={multiple} and type={type}.")
-            return NON_LIST_TYPES[type](*args)
+            return NON_LIST_TYPES[type](*args, **kwargs)
 
         if multiple is True:
             if type in LIST_TYPES:
                 return LIST_TYPES[type]()
             if type + "-list" in LIST_TYPES:
-                return LIST_TYPES[type + "-list"](*args)
+                return LIST_TYPES[type + "-list"](*args, **kwargs)
             raise ValueError(
                 f"Cannot set multiple={multiple} and type={type}. Type must be in {list(LIST_TYPES.keys())}"
             )

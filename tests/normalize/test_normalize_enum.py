@@ -201,7 +201,6 @@ def test_enum_alias_2():
 
 
 if __name__ == "__main__":
-    test_enum_list_alias_1()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

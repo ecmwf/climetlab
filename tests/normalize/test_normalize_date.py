@@ -68,8 +68,6 @@ def test_dates_multiple():
 
 
 if __name__ == "__main__":
-    test_normalize_dates_from_source()
+    from climetlab.testing import main
 
-    # from climetlab.testing import main
-
-    # main(__file__)
+    main(__file__)
