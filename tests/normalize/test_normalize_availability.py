@@ -263,17 +263,17 @@ C2 = [
 ]
 
 
-availability_decoratorrator = availability(C1)
+availability_decorator = availability(C1)
 av = Availability(C1)
 
 
-@availability_decoratorrator
+@availability_decorator
 def func_a(level, param, step):
     return param
 
 
 class Klass_a:
-    @availability_decoratorrator
+    @availability_decorator
     def __init__(self, level, param, step):
         pass
 
@@ -286,13 +286,13 @@ class Klass_n:
 
 class Klass_a_n:
     @normalize("param", ["a", "b"])
-    @availability_decoratorrator
+    @availability_decorator
     def __init__(self, level, param, step):
         pass
 
 
 class Klass_n_a:
-    @availability_decoratorrator
+    @availability_decorator
     @normalize("param", ["a", "b"])
     def __init__(self, level, param, step):
         pass
@@ -304,12 +304,12 @@ def func_n(level, param, step):
 
 
 @normalize("param", ["a", "b"])
-@availability_decoratorrator
+@availability_decorator
 def func_a_n(level, param, step):
     return param
 
 
-@availability_decoratorrator
+@availability_decorator
 @normalize("param", ["a", "b"])
 def func_n_a(level, param, step):
     return param
@@ -393,7 +393,7 @@ def test_avail_norm_setup():
 
         assert func5(param="A") == ["A"]
 
-    @availability_decoratorrator
+    @availability_decorator
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func6(param):
