@@ -157,10 +157,6 @@ class _VariableType(Type):
     def __init__(self, convention):
         self.convention = convention
 
-    def include_args(self, decorator, args):
-        assert len(args) == 1, args
-        decorator.format = args[0]
-
     def _cast(self, value):
         from climetlab.utils.conventions import normalise_string
 
@@ -253,11 +249,10 @@ def infer_type(values, type, multiple, options, *args, **kwargs):
             LOG.warning(
                 f"Type ignored with enums, values={values}, type={type} and multiple={multiple}"
             )
-        if multiple is False or (isinstance(values, tuple) and multiple is None):
-            return EnumType(values)
-
-        if multiple is True or (isinstance(values, list) and multiple is None):
+        if multiple:
             return EnumListType(values)
+        else:
+            return EnumType(values)
 
     if isinstance(values, str) and type is None:
         if "(" in values:

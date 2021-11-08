@@ -140,7 +140,7 @@ def test_enum_list_alias_1():
         "name",
         ["a", "b", "c"],
         multiple=True,
-        alias={
+        aliases={
             "ab": ["a", "b"],
             "z": "a",
             "i": ["a", "b"],
@@ -165,7 +165,7 @@ def test_enum_list_alias_2():
         "name",
         [1, 2, 3],
         multiple=True,
-        alias=lambda x: {"one": 1, "o": "one"}.get(x, x),
+        aliases=lambda x: {"one": 1, "o": "one"}.get(x, x),
     )(name_no_default)
     assert enum_list_alias_2(1) == [1]
     assert enum_list_alias_2("one") == [1]
@@ -178,7 +178,7 @@ def test_enum_alias():
         "name",
         ["a", "b", "c"],
         multiple=True,
-        alias={"x": "y", "y": "z", "z": "a"},
+        aliases={"x": "y", "y": "z", "z": "a"},
     )(name_no_default)
     assert enum_alias("a") == ["a"]
     assert enum_alias("b") == ["b"]
@@ -191,7 +191,7 @@ def test_enum_alias_2():
     enum_alias = normalize(
         "name",
         ["a", "b", "c"],
-        alias={"x": "y", "y": "z", "z": "a"},
+        aliases={"x": "y", "y": "z", "z": "a"},
     )(name_no_default)
     assert enum_alias("a") == "a"
     assert enum_alias("b") == "b"

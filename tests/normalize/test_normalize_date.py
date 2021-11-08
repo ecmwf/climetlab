@@ -58,12 +58,12 @@ def test_dates_multiple():
     date_1 = normalize("d", "date-list(%Y.%m.%d)")(f)
     date_2 = normalize("d", "date(%Y.%m.%d)", multiple=True)(f)
     date_3 = normalize("d", "date(%Y.%m.%d)", multiple=False)(f)
-    date_4 = normalize("d", "date-list(%Y.%m.%d)", multiple=False)(f)
 
     assert date_1("20200513") == ["2020.05.13"]
     assert date_2("20200513") == ["2020.05.13"]
     assert date_3("20200513") == "2020.05.13"
     with pytest.raises(ValueError):
+        date_4 = normalize("d", "date-list(%Y.%m.%d)", multiple=False)(f)
         date_4("20200513")
 
 
