@@ -245,7 +245,7 @@ def infer_type(values, type, multiple, options, *args, **kwargs):
 
     # Take care of builtin types and others
     if type in GIVEN_TYPES:
-        return infer_type(values, GIVEN_TYPES[type], multiple, options)
+        return infer_type(values, GIVEN_TYPES[type], multiple, options, *args, **kwargs)
 
     # normalize("name", ["a", "b", "c"]) and similar
     if isinstance(values, (list, tuple)):  # and type is None:
