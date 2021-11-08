@@ -113,6 +113,7 @@ class normalize(Decorator):
                 type = values
                 args = []
 
+            # len(args) <= len(options)
             for name, value in zip(OPTIONS[type], args):
                 kwargs[name] = value
             kwargs["type"] = type

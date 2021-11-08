@@ -32,21 +32,28 @@ class Argument:
     ):
         assert name != "format"
         self.name = name
-        self.normalize = {}
         self.availability = None
         self._type = None
+        self._normalize = {}
+        self.format = None
+        self.aliases = None
+
+    @property
+    def normalize(self):
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, value):
+        self.format = value.pop("format", None)
+        self.aliases = value.pop("aliases", None)
+        self._normalize = value
 
     @property
     def cmltype(self):
         if self._type is None:
-            self.format = self.normalize.get("format")
             self.normalize.setdefault("values", self.availability)
             self._type = infer_type(**self.normalize)
         return self._type
-
-    @property
-    def aliases(self):
-        return self.normalize.get("aliases", {})
 
     def add_alias_transformers(self, pipeline):
         if self.aliases:
@@ -58,9 +65,6 @@ class Argument:
     def add_format_transformers(self, pipeline):
         if self.format is not None:
             pipeline.append(FormatTransformer(self, self.format, self.cmltype))
-
-    def set_default(self, default):
-        raise NotImplementedError("default TODO")
 
     def __repr__(self) -> str:
         return f"Argument({self.name})"
