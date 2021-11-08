@@ -99,6 +99,7 @@ class normalize(Decorator):
         **kwargs,
     ):
         assert name is None or isinstance(name, str)
+        self.name = name
 
         if isinstance(values, str):
             assert (
@@ -118,9 +119,8 @@ class normalize(Decorator):
         else:
             kwargs["values"] = values
 
-        self.name = name
+
         self.kwargs = kwargs
-        print("====>", name, kwargs)
 
     def register(self, manager):
         manager.register_normalize(self)

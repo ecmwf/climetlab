@@ -30,6 +30,7 @@ class Argument:
         self,
         name,
     ):
+        assert name != 'format'
         self.name = name
         self.normalize = {}
         self.availability = None
