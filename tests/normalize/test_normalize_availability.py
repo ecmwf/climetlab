@@ -263,17 +263,17 @@ C2 = [
 ]
 
 
-availability_decorator = availability(C1)
+availability_decoratorrator = availability(C1)
 av = Availability(C1)
 
 
-@availability_decorator
+@availability_decoratorrator
 def func_a(level, param, step):
     return param
 
 
 class Klass_a:
-    @availability_decorator
+    @availability_decoratorrator
     def __init__(self, level, param, step):
         pass
 
@@ -286,13 +286,13 @@ class Klass_n:
 
 class Klass_a_n:
     @normalize("param", ["a", "b"])
-    @availability_decorator
+    @availability_decoratorrator
     def __init__(self, level, param, step):
         pass
 
 
 class Klass_n_a:
-    @availability_decorator
+    @availability_decoratorrator
     @normalize("param", ["a", "b"])
     def __init__(self, level, param, step):
         pass
@@ -304,12 +304,12 @@ def func_n(level, param, step):
 
 
 @normalize("param", ["a", "b"])
-@availability_decorator
+@availability_decoratorrator
 def func_a_n(level, param, step):
     return param
 
 
-@availability_decorator
+@availability_decoratorrator
 @normalize("param", ["a", "b"])
 def func_n_a(level, param, step):
     return param
@@ -363,7 +363,7 @@ def test_norm(func):
         func(level="1000", param="zz", step="24")
 
 
-def test_avail_norm_1():
+def test_avail_norm_setup():
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func1(param):
@@ -384,15 +384,22 @@ def test_avail_norm_1():
 
         assert func3("a", 24) == ["a"]
 
+    with pytest.raises(ValueError):
 
-def test_avail_norm_3():
-    @availability_decorator
+        @normalize("param", ["A", "B"])
+        @availability(C1)
+        def func5(param):
+            return param
+
+        assert func5(param="A") == ["A"]
+
+    @availability_decoratorrator
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func6(param):
         return param
 
-    assert func6(param="A") == "a"
+    assert func6(param="A") == ["a"]
 
 
 def test_availability_5():
@@ -402,7 +409,6 @@ def test_availability_5():
 
     func7("a", step="36")
     with pytest.raises(ValueError, match=r"Invalid value .*"):
-        # with pytest.raises(ValueError, match=r"invalid combination .*"):
         func7(3, step="36")
 
 

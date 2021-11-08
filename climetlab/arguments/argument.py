@@ -51,7 +51,9 @@ class Argument:
     @property
     def cmltype(self):
         if self._type is None:
-            self.normalize.setdefault("values", self.availability)
+            if self.availability:
+                if self._normalize.get("values") is None:
+                    self._normalize["values"] = self.availability
             self._type = infer_type(**self.normalize)
         return self._type
 
