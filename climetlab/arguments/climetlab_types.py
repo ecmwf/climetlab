@@ -233,11 +233,13 @@ LIST_TYPES = {
     "variable-list": VariableListType,
 }
 
+
 def infer_type(**kwargs):
     print("INFER => ", kwargs)
     x = _infer_type(**kwargs)
     print("INFER <= ", x)
     return x
+
 
 def _infer_type(**kwargs):
     type = kwargs.pop("type", None)
@@ -268,9 +270,6 @@ def _infer_type(**kwargs):
             return EnumType(values)
 
     if values is None and isinstance(type, str):
-
-        # We remove format
-        kwargs.pop("format", None)
 
         if multiple is None:
             try:

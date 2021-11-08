@@ -119,7 +119,6 @@ class normalize(Decorator):
         else:
             kwargs["values"] = values
 
-
         self.kwargs = kwargs
 
     def register(self, manager):

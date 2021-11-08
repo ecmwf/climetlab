@@ -30,7 +30,7 @@ class Argument:
         self,
         name,
     ):
-        assert name != 'format'
+        assert name != "format"
         self.name = name
         self.normalize = {}
         self.availability = None
@@ -39,13 +39,10 @@ class Argument:
     @property
     def cmltype(self):
         if self._type is None:
+            self.format = self.normalize.get("format")
             self.normalize.setdefault("values", self.availability)
             self._type = infer_type(**self.normalize)
         return self._type
-
-    @property
-    def format(self):
-        return self.normalize.get("format")
 
     @property
     def aliases(self):
