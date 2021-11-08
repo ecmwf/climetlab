@@ -7,10 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 import logging
-from collections import defaultdict
 
 from .argument import Argument
-from .transformers import Action, AvailabilityChecker
+from .transformers import AvailabilityChecker
 
 LOG = logging.getLogger(__name__)
 

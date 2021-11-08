@@ -246,8 +246,6 @@ def infer_type(**kwargs):
     type = kwargs.pop("type", None)
     values = kwargs.pop("values", None)
     multiple = kwargs.pop("multiple", None)
-    availability = kwargs.pop("availability", None)
-    format = kwargs.pop("format", None)
 
     # TODO:
     assert not isinstance(type, Type), f"IMPLEMENT infer_type({type})"
@@ -258,8 +256,6 @@ def infer_type(**kwargs):
             type=GIVEN_TYPES[type],
             values=values,
             multiple=multiple,
-            availability=availability,
-            format=format,
             **kwargs,
         )
 
@@ -293,8 +289,6 @@ def infer_type(**kwargs):
             type=type,
             values=None,  # !
             multiple=multiple,
-            availability=availability,
-            format=format,
             **kwargs,
         )
 
@@ -319,14 +313,16 @@ def infer_type(**kwargs):
                 f"Cannot set multiple={multiple} and type={type}. Type must be in {list(LIST_TYPES.keys())}"
             )
 
-    # Place older for availability, assuming Enum
-    if values is None and type is None and multiple is not None:
-        if availability:
-            values = availability
-            if multiple:
-                return EnumListType(values)
-            else:
-                return EnumType(values)
+    # # Place older for availability, assuming Enum
+    # if values is None and type is None:
+    #     if "availability" in kwargs:
+    #         values = kwargs.pop("availability")
+    #         return infer_type(
+    #             type=type,
+    #             values=values,
+    #             multiple=multiple,
+    #             **kwargs,
+    #         )
 
     raise ValueError(
         f"Cannot infer type from values={values}, type={type} and multiple={multiple}"
