@@ -9,6 +9,9 @@
 # nor does it submit to any jurisdiction.
 #
 
+import itertools
+import os
+
 import pandas as pd
 import pytest
 import yaml
@@ -18,7 +21,7 @@ from climetlab.utils.availability import Availability
 
 
 @pytest.fixture
-def availability_s2s_1():
+def availability_s2s_as_list():
     s2s_config = """
     ecmwf:
         param: ['2t', 'ci', 'gh', 'lsm', 'msl']
@@ -46,11 +49,10 @@ def availability_s2s_1():
         dic["number"] = list(range(1, v["number"] + 1))
         dic["param"] = v["param"][:3]
         availability_list.append(dic)
-    av = Availability(availability_list)
-    return av
+    return availability_list
 
 
-def parser(v):
+def parser_for_availability_s2s(v):
     # import pandas as pd
 
     if "alldates" in v:
@@ -104,33 +106,43 @@ C1 = [
 ]
 
 
-@availability(C0)
-def func1(level, param, step):
-    pass
+def level_param_step_no_default(level, param, step):
+    return level, param, step
 
 
-def test_availability_1():
-    func1(level="1000", param="Z", step="24")
+def test_availability_decorator_from_text():
+    g = availability(C0)(level_param_step_no_default)
+    g(level="1000", param="Z", step="24")
     with pytest.raises(ValueError):
-        func1(level="1032100", param="Z", step="24")
+        g(level="1032100", param="Z", step="24")
 
 
-@availability("availability.json")
-def func2(level, param, step):
-    pass
+def test_availability_decorator_from_json_1():
+    @availability("availability.json")
+    def g(level, param, step):
+        return level_param_step_no_default(level, param, step)
+
+    g("1000", "Z", "24")
 
 
-def test_availability_2():
-    func2("1000", "Z", "24")
+def test_availability_decorator_from_json_2():
+    g = availability("availability.json")(level_param_step_no_default)
+    g("1000", "Z", "24")
 
 
-def test_availability_3():
+def test_availability_constructor_from_text():
     avail = Availability(C0)
     print(avail)
 
 
-def test_s2s(availability_s2s_1):
-    av = availability_s2s_1
+def test_availability_constructor_from_json():
+    path = os.path.join(os.path.dirname(__file__), "availability.json")
+    avail = Availability(path)
+    print(avail)
+
+
+def test_availability_s2s_1(availability_s2s_as_list):
+    av = Availability(availability_s2s_as_list)
 
     print(av.tree())
 
@@ -171,8 +183,8 @@ def test_s2s(availability_s2s_1):
 
 
 @pytest.fixture
-def availability_s2s_2():
-    s2s_bis = """
+def availability_s2s_as_txt():
+    return """
     - origin: ecmwf
       fctype: hindcast
       param: ['2t', 'ci', 'gh', 'lsm', 'msl', 'q', 'rsn', 'sm100', 'sm20', 'sp', 'sst', 'st100', 'st20', 't', 'tcc', 'tcw', 'tp', 'ttr', 'u', 'v']
@@ -214,16 +226,13 @@ def availability_s2s_2():
       alldates: {start: '2010-01-07', end: '2010-12-29', freq: 'w-thu'}
     """  # noqa: E501
 
+
+def test_availability_s2s_2(availability_s2s_as_txt):
     av = Availability(
-        s2s_bis,
-        parser=parser,
+        availability_s2s_as_txt,
+        parser=parser_for_availability_s2s,
         intervals="date",
     )
-    return av
-
-
-def test_availability_4(availability_s2s_2):
-    av = availability_s2s_2
     av.check(number=30, origin="eccc")
     with pytest.raises(ValueError):
         av.check(number=100, fctype="hindcast", origin="ecmwf")
@@ -263,104 +272,20 @@ C2 = [
 ]
 
 
-availability_decoratorrator = availability(C1)
-av = Availability(C1)
+def test_normalize_availability_on_func():
+    norm_decorator = normalize("param", ["a", "b"])
+    availability_decorator_1 = availability(C1)
+    availability_decorator_2 = availability(C2)
 
+    func1 = norm_decorator(availability_decorator_1(level_param_step_no_default))
+    func2 = norm_decorator(availability_decorator_2(level_param_step_no_default))
 
-@availability_decoratorrator
-def func_a(level, param, step):
-    return param
-
-
-class Klass_a:
-    @availability_decoratorrator
-    def __init__(self, level, param, step):
-        pass
-
-
-class Klass_n:
-    @normalize("param", ["a", "b", "c"])
-    def __init__(self, level, param, step):
-        pass
-
-
-class Klass_a_n:
-    @normalize("param", ["a", "b"])
-    @availability_decoratorrator
-    def __init__(self, level, param, step):
-        pass
-
-
-class Klass_n_a:
-    @availability_decoratorrator
-    @normalize("param", ["a", "b"])
-    def __init__(self, level, param, step):
-        pass
-
-
-@normalize("param", ["a", "b", "c"])
-def func_n(level, param, step):
-    return param
-
-
-@normalize("param", ["a", "b"])
-@availability_decoratorrator
-def func_a_n(level, param, step):
-    return param
-
-
-@availability_decoratorrator
-@normalize("param", ["a", "b"])
-def func_n_a(level, param, step):
-    return param
-
-
-@pytest.mark.parametrize(
-    "func",
-    [
-        func_a,
-        # func_n is excluded.
-        func_n_a,
-        # func_a_n, # TODO
-        Klass_a,
-        # Klass_n is excluded.
-        Klass_n_a,
-        # Klass_a_n, # TODO
-    ],
-)
-def test_avail_1(func):
-    func(level="1000", param="a", step="24")
+    assert func1(level="1000", param="a", step="24") == ("1000", "a", "24")
+    assert func2(level="1000", param="a", step="24") == (1000, "a", 24)
     with pytest.raises(ValueError):
-        func(level="1032100", param="a", step="24")
-
-
-@pytest.mark.parametrize(
-    "func",
-    [func_n, Klass_n],
-)
-def test_avail_n(func):
-    func(level="1000", param="a", step="24")
-    func(level="1032100", param="a", step="24")
-
-
-@pytest.mark.parametrize(
-    "func",
-    [
-        func_a,
-        func_n,
-        func_n_a,
-        # func_a_n,
-        Klass_a,
-        Klass_n,
-        Klass_n_a,
-        # Klass_a_n,
-    ],
-)
-def test_norm(func):
-    func(level="1000", param="a", step="24")
-
+        func1(level="1032100", param="a", step="24")
     with pytest.raises(ValueError):
-        func(level="1000", param="zz", step="24")
+        func2(level="1032100", param="a", step="24")
 
 
 def test_avail_norm_1():
@@ -384,7 +309,9 @@ def test_avail_norm_1():
 
         assert func3("a", 24) == ["a"]
 
+
 def test_avail_norm_2():
+    availability_decorator = availability(C1)
 
     @normalize("param", ["A", "B"])
     @availability(C1)
@@ -393,7 +320,7 @@ def test_avail_norm_2():
 
     assert func5(param="A") == "A"
 
-    @availability_decoratorrator
+    @availability_decorator
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func6(param):
@@ -402,7 +329,7 @@ def test_avail_norm_2():
     assert func6(param="A") == "a"
 
 
-def test_availability_5():
+def test_availability_3():
     @availability(C1)
     def func7(param, step=24):
         return param
@@ -410,6 +337,24 @@ def test_availability_5():
     func7("a", step="36")
     with pytest.raises(ValueError, match=r"Invalid value .*"):
         func7(3, step="36")
+
+
+# def test_order_avaibility_normalize_4():
+#    decorators = [
+#        normalize("step", multiple=True),
+#        normalize("param", multiple=True),
+#        normalize("level", multiple=False),
+#        availability(C2),
+#    ]
+#    g = level_param_step_no_default
+#    for order in itertools.permutations([0, 1, 2, 3]):
+#        print(order)
+#        for i in order:
+#            decorator = decorators[i]
+#            print(decorator)
+#            g = decorator(g)
+#            print("---", g("1000", "a", "24"))
+#            assert g("1000", "a", "24") == (1000, ["a"], [24])
 
 
 # @availability(C1)
@@ -461,6 +406,7 @@ def test_dev():
 
 
 if __name__ == "__main__":
+    # test_order_avaibility_normalize_4()
     from climetlab.testing import main
 
     main(__file__)
