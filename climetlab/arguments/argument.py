@@ -39,7 +39,6 @@ class Argument:
     def cmltype(self):
         if self._type is None:
             self.normalize.setdefault("values", self.availability)
-            self.normalize.setdefault("multiple", self.availability is not None)
             self._type = infer_type(**self.normalize)
         return self._type
 
@@ -57,16 +56,6 @@ class Argument:
 
     def add_type_transformers(self, pipeline):
         pipeline.append(TypeTransformer(self, self.cmltype))
-
-    #            def merge_values(value1, value2):
-    #                if values1 and values2:
-    #                    check_included(values1, values2)
-    #                    return values1
-    #                if values1:
-    #                    return value1
-    #                if values2:
-    #                    return value2
-    #                return None
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:

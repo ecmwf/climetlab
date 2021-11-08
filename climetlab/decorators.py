@@ -9,6 +9,7 @@
 import inspect
 import logging
 import os
+import re
 import threading
 from functools import wraps
 
@@ -80,6 +81,16 @@ class Decorator:
         return newfunc
 
 
+OPTIONS = {
+    "date": ("format",),
+    "date-list": ("format",),
+    "bounding-box": ("format",),
+    "bbox": ("format",),
+    "variable": ("convention",),
+    "variable-list": ("convention",),
+}
+
+
 class normalize(Decorator):
     def __init__(
         self,
@@ -89,10 +100,27 @@ class normalize(Decorator):
     ):
         assert name is None or isinstance(name, str)
 
-        kwargs["values"] = values
+        if isinstance(values, str):
+            assert (
+                kwargs.get("type") is None
+            ), f"Cannot mix values={values} and type={kwargs.get('type')}"
+            if "(" in values:
+                m = re.match(r"(.+)\((.+)\)", values)
+                type = m.group(1)
+                args = m.group(2).split(",")
+            else:
+                type = values
+                args = []
+
+            for name, value in zip(OPTIONS[type], args):
+                kwargs[name] = value
+            kwargs["type"] = type
+        else:
+            kwargs["values"] = values
 
         self.name = name
         self.kwargs = kwargs
+        print("====>", name, kwargs)
 
     def register(self, manager):
         manager.register_normalize(self)

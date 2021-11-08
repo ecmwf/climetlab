@@ -9,7 +9,6 @@
 
 import datetime
 import logging
-import re
 
 LOG = logging.getLogger(__name__)
 
@@ -234,13 +233,6 @@ LIST_TYPES = {
     "variable-list": VariableListType,
 }
 
-OPTIONS = {
-    "date": ("format",),
-    "date-list": ("format",),
-    "bounding-box": ("format",),
-    "bbox": ("format",),
-}
-
 
 def infer_type(**kwargs):
     type = kwargs.pop("type", None)
@@ -256,6 +248,7 @@ def infer_type(**kwargs):
             type=GIVEN_TYPES[type],
             values=values,
             multiple=multiple,
+            format=format,
             **kwargs,
         )
 
@@ -270,29 +263,11 @@ def infer_type(**kwargs):
         else:
             return EnumType(values)
 
-    if isinstance(values, str) and type is None:
-        if "(" in values:
-            m = re.match(r"(.+)\((.+)\)", values)
-            type = m.group(1)
-            args = m.group(2).split(",")
-        else:
-            type = values
-            args = []
-
-        if args:
-            # Remove
-            for a, o in zip(args, OPTIONS.get(type, [])):
-                kwargs[o] = a
-            args = args[len(OPTIONS.get(type, [])) :]
-
-        return infer_type(
-            type=type,
-            values=None,  # !
-            multiple=multiple,
-            **kwargs,
-        )
-
     if values is None and isinstance(type, str):
+
+        # We remove format
+        kwargs.pop("format", None)
+
         if multiple is None:
             try:
                 return {**LIST_TYPES, **NON_LIST_TYPES}[type](**kwargs)

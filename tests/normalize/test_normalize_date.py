@@ -58,16 +58,18 @@ def test_dates_multiple():
     date_1 = normalize("d", "date-list(%Y.%m.%d)")(f)
     date_2 = normalize("d", "date(%Y.%m.%d)", multiple=True)(f)
     date_3 = normalize("d", "date(%Y.%m.%d)", multiple=False)(f)
+    date_4 = normalize("d", "date-list(%Y.%m.%d)", multiple=False)(f)
 
-    assert date_1("20200513") == ["2020.05.13"]
-    assert date_2("20200513") == ["2020.05.13"]
+    assert date_1("20200511") == ["2020.05.11"]
+    assert date_2("20200512") == ["2020.05.12"]
     assert date_3("20200513") == "2020.05.13"
+
     with pytest.raises(ValueError):
-        date_4 = normalize("d", "date-list(%Y.%m.%d)", multiple=False)(f)
-        date_4("20200513")
+        date_4("20200514")
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    test_dates_multiple()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)

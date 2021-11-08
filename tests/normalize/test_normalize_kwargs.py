@@ -47,7 +47,7 @@ def test_normalize_kwargs_1():
 
 
 def test_normalize_kwargs_2():
-    @normalize("date", "date-list", optional=True)
+    @normalize("date", "date-list")
     def f(**kwargs):
         pass
 
