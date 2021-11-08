@@ -67,7 +67,7 @@ class _EnumType(Type):
                 pass
             try:
                 return float(a) == float(b)
-            except TypeError:
+            except ValueError:
                 pass
             return False
 

@@ -408,8 +408,8 @@ def test_availability_5():
         return param
 
     func7("a", step="36")
-    # with pytest.raises(ValueError, match=r"Invalid value .*"):
-    with pytest.raises(ValueError, match=r"invalid combination .*"):
+    with pytest.raises(ValueError, match=r"Invalid value .*"):
+        # with pytest.raises(ValueError, match=r"invalid combination .*"):
         func7(3, step="36")
 
 
