@@ -141,7 +141,190 @@ def test_availability_constructor_from_json():
     print(avail)
 
 
-def test_availability_s2s_1(availability_s2s_as_list):
+C1 = [
+    {"level": "500", "param": "a", "step": "24"},
+    {"level": "500", "param": "a", "step": "36"},
+    {"level": "500", "param": "a", "step": "48"},
+    {"level": "500", "param": "b", "step": "24"},
+    {"level": "500", "param": "b", "step": "36"},
+    {"level": "500", "param": "b", "step": "48"},
+    {"level": "850", "param": "b", "step": "36"},
+    {"level": "850", "param": "b", "step": "48"},
+    {"level": "1000", "param": "a", "step": "24"},
+    {"level": "1000", "param": "a", "step": "48"},
+]
+
+C2 = [
+    {"level": 500, "param": "a", "step": 24},
+    {"level": 500, "param": "a", "step": 36},
+    {"level": 500, "param": "a", "step": 48},
+    {"level": 500, "param": "b", "step": 24},
+    {"level": 500, "param": "b", "step": 36},
+    {"level": 500, "param": "b", "step": 48},
+    {"level": 850, "param": "b", "step": 36},
+    {"level": 850, "param": "b", "step": 48},
+    {"level": 1000, "param": "a", "step": 24},
+    {"level": 1000, "param": "a", "step": 48},
+]
+
+
+def test_normalize_availability_on_func():
+    norm_decorator = normalize("param", ["a", "b"])
+    availability_decorator_1 = availability(C1)
+    availability_decorator_2 = availability(C2)
+
+    func1 = norm_decorator(availability_decorator_1(level_param_step_no_default))
+    func2 = norm_decorator(availability_decorator_2(level_param_step_no_default))
+
+    assert func1(level="1000", param="a", step="24") == ("1000", "a", "24")
+    assert func2(level="1000", param="a", step="24") == (1000, "a", 24)
+    with pytest.raises(ValueError):
+        func1(level="1032100", param="a", step="24")
+    with pytest.raises(ValueError):
+        func2(level="1032100", param="a", step="24")
+
+
+def test_normalize_availability_on_method():
+    norm_decorator = normalize("param", ["a", "b"])
+    availability_decorator_1 = availability(C1)
+    availability_decorator_2 = availability(C2)
+
+    class A:
+        @norm_decorator
+        @availability_decorator_1
+        def method1(self, level, param, step):
+            return level, param, step
+
+        @norm_decorator
+        @availability_decorator_2
+        def method2(self, level, param, step):
+            return level, param, step
+
+    assert A().method1(level="1000", param="a", step="24") == ("1000", "a", "24")
+    assert A().method2(level="1000", param="a", step="24") == (1000, "a", 24)
+    with pytest.raises(ValueError):
+        A().method1(level="1032100", param="a", step="24")
+    with pytest.raises(ValueError):
+        A().method2(level="1032100", param="a", step="24")
+
+
+def test_avail_norm_1():
+    @normalize("param", ["a", "b"])
+    @availability(C1)
+    def func1(param):
+        return param
+
+    @normalize("param", ["unk1", "unk2"])
+    @availability(C1)
+    def func2(param):
+        return param
+
+    with pytest.raises(Exception):
+
+        @normalize("param", ["A", "B"])
+        @normalize("step", [24, 36])
+        @normalize("param", ["a", "b"])
+        def func3(param, step):
+            return param
+
+        assert func3("a", 24) == ["a"]
+
+
+def test_avail_norm_2():
+    availability_decorator = availability(C1)
+
+    @normalize("param", ["A", "B"])
+    @availability(C1)
+    def func5(param):
+        return param
+
+    assert func5(param="A") == "A"
+
+    @availability_decorator
+    @normalize("param", ["a", "b"])
+    @availability(C1)
+    def func6(param):
+        return param
+
+    assert func6(param="A") == "a"
+
+
+def test_availability_3():
+    @availability(C1)
+    def func7(param, step=24):
+        return param
+
+    func7("a", step="36")
+    with pytest.raises(ValueError, match=r"Invalid value .*"):
+        func7(3, step="36")
+
+
+def test_order_availability_normalize_int():
+    decorators = [
+        availability(C2),
+        normalize("step", type=int, multiple=True),
+        normalize("param", type=str, multiple=True),
+        normalize("level", type=int, multiple=False),
+    ]
+    g = level_param_step_no_default
+    for order in itertools.permutations(decorators):
+        print(order)
+        for decorator in order:
+            g = decorator(g)
+        print("---", g("1000", "a", "24"))
+        assert g("1000", "a", "24") == (1000, ["a"], [24])
+
+
+def test_order_availability_normalize_int_2():
+    decorators = [
+        normalize("step", type=int, multiple=True),
+        normalize("param", type=str, multiple=True),
+        normalize("level", type=int, multiple=False),
+    ]
+    g = level_param_step_no_default
+    for order in itertools.permutations(decorators):
+        print(order)
+        for decorator in order:
+            g = decorator(g)
+        print("---", g("1000", "a", "24"))
+        assert g("1000", "a", "24") == (1000, ["a"], [24])
+
+
+def test_order_availability_normalize_no_type_int():
+    decorators = [
+        normalize("step", multiple=True),
+        normalize("param", multiple=True),
+        normalize("level", multiple=False),
+        availability(C2),
+    ]
+    g = level_param_step_no_default
+    for order in itertools.permutations(decorators):
+        print(order)
+        for decorator in order:
+            g = decorator(g)
+        print("---", g("1000", "a", "24"))
+        assert g("1000", "a", "24") == (1000, ["a"], [24])
+        assert g(1000, "a", 24.0) == (1000, ["a"], [24])
+
+
+def test_order_availability_normalize_no_type_str():
+    decorators = [
+        normalize("step", multiple=True),
+        normalize("param", multiple=True),
+        normalize("level", type=str, multiple=False),
+        availability(C1),
+    ]
+    g = level_param_step_no_default
+    for order in itertools.permutations(decorators):
+        print(order)
+        for decorator in order:
+            g = decorator(g)
+        print("---", g("1000", "a", "24"))
+        assert g(1000, "a", 24) == ("1000", ["a"], ["24"])
+        assert g("1000", "a", "24") == ("1000", ["a"], ["24"])
+
+
+def test_s2s_availability_1(availability_s2s_as_list):
     av = Availability(availability_s2s_as_list)
 
     print(av.tree())
@@ -227,7 +410,7 @@ def availability_s2s_as_txt():
     """  # noqa: E501
 
 
-def test_availability_s2s_2(availability_s2s_as_txt):
+def test_s2s_availability_2(availability_s2s_as_txt):
     av = Availability(
         availability_s2s_as_txt,
         parser=parser_for_availability_s2s,
@@ -243,166 +426,6 @@ def test_availability_s2s_2(availability_s2s_as_txt):
     # this should raise a ValueError
     # with pytest.raises(ValueError):
     #     av.check(number=30, alldates='2020-01-03', origin="eccc")
-
-
-C1 = [
-    {"level": "500", "param": "a", "step": "24"},
-    {"level": "500", "param": "a", "step": "36"},
-    {"level": "500", "param": "a", "step": "48"},
-    {"level": "500", "param": "b", "step": "24"},
-    {"level": "500", "param": "b", "step": "36"},
-    {"level": "500", "param": "b", "step": "48"},
-    {"level": "850", "param": "b", "step": "36"},
-    {"level": "850", "param": "b", "step": "48"},
-    {"level": "1000", "param": "a", "step": "24"},
-    {"level": "1000", "param": "a", "step": "48"},
-]
-
-C2 = [
-    {"level": 500, "param": "a", "step": 24},
-    {"level": 500, "param": "a", "step": 36},
-    {"level": 500, "param": "a", "step": 48},
-    {"level": 500, "param": "b", "step": 24},
-    {"level": 500, "param": "b", "step": 36},
-    {"level": 500, "param": "b", "step": 48},
-    {"level": 850, "param": "b", "step": 36},
-    {"level": 850, "param": "b", "step": 48},
-    {"level": 1000, "param": "a", "step": 24},
-    {"level": 1000, "param": "a", "step": 48},
-]
-
-
-def test_normalize_availability_on_func():
-    norm_decorator = normalize("param", ["a", "b"])
-    availability_decorator_1 = availability(C1)
-    availability_decorator_2 = availability(C2)
-
-    func1 = norm_decorator(availability_decorator_1(level_param_step_no_default))
-    func2 = norm_decorator(availability_decorator_2(level_param_step_no_default))
-
-    assert func1(level="1000", param="a", step="24") == ("1000", "a", "24")
-    assert func2(level="1000", param="a", step="24") == (1000, "a", 24)
-    with pytest.raises(ValueError):
-        func1(level="1032100", param="a", step="24")
-    with pytest.raises(ValueError):
-        func2(level="1032100", param="a", step="24")
-
-
-def test_avail_norm_1():
-    @normalize("param", ["a", "b"])
-    @availability(C1)
-    def func1(param):
-        return param
-
-    @normalize("param", ["unk1", "unk2"])
-    @availability(C1)
-    def func2(param):
-        return param
-
-    with pytest.raises(Exception):
-
-        @normalize("param", ["A", "B"])
-        @normalize("step", [24, 36])
-        @normalize("param", ["a", "b"])
-        def func3(param, step):
-            return param
-
-        assert func3("a", 24) == ["a"]
-
-
-def test_avail_norm_2():
-    availability_decorator = availability(C1)
-
-    @normalize("param", ["A", "B"])
-    @availability(C1)
-    def func5(param):
-        return param
-
-    assert func5(param="A") == "A"
-
-    @availability_decorator
-    @normalize("param", ["a", "b"])
-    @availability(C1)
-    def func6(param):
-        return param
-
-    assert func6(param="A") == "a"
-
-
-def test_availability_3():
-    @availability(C1)
-    def func7(param, step=24):
-        return param
-
-    func7("a", step="36")
-    with pytest.raises(ValueError, match=r"Invalid value .*"):
-        func7(3, step="36")
-
-
-# def test_order_avaibility_normalize_4():
-#    decorators = [
-#        normalize("step", multiple=True),
-#        normalize("param", multiple=True),
-#        normalize("level", multiple=False),
-#        availability(C2),
-#    ]
-#    g = level_param_step_no_default
-#    for order in itertools.permutations([0, 1, 2, 3]):
-#        print(order)
-#        for i in order:
-#            decorator = decorators[i]
-#            print(decorator)
-#            g = decorator(g)
-#            print("---", g("1000", "a", "24"))
-#            assert g("1000", "a", "24") == (1000, ["a"], [24])
-
-
-# @availability(C1)
-@normalize("level", type=int, multiple=False)
-@normalize("param", type=str, multiple=True)
-@normalize("step", type=int, multiple=True)
-def param_values_1(level, param, step):
-    return (level, param, step)
-
-
-@normalize("level", type=int, multiple=False)
-@normalize("param", type=str, multiple=True)
-@normalize("step", type=int, multiple=True)
-# @availability(C1)
-def param_values_2(level, param, step):
-    return (level, param, step)
-
-
-# No type
-@availability(C1)
-@normalize("level", multiple=False)
-@normalize("param", multiple=True)
-@normalize("step", multiple=True)
-def param_values_3(level, param, step):
-    return (level, param, step)
-
-
-@availability(C2)
-@normalize("level", multiple=False)
-@normalize("param", multiple=True)
-@normalize("step", multiple=True)
-def param_values_4(level, param, step):
-    return (level, param, step)
-
-
-def test_dev():
-
-    print("---", param_values_1("1000", "a", "24"))
-    assert param_values_1("1000", "a", "24") == (1000, ["a"], [24])
-
-    print("---", param_values_2("1000", "a", "24"))
-    assert param_values_2("1000", "a", "24") == (1000, ["a"], [24])
-
-    print("---", param_values_3("1000", "a", "24"))
-    assert param_values_3("1000", "a", "24") == ("1000", ["a"], ["24"])
-
-    print("---", param_values_4("1000", "a", "24"))
-    assert param_values_4("1000", "a", "24") == (1000, ["a"], [24])
 
 
 if __name__ == "__main__":
