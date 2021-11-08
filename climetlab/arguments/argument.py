@@ -8,6 +8,7 @@
 #
 import logging
 
+from climetlab.arguments.climetlab_types import infer_type
 from climetlab.arguments.transformers import (
     AliasTransformer,
     FormatTransformer,
@@ -28,68 +29,25 @@ class Argument:
     def __init__(
         self,
         name,
-        decorators,
     ):
-        if name is not None:
-            assert isinstance(name, str), name
         self.name = name
-        self.decorators = decorators
-        self._cmltype = None
+        self.normalize = {}
+        self.availability = None
+        self._type = None
 
     @property
     def cmltype(self):
-        if self._cmltype:
-            return self._cmltype
-
-        type1 = None
-        type2 = None
-
-        if self.normalize_decorator:
-            return self.normalize_decorator.cml_type
-
-        if self.availability_decorator:
-            type2 = self.availability_decorator.gess_cml_type(self.name)
-
-        if type1 and type2:
-            assert type1 == type2
-        else:
-            if type1:
-                type = type1
-            else:
-                type = type2
-
-        if type:
-            self._cmltype = type
-
-        return self._cmltype
+        if self._type is None:
+            self._type = infer_type(availability=self.availability, **self.normalize)
+        return self._type
 
     @property
     def format(self):
-        if not self.normalize_decorator:
-            return None
-        return self.normalize_decorator.format
+        return self.normalize.get("format")
 
     @property
     def aliases(self):
-        if self.normalize_decorator:
-            return self.normalize_decorator.aliases
-        return {}
-
-    @property
-    def normalize_decorator(self):
-        decos = [d for d in self.decorators if not d.is_availability]
-        if decos:
-            assert len(decos) == 1, decos
-            return decos[0]
-        return None
-
-    @property
-    def availability_decorator(self):
-        decos = [d for d in self.decorators if d.is_availability]
-        if decos:
-            assert len(decos) == 1, decos
-            return decos[0]
-        return None
+        return self.normalize.get("aliases", {})
 
     def add_alias_transformers(self, pipeline):
         if self.aliases:
@@ -98,30 +56,15 @@ class Argument:
     def add_type_transformers(self, pipeline):
         pipeline.append(TypeTransformer(self, self.cmltype))
 
-    @property
-    def values(self):
-        if self.normalize_decorator and not self.availability_decorator:
-            return self.normalize_decorator.get_values()
-
-        if not self.normalize_decorator and self.availability_decorator:
-            return self.availability_decorator.get_values(self.name)
-
-        if self.normalize_decorator and self.availability_decorator:
-            values1 = self.normalize_decorator.get_values()
-            values2 = self.availability_decorator.get_values(self.name)
-
-            def merge_values(value1, value2):
-                if values1 and values2:
-                    check_included(values1, values2)
-                    return values1
-                if values1:
-                    return value1
-                if values2:
-                    return value2
-                return None
-
-            return merge_values(values1, values2)
-        return None
+    #            def merge_values(value1, value2):
+    #                if values1 and values2:
+    #                    check_included(values1, values2)
+    #                    return values1
+    #                if values1:
+    #                    return value1
+    #                if values2:
+    #                    return value2
+    #                return None
 
     def add_format_transformers(self, pipeline):
         if self.format is not None:

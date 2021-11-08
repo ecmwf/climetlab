@@ -88,38 +88,17 @@ class normalize(Decorator):
         self,
         name,
         values=None,
-        aliases=None,
-        multiple=None,
-        type=None,
-        format=None,
-        optional=False,
         **kwargs,
     ):
         assert name is None or isinstance(name, str)
 
+        kwargs["values"] = values
+
         self.name = name
-        self.aliases = aliases
-        self.multiple = multiple
-        self.format = format
-        self.optional = optional
+        self.kwargs = kwargs
 
-        options = {}
-        self.cml_type = infer_type(values, type, multiple, options, **kwargs)
-
-        # In case the infer_type changes anynthing, e.g. format
-        for k, v in options.items():
-            setattr(self, k, v)
-
-        # TODO: check if still needed
-        if self.format is None:
-            if self.cml_type is str:
-                self.format = str
-
-    def visit(self, manager):
-        manager.parameters[self.name].append(self)
-
-    def get_values(self):
-        return self.values
+    def register(self, manager):
+        manager.register_normalize(self)
 
 
 class availability(Decorator):
@@ -133,14 +112,5 @@ class availability(Decorator):
 
         self.availability = Availability(availability)
 
-    def visit(self, manager):
-        for name in self.availability.unique_values().keys():
-            manager.parameters[name].append(self)
-        manager.availabilities.append(self.availability)
-
-    def get_values(self, name):
-        return self.availability.unique_values()[name]
-
-    def gess_cml_type(self, name):
-        # TODO: get type from availability values
-        return None
+    def register(self, manager):
+        manager.register_availability(self)

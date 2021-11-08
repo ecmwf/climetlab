@@ -22,32 +22,37 @@ class InputManager:
     ):
         self.decorators = decorators
         self._pipeline = None
-
         self.availabilities = []
-
-        LOG.debug("Building arguments from decorators:\n %s", decorators)
-        self.parameters = defaultdict(list)
-        for decorator in self.decorators:
-            decorator.visit(self)
-
-        self.arguments = [
-            Argument(name, decorators) for name, decorators in self.parameters.items()
-        ]
-
-        LOG.debug("Built manager: %s", self)
+        self.arguments = {}
 
     @property
     def pipeline(self):
         if self._pipeline is None:
-            self._pipeline = []
             self.build_pipeline()
-            for t in self._pipeline:
-                if not isinstance(t, Action):
-                    raise f"Unknown action: {t}"
         return self._pipeline
+
+    def register_availability(self, decorator):
+        for name, values in decorator.availability.unique_values().items():
+            if name not in self.arguments:
+                self.arguments[name] = Argument(name)
+            self.arguments[name].availability = values
+
+    def register_normalize(self, decorator):
+        if decorator.name not in self.arguments:
+            self.arguments[decorator.name] = Argument(decorator.name)
+        self.arguments[decorator.name].normalize = decorator.kwargs
 
     def build_pipeline(self):
         print("Building...")
+        self._pipeline = []
+        LOG.debug("Building arguments from decorators:\n %s", self.decorators)
+
+        self.arguments = {}
+
+        for decorator in self.decorators:
+            decorator.register(self)
+
+        self.arguments = list(self.arguments.values())
 
         for a in self.arguments:
             a.add_alias_transformers(self._pipeline)

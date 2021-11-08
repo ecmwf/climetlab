@@ -49,6 +49,9 @@ class Type:
     def __repr__(self):
         return self.__class__.__name__
 
+    def update(self, availability):
+        pass
+
 
 class _EnumType(Type):
     def __init__(self, values):
@@ -75,6 +78,11 @@ class _EnumType(Type):
         raise ValueError(
             f"Invalid value '{value}', possible values are {self.values} ({self.__class__.__name__})"
         )
+
+    def update(self, availability):
+        # TODO: if value is none : use availability w
+        # else : check subset : values included into availability
+        pass
 
 
 class EnumType(_EnumType, NonListMixin):
@@ -234,14 +242,26 @@ OPTIONS = {
 }
 
 
-def infer_type(values, type, multiple, options, *args, **kwargs):
+def infer_type(**kwargs):
+    type = kwargs.pop("type", None)
+    values = kwargs.pop("values", None)
+    multiple = kwargs.pop("multiple", None)
+    availability = kwargs.pop("availability", None)
+    format = kwargs.pop("format", None)
 
     # TODO:
     assert not isinstance(type, Type), f"IMPLEMENT infer_type({type})"
 
     # Take care of builtin types and others
     if type in GIVEN_TYPES:
-        return infer_type(values, GIVEN_TYPES[type], multiple, options, *args, **kwargs)
+        return infer_type(
+            type=GIVEN_TYPES[type],
+            values=values,
+            multiple=multiple,
+            availability=availability,
+            format=format,
+            **kwargs,
+        )
 
     # normalize("name", ["a", "b", "c"]) and similar
     if isinstance(values, (list, tuple)):  # and type is None:
@@ -266,39 +286,47 @@ def infer_type(values, type, multiple, options, *args, **kwargs):
         if args:
             # Remove
             for a, o in zip(args, OPTIONS.get(type, [])):
-                options[o] = a
+                kwargs[o] = a
             args = args[len(OPTIONS.get(type, [])) :]
 
-        return infer_type(None, type, multiple, options, *args, **kwargs)
+        return infer_type(
+            type=type,
+            values=None,  # !
+            multiple=multiple,
+            availability=availability,
+            format=format,
+            **kwargs,
+        )
 
     if values is None and isinstance(type, str):
-        print("----->", type, args)
         if multiple is None:
             try:
-                return {**LIST_TYPES, **NON_LIST_TYPES}[type](*args, **kwargs)
+                return {**LIST_TYPES, **NON_LIST_TYPES}[type](**kwargs)
             except Exception as e:
-                raise ValueError(f"Error building {type}({args}{kwargs}): {e}")
+                raise ValueError(f"Error building {type}({kwargs}): {e}")
 
         if multiple is False:
             if type in LIST_TYPES:
                 raise ValueError(f"Cannot set multiple={multiple} and type={type}.")
-            return NON_LIST_TYPES[type](*args, **kwargs)
+            return NON_LIST_TYPES[type](**kwargs)
 
         if multiple is True:
             if type in LIST_TYPES:
                 return LIST_TYPES[type]()
             if type + "-list" in LIST_TYPES:
-                return LIST_TYPES[type + "-list"](*args, **kwargs)
+                return LIST_TYPES[type + "-list"](**kwargs)
             raise ValueError(
                 f"Cannot set multiple={multiple} and type={type}. Type must be in {list(LIST_TYPES.keys())}"
             )
 
     # Place older for availability, assuming Enum
     if values is None and type is None and multiple is not None:
-        if multiple:
-            return EnumListType(values)
-        else:
-            return EnumType(values)
+        if availability:
+            values = availability
+            if multiple:
+                return EnumListType(values)
+            else:
+                return EnumType(values)
 
     raise ValueError(
         f"Cannot infer type from values={values}, type={type} and multiple={multiple}"
