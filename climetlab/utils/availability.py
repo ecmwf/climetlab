@@ -114,6 +114,8 @@ class Availability:
         return Availability(self._tree.missing(*args, **kwargs))
 
     def check(self, _kwargs=None, **kwargs):
+        assert _kwargs is None or not kwargs
+
         if _kwargs is not None and not kwargs:
             assert isinstance(_kwargs, dict)
             kwargs = _kwargs

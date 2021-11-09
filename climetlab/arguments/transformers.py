@@ -134,22 +134,8 @@ class AvailabilityChecker(Action):
         if not isinstance(kwargs, dict):
             return kwargs
         LOG.debug("Checking availability for %s", kwargs)
-        # kwargs2 = deepcopy(kwargs)
-
-        def stringify(s):
-            if isinstance(s, (list, tuple)):
-                return [stringify(x) for x in s]
-
-            if isinstance(s, dict):
-                r = {}
-                for k, v in s.items():
-                    r[k] = stringify(v)
-                return r
-
-            return str(s)
-
-        print("---------")
-        self.availability.check(stringify(kwargs))
+        assert isinstance(kwargs, dict), kwargs
+        self.availability.check(kwargs)
         return kwargs
 
     def __repr__(self) -> str:

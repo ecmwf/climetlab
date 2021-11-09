@@ -43,7 +43,6 @@ class InputManager:
         self.arguments[decorator.name].normalize = decorator.kwargs
 
     def build_pipeline(self):
-        print("Building...")
         self._pipeline = []
         LOG.debug("Building arguments from decorators:\n %s", self.decorators)
 
@@ -67,24 +66,16 @@ class InputManager:
         for a in self.arguments:
             a.add_format_transformers(self._pipeline)
 
-        print("----------------------------")
-        print("Pipeline built")
-        for t in self._pipeline:
-            print(" ", t)
-        print("----------------------------")
-
     def apply_to_kwargs(self, kwargs):
-        print(f"Apply pipeline to kwargs: {kwargs}")
+        LOG.debug(f"Apply pipeline to kwargs: {kwargs}")
         for t in self.pipeline:
             if hasattr(t, "name"):
-                print(f" - {t.name}: apply {t}.")
+                LOG.debug(f" - {t.name}: apply {t}.")
             else:
-                print(f" - apply {t}.")
+                LOG.debug(f" - apply {t}.")
 
             kwargs = t.execute(kwargs)
-            print(f"       kwargs: {kwargs}")
-        print(f"Applied pipeline: {kwargs}")
-        print()
+            LOG.debug(f"       kwargs: {kwargs}")
 
         return kwargs
 

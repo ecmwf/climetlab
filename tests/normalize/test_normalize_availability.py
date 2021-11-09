@@ -183,7 +183,6 @@ def test_normalize_availability_on_func_1():
         func1(level="1032100", param="a", step="24")
 
 
-@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_normalize_availability_on_func_2():
     func2 = availability(C2)(level_param_step_no_default)
     func2 = normalize("param", ["a", "b"])(func2)
@@ -214,7 +213,6 @@ def test_normalize_availability_on_method():
         A().method1(level="1032100", param="a", step="24")
 
 
-@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_avail_norm_1():
     @normalize("param", ["a", "b"])
     @availability(C1)
@@ -225,16 +223,6 @@ def test_avail_norm_1():
     @availability(C1)
     def func2(param):
         return param
-
-    with pytest.raises(Exception):
-
-        @normalize("param", ["A", "B"])
-        @normalize("step", [24, 36])
-        @normalize("param", ["a", "b"])
-        def func3(param, step):
-            return param
-
-        func3("a", 24)
 
 
 def test_avail_norm_2():
@@ -302,7 +290,6 @@ def test_availability_3():
         func7(3, step="36")
 
 
-@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_order_availability_normalize_int():
     decorators = [
         availability(C2),
@@ -334,7 +321,6 @@ def test_order_availability_normalize_int_2():
         assert g("1000", "a", "24") == (1000, ["a"], [24])
 
 
-@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_order_availability_normalize_no_type_int():
     decorators = [
         normalize("step", multiple=True),
