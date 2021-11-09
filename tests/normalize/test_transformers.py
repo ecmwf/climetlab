@@ -52,14 +52,13 @@ def test_types():
         20000101
     ) == datetime.datetime(2000, 1, 1)
 
-    with pytest.raises(AssertionError):  # FIXME: This should happend
-        assert TypeTransformer(None, type=DateListType).transform(
-            "20000101/to/20000103"
-        ) == [
-            datetime.datetime(2000, 1, 1),
-            datetime.datetime(2000, 1, 2),
-            datetime.datetime(2000, 1, 3),
-        ]
+    assert TypeTransformer(None, type=DateListType).transform(
+        "20000101/to/20000103"
+    ) == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 2),
+        datetime.datetime(2000, 1, 3),
+    ]
 
     assert TypeTransformer(None, type=DateListType).transform(
         (20000101, 20000102, 20000103)
