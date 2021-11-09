@@ -129,13 +129,13 @@ class normalize(Decorator):
 class availability(Decorator):
     is_availability = True
 
-    def __init__(self, availability):
+    def __init__(self, availability, **kwargs):
         if isinstance(availability, str):
             if not os.path.isabs(availability):
                 caller = os.path.dirname(inspect.stack()[1].filename)
                 availability = os.path.join(caller, availability)
 
-        self.availability = Availability(availability)
+        self.availability = Availability(availability, **kwargs)
 
     def register(self, manager):
         manager.register_availability(self)
