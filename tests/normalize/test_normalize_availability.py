@@ -168,18 +168,29 @@ C2 = [
 ]
 
 
-def test_normalize_availability_on_func():
-    norm_decorator = normalize("param", ["a", "b"])
-    availability_decorator_1 = availability(C1)
-    availability_decorator_2 = availability(C2)
+def test_normalize_availability_on_func_1():
+    func1 = availability(C1)(level_param_step_no_default)
+    func1 = normalize("param", ["a", "b"])(func1)
 
-    func1 = norm_decorator(availability_decorator_1(level_param_step_no_default))
-    func2 = norm_decorator(availability_decorator_2(level_param_step_no_default))
-
-    assert func1(level="1000", param="a", step="24") == ("1000", "a", "24")
-    assert func2(level="1000", param="a", step="24") == (1000, "a", 24)
+    assert func1(level=1000, param="a", step="24") == ("1000", "a", "24")
+    with pytest.raises(ValueError, match="invalid .*"):
+        func1(level=850, param="a", step="24")
     with pytest.raises(ValueError):
         func1(level="1032100", param="a", step="24")
+
+
+@pytest.mark.skip("Not yet implemented. Availability only works with str.")
+def test_normalize_availability_on_func_2():
+    func2 = availability(C2)(level_param_step_no_default)
+    func2 = normalize("param", ["a", "b"])(func2)
+    # func2 = normalize("level", type=int)(func2)
+    # func2 = normalize("step", type=int)(func2)
+
+    # in C2: {"level": 1000, "param": "a", "step": 24},
+    assert func2(level=1000, param="a", step=24) == (1000, "a", 24)
+    assert func2(level="1000", param="a", step=24) == (1000, "a", 24)
+    with pytest.raises(ValueError, match="invalid .*"):
+        func2(level="850", param="a", step="24")
     with pytest.raises(ValueError):
         func2(level="1032100", param="a", step="24")
 
@@ -227,10 +238,21 @@ def test_avail_norm_1():
         def func3(param, step):
             return param
 
-        assert func3("a", 24) == ["a"]
+        func3("a", 24)
 
 
 def test_avail_norm_2():
+    @availability(C1)
+    @normalize("param", ["a", "b"])
+    def func3(level, param, step):
+        return level, param, step
+
+    func3("500", "a", "24")
+    with pytest.raises(ValueError, match="invalid .*850.*"):
+        func3("850", "a", "24")
+
+
+def test_avail_norm_3():
     availability_decorator = availability(C1)
 
     @normalize("param", ["A", "B"])

@@ -35,6 +35,7 @@ class InputManager:
             if name not in self.arguments:
                 self.arguments[name] = Argument(name)
             self.arguments[name].availability = values
+        self.availabilities.append(decorator.availability)
 
     def register_normalize(self, decorator):
         if decorator.name not in self.arguments:
@@ -75,7 +76,7 @@ class InputManager:
     def apply_to_kwargs(self, kwargs):
         print(f"Apply pipeline to kwargs: {kwargs}")
         for t in self.pipeline:
-            if t.name:
+            if hasattr(t, "name"):
                 print(f" - {t.name}: apply {t}.")
             else:
                 print(f" - apply {t}.")
