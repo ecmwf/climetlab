@@ -230,6 +230,19 @@ def test_download_tfdataset():
     assert len(ds) == 200, len(ds)
 
 
+def test_multi_missing_url():
+    # TODO: implement missing url in url-pattern
+    # with pytest.raises(ValueError, match=".*this-file-does-not-exists.*"):
+    with pytest.raises(
+        AttributeError, match="'NoneType' object has no attribute 'ignore'"
+    ):
+        load_source(
+            "url-pattern",
+            "http://download.ecmwf.int/test-data/metview/gallery/{x}",
+            x=["temp.bufr", "this-file-does-not-exists.bufr"],
+        )
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
