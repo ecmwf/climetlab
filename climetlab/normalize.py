@@ -13,7 +13,7 @@ from climetlab.decorators import normalize
 
 
 class normalize_args:
-    def __init__(self, dic):
+    def __init__(self, **dic):
         warnings.warn(
             "Deprecated decorator @normalize_arg. Use @normalise on each argument instead."
         )

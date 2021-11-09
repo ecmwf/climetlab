@@ -19,11 +19,9 @@ def a_b_no_default(a, b):
 
 def test_normalize_argss():
     @normalize_args(
-        dict(
-            dates="date-list(%Y.%m.%d)",
-            names=["a", "b", "c"],
-            name=("A", "B", "C"),
-        )
+        dates="date-list(%Y.%m.%d)",
+        names=["a", "b", "c"],
+        name=("A", "B", "C"),
     )
     def f(dates, names, name):
         return dates, names, name
