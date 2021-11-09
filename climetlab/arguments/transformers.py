@@ -131,8 +131,6 @@ class AvailabilityChecker(Action):
         self.availability = availability
 
     def execute(self, kwargs):
-        if not isinstance(kwargs, dict):
-            return kwargs
         LOG.debug("Checking availability for %s", kwargs)
         assert isinstance(kwargs, dict), kwargs
         self.availability.check(kwargs)
