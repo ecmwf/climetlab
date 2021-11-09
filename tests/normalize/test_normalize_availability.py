@@ -110,6 +110,10 @@ def level_param_step_no_default(level, param, step):
     return level, param, step
 
 
+def func_param(param):
+    return param
+
+
 def test_availability_decorator_from_text():
     g = availability(C0)(level_param_step_no_default)
     g(level="1000", param="Z", step="24")
@@ -198,7 +202,6 @@ def test_normalize_availability_on_func_2():
 def test_normalize_availability_on_method():
     norm_decorator = normalize("param", ["a", "b"])
     availability_decorator_1 = availability(C1)
-    availability_decorator_2 = availability(C2)
 
     class A:
         @norm_decorator
@@ -206,19 +209,12 @@ def test_normalize_availability_on_method():
         def method1(self, level, param, step):
             return level, param, step
 
-        @norm_decorator
-        @availability_decorator_2
-        def method2(self, level, param, step):
-            return level, param, step
-
     assert A().method1(level="1000", param="a", step="24") == ("1000", "a", "24")
-    assert A().method2(level="1000", param="a", step="24") == (1000, "a", 24)
     with pytest.raises(ValueError):
         A().method1(level="1032100", param="a", step="24")
-    with pytest.raises(ValueError):
-        A().method2(level="1032100", param="a", step="24")
 
 
+@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_avail_norm_1():
     @normalize("param", ["a", "b"])
     @availability(C1)
@@ -252,23 +248,48 @@ def test_avail_norm_2():
         func3("850", "a", "24")
 
 
-def test_avail_norm_3():
-    availability_decorator = availability(C1)
-
-    @normalize("param", ["A", "B"])
+def test_normalize_duplicates_availability():
     @availability(C1)
-    def func5(param):
-        return param
-
-    assert func5(param="A") == "A"
-
-    @availability_decorator
     @normalize("param", ["a", "b"])
     @availability(C1)
     def func6(param):
         return param
 
     assert func6(param="A") == "a"
+
+
+def test_normalize_duplicates_normalize_1():
+
+    func7 = func_param
+    func7 = normalize("param", ["b"])(func7)
+    func7 = normalize("param", ["a", "b"])(func7)
+    assert func7(param="B") == "b"
+    with pytest.raises(ValueError):
+        func7(param="a")
+
+    func7a = availability(C1)(func7)
+    assert func7a(param="B") == "b"
+    with pytest.raises(ValueError):
+        func7a(param="a")
+
+
+def test_normalize_duplicates_normalize_2():
+    # latest normalize overwrite "values" of the previous one.
+    # TODO: This should perhaps raise a ValueError duplicate normalizer?
+    func8 = func_param
+    func8 = normalize("param", ["a", "b"])(func8)
+    func8 = normalize("param", ["b"])(func8)
+    assert func8(param="B") == "b"
+    func8(param="a")
+
+
+def test_avail_norm_3():
+    @normalize("param", ["a", "a"])
+    @availability(C1)
+    def func5(param):
+        return param
+
+    assert func5(param="A") == "a"
 
 
 def test_availability_3():
@@ -281,6 +302,7 @@ def test_availability_3():
         func7(3, step="36")
 
 
+@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_order_availability_normalize_int():
     decorators = [
         availability(C2),
@@ -312,6 +334,7 @@ def test_order_availability_normalize_int_2():
         assert g("1000", "a", "24") == (1000, ["a"], [24])
 
 
+@pytest.mark.skip("Not yet implemented. Availability only works with str.")
 def test_order_availability_normalize_no_type_int():
     decorators = [
         normalize("step", multiple=True),
