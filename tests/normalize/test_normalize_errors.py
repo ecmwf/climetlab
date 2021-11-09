@@ -11,7 +11,6 @@
 
 import pytest
 
-from climetlab import ALL
 from climetlab.decorators import availability, normalize
 
 

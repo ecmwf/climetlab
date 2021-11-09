@@ -99,36 +99,34 @@ def test_enum_float_1():
     assert g(1) == "1.000000"
 
 
-@pytest.mark.skip("Not implemented yet")
 def test_enum_float_2():
-    g = normalize("name", [1, 0.5, 3], type=EnumListType, format="%03f")(
+    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f")(
         name_no_default
     )
     assert g(1) == ["1.000000"]
 
-    g = normalize("name", [1, 0.5, 3], type=EnumListType, format="%03f", multiple=True)(
+    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=True)(
         name_no_default
     )
     assert g(1) == ["1.000000"]
 
     g = normalize(
-        "name", [1, 0.5, 3], type=EnumListType, format="%03f", multiple=False
+        "name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=False
     )(name_no_default)
     with pytest.raises(ValueError, match="Cannot .*"):
         assert g(1) == ["1.000000"]
 
 
-@pytest.mark.skip("Not implemented yet")
 def test_enum_float_3():
-    g = normalize("name", [1, 0.5, 3], type=EnumType, format="%03f")(name_no_default)
+    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f")(name_no_default)
     assert g(1) == "1.000000"
 
-    g = normalize("name", [1, 0.5, 3], type=EnumType, format="%03f", multiple=False)(
+    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=False)(
         name_no_default
     )
     assert g(1) == "1.000000"
 
-    g = normalize("name", [1, 0.5, 3], type=EnumType, format="%03f", multiple=True)(
+    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=True)(
         name_no_default
     )
     with pytest.raises(ValueError, match="Cannot .*"):
