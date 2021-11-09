@@ -11,10 +11,19 @@ import xarray as xr
 from xarray.backends.common import BackendEntrypoint
 
 
+# We wrap the sources because the FileSource is a os.PathLike and
+# since version 0.20, xarray checks the class and change os.PathLike to
+# strings. We don't want that, as we want to keep our objects
+class WrappedSource:
+    def __init__(self, source):
+        self.source = source
+
+
 class CMLEngine(BackendEntrypoint):
     @classmethod
     def open_dataset(cls, filename_or_obj, *args, **kwargs):
-        return filename_or_obj.to_xarray()
+        assert isinstance(filename_or_obj, WrappedSource)
+        return filename_or_obj.source.to_xarray()
 
 
 def infer_open_mfdataset_kwargs(
@@ -57,4 +66,6 @@ def merge(
 
         return xr.open_mfdataset(paths, **options)
 
-    return xr.open_mfdataset(sources, engine=CMLEngine, **options)
+    return xr.open_mfdataset(
+        [WrappedSource(s) for s in sources], engine=CMLEngine, **options
+    )
