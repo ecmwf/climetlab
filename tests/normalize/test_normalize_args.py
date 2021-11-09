@@ -9,11 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-import sys
 
-import pytest
-
-from climetlab.decorators import normalize
 from climetlab.normalize import normalize_args
 
 
