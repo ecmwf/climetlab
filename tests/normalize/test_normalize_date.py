@@ -68,6 +68,60 @@ def test_dates_multiple():
         date_4("20200514")
 
 
+def test_dates_formated_from_pandas():
+    import pandas as pd
+
+    df1 = pd.DataFrame(
+        [
+            datetime.datetime(2005, 8, 27, 18, 0),
+        ],
+        columns=["date"],
+    )
+    df2 = pd.DataFrame(
+        [
+            datetime.datetime(2005, 8, 26, 18, 0),
+            datetime.datetime(2005, 8, 27, 18, 0),
+        ],
+        columns=["date"],
+    )
+
+    @normalize("date", "date-list(%Y-%m-%d)")
+    def f(date):
+        return date
+
+    print(f(df1))
+    print(f(df2))
+
+    @normalize("date", "date(%Y-%m-%d)")
+    def f(date):
+        return date
+
+    print(f(df1))
+    with pytest.raises(AssertionError):
+        print(f(df2))
+
+
+@pytest.mark.skip("Not implemented (yet?).")
+def test_dates_formated_from_object():
+    date_formated = normalize("d", "date", format="%Y.%m.%d")(f)
+
+    class CustomDateObject:
+        def __init__(self, dates):
+            self.dates = dates
+
+        def to_datetime_list(self):
+            return self.dates
+
+    obj = CustomDateObject(
+        [
+            datetime.datetime(2005, 8, 26, 18, 0),
+            datetime.datetime(2005, 8, 26, 18, 0),
+        ]
+    )
+
+    assert date_formated(obj) == "2020.05.13"
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
