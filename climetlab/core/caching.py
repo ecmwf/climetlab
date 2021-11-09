@@ -381,11 +381,10 @@ class Cache(threading.Thread):
         if isinstance(entry, str):
             entry = dict(
                 path=entry,
-                size=None,
+                size=0,
                 owner=None,
                 args=None,
             )
-            path, size, owner, args = entry, None, None, None
             try:
                 entry["size"] = os.path.getsize(entry["path"])
             except OSError:
@@ -397,6 +396,8 @@ class Cache(threading.Thread):
             entry["owner"],
             entry["args"],
         )
+        if entry["size"] is None:
+            entry["size"] = 0
 
         LOG.warning(
             "Deleting entry %s",

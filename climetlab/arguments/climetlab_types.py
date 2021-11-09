@@ -137,13 +137,6 @@ class FloatListType(_FloatType, ListMixin):
 
 
 class _DateType(Type):
-    def _cast(self, value):
-        from climetlab.utils.dates import to_date_list
-
-        lst = to_date_list(value)
-        assert len(lst) == 1, lst
-        return lst[0]
-
     def _format(self, value, format):
         return value.strftime(format)
 
@@ -153,11 +146,21 @@ class _DateType(Type):
 
 
 class DateType(_DateType, NonListMixin):
-    pass
+    def cast(self, value):
+        from climetlab.utils.dates import to_date_list
+
+        # TODO: change into to_datetime?
+        lst = to_date_list(value)
+        assert len(lst) == 1, lst
+        return lst[0]
 
 
 class DateListType(_DateType, ListMixin):
-    pass
+    def cast(self, value):
+        from climetlab.utils.dates import to_date_list
+
+        lst = to_date_list(value)
+        return lst
 
 
 class _VariableType(Type):
@@ -235,9 +238,9 @@ LIST_TYPES = {
 
 
 def infer_type(**kwargs):
-    print("INFER => ", kwargs)
+    LOG.debug("INFER => %s", kwargs)
     x = _infer_type(**kwargs)
-    print("INFER <= ", x)
+    LOG.debug("INFER <= %s", x)
     return x
 
 

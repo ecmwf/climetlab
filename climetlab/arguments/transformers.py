@@ -89,7 +89,7 @@ class AliasTransformer(_TypedTransformer):
         while old != value:
             old = value
             value = self.unalias(old)
-            print("Unalias -------->", old, value)
+            LOG.debug("Unalias --------> %s %s", old, value)
         return value
 
     def transform(self, value):
