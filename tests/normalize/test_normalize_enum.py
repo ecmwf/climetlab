@@ -99,6 +99,7 @@ def test_enum_float_1():
     assert g(1) == "1.000000"
 
 
+@pytest.mark.skip("Not implemented yet")
 def test_enum_float_2():
     g = normalize("name", [1, 0.5, 3], type=EnumListType, format="%03f")(
         name_no_default
@@ -134,7 +135,6 @@ def test_enum_float_3():
         assert g(1) == ["1.000000"]
 
 
-@pytest.mark.skip("Not implemented yet")
 def test_enum_int_1():
     g = normalize("name", [1, 0.5, 3], type=int, multiple=True)(name_default_is_1)
     assert g(1) == [1]
