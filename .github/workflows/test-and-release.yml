@@ -183,10 +183,3 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Send message on teams Stage
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-          method: 'POST'
-          data: ' { "type":"message", "attachments":[ { "contentType":"application/vnd.microsoft.card.adaptive", "contentUrl":null, "content":{ "$schema":"http://adaptivecards.io/schemas/adaptive-card.json", "type":"AdaptiveCard    ", "version":"1.2", "body":[ { "type": "TextBlock", "text": "Test message: CliMetLab version ${{ steps.checkversion.outputs.version }}  has been released" } ] } } ] }'
