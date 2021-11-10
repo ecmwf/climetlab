@@ -224,17 +224,69 @@ def test_enum_alias():
     assert enum_alias("z") == ["a"]
 
 
+def test_enum_none_1():
+    @normalize(
+        "name",
+        ["a", "b", "c"],
+        multiple=True,
+        aliases={"x": "y", "y": "z", "z": "a"},
+    )
+    def enum_none(name):
+        return name
+
+    assert enum_none(None) == None
+
+
+def test_enum_none_2():
+    @normalize("name", ["a", "b", "c"], multiple=True, aliases={None: "b"})
+    def enum_none_2(name):
+        return name
+
+    assert enum_none_2(None) == ["b"]
+
+
+def test_enum_none_3():
+    @normalize("name", ["a", "b", "c"], aliases={None: "b"})
+    def enum_none_3(name):
+        return name
+
+    assert enum_none_3(None) == "b"
+
+
+def test_enum_none_4():
+    @normalize("name", ["a", "b", "c"], aliases={None: "b"})
+    def enum_none_4(name=None):
+        return name
+
+    assert enum_none_4() == "b"
+
+
 def test_enum_alias_2():
     enum_alias = normalize(
         "name",
         ["a", "b", "c"],
-        aliases={"x": "y", "y": "z", "z": "a"},
+        aliases={"x": "y", "y": "z", "z": "a", "w": "wrong-value"},
     )(name_no_default)
     assert enum_alias("a") == "a"
     assert enum_alias("b") == "b"
     assert enum_alias("x") == "a"
     assert enum_alias("y") == "a"
     assert enum_alias("z") == "a"
+    with pytest.raises(ValueError, match=".*wrong-value.*"):
+        enum_alias("w")
+
+
+def test_enum_default_1():
+    @normalize(
+        "name",
+        ["a", "b", "c"],
+    )
+    def enum_default_1(name="wrong-default"):
+        return name
+
+    enum_default_1("a")
+    with pytest.raises(ValueError, match=".*wrong-default.*"):
+        enum_default_1()
 
 
 if __name__ == "__main__":

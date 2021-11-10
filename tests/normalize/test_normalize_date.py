@@ -122,6 +122,43 @@ def test_dates_formated_from_object():
     assert date_formated(obj) == "2020.05.13"
 
 
+def test_date_none_1():
+    @normalize(
+        "name",
+        "date(%Y%m%d)",
+    )
+    def date_default_none(name=None):
+        return name
+
+    assert date_default_none("2012-12-02") == "20121202"
+    assert date_default_none() is None
+
+
+def test_date_list_none_1():
+    @normalize(
+        "name",
+        "date-list(%Y%m%d)",
+    )
+    def date_default_none(name=None):
+        return name
+
+    assert date_default_none("2012-12-02") == ["20121202"]
+    assert date_default_none() is None
+
+
+def test_date_default_1():
+    @normalize(
+        "name",
+        "date",
+    )
+    def date_default_1(name="wrong-default"):
+        return name
+
+    date_default_1("2012-12-02")
+    with pytest.raises(ValueError, match=".*wrong-default.*"):
+        date_default_1()
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 

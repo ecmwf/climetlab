@@ -93,8 +93,6 @@ class AliasTransformer(_TypedTransformer):
         return value
 
     def transform(self, value):
-        if value is None:
-            return value
         if isinstance(value, list):
             return [self._transform_one(v) for v in value]
         if isinstance(value, tuple):
