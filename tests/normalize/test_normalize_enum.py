@@ -234,7 +234,7 @@ def test_enum_none_1():
     def enum_none(name):
         return name
 
-    assert enum_none(None) == None
+    assert enum_none(None) is None
 
 
 def test_enum_none_2():
