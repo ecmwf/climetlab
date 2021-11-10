@@ -592,7 +592,6 @@ class Url(FileSource):
                 self.parts = None
 
         if mirror:
-            assert self.parts is None
             url = mirror(url)
 
         o = urlparse(url)

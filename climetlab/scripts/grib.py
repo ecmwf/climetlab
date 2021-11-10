@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import json
 import os
 
 from .tools import parse_args
@@ -66,4 +67,4 @@ class GribCmd:
     def do_index_gribs(self, args):
         for path in args.paths:
             for n in _index_path(path):
-                print(n)
+                print(json.dumps(n))
