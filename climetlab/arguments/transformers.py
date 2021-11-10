@@ -93,6 +93,8 @@ class AliasTransformer(_TypedTransformer):
         return value
 
     def transform(self, value):
+        if value is None:
+            return value
         if isinstance(value, list):
             return [self._transform_one(v) for v in value]
         if isinstance(value, tuple):
@@ -109,6 +111,8 @@ class FormatTransformer(_TypedTransformer):
         self.format = format
 
     def transform(self, value):
+        if value is None:
+            return value
         return self.type.format(value, self.format)
 
     def __repr__(self) -> str:
@@ -120,6 +124,8 @@ class TypeTransformer(_TypedTransformer):
         super().__init__(owner, type)
 
     def transform(self, value):
+        if value is None:
+            return value
         return self.type.cast(value)
 
     def __repr__(self) -> str:
@@ -133,7 +139,8 @@ class AvailabilityChecker(Action):
     def execute(self, kwargs):
         LOG.debug("Checking availability for %s", kwargs)
         assert isinstance(kwargs, dict), kwargs
-        self.availability.check(kwargs)
+        without_none = {k: v for k, v in kwargs.items() if v is not None}
+        self.availability.check(without_none)
         return kwargs
 
     def __repr__(self) -> str:
