@@ -37,6 +37,9 @@ def _index_grib_file(path):
                 field["_offset"] = eccodes.codes_get_long(h, "offset")
                 field["_length"] = eccodes.codes_get_long(h, "totalLength")
 
+                field["param"] = eccodes.codes_get_string(h, "paramId")
+                field["_short_name"] = eccodes.codes_get_string(h, "shortName")
+
                 yield field
 
             finally:
