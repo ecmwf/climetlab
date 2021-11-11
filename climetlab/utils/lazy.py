@@ -34,20 +34,21 @@ class LazySource:
     @property
     def source(self):
         if self._source is None:
-            try:
-                self._source = load_source(
-                    self.name,
-                    lazily=False,
-                    *self.args,
-                    **self.kwargs,
-                )
-            except Exception:
-                LOG.exception(
-                    "Error loading source %s(%s, %s)",
-                    self.name,
-                    self.args,
-                    self.kwargs,
-                )
+            # try:
+            self._source = load_source(
+                self.name,
+                lazily=False,
+                *self.args,
+                **self.kwargs,
+            )
+        # except Exception:
+        #     LOG.exception(
+        #         "Error loading source %s(%s, %s)",
+        #         self.name,
+        #         self.args,
+        #         self.kwargs,
+        #     )
+        #     raise
 
         return self._source
 

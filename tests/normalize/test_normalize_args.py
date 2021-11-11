@@ -17,7 +17,7 @@ def a_b_no_default(a, b):
     return a, b
 
 
-def test_normalize_argss():
+def test_normalize_args():
     @normalize_args(
         dates="date-list(%Y.%m.%d)",
         names=["a", "b", "c"],

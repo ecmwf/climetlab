@@ -21,11 +21,12 @@ def test_open_data():
     load_source(
         "ecmwf-open-data",
         step=24,
-        date=20211103,
+        date=-2,
     )
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    test_open_data()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)

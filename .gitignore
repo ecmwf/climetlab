@@ -163,3 +163,4 @@ test
 *.swn
 *.swo
 .DS_Store
+*.grib2

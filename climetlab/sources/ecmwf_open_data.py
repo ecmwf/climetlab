@@ -7,7 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.sources.multi_url import MultiUrl
+from climetlab import load_source
+from climetlab.sources.multi import MultiSource
 from climetlab.utils.patterns import Pattern
 
 from .prompt import APIKeyPrompt
@@ -29,7 +30,7 @@ class EODKeyPrompt(APIKeyPrompt):
     rcfile = "~/.ecmwf-open-data"
 
 
-class EODRetriever(MultiUrl):
+class EODRetriever(MultiSource):
 
     sphinxdoc = """
     EODRetriever
@@ -57,9 +58,9 @@ class EODRetriever(MultiUrl):
         options.update(kwargs)
         # assert False, (kwargs, options)
 
-        urls = self.requests(**options)
+        sources = self.requests(**options)
 
-        super().__init__(urls)
+        super().__init__(sources)
 
     # @normalize("date", "date-list(%Y-%m-%d)")
     # @normalize("area", "bounding-box(list)")
@@ -76,7 +77,7 @@ class EODRetriever(MultiUrl):
 
         result = []
         for p in Pattern(pattern).substitute([], **kwargs):
-            result.append(p)
+            result.append(load_source("url", p, parts=[(0, 4)]))
 
         return result
 

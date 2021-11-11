@@ -130,29 +130,46 @@ class Downloader:
 
 # S3 does not support multiple ranges
 class S3Streamer:
-    def __init__(self, url, request, parts, **kwargs):
+    def __init__(self, url, request, parts, headers, **kwargs):
         self.url = url
         self.parts = parts
         self.request = request
+        self.headers = headers
         self.kwargs = kwargs
 
     def __call__(self, chunk_size):
         # See https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
 
-        sep = "&" if "?" in self.url else "?"
-
+        headers = dict(**self.headers)
         # TODO: add assertions
 
         for i, part in enumerate(self.parts):
             if i == 0:
                 request = self.request
             else:
-                url = f"{self.url}{sep}partNumber={i+1}"
+                offset, length = part
+                headers["range"] = f"bytes={offset}-{offset+length-1}"
                 request = requests.get(
-                    url,
+                    self.url,
                     stream=True,
+                    headers=headers,
                     **self.kwargs,
                 )
+
+            header = request.headers
+            bytes = header["content-range"]
+            LOG.debug("HEADERS %s", header)
+            m = re.match(r"^bytes (\d+)d?-(\d+)d?/(\d+)d?$", bytes)
+            assert m, header
+            start, end, total = int(m.group(1)), int(m.group(2)), int(m.group(3))
+
+            assert end >= start
+            assert start < total
+            assert end < total
+
+            assert start == part[0], (bytes, part)
+            assert end == part[0] + part[1] - 1, (bytes, part)
+
             # print("S3 chunk_size", chunk_size, 'part', i)
             for chunk in request.iter_content(chunk_size):
                 yield chunk
@@ -249,7 +266,7 @@ class MultiPartStreamer:
 
 
 class DecodeMultipart:
-    def __init__(self, url, request, parts, filter, **kwargs):
+    def __init__(self, url, request, parts, **kwargs):
         self.request = request
         assert request.status_code == 206, request.status_code
 
@@ -257,11 +274,9 @@ class DecodeMultipart:
 
         if content_type.startswith("multipart/byteranges; boundary="):
             _, boundary = content_type.split("=")
-            self.streamer = filter(
-                MultiPartStreamer(url, request, parts, boundary, **kwargs)
-            )
+            self.streamer = MultiPartStreamer(url, request, parts, boundary, **kwargs)
         else:
-            self.streamer = filter(S3Streamer(url, request, parts, **kwargs))
+            self.streamer = S3Streamer(url, request, parts, **kwargs)
 
     def __call__(self, chunk_size):
         return self.streamer(chunk_size)
@@ -271,11 +286,10 @@ class PartFilter:
     def __init__(self, parts, positions):
         self.parts = parts
         self.positions = positions
-        # print("PartFilter", self.parts)
-        # print("PartFilter", self.positions)
+        print("PartFilter", self.parts)
+        print("PartFilter", self.positions)
 
     def __call__(self, streamer):
-
         def execute(chunk_size):
             stream = streamer(chunk_size)
             chunk = next(stream)
@@ -432,49 +446,56 @@ class HTTPDownloader(Downloader):
         filter = NoFilter
 
         if parts:
-            if headers.get("accept-ranges") != "bytes":
-                raise ValueError(f"Server for {url} does not support byte ranges")
+
             # We can trust the size
             encoded = None
             size = sum(p[1] for p in parts)
-
-            ranges = []
-            if block_transfers:
-                rounded = []
-                last_offset = -1
-                positions = []
-                for offset, length in parts:
-                    rounded_offset = (offset // block_transfers) * block_transfers
-                    rounded_length = (
-                        (length + block_transfers - 1) // block_transfers
-                    ) * block_transfers
-
-                    if rounded_offset <= last_offset:
-                        prev_offset, prev_length = rounded.pop()
-                        end_offset = rounded_offset + rounded_length
-                        prev_end_offset = prev_offset + prev_length
-                        rounded_offset = min(rounded_offset, prev_offset)
-                        assert rounded_offset == prev_offset
-                        rounded_length = (
-                            max(end_offset, prev_end_offset) - rounded_offset
-                        )
-
-                    # Position in part in stream
-                    positions.append(
-                        offset - rounded_offset + sum(x[1] for x in rounded)
-                    )
-                    # print("POS", positions)
-                    rounded.append((rounded_offset, rounded_length))
-
-                    last_offset = rounded_offset + rounded_length
-
+            if headers.get("accept-ranges") != "bytes":
+                LOG.warning(
+                    "Server for %s does not support byte ranges, downloading whole file",
+                    url,
+                )
+                positions = [x[0] for x in parts]
                 filter = PartFilter(parts, positions)
-                parts = rounded
+                parts = None
+            else:
+                ranges = []
+                if block_transfers:
+                    rounded = []
+                    last_offset = -1
+                    positions = []
+                    for offset, length in parts:
+                        rounded_offset = (offset // block_transfers) * block_transfers
+                        rounded_length = (
+                            (length + block_transfers - 1) // block_transfers
+                        ) * block_transfers
 
-            for offset, length in parts:
-                ranges.append(f"{offset}-{offset+length-1}")
+                        if rounded_offset <= last_offset:
+                            prev_offset, prev_length = rounded.pop()
+                            end_offset = rounded_offset + rounded_length
+                            prev_end_offset = prev_offset + prev_length
+                            rounded_offset = min(rounded_offset, prev_offset)
+                            assert rounded_offset == prev_offset
+                            rounded_length = (
+                                max(end_offset, prev_end_offset) - rounded_offset
+                            )
 
-            http_headers["range"] = f"bytes={','.join(ranges)}"
+                        # Position in part in stream
+                        positions.append(
+                            offset - rounded_offset + sum(x[1] for x in rounded)
+                        )
+                        # print("POS", positions)
+                        rounded.append((rounded_offset, rounded_length))
+
+                        last_offset = rounded_offset + rounded_length
+
+                    filter = PartFilter(parts, positions)
+                    parts = rounded
+
+                for offset, length in parts:
+                    ranges.append(f"{offset}-{offset+length-1}")
+
+                http_headers["range"] = f"bytes={','.join(ranges)}"
             # print(http_headers)
             # print("LENGTH", sum(x[1] for x in parts))
 
@@ -492,14 +513,15 @@ class HTTPDownloader(Downloader):
         self.stream = filter(r.iter_content)
 
         if parts and len(parts) > 1:
-            self.stream = DecodeMultipart(
-                url,
-                r,
-                parts,
-                filter=filter,
-                verify=self.owner.verify,
-                timeout=SETTINGS.get("url-download-timeout"),
-                headers=http_headers,
+            self.stream = filter(
+                DecodeMultipart(
+                    url,
+                    r,
+                    parts,
+                    verify=self.owner.verify,
+                    timeout=SETTINGS.get("url-download-timeout"),
+                    headers=http_headers,
+                )
             )
 
         LOG.debug(
@@ -513,7 +535,7 @@ class HTTPDownloader(Downloader):
 
     def transfer(self, f, pbar, watcher):
         total = 0
-        for chunk in self.stream(chunk_size=1024 * 1024):
+        for chunk in self.stream(chunk_size=self.owner.chunk_size):
             watcher()
             if chunk:
                 f.write(chunk)
@@ -663,7 +685,7 @@ class FileDownloader(Downloader):
                 g.seek(offset)
                 watcher()
                 while length > 0:
-                    chunk = g.read(min(length, 1024 * 1024))
+                    chunk = g.read(min(length, self.owner.chunk_size))
                     assert chunk
                     f.write(chunk)
                     length -= len(chunk)
@@ -691,6 +713,7 @@ class Url(FileSource):
         merger=None,
         verify=True,
         force=None,
+        chunk_size=1024 * 1024,
         # extension=None,
         http_headers=None,
         update_if_out_of_date=False,
@@ -706,6 +729,7 @@ class Url(FileSource):
         self.filter = filter
         self.merger = merger
         self.verify = verify
+        self.chunk_size = chunk_size
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
