@@ -84,6 +84,8 @@ def dev():
 
     # request = dict(param="157.128")
     request = dict(param="157.128", time="1000")
+    # request = dict(date="19970101")
+    # request = dict(param="157.128", time="1000", date="19970101")
 
     parts = index.request_to_url_parts(request)
 
