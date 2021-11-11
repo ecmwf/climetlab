@@ -10,6 +10,7 @@
 #
 
 import json
+from typing import DefaultDict
 
 import climetlab
 from climetlab.sources.multi import MultiSource
@@ -20,7 +21,38 @@ BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 # climetlab index_gribs data > EU.index
 
 # path = "data/ana/pressure/EU_analysis_pressure_params_1997-01.grb"
+from collections import defaultdict
 
+
+class UrlsParts:
+    def __init__(self):
+        self.parts = defaultdict(list)
+
+    def append(self, e):
+        path = e["_path"]
+        offset = e["_offset"]
+        length = e["_length"]
+
+        self.parts[path].append((offset, length))
+
+    def __repr__(self):
+        n = 0
+        return f"{len(self.parts)} HTTP requests with {n} parts"
+
+    def to_source(self, baseurl):
+        sources = []
+        for path, ranges in self.parts.items():
+            source = climetlab.load_source(
+                "url",
+                url=f"{baseurl}/{path}",
+                parts=sorted(ranges),
+            )
+            print(source)
+            sources.append(source)
+        if not sources:
+            raise ValueError("Empty request: no match.")
+        s = MultiSource(*sources)
+        return s
 
 class GribIndex:
     def __init__(self, filename):
@@ -38,29 +70,13 @@ class GribIndex:
         return True
 
     def request_to_url_parts(self, request):
-        url_parts = []
+        parts = UrlsParts()
         for e in self.entries:
             if self.match(e, request):
-                url_parts.append(
-                    dict(path=e["_path"], offset=e["_offset"], length=e["_length"])
-                )
-        print(f"{len(url_parts)} HTTP requests for {request}")
-        return url_parts
+                parts.append(e)
+        print(f"Build HTTP requests for {request}: {parts} ")
+        return parts
 
-    def parts_to_source(self, baseurl, parts):
-        sources = []
-        for part in parts:
-            source = climetlab.load_source(
-                "url",
-                url=f"{baseurl}/{part['path']}",
-                offsets=[part["offset"]],
-                lengths=[part["length"]],
-            )
-            sources.append(source)
-        if not sources:
-            raise ValueError("Empty request: no match.")
-        s = MultiSource(*sources)
-        return s
 
 
 def dev():
@@ -71,7 +87,8 @@ def dev():
 
     parts = index.request_to_url_parts(request)
 
-    s = index.parts_to_source(baseurl=BASEURL, parts=parts)
+    s = parts.to_source(baseurl=BASEURL)
+    print(s)
     print(s.to_xarray())
 
 
