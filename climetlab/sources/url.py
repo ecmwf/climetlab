@@ -133,8 +133,12 @@ class DecodeMultipart:
         self.request = request
         assert request.status_code == 206, request.status_code
 
-        kind, self.boundary = request.headers["content-type"].split("=")
-        assert kind == "multipart/byteranges; boundary", kind
+        print(request.headers)
+
+        assert request.headers["content-type"].startswith(
+            "multipart/byteranges; boundary="
+        ), request.headers
+        _, self.boundary = request.headers["content-type"].split("=")
 
         self.size = int(request.headers["content-length"])
         self.encoding = "utf-8"
@@ -341,6 +345,7 @@ class HTTPDownloader(Downloader):
             for offset, length in parts:
                 ranges.append(f"{offset}-{offset+length-1}")
             http_headers["range"] = f"bytes={','.join(ranges)}"
+            print(http_headers)
 
         r = requests.get(
             url,

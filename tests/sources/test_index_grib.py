@@ -54,6 +54,7 @@ class UrlsParts:
         s = MultiSource(*sources)
         return s
 
+
 class GribIndex:
     def __init__(self, filename):
         with open(filename, "r") as f:
@@ -76,7 +77,6 @@ class GribIndex:
                 parts.append(e)
         print(f"Build HTTP requests for {request}: {parts} ")
         return parts
-
 
 
 def dev():
