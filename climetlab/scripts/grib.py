@@ -10,10 +10,12 @@
 import json
 import os
 
+import climetlab as cml
+
 from .tools import parse_args
 
 
-def _index_grib_file(path):
+def _index_grib_file(path, force_path_name=None):
     import eccodes
 
     with open(path, "rb") as f:
@@ -23,6 +25,8 @@ def _index_grib_file(path):
         while h:
             try:
                 field = dict(_path=path)
+                if force_path_name:
+                    field["_path"] = force_path_name
 
                 i = eccodes.codes_keys_iterator_new(h, "mars")
                 try:
@@ -48,6 +52,11 @@ def _index_grib_file(path):
             h = eccodes.codes_grib_new_from_file(f)
 
 
+def _index_url(path, url):
+    source = cml.load_source("url", url)
+    yield from _index_grib_file(source.path, force_path_name=path)
+
+
 def _index_path(path):
     if os.path.isdir(path):
         for root, _, files in os.walk(path):
@@ -66,8 +75,18 @@ class GribCmd:
             help="list of files or directories to index",
         ),
         # json=dict(action="store_true", help="produce a JSON output"),
+        baseurl=dict(
+            metavar="URL",
+            type=str,
+            help="Base url to use as a prefix to find the files.",
+        ),
     )
     def do_index_gribs(self, args):
         for path in args.paths:
-            for n in _index_path(path):
-                print(json.dumps(n))
+            if args.baseurl:
+                entries = _index_url(path, f"{args.baseurl}/{path}")
+            else:
+                entries = _index_path(path)
+
+            for e in entries:
+                print(json.dumps(e))
