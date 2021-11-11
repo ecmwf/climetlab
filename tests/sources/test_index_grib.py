@@ -10,7 +10,8 @@
 #
 
 import json
-from typing import DefaultDict
+import os
+from collections import defaultdict
 
 import climetlab
 from climetlab.sources.multi import MultiSource
@@ -21,7 +22,6 @@ BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 # climetlab index_gribs data > EU.index
 
 # path = "data/ana/pressure/EU_analysis_pressure_params_1997-01.grb"
-from collections import defaultdict
 
 
 class UrlsParts:
@@ -80,7 +80,7 @@ class GribIndex:
 
 
 def dev():
-    index = GribIndex("EU.index")
+    index = GribIndex(os.path.join(os.path.dirname(__file__), "EU.index"))
 
     # request = dict(param="157.128")
     request = dict(param="157.128", time="1000")

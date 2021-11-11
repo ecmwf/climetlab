@@ -128,24 +128,42 @@ class Downloader:
         return False
 
 
-class DecodeMultipart:
-    def __init__(self, request, parts):
+# S3 does not support multiple ranges
+class S3Streamer:
+    def __init__(self, url, request, parts, **kwargs):
+        self.url = url
+        self.parts = parts
         self.request = request
-        assert request.status_code == 206, request.status_code
+        self.kwargs = kwargs
 
-        print(request.headers)
+    def stream(self, chunk_size):
+        # See https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
 
-        assert request.headers["content-type"].startswith(
-            "multipart/byteranges; boundary="
-        ), request.headers
-        _, self.boundary = request.headers["content-type"].split("=")
+        sep = "&" if "?" in self.url else "?"
 
+        # TODO: add assertions
+
+        for i, part in enumerate(self.parts):
+            if i == 0:
+                request = self.request
+            else:
+                url = f"{self.url}{sep}partNumber={i+1}"
+                request = requests.get(
+                    url,
+                    stream=True,
+                    **self.kwargs,
+                )
+            for chunk in request.iter_content(chunk_size):
+                yield chunk
+
+
+class MultiPartStreamer:
+    def __init__(self, url, request, parts, boundary, **kwargs):
+        self.request = request
         self.size = int(request.headers["content-length"])
         self.encoding = "utf-8"
         self.parts = parts
-
-    def __call__(self, chunk_size):
-        return self.stream(chunk_size)
+        self.boundary = boundary
 
     def stream(self, chunk_size):
         from email.parser import HeaderParser
@@ -227,6 +245,23 @@ class DecodeMultipart:
             assert chunk.find(end_data) == 0
             chunk = chunk[len(end_data) :]
             part += 1
+
+
+class DecodeMultipart:
+    def __init__(self, url, request, parts, **kwargs):
+        self.request = request
+        assert request.status_code == 206, request.status_code
+
+        content_type = request.headers["content-type"]
+
+        if content_type.startswith("multipart/byteranges; boundary="):
+            _, boundary = content_type.split("=")
+            self.streamer = MultiPartStreamer(url, request, parts, boundary, **kwargs)
+        else:
+            self.streamer = S3Streamer(url, request, parts, **kwargs)
+
+    def __call__(self, chunk_size):
+        return self.streamer.stream(chunk_size)
 
 
 class HTTPDownloader(Downloader):
@@ -358,7 +393,14 @@ class HTTPDownloader(Downloader):
 
         self.stream = r.iter_content
         if parts and len(parts) > 1:
-            self.stream = DecodeMultipart(r, parts)
+            self.stream = DecodeMultipart(
+                url,
+                r,
+                parts,
+                verify=self.owner.verify,
+                timeout=SETTINGS.get("url-download-timeout"),
+                headers=http_headers,
+            )
 
         LOG.debug(
             "url prepare size=%s mode=%s skip=%s encoded=%s",
