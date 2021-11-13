@@ -168,9 +168,10 @@ class S3Streamer:
             assert end < total
 
             assert start == part[0], (bytes, part)
-            assert end == part[0] + part[1] - 1, (bytes, part)
+            # (end + 1 == total) means that we overshoot the end of the file,
+            # this happens when we round transfer blocks
+            assert (end == part[0] + part[1] - 1) or (end + 1 == total), (bytes, part)
 
-            # print("S3 chunk_size", chunk_size, 'part', i)
             for chunk in request.iter_content(chunk_size):
                 yield chunk
 
@@ -283,22 +284,22 @@ class DecodeMultipart:
 
 
 class PartFilter:
-    def __init__(self, parts, positions):
+    def __init__(self, parts, positions=None):
         self.parts = parts
+
+        if positions is None:
+            positions = [x[0] for x in parts]
         self.positions = positions
-        print("PartFilter", self.parts)
-        print("PartFilter", self.positions)
+
+        assert len(self.parts) == len(self.positions)
 
     def __call__(self, streamer):
         def execute(chunk_size):
             stream = streamer(chunk_size)
             chunk = next(stream)
-            # print("CHUNK", len(chunk), chunk_size)
             pos = 0
             for (_, length), offset in zip(self.parts, self.positions):
                 offset -= pos
-
-                # print("POSITION 1", offset, length, len(chunk))
 
                 while offset > len(chunk):
                     pos += len(chunk)
@@ -306,20 +307,20 @@ class PartFilter:
                     chunk = next(stream)
                     assert chunk
 
-                # print("POSITION 2", offset, length, len(chunk))
-
                 chunk = chunk[offset:]
                 pos += offset
-
-                while True:
-                    size = min(length, len(chunk))
-                    yield chunk[:size]
-                    length -= size
-                    chunk = chunk[size:]
-                    pos += size
-                    if length == 0:
-                        break
-                    chunk += next(stream)
+                size = length
+                while size > 0:
+                    if len(chunk) >= size:
+                        yield chunk[:size]
+                        chunk = chunk[size:]
+                        pos += size
+                        size = 0
+                    else:
+                        yield chunk
+                        size -= len(chunk)
+                        pos += len(chunk)
+                        chunk = next(stream)
 
             # Drain stream, so we don't created error messages in the server's logs
             while True:
@@ -329,6 +330,73 @@ class PartFilter:
                     break
 
         return execute
+
+
+def round_down(a, b):
+    return (a // b) * b
+
+
+def round_up(a, b):
+    return ((a + b - 1) // b) * b
+
+
+def _compute_byte_ranges(parts, transfer_size):
+    rounded = []
+    last_rounded_offset = -1
+    last_offset = 0
+    positions = []
+    for offset, length in parts:
+
+        assert offset >= last_offset
+
+        rounded_offset = round_down(offset, transfer_size)
+        rounded_length = round_up(offset + length, transfer_size) - rounded_offset
+
+        if rounded_offset <= last_rounded_offset:
+            prev_offset, prev_length = rounded.pop()
+            end_offset = rounded_offset + rounded_length
+            prev_end_offset = prev_offset + prev_length
+            rounded_offset = min(rounded_offset, prev_offset)
+            assert rounded_offset == prev_offset
+            rounded_length = max(end_offset, prev_end_offset) - rounded_offset
+
+        # Position in part in stream
+        positions.append(offset - rounded_offset + sum(x[1] for x in rounded))
+        rounded.append((rounded_offset, rounded_length))
+
+        last_rounded_offset = rounded_offset + rounded_length
+        last_offset = offset + length
+
+    # Sanity check
+    # Assert that each parts is contain in a rounded part
+    i = 0
+    roffset, rlength = rounded[i]
+    for offset, length in parts:
+        while offset > roffset + rlength:
+            i += 1
+            roffset, rlength = rounded[i]
+        start = i
+        while offset + length > roffset + rlength:
+            i += 1
+            roffset, rlength = rounded[i]
+        end = i
+        assert start == end
+
+    before = (len(parts), sum(x[1] for x in parts))
+    after = (len(rounded), sum(x[1] for x in rounded))
+    return rounded, positions, (before, after, float(after[1]) / float(before[1]))
+
+
+def compute_byte_ranges(parts, transfer_size):
+    smallest = min(x[1] for x in parts)
+    transfer_size = round_up(max(transfer_size, smallest), 1024)
+
+    while transfer_size >= smallest:
+        rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
+        print(transfer_size, info)
+        transfer_size //= 2
+
+    return rounded, positions
 
 
 def NoFilter(x):
@@ -441,7 +509,7 @@ class HTTPDownloader(Downloader):
                         bytes,
                     )
 
-        block_transfers = 8 * 1024 * 1024
+        transfer_size = 8 * 1024 * 1024
 
         filter = NoFilter
 
@@ -455,40 +523,13 @@ class HTTPDownloader(Downloader):
                     "Server for %s does not support byte ranges, downloading whole file",
                     url,
                 )
-                positions = [x[0] for x in parts]
-                filter = PartFilter(parts, positions)
+                filter = PartFilter(parts)
                 parts = None
             else:
                 ranges = []
-                if block_transfers:
-                    rounded = []
-                    last_offset = -1
-                    positions = []
-                    for offset, length in parts:
-                        rounded_offset = (offset // block_transfers) * block_transfers
-                        rounded_length = (
-                            (length + block_transfers - 1) // block_transfers
-                        ) * block_transfers
+                if transfer_size:
 
-                        if rounded_offset <= last_offset:
-                            prev_offset, prev_length = rounded.pop()
-                            end_offset = rounded_offset + rounded_length
-                            prev_end_offset = prev_offset + prev_length
-                            rounded_offset = min(rounded_offset, prev_offset)
-                            assert rounded_offset == prev_offset
-                            rounded_length = (
-                                max(end_offset, prev_end_offset) - rounded_offset
-                            )
-
-                        # Position in part in stream
-                        positions.append(
-                            offset - rounded_offset + sum(x[1] for x in rounded)
-                        )
-                        # print("POS", positions)
-                        rounded.append((rounded_offset, rounded_length))
-
-                        last_offset = rounded_offset + rounded_length
-
+                    rounded, positions = compute_byte_ranges(parts, transfer_size)
                     filter = PartFilter(parts, positions)
                     parts = rounded
 
@@ -496,8 +537,6 @@ class HTTPDownloader(Downloader):
                     ranges.append(f"{offset}-{offset+length-1}")
 
                 http_headers["range"] = f"bytes={','.join(ranges)}"
-            # print(http_headers)
-            # print("LENGTH", sum(x[1] for x in parts))
 
         r = requests.get(
             url,
@@ -507,8 +546,6 @@ class HTTPDownloader(Downloader):
             headers=http_headers,
         )
         r.raise_for_status()
-
-        print("HEADER", r.headers)
 
         self.stream = filter(r.iter_content)
 
@@ -713,7 +750,7 @@ class Url(FileSource):
         merger=None,
         verify=True,
         force=None,
-        chunk_size=1024 * 1024,
+        chunk_size=16 * 1024,
         # extension=None,
         http_headers=None,
         update_if_out_of_date=False,

@@ -14,6 +14,7 @@ import os
 from collections import defaultdict
 
 import climetlab
+from climetlab import load_source
 from climetlab.sources.multi import MultiSource
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
@@ -51,8 +52,7 @@ class UrlsParts:
             sources.append(source)
         if not sources:
             raise ValueError("Empty request: no match.")
-        s = MultiSource(*sources)
-        return s
+        return load_source("multi", *sources)
 
 
 class GribIndex:
@@ -79,19 +79,37 @@ class GribIndex:
         return parts
 
 
+def retrieve_and_check(index, request):
+    parts = index.request_to_url_parts(request)
+    print("REQUEST", request)
+    print("PARTS", parts)
+
+    s = parts.to_source(baseurl=BASEURL)
+    try:
+        paths = [s.path]
+    except AttributeError:
+        paths = [p.path for p in s.sources]
+
+    for path in paths:
+        for grib in load_source("file", path):
+            for k, v in request.items():
+                assert str(grib._get(k)) == str(v), (grib._get(k), v)
+
+
 def dev():
     index = GribIndex(os.path.join(os.path.dirname(__file__), "EU.index"))
 
-    # request = dict(param="157.128")
+    request = dict(param="157.128")
+    retrieve_and_check(index, request)
+
     request = dict(param="157.128", time="1000")
+    retrieve_and_check(index, request)
+
     request = dict(date="19970101")
-    # request = dict(param="157.128", time="1000", date="19970101")
+    retrieve_and_check(index, request)
 
-    parts = index.request_to_url_parts(request)
-
-    s = parts.to_source(baseurl=BASEURL)
-    print(s)
-    print(s.to_xarray())
+    request = dict(param="157.128", time="1000", date="19970101")
+    retrieve_and_check(index, request)
 
 
 if __name__ == "__main__":

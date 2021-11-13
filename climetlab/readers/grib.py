@@ -289,6 +289,10 @@ class GribField(Base):
             result[name] = self.handle.get(name)
         return result
 
+    def _get(self, name):
+        """Private, for testing only"""
+        return self.handle.get(name)
+
 
 class GRIBIterator:
     def __init__(self, path):
