@@ -11,11 +11,10 @@
 
 import json
 import os
+import time
 from collections import defaultdict
 
-import climetlab
 from climetlab import load_source
-from climetlab.sources.multi import MultiSource
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
@@ -40,15 +39,16 @@ class UrlsParts:
         n = 0
         return f"{len(self.parts)} HTTP requests with {n} parts"
 
-    def to_source(self, baseurl):
+    def to_source(self, baseurl, **kwargs):
         sources = []
         for path, ranges in self.parts.items():
-            source = climetlab.load_source(
+            source = load_source(
                 "url",
                 url=f"{baseurl}/{path}",
                 parts=sorted(ranges),
+                lazily=True,
+                **kwargs,
             )
-            print(source)
             sources.append(source)
         if not sources:
             raise ValueError("Empty request: no match.")
@@ -79,12 +79,15 @@ class GribIndex:
         return parts
 
 
-def retrieve_and_check(index, request):
+def retrieve_and_check(index, request, **kwargs):
     parts = index.request_to_url_parts(request)
     print("REQUEST", request)
     print("PARTS", parts)
 
-    s = parts.to_source(baseurl=BASEURL)
+    now = time.time()
+    s = parts.to_source(baseurl=BASEURL, **kwargs)
+    elapsed = time.time() - now
+    print("ELAPSED", elapsed)
     try:
         paths = [s.path]
     except AttributeError:
@@ -94,6 +97,7 @@ def retrieve_and_check(index, request):
         for grib in load_source("file", path):
             for k, v in request.items():
                 assert str(grib._get(k)) == str(v), (grib._get(k), v)
+    return elapsed
 
 
 def dev():
@@ -110,6 +114,36 @@ def dev():
 
     request = dict(param="157.128", time="1000", date="19970101")
     retrieve_and_check(index, request)
+
+
+def timing():
+    sizes = [None, "auto"]
+    n = 8 * 1024 * 1024
+    while n > 1024:
+        sizes.append(n)
+        n //= 2
+
+    report = {}
+    for request in [
+        dict(param="157.128"),
+        dict(param="157.128", time="1000"),
+        dict(date="19970101"),
+        dict(param="157.128", time="1000", date="19970101"),
+    ]:
+        times = []
+        for n in sizes:
+            elapsed = retrieve_and_check(index, request, transfer_size=n, force=True)
+            if n is None:
+                n = 0
+            if n == "auto":
+                n = -1
+            times.append((round(elapsed * 10) / 10.0, n))
+
+        report[tuple(request.items())] = request, sorted(times)
+
+    for k, v in report.items():
+        print(k)
+        print(v)
 
 
 if __name__ == "__main__":

@@ -388,8 +388,16 @@ def _compute_byte_ranges(parts, transfer_size):
 
 
 def compute_byte_ranges(parts, transfer_size):
+
+    if isinstance(transfer_size, int):
+        rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
+        print(transfer_size, info)
+        return rounded, positions
+
+    assert transfer_size == "auto", transfer_size
+
     smallest = min(x[1] for x in parts)
-    transfer_size = round_up(max(transfer_size, smallest), 1024)
+    transfer_size = round_up(max(x[1] for x in parts), 1024)
 
     while transfer_size >= smallest:
         rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
@@ -509,7 +517,7 @@ class HTTPDownloader(Downloader):
                         bytes,
                     )
 
-        transfer_size = 8 * 1024 * 1024
+        transfer_size = self.owner.transfer_size
 
         filter = NoFilter
 
@@ -750,8 +758,9 @@ class Url(FileSource):
         merger=None,
         verify=True,
         force=None,
-        chunk_size=16 * 1024,
+        chunk_size=1024 * 1024,
         # extension=None,
+        transfer_size="auto",
         http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
@@ -767,6 +776,7 @@ class Url(FileSource):
         self.merger = merger
         self.verify = verify
         self.chunk_size = chunk_size
+        self.transfer_size = transfer_size
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
