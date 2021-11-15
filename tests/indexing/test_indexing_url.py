@@ -13,14 +13,68 @@ import os
 import time
 
 from climetlab import load_source
+from climetlab.datasets import Dataset
+from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
-# wget-recursive  "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
-# climetlab index_gribs data > EU.index
+# index file has been created with :
+# climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
+#           data/ana/pressure/EU_analysis_pressure_params_1997-01.grb > eumetnet.index
+# climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
+#           data/ana/pressure/EU_analysis_pressure_params_1997-02.grb >> eumetnet.index
+filename = os.path.join(os.path.dirname(__file__), "eumetnet.index")
+INDEX = GlobalIndex(filename, baseurl=BASEURL)
 
-# path = "data/ana/pressure/EU_analysis_pressure_params_1997-01.grb"
+
+def test_eumetnet_1():
+    class A:
+        @normalize(
+            "param",
+            ["133", "157", "130", "131", "132", "129"],
+            aliases="eumetnet_aliases.yaml",
+            multiple=True,
+        )
+        def __init__(self, option="abc", **request):
+            self.request = request
+
+    a = A(param="q")
+    assert a.request["param"] == ["133"]
+    a = A(param=133)
+    assert a.request["param"] == ["133"]
+    a = A(param=["q", "r"])
+    assert a.request["param"] == ["133", "157"]
+
+
+def test_eumetnet_2():
+    class Eumetnet(Dataset):
+        @normalize(
+            "param",
+            ["133", "157", "130", "131", "132", "129"],
+            aliases="eumetnet_aliases.yaml",
+            # multiple=True,
+        )
+        def __init__(self, option="abc", **request):
+            self.source = load_source("indexed-urls", INDEX, request)
+
+    a = Eumetnet(
+        **{
+            "domain": "g",
+            "levtype": "pl",
+            "levelist": "850",
+            "date": "19970228",
+            "time": "2300",
+            "step": "0",
+            "param": "r",  # "param": "157",
+            "class": "ea",
+            "type": "an",
+            "stream": "oper",
+            "expver": "0001",
+        }
+    )
+    ds = a.to_xarray()
+    assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
 def retrieve_and_check(index, request, **kwargs):
@@ -46,7 +100,7 @@ def retrieve_and_check(index, request, **kwargs):
 
 def dev():
     index = GlobalIndex(
-        os.path.join(os.path.dirname(__file__), "EU.index"), baseurl=BASEURL
+        os.path.join(os.path.dirname(__file__), "eumetnet.index"), baseurl=BASEURL
     )
 
     request = dict(param="157.128")
@@ -78,7 +132,7 @@ def timing():
     ]:
         times = []
         for n in sizes:
-            elapsed = retrieve_and_check(index, request, transfer_size=n, force=True)
+            elapsed = retrieve_and_check(INDEX, request, transfer_size=n, force=True)
             if n is None:
                 n = 0
             if n == "auto":
