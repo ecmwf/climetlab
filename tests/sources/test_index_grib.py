@@ -36,8 +36,8 @@ class UrlsParts:
         self.parts[path].append((offset, length))
 
     def __repr__(self):
-        n = 0
-        return f"{len(self.parts)} HTTP requests with {n} parts"
+        n = sum(len(x) for x in self.parts.values())
+        return f"{len(self.parts)} HTTP requests with a total of {n} parts"
 
     def to_source(self, baseurl, **kwargs):
         sources = []
@@ -117,6 +117,8 @@ def dev():
 
 
 def timing():
+    index = GribIndex(os.path.join(os.path.dirname(__file__), "EU.index"))
+
     sizes = [None, "auto"]
     n = 8 * 1024 * 1024
     while n > 1024:
