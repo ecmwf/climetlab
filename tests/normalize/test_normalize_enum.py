@@ -289,6 +289,17 @@ def test_enum_default_1():
         enum_default_1()
 
 
+def test_enum_aliases_from_file():
+    enum_aliases_from_file = normalize(
+        "name",
+        ["a", "b", "c"],
+        aliases="aliases.json",
+    )(name_no_default)
+    assert enum_aliases_from_file("y") == "b"
+    with pytest.raises(ValueError):
+        enum_aliases_from_file("unknown")
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
