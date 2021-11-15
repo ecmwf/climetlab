@@ -11,6 +11,7 @@ import json
 import re
 
 import requests
+import yaml
 
 try:
     # There is a bug in tqdm that expects ipywidgets
@@ -153,3 +154,14 @@ def string_to_args(s):
             args.append(typed(bit))
 
     return name, args, kwargs
+
+
+def load_json_or_yaml(path):
+    with open(path, "r") as f:
+        if path.endswith(".json"):
+            return json.load(f)
+        if path.endswith(".yaml") or path.endswith(".yml"):
+            return yaml.load(f)
+        raise ValueError(
+            f"Cannot read file {path}. Need json or yaml with appropriate extension."
+        )

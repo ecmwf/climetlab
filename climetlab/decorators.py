@@ -13,6 +13,7 @@ import re
 import threading
 from functools import wraps
 
+from climetlab.utils import load_json_or_yaml
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -120,6 +121,12 @@ class normalize(Decorator):
             kwargs["type"] = type
         else:
             kwargs["values"] = values
+
+        if "aliases" in kwargs and isinstance(kwargs["aliases"], str):
+            if not os.path.isabs(kwargs["aliases"]):
+                caller = os.path.dirname(inspect.stack()[1].filename)
+                path = os.path.join(caller, kwargs["aliases"])
+                kwargs["aliases"] = load_json_or_yaml(path)
 
         self.kwargs = kwargs
 

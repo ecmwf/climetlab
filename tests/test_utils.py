@@ -10,10 +10,11 @@
 #
 
 import datetime
+import os
 
 import pytest
 
-from climetlab.utils import string_to_args
+from climetlab.utils import load_json_or_yaml, string_to_args
 from climetlab.utils.humanize import (
     as_bytes,
     as_seconds,
@@ -24,6 +25,27 @@ from climetlab.utils.humanize import (
     seconds,
     when,
 )
+
+
+def test_load_yaml():
+    filename = os.path.join(os.path.dirname(__file__), "example.yaml")
+    load_json_or_yaml(filename)
+
+    filename = os.path.join(os.path.dirname(__file__), "example.yml")
+    load_json_or_yaml(filename)
+
+    filename = os.path.join(os.path.dirname(__file__), "unknown.yml")
+    with pytest.raises(FileNotFoundError):
+        load_json_or_yaml(filename)
+
+    filename = os.path.join(os.path.dirname(__file__), "example.ya_ml")
+    with pytest.raises(ValueError):
+        load_json_or_yaml(filename)
+
+
+def test_load_json():
+    filename = os.path.join(os.path.dirname(__file__), "example.json")
+    load_json_or_yaml(filename)
 
 
 def test_string_to_args():
