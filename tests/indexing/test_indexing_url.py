@@ -15,7 +15,7 @@ import time
 from climetlab import load_source
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
-from climetlab.indexing import GlobalIndex
+from climetlab.indexing import GlobalIndex, PerUrlIndex
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
@@ -25,7 +25,14 @@ BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 # climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
 #           data/ana/pressure/EU_analysis_pressure_params_1997-02.grb >> eumetnet.index
 filename = os.path.join(os.path.dirname(__file__), "eumetnet.index")
-INDEX = GlobalIndex(filename, baseurl=BASEURL)
+GLOBAL_INDEX = GlobalIndex(filename, baseurl=BASEURL)
+
+
+CML_BASEURL = "https://storage.ecmwf.europeanweather.cloud/climetlab"
+PER_URL_INDEX = PerUrlIndex(
+    CML_BASEURL
+    + "/test-data/input/eumetnet-sample/EU_analysis_pressure_params_{year}-{nn}.grb"
+)
 
 
 def test_eumetnet_1():
@@ -56,7 +63,7 @@ def test_eumetnet_2():
             # multiple=True,
         )
         def __init__(self, option="abc", **request):
-            self.source = load_source("indexed-urls", INDEX, request)
+            self.source = load_source("indexed-urls", GLOBAL_INDEX, request)
 
     a = Eumetnet(
         **{
@@ -71,6 +78,39 @@ def test_eumetnet_2():
             "type": "an",
             "stream": "oper",
             "expver": "0001",
+        }
+    )
+    ds = a.to_xarray()
+    assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
+
+
+def test_eumetnet_3():
+    class Eumetnet(Dataset):
+        @normalize(
+            "param",
+            ["133", "157", "130", "131", "132", "129"],
+            aliases="eumetnet_aliases.yaml",
+            # multiple=True,
+        )
+        def __init__(self, option="abc", **request):
+            self.source = load_source("indexed-urls", PER_URL_INDEX, request)
+
+    a = Eumetnet(
+        **{
+            "domain": "g",
+            "levtype": "pl",
+            "levelist": "850",
+            "date": "19970228",
+            "time": "2300",
+            "step": "0",
+            "param": "r",  # "param": "157",
+            "class": "ea",
+            "type": "an",
+            "stream": "oper",
+            "expver": "0001",
+            #
+            "year": "1997",
+            "nn": ["01", "02"],
         }
     )
     ds = a.to_xarray()
@@ -132,7 +172,9 @@ def timing():
     ]:
         times = []
         for n in sizes:
-            elapsed = retrieve_and_check(INDEX, request, transfer_size=n, force=True)
+            elapsed = retrieve_and_check(
+                GLOBAL_INDEX, request, transfer_size=n, force=True
+            )
             if n is None:
                 n = 0
             if n == "auto":

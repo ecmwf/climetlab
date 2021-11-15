@@ -69,24 +69,28 @@ def _index_path(path):
 class GribCmd:
     @parse_args(
         paths=dict(
-            metavar="PATH",
+            metavar="PATH_OR_URL",
             type=str,
             nargs="+",
-            help="list of files or directories to index",
+            help="list of files or directories or urls to index",
         ),
         # json=dict(action="store_true", help="produce a JSON output"),
         baseurl=dict(
-            metavar="URL",
+            metavar="BASEURL",
             type=str,
-            help="Base url to use as a prefix to find the files.",
+            help="Base url to use as a prefix on each URL to build urls.",
         ),
     )
     def do_index_gribs(self, args):
         for path in args.paths:
             if args.baseurl:
                 entries = _index_url(path, f"{args.baseurl}/{path}")
-            else:
+            elif os.path.exists(path):
                 entries = _index_path(path)
+            elif path.startswith("https://"):
+                entries = _index_url(None, path)
+            else:
+                raise ValueError(f'Cannot find "{path}" to index it.')
 
             for e in entries:
                 print(json.dumps(e))

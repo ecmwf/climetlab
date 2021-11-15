@@ -9,6 +9,9 @@
 
 from collections import defaultdict
 
+from climetlab import load_source
+from climetlab.utils.patterns import Pattern
+
 from .backends import JsonIndexBackend
 
 
@@ -20,9 +23,13 @@ class Index:
 
 
 class GlobalIndex(Index):
-    # index1 : 1 index, multifile.  relative path.  need baseurl.
-    # index = GlobalIndex(baseurl, filename, backend=JsonIndexBackend)
     def __init__(self, index_location, baseurl, backend=None) -> None:
+        """The GloblaIndex has one index managing multiple urls/files.
+        This unique index is found at "index_location"
+        The path of each file is written in the index as a relative path.
+        It is relative to a base url: "baseurl".
+        """
+
         super().__init__(backend=backend)
         self.baseurl = baseurl
         # if is url index_location
@@ -57,12 +64,53 @@ class PerUrlIndex(Index):  # TODO
         substitute_extension=False,
         index_extension=".index",
     ) -> None:
+        """The PerUrlIndex uses one index for each urls/files that it manages.
+        The urls/files are built from the pattern and the request.
+        The indexese locations are built from each url.
+        """
         super().__init__(backend=backend)
         self.pattern = pattern
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
+        self._backends = {}
 
-    def _get_index_file(self, url):
+    def _build_index_file(self, url):
         if self.substitute_extension:
             url = url.rsplit(".", 1)
         return url + self.index_extension
+
+    def get_backend(self, url):
+        if url in self._backends:
+            return self._backends[url]
+
+        index_url = self._build_index_file(url)
+        index_source = load_source("url", index_url)
+        index_filename = index_source.path
+        backend = JsonIndexBackend()
+        backend.add_index_file(index_filename)
+
+        self._backends[url] = backend
+        return self._backends[url]
+
+    def lookup_request(self, request):
+        dic = defaultdict(list)
+
+        pattern = Pattern(self.pattern, ignore_missing_keys=True)
+        urls = pattern.substitute(**request)
+        for used in pattern.names:
+            # consume arguments used by Pattern to build the urls
+            # This is to avoid keeping them on the request
+            request.pop(used)
+
+        # group parts by url
+        for url in urls:
+            backend = self.get_backend(url)
+            for path, parts in backend.lookup(request):
+                dic[url].append(parts)
+
+        # and sort
+        dic = {k: sorted(v) for k, v in dic.items()}
+
+        urls_parts = [(k, v) for k, v in dic.items()]
+
+        return urls_parts
