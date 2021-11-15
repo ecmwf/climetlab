@@ -117,7 +117,8 @@ class Variable:
 
 
 class Pattern:
-    def __init__(self, pattern):
+    def __init__(self, pattern, ignore_missing_keys=False):
+        self.ignore_missing_keys = ignore_missing_keys
 
         self.pattern = []
         self.variables = []
@@ -151,7 +152,7 @@ class Pattern:
         for p in self.pattern:
             used.discard(p.name)
             result.append(p.substitute(params))
-        if used:
+        if used and not self.ignore_missing_keys:
             raise ValueError("Unused parameter(s): {}".format(used))
 
         return "".join(str(x) for x in result)

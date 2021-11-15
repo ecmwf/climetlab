@@ -7,6 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import pytest
+
 from climetlab.utils.patterns import Pattern
 
 
@@ -31,6 +33,20 @@ def test_patterns():
         "tp.rt.20000101.grib",
         "2t.rt.20000101.grib",
     ]
+
+
+def test_patterns_missing_key():
+
+    p = Pattern("{date}-{param}")
+    with pytest.raises(ValueError, match=".*level.*"):
+        p.substitute(dict(date="20000101", param="2t", level=12))
+
+    p = Pattern("{date}-{param}", ignore_missing_keys=False)
+    with pytest.raises(ValueError, match=".*level.*"):
+        p.substitute(dict(date="20000101", param="2t", level=12))
+
+    p = Pattern("{date}-{param}", ignore_missing_keys=True)
+    assert p.substitute(dict(date="20000101", param="2t", level=12)) == "20000101-2t"
 
 
 if __name__ == "__main__":
