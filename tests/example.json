@@ -1,0 +1,12 @@
+[
+    {"level": "500", "param": "Z", "step": "24"},
+    {"level": "500", "param": "Z", "step": "36"},
+    {"level": "500", "param": "Z", "step": "48"},
+    {"level": "500", "param": "T", "step": "24"},
+    {"level": "500", "param": "T", "step": "36"},
+    {"level": "500", "param": "T", "step": "48"},
+    {"level": "850", "param": "T", "step": "36"},
+    {"level": "850", "param": "T", "step": "48"},
+    {"level": "1000", "param": "Z", "step": "24"},
+    {"level": "1000", "param": "Z", "step": "48"}
+]

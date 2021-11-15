@@ -1,0 +1,5 @@
+title:
+- [string:with:colon, string with spaces, string]
+- - string:with:colon
+  - string with spaces
+  - string
