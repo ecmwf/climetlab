@@ -98,6 +98,7 @@ class PerUrlIndex(Index):  # TODO
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
         urls = pattern.substitute(**request)
+        request = dic(**request) # deepcopy to avoid changing the user's request
         for used in pattern.names:
             # consume arguments used by Pattern to build the urls
             # This is to avoid keeping them on the request
