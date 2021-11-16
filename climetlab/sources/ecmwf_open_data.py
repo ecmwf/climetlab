@@ -8,9 +8,8 @@
 #
 
 from climetlab import load_source
-from climetlab.sources.multi import MultiSource
-from climetlab.utils.patterns import Pattern
 from climetlab.indexing import PerUrlIndex
+from climetlab.sources.multi import MultiSource
 
 from .prompt import APIKeyPrompt
 

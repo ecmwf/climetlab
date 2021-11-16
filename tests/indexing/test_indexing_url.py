@@ -118,9 +118,12 @@ def test_eumetnet_3():
 
 
 def retrieve_and_check(index, request, **kwargs):
+    print("--------")
     parts = index.lookup_request(request)
     print("REQUEST", request)
-    print("PARTS", parts)
+    for url, p in parts:
+        total = len(index.get_backend(url).entries)
+        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
     s = load_source("indexed-urls", index, request, **kwargs)
@@ -134,7 +137,10 @@ def retrieve_and_check(index, request, **kwargs):
     for path in paths:
         for grib in load_source("file", path):
             for k, v in request.items():
-                assert str(grib._get(k)) == str(v), (grib._get(k), v)
+                # paramId is renamed as param to get rid of the
+                # additional '.128' (in climetlab/scripts/grib.py)
+                kk = {"param": "paramId"}.get(k, k)
+                assert str(grib._get(kk)) == str(v), (grib._get(k), v)
     return elapsed
 
 
@@ -143,16 +149,16 @@ def dev():
         os.path.join(os.path.dirname(__file__), "eumetnet.index"), baseurl=BASEURL
     )
 
-    request = dict(param="157.128")
+    request = dict(param="157")
     retrieve_and_check(index, request)
 
-    request = dict(param="157.128", time="1000")
+    request = dict(param="157", time="1000")
     retrieve_and_check(index, request)
 
     request = dict(date="19970101")
     retrieve_and_check(index, request)
 
-    request = dict(param="157.128", time="1000", date="19970101")
+    request = dict(param="157", time="1000", date="19970101")
     retrieve_and_check(index, request)
 
 

@@ -14,10 +14,18 @@ from .multi import MultiSource
 
 class IndexedUrls(MultiSource):
     def __init__(
-        self, index, request, *args, filter=None, merger=None, force=None, **kwargs
+        self,
+        index,
+        request,
+        *args,
+        filter=None,
+        merger=None,
+        force=None,
+        split_method="minimum-split",
+        **kwargs,
     ):
 
-        urls_parts = index.lookup_request(request)
+        urls_parts = index.lookup_request(request, split_method=split_method)
 
         sources = []
         for url, parts in urls_parts:

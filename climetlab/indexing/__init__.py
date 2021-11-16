@@ -10,9 +10,10 @@
 from collections import defaultdict
 
 from climetlab import load_source
+from climetlab.indexing.algo import resplit_urls_parts
 from climetlab.utils.patterns import Pattern
 
-from .backends import JsonIndexBackend, IndexBackend
+from .backends import IndexBackend, JsonIndexBackend
 
 
 class Index:
@@ -37,7 +38,10 @@ class GlobalIndex(Index):
         #   download index_location
         self.backend = self._backend_constructor(index_location)
 
-    def lookup_request(self, request):
+    def get_backend(self, url=None):
+        return self.backend
+
+    def lookup_request(self, request, split_method="minimum-split"):
         dic = defaultdict(list)
 
         # group parts by url
@@ -48,7 +52,8 @@ class GlobalIndex(Index):
         # and sort
         dic = {k: sorted(v) for k, v in dic.items()}
 
-        urls_parts = [(k, v) for k, v in dic.items()]
+        # urls_parts = [(k, v) for k, v in dic.items()]
+        urls_parts = resplit_urls_parts(dic, method=split_method)
 
         return urls_parts
 
@@ -103,12 +108,12 @@ class PerUrlIndex(Index):
         self.backends[url] = backend
         return self.backends[url]
 
-    def lookup_request(self, request):
+    def lookup_request(self, request, split_method="minimum-split"):
         dic = defaultdict(list)
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
         urls = pattern.substitute(**request)
-        request = dict(**request) # deepcopy to avoid changing the user's request
+        request = dict(**request)  # deepcopy to avoid changing the user's request
         for used in pattern.names:
             # consume arguments used by Pattern to build the urls
             # This is to avoid keeping them on the request
@@ -117,12 +122,13 @@ class PerUrlIndex(Index):
         # group parts by url
         for url in urls:
             backend = self.get_backend(url)
-            for path, parts in backend.lookup(request):
+            for _, parts in backend.lookup(request):
                 dic[url].append(parts)
 
         # and sort
         dic = {k: sorted(v) for k, v in dic.items()}
 
-        urls_parts = [(k, v) for k, v in dic.items()]
+        # urls_parts = [(k, v) for k, v in dic.items()]
+        urls_parts = resplit_urls_parts(dic, method=split_method)
 
         return urls_parts

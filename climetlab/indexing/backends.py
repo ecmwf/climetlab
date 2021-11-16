@@ -54,5 +54,4 @@ class JsonIndexBackend(IndexBackend):
                 offset = int(e["_offset"])
                 length = int(e["_length"])
                 parts.append((path, [offset, length]))
-        print(f"Build HTTP requests for {request}: {len(parts)} parts.")
         return parts
