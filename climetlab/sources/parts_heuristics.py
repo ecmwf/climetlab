@@ -24,7 +24,7 @@ def round_up(a, b):
     return ((a + b - 1) // b) * b
 
 
-def _parts_and_blocks_to_position(parts, blocks):
+def _positions(parts, blocks):
     # Sanity check
     # Assert that each parts is contain in a rounded part
     i = 0
@@ -71,7 +71,7 @@ class HierarchicalClustering:
                 else:
                     i += 1
 
-        return clusters, _parts_and_blocks_to_position(parts, clusters)
+        return clusters, _positions(parts, clusters)
 
 
 class BlockGrouping:
@@ -103,7 +103,7 @@ class BlockGrouping:
             last_rounded_offset = rounded_offset + rounded_length
             last_offset = offset + length
 
-        return rounded, _parts_and_blocks_to_position(parts, rounded)
+        return rounded, _positions(parts, rounded)
 
 
 class Automatic:
