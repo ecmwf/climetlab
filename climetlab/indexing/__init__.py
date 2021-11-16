@@ -12,14 +12,15 @@ from collections import defaultdict
 from climetlab import load_source
 from climetlab.utils.patterns import Pattern
 
-from .backends import JsonIndexBackend
+from .backends import JsonIndexBackend, IndexBackend
 
 
 class Index:
     def __init__(self, backend=None) -> None:
         if backend is None:
-            backend = JsonIndexBackend()
-        self.backend = backend
+            backend = JsonIndexBackend
+        assert isinstance(backend, IndexBackend)
+        self._backend_constructor = backend
 
 
 class GlobalIndex(Index):
@@ -34,7 +35,7 @@ class GlobalIndex(Index):
         self.baseurl = baseurl
         # if is url index_location
         #   download index_location
-        self.backend.add_index_file(index_location)
+        self.backend = self._backend_constructor(index_location)
 
     def lookup_request(self, request):
         dic = defaultdict(list)
@@ -52,7 +53,7 @@ class GlobalIndex(Index):
         return urls_parts
 
 
-class PerUrlIndex(Index):  # TODO
+class PerUrlIndex(Index):
     # index2 : 1 index per url.
     #        2a: index location = url location + '.jsonl'
     #        2b: index location = url location - '.grib' + '.jsonl'
@@ -65,33 +66,42 @@ class PerUrlIndex(Index):  # TODO
         index_extension=".index",
     ) -> None:
         """The PerUrlIndex uses one index for each urls/files that it manages.
-        The urls/files are built from the pattern and the request.
-        The indexese locations are built from each url.
+
+        The urls are built from the pattern and the request.
+        For each url, the location of the index is build (then downloaded and cached)
+        using the url and changing its extension into ".index".
+
+        pattern: pattern to build the list of url.
+        index_extension (".index"): extension for the index url.
+        substitute_extension (False): if set to True, substitute the index_extension
+        to build the index url instead of appending.
+        lookup_request(): get the urls and parts for a given request.
         """
         super().__init__(backend=backend)
         self.pattern = pattern
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
-        self._backends = {}
+        self.backends = {}
 
     def _build_index_file(self, url):
+        if callable(self.substitute_extension):
+            return self.substitute_extension(url)
         if self.substitute_extension:
             url = url.rsplit(".", 1)[0]
         return url + self.index_extension
 
     def get_backend(self, url):
-        if url in self._backends:
-            return self._backends[url]
+        if url in self.backends:
+            return self.backends[url]
         assert isinstance(url, str), url
 
         index_url = self._build_index_file(url)
         index_source = load_source("url", index_url)
         index_filename = index_source.path
-        backend = JsonIndexBackend()
-        backend.add_index_file(index_filename)
+        backend = self._backend_constructor(index_filename)
 
-        self._backends[url] = backend
-        return self._backends[url]
+        self.backends[url] = backend
+        return self.backends[url]
 
     def lookup_request(self, request):
         dic = defaultdict(list)

@@ -45,8 +45,7 @@ REQUEST_2 = {
 
 
 def test_indexing_json_1():
-    backend = JsonIndexBackend()
-    backend.add_index_file(index_jsonl)
+    backend = JsonIndexBackend(index_jsonl)
     parts = backend.lookup(REQUEST_1)
     assert len(parts) == 1
     assert parts[0][0] == "data/02.grb"
@@ -55,8 +54,7 @@ def test_indexing_json_1():
 
 
 def test_indexing_json_2():
-    backend = JsonIndexBackend()
-    backend.add_index_file(index_jsonl)
+    backend = JsonIndexBackend(index_jsonl)
     parts = backend.lookup(REQUEST_2)
     assert len(parts) == 1
 

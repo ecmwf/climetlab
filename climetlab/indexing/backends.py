@@ -16,12 +16,8 @@ class IndexBackend:
 
 
 class JsonIndexBackend:
-    def __init__(self):
+    def __init__(self, filename):
         self._entries = None
-        self.filename = None
-
-    def add_index_file(self, filename):
-        assert self.filename is None, (filename, self.filename)
         self.filename = filename
 
     @property
