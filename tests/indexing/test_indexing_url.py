@@ -173,10 +173,10 @@ def timing():
 
     report = {}
     for request in [
-        dict(param="157.128"),
-        dict(param="157.128", time="1000"),
+        dict(param="157"),
+        dict(param="157", time="1000"),
         dict(date="19970101"),
-        dict(param="157.128", time="1000", date="19970101"),
+        dict(param="157", time="1000", date="19970101"),
     ]:
         times = []
         for n in sizes:
@@ -197,7 +197,7 @@ def timing():
 
 
 if __name__ == "__main__":
-    dev()
+    timing()
     # from climetlab.testing import main
 
     # main(__file__)

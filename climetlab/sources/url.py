@@ -388,6 +388,9 @@ def _compute_byte_ranges(parts, transfer_size):
 
 
 def compute_byte_ranges(parts, transfer_size):
+    if callable(transfer_size):
+        rounded, positions = transfer_size(parts)
+        return rounded, positions
 
     if isinstance(transfer_size, int):
         rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
@@ -555,8 +558,6 @@ class HTTPDownloader(Downloader):
         )
         r.raise_for_status()
 
-        self.stream = filter(r.iter_content)
-
         if parts and len(parts) > 1:
             self.stream = filter(
                 DecodeMultipart(
@@ -568,6 +569,8 @@ class HTTPDownloader(Downloader):
                     headers=http_headers,
                 )
             )
+        else:
+            self.stream = filter(r.iter_content)
 
         LOG.debug(
             "url prepare size=%s mode=%s skip=%s encoded=%s",
