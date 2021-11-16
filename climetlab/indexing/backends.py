@@ -15,7 +15,7 @@ class IndexBackend:
     pass
 
 
-class JsonIndexBackend:
+class JsonIndexBackend(IndexBackend):
     def __init__(self, filename):
         self._entries = None
         self.filename = filename
