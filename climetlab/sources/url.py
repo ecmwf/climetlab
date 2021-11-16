@@ -27,7 +27,7 @@ from climetlab.utils import tqdm
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
-from .parts_heuristics import Automatic, BlockGrouping, HierarchicalClustering
+from .parts_heuristics import parts_heuristics
 
 LOG = logging.getLogger(__name__)
 
@@ -335,20 +335,9 @@ class PartFilter:
 
 def compute_byte_ranges(parts, transfer_size):
     if callable(transfer_size):
-        rounded, positions = transfer_size(parts)
-        return rounded, positions
+        return transfer_size(parts)
 
-    if isinstance(transfer_size, int):
-        rounded, positions = BlockGrouping(transfer_size)(parts)
-        return rounded, positions
-
-    assert transfer_size in ("auto", "cluster"), transfer_size
-
-    if transfer_size == "auto":
-        return Automatic()(parts)
-
-    if transfer_size == "cluster":
-        return HierarchicalClustering()(parts)
+    return parts_heuristics(transfer_size)(parts)
 
 
 def NoFilter(x):

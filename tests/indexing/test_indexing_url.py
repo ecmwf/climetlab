@@ -16,7 +16,6 @@ from climetlab import load_source
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex, PerUrlIndex
-from climetlab.sources.parts_heuristics import HierarchicalClustering
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
@@ -168,7 +167,7 @@ def dev():
 def dev2():
     request = dict(param="157")
     elapsed = retrieve_and_check(
-        GLOBAL_INDEX, request, transfer_size=HierarchicalClustering(5), force=True
+        GLOBAL_INDEX, request, transfer_size="cluster(5)", force=True
     )
     print(elapsed)
 
