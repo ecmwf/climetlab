@@ -49,10 +49,6 @@ class GlobalIndex(Index):
             url = f"{self.baseurl}/{path}"
             dic[url].append(parts)
 
-        # and sort
-        dic = {k: sorted(v) for k, v in dic.items()}
-
-        # urls_parts = [(k, v) for k, v in dic.items()]
         urls_parts = resplit_urls_parts(dic, method=split_method)
 
         return urls_parts
@@ -125,10 +121,6 @@ class PerUrlIndex(Index):
             for _, parts in backend.lookup(request):
                 dic[url].append(parts)
 
-        # and sort
-        dic = {k: sorted(v) for k, v in dic.items()}
-
-        # urls_parts = [(k, v) for k, v in dic.items()]
         urls_parts = resplit_urls_parts(dic, method=split_method)
 
         return urls_parts

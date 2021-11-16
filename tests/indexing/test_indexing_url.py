@@ -117,16 +117,18 @@ def test_eumetnet_3():
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
-def retrieve_and_check(index, request, **kwargs):
+def retrieve_and_check(index, request, split_method="optimal-split", **kwargs):
+    # def retrieve_and_check(index, request, split_method='minimum-split',**kwargs):
+    # def retrieve_and_check(index, request, split_method='maximum-split',**kwargs):
     print("--------")
-    parts = index.lookup_request(request)
+    parts = index.lookup_request(request, split_method=split_method)
     print("REQUEST", request)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
         print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
-    s = load_source("indexed-urls", index, request, **kwargs)
+    s = load_source("indexed-urls", index, request, split_method=split_method, **kwargs)
     elapsed = time.time() - now
     print("ELAPSED", elapsed)
     try:
