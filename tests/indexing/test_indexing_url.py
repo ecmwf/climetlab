@@ -16,6 +16,7 @@ from climetlab import load_source
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex, PerUrlIndex
+from climetlab.sources.parts_heuristics import HierarchicalClustering
 
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
@@ -164,8 +165,21 @@ def dev():
     retrieve_and_check(index, request)
 
 
+def dev2():
+    request = dict(param="157")
+    elapsed = retrieve_and_check(
+        GLOBAL_INDEX, request, transfer_size=HierarchicalClustering(5), force=True
+    )
+    print(elapsed)
+
+    elapsed = retrieve_and_check(
+        GLOBAL_INDEX, request, transfer_size="auto", force=True
+    )
+    print(elapsed)
+
+
 def timing():
-    sizes = [None, "auto"]
+    sizes = [None, "auto", "cluster"]
     n = 8 * 1024 * 1024
     while n > 1024:
         sizes.append(n)
@@ -187,6 +201,8 @@ def timing():
                 n = 0
             if n == "auto":
                 n = -1
+            if n == "cluster":
+                n = 1
             times.append((round(elapsed * 10) / 10.0, n))
 
         report[tuple(request.items())] = request, sorted(times)
@@ -197,7 +213,8 @@ def timing():
 
 
 if __name__ == "__main__":
-    timing()
+    dev2()
+    # timing()
     # from climetlab.testing import main
 
     # main(__file__)

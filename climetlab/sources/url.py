@@ -27,6 +27,7 @@ from climetlab.utils import tqdm
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
+from .parts_heuristics import Automatic, BlockGrouping, HierarchicalClustering
 
 LOG = logging.getLogger(__name__)
 
@@ -332,82 +333,22 @@ class PartFilter:
         return execute
 
 
-def round_down(a, b):
-    return (a // b) * b
-
-
-def round_up(a, b):
-    return ((a + b - 1) // b) * b
-
-
-def _compute_byte_ranges(parts, transfer_size):
-    rounded = []
-    last_rounded_offset = -1
-    last_offset = 0
-    positions = []
-    for offset, length in parts:
-
-        assert offset >= last_offset
-
-        rounded_offset = round_down(offset, transfer_size)
-        rounded_length = round_up(offset + length, transfer_size) - rounded_offset
-
-        if rounded_offset <= last_rounded_offset:
-            prev_offset, prev_length = rounded.pop()
-            end_offset = rounded_offset + rounded_length
-            prev_end_offset = prev_offset + prev_length
-            rounded_offset = min(rounded_offset, prev_offset)
-            assert rounded_offset == prev_offset
-            rounded_length = max(end_offset, prev_end_offset) - rounded_offset
-
-        # Position in part in stream
-        positions.append(offset - rounded_offset + sum(x[1] for x in rounded))
-        rounded.append((rounded_offset, rounded_length))
-
-        last_rounded_offset = rounded_offset + rounded_length
-        last_offset = offset + length
-
-    # Sanity check
-    # Assert that each parts is contain in a rounded part
-    i = 0
-    roffset, rlength = rounded[i]
-    for offset, length in parts:
-        while offset > roffset + rlength:
-            i += 1
-            roffset, rlength = rounded[i]
-        start = i
-        while offset + length > roffset + rlength:
-            i += 1
-            roffset, rlength = rounded[i]
-        end = i
-        assert start == end
-
-    before = (len(parts), sum(x[1] for x in parts))
-    after = (len(rounded), sum(x[1] for x in rounded))
-    return rounded, positions, (before, after, float(after[1]) / float(before[1]))
-
-
 def compute_byte_ranges(parts, transfer_size):
     if callable(transfer_size):
         rounded, positions = transfer_size(parts)
         return rounded, positions
 
     if isinstance(transfer_size, int):
-        rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
-        print(transfer_size, info)
+        rounded, positions = BlockGrouping(transfer_size)(parts)
         return rounded, positions
 
-    assert transfer_size == "auto", transfer_size
+    assert transfer_size in ("auto", "cluster"), transfer_size
 
-    smallest = min(x[1] for x in parts)
-    transfer_size = round_up(max(x[1] for x in parts), 1024)
+    if transfer_size == "auto":
+        return Automatic()(parts)
 
-    while transfer_size >= smallest:
-        rounded, positions, info = _compute_byte_ranges(parts, transfer_size)
-        print(transfer_size, info)
-        transfer_size //= 2
-
-    return rounded, positions
+    if transfer_size == "cluster":
+        return HierarchicalClustering()(parts)
 
 
 def NoFilter(x):
