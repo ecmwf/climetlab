@@ -76,7 +76,7 @@ class PerUrlIndex(Index):  # TODO
 
     def _build_index_file(self, url):
         if self.substitute_extension:
-            url = url.rsplit(".", 1)
+            url = url.rsplit(".", 1)[0]
         return url + self.index_extension
 
     def get_backend(self, url):
