@@ -25,27 +25,6 @@ def round_up(a, b):
     return ((a + b - 1) // b) * b
 
 
-def _positions(parts, blocks):
-
-    i = 0
-    positions = []
-    block_offset, block_length = blocks[i]
-    for offset, length in parts:
-        while offset > block_offset + block_length:
-            i += 1
-            block_offset, block_length = blocks[i]
-        start = i
-        while offset + length > block_offset + block_length:
-            i += 1
-            block_offset, block_length = blocks[i]
-        end = i
-        # Sanity check: assert that each parts is contain in a rounded part
-        assert start == end
-        positions.append(offset - blocks[i][0] + sum(blocks[j][1] for j in range(i)))
-
-    return positions
-
-
 class HierarchicalClustering:
     def __init__(self, min_clusters=5):
         self.min_clusters = min_clusters
@@ -72,7 +51,7 @@ class HierarchicalClustering:
                 else:
                     i += 1
 
-        return clusters, _positions(parts, clusters)
+        return clusters
 
 
 class BlockGrouping:
@@ -104,7 +83,7 @@ class BlockGrouping:
             last_block_offset = block_offset + block_length
             last_offset = offset + length
 
-        return blocks, _positions(parts, blocks)
+        return blocks
 
 
 class Automatic:
@@ -113,10 +92,10 @@ class Automatic:
         transfer_size = round_up(max(x[1] for x in parts), 1024)
 
         while transfer_size >= smallest:
-            blocks, positions = BlockGrouping(transfer_size)(parts)
+            blocks = BlockGrouping(transfer_size)(parts)
             transfer_size //= 2
 
-        return blocks, positions
+        return blocks
 
 
 HEURISTICS = {
