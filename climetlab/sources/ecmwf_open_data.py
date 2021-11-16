@@ -10,6 +10,7 @@
 from climetlab import load_source
 from climetlab.sources.multi import MultiSource
 from climetlab.utils.patterns import Pattern
+from climetlab.indexing import PerUrlIndex
 
 from .prompt import APIKeyPrompt
 
@@ -64,22 +65,26 @@ class EODRetriever(MultiSource):
 
     # @normalize("date", "date-list(%Y-%m-%d)")
     # @normalize("area", "bounding-box(list)")
-    def requests(self, **kwargs):
+    def requests(self, **request):
 
-        for k, v in kwargs.items():
+        for k, v in request.items():
             if not isinstance(v, (list, tuple)):
-                kwargs[k] = [v]
+                request[k] = [v]
 
         pattern = (
             "{url}/{date:date(%Y%m%d)}/{date:date(%H)}z/{resol}/{stream}/"
             "{date:date(%Y%m%d%H%M%S)}-{step}h-{stream}-{type}{extension}"
         )
 
-        result = []
-        for p in Pattern(pattern).substitute([], **kwargs):
-            result.append(load_source("url", p, parts=[(0, 4)]))
+        index = PerUrlIndex(pattern, substitute_extension=True)
 
-        return result
+        # result = []
+        # for p in Pattern(pattern).substitute([], **kwargs):
+        #    result.append(load_source("url", p, lazily=True))# parts=[(0, 4)]))
+
+        sources = load_source("indexed-urls", index, request)
+
+        return sources
 
 
 source = EODRetriever

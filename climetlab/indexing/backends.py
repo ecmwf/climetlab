@@ -42,15 +42,21 @@ class JsonIndexBackend:
 
     def match(self, entry, request):
         for k, v in request.items():
-            if entry[k] != v:
-                return False
+            if isinstance(v, (tuple, list)):
+                if not entry[k] in v:
+                    return False
+            else:
+                if entry[k] != v:
+                    return False
         return True
 
     def lookup(self, request):
         parts = []
         for e in self.entries:
             if self.match(e, request):
-                part = (e["_path"], [e["_offset"], e["_length"]])
-                parts.append(part)
+                path = e.get("_path", None)
+                offset = int(e["_offset"])
+                length = int(e["_length"])
+                parts.append((path, [offset, length]))
         print(f"Build HTTP requests for {request}: {len(parts)} parts.")
         return parts

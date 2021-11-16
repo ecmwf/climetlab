@@ -22,6 +22,9 @@ def test_open_data():
         "ecmwf-open-data",
         step=24,
         date=-2,
+        stream="enfo",
+        type="ef",
+        param="167",
     )
     print(s)
 

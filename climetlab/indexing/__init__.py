@@ -82,6 +82,7 @@ class PerUrlIndex(Index):  # TODO
     def get_backend(self, url):
         if url in self._backends:
             return self._backends[url]
+        assert isinstance(url, str), url
 
         index_url = self._build_index_file(url)
         index_source = load_source("url", index_url)
