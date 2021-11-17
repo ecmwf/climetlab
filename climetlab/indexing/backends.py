@@ -35,7 +35,7 @@ class JsonIndexBackend(IndexBackend):
             return self._entries
 
         if self.filename.startswith("http://") or self.filename.startswith("https://"):
-            path = cml.load_source('url', self.filename).path
+            path = cml.load_source("url", self.filename).path
             self.read_file_index(path)
             return self._entries
 

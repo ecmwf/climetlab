@@ -26,13 +26,11 @@ class LazySource:
         self.kwargs = kwargs
         self._source = None
 
-    def __call__(self, **kwargs):
-        assert self._source is None
-        self.kwargs.update(kwargs)
-        return self.source
+
 
     @property
     def source(self):
+
         if self._source is None:
             # try:
             self._source = load_source(
@@ -64,3 +62,8 @@ class LazySource:
     def __getattr__(self, name):
         assert name != "source"
         return getattr(self.source, name)
+    
+    def __call__(self, **kwargs):
+        assert self._source is None
+        self.kwargs.update(kwargs)
+        return self.source

@@ -278,8 +278,10 @@ class DecodeMultipart:
 
         if content_type.startswith("multipart/byteranges; boundary="):
             _, boundary = content_type.split("=")
+            print("******  MULTI-PART supported by server", url)
             self.streamer = MultiPartStreamer(url, request, parts, boundary, **kwargs)
         else:
+            print("******  MULTI-PART *NOT* supported by server", url)
             self.streamer = S3Streamer(url, request, parts, **kwargs)
 
     def __call__(self, chunk_size):
@@ -504,7 +506,10 @@ class HTTPDownloader(Downloader):
 
         filter = NoFilter
 
+
         if parts:
+
+            print("PARTS", len(parts))
 
             # We can trust the size
             encoded = None
@@ -529,6 +534,8 @@ class HTTPDownloader(Downloader):
 
                 http_headers["range"] = f"bytes={','.join(ranges)}"
 
+                print("RANGES", http_headers["range"])
+
         r = requests.get(
             url,
             stream=True,
@@ -536,7 +543,11 @@ class HTTPDownloader(Downloader):
             timeout=SETTINGS.get("url-download-timeout"),
             headers=http_headers,
         )
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except:
+            print(r.body)
+            raise
 
         if parts and len(parts) > 1:
             self.stream = filter(

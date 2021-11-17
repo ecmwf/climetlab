@@ -30,6 +30,9 @@ GLOBAL_INDEX = GlobalIndex(filename, baseurl=BASEURL)
 
 
 CML_BASEURL = "https://storage.ecmwf.europeanweather.cloud/climetlab"
+
+CML_BASEURL = "https://datastore.copernicus-climate.eu/climetlab"
+
 PER_URL_INDEX = PerUrlIndex(
     CML_BASEURL
     + "/test-data/input/eumetnet-sample/EU_analysis_pressure_params_{year}-{nn}.grb"
@@ -122,7 +125,7 @@ def test_eumetnet_3():
 def retrieve_and_check(index, request, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
-    print("range_method", kwargs.get('range_method', None))
+    print("range_method", kwargs.get("range_method", None))
     print("REQUEST", request)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
@@ -228,7 +231,7 @@ def timing():
     )
 
     sizes = ["sharp", None, "auto", "cluster"]
-    for r in range(11,24): # from 2k to 8M
+    for r in range(11, 24):  # from 2k to 8M
         sizes.append(2 ** r)
 
     report = {}
@@ -240,9 +243,7 @@ def timing():
     ]:
         times = []
         for n in sizes:
-            elapsed = retrieve_and_check(
-                index, request, range_method=n, force=True
-            )
+            elapsed = retrieve_and_check(index, request, range_method=n, force=True)
             if n is None:
                 n = 0
             if n == "auto":
@@ -261,7 +262,7 @@ def timing():
 
 
 if __name__ == "__main__":
-    dev()
+    dev2()
     # timing()
     # from climetlab.testing import main
 
