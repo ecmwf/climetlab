@@ -291,6 +291,10 @@ class GribField(Base):
 
     def _get(self, name):
         """Private, for testing only"""
+        # paramId is renamed as param to get rid of the
+        # additional '.128' (in climetlab/scripts/grib.py)
+        if name == "param":
+            name = "paramId"
         return self.handle.get(name)
 
 

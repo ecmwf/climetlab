@@ -138,12 +138,10 @@ def retrieve_and_check(index, request, split_method="optimal-split", **kwargs):
         paths = [p.path for p in s.sources]
 
     for path in paths:
+        # check that the downloaded gribs match the request
         for grib in load_source("file", path):
             for k, v in request.items():
-                # paramId is renamed as param to get rid of the
-                # additional '.128' (in climetlab/scripts/grib.py)
-                kk = {"param": "paramId"}.get(k, k)
-                assert str(grib._get(kk)) == str(v), (grib._get(k), v)
+                assert str(grib._get(k)) == str(v), (grib._get(k), v)
     return elapsed
 
 
