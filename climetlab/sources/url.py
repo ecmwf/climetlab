@@ -335,11 +335,55 @@ class PartFilter:
         return execute
 
 
-def compute_byte_ranges(parts, transfer_size):
-    if callable(transfer_size):
-        return transfer_size(parts)
+def _compress(parts):
+    last = -1
+    result = []
+    # Compress and check
+    for offset, length in parts:
+        assert offset >= 0 and length > 0
+        assert offset >= last, (
+            f"Offsets and lengths must be in order, and not overlapping:"
+            f" offset={offset}, end of previous part={last}"
+        )
+        if offset == last:
+            # Compress
+            offset, prev_length = result.pop()
+            length += prev_length
 
-    return parts_heuristics(transfer_size)(parts)
+        result.append((offset, length))
+        last = offset + length
+    return result
+
+
+def compute_byte_ranges(parts, transfer_size):
+
+    if callable(transfer_size):
+        blocks = transfer_size(parts)
+    else:
+        blocks = parts_heuristics(transfer_size)(parts)
+
+    blocks = _compress(blocks)
+
+    assert len(blocks) > 0
+    assert len(blocks) <= len(parts)
+
+    i = 0
+    positions = []
+    block_offset, block_length = blocks[i]
+    for offset, length in parts:
+        while offset > block_offset + block_length:
+            i += 1
+            block_offset, block_length = blocks[i]
+        start = i
+        while offset + length > block_offset + block_length:
+            i += 1
+            block_offset, block_length = blocks[i]
+        end = i
+        # Sanity check: assert that each parts is contain in a rounded part
+        assert start == end
+        positions.append(offset - blocks[i][0] + sum(blocks[j][1] for j in range(i)))
+
+    return blocks, positions
 
 
 def NoFilter(x):
@@ -689,8 +733,6 @@ class Url(FileSource):
         self,
         url,
         parts=None,
-        offsets=None,
-        lengths=None,
         filter=None,
         merger=None,
         verify=True,
@@ -718,31 +760,9 @@ class Url(FileSource):
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
 
-        if parts is not None:
-            assert offsets is None and lengths is None
-            offsets = [p[0] for p in parts]
-            lengths = [p[1] for p in parts]
-
         self.parts = None
-        if offsets is not None or lengths is not None:
-            assert len(offsets) == len(lengths)
-            self.parts = []
-            last = -1
-            # Compress and check
-            for offset, length in zip(offsets, lengths):
-                assert offset >= 0 and length > 0
-                assert offset >= last, (
-                    f"Offsets and lengths must be in order, and not overlapping:"
-                    f" offset={offset}, end of previous part={last}"
-                )
-                if offset == last:
-                    # Compress
-                    offset, prev_length = self.parts.pop()
-                    length += prev_length
-
-                self.parts.append((offset, length))
-                last = offset + length
-
+        if parts is not None:
+            self.parts = _compress(parts)
             if len(self.parts) == 0:
                 self.parts = None
 
