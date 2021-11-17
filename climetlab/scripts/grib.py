@@ -85,10 +85,13 @@ class GribCmd:
         baseurl=dict(
             metavar="BASEURL",
             type=str,
-            help="Base url to use as a prefix on each URL to build urls.",
+            help="Base url to use as a prefix to happen on each PATHS_OR_URLS to build urls.",
         ),
     )
     def do_index_gribs(self, args):
+        """Create index files for grib files.
+        If the option --baseurl is provided, create an index for multiple gribs."
+        """
         for path_or_url in args.paths_or_urls:
             if args.baseurl:
                 entries = _index_url(
