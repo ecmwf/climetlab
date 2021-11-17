@@ -62,7 +62,7 @@ def test_eumetnet_2():
             "param",
             ["133", "157", "130", "131", "132", "129"],
             aliases="eumetnet_aliases.yaml",
-            # multiple=True,
+            multiple=True,
         )
         def __init__(self, option="abc", **request):
             self.source = load_source("indexed-urls", GLOBAL_INDEX, request)

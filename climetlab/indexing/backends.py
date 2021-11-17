@@ -11,7 +11,7 @@
 import json
 import os
 
-from climetlab.utils import download_and_cache
+import climetlab as cml
 
 
 class IndexBackend:
@@ -35,7 +35,7 @@ class JsonIndexBackend(IndexBackend):
             return self._entries
 
         if self.filename.startswith("http://") or self.filename.startswith("https://"):
-            path = download_and_cache(self.filename, update_if_out_of_date=True)
+            path = cml.load_source('url', self.filename).path
             self.read_file_index(path)
             return self._entries
 
