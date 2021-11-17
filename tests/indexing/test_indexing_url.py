@@ -144,9 +144,29 @@ def retrieve_and_check(index, request, **kwargs):
     return elapsed
 
 
-def dev():
+def test_global_index():
+
     index = GlobalIndex(
-        os.path.join(os.path.dirname(__file__), "eumetnet.index"), baseurl=BASEURL
+        f"{CML_BASEURL}/test-data/input/indexed-urls/global_index.index",
+        baseurl=f"{CML_BASEURL}/test-data/input/indexed-urls",
+    )
+
+    request = dict(param="157")
+    retrieve_and_check(index, request)
+
+
+def test_per_url_index():
+    index = PerUrlIndex(
+        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+    )
+    request = dict(param="157")
+    retrieve_and_check(index, request)
+
+
+def dev():
+
+    index = PerUrlIndex(
+        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
     )
 
     request = dict(param="157")
@@ -163,32 +183,33 @@ def dev():
 
 
 def dev2():
+    index = GLOBAL_INDEX
     collect_statistics(True)
     request = dict(param="157")
 
     retrieve_and_check(
-        GLOBAL_INDEX,
+        index,
         request,
         range_method=None,
         force=True,
     )
 
     retrieve_and_check(
-        GLOBAL_INDEX,
+        index,
         request,
         range_method="cluster(5)",
         force=True,
     )
 
     retrieve_and_check(
-        GLOBAL_INDEX,
+        index,
         request,
         range_method="auto",
         force=True,
     )
 
     retrieve_and_check(
-        GLOBAL_INDEX,
+        index,
         request,
         range_method="cluster(5)|debug|blocked(4096)|debug",
         force=True,
@@ -233,7 +254,7 @@ def timing():
 
 
 if __name__ == "__main__":
-    dev2()
+    dev()
     # timing()
     # from climetlab.testing import main
 

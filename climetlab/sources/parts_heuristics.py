@@ -98,6 +98,47 @@ class Automatic:
         return blocks
 
 
+class Sharp:
+    def __init__(self, download_cost=5, split_cost=3.0):
+        """
+        download_cost:
+            unit is seconds/megabyte.
+            additional cost to download one useles byte.
+         split_cost:
+            unit is microseconds.
+            additional cost to do one additional HTTP request.
+        """
+        self.download_cost = download_cost
+        self.split_cost = split_cost
+
+    def __call__(self, parts):
+        if len(parts) == 0:
+            return [parts]
+
+        blocks = [parts[0]]
+
+        for offset, length in parts[1:]:
+            latest = blocks[-1]
+            latest_end = latest[0] + latest[1]
+
+            distance = offset - latest_end
+            assert distance >= 0, (distance, latest, (offset, length), parts)  # , url)
+
+            # if distance == 0: # adjacents: merge immediately
+            #    blocks[-1] = [latest[0], latest[1] + length]
+            #    continue
+
+            cost_of_merging = distance * self.download_cost - self.split_cost
+            # print(cost_of_merging, distance* download_cost, split_cost)
+
+            if cost_of_merging <= 0:
+                blocks[-1] = [latest[0], latest[1] + length]
+            else:
+                blocks.append([offset, length])
+
+        return blocks
+
+
 class Join:
     def __init__(self, first, second):
         self.first = first
@@ -118,6 +159,7 @@ class Debug:
 
 HEURISTICS = {
     "auto": Automatic,
+    "sharp": Sharp,
     "cluster": HierarchicalClustering,
     "blocked": BlockGrouping,
     "debug": Debug,

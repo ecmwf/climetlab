@@ -9,6 +9,9 @@
 
 
 import json
+import os
+
+from climetlab.utils import download_and_cache
 
 
 class IndexBackend:
@@ -25,16 +28,25 @@ class JsonIndexBackend(IndexBackend):
         if self._entries is not None:
             return self._entries
 
-        with open(self.filename, "r") as f:
-            lines = f.readlines()
         self._entries = []
+
+        if os.path.exists(self.filename):
+            self.read_file_index(self.filename)
+            return self._entries
+
+        if self.filename.startswith("http://") or self.filename.startswith("https://"):
+            path = download_and_cache(self.filename, update_if_out_of_date=True)
+            self.read_file_index(path)
+            return self._entries
+
+        raise Exception(f"Cannot load index data from {self.filename}")
+
+    def read_file_index(self, filename):
+        with open(filename, "r") as f:
+            lines = f.readlines()
         for line in lines:
             entry = json.loads(line)
-            self.entries.append(entry)
-
-        assert isinstance(self._entries, (list, tuple)), self._entries
-
-        return self._entries
+            self._entries.append(entry)
 
     def match(self, entry, request):
         for k, v in request.items():

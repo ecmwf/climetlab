@@ -145,6 +145,8 @@ class Pattern:
                 return self._substitute_many(params)
 
         return self._substitute_one(params)
+        # TODO: discuss if this should be:
+        # return [self._substitute_one(params)]
 
     def _substitute_one(self, params):
         used = set(params.keys())

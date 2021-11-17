@@ -9,7 +9,6 @@
 
 from collections import defaultdict
 
-from climetlab import load_source
 from climetlab.utils.patterns import Pattern
 
 from .backends import IndexBackend, JsonIndexBackend
@@ -99,9 +98,7 @@ class PerUrlIndex(Index):
         assert isinstance(url, str), url
 
         index_url = self._build_index_file(url)
-        index_source = load_source("url", index_url)
-        index_filename = index_source.path
-        backend = self._backend_constructor(index_filename)
+        backend = self._backend_constructor(index_url)
 
         self.backends[url] = backend
         return self.backends[url]
@@ -111,6 +108,9 @@ class PerUrlIndex(Index):
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
         urls = pattern.substitute(**request)
+        if not isinstance(urls, list):
+            urls = [urls]
+
         request = dict(**request)  # deepcopy to avoid changing the user's request
         for used in pattern.names:
             # consume arguments used by Pattern to build the urls

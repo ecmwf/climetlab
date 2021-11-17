@@ -60,8 +60,10 @@ def _index_grib_file(path, path_name=None):
 
 
 def _index_url(path_name, url):
-    source = cml.load_source("url", url)
-    yield from _index_grib_file(source.path, path_name=path_name)
+    path = cml.load_source("url", url).path
+    # TODO: or use download_and_cache?
+    # path = download_and_cache(url)
+    yield from _index_grib_file(path, path_name=path_name)
 
 
 def _index_path(path):
