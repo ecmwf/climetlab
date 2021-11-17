@@ -24,9 +24,16 @@ def _index_grib_file(path, path_name=None):
 
         while h:
             try:
-                field = dict(_path=path)
-                if path_name:
+                field = dict()
+
+                if isinstance(path_name, str):
                     field["_path"] = path_name
+                elif path_name is False:
+                    pass
+                elif path_name is None:
+                    field["_path"] = path
+                else:
+                    raise ValueError(f"Value of path_name cannot be '{path_name}.'")
 
                 i = eccodes.codes_keys_iterator_new(h, "mars")
                 try:
@@ -52,9 +59,9 @@ def _index_grib_file(path, path_name=None):
             h = eccodes.codes_grib_new_from_file(f)
 
 
-def _index_url(path, url):
+def _index_url(path_name, url):
     source = cml.load_source("url", url)
-    yield from _index_grib_file(source.path, path_name=path)
+    yield from _index_grib_file(source.path, path_name=path_name)
 
 
 def _index_path(path):
@@ -68,7 +75,7 @@ def _index_path(path):
 
 class GribCmd:
     @parse_args(
-        paths=dict(
+        paths_or_urls=dict(
             metavar="PATH_OR_URL",
             type=str,
             nargs="+",
@@ -78,19 +85,24 @@ class GribCmd:
         baseurl=dict(
             metavar="BASEURL",
             type=str,
-            help="Base url to use as a prefix on each URL to build urls.",
+            help="Base url to use as a prefix to happen on each PATHS_OR_URLS to build urls.",
         ),
     )
     def do_index_gribs(self, args):
-        for path in args.paths:
+        """Create index files for grib files.
+        If the option --baseurl is provided, create an index for multiple gribs."
+        """
+        for path_or_url in args.paths_or_urls:
             if args.baseurl:
-                entries = _index_url(path, url=f"{args.baseurl}/{path}")
-            elif os.path.exists(path):
-                entries = _index_path(path)
-            elif path.startswith("https://"):
-                entries = _index_url(None, url=path)
+                entries = _index_url(
+                    url=f"{args.baseurl}/{path_or_url}", path_name=path_or_url
+                )
+            elif os.path.exists(path_or_url):
+                entries = _index_path(path_or_url)
+            elif path_or_url.startswith("https://"):
+                entries = _index_url(url=path_or_url, path_name=False)
             else:
-                raise ValueError(f'Cannot find "{path}" to index it.')
+                raise ValueError(f'Cannot find "{path_or_url}" to index it.')
 
             for e in entries:
                 print(json.dumps(e))
