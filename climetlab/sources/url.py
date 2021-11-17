@@ -15,6 +15,7 @@ import mimetypes
 import os
 import re
 import sys
+import time
 from ftplib import FTP
 from urllib.parse import urlparse
 
@@ -23,6 +24,7 @@ import requests
 from dateutil.parser import parse as parse_date
 
 from climetlab.core.settings import SETTINGS
+from climetlab.core.statistics import record_statistics
 from climetlab.utils import tqdm
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
@@ -513,12 +515,14 @@ class HTTPDownloader(Downloader):
 
     def transfer(self, f, pbar, watcher):
         total = 0
+        start = time.time()
         for chunk in self.stream(chunk_size=self.owner.chunk_size):
             watcher()
             if chunk:
                 f.write(chunk)
                 total += len(chunk)
                 pbar.update(len(chunk))
+        record_statistics("transfer", url=self.owner.url, total=total, elapsed=time.time() - start)
         return total
 
     def cache_data(self, url):
