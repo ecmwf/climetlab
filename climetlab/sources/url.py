@@ -776,6 +776,8 @@ class Url(FileSource):
             url = mirror(url)
 
         o = urlparse(url)
+        if o.scheme not in DOWNLOADERS:
+            LOG.warning(f"Url '{url}' has unknown scheme '{o.scheme}'.")
         downloader = DOWNLOADERS[o.scheme](self)
 
         if extension and extension[0] != ".":
