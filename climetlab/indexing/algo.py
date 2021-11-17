@@ -68,7 +68,6 @@ SPLIT_FUNCTIONS = {
 
 
 def resplit_urls_parts(dic_urls_parts, method="minimum-split"):
-    dic_urls_parts = {k: sorted(v) for k, v in dic_urls_parts.items()}
 
     split_func = SPLIT_FUNCTIONS[method]
 

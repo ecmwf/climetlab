@@ -21,11 +21,10 @@ class IndexedUrls(MultiSource):
         filter=None,
         merger=None,
         force=None,
-        split_method="minimum-split",
         **kwargs,
     ):
 
-        urls_parts = index.lookup_request(request, split_method=split_method)
+        urls_parts = index.lookup_request(request)
 
         sources = []
         for url, parts in urls_parts:

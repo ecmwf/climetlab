@@ -10,7 +10,6 @@
 from collections import defaultdict
 
 from climetlab import load_source
-from climetlab.indexing.algo import resplit_urls_parts
 from climetlab.utils.patterns import Pattern
 
 from .backends import IndexBackend, JsonIndexBackend
@@ -41,7 +40,7 @@ class GlobalIndex(Index):
     def get_backend(self, url=None):
         return self.backend
 
-    def lookup_request(self, request, split_method="minimum-split"):
+    def lookup_request(self, request):
         dic = defaultdict(list)
 
         # group parts by url
@@ -49,7 +48,10 @@ class GlobalIndex(Index):
             url = f"{self.baseurl}/{path}"
             dic[url].append(parts)
 
-        urls_parts = resplit_urls_parts(dic, method=split_method)
+        # and sort
+        dic = {k: sorted(v) for k, v in dic.items()}
+
+        urls_parts = [(k, v) for k, v in dic.items()]
 
         return urls_parts
 
@@ -104,7 +106,7 @@ class PerUrlIndex(Index):
         self.backends[url] = backend
         return self.backends[url]
 
-    def lookup_request(self, request, split_method="minimum-split"):
+    def lookup_request(self, request):
         dic = defaultdict(list)
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
@@ -121,6 +123,9 @@ class PerUrlIndex(Index):
             for _, parts in backend.lookup(request):
                 dic[url].append(parts)
 
-        urls_parts = resplit_urls_parts(dic, method=split_method)
+        # and sort
+        dic = {k: sorted(v) for k, v in dic.items()}
+
+        urls_parts = [(k, v) for k, v in dic.items()]
 
         return urls_parts
