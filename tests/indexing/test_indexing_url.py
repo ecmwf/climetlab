@@ -122,6 +122,7 @@ def test_eumetnet_3():
 def retrieve_and_check(index, request, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
+    print("range_method", kwargs.get('range_method', None))
     print("REQUEST", request)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
@@ -183,7 +184,9 @@ def dev():
 
 
 def dev2():
-    index = GLOBAL_INDEX
+    index = PerUrlIndex(
+        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+    )
     collect_statistics(True)
     request = dict(param="157")
 
@@ -220,11 +223,13 @@ def dev2():
 
 
 def timing():
-    sizes = [None, "auto", "cluster"]
-    n = 8 * 1024 * 1024
-    while n > 1024:
-        sizes.append(n)
-        n //= 2
+    index = PerUrlIndex(
+        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+    )
+
+    sizes = ["sharp", None, "auto", "cluster"]
+    for r in range(11,24): # from 2k to 8M
+        sizes.append(2 ** r)
 
     report = {}
     for request in [
@@ -236,7 +241,7 @@ def timing():
         times = []
         for n in sizes:
             elapsed = retrieve_and_check(
-                GLOBAL_INDEX, request, range_method=n, force=True
+                index, request, range_method=n, force=True
             )
             if n is None:
                 n = 0
@@ -244,6 +249,8 @@ def timing():
                 n = -1
             if n == "cluster":
                 n = 1
+            if n == "sharp":
+                n = -2
             times.append((round(elapsed * 10) / 10.0, n))
 
         report[tuple(request.items())] = request, sorted(times)

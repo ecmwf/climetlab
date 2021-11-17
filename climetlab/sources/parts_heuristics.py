@@ -176,7 +176,12 @@ def parts_heuristics(method):
         if "(" in name:
             m = re.match(r"(.+)\((.+)\)", name)
             name = m.group(1)
-            args = [int(a) for a in m.group(2).split(",")]
+            args = []
+            for a in m.group(2).split(","):
+                try:
+                    args.append(int(a))
+                except ValueError:
+                    args.append(float(a))
         else:
             args = []
 
