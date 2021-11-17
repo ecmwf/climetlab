@@ -13,10 +13,11 @@ import os
 import time
 
 from climetlab import load_source
+from climetlab.core.statistics import collect_statistics, retrieve_statistics
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex, PerUrlIndex
-from climetlab.core.statistics import collect_statistics, retrieve_statistics
+
 BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
 
 # index file has been created with :
@@ -167,17 +168,37 @@ def dev():
 def dev2():
     collect_statistics(True)
     request = dict(param="157")
-    elapsed = retrieve_and_check(
-        GLOBAL_INDEX, request, transfer_size="cluster(5)", force=True
-    )
-    print(elapsed)
-    print(retrieve_statistics())
 
-    elapsed = retrieve_and_check(
-        GLOBAL_INDEX, request, transfer_size="auto", force=True
+    retrieve_and_check(
+        GLOBAL_INDEX,
+        request,
+        range_method=None,
+        force=True,
     )
-    print(elapsed)
-    print(retrieve_statistics())
+
+    retrieve_and_check(
+        GLOBAL_INDEX,
+        request,
+        range_method="cluster(5)",
+        force=True,
+    )
+
+    retrieve_and_check(
+        GLOBAL_INDEX,
+        request,
+        range_method="auto",
+        force=True,
+    )
+
+    retrieve_and_check(
+        GLOBAL_INDEX,
+        request,
+        range_method="cluster(5)|debug|blocked(4096)|debug",
+        force=True,
+    )
+
+    for s in retrieve_statistics():
+        print(s)
 
 
 def timing():
@@ -197,7 +218,7 @@ def timing():
         times = []
         for n in sizes:
             elapsed = retrieve_and_check(
-                GLOBAL_INDEX, request, transfer_size=n, force=True
+                GLOBAL_INDEX, request, range_method=n, force=True
             )
             if n is None:
                 n = 0

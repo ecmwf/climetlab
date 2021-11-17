@@ -89,32 +89,59 @@ class BlockGrouping:
 class Automatic:
     def __call__(self, parts):
         smallest = min(x[1] for x in parts)
-        transfer_size = round_up(max(x[1] for x in parts), 1024)
+        range_method = round_up(max(x[1] for x in parts), 1024)
 
-        while transfer_size >= smallest:
-            blocks = BlockGrouping(transfer_size)(parts)
-            transfer_size //= 2
+        while range_method >= smallest:
+            blocks = BlockGrouping(range_method)(parts)
+            range_method //= 2
 
         return blocks
+
+
+class Join:
+    def __init__(self, first, second):
+        self.first = first
+        self.second = second
+
+    def __call__(self, parts):
+        return self.first(self.second(parts))
+
+    def __repr__(self):
+        return f"{self.first}({self.second})"
+
+
+class Debug:
+    def __call__(self, parts):
+        print("DEBUG", parts)
+        return parts
 
 
 HEURISTICS = {
     "auto": Automatic,
     "cluster": HierarchicalClustering,
     "blocked": BlockGrouping,
+    "debug": Debug,
 }
 
 
-def parts_heuristics(name):
+def parts_heuristics(method):
 
-    if isinstance(name, int):
-        return BlockGrouping(name)
+    if isinstance(method, int):
+        return BlockGrouping(method)
 
-    if "(" in name:
-        m = re.match(r"(.+)\((.+)\)", name)
-        name = m.group(1)
-        args = [int(a) for a in m.group(2).split(",")]
-    else:
-        args = []
+    result = None
+    for name in method.split("|"):
+        if "(" in name:
+            m = re.match(r"(.+)\((.+)\)", name)
+            name = m.group(1)
+            args = [int(a) for a in m.group(2).split(",")]
+        else:
+            args = []
 
-    return HEURISTICS[name](*args)
+        obj = HEURISTICS[name](*args)
+        if result is None:
+            result = obj
+        else:
+            result = Join(obj, result)
+    print(result)
+    return result

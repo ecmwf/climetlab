@@ -355,17 +355,21 @@ def _compress(parts):
     return result
 
 
-def compute_byte_ranges(parts, transfer_size):
+def compute_byte_ranges(parts, method, url):
 
-    if callable(transfer_size):
-        blocks = transfer_size(parts)
+    if callable(method):
+        blocks = method(parts)
     else:
-        blocks = parts_heuristics(transfer_size)(parts)
+        blocks = parts_heuristics(method)(parts)
 
     blocks = _compress(blocks)
 
     assert len(blocks) > 0
     assert len(blocks) <= len(parts)
+
+    record_statistics(
+        "byte-ranges", method=str(method), url=url, parts=parts, blocks=blocks
+    )
 
     i = 0
     positions = []
@@ -496,7 +500,7 @@ class HTTPDownloader(Downloader):
                         bytes,
                     )
 
-        transfer_size = self.owner.transfer_size
+        range_method = self.owner.range_method
 
         filter = NoFilter
 
@@ -514,9 +518,9 @@ class HTTPDownloader(Downloader):
                 parts = None
             else:
                 ranges = []
-                if transfer_size:
+                if range_method:
 
-                    rounded, positions = compute_byte_ranges(parts, transfer_size)
+                    rounded, positions = compute_byte_ranges(parts, range_method, url)
                     filter = PartFilter(parts, positions)
                     parts = rounded
 
@@ -566,7 +570,9 @@ class HTTPDownloader(Downloader):
                 f.write(chunk)
                 total += len(chunk)
                 pbar.update(len(chunk))
-        record_statistics("transfer", url=self.owner.url, total=total, elapsed=time.time() - start)
+        record_statistics(
+            "transfer", url=self.owner.url, total=total, elapsed=time.time() - start
+        )
         return total
 
     def cache_data(self, url):
@@ -739,7 +745,7 @@ class Url(FileSource):
         force=None,
         chunk_size=1024 * 1024,
         # extension=None,
-        transfer_size="auto",
+        range_method="auto",
         http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
@@ -755,7 +761,7 @@ class Url(FileSource):
         self.merger = merger
         self.verify = verify
         self.chunk_size = chunk_size
-        self.transfer_size = transfer_size
+        self.range_method = range_method
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
