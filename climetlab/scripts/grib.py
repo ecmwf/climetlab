@@ -15,7 +15,7 @@ import climetlab as cml
 from .tools import parse_args
 
 
-def _index_grib_file(path, force_path_name=None):
+def _index_grib_file(path, path_name=None):
     import eccodes
 
     with open(path, "rb") as f:
@@ -25,8 +25,8 @@ def _index_grib_file(path, force_path_name=None):
         while h:
             try:
                 field = dict(_path=path)
-                if force_path_name:
-                    field["_path"] = force_path_name
+                if path_name:
+                    field["_path"] = path_name
 
                 i = eccodes.codes_keys_iterator_new(h, "mars")
                 try:
@@ -54,7 +54,7 @@ def _index_grib_file(path, force_path_name=None):
 
 def _index_url(path, url):
     source = cml.load_source("url", url)
-    yield from _index_grib_file(source.path, force_path_name=path)
+    yield from _index_grib_file(source.path, path_name=path)
 
 
 def _index_path(path):
@@ -84,11 +84,11 @@ class GribCmd:
     def do_index_gribs(self, args):
         for path in args.paths:
             if args.baseurl:
-                entries = _index_url(path, f"{args.baseurl}/{path}")
+                entries = _index_url(path, url=f"{args.baseurl}/{path}")
             elif os.path.exists(path):
                 entries = _index_path(path)
             elif path.startswith("https://"):
-                entries = _index_url(None, path)
+                entries = _index_url(None, url=path)
             else:
                 raise ValueError(f'Cannot find "{path}" to index it.')
 
