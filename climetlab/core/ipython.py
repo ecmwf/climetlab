@@ -108,7 +108,19 @@ def _identity(x, **kwargs):
 
 
 if ipython_active:
-    from IPython.display import HTML, SVG, Image, Markdown, display
+    from IPython.display import HTML
+    from IPython.display import SVG as SVG_ipython
+    from IPython.display import Image, Markdown, display
+
+    def SVG(*args, **kwargs):
+        import IPython
+
+        ipython_major = int(IPython.__version__.split(".")[0])
+
+        if ipython_major < 6 and "metadata" in kwargs:
+            kwargs.pop("metadata")
+
+        return SVG_ipython(*args, **kwargs)
 
     # enable_ipython_logging()
 else:
