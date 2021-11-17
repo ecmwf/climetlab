@@ -158,6 +158,11 @@ class S3Streamer:
                     headers=headers,
                     **self.kwargs,
                 )
+                try:
+                    request.raise_for_status()
+                except Exception:
+                    LOG.error("URL %s: %s", self.url, request.text)
+                    raise
 
             header = request.headers
             bytes = header["content-range"]
@@ -252,7 +257,11 @@ class MultiPartStreamer:
             size = end - start + 1
 
             assert start == self.parts[part][0]
-            assert end == self.parts[part][0] + self.parts[part][1] - 1
+            # (end + 1 == total) means that we overshoot the end of the file,
+            # this happens when we round transfer blocks
+            assert (end == self.parts[part][0] + self.parts[part][1] - 1) or (
+                end + 1 == total
+            ), (bytes, self.parts[part])
 
             while size > 0:
                 if len(chunk) >= size:
@@ -370,7 +379,7 @@ def compute_byte_ranges(parts, method, url):
     assert len(blocks) <= len(parts)
 
     record_statistics(
-        "byte-ranges", method=str(method), url=url, parts=parts, blocks=blocks
+        "byte-ranges", method=str(method), url=url, parts=parts, blocks=blocks,
     )
 
     i = 0
@@ -506,7 +515,6 @@ class HTTPDownloader(Downloader):
 
         filter = NoFilter
 
-
         if parts:
 
             print("PARTS", len(parts))
@@ -545,8 +553,8 @@ class HTTPDownloader(Downloader):
         )
         try:
             r.raise_for_status()
-        except:
-            print(r.body)
+        except Exception:
+            LOG.error("URL %s: %s", url, r.text)
             raise
 
         if parts and len(parts) > 1:

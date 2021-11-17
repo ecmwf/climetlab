@@ -196,7 +196,7 @@ def dev2():
     retrieve_and_check(
         index,
         request,
-        range_method=None,
+        range_method="cluster(100)",
         force=True,
     )
 
@@ -218,6 +218,13 @@ def dev2():
         index,
         request,
         range_method="cluster(5)|debug|blocked(4096)|debug",
+        force=True,
+    )
+
+    retrieve_and_check(
+        index,
+        request,
+        range_method="cluster(1)",
         force=True,
     )
 

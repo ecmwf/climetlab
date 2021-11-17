@@ -25,28 +25,22 @@ class LazySource:
         self.args = args
         self.kwargs = kwargs
         self._source = None
-
-
+        self._exception = None
 
     @property
     def source(self):
 
         if self._source is None:
-            # try:
-            self._source = load_source(
-                self.name,
-                lazily=False,
-                *self.args,
-                **self.kwargs,
-            )
-        # except Exception:
-        #     LOG.exception(
-        #         "Error loading source %s(%s, %s)",
-        #         self.name,
-        #         self.args,
-        #         self.kwargs,
-        #     )
-        #     raise
+            try:
+                self._source = load_source(
+                    self.name,
+                    lazily=False,
+                    *self.args,
+                    **self.kwargs,
+                )
+            except Exception as e:
+                self._exception = e
+                raise
 
         return self._source
 
@@ -60,9 +54,11 @@ class LazySource:
         return len(self.source)
 
     def __getattr__(self, name):
+        if self._exception is not None:
+            raise self._exception(name)
         assert name != "source"
         return getattr(self.source, name)
-    
+
     def __call__(self, **kwargs):
         assert self._source is None
         self.kwargs.update(kwargs)
