@@ -379,7 +379,11 @@ def compute_byte_ranges(parts, method, url):
     assert len(blocks) <= len(parts)
 
     record_statistics(
-        "byte-ranges", method=str(method), url=url, parts=parts, blocks=blocks,
+        "byte-ranges",
+        method=str(method),
+        url=url,
+        parts=parts,
+        blocks=blocks,
     )
 
     i = 0

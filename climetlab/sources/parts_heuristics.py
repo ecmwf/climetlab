@@ -54,7 +54,7 @@ class HierarchicalClustering:
         return clusters
 
     def __repr__(self):
-        return f'cluster({self.min_clusters})'
+        return f"cluster({self.min_clusters})"
 
 
 class BlockGrouping:
@@ -87,8 +87,10 @@ class BlockGrouping:
             last_offset = offset + length
 
         return blocks
+
     def __repr__(self):
-        return f'blocked({self.block_size})'
+        return f"blocked({self.block_size})"
+
 
 class Automatic:
     def __call__(self, parts):
@@ -103,7 +105,9 @@ class Automatic:
         return HierarchicalClustering(100)(blocks)
 
     def __repr__(self):
-        return 'auto'
+        return "auto"
+
+
 class Sharp:
     def __init__(self, download_cost=5, split_cost=3.0):
         """
@@ -145,7 +149,8 @@ class Sharp:
         return blocks
 
     def __repr__(self):
-        return f'sharp({self.download_cost},{self.split_cost})'
+        return f"sharp({self.download_cost},{self.split_cost})"
+
 
 class Join:
     def __init__(self, first, second):
@@ -165,7 +170,7 @@ class Debug:
         return parts
 
     def __repr__(self):
-        return 'debug'
+        return "debug"
 
 
 HEURISTICS = {
@@ -201,5 +206,5 @@ def parts_heuristics(method):
             result = obj
         else:
             result = Join(obj, result)
-    print('parts_heuristics', result)
+    print("parts_heuristics", result)
     return result
