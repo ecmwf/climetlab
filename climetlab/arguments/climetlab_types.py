@@ -258,6 +258,10 @@ class VariableListType(_VariableType, ListMixin):
     pass
 
 
+class VariableSingleOrListType(_VariableType, SingleOrListMixin):
+    pass
+
+
 class BoundingBoxType(Type, NonListMixin):
     def include_args(self, decorator, args):
         assert len(args) == 1, args
@@ -319,7 +323,7 @@ SINGLE_OR_LIST_TYPES = {
     "str": StrSingleOrListType,
     "enum": EnumSingleOrListType,
     "date": DateSingleOrListType,
-    #    "variable": VariableSingleOrListType,
+    "variable": VariableSingleOrListType,
 }
 
 
