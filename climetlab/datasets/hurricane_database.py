@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from climetlab.utils import download_and_cache
-from climetlab.utils.dates import parse_date
+from climetlab.utils.dates import to_datetime
 
 from . import Dataset
 
@@ -116,7 +116,7 @@ class HurricaneDatabase(Dataset):
                             number=number,
                             year=year,
                             name=name,
-                            time=parse_date(time),
+                            time=to_datetime(time),
                             type=line[16],
                             status=line[19:21],
                             lat=float(line[23:27]) * SIGN[line[27]],

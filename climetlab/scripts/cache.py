@@ -13,7 +13,7 @@ import json
 from termcolor import colored
 
 from climetlab.utils import humanize
-from climetlab.utils.dates import parse_date
+from climetlab.utils.dates import to_datetime
 
 from .tools import parse_args, print_table
 
@@ -62,7 +62,7 @@ def parse_size(txt):
 
 def parse_user_date(value):
     try:
-        return parse_date(value)
+        return to_datetime(value)
     except ValueError:
         return datetime.datetime.now() - humanize.as_timedelta(value)
 
@@ -112,7 +112,7 @@ class Matcher:
             if entry["size"] is None or entry["size"] < self.larger:
                 return False
 
-        creation_date = parse_date(entry["creation_date"])
+        creation_date = to_datetime(entry["creation_date"])
 
         if self.newer is not None:
             if creation_date < self.newer:

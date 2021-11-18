@@ -133,8 +133,7 @@ def test_part_url():
     ds = load_source(
         "url",
         "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
-        offsets=(0,),
-        lengths=(4,),
+        parts=((0, 4),),
     )
 
     assert os.path.getsize(ds.path) == 4
@@ -145,8 +144,7 @@ def test_part_url():
     ds = load_source(
         "url",
         "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
-        offsets=(0, 50, 60),
-        lengths=(10, 10, 10),
+        parts=((0, 10), (50, 10), (60, 10)),
     )
 
     print(ds.path)
