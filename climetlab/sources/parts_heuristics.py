@@ -148,7 +148,7 @@ class Sharp:
             else:
                 blocks.append([offset, length])
 
-        return blocks
+        return HierarchicalClustering(100)(blocks)
 
     def __repr__(self):
         return f"sharp({self.transfer_rate},{self.request_latency_overhead})"
