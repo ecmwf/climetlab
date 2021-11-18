@@ -208,7 +208,7 @@ class DateType(_DateType, NonListMixin):
         # TODO: change into to_datetime?
         lst = to_date_list(value)
         assert len(lst) == 1, lst
-        return super().cast(lst)
+        return lst[0]
 
     def _cast(self, value):
         return value
@@ -220,6 +220,21 @@ class DateListType(_DateType, ListMixin):
 
         lst = to_date_list(value)
         return lst
+
+
+class DateSingleOrListType(_DateType, SingleOrListMixin):
+    def cast(self, value):
+        from climetlab.utils.dates import to_date_list
+
+        if isinstance(value, list):
+            return to_date_list(value)
+        if isinstance(value, tuple):
+            return tuple(to_date_list(value))
+
+        # TODO: change into to_datetime?
+        lst = to_date_list(value)
+        assert len(lst) == 1, lst
+        return lst[0]
 
     def _cast(self, value):
         return value
@@ -303,7 +318,7 @@ SINGLE_OR_LIST_TYPES = {
     "float": FloatSingleOrListType,
     "str": StrSingleOrListType,
     "enum": EnumSingleOrListType,
-    #    "date": DateSingleOrListType,
+    "date": DateSingleOrListType,
     #    "variable": VariableSingleOrListType,
 }
 

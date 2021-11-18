@@ -101,9 +101,9 @@ def test_aliases_grib_paramid_mutiple_none(typ, _131, _132):
     assert aliases_grib_paramid(["131", "v"]) == [_131, _132]
     assert aliases_grib_paramid([131, "v"]) == [_131, _132]
     assert aliases_grib_paramid(["u", "v"]) == [_131, _132]
-    assert aliases_grib_paramid(("u", "v")) == [_131, _132]
+    assert aliases_grib_paramid(("u", "v")) == (_131, _132)
     assert aliases_grib_paramid([]) == []
-    assert aliases_grib_paramid(tuple([])) == []
+    assert aliases_grib_paramid(tuple([])) == ()
 
 
 if __name__ == "__main__":
