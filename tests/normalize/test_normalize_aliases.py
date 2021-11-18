@@ -20,7 +20,7 @@ from climetlab.decorators import availability, normalize
 from climetlab.vocabularies.aliases import unalias
 
 def test_unalias():
-    assert unalias('grib-paramid','2t')
+    assert unalias('grib-paramid','2t') == '167'
 
 def func_x(x):
     return x
