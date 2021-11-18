@@ -17,7 +17,10 @@ import pytest
 import yaml
 
 from climetlab.decorators import availability, normalize
+from climetlab.vocabularies.aliases import unalias
 
+def test_unalias():
+    assert unalias('grib-paramid','2t')
 
 def func_x(x):
     return x
