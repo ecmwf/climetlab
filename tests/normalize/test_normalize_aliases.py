@@ -9,18 +9,15 @@
 # nor does it submit to any jurisdiction.
 #
 
-import itertools
-import os
-
-import pandas as pd
 import pytest
-import yaml
 
-from climetlab.decorators import availability, normalize
+from climetlab.decorators import normalize
 from climetlab.vocabularies.aliases import unalias
 
+
 def test_unalias():
-    assert unalias('grib-paramid','2t') == '167'
+    assert unalias("grib-paramid", "2t") == "167"
+
 
 def func_x(x):
     return x
