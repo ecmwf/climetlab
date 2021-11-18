@@ -9,6 +9,7 @@
 import logging
 
 from climetlab.arguments.climetlab_types import Type
+from climetlab.vocabularies.aliases import unalias
 
 LOG = logging.getLogger(__name__)
 
@@ -61,6 +62,10 @@ class AliasTransformer(_TypedTransformer):
         super().__init__(owner, type)
         self.aliases = aliases
 
+        if isinstance(self.aliases, str):
+            self.unalias = self.from_string
+            return
+
         if isinstance(self.aliases, dict):
             self.unalias = self.from_dict
             return
@@ -73,6 +78,9 @@ class AliasTransformer(_TypedTransformer):
 
     def unsupported(self, value):
         raise NotImplementedError(self.aliases)
+
+    def from_string(self, value):
+        return unalias(self.aliases, value)
 
     def from_dict(self, value):
         try:
@@ -89,10 +97,11 @@ class AliasTransformer(_TypedTransformer):
         while old != value:
             old = value
             value = self.unalias(old)
-            LOG.debug("Unalias --------> %s %s", old, value)
+            LOG.debug("    Unalias %s --> %s", old, value)
         return value
 
     def transform(self, value):
+        LOG.debug("    Unaliasing %s", value)
         if isinstance(value, list):
             return [self._transform_one(v) for v in value]
         if isinstance(value, tuple):

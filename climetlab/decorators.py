@@ -123,9 +123,12 @@ class normalize(Decorator):
             kwargs["values"] = values
 
         if "aliases" in kwargs and isinstance(kwargs["aliases"], str):
-            if not os.path.isabs(kwargs["aliases"]):
-                caller = os.path.dirname(inspect.stack()[1].filename)
-                path = os.path.join(caller, kwargs["aliases"])
+            _, ext = os.path.splitext(kwargs["aliases"])
+            if ext in (".json", ".yaml", ".yml"):
+                path = kwargs["aliases"]
+                if not os.path.isabs(path):
+                    caller = os.path.dirname(inspect.stack()[1].filename)
+                    path = os.path.join(caller, path)
                 kwargs["aliases"] = load_json_or_yaml(path)
 
         self.kwargs = kwargs
