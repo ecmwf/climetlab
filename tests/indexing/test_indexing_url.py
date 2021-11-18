@@ -67,17 +67,17 @@ def test_indexed_s3(baseurl):
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
-def retrieve_and_check(index, request, **kwargs):
+def retrieve_and_check(index, request, range_method, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
-    print("range_method", kwargs.get("range_method", None))
+    print("range_method", range_method)
     print("REQUEST", request)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
         print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
-    s = load_source("indexed-urls", index, request, **kwargs)
+    s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
     elapsed = time.time() - now
     print("ELAPSED", elapsed)
     try:
@@ -134,69 +134,17 @@ def dev():
     retrieve_and_check(index, request)
 
 
-def dev2():
-    baseurl = CML_BASEURL_S3
-    index = PerUrlIndex(
-        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
-    )
-    collect_statistics(True)
-    request = dict(param="157")
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="sharp(1,1)",
-        force=True,
-    )
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="cluster(100)",
-        force=True,
-    )
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="cluster(5)",
-        force=True,
-    )
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="auto",
-        force=True,
-    )
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="cluster(5)|debug|blocked(4096)|debug",
-        force=True,
-    )
-
-    retrieve_and_check(
-        index,
-        request,
-        range_method="cluster(1)",
-        force=True,
-    )
-
-    for s in retrieve_statistics():
-        print(s)
-
-
 def timing():
     baseurl = CML_BASEURL_S3
+    baseurl = CML_BASEURL_CDS
     index = PerUrlIndex(
         f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
 
-    sizes = ["sharp", None, "auto", "cluster"]
+    sizes = ["sharp(1,1)", "auto", "cluster"]
+    sizes = []
     for r in range(11, 24):  # from 2k to 8M
-        sizes.append(2 ** r)
+        sizes.append(f"blocked({2 ** r})")
 
     report = {}
     for request in [
@@ -207,7 +155,12 @@ def timing():
     ]:
         times = []
         for n in sizes:
-            elapsed = retrieve_and_check(index, request, range_method=n, force=True)
+            try:
+                elapsed = retrieve_and_check(index, request, range_method=n, force=True)
+            except Exception as e:
+                print(e)
+                times.append(-1)
+                continue
             if n is None:
                 n = 0
             if n == "auto":
@@ -225,9 +178,55 @@ def timing():
         print(v)
 
 
-if __name__ == "__main__":
-    # dev2()
-    # timing()
-    from climetlab.testing import main
+def benchmark():
+    collect_statistics(True)
 
-    main(__file__)
+    baseurls = [
+        CML_BASEURL_S3,
+        CML_BASEURL_CDS,
+    ]
+
+    requests = [
+        dict(param="157", time="1000", date="19970101"),
+        dict(param="157", time="1000"),
+        dict(param="157"),
+        dict(date="19970101"),
+    ]
+
+    methods = [
+        "sharp(1,1)",
+        "cluster(100)",
+        "cluster(5)",
+        "auto",
+        "cluster(5)|debug|blocked(4096)|debug",
+        "cluster(1)",
+    ]
+
+    for baseurl in baseurls:
+        index = PerUrlIndex(
+            f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
+        )
+        for request in requests[:1]:
+            for range_method in methods[:1]:
+                retrieve_and_check(
+                    index,
+                    request,
+                    range_method,
+                    force=True,
+                )
+
+    stats = retrieve_statistics()
+    import json
+
+    path = "benchmark.json"
+    with open(path, "w") as f:
+        json.dump(stats, f, indent=2)
+    print(f"TEST FINISHED. Saved in {path}")
+
+
+if __name__ == "__main__":
+    benchmark()
+    # timing()
+    # from climetlab.testing import main
+
+    # main(__file__)

@@ -520,9 +520,6 @@ class HTTPDownloader(Downloader):
         filter = NoFilter
 
         if parts:
-
-            print("PARTS", len(parts))
-
             # We can trust the size
             encoded = None
             size = sum(p[1] for p in parts)
@@ -546,7 +543,7 @@ class HTTPDownloader(Downloader):
 
                 http_headers["range"] = f"bytes={','.join(ranges)}"
 
-                print("RANGES", http_headers["range"])
+                # print("RANGES", http_headers["range"])
 
         r = requests.get(
             url,

@@ -185,7 +185,6 @@ HEURISTICS = {
 
 
 def parts_heuristics(method):
-
     if isinstance(method, int):
         return BlockGrouping(method)
 
