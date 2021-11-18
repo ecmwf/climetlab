@@ -384,7 +384,7 @@ def _infer_type(**kwargs):
 
         if multiple is True:
             if type in LIST_TYPES:
-                return LIST_TYPES[type]()
+                return LIST_TYPES[type](**kwargs)
             if type + "-list" in LIST_TYPES:
                 return LIST_TYPES[type + "-list"](**kwargs)
             raise ValueError(
