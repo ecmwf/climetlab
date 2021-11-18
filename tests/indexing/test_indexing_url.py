@@ -9,7 +9,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 import time
 
 import pytest
