@@ -12,85 +12,32 @@
 import os
 import time
 
+import pytest
+
 from climetlab import load_source
 from climetlab.core.statistics import collect_statistics, retrieve_statistics
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex, PerUrlIndex
 
-BASEURL = "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset"
+CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
+CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
+CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_CDS]
 
 # index file has been created with :
 # climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
 #           data/ana/pressure/EU_analysis_pressure_params_1997-01.grb > eumetnet.index
 # climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
 #           data/ana/pressure/EU_analysis_pressure_params_1997-02.grb >> eumetnet.index
-filename = os.path.join(os.path.dirname(__file__), "eumetnet.index")
-GLOBAL_INDEX = GlobalIndex(filename, baseurl=BASEURL)
 
 
-CML_BASEURL = "https://storage.ecmwf.europeanweather.cloud/climetlab"
-
-CML_BASEURL = "https://datastore.copernicus-climate.eu/climetlab"
-
-PER_URL_INDEX = PerUrlIndex(
-    CML_BASEURL
-    + "/test-data/input/eumetnet-sample/EU_analysis_pressure_params_{year}-{nn}.grb"
-    # + "/test-data/input/indexed-urls/large_grib_{n}.grb"
-)
-
-
-def test_eumetnet_1():
-    class A:
-        @normalize(
-            "param",
-            ["133", "157", "130", "131", "132", "129"],
-            aliases="eumetnet_aliases.yaml",
-            multiple=True,
-        )
-        def __init__(self, option="abc", **request):
-            self.request = request
-
-    a = A(param="q")
-    assert a.request["param"] == ["133"]
-    a = A(param=133)
-    assert a.request["param"] == ["133"]
-    a = A(param=["q", "r"])
-    assert a.request["param"] == ["133", "157"]
-
-
-def test_eumetnet_2():
-    class Eumetnet(Dataset):
-        @normalize(
-            "param",
-            ["133", "157", "130", "131", "132", "129"],
-            aliases="eumetnet_aliases.yaml",
-            multiple=True,
-        )
-        def __init__(self, option="abc", **request):
-            self.source = load_source("indexed-urls", GLOBAL_INDEX, request)
-
-    a = Eumetnet(
-        **{
-            "domain": "g",
-            "levtype": "pl",
-            "levelist": "850",
-            "date": "19970228",
-            "time": "2300",
-            "step": "0",
-            "param": "r",  # "param": "157",
-            "class": "ea",
-            "type": "an",
-            "stream": "oper",
-            "expver": "0001",
-        }
+@pytest.mark.parametrize("baseurl", CML_BASEURLS)
+def test_indexed_s3(baseurl):
+    PER_URL_INDEX = PerUrlIndex(
+        baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb"
     )
-    ds = a.to_xarray()
-    assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
-
-def test_eumetnet_3():
-    class Eumetnet(Dataset):
+    class Mydataset(Dataset):
         @normalize(
             "param",
             ["133", "157", "130", "131", "132", "129"],
@@ -100,7 +47,7 @@ def test_eumetnet_3():
         def __init__(self, option="abc", **request):
             self.source = load_source("indexed-urls", PER_URL_INDEX, request)
 
-    a = Eumetnet(
+    a = Mydataset(
         **{
             "domain": "g",
             "levtype": "pl",
@@ -114,8 +61,7 @@ def test_eumetnet_3():
             "stream": "oper",
             "expver": "0001",
             #
-            "year": "1997",
-            "nn": ["01", "02"],
+            "n": ["1", "2"],
         }
     )
     ds = a.to_xarray()
@@ -148,29 +94,32 @@ def retrieve_and_check(index, request, **kwargs):
     return elapsed
 
 
-def test_global_index():
+@pytest.mark.parametrize("baseurl", CML_BASEURLS)
+def test_global_index(baseurl):
 
     index = GlobalIndex(
-        f"{CML_BASEURL}/test-data/input/indexed-urls/global_index.index",
-        baseurl=f"{CML_BASEURL}/test-data/input/indexed-urls",
+        f"{baseurl}/test-data/input/indexed-urls/global_index.index",
+        baseurl=f"{baseurl}/test-data/input/indexed-urls",
     )
 
     request = dict(param="157")
     retrieve_and_check(index, request)
 
 
-def test_per_url_index():
+@pytest.mark.parametrize("baseurl", CML_BASEURLS)
+def test_per_url_index(baseurl):
     index = PerUrlIndex(
-        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
     request = dict(param="157")
     retrieve_and_check(index, request)
 
 
 def dev():
+    baseurl = CML_BASEURL_S3
 
     index = PerUrlIndex(
-        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
 
     request = dict(param="157")
@@ -187,8 +136,9 @@ def dev():
 
 
 def dev2():
+    baseurl = CML_BASEURL_S3
     index = PerUrlIndex(
-        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
     collect_statistics(True)
     request = dict(param="157")
@@ -240,8 +190,9 @@ def dev2():
 
 
 def timing():
+    baseurl = CML_BASEURL_S3
     index = PerUrlIndex(
-        f"{CML_BASEURL}/test-data/input/indexed-urls/large_grib_1.grb",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
 
     sizes = ["sharp", None, "auto", "cluster"]
@@ -276,8 +227,8 @@ def timing():
 
 
 if __name__ == "__main__":
-    dev2()
+    # dev2()
     # timing()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
