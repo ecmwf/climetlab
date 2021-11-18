@@ -109,7 +109,7 @@ class Automatic:
 
 
 class Sharp:
-    def __init__(self, transfer_rate=1024*1024, request_latency_overhead=0.1):
+    def __init__(self, transfer_rate=1024 * 1024, request_latency_overhead=0.1):
         """
         transfer_rate:
             unit is byte/seconds.
@@ -138,7 +138,9 @@ class Sharp:
             #    blocks[-1] = [latest[0], latest[1] + length]
             #    continue
 
-            cost_of_merging = distance / self.transfer_rate - self.request_latency_overhead
+            cost_of_merging = (
+                distance / self.transfer_rate - self.request_latency_overhead
+            )
             # print(cost_of_merging, distance* transfer_rate, request_latency_overhead)
 
             if cost_of_merging <= 0:

@@ -8,24 +8,39 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 #
-import itertools
+import csv
 import logging
 import os
 
 from climetlab.utils import load_json_or_yaml
-from climetlab.utils.humanize import did_you_mean
 
 LOG = logging.getLogger(__name__)
 
 ALIASES = {}
 
 
+def load_csv(path):
+    result = {}
+    with open(path) as f:
+        for row in csv.reader(f):
+            result[row[0]] = row[1]
+
+    return result
+
+
 def _find_aliases(name):
     if name not in ALIASES:
-        path = os.path.join(os.path.dirname(__file__), name + ".yaml")
-        ALIASES[name] = load_json_or_yaml(path)
+        path = os.path.join(os.path.dirname(__file__), name)
+        if os.path.exists(path + ".csv"):
+            ALIASES[name] = load_csv(path + ".csv")
+        else:
+            ALIASES[name] = load_json_or_yaml(path + ".yaml")
     return ALIASES[name]
 
 
 def unalias(name, value):
     return _find_aliases(name).get(value, value)
+
+
+if __name__ == "__main__":
+    print(unalias("grib-paramid", "2t"))
