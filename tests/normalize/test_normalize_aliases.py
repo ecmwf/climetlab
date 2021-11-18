@@ -80,8 +80,8 @@ def test_aliases_grib_paramid_mutiple_true(typ, _131, _132):
 
 
 @pytest.mark.parametrize(
-    "typ,_131,_132", [(str, "131", "132")]
-)  # , (int, 131, 132), (float, 131., 132.)])
+    "typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)]
+)
 def test_aliases_grib_paramid_mutiple_none(typ, _131, _132):
     aliases_grib_paramid = normalize(
         "x",

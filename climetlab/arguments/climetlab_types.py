@@ -44,6 +44,22 @@ class NonListMixin:
         return self._format(value, format)
 
 
+class SingleOrListMixin:
+    def cast(self, value):
+        if isinstance(value, list):
+            return [self._cast(v) for v in value]
+        if isinstance(value, tuple):
+            return tuple([self._cast(v) for v in value])
+        return self._cast(value)
+
+    def format(self, value, format):
+        if isinstance(value, list):
+            return [self._format(v, format) for v in value]
+        if isinstance(value, tuple):
+            return tuple([self._format(v, format) for v in value])
+        return self._format(value, format)
+
+
 class Type:
     def _cast(self, value):
         raise NotImplementedError(self.__class__)
@@ -90,6 +106,10 @@ class _EnumType(Type):
         pass
 
 
+class EnumSingleOrListType(_EnumType, SingleOrListMixin):
+    pass
+
+
 class EnumType(_EnumType, NonListMixin):
     pass
 
@@ -116,6 +136,10 @@ class StrListType(_StrType, ListMixin):
     pass
 
 
+class StrSingleOrListType(_StrType, SingleOrListMixin):
+    pass
+
+
 class _AnyType(Type):
     def _cast(self, value):
         return value
@@ -129,16 +153,9 @@ class AnyListType(_AnyType, ListMixin):
     pass
 
 
-class AnySingleOrListType(_AnyType):
-    def cast(self, value):
+class AnySingleOrListType(_AnyType, SingleOrListMixin):
+    def _cast(self, value):
         return value
-
-    def format(self, value, format):
-        if isinstance(value, list):
-            return [self._format(v, format) for v in value]
-        if isinstance(value, tuple):
-            return tuple([self._format(v, format) for v in value])
-        return self._format(value, format)
 
 
 class _IntType(Type):
@@ -154,6 +171,10 @@ class IntListType(_IntType, ListMixin):
     pass
 
 
+class IntSingleOrListType(_IntType, SingleOrListMixin):
+    pass
+
+
 class _FloatType(Type):
     def _cast(self, value):
         return float(value)
@@ -164,6 +185,10 @@ class FloatType(_FloatType, NonListMixin):
 
 
 class FloatListType(_FloatType, ListMixin):
+    pass
+
+
+class FloatSingleOrListType(_FloatType, SingleOrListMixin):
     pass
 
 
@@ -185,6 +210,9 @@ class DateType(_DateType, NonListMixin):
         assert len(lst) == 1, lst
         return super().cast(lst)
 
+    def _cast(self, value):
+        return value
+
 
 class DateListType(_DateType, ListMixin):
     def cast(self, value):
@@ -192,6 +220,9 @@ class DateListType(_DateType, ListMixin):
 
         lst = to_date_list(value)
         return lst
+
+    def _cast(self, value):
+        return value
 
 
 class _VariableType(Type):
@@ -267,6 +298,15 @@ LIST_TYPES = {
     "variable-list": VariableListType,
 }
 
+SINGLE_OR_LIST_TYPES = {
+    "int": IntSingleOrListType,
+    "float": FloatSingleOrListType,
+    "str": StrSingleOrListType,
+    "enum": EnumSingleOrListType,
+    #    "date": DateSingleOrListType,
+    #    "variable": VariableSingleOrListType,
+}
+
 
 def infer_type(**kwargs):
     LOG.debug("INFER => %s", kwargs)
@@ -298,17 +338,22 @@ def _infer_type(**kwargs):
             LOG.warning(
                 f"Type ignored with enums, values={values}, type={type} and multiple={multiple}"
             )
+        if multiple is None and type == "enum-list":
+            multiple = True
+
         if multiple is None:
-            multiple = type == "enum-list"
-        if multiple:
+            return EnumSingleOrListType(values)
+        if multiple is True:
             return EnumListType(values)
-        else:
+        if multiple is False:
             return EnumType(values)
 
     if values is None and isinstance(type, str):
 
         if multiple is None:
             try:
+                if type in SINGLE_OR_LIST_TYPES:
+                    return SINGLE_OR_LIST_TYPES[type](**kwargs)
                 return {**LIST_TYPES, **NON_LIST_TYPES}[type](**kwargs)
             except Exception as e:
                 raise ValueError(f"Error building {type}({kwargs}): {e}")

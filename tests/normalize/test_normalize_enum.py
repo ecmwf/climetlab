@@ -60,13 +60,14 @@ def test_enum_decorator():
     assert g() == "a"
     with pytest.raises(ValueError):
         g("z")
-    with pytest.raises(ValueError):
-        g(["a", "b"])
+    assert g(["a", "b"]) == ["a", "b"]
+    assert g(("a", "b")) == ("a", "b")
+    assert g(["a"]) == ["a"]
 
 
 def test_enum_multiple():
     g = normalize("name", ["a", "b", "c"], multiple=False)(name_default_is_str_a)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         g(["a", "b"])
 
 

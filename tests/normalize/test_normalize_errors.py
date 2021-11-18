@@ -46,10 +46,10 @@ def test_enum_inconsistent_availablity_normalizers():
         g(name="50")
 
 
-def test_enum_cannot_find_type():
+def test_enum_no_type():
     g = normalize("name", multiple=True)(name_no_default)
-    with pytest.raises(ValueError, match="Cannot infer type .*"):
-        g(["a", "b"])
+    assert g(["a", "b"]) == ["a", "b"]
+    assert g("a") == ["a"]
 
 
 # def test_enum_cannot_find_type_2():
