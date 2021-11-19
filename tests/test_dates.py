@@ -15,10 +15,10 @@ import numpy as np
 
 from climetlab import load_source
 from climetlab.testing import climetlab_file
-from climetlab.utils.dates import parse_date, to_datetime, to_datetime_list
+from climetlab.utils.dates import to_datetime, to_datetime_list
 
 
-def test_to_datetime():
+def test_to_datetime_1():
     pydate = datetime.datetime(2016, 1, 1)
 
     assert to_datetime(np.datetime64("2016-01-01")) == pydate
@@ -32,21 +32,21 @@ def test_to_datetime():
     assert to_datetime("2016-01-01T00:00:00") == pydate
 
 
-def test_parse_date():
-    assert parse_date("1851-06-25T00:00") == datetime.datetime(1851, 6, 25)
-    assert parse_date("1851-06-25T06:00") == datetime.datetime(1851, 6, 25, 6)
-    assert parse_date("1851-06-25") == datetime.datetime(1851, 6, 25)
+def test_to_datetime_2():
+    assert to_datetime("1851-06-25T00:00") == datetime.datetime(1851, 6, 25)
+    assert to_datetime("1851-06-25T06:00") == datetime.datetime(1851, 6, 25, 6)
+    assert to_datetime("1851-06-25") == datetime.datetime(1851, 6, 25)
 
-    assert parse_date("18510625") == datetime.datetime(1851, 6, 25)
-    assert parse_date(18510625) == datetime.datetime(1851, 6, 25)
+    assert to_datetime("18510625") == datetime.datetime(1851, 6, 25)
+    assert to_datetime(18510625) == datetime.datetime(1851, 6, 25)
 
-    assert parse_date("1851-06-25 06:00:00") == datetime.datetime(1851, 6, 25, 6)
-    assert parse_date("1851-06-25T06:00:00") == datetime.datetime(1851, 6, 25, 6)
-    assert parse_date("1851-06-25T06:00:00Z") == datetime.datetime(
+    assert to_datetime("1851-06-25 06:00:00") == datetime.datetime(1851, 6, 25, 6)
+    assert to_datetime("1851-06-25T06:00:00") == datetime.datetime(1851, 6, 25, 6)
+    assert to_datetime("1851-06-25T06:00:00Z") == datetime.datetime(
         1851, 6, 25, 6, tzinfo=datetime.timezone.utc
     )
 
-    assert parse_date(-2) == parse_date(0) - datetime.timedelta(days=2)
+    assert to_datetime(-2) == to_datetime(0) - datetime.timedelta(days=2)
 
 
 def test_to_datetimes_list():

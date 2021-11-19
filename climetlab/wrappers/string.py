@@ -9,27 +9,16 @@
 import datetime
 import re
 
-import numpy as np
-
-# datetime.fromisoformat() only available from Python3.7
-# from backports.datetime_fromisoformat import MonkeyPatch
 from dateutil.parser import isoparse, parse
 
+from climetlab.utils.dates import mars_like_date_list
 from climetlab.utils.domains import domain_to_area
-
-# from collections import defaultdict
-from climetlab.wrappers import Wrapper, get_wrapper
-
-# MonkeyPatch.patch_fromisoformat()
-
+from climetlab.wrappers import Wrapper
 
 VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
 
 
 def parse_date(dt):
-
-    if not isinstance(dt, str):
-        return to_datetime(dt)
 
     if not VALID_DATE.match(dt):
         raise ValueError(f"Invalid datetime '{dt}'")
@@ -53,6 +42,23 @@ class StrWrapper(Wrapper):
 
     def to_bounding_box(self):
         return domain_to_area(self.data)
+
+    def to_datetime(self):
+        return parse_date(self.data)
+
+    def to_datetime_list(self):
+
+        # MARS style lists
+        bits = self.data.split("/")
+        if len(bits) == 3 and bits[1].lower() == "to":
+            return mars_like_date_list(parse_date(bits[0]), parse_date(bits[2]), 1)
+
+        if len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+            return mars_like_date_list(
+                parse_date(bits[0]), parse_date(bits[2]), int(bits[4])
+            )
+
+        return [parse_date(d) for d in bits]
 
 
 def wrapper(data, *args, **kwargs):
