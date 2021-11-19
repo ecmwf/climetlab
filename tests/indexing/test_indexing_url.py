@@ -89,11 +89,18 @@ def retrieve_and_check(index, request, range_method, **kwargs):
         # check that the downloaded gribs match the request
         for grib in load_source("file", path):
             for k, v in request.items():
-                if isinstance(v, (list, tuple)):
-                    assert str(grib._get(k)) in [str(_v) for _v in v], (grib._get(k), v)
-                else:
-                    assert str(grib._get(k)) == str(v), (grib._get(k), v)
+                assert check_grib_value(grib._get(k), v), (grib._get(k), v)
     return elapsed
+
+
+def check_grib_value(value, requested):
+    if isinstance(requested, (list, tuple)):
+        return any([check_grib_value(value, _v) for _v in requested])
+    else:
+        try:
+            return int(value) == int(requested)
+        except TypeError:
+            return str(value) == str(requested)
 
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
