@@ -62,6 +62,8 @@ def test_bbox():
     source = load_source("file", climetlab_file("docs/examples/test.nc"))
     assert bbox_tuple(source[0]) == (73.0, -27.0, 33.0, 45.0)
 
+    assert bbox_tuple("france") == (54.5, -6.0, 39.0, 9.5)
+
 
 if __name__ == "__main__":
 
