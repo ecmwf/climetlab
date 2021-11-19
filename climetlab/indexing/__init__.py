@@ -66,6 +66,7 @@ class PerUrlIndex(Index):
         backend=None,
         substitute_extension=False,
         index_extension=".index",
+        max_parts=100,
     ) -> None:
         """The PerUrlIndex uses one index for each urls/files that it manages.
 
@@ -84,6 +85,7 @@ class PerUrlIndex(Index):
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
         self.backends = {}
+        self.max_parts = max_parts
 
     def _build_index_file(self, url):
         if callable(self.substitute_extension):
@@ -126,6 +128,12 @@ class PerUrlIndex(Index):
         # and sort
         dic = {k: sorted(v) for k, v in dic.items()}
 
-        urls_parts = [(k, v) for k, v in dic.items()]
+        urls_parts = []
+        for k, v in dic.items():
+            while len(v) > self.max_parts:
+                urls_parts.append((k, v[: self.max_parts]))
+                v = v[self.max_parts :]
+            if v:
+                urls_parts.append((k, v))
 
         return urls_parts

@@ -104,7 +104,7 @@ class Automatic:
             range_method //= 2
 
         # Max number of parts
-        return HierarchicalClustering(100)(blocks)
+        return blocks
 
     def __repr__(self):
         return "auto"
@@ -150,7 +150,7 @@ class Sharp:
             else:
                 blocks.append([offset, length])
 
-        return HierarchicalClustering(100)(blocks)
+        return blocks
 
     def __repr__(self):
         return f"sharp({self.transfer_rate},{self.request_latency_overhead})"
