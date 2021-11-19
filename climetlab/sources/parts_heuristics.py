@@ -10,6 +10,7 @@
 import logging
 import re
 from collections import namedtuple
+from climetlab.core.statistics import record_statistics
 
 LOG = logging.getLogger(__name__)
 
@@ -208,4 +209,10 @@ def parts_heuristics(method):
         else:
             result = Pipe(obj, result)
     print("parts_heuristics", result)
+
+    record_statistics(
+        "parts-heuristics",
+        method=str(method),
+        method_args=str(args),
+    )
     return result

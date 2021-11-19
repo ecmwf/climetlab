@@ -8,6 +8,7 @@
 #
 
 from climetlab import load_source
+from climetlab.core.statistics import record_statistics
 
 from .multi import MultiSource
 
@@ -25,6 +26,9 @@ class IndexedUrls(MultiSource):
     ):
 
         urls_parts = index.lookup_request(request)
+        record_statistics(
+            "indexed-urls", request=str(request),
+        )
 
         sources = []
         for url, parts in urls_parts:

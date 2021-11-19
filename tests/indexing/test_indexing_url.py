@@ -206,8 +206,8 @@ def benchmark():
         index = PerUrlIndex(
             f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
         )
-        for request in requests[:1]:
-            for range_method in methods[:1]:
+        for request in requests:
+            for range_method in methods:
                 retrieve_and_check(
                     index,
                     request,
