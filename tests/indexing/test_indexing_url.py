@@ -196,6 +196,13 @@ def dev2():
     retrieve_and_check(
         index,
         request,
+        range_method="sharp(1,1)",
+        force=True,
+    )
+
+    retrieve_and_check(
+        index,
+        request,
         range_method="cluster(100)",
         force=True,
     )
