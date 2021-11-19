@@ -28,13 +28,13 @@ To get started, let us first import *CliMetLab* at the top of our Python noteboo
     import climetlab as cml
 
 Now download
-`test.grib <https://raw.githubusercontent.com/ecmwf/climetlab/develop/docs/examples/test.grib>`_ (example GRIB file)
+`test.grib <https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.grib>`_ (example GRIB file)
 to your project directory, or if you have ``wget`` command available, run
 following in your notebook:
 
 .. code-block:: python
 
-    !wget https://raw.githubusercontent.com/ecmwf/climetlab/develop/docs/examples/test.grib
+    !wget https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.grib
 
 GRIB is a file format for storage and sharing of gridded meteorological data.
 You can think of gridded data as weather or some other data that is associated with
@@ -75,7 +75,7 @@ server, in one step. For example, let's download and plot a NetCDF file:
 
 .. code-block:: python
 
-    netcdf_url = "https://raw.githubusercontent.com/ecmwf/climetlab/develop/docs/examples/test.nc"
+    netcdf_url = "https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.nc"
     netcdf_data = cml.load_source("url", netcdf_url)
     cml.plot_map(netcdf_data)
 
