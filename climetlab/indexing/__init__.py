@@ -14,6 +14,26 @@ from climetlab.utils.patterns import Pattern
 from .backends import IndexBackend, JsonIndexBackend
 
 
+def _compress(parts):
+    last = -1
+    result = []
+    # Compress and check
+    for offset, length in parts:
+        assert offset >= 0 and length > 0
+        assert offset >= last, (
+            f"Offsets and lengths must be in order, and not overlapping:"
+            f" offset={offset}, end of previous part={last}"
+        )
+        if offset == last:
+            # Compress
+            offset, prev_length = result.pop()
+            length += prev_length
+
+        result.append((offset, length))
+        last = offset + length
+    return result
+
+
 class Index:
     def __init__(self, backend=None) -> None:
         if backend is None:
@@ -126,14 +146,15 @@ class PerUrlIndex(Index):
                 dic[url].append(parts)
 
         # and sort
-        dic = {k: sorted(v) for k, v in dic.items()}
+        dic = {url: _compress(sorted(parts)) for url, parts in dic.items()}
 
         urls_parts = []
-        for k, v in dic.items():
-            while len(v) > self.max_parts:
-                urls_parts.append((k, v[: self.max_parts]))
-                v = v[self.max_parts :]
-            if v:
-                urls_parts.append((k, v))
+        for url, parts in dic.items():
+
+            while len(parts) > self.max_parts:
+                urls_parts.append((url, parts[: self.max_parts]))
+                parts = parts[self.max_parts :]
+            if parts:
+                urls_parts.append((url, parts))
 
         return urls_parts

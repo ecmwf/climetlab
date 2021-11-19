@@ -67,7 +67,7 @@ def test_indexed_s3(baseurl):
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
-def retrieve_and_check(index, request, range_method, **kwargs):
+def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
     print("range_method", range_method)
