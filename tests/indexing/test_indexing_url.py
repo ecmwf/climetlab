@@ -187,9 +187,13 @@ def benchmark():
     ]
 
     requests = [
+        dict(param="157", time=["1100", "1200", "1300", "1400"]),
+        dict(param=["157", "129"], time=["0200", "1000", "1800", "2300"]),
+        dict(param=["157", "130"], levelist=["500", "850"]),
         dict(param="157", time="1000", date="19970101"),
         dict(param="157", time="1000"),
         dict(param="157"),
+        dict(param=["157", "129"]),
         dict(date="19970101"),
     ]
 
