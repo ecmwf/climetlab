@@ -15,7 +15,7 @@ Getting data
 1. Data Sources
 2. Datasets
 
-Data sources
+Data Sources
 ^^^^^^^^^^^^
 
 In *CliMetLab*, a *Data Source* refers to a local or remote storage server or data archive
@@ -41,10 +41,9 @@ You can think of gridded data as weather or some other data that is associated w
 specific locations using coordinates. For example, wind speed data for
 every longitude and latitude on a two dimensional grid.
 
-GRIB is designed and maintained by World Meteorological Organization as an
-easy to handle and compact data format. GRIB (GRIdded Binary) is a binary file
-format so you cannot look at it using a text editor. But you sure can use
-*CliMetLab* to explore it:
+The GRIB format (version 1 and 2) is `endorsed by WMO <https://en.wikipedia.org/wiki/GRIB>`_.
+GRIB (GRIdded Binary) is a binary file format so you cannot look at it using a text editor.
+But you sure can use *CliMetLab* to explore it:
 
 .. code-block:: python
 
@@ -59,7 +58,7 @@ Let's plot this data using the ``plot_map`` convenience method:
 
 .. code-block:: python
 
-    cml.plot_map(data, title=True, path="test-grib-plot.svg")
+    cml.plot_map(grib_data, title=True, path="test-grib-plot.svg")
 
 
 .. image:: _static/example-plots/test-grib-plot.svg
@@ -83,13 +82,8 @@ server, in one step. For example, let's download and plot a NetCDF file:
 .. image:: _static/example-plots/test-netcdf-plot.svg
   :width: 100%
 
-If you don't know already, NetCDF is another commonly used data format for
+If you don't know already, NetCDF_ is another commonly used data format for
 transporting scientific data.
-
-In this case, *CliMetLab* not only downloaded the file specified by the url,
-but it also saved it in the
-:ref:`default caching location <caching>`
-on your filesystem.
 
 So, we have downloaded and plotted scientific weather data, can we convert
 this data to work with our favorite Data Science library? ``Pandas``,
@@ -321,6 +315,7 @@ or, if you want to specify a per-data custom *style*, you can use
 .. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 .. _ECMWF web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 .. _Uma: https://en.wikipedia.org/wiki/1986–87_South_Pacific_cyclone_season#Severe_Tropical_Cyclone_Uma
+.. _NetCDF: https://www.unidata.ucar.edu/software/netcdf/docs/
 
 .. Notebooks
 
