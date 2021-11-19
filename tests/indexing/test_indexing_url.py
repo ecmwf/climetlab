@@ -89,7 +89,10 @@ def retrieve_and_check(index, request, range_method, **kwargs):
         # check that the downloaded gribs match the request
         for grib in load_source("file", path):
             for k, v in request.items():
-                assert str(grib._get(k)) == str(v), (grib._get(k), v)
+                if isinstance(v, (list, tuple)):
+                    assert str(grib._get(k)) in [str(_v) for _v in v], (grib._get(k), v)
+                else:
+                    assert str(grib._get(k)) == str(v), (grib._get(k), v)
     return elapsed
 
 

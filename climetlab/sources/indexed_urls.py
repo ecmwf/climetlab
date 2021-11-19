@@ -27,7 +27,8 @@ class IndexedUrls(MultiSource):
 
         urls_parts = index.lookup_request(request)
         record_statistics(
-            "indexed-urls", request=str(request),
+            "indexed-urls",
+            request=str(request),
         )
 
         sources = []

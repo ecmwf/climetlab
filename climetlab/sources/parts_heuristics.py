@@ -10,6 +10,7 @@
 import logging
 import re
 from collections import namedtuple
+
 from climetlab.core.statistics import record_statistics
 
 LOG = logging.getLogger(__name__)
