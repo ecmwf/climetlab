@@ -17,7 +17,7 @@ import sys
 import pytest
 
 from climetlab import load_source
-from climetlab.sources.url import canonical_extension
+from climetlab.download import canonical_extension
 from climetlab.testing import TEST_DATA_URL, climetlab_file
 
 

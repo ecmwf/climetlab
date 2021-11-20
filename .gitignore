@@ -164,3 +164,4 @@ test
 *.swo
 .DS_Store
 *.grib2
+benchmark.json
