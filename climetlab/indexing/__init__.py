@@ -9,7 +9,7 @@
 
 from collections import defaultdict
 
-from climetlab.download.http import compress_parts
+from climetlab.download.multipart import compress_parts
 from climetlab.utils.patterns import Pattern
 
 from .backends import IndexBackend, JsonIndexBackend
