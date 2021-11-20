@@ -10,7 +10,8 @@
 
 import logging
 
-from climetlab.download import compress_parts, get_downloader
+from climetlab.download import get_downloader
+from climetlab.download.http import compress_parts
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
