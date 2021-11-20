@@ -9,29 +9,10 @@
 
 from collections import defaultdict
 
+from climetlab.download import compress_parts
 from climetlab.utils.patterns import Pattern
 
 from .backends import IndexBackend, JsonIndexBackend
-
-
-def _compress(parts):
-    last = -1
-    result = []
-    # Compress and check
-    for offset, length in parts:
-        assert offset >= 0 and length > 0
-        assert offset >= last, (
-            f"Offsets and lengths must be in order, and not overlapping:"
-            f" offset={offset}, end of previous part={last}"
-        )
-        if offset == last:
-            # Compress
-            offset, prev_length = result.pop()
-            length += prev_length
-
-        result.append((offset, length))
-        last = offset + length
-    return result
 
 
 class Index:
@@ -146,7 +127,7 @@ class PerUrlIndex(Index):
                 dic[url].append(parts)
 
         # and sort
-        dic = {url: _compress(sorted(parts)) for url, parts in dic.items()}
+        dic = {url: compress_parts(sorted(parts)) for url, parts in dic.items()}
 
         urls_parts = []
         for url, parts in dic.items():
