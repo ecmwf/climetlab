@@ -16,15 +16,12 @@ from .downloader import Downloader
 LOG = logging.getLogger(__name__)
 
 
-class FileDownloader(Downloader):
+class FileDownloaderBase(Downloader):
 
     supports_parts = True
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-
-    def local_path(self):
-
         o = urlparse(self.url)
         path = o.path
 
@@ -39,9 +36,13 @@ class FileDownloader(Downloader):
 
         self.path = path
 
-        # If parts is given, we cannot use the original path
-        return path if self.parts is None else None
 
+class FullFileDownloader(FileDownloaderBase):
+    def local_path(self):
+        return self.path
+
+
+class PartFileDownloader(FileDownloaderBase):
     def prepare(self, target):
         parts = self.parts
         size = sum(p[1] for p in parts)

@@ -213,6 +213,8 @@ GENERATORS = {
 
 class DummySource(FileSource):
     def __init__(self, kind, request=None, force=False, extension=None, **kwargs):
+        super().__init__()
+
         if request is None:
             request = {}
         request.update(kwargs)

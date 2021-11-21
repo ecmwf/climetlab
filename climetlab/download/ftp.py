@@ -18,7 +18,7 @@ from .downloader import Downloader
 LOG = logging.getLogger(__name__)
 
 
-class FTPDownloader(Downloader):
+class FTPDownloaderBase(Downloader):
 
     supports_parts = False
 
@@ -68,3 +68,13 @@ class FTPDownloader(Downloader):
 
     def finalise(self):
         self.ftp.close()
+
+
+class FullFTPDownloader(FTPDownloaderBase):
+    pass
+
+
+class PartFTPDownloader(FTPDownloaderBase):
+    def __init__(self, url, **kwargs):
+        # If needed, that can be implemented with the PartFilter
+        raise NotImplementedError("Part FTPDownloader is not yet implemented")

@@ -12,9 +12,10 @@ import mimetypes
 import os
 from urllib.parse import urlparse
 
-from .file import FileDownloader
-from .ftp import FTPDownloader
-from .http import HTTPDownloader
+from .file import FullFileDownloader, PartFileDownloader
+from .ftp import FullFTPDownloader, PartFTPDownloader
+from .http import FullHTTPDownloader, PartHTTPDownloader
+from .multipart import compress_parts
 
 LOG = logging.getLogger(__name__)
 
@@ -44,17 +45,30 @@ def canonical_extension(path):
     return EXTENSIONS.get(ext, ext)
 
 
-DOWNLOADERS = dict(
-    ftp=FTPDownloader,
-    http=HTTPDownloader,
-    https=HTTPDownloader,
-    file=FileDownloader,
-)
+DOWNLOADERS = {
+    ("ftp", False): FullFTPDownloader,
+    ("ftp", True): PartFTPDownloader,
+    ("http", False): FullHTTPDownloader,
+    ("http", True): PartHTTPDownloader,
+    ("https", False): FullHTTPDownloader,
+    ("https", True): PartHTTPDownloader,
+    ("file", False): FullFileDownloader,
+    ("file", True): PartFileDownloader,
+}
 
 
 def get_downloader(url, **kwargs):
+
+    parts = kwargs.get("parts")
+    if parts is not None:
+        parts = compress_parts(parts)
+        if len(parts) == 0:
+            parts = None
+        kwargs["parts"] = parts
+
     o = urlparse(url)
-    if o.scheme not in DOWNLOADERS:
-        LOG.warning(f"Url '{url}' has unknown scheme '{o.scheme}'.")
-    downloader = DOWNLOADERS[o.scheme](url, **kwargs)
+    has_parts = parts is not None and len(parts) > 0
+
+    downloader = DOWNLOADERS[(o.scheme, has_parts)](url, **kwargs)
+
     return downloader

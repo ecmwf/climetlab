@@ -71,6 +71,8 @@ class CDSRetriever(FileSource):
     """
 
     def __init__(self, dataset, *args, **kwargs):
+        super().__init__()
+
         assert isinstance(dataset, str)
         if len(args):
             assert len(args) == 1

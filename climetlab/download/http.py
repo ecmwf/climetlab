@@ -28,7 +28,7 @@ def NoFilter(x):
     return x
 
 
-class HTTPDownloader(Downloader):
+class HTTPDownloaderBase(Downloader):
     supports_parts = True
 
     def __init__(
@@ -104,119 +104,6 @@ class HTTPDownloader(Downloader):
                 return params["filename"]
         return super().title()
 
-    def prepare(self, target):
-
-        size = None
-        mode = "wb"
-        skip = 0
-
-        parts = self.parts
-
-        headers = self.headers()
-        if "content-length" in headers:
-            try:
-                size = int(headers["content-length"])
-            except Exception:
-                LOG.exception("content-length %s", self.url)
-
-        # content-length is the size of the encoded body
-        # so we cannot rely on it to check the file size
-        trust_size = headers.get("content-encoding") is None
-
-        http_headers = dict(**self.http_headers)
-
-        if not parts and trust_size and os.path.exists(target):
-
-            bytes = os.path.getsize(target)
-
-            if size is not None:
-                assert bytes < size, (bytes, size, self.url, target)
-
-            if bytes > 0:
-                if headers.get("accept-ranges") == "bytes":
-                    mode = "ab"
-                    http_headers["range"] = f"bytes={bytes}-"
-                    LOG.info(
-                        "%s: resuming download from byte %s",
-                        target,
-                        bytes,
-                    )
-                    skip = bytes
-                else:
-                    LOG.warning(
-                        "%s: %s bytes already download, but server does not support restarts",
-                        target,
-                        bytes,
-                    )
-
-        range_method = self.range_method
-
-        filter = NoFilter
-
-        if parts:
-            # We can trust the size
-            trust_size = True
-            size = sum(p[1] for p in parts)
-            if headers.get("accept-ranges") != "bytes":
-                LOG.warning(
-                    "Server for %s does not support byte ranges, downloading whole file",
-                    self.url,
-                )
-                filter = PartFilter(parts)
-                parts = None
-            else:
-                ranges = []
-                if range_method:
-
-                    rounded, positions = compute_byte_ranges(
-                        parts, range_method, self.url
-                    )
-                    filter = PartFilter(parts, positions)
-                    parts = rounded
-
-                for offset, length in parts:
-                    ranges.append(f"{offset}-{offset+length-1}")
-
-                http_headers["range"] = f"bytes={','.join(ranges)}"
-
-                # print("RANGES", http_headers["range"])
-
-        r = requests.get(
-            self.url,
-            stream=True,
-            verify=self.verify,
-            timeout=self.timeout,
-            headers=http_headers,
-        )
-        try:
-            r.raise_for_status()
-        except Exception:
-            LOG.error("URL %s: %s", self.url, r.text)
-            raise
-
-        if parts and len(parts) > 1:
-            self.stream = filter(
-                DecodeMultipart(
-                    self.url,
-                    r,
-                    parts,
-                    verify=self.verify,
-                    timeout=self.timeout,
-                    headers=http_headers,
-                )
-            )
-        else:
-            self.stream = filter(r.iter_content)
-
-        LOG.debug(
-            "url prepare size=%s mode=%s skip=%s trust_size=%s",
-            size,
-            mode,
-            skip,
-            trust_size,
-        )
-        return (size, mode, skip, trust_size)
-
     def transfer(self, f, pbar):
         total = 0
         start = time.time()
@@ -277,3 +164,179 @@ class HTTPDownloader(Downloader):
                 LOG.debug("Remote content of URL %s unchanged", self.url)
 
         return False
+
+    def prepare(self, target):
+
+        size = None
+        mode = "wb"
+        skip = 0
+
+        headers = self.headers()
+        if "content-length" in headers:
+            try:
+                size = int(headers["content-length"])
+            except Exception:
+                LOG.exception("content-length %s", self.url)
+
+        # content-length is the size of the encoded body
+        # so we cannot rely on it to check the file size
+        trust_size = size is not None and headers.get("content-encoding") is None
+
+        return (size, mode, skip, trust_size)
+
+    def check_for_restarts(self, target):
+        if not os.path.exists(target):
+            return 0
+
+        # Check if we can restarts the transfer
+        # TODO: check etags... the file may have changed since
+
+        bytes = os.path.getsize(target)
+
+        if bytes > 0:
+            headers = self.headers()
+            if headers.get("accept-ranges") != "bytes":
+                LOG.warning(
+                    "%s: %s bytes already download, but server does not support restarts",
+                    target,
+                    bytes,
+                )
+                return 0
+
+            LOG.info(
+                "%s: resuming download from byte %s",
+                target,
+                bytes,
+            )
+
+        return bytes
+
+
+class FullHTTPDownloader(HTTPDownloaderBase):
+    def prepare(self, target):
+        assert self.parts is None
+
+        size, mode, skip, trust_size = super().prepare(target)
+
+        http_headers = dict(**self.http_headers)
+
+        # Check if we can restarts the transfer
+
+        bytes = self.check_for_restarts(target)
+        if bytes > 0:
+            assert size is None or bytes < size, (bytes, size, self.url, target)
+            skip = bytes
+            mode = "ab"
+            http_headers["range"] = f"bytes={bytes}-"
+
+        r = requests.get(
+            self.url,
+            stream=True,
+            verify=self.verify,
+            timeout=self.timeout,
+            headers=http_headers,
+        )
+        try:
+            r.raise_for_status()
+        except Exception:
+            LOG.error("URL %s: %s", self.url, r.text)
+            raise
+
+        self.stream = r.iter_content
+
+        LOG.debug(
+            "url prepare size=%s mode=%s skip=%s trust_size=%s",
+            size,
+            mode,
+            skip,
+            trust_size,
+        )
+        return (size, mode, skip, trust_size)
+
+
+class PartHTTPDownloader(HTTPDownloaderBase):
+    def prepare(self, target):
+        assert self.parts is not None
+
+        size, mode, skip, trust_size = super().prepare(target)
+
+        http_headers = dict(**self.http_headers)
+
+        # We can trust the size
+        trust_size = True
+        size = sum(p[1] for p in self.parts)
+
+        headers = self.headers()
+        if headers.get("accept-ranges") != "bytes":
+            LOG.warning(
+                "Server for %s does not support byte ranges, downloading whole file",
+                self.url,
+            )
+            filter = PartFilter(self.parts)
+            parts = None
+        else:
+            if len(self.parts) == 1:
+                # Special case, we let HTTP to its job, so we can resume transfers if needed
+                filter = NoFilter
+                offset, length = self.parts[0]
+                start = offset
+                end = offset + length - 1
+                bytes = self.check_for_restarts(target)
+                if bytes > 0:
+                    start += bytes
+                    skip = bytes
+                    mode = "ab"
+                http_headers["range"] = f"bytes={start}-{end}"
+
+            else:
+                ranges = []
+                if self.range_method:
+
+                    rounded, positions = compute_byte_ranges(
+                        self.parts,
+                        self.range_method,
+                        self.url,
+                    )
+                    filter = PartFilter(self.parts, positions)
+                    parts = rounded
+
+                for offset, length in parts:
+                    ranges.append(f"{offset}-{offset+length-1}")
+
+                http_headers["range"] = f"bytes={','.join(ranges)}"
+
+        r = requests.get(
+            self.url,
+            stream=True,
+            verify=self.verify,
+            timeout=self.timeout,
+            headers=http_headers,
+        )
+        try:
+            r.raise_for_status()
+        except Exception:
+            LOG.error("URL %s: %s", self.url, r.text)
+            raise
+
+        if len(parts) == 1:
+            self.stream = filter(r.iter_content)
+        else:
+            self.stream = filter(
+                DecodeMultipart(
+                    self.url,
+                    r,
+                    parts,
+                    verify=self.verify,
+                    timeout=self.timeout,
+                    headers=http_headers,
+                )
+            )
+
+        LOG.debug(
+            "url prepare size=%s mode=%s skip=%s trust_size=%s",
+            size,
+            mode,
+            skip,
+            trust_size,
+        )
+        return (size, mode, skip, trust_size)

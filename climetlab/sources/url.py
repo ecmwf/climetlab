@@ -13,7 +13,6 @@ import logging
 from climetlab.core.settings import SETTINGS
 from climetlab.core.statistics import record_statistics
 from climetlab.download import get_downloader
-from climetlab.download.multipart import compress_parts
 from climetlab.utils import tqdm
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
@@ -51,18 +50,16 @@ class Url(FileSource):
         mirror=DEFAULT_MIRROR,
         fake_headers=None,  # When HEAD is not allowed but you know the size
     ):
+
+        super().__init__(filter=filter, merger=merger)
+
         # TODO: re-enable this feature
         extension = None
 
         self.url = url
         LOG.debug("URL %s", url)
 
-        self.update_if_out_of_date = (update_if_out_of_date,)
-
-        if parts is not None:
-            parts = compress_parts(parts)
-            if len(parts) == 0:
-                parts = None
+        self.update_if_out_of_date = update_if_out_of_date
 
         if mirror:
             url = mirror(url)

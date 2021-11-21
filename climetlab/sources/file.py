@@ -32,9 +32,11 @@ class FileSourceMeta(type(Source), type(os.PathLike)):
 class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
 
     _reader_ = None
-    path = None
-    filter = None
-    merger = None
+
+    def __init__(self, path=None, filter=None, merger=None):
+        self.path = path
+        self.filter = filter
+        self.merger = merger
 
     def mutate(self):
 
@@ -161,9 +163,7 @@ class File(FileSource):
             if len(matches) > 1:
                 path = sorted(matches)
 
-        self.path = path
-        self.filter = filter
-        self.merger = merger
+        super().__init__(path, filter, merger)
 
 
 source = File

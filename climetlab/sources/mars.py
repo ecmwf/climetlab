@@ -60,6 +60,7 @@ def service(name):
 
 class MARSRetriever(FileSource):
     def __init__(self, **kwargs):
+        super().__init__()
 
         requests = self.requests(**kwargs)
 
