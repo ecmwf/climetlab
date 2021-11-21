@@ -10,13 +10,28 @@
 import logging
 import os
 
-from climetlab.utils import tqdm
-
 LOG = logging.getLogger(__name__)
 
 
-def _dummy_observer():
+def _ignore(*args, **kwargs):
     pass
+
+
+class NoBar:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        pass
+
+    def update(self, *args, **kwargs):
+        pass
+
+    def close(self, *args, **kwargs):
+        pass
 
 
 class Downloader:
@@ -26,20 +41,24 @@ class Downloader:
         chunk_size=1024 * 1024,
         timeout=None,
         parts=None,
-        observer=None,
+        observer=_ignore,
+        statistics_gatherer=_ignore,
+        progress_bar=NoBar,
         **kwargs,
     ):
         self.url = url
         self.chunk_size = chunk_size
         self.timeout = timeout
         self.parts = parts
-        self.observer = observer if observer else _dummy_observer
+        self.observer = observer
+        self.statistics_gatherer = statistics_gatherer
+        self.progress_bar = progress_bar
 
-    def local_path(self, url):
+    def local_path(self):
         return None
 
-    def extension(self, url):
-        url_no_args = url.split("?")[0]
+    def extension(self):
+        url_no_args = self.url.split("?")[0]
         base = os.path.basename(url_no_args)
         extensions = []
         while True:
@@ -51,32 +70,27 @@ class Downloader:
             extensions.append(".unknown")
         return "".join(reversed(extensions))
 
-    def download(self, url, target):
+    def download(self, target):
         if os.path.exists(target):
             return
 
         download = target + ".download"
-        LOG.info("Downloading %s", url)
+        LOG.info("Downloading %s", self.url)
 
-        size, mode, skip, encoded = self.prepare(url, download)
+        size, mode, skip, trust_size = self.prepare(download)
 
-        with tqdm(
+        with self.progress_bar(
             total=size,
             initial=skip,
-            unit_scale=True,
-            unit_divisor=1024,
-            unit="B",
-            disable=False,
-            leave=False,
-            desc=self.title(url),
+            desc=self.title(),
         ) as pbar:
 
             with open(download, mode) as f:
-                total = self.transfer(f, pbar, self.observer)
+                total = self.transfer(f, pbar)
 
             pbar.close()
 
-        if not encoded and size is not None:
+        if trust_size and size is not None:
             assert (
                 os.path.getsize(download) == size
             ), f"File size mismatch {os.path.getsize(download)} bytes instead of {size}"
@@ -89,11 +103,11 @@ class Downloader:
     def finalise(self):
         pass
 
-    def title(self, url):
-        return os.path.basename(url)
+    def title(self):
+        return os.path.basename(self.url)
 
-    def cache_data(sel, url):
+    def cache_data(self):
         return None
 
-    def out_of_date(self, url, path, cache_data):
+    def out_of_date(self, path, cache_data):
         return False

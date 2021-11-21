@@ -25,11 +25,9 @@ class FTPDownloader(Downloader):
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
 
-    def prepare(self, url, download):
+    def prepare(self, target):
 
-        mode = "wb"
-
-        o = urlparse(url)
+        o = urlparse(self.url)
         assert o.scheme == "ftp"
 
         if "@" in o.netloc:
@@ -54,14 +52,14 @@ class FTPDownloader(Downloader):
         self.filename = os.path.basename(o.path)
         self.ftp = ftp
 
-        return ftp.size(self.filename), mode, 0, False
+        return (ftp.size(self.filename), "wb", 0, True)
 
-    def transfer(self, f, pbar, watcher):
+    def transfer(self, f, pbar):
         total = 0
 
         def callback(chunk):
             nonlocal total
-            watcher()
+            self.observer()
             f.write(chunk)
             total += len(chunk)
             pbar.update(len(chunk))
