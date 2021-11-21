@@ -13,7 +13,7 @@ import requests
 
 from climetlab.core.statistics import record_statistics
 
-from .parts_heuristics import parts_heuristics
+from .heuristics import parts_heuristics
 
 LOG = logging.getLogger(__name__)
 
