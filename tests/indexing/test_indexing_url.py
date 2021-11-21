@@ -239,7 +239,7 @@ def benchmark():
 
 
 if __name__ == "__main__":
-    benchmark()
+    test_global_index(CML_BASEURL_CDS)
     # timing()
     # from climetlab.testing import main
 

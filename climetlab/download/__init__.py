@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 from .file import FullFileDownloader, PartFileDownloader
 from .ftp import FullFTPDownloader, PartFTPDownloader
+from .heuristics import Part
 from .http import FullHTTPDownloader, PartHTTPDownloader
 from .multipart import compress_parts
 
@@ -61,6 +62,7 @@ def get_downloader(url, **kwargs):
 
     parts = kwargs.get("parts")
     if parts is not None:
+        parts = [Part(offset, length) for offset, length in parts]
         parts = compress_parts(parts)
         if len(parts) == 0:
             parts = None

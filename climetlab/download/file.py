@@ -45,7 +45,7 @@ class FullFileDownloader(FileDownloaderBase):
 class PartFileDownloader(FileDownloaderBase):
     def prepare(self, target):
         parts = self.parts
-        size = sum(p[1] for p in parts)
+        size = sum(p.length for p in parts)
         return (size, "wb", 0, True)
 
     def transfer(self, f, pbar):

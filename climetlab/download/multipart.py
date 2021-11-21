@@ -11,7 +11,7 @@ import re
 
 import requests
 
-from .heuristics import parts_heuristics
+from .heuristics import Part, parts_heuristics
 
 LOG = logging.getLogger(__name__)
 
@@ -60,10 +60,13 @@ class S3Streamer:
             assert start < total
             assert end < total
 
-            assert start == part[0], (bytes, part)
+            assert start == part.offset, (bytes, part)
             # (end + 1 == total) means that we overshoot the end of the file,
             # this happens when we round transfer blocks
-            assert (end == part[0] + part[1] - 1) or (end + 1 == total), (bytes, part)
+            assert (end == part.offset + part.length - 1) or (end + 1 == total), (
+                bytes,
+                part,
+            )
 
             for chunk in request.iter_content(chunk_size):
                 yield chunk
@@ -122,7 +125,7 @@ class MultiPartStreamer:
                 more = next(iter_content)
                 assert more is not None
                 chunk += more
-                assert len(chunk) < 1024 * 16
+                assert len(chunk) < 1024 * 1024
 
             pos += len(end_header)
             header = chunk[:pos].decode(self.encoding)
@@ -141,10 +144,10 @@ class MultiPartStreamer:
 
             size = end - start + 1
 
-            assert start == self.parts[part][0]
+            assert start == self.parts[part].offset
             # (end + 1 == total) means that we overshoot the end of the file,
             # this happens when we round transfer blocks
-            assert (end == self.parts[part][0] + self.parts[part][1] - 1) or (
+            assert (end == self.parts[part].offset + self.parts[part].length - 1) or (
                 end + 1 == total
             ), (bytes, self.parts[part])
 
@@ -172,10 +175,10 @@ class DecodeMultipart:
 
         if content_type.startswith("multipart/byteranges; boundary="):
             _, boundary = content_type.split("=")
-            print("******  MULTI-PART supported by server", url)
+            # print("******  MULTI-PART supported by server", url)
             self.streamer = MultiPartStreamer(url, request, parts, boundary, **kwargs)
         else:
-            print("******  MULTI-PART *NOT* supported by server", url)
+            # print("******  MULTI-PART *NOT* supported by server", url)
             self.streamer = S3Streamer(url, request, parts, **kwargs)
 
     def __call__(self, chunk_size):
@@ -187,7 +190,7 @@ class PartFilter:
         self.parts = parts
 
         if positions is None:
-            positions = [x[0] for x in parts]
+            positions = [x.offset for x in parts]
         self.positions = positions
 
         assert len(self.parts) == len(self.positions)
@@ -248,7 +251,7 @@ def compress_parts(parts):
 
         result.append((offset, length))
         last = offset + length
-    return result
+    return tuple(Part(offset, length) for offset, length in result)
 
 
 def compute_byte_ranges(parts, method, url, statistics_gatherer):
@@ -285,6 +288,8 @@ def compute_byte_ranges(parts, method, url, statistics_gatherer):
         end = i
         # Sanity check: assert that each parts is contain in a rounded part
         assert start == end
-        positions.append(offset - blocks[i][0] + sum(blocks[j][1] for j in range(i)))
+        positions.append(
+            offset - blocks[i].offset + sum(blocks[j].length for j in range(i))
+        )
 
     return blocks, positions

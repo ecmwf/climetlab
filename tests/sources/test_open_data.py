@@ -26,7 +26,7 @@ def test_open_data():
         type="fc",
         param="167",
     )
-    print(s)
+    print(s.path)
 
 
 if __name__ == "__main__":

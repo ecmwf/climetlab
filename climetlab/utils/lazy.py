@@ -36,9 +36,12 @@ class LazySource:
                     *self.args,
                     **self.kwargs,
                 )
+            # except AttributeError as e:
+            #     self._exception = e
+            #     raise LazySource(e)
             except Exception as e:
                 self._exception = e
-                raise LazySourceError(e)
+                raise
 
         return self._source
 

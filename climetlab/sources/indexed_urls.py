@@ -41,7 +41,7 @@ class IndexedUrls(MultiSource):
                 merger=merger,
                 force=force,
                 # Load lazily so we can do parallel downloads
-                lazily=True,
+                # lazily=True,
                 **kwargs,
             )
             sources.append(source)

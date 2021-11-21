@@ -30,7 +30,7 @@ class HierarchicalClustering:
         self.min_clusters = min_clusters
 
     def __call__(self, parts):
-        clusters = [Part(offset, length) for offset, length in parts]
+        clusters = [p for p in parts]
 
         while len(clusters) > self.min_clusters:
             min_dist = min(
@@ -81,7 +81,7 @@ class BlockGrouping:
                 assert block_offset == prev_offset
                 block_length = max(end_offset, prev_end_offset) - block_offset
 
-            blocks.append((block_offset, block_length))
+            blocks.append(Part(block_offset, block_length))
 
             last_block_offset = block_offset + block_length
             last_offset = offset + length
@@ -94,8 +94,8 @@ class BlockGrouping:
 
 class Automatic:
     def __call__(self, parts):
-        smallest = min(x[1] for x in parts)
-        range_method = round_up(max(x[1] for x in parts), 1024)
+        smallest = min(x.length for x in parts)
+        range_method = round_up(max(x.length for x in parts), 1024)
 
         while range_method >= smallest:
             blocks = BlockGrouping(range_method)(parts)
@@ -122,31 +122,24 @@ class Sharp:
         self.request_latency_overhead = request_latency_overhead
 
     def __call__(self, parts):
-        if len(parts) == 0:
-            return [parts]
 
         blocks = [parts[0]]
 
         for offset, length in parts[1:]:
             latest = blocks[-1]
-            latest_end = latest[0] + latest[1]
+            latest_end = latest.offset + latest.length
 
             distance = offset - latest_end
-            assert distance >= 0, (distance, latest, (offset, length), parts)  # , url)
-
-            # if distance == 0: # adjacents: merge immediately
-            #    blocks[-1] = [latest[0], latest[1] + length]
-            #    continue
+            assert distance >= 0, (distance, latest, (offset, length), parts)
 
             cost_of_merging = (
                 distance / self.transfer_rate - self.request_latency_overhead
             )
-            # print(cost_of_merging, distance* transfer_rate, request_latency_overhead)
 
             if cost_of_merging <= 0:
-                blocks[-1] = [latest[0], latest[1] + length]
+                blocks[-1] = Part(latest.offset, latest.length + length)
             else:
-                blocks.append([offset, length])
+                blocks.append(Part(offset, length))
 
         return blocks
 

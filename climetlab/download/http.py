@@ -38,6 +38,8 @@ class HTTPDownloaderBase(Downloader):
         http_headers=None,
         fake_headers=None,
         range_method=None,
+        retry_max=500,
+        sleep_max=120,
         **kwargs,
     ):
         super().__init__(url, **kwargs)
@@ -47,6 +49,8 @@ class HTTPDownloaderBase(Downloader):
         self.verify = verify
         self.fake_headers = fake_headers
         self.range_method = range_method
+        self.sleep_max = sleep_max
+        self.retry_max = retry_max
 
     def headers(self):
         if self._headers is None or self.url != self._url:
@@ -56,7 +60,7 @@ class HTTPDownloaderBase(Downloader):
                 self._headers = dict(**self.fake_headers)
             else:
                 try:
-                    r = requests.head(
+                    r = self.robust(requests.head)(
                         self.url,
                         headers=self.http_headers,
                         verify=self.verify,
@@ -192,13 +196,13 @@ class HTTPDownloaderBase(Downloader):
 
         return bytes
 
-    def issue_request(self, range=None):
+    def issue_request(self, bytes_ranges=None):
         headers = {}
         headers.update(self.http_headers)
-        if range is not None:
-            headers["range"] = range
+        if bytes_ranges is not None:
+            headers["range"] = bytes_ranges
 
-        r = requests.get(
+        r = self.robust(requests.get)(
             self.url,
             stream=True,
             verify=self.verify,
@@ -211,6 +215,54 @@ class HTTPDownloaderBase(Downloader):
             LOG.error("URL %s: %s", self.url, r.text)
             raise
         return r
+
+    def robust(self, call):
+        def retriable(code):
+
+            return code in (
+                requests.codes.internal_server_error,
+                requests.codes.bad_gateway,
+                requests.codes.service_unavailable,
+                requests.codes.gateway_timeout,
+                requests.codes.too_many_requests,
+                requests.codes.request_timeout,
+            )
+
+        def wrapped(*args, **kwargs):
+            tries = 0
+            while tries < self.retry_max:
+                try:
+                    r = call(*args, **kwargs)
+                except (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.ReadTimeout,
+                ) as e:
+                    r = None
+                    LOG.warning(
+                        "Recovering from connection error [%s], attemps %s of %s",
+                        e,
+                        tries,
+                        self.retry_max,
+                    )
+
+                if r is not None:
+                    if not retriable(r.status_code):
+                        return r
+                    LOG.warning(
+                        "Recovering from HTTP error [%s %s], attemps %s of %s",
+                        r.status_code,
+                        r.reason,
+                        tries,
+                        self.retry_max,
+                    )
+
+                tries += 1
+
+                LOG.warning("Retrying in %s seconds", self.sleep_max)
+                time.sleep(self.sleep_max)
+                LOG.info("Retrying now...")
+
+        return wrapped
 
 
 class FullHTTPDownloader(HTTPDownloaderBase):
@@ -278,7 +330,7 @@ class PartHTTPDownloader(HTTPDownloaderBase):
         r = self.issue_request()
         self.stream = PartFilter(self.parts)(r.iter_content)
 
-        size = sum(p[1] for p in self.parts)
+        size = sum(p.length for p in self.parts)
         return (size, "wb", 0, True)
 
     def one_part_only(self, target):
@@ -297,12 +349,29 @@ class PartHTTPDownloader(HTTPDownloaderBase):
             skip = 0
             mode = "wb"
 
-        range = f"bytes={start}-{end}"
-        r = self.issue_request(range)
+        bytes_range = f"bytes={start}-{end}"
+        r = self.issue_request(bytes_range)
         self.stream = r.iter_content
 
-        size = sum(p[1] for p in self.parts)
+        size = sum(p.length for p in self.parts)
         return (size, mode, skip, True)
+
+    def split_large_requests(self, parts):
+        ranges = []
+        for offset, length in parts:
+            ranges.append(f"{offset}-{offset+length-1}")
+
+        # Nginx default is 4K
+        # https://stackoverflow.com/questions/686217/maximum-on-http-header-values
+        bytes_range = f"bytes={','.join(ranges)}"
+
+        if len(bytes_range) < 4000:
+            return [(bytes_range, parts)]
+
+        middle = len(parts) // 2
+        return self.split_large_requests(parts[:middle]) + self.split_large_requests(
+            parts[middle:]
+        )
 
     def multi_parts(self, target):
 
@@ -322,24 +391,27 @@ class PartHTTPDownloader(HTTPDownloaderBase):
             filter = PartFilter(self.parts, positions)
             parts = rounded
 
-        ranges = []
-        for offset, length in parts:
-            ranges.append(f"{offset}-{offset+length-1}")
+        splits = self.split_large_requests(parts)
 
-        range = f"bytes={','.join(ranges)}"
+        def iterate_requests(chunk_size):
 
-        r = self.issue_request(range)
+            for bytes_ranges, parts in splits:
 
-        self.stream = filter(
-            DecodeMultipart(
-                self.url,
-                r,
-                parts,
-                verify=self.verify,
-                timeout=self.timeout,
-                headers=self.http_headers,
-            )
-        )
+                r = self.issue_request(bytes_ranges)
 
-        size = sum(p[1] for p in self.parts)
+                stream = DecodeMultipart(
+                    self.url,
+                    r,
+                    parts,
+                    verify=self.verify,
+                    timeout=self.timeout,
+                    headers=self.http_headers,
+                )
+
+                for chunk in stream(chunk_size):
+                    yield chunk
+
+        self.stream = filter(iterate_requests)
+
+        size = sum(p.length for p in self.parts)
         return (size, "wb", 0, True)
