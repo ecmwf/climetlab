@@ -34,21 +34,36 @@ def NoFilter(x):
 class HTTPDownloader(Downloader):
     supports_parts = True
 
-    _headers = None
-    _url = None
+    def __init__(
+        self,
+        url,
+        verify=True,
+        http_headers=None,
+        fake_headers=None,
+        range_method=None,
+        **kwargs,
+    ):
+        super().__init__(url, **kwargs)
+        self._headers = None
+        self._url = None
+        self.http_headers = http_headers if http_headers else {}
+        self.verify = verify
+        self.fake_headers = fake_headers
+        self.range_method = range_method
 
     def headers(self, url):
         if self._headers is None or url != self._url:
             self._url = url
             self._headers = {}
-            if self.owner.fake_headers is not None:
-                self._headers = dict(**self.owner.fake_headers)
+            if self.fake_headers is not None:
+                self._headers = dict(**self.fake_headers)
             else:
                 try:
                     r = requests.head(
                         url,
-                        headers=self.owner.http_headers,
-                        verify=self.owner.verify,
+                        headers=self.http_headers,
+                        verify=self.verify,
+                        timeout=self.timeout,
                         allow_redirects=True,
                     )
                     r.raise_for_status()
@@ -98,7 +113,7 @@ class HTTPDownloader(Downloader):
         mode = "wb"
         skip = 0
 
-        parts = self.owner.parts
+        parts = self.parts
 
         headers = self.headers(url)
         if "content-length" in headers:
@@ -111,7 +126,7 @@ class HTTPDownloader(Downloader):
         # so we cannot rely on it to check the file size
         encoded = headers.get("content-encoding") is not None
 
-        http_headers = dict(**self.owner.http_headers)
+        http_headers = dict(**self.http_headers)
 
         if not parts and not encoded and os.path.exists(download):
 
@@ -137,7 +152,7 @@ class HTTPDownloader(Downloader):
                         bytes,
                     )
 
-        range_method = self.owner.range_method
+        range_method = self.range_method
 
         filter = NoFilter
 
@@ -170,8 +185,8 @@ class HTTPDownloader(Downloader):
         r = requests.get(
             url,
             stream=True,
-            verify=self.owner.verify,
-            timeout=SETTINGS.get("url-download-timeout"),
+            verify=self.verify,
+            timeout=self.timeout,
             headers=http_headers,
         )
         try:
@@ -186,8 +201,8 @@ class HTTPDownloader(Downloader):
                     url,
                     r,
                     parts,
-                    verify=self.owner.verify,
-                    timeout=SETTINGS.get("url-download-timeout"),
+                    verify=self.verify,
+                    timeout=self.timeout,
                     headers=http_headers,
                 )
             )
@@ -206,14 +221,18 @@ class HTTPDownloader(Downloader):
     def transfer(self, f, pbar, watcher):
         total = 0
         start = time.time()
-        for chunk in self.stream(chunk_size=self.owner.chunk_size):
+        for chunk in self.stream(chunk_size=self.chunk_size):
             watcher()
             if chunk:
                 f.write(chunk)
                 total += len(chunk)
                 pbar.update(len(chunk))
+
         record_statistics(
-            "transfer", url=self.owner.url, total=total, elapsed=time.time() - start
+            "transfer",
+            url=self.url,
+            total=total,
+            elapsed=time.time() - start,
         )
         return total
 
@@ -257,7 +276,7 @@ class HTTPDownloader(Downloader):
                 LOG.warning("Remote content of URL %s has changed", url)
                 if (
                     SETTINGS.get("download-out-of-date-urls")
-                    or self.owner.update_if_out_of_date
+                    or self.update_if_out_of_date
                 ):
                     LOG.warning("Invalidating cache version and re-downloading %s", url)
                     return True

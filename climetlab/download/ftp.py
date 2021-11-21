@@ -13,8 +13,6 @@ import os
 from ftplib import FTP
 from urllib.parse import urlparse
 
-from climetlab.core.settings import SETTINGS
-
 from .downloader import Downloader
 
 LOG = logging.getLogger(__name__)
@@ -23,6 +21,9 @@ LOG = logging.getLogger(__name__)
 class FTPDownloader(Downloader):
 
     supports_parts = False
+
+    def __init__(self, url, **kwargs):
+        super().__init__(url, **kwargs)
 
     def prepare(self, url, download):
 
@@ -40,7 +41,7 @@ class FTPDownloader(Downloader):
 
         ftp = FTP(
             server,
-            timeout=SETTINGS.get("url-download-timeout"),
+            timeout=self.timeout,
         )
 
         if auth:

@@ -179,7 +179,6 @@ def test_url_part_file_source():
 
 
 if __name__ == "__main__":
-    test_part_url()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

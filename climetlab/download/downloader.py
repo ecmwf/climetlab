@@ -15,13 +15,25 @@ from climetlab.utils import tqdm
 LOG = logging.getLogger(__name__)
 
 
-class Downloader:
-    def __init__(self, owner):
-        # TODO: use weakref instead
-        self.owner = owner
+def _dummy_observer():
+    pass
 
-        if self.owner.parts:
-            assert self.supports_parts
+
+class Downloader:
+    def __init__(
+        self,
+        url,
+        chunk_size=1024 * 1024,
+        timeout=None,
+        parts=None,
+        observer=None,
+        **kwargs,
+    ):
+        self.url = url
+        self.chunk_size = chunk_size
+        self.timeout = timeout
+        self.parts = parts
+        self.observer = observer if observer else _dummy_observer
 
     def local_path(self, url):
         return None
@@ -60,7 +72,7 @@ class Downloader:
         ) as pbar:
 
             with open(download, mode) as f:
-                total = self.transfer(f, pbar, self.owner.observer)
+                total = self.transfer(f, pbar, self.observer)
 
             pbar.close()
 

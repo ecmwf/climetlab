@@ -10,8 +10,9 @@
 
 import logging
 
+from climetlab.core.settings import SETTINGS
 from climetlab.download import get_downloader
-from climetlab.download.http import compress_parts
+from climetlab.download.multipart import compress_parts
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
 from .file import FileSource
@@ -45,22 +46,27 @@ class Url(FileSource):
         self.filter = filter
         self.merger = merger
         self.verify = verify
-        self.chunk_size = chunk_size
-        self.range_method = range_method
         self.update_if_out_of_date = update_if_out_of_date
         self.http_headers = http_headers if http_headers else {}
         self.fake_headers = fake_headers
 
-        self.parts = None
         if parts is not None:
-            self.parts = compress_parts(parts)
-            if len(self.parts) == 0:
-                self.parts = None
+            parts = compress_parts(parts)
+            if len(parts) == 0:
+                parts = None
 
         if mirror:
             url = mirror(url)
 
-        downloader = get_downloader(url, self)
+        downloader = get_downloader(
+            url,
+            chunk_size=chunk_size,
+            timeout=SETTINGS.get("url-download-timeout"),
+            verify=verify,
+            parts=parts,
+            http_headers=http_headers,
+            fake_headers=fake_headers,
+        )
 
         if extension and extension[0] != ".":
             extension = "." + extension
@@ -84,7 +90,7 @@ class Url(FileSource):
             url,
             extension=extension,
             force=force,
-            hash_extra=self.parts,
+            hash_extra=parts,
         )
 
     def __repr__(self) -> str:

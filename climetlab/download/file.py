@@ -17,7 +17,11 @@ LOG = logging.getLogger(__name__)
 
 
 class FileDownloader(Downloader):
+
     supports_parts = True
+
+    def __init__(self, url, **kwargs):
+        super().__init__(url, **kwargs)
 
     def local_path(self, url):
 
@@ -36,10 +40,10 @@ class FileDownloader(Downloader):
         self.path = path
 
         # If parts is given, we cannot use the original path
-        return path if self.owner.parts is None else None
+        return path if self.parts is None else None
 
     def prepare(self, url, download):
-        parts = self.owner.parts
+        parts = self.parts
         size = sum(p[1] for p in parts)
         mode = "wb"
         skip = 0
@@ -49,11 +53,11 @@ class FileDownloader(Downloader):
     def transfer(self, f, pbar, watcher):
         with open(self.path, "rb") as g:
             total = 0
-            for offset, length in self.owner.parts:
+            for offset, length in self.parts:
                 g.seek(offset)
                 watcher()
                 while length > 0:
-                    chunk = g.read(min(length, self.owner.chunk_size))
+                    chunk = g.read(min(length, self.chunk_size))
                     assert chunk
                     f.write(chunk)
                     length -= len(chunk)

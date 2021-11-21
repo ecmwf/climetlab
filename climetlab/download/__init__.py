@@ -52,9 +52,9 @@ DOWNLOADERS = dict(
 )
 
 
-def get_downloader(url, owner):
+def get_downloader(url, **kwargs):
     o = urlparse(url)
     if o.scheme not in DOWNLOADERS:
         LOG.warning(f"Url '{url}' has unknown scheme '{o.scheme}'.")
-    downloader = DOWNLOADERS[o.scheme](owner)
+    downloader = DOWNLOADERS[o.scheme](url, **kwargs)
     return downloader
