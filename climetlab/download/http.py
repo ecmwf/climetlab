@@ -327,8 +327,8 @@ class PartHTTPDownloader(HTTPDownloaderBase):
             self.url,
         )
 
-        r = self.issue_request()
-        self.stream = PartFilter(self.parts)(r.iter_content)
+        request = self.issue_request()
+        self.stream = PartFilter(self.parts)(request.iter_content)
 
         size = sum(p.length for p in self.parts)
         return (size, "wb", 0, True)
@@ -350,8 +350,8 @@ class PartHTTPDownloader(HTTPDownloaderBase):
             mode = "wb"
 
         bytes_range = f"bytes={start}-{end}"
-        r = self.issue_request(bytes_range)
-        self.stream = r.iter_content
+        request = self.issue_request(bytes_range)
+        self.stream = request.iter_content
 
         size = sum(p.length for p in self.parts)
         return (size, mode, skip, True)
@@ -365,7 +365,7 @@ class PartHTTPDownloader(HTTPDownloaderBase):
         # https://stackoverflow.com/questions/686217/maximum-on-http-header-values
         bytes_range = f"bytes={','.join(ranges)}"
 
-        if len(bytes_range) < 4000:
+        if len(bytes_range) <= 4000:
             return [(bytes_range, parts)]
 
         middle = len(parts) // 2
@@ -397,19 +397,18 @@ class PartHTTPDownloader(HTTPDownloaderBase):
 
             for bytes_ranges, parts in splits:
 
-                r = self.issue_request(bytes_ranges)
+                request = self.issue_request(bytes_ranges)
 
                 stream = DecodeMultipart(
                     self.url,
-                    r,
+                    request,
                     parts,
                     verify=self.verify,
                     timeout=self.timeout,
                     headers=self.http_headers,
                 )
 
-                for chunk in stream(chunk_size):
-                    yield chunk
+                yield from stream(chunk_size)
 
         self.stream = filter(iterate_requests)
 

@@ -68,8 +68,7 @@ class S3Streamer:
                 part,
             )
 
-            for chunk in request.iter_content(chunk_size):
-                yield chunk
+            yield from request.iter_content(chunk_size)
 
 
 class MultiPartStreamer:
