@@ -11,8 +11,6 @@ import logging
 import re
 from collections import namedtuple
 
-from climetlab.core.statistics import record_statistics
-
 LOG = logging.getLogger(__name__)
 
 
@@ -186,7 +184,7 @@ HEURISTICS = {
 }
 
 
-def parts_heuristics(method):
+def parts_heuristics(method, statistics_gatherer):
     if isinstance(method, int):
         return BlockGrouping(method)
 
@@ -211,7 +209,7 @@ def parts_heuristics(method):
             result = Pipe(obj, result)
     print("parts_heuristics", result)
 
-    record_statistics(
+    statistics_gatherer(
         "parts-heuristics",
         method=str(method),
         method_args=str(args),

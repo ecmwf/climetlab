@@ -11,8 +11,6 @@ import re
 
 import requests
 
-from climetlab.core.statistics import record_statistics
-
 from .heuristics import parts_heuristics
 
 LOG = logging.getLogger(__name__)
@@ -24,7 +22,7 @@ class S3Streamer:
         self.url = url
         self.parts = parts
         self.request = request
-        self.headers = headers
+        self.headers = dict(**headers)
         self.kwargs = kwargs
 
     def __call__(self, chunk_size):
@@ -253,19 +251,19 @@ def compress_parts(parts):
     return result
 
 
-def compute_byte_ranges(parts, method, url):
+def compute_byte_ranges(parts, method, url, statistics_gatherer):
 
     if callable(method):
         blocks = method(parts)
     else:
-        blocks = parts_heuristics(method)(parts)
+        blocks = parts_heuristics(method, statistics_gatherer)(parts)
 
     blocks = compress_parts(blocks)
 
     assert len(blocks) > 0
     assert len(blocks) <= len(parts)
 
-    record_statistics(
+    statistics_gatherer(
         "byte-ranges",
         method=str(method),
         url=url,

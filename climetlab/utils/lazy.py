@@ -13,10 +13,8 @@ from climetlab import load_source
 LOG = logging.getLogger(__name__)
 
 
-class LazySourceError:
-    def __init__(self, owner, error):
-        self.owner = owner
-        self.error = error
+class LazySourceError(Exception):
+    pass
 
 
 class LazySource:
@@ -40,7 +38,7 @@ class LazySource:
                 )
             except Exception as e:
                 self._exception = e
-                raise
+                raise LazySourceError(e)
 
         return self._source
 
