@@ -15,10 +15,6 @@ from climetlab.decorators import normalize
 from climetlab.vocabularies.aliases import unalias
 
 
-def test_unalias():
-    assert unalias("grib-paramid", "2t") == "167"
-
-
 def func_x(x):
     return x
 
@@ -29,7 +25,7 @@ def test_aliases_grib_paramid_mutiple_false(typ):
     aliases_grib_paramid = normalize(
         "x",
         type=typ,
-        aliases="grib-paramid",
+        aliases={"u": typ(131), "v": typ(132)},
         multiple=False,
     )(func_x)
     assert aliases_grib_paramid("u") == _131
@@ -58,7 +54,7 @@ def test_aliases_grib_paramid_mutiple_true(typ, _131, _132):
     aliases_grib_paramid = normalize(
         "x",
         type=typ,
-        aliases="grib-paramid",
+        aliases={"u": typ(131), "v": typ(132)},
         multiple=True,
     )(func_x)
     # single values
@@ -82,28 +78,28 @@ def test_aliases_grib_paramid_mutiple_true(typ, _131, _132):
 @pytest.mark.parametrize(
     "typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)]
 )
-def test_aliases_grib_paramid_mutiple_none(typ, _131, _132):
-    aliases_grib_paramid = normalize(
+def test_aliases_mutiple_none(typ, _131, _132):
+    aliases_func = normalize(
         "x",
         type=typ,
-        aliases="grib-paramid",
+        aliases={"u": _131, "v": _132},
     )(func_x)
     # single values
-    assert aliases_grib_paramid("u") == _131
-    assert aliases_grib_paramid(131) == _131
-    assert aliases_grib_paramid("131") == _131
+    assert aliases_func("u") == _131
+    assert aliases_func(131) == _131
+    assert aliases_func("131") == _131
 
     # one-element list/tuple
-    assert aliases_grib_paramid(("131",)) == (_131,)
-    assert aliases_grib_paramid(["131"]) == [_131]
+    assert aliases_func(("131",)) == (_131,)
+    assert aliases_func(["131"]) == [_131]
 
     # list/tuple
-    assert aliases_grib_paramid(["131", "v"]) == [_131, _132]
-    assert aliases_grib_paramid([131, "v"]) == [_131, _132]
-    assert aliases_grib_paramid(["u", "v"]) == [_131, _132]
-    assert aliases_grib_paramid(("u", "v")) == (_131, _132)
-    assert aliases_grib_paramid([]) == []
-    assert aliases_grib_paramid(tuple([])) == ()
+    assert aliases_func(["131", "v"]) == [_131, _132]
+    assert aliases_func([131, "v"]) == [_131, _132]
+    assert aliases_func(["u", "v"]) == [_131, _132]
+    assert aliases_func(("u", "v")) == (_131, _132)
+    assert aliases_func([]) == []
+    assert aliases_func(tuple([])) == ()
 
 
 if __name__ == "__main__":
