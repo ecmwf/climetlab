@@ -1,35 +1,123 @@
-First steps
+First Steps
 ===========
+
+This is an easy to follow tutorial that gets you up to speed with *CliMetLab*
+to access scientific climate data.
+It assumes you have basic Python programming knowledge.
+
+So, let's start with what *CliMetLab* does best:
 
 Getting data
 ------------
 
-There are two ways of loading data in *CliMetLab*, using :ref:`data
-sources <data-sources>` or :ref:`datasets <datasets>`.
+*CliMetLab* provides two main ways to access climate data
 
-Data sources
+1. Data Sources
+2. Datasets
+
+Data Sources
 ^^^^^^^^^^^^
 
-Data sources implement various methods to access and decode data.
-When data are downloaded from a remote site, they are :ref:`cached
-<caching>` on the local computer.
+In *CliMetLab*, a *Data Source* refers to a local or remote storage server or data archive
+from where we can download or access files related to climate data.
+
+To get started, let us first import *CliMetLab* at the top of our Python notebook:
+
+.. code-block:: python
+
+    import climetlab as cml
+
+Now download
+`test.grib <https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.grib>`_ (example GRIB file)
+to your project directory, or if you have ``wget`` command available, run
+following in your notebook:
+
+.. code-block:: python
+
+    !wget https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.grib
+
+GRIB is a file format for storage and sharing of gridded meteorological data.
+You can think of gridded data as weather or some other data that is associated with
+specific locations using coordinates. For example, wind speed data for
+every longitude and latitude on a two dimensional grid.
+
+The GRIB format (version 1 and 2) is `endorsed by WMO <https://en.wikipedia.org/wiki/GRIB>`_.
+GRIB (GRIdded Binary) is a binary file format so you cannot look at it using a text editor.
+But you sure can use *CliMetLab* to explore it:
+
+.. code-block:: python
+
+    grib_data = cml.load_source("file", "test.grib")
+
+Here we used ``load_source`` method from *CliMetLab* to load our GRIB file
+into ``grib_data`` variable. The first argument ``"file"`` specifies the type of
+our data source. Which currently is indeed a local file that we downloaded.
+The second argument is the path to that file.
+
+Let's plot this data using the ``plot_map`` convenience method:
+
+.. code-block:: python
+
+    cml.plot_map(grib_data, title=True, path="test-grib-plot.svg")
+
+
+.. image:: _static/example-plots/test-grib-plot.svg
+  :width: 100%
+
+The ``title`` and ``path`` arguments supplied to ``plot_map`` are optional.
+When ``title`` is set to ``True``, the plot will include the title of the data
+from our data file. If you specify the
+``path`` ending with a supported format (``.svg``, ``.png``, ``.pdf``), the
+plot will be saved at the specified location.
+
+You can also use ``load_source`` to directly download and load files from remote
+server, in one step. For example, let's download and plot a NetCDF file:
+
+.. code-block:: python
+
+    netcdf_url = "https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.nc"
+    netcdf_data = cml.load_source("url", netcdf_url)
+    cml.plot_map(netcdf_data)
+
+.. image:: _static/example-plots/test-netcdf-plot.svg
+  :width: 100%
+
+If you don't know already, NetCDF_ is another commonly used data format for
+transporting scientific data.
+
+So, we have downloaded and plotted scientific weather data, can we convert
+this data to work with our favorite Data Science library? ``Pandas``,
+``Xarray`` or ``Numpy``?
+Don't worry, *CliMetLab* has got you covered.
+
+If your data is gridded data, like in our examples above,
+you can simply call ``to_xarray()`` method to convert it to an ``Xarray``
+object:
+
+.. code-block:: python
+
+    grib_xr = grib_data.to_xarray()
+    # as well as:
+    netcdf_xr = netcdf_data.to_xarray()
 
 *CliMetLab* will infer the type of data by probing the downloaded
 file. If the file contains gridded data, such as meteorological
 fields, they will be accessible as an Xarray dataset, using the
 ``to_xarray()`` method.  If the file contains point data, such as
-observation, they will be accessible as an as Pandas frame, using
+observations, they can be converted to a Pandas data frame via
 the ``to_pandas()`` method. Other data may only be available as
 NumPy arrays using the ``to_numpy()`` method.
 
+Observations are usually data points corresponding to time for a
+certain location unlike gridded data that contains data points
+that is usually for a range of locations.
+For example, monthly average temperature of Lahore for the past ten years.
 
 The following example downloads a ``.csv`` file from NOAA's
 *International Best Track Archive for Climate Stewardship* (IBTrACS_)
 using the ``url`` data source. The file is downloaded into the local
-cache. It is then converted as a Pandas frame. The rows corresponding
-to the severe tropical cyclone Uma_ are extracted and plotted (more
-on plotting below).
-
+cache. We then convert it to a Pandas frame. The rows corresponding
+to the severe tropical cyclone Uma_ are extracted and plotted.
 
 .. _data source example:
 
@@ -39,30 +127,36 @@ on plotting below).
 .. image:: _static/datasource-example.svg
   :width: 100%
 
+The Data Sources implement various methods to access and decode data.
+When data are downloaded from a remote site, they are :ref:`cached
+<caching>` on the local computer.
+
+The first argument to ``load_source`` can take the following values:
 
 .. list-table::
    :header-rows: 1
-   :widths: 10 20 80
+   :widths: 20 80
 
-   * - Name
-     - Parameter
+   * - Argument value
      - Description
 
    * - ``"file"``
-     - A path to a local file name.
-     - TODO. :ref:`Read more <data-sources-file>`. (`Notebook <nb-file>`_).
+     - A path to a local file name. :ref:`Read more <data-sources-file>`
 
    * - ``"url"``
-     - A URL to a remote file.
-     - TODO. :ref:`Read more <data-sources-url>`. (`Notebook <nb-url>`_).
+     - A URL to a remote file. :ref:`Read more <data-sources-url>`
 
    * - ``"cds"``
-     - A request to the CDS API.
-     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account. :ref:`Read more <data-sources-cds>`. (`Notebook <nb-cds>`_).
+     - A request to retrieve data from the `Copernicus Climate Data Store`_ (CDS). Requires an account. :ref:`Read more <data-sources-cds>`
 
    * - ``"mars"``
-     - TODO
-     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account. :ref:`Read more <data-sources-mars>`. (`Notebook <nb-mars>`_).
+     - A request to retrieve data from ECMWF's meteorological archive (MARS), using the `ECMWF web API`_. Requires an account. :ref:`Read more <data-sources-mars>`
+
+
+To read more about Data Sources, head over to :ref:`Data Sources guide <data-sources>`.
+
+Now let's dive into the second way that you can access climate scientific data
+using *CliMetLab*:
 
 
 Datasets
@@ -202,7 +296,7 @@ you can call ``cml.plot_map()`` with a list of data objects.
 
 .. code-block:: python
 
-  cml.plot_map((data1, data2), foreground=False)
+    cml.plot_map((data1, data2), foreground=False)
 
 or, if you want to specify a per-data custom *style*, you can use
 ``cml.new_map()``:
@@ -221,6 +315,7 @@ or, if you want to specify a per-data custom *style*, you can use
 .. _IBTrACS: https://www.ncdc.noaa.gov/ibtracs/
 .. _ECMWF web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 .. _Uma: https://en.wikipedia.org/wiki/1986–87_South_Pacific_cyclone_season#Severe_Tropical_Cyclone_Uma
+.. _NetCDF: https://www.unidata.ucar.edu/software/netcdf/docs/
 
 .. Notebooks
 
