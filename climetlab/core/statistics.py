@@ -40,3 +40,30 @@ def retrieve_statistics():
         stats = STATISTICS
         STATISTICS = []
         return stats
+
+
+def stats_to_pandas(stats, keys):
+    # keys = ('indexed-urls', 'parts-heuristics', 'byte-ranges', 'transfer'))
+
+    import pandas as pd
+
+    data = []
+    one_point = {}
+
+    for message in stats:
+        if message[1] not in keys:
+            continue
+
+        if message[1] == keys[0]:  # First one
+            one_point = {}
+
+        for k, v in message[2].items():
+            if k in one_point:
+                assert one_point[k] == v
+            one_point[k] = v
+
+        if message[1] == keys[-1]:  # last one
+            data.append(one_point)
+
+    df = pd.DataFrame(data)
+    return df

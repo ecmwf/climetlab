@@ -16,6 +16,7 @@ import traceback
 
 from termcolor import colored
 
+from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
 from .grib import GribCmd
@@ -42,6 +43,7 @@ class CliMetLabApp(
     CacheCmd,
     CheckCmd,
     GribCmd,
+    BenchmarkCmd,
 ):
     # intro = 'Welcome to climetlab. Type ? to list commands.\n'
     prompt = colored("(climetlab) ", "yellow")

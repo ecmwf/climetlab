@@ -14,17 +14,17 @@ import time
 import pytest
 
 from climetlab import load_source
-from climetlab.core.statistics import collect_statistics, retrieve_statistics
 from climetlab.datasets import Dataset
 from climetlab.decorators import normalize
 from climetlab.indexing import GlobalIndex, PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
-CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_CDS]
+CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"
+CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 
 # Index files have been created with :
-#  export BASEURL=https://storage.ecmwf.europeanweather.cloud/climetlab//test-data/input/indexed-urls
+#  export BASEURL=https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/input/indexed-urls
 #  climetlab index_gribs $BASEURL/large_grib_1.grb > large_grib_1.grb.index
 #  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
 #  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
@@ -44,7 +44,9 @@ def test_indexed_s3(baseurl):
             # multiple=True,
         )
         def __init__(self, option="abc", **request):
-            self.source = load_source("indexed-urls", PER_URL_INDEX, request)
+            self.source = load_source(
+                "indexed-urls", PER_URL_INDEX, request, range_method="auto"
+            )
 
     a = Mydataset(
         **{
@@ -188,56 +190,6 @@ def timing():
     for k, v in report.items():
         print(k)
         print(v)
-
-
-def benchmark():
-    collect_statistics(True)
-
-    baseurls = [
-        CML_BASEURL_S3,
-        CML_BASEURL_CDS,
-    ]
-
-    requests = [
-        dict(param="r", time=["1100", "1200", "1300", "1400"]),
-        dict(param=["r", "z"], time=["0200", "1000", "1800", "2300"]),
-        dict(param=["r", "t"], levelist=["500", "850"]),
-        dict(param="r", time="1000", date="19970101"),
-        dict(param="r", time="1000"),
-        dict(param="r"),
-        dict(param=["r", "z"]),
-        dict(date="19970101"),
-    ]
-
-    methods = [
-        "sharp(1,1)",
-        "cluster(100)",
-        "cluster(5)",
-        "auto",
-        "cluster(5)|debug|blocked(4096)|debug",
-        "cluster(1)",
-    ]
-
-    for baseurl in baseurls:
-        index = PerUrlIndex(
-            f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
-        )
-        for request in requests:
-            for range_method in methods:
-                retrieve_and_check(
-                    index,
-                    request,
-                    range_method,
-                    force=True,
-                )
-
-    stats = retrieve_statistics()
-    import json
-
-    path = "benchmark.json"
-    with open(path, "w") as f:
-        json.dump(stats, f, indent=2)
-    print(f"TEST FINISHED. Saved in {path}")
 
 
 if __name__ == "__main__":
