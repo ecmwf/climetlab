@@ -12,7 +12,6 @@
 import pytest
 
 from climetlab.decorators import normalize
-from climetlab.vocabularies.aliases import unalias
 
 
 def func_x(x):

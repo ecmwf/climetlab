@@ -100,9 +100,9 @@ def test_aliases_grib_paramid_mutiple_none():
 
 
 if __name__ == "__main__":
-    #import logging
+    # import logging
 
-    #logging.basicConfig(level=logging.WARNING)
+    # logging.basicConfig(level=logging.WARNING)
     # test_aliases_grib_paramid_mutiple_true()
     # test_aliases_grib_paramid_mutiple_none()
     from climetlab.testing import main

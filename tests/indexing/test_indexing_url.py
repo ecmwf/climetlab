@@ -23,11 +23,11 @@ CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_CDS]
 
-# index file has been created with :
-# climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
-#           data/ana/pressure/EU_analysis_pressure_params_1997-01.grb > eumetnet.index
-# climetlab index_gribs --baseurl "https://storage.ecmwf.europeanweather.cloud/benchmark-dataset" \
-#           data/ana/pressure/EU_analysis_pressure_params_1997-02.grb >> eumetnet.index
+# Index files have been created with :
+#  export BASEURL=https://storage.ecmwf.europeanweather.cloud/climetlab//test-data/input/indexed-urls
+#  climetlab index_gribs $BASEURL/large_grib_1.grb > large_grib_1.grb.index
+#  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
+#  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
 
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
@@ -39,8 +39,8 @@ def test_indexed_s3(baseurl):
     class Mydataset(Dataset):
         @normalize(
             "param",
-            ["133", "157", "130", "131", "132", "129"],
-            aliases="eumetnet_aliases.yaml",
+            ["q", "r", "t", "u", "v", "z"],
+            # aliases="eumetnet_aliases.yaml",
             # multiple=True,
         )
         def __init__(self, option="abc", **request):
@@ -54,7 +54,7 @@ def test_indexed_s3(baseurl):
             "date": "19970228",
             "time": "2300",
             "step": "0",
-            "param": "r",  # "param": "157",
+            "param": "r",
             "class": "ea",
             "type": "an",
             "stream": "oper",
@@ -89,6 +89,8 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
         # check that the downloaded gribs match the request
         for grib in load_source("file", path):
             for k, v in request.items():
+                if k == "param":
+                    k = "shortName"
                 assert check_grib_value(grib._get(k), v), (grib._get(k), v)
     return elapsed
 
@@ -99,7 +101,7 @@ def check_grib_value(value, requested):
     else:
         try:
             return int(value) == int(requested)
-        except TypeError:
+        except (TypeError, ValueError):
             return str(value) == str(requested)
 
 
@@ -111,7 +113,7 @@ def test_global_index(baseurl):
         baseurl=f"{baseurl}/test-data/input/indexed-urls",
     )
 
-    request = dict(param="157")
+    request = dict(param="r")
     retrieve_and_check(index, request)
 
 
@@ -120,7 +122,7 @@ def test_per_url_index(baseurl):
     index = PerUrlIndex(
         f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
-    request = dict(param="157")
+    request = dict(param="r")
     retrieve_and_check(index, request)
 
 
@@ -131,16 +133,16 @@ def dev():
         f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
 
-    request = dict(param="157")
+    request = dict(param="r")
     retrieve_and_check(index, request)
 
-    request = dict(param="157", time="1000")
+    request = dict(param="r", time="1000")
     retrieve_and_check(index, request)
 
     request = dict(date="19970101")
     retrieve_and_check(index, request)
 
-    request = dict(param="157", time="1000", date="19970101")
+    request = dict(param="r", time="1000", date="19970101")
     retrieve_and_check(index, request)
 
 
@@ -158,10 +160,10 @@ def timing():
 
     report = {}
     for request in [
-        dict(param="157"),
-        dict(param="157", time="1000"),
+        dict(param="r"),
+        dict(param="r", time="1000"),
         dict(date="19970101"),
-        dict(param="157", time="1000", date="19970101"),
+        dict(param="r", time="1000", date="19970101"),
     ]:
         times = []
         for n in sizes:
@@ -197,13 +199,13 @@ def benchmark():
     ]
 
     requests = [
-        dict(param="157", time=["1100", "1200", "1300", "1400"]),
-        dict(param=["157", "129"], time=["0200", "1000", "1800", "2300"]),
-        dict(param=["157", "130"], levelist=["500", "850"]),
-        dict(param="157", time="1000", date="19970101"),
-        dict(param="157", time="1000"),
-        dict(param="157"),
-        dict(param=["157", "129"]),
+        dict(param="r", time=["1100", "1200", "1300", "1400"]),
+        dict(param=["r", "z"], time=["0200", "1000", "1800", "2300"]),
+        dict(param=["r", "t"], levelist=["500", "850"]),
+        dict(param="r", time="1000", date="19970101"),
+        dict(param="r", time="1000"),
+        dict(param="r"),
+        dict(param=["r", "z"]),
         dict(date="19970101"),
     ]
 
@@ -239,8 +241,9 @@ def benchmark():
 
 
 if __name__ == "__main__":
-    test_global_index(CML_BASEURL_CDS)
+    # test_global_index(CML_BASEURL_CDS)
+    # test_indexed_s3(CML_BASEURL_S3)
     # timing()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
