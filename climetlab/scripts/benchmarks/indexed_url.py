@@ -38,6 +38,23 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
         total = len(index.get_backend(url).entries)
         print(f"PARTS: {len(p)}/{total} parts in {url}")
 
+    ####################
+    # from climetlab import load_source
+    # from climetlab.indexing import PerUrlIndex
+    #
+    # baseurl = "https://datastore.copernicus-climate.eu/climetlab"
+    # s = load_source(
+    #     "indexed-urls",
+    #     PerUrlIndex(
+    #         f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
+    #     ),
+    #     {"param": "r", "time": "1200"},
+    #     range_method="auto",
+    #     force=True,
+    # )
+    # assert 0, "Stop here"
+    ####################
+
     now = time.time()
     s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
     elapsed = time.time() - now
@@ -58,8 +75,17 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
 
 
 def plot(df):
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("No matplolib. No plot.")
+        return
+
+    try:
+        import seaborn as sns
+    except ImportError:
+        print("No seaborn. No plot.")
+        return
 
     for k in ["url", "parts", "blocks"]:
         if k in df:
