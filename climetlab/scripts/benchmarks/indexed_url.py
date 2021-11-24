@@ -161,12 +161,12 @@ def benchmark():
     run_id = get_run_id()
 
     path = f"climetlab_benchmark{run_id}.json"
-
     stats.write_to_json(path)
+    stats.write_to_json("climetlab_benchmark.json")
 
     df = stats.to_pandas()
 
-    df.to_csv(f"climetlab_benchmarkraw{run_id}.csv")
+    df.to_csv(f"climetlab_benchmark.raw{run_id}.csv")
 
     print(f"BENCHMARK FINISHED. Logs saved in {path}")
 
@@ -176,12 +176,12 @@ def benchmark():
     df["method"] = df["full_method"].apply(radix)
 
     df.to_csv(f"climetlab_benchmark{run_id}.csv")
+    df.to_csv("climetlab_benchmark.csv")
 
     plot(df)
 
 
-# def get_run_id(keys=('hostname', 'ip', 'date',  'user','time')):
-def get_run_id(keys=("user")):
+def get_run_id(keys=("hostname", "ip", "date", "user", "time")):
     run_id = ""
 
     import datetime
