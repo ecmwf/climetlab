@@ -66,7 +66,9 @@ def version(module):
 
 
 class CheckCmd:
+    @parse_args()
     def do_check(self, args):
+        """Experimental."""
         import climetlab
 
         print(
@@ -279,7 +281,13 @@ class CheckCmd:
 
             print_table(items, colours)
 
-    def do_df(self, path):
+    @parse_args(
+        path=dict(help="Path to analyse"),
+    )
+    def do_df(self, args):
+        """Provide some information about disk usage."""
         from climetlab.core.caching import disk_usage
+
+        path = args.path if args.path else "."
 
         print(disk_usage(path))
