@@ -281,13 +281,11 @@ class CheckCmd:
 
             print_table(items, colours)
 
-    @parse_args(
-        path=dict(help="Path to analyse"),
-    )
-    def do_df(self, args):
-        """Provide some information about disk usage."""
+    def do_df(self, path):
         from climetlab.core.caching import disk_usage
 
-        path = args.path if args.path else "."
+        if path == "-h":
+            print("Provide some information about disk usage.")
+            return
 
         print(disk_usage(path))
