@@ -138,8 +138,9 @@ def benchmark():
         methods.append(f"cluster({i})")
 
     methods.append("auto")
+
     for i in range(12, 25, 2):
-        methods.append(f"blocked({i})")
+        methods.append(f"blocked({2**i})")
 
     methods.append("cluster(5)|blocked(4096)")
 
