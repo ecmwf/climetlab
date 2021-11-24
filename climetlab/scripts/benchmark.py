@@ -21,6 +21,6 @@ class BenchmarkCmd:
         full=dict(action="store_true", help="Run all benchmarks."),
     )
     def do_benchmark(self, args):
-        if args.full or args.indexed_url:
+        if args.full or args.indexedurl:
             print("Starting benchmark.")
             benchmark_indexed_url()

@@ -7,30 +7,91 @@
 # nor does it submit to any jurisdiction.
 #
 
+import json
 import threading
 import time
 
 LOCK = threading.Lock()
-COLLECT = False
-STATISTICS = []
+
+
+class Statistics:
+    def __init__(self, filename=None):
+        self.collect = False
+        self._current = {}
+        self._events = []
+        self._data = []
+
+        if filename:
+            self.load_from_json(filename)
+
+    def append(self, event):
+        self._events.append(event)
+        self.process_event(event)
+
+    def process_event(self, event):
+        key = event[1]
+
+        if key == "indexed-urls":
+            assert not self._current, self._current
+
+        for k, v in event[2].items():
+            if k in self._current:
+                assert self._current[k] == v
+            self._current[k] = v
+
+        if key == "transfer":
+            for k in ["parts", "blocks"]:
+                if k in self._current:
+                    v = self._current[k]
+                    self._current["n" + k] = len(v)  # create nblocks and nparts
+                    v = [(p[0], p[1]) for p in v]
+                    v = json.dumps(v)
+                    self._current[k] = v
+            self._data.append(self._current)
+            self._current = {}
+
+    def to_pandas(self):
+        import pandas as pd
+
+        return pd.DataFrame(self._data)
+
+    def write_to_json(self, filename):
+        import json
+
+        with open(filename, "w") as f:
+            json.dump(
+                dict(events=self._events, data=self._data),
+                f,
+                indent=2,
+            )
+
+    def load_from_json(self, filename):
+        with open(filename, "r") as f:
+            data = json.load(f)
+            self.process_event(data["events"])
+
+
+global STATISTICS
+STATISTICS = Statistics()
 
 
 def collect_statistics(on):
+    assert on in [True, False]
     with LOCK:
-        global COLLECT, STATISTICS
-        COLLECT = on
-        STATISTICS = []
+        global STATISTICS
+        STATISTICS.collect = on
 
 
 def reset_statistics():
     with LOCK:
         global STATISTICS
-        STATISTICS = []
+        STATISTICS = Statistics()
 
 
 def record_statistics(name, **values):
     with LOCK:
-        if COLLECT:
+        global STATISTICS
+        if STATISTICS.collect:
             STATISTICS.append((time.time(), name, values))
 
 
@@ -38,32 +99,5 @@ def retrieve_statistics():
     with LOCK:
         global STATISTICS
         stats = STATISTICS
-        STATISTICS = []
+        STATISTICS = Statistics()
         return stats
-
-
-def stats_to_pandas(stats, keys):
-    # keys = ('indexed-urls', 'parts-heuristics', 'byte-ranges', 'transfer'))
-
-    import pandas as pd
-
-    data = []
-    one_point = {}
-
-    for message in stats:
-        if message[1] not in keys:
-            continue
-
-        if message[1] == keys[0]:  # First one
-            one_point = {}
-
-        for k, v in message[2].items():
-            if k in one_point:
-                assert one_point[k] == v
-            one_point[k] = v
-
-        if message[1] == keys[-1]:  # last one
-            data.append(one_point)
-
-    df = pd.DataFrame(data)
-    return df

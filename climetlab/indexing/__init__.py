@@ -130,3 +130,6 @@ class PerUrlIndex(Index):
         urls_parts = [(k, v) for k, v in dic.items()]
 
         return urls_parts
+
+    def __repr__(self) -> str:
+        return f"PerUrlIndex(pattern={self.pattern})"

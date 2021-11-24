@@ -8,15 +8,10 @@
 #
 
 
-import json
 import time
 
 from climetlab import load_source
-from climetlab.core.statistics import (
-    collect_statistics,
-    retrieve_statistics,
-    stats_to_pandas,
-)
+from climetlab.core.statistics import collect_statistics, retrieve_statistics
 from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
@@ -38,7 +33,7 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
     print("range_method", range_method)
-    print("REQUEST", request)
+    print("REQUEST", request, index)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
         print(f"PARTS: {len(p)}/{total} parts in {url}")
@@ -66,7 +61,10 @@ def plot(df):
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    x = "nblocks"
+    for k in ["url", "parts", "blocks"]:
+        if k in df:
+            del df[k]
+
     x = "nparts"
 
     df = df.sort_values(by=[x])
@@ -78,6 +76,15 @@ def plot(df):
     g.add_legend()
 
     # print(f"BENCHMARK FINISHED. Panda saved in {path}")
+
+
+def radix(long, sep="("):
+    assert long is not None, long
+    if not isinstance(long, str):
+        return long
+    if sep not in long:
+        return long
+    return long.split(sep)[0]
 
 
 def url_to_server(url):
@@ -102,6 +109,19 @@ def benchmark():
     requests = [
         dict(param="r", time=["1100", "1200", "1300", "1400"]),
         dict(param=["r", "z"], time=["0200", "1000", "1800", "2300"]),
+        dict(
+            param=["r", "z"],
+            time=["0200", "1000", "1800", "2300"],
+            levelist=["500", "850"],
+        ),
+        dict(
+            param=["r", "z", "t"],
+            time=["0200", "1000", "1800", "2300"],
+            levelist=["500", "850"],
+        ),
+        dict(
+            param=["t"], time=["0200", "1000", "1800", "2300"], levelist=["500", "850"]
+        ),
         dict(param=["r", "t"], levelist=["500", "850"]),
         dict(param="r", time="1000", date="19970101"),
         dict(param="r", time="1000"),
@@ -110,14 +130,18 @@ def benchmark():
         dict(date="19970101"),
     ]
 
-    methods = [
-        "sharp(1,1)",
-        "cluster(100)",
-        "cluster(5)",
-        "auto",
-        "cluster(5)|debug|blocked(4096)|debug",
-        "cluster(1)",
-    ]
+    methods = []
+    for i in [0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100]:
+        methods.append(f"sharp({i},1)")
+
+    for i in [1, 5, 10, 50, 100, 500, 1000]:
+        methods.append(f"cluster({i})")
+
+    methods.append("auto")
+    for i in range(12, 25, 2):
+        methods.append(f"blocked({i})")
+
+    methods.append("cluster(5)|blocked(4096)")
 
     for request in requests:
         for range_method in methods:
@@ -133,22 +157,60 @@ def benchmark():
                 )
 
     stats = retrieve_statistics()
-    keys = ("indexed-urls", "parts-heuristics", "byte-ranges", "transfer")
 
-    path = "benchmark.json"
-    with open(path, "w") as f:
-        json.dump(stats, f, indent=2)
+    run_id = get_run_id()
 
-    df = stats_to_pandas(stats, keys)
+    path = f"climetlab_benchmark{run_id}.json"
 
-    print(f"BENCHMARK FINISHED. JSON log saved in {path}")
+    stats.write_to_json(path)
 
-    df["server"] = df["url"].apply(lambda url: url_to_server(url))
-    df["nparts"] = df["parts"].apply(lambda x: len(x))
-    df["nblocks"] = df["blocks"].apply(lambda x: len(x))
+    df = stats.to_pandas()
+
+    df.to_csv(f"climetlab_benchmarkraw{run_id}.csv")
+
+    print(f"BENCHMARK FINISHED. Logs saved in {path}")
+
+    df["server"] = df["url"].apply(url_to_server)
     df["speed"] = df["total"] / df["elapsed"] / (1024 * 1024)  # MB/s
-    for k in ["url", "parts", "blocks"]:
-        if k in df:
-            del df[k]
+
+    df["method"] = df["full_method"].apply(radix)
+
+    df.to_csv(f"climetlab_benchmark{run_id}.csv")
 
     plot(df)
+
+
+# def get_run_id(keys=('hostname', 'ip', 'date',  'user','time')):
+def get_run_id(keys=("user")):
+    run_id = ""
+
+    import datetime
+
+    now = datetime.datetime.now()
+
+    for k in keys:
+        if k == "hostname":
+            import socket
+
+            run_id += "_" + str(socket.gethostname())
+            continue
+
+        if k == "user":
+            import getpass
+
+            run_id += "_" + str(getpass.getuser())
+            continue
+
+        if k == "ip":
+            from requests import get
+
+            ip = get("https://api.ipify.org").text
+            run_id += "_" + str(ip)
+
+        if k == "date":
+            run_id += "_" + now.strftime("%Y-%m-%d")
+
+        if k == "time":
+            run_id += "_" + now.strftime("%H:%M")
+
+    return run_id
