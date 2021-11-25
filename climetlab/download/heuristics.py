@@ -205,6 +205,6 @@ def parts_heuristics(method, statistics_gatherer):
     statistics_gatherer(
         "parts-heuristics",
         full_method=str(method),
-        method_args=str(args),
+        method_args=args,
     )
     return result

@@ -39,7 +39,7 @@ class Statistics:
                 assert self._current[k] == v
             self._current[k] = v
 
-        if key == "transfer":
+        if key == "transfer":  # last one
             for k in ["parts", "blocks"]:
                 if k in self._current:
                     v = self._current[k]
@@ -47,6 +47,21 @@ class Statistics:
                     v = [(p[0], p[1]) for p in v]
                     v = json.dumps(v)
                     self._current[k] = v
+
+            k = "method_args"
+            if k in self._current:
+                v = self._current[k]
+                arg1 = 0.0
+                if v:
+                    arg1 = v[0]
+                    try:
+                        arg1 = float(arg1)
+                    except Exception:
+                        pass
+                v = str(v)
+                self._current["arg1"] = arg1
+                self._current[k] = v
+
             self._data.append(self._current)
             self._current = {}
 

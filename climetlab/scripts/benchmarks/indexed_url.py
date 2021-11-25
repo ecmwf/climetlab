@@ -129,7 +129,7 @@ def benchmark():
     baseurls = [
         CML_BASEURL_S3,
         CML_BASEURL_CDS,
-        CML_BASEURL_GET,
+        # CML_BASEURL_GET,
     ]
 
     requests = [
@@ -157,31 +157,44 @@ def benchmark():
     ]
 
     methods = []
-    for i in [0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100]:
-        methods.append(f"sharp({i},1)")
 
-    for i in [1, 5, 10, 50, 100, 500, 1000]:
+    # methods.append("cluster(5)|blocked(4096)")
+    for i in [1, 2, 5, 10, 100]:
+        for j in range(8, 25, 4):
+            methods.append(f"cluster({i})|blocked({2**j})")
+
+    # for i in range(1,10,2):
+    #    methods.append(f"sharp({10**i},1)")
+
+    for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
         methods.append(f"cluster({i})")
 
     methods.append("auto")
 
-    for i in range(12, 25, 2):
+    for i in range(8, 25, 2):
         methods.append(f"blocked({2**i})")
 
-    methods.append("cluster(5)|blocked(4096)")
-
+    # requests = [requests[2]]
+    # methods = [methods[0]]
+    # baseurls = [baseurls[0]]
+    # requests = requests[::2]
+    # methods = methods[::2]
+    # baseurls = [baseurls[0]]
     for request in requests:
         for range_method in methods:
             for baseurl in baseurls:
                 index = PerUrlIndex(
                     f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
                 )
+                # try:
                 retrieve_and_check(
                     index,
                     request,
                     range_method,
                     force=True,
                 )
+                # except:
+                #    print('FAILED for ', index, request, range_method)
 
     stats = retrieve_statistics()
 
