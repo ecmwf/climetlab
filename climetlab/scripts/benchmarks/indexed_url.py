@@ -134,25 +134,24 @@ def benchmark():
 
     requests = [
         dict(param="r", time=["1100", "1200", "1300", "1400"]),
-        dict(param=["r", "z"], time=["0200", "1000", "1800", "2300"]),
+        dict(param=["r", "z", "t"], time=["0200", "1000", "1800", "2300"]),
         dict(
             param=["r", "z"],
             time=["0200", "1000", "1800", "2300"],
             levelist=["500", "850"],
         ),
-        dict(
-            param=["r", "z", "t"],
-            time=["0200", "1000", "1800", "2300"],
-            levelist=["500", "850"],
-        ),
+        # dict(
+        #    param=["r", "z", "t"],
+        #    time=["0200", "1000", "1800", "2300"],
+        #    levelist=["500"],
+        #),
         dict(
             param=["t"], time=["0200", "1000", "1800", "2300"], levelist=["500", "850"]
         ),
         dict(param=["r", "t"], levelist=["500", "850"]),
         dict(param="r", time="1000", date="19970101"),
-        dict(param="r", time="1000"),
-        dict(param="r"),
-        dict(param=["r", "z"]),
+        # dict(param="r"),
+        # dict(param=["r", "z"]),
         dict(date="19970101"),
     ]
 
@@ -166,12 +165,13 @@ def benchmark():
     # for i in range(1,10,2):
     #    methods.append(f"sharp({10**i},1)")
 
-    for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
+    #for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
+    for i in [1, 3, 5, 10, 50, 100, 1000]:
         methods.append(f"cluster({i})")
 
     methods.append("auto")
 
-    for i in range(8, 25, 2):
+    for i in range(8, 25, 4):
         methods.append(f"blocked({2**i})")
 
     # requests = [requests[2]]
@@ -182,8 +182,9 @@ def benchmark():
     # baseurls = [baseurls[0]]
     failed = []
     successfull = 0
-    for request in requests:
-        for range_method in methods:
+    import tqdm
+    for request in tqdm.tqdm(requests):
+        for range_method in tqdm.tqdm(methods):
             for baseurl in baseurls:
                 index = PerUrlIndex(
                     f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
