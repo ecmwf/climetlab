@@ -33,7 +33,7 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
     parts = index.lookup_request(request)
     print("range_method", range_method)
-    print("REQUEST", request, index)
+    print("REQUEST", request)
     for url, p in parts:
         total = len(index.get_backend(url).entries)
         print(f"PARTS: {len(p)}/{total} parts in {url}")
@@ -74,36 +74,6 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     return elapsed
 
 
-def plot(df):
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print("No matplolib. No plot.")
-        return
-
-    try:
-        import seaborn as sns
-    except ImportError:
-        print("No seaborn. No plot.")
-        return
-
-    for k in ["url", "parts", "blocks"]:
-        if k in df:
-            del df[k]
-
-    x = "nparts"
-
-    df = df.sort_values(by=[x])
-    # g = sns.FacetGrid(data=df, col="method", hue='server', height=3, aspect=1.5, col_wrap=3)
-    g = sns.FacetGrid(
-        data=df, col="server", hue="method", height=4, aspect=1.5, col_wrap=3
-    )
-    g = g.map(plt.semilogx, x, "speed")  # , shade=True)
-    g.add_legend()
-
-    # print(f"BENCHMARK FINISHED. Panda saved in {path}")
-
-
 def radix(long, sep="("):
     assert long is not None, long
     if not isinstance(long, str):
@@ -127,46 +97,39 @@ def benchmark():
     collect_statistics(True)
 
     baseurls = [
-        CML_BASEURL_S3,
+        # CML_BASEURL_S3,
         CML_BASEURL_CDS,
         # CML_BASEURL_GET,
     ]
 
     requests = [
-        dict(param="r", time=["1100", "1200", "1300", "1400"]),
-        dict(param=["r", "z", "t"], time=["0200", "1000", "1800", "2300"]),
-        dict(
-            param=["r", "z"],
-            time=["0200", "1000", "1800", "2300"],
-            levelist=["500", "850"],
-        ),
-        # dict(
-        #    param=["r", "z", "t"],
-        #    time=["0200", "1000", "1800", "2300"],
-        #    levelist=["500"],
-        #),
-        dict(
-            param=["t"], time=["0200", "1000", "1800", "2300"], levelist=["500", "850"]
-        ),
-        dict(param=["r", "t"], levelist=["500", "850"]),
-        dict(param="r", time="1000", date="19970101"),
-        # dict(param="r"),
-        # dict(param=["r", "z"]),
-        dict(date="19970101"),
+        {"param": "r", "time": "1000", "step": "0"},
+        {"param": "r", "time": "1000"},
+        {"param": "r", "time": ["1100", "1200", "1300", "1400"]},
+        {
+            "param": ["r", "z"],
+            "time": ["0200", "1000", "1800", "2300"],
+            "levelist": ["500", "850"],
+        },
+        {"param": ["r", "z"], "levelist": ["500", "850"]},
+        {"param": "r"},
+        # {"param": ["r", "z"]},
+        {"param": ["r", "z", "t"]},
+        # {},
     ]
 
     methods = []
-
+    # methods.append("cluster(2)|blocked(256)")
     # methods.append("cluster(5)|blocked(4096)")
-    for i in [1, 2, 5, 10, 100]:
-        for j in range(8, 25, 4):
+    for i in [10, 100]:
+        for j in [12, 16, 24]:
             methods.append(f"cluster({i})|blocked({2**j})")
 
     # for i in range(1,10,2):
-    #    methods.append(f"sharp({10**i},1)")
+    #     methods.append(f"sharp({10**i},1)")
 
-    #for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
-    for i in [1, 3, 5, 10, 50, 100, 1000]:
+    # for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
+    for i in [1, 5, 10, 50, 100]:
         methods.append(f"cluster({i})")
 
     methods.append("auto")
@@ -183,6 +146,7 @@ def benchmark():
     failed = []
     successfull = 0
     import tqdm
+
     for request in tqdm.tqdm(requests):
         for range_method in tqdm.tqdm(methods):
             for baseurl in baseurls:
@@ -221,11 +185,16 @@ def benchmark():
 
     df["method"] = df["full_method"].apply(radix)
 
+    df["max_speed"] = df.groupby(["request", "server"]).speed.transform(
+        lambda x: x.max()
+    )
+
+    df["ratio"] = df.nparts / df.nblocks
+
     df.to_csv(f"climetlab_benchmark{run_id}.csv")
     df.to_csv("climetlab_benchmark.csv")
 
-    plot(df)
-    print("Benchmark finished ({len(successfull)} successfull, {len(failed)} failed).")
+    print(f"Benchmark finished ({successfull} successfull, {len(failed)} failed).")
 
 
 def get_run_id(keys=("hostname", "ip", "date", "user", "time")):
