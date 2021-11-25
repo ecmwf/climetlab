@@ -180,21 +180,26 @@ def benchmark():
     # requests = requests[::2]
     # methods = methods[::2]
     # baseurls = [baseurls[0]]
+    failed = []
+    successfull = 0
     for request in requests:
         for range_method in methods:
             for baseurl in baseurls:
                 index = PerUrlIndex(
                     f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
                 )
-                # try:
-                retrieve_and_check(
-                    index,
-                    request,
-                    range_method,
-                    force=True,
-                )
-                # except:
-                #    print('FAILED for ', index, request, range_method)
+                try:
+                    retrieve_and_check(
+                        index,
+                        request,
+                        range_method,
+                        force=True,
+                    )
+                    successfull += 1
+                except Exception as e:
+                    failed.append((index, request, range_method))
+                    print("FAILED for ", index, request, range_method)
+                    print(e)
 
     stats = retrieve_statistics()
 
@@ -219,6 +224,7 @@ def benchmark():
     df.to_csv("climetlab_benchmark.csv")
 
     plot(df)
+    print("Benchmark finished ({len(successfull)} successfull, {len(failed)} failed).")
 
 
 def get_run_id(keys=("hostname", "ip", "date", "user", "time")):

@@ -200,7 +200,6 @@ def parts_heuristics(method, statistics_gatherer):
             result = obj
         else:
             result = Pipe(obj, result)
-    print("parts_heuristics", result)
 
     statistics_gatherer(
         "parts-heuristics",
