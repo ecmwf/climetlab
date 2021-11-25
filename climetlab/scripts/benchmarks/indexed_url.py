@@ -227,6 +227,6 @@ def get_run_id(keys=("hostname", "ip", "date", "user", "time")):
             run_id += "_" + now.strftime("%Y-%m-%d")
 
         if k == "time":
-            run_id += "_" + now.strftime("%H:%M")
+            run_id += "_" + now.strftime("%H%M")
 
     return run_id
