@@ -97,7 +97,7 @@ def benchmark():
     collect_statistics(True)
 
     baseurls = [
-        # CML_BASEURL_S3,
+        CML_BASEURL_S3,
         CML_BASEURL_CDS,
         # CML_BASEURL_GET,
     ]
