@@ -176,31 +176,32 @@ def benchmark():
 
     run_id = get_run_id()
 
+    logfiles = []
+
     path = f"climetlab_benchmark{run_id}.json"
+    logfiles.append(path)
     stats.write_to_json(path)
-    stats.write_to_json("climetlab_benchmark.json")
+    print(f"BENCHMARK FINISHED. Raw logs saved in {path}")
 
     df = stats.to_pandas()
 
-    df.to_csv(f"climetlab_benchmark.raw{run_id}.csv")
-
-    print(f"BENCHMARK FINISHED. Logs saved in {path}")
-
     df["server"] = df["url"].apply(url_to_server)
     df["speed"] = df["total"] / df["elapsed"] / (1024 * 1024)  # MB/s
-
     df["method"] = df["full_method"].apply(radix)
-
-    df["max_speed"] = df.groupby(["request", "server"]).speed.transform(
-        lambda x: x.max()
-    )
-
     df["ratio"] = df.nparts / df.nblocks
 
-    df.to_csv(f"climetlab_benchmark{run_id}.csv")
-    df.to_csv("climetlab_benchmark.csv")
+    path = f"climetlab_benchmark{run_id}.json"
+    df.to_csv(path)
+    # df.to_csv("climetlab_benchmark.csv")
+    logfiles.append(path)
 
     print(f"Benchmark finished ({successfull} successfull, {len(failed)} failed).")
+    print(
+        "All data in the log files are anonymous."
+        "Only the log file names contain personal data (machine name, IP, etc.)."
+    )
+    for f in logfiles:
+        print(f"Log file: {f}")
 
 
 def get_run_id(keys=("hostname", "ip", "date", "user", "time")):
