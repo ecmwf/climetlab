@@ -19,6 +19,29 @@ CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"
 
 
+def get_methods_list():
+    methods = []
+    # methods.append("cluster(2)|blocked(256)")
+    # methods.append("cluster(5)|blocked(4096)")
+    for i in [10, 100]:
+        for j in [12, 16, 24]:
+            methods.append(f"cluster({i})|blocked({2**j})")
+
+    # for i in range(1,10,2):
+    #     methods.append(f"sharp({10**i},1)")
+
+    # for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
+    for i in [1, 5, 10, 50, 100]:
+        methods.append(f"cluster({i})")
+
+    methods.append("auto")
+
+    for i in range(8, 25, 4):
+        methods.append(f"blocked({2**i})")
+
+    return methods
+
+
 def check_grib_value(value, requested):
     if isinstance(requested, (list, tuple)):
         return any([check_grib_value(value, _v) for _v in requested])
@@ -118,24 +141,7 @@ def benchmark():
         # {},
     ]
 
-    methods = []
-    # methods.append("cluster(2)|blocked(256)")
-    # methods.append("cluster(5)|blocked(4096)")
-    for i in [10, 100]:
-        for j in [12, 16, 24]:
-            methods.append(f"cluster({i})|blocked({2**j})")
-
-    # for i in range(1,10,2):
-    #     methods.append(f"sharp({10**i},1)")
-
-    # for i in [1, 2, 3, 4, 5, 7, 10, 20, 50, 100, 500, 1000]:
-    for i in [1, 5, 10, 50, 100]:
-        methods.append(f"cluster({i})")
-
-    methods.append("auto")
-
-    for i in range(8, 25, 4):
-        methods.append(f"blocked({2**i})")
+    methods = get_methods_list()
 
     # requests = [requests[2]]
     # methods = [methods[0]]
