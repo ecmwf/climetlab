@@ -100,6 +100,12 @@ def test_aliases_mutiple_none(typ, _131, _132):
     assert aliases_func([]) == []
     assert aliases_func(tuple([])) == ()
 
+def test_aliases():
+    @normalize( "x", aliases={"one": 1})
+    def f(x):
+        return x
+    assert f(1) == 1
+    assert f('one') == 1
 
 if __name__ == "__main__":
     # import logging

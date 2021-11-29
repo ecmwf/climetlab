@@ -4,7 +4,7 @@ Normalizer decorator
 ====================
 
 This section discuss the purpose of the `@normalize` decorator,
-and provides extensive docummentation on how to use it.
+show how to use it and provides reference documentation.
 
 Purpose
 -------
@@ -71,174 +71,119 @@ Compare the following codes snippets:
             do_suff(date, option)
 
 
+.. _howto-normalizer:
+
+How to use
+----------
+
+- How to ensure that the value in the function belong to a list ?
+
+    .. code-block:: python
+
+        from climetlab.decorator import normalize
+
+        @normalize(param, ["tp", "gh"])
+        def f(self, param):
+            print(param)
 
 
-.. dropdown:: Using CliMetLab fine-control API
-    :open:
+- How to ensure that the value in the function is a date
+  with format "YYYY-MM-DD"?
 
-    .. todo::
+    .. code-block:: python
 
-        The fine-control API is not implemented.
+        from climetlab.decorator import normalize
 
-        .. code-block:: python
+        @normalize(option, "date(%Y-%m-%d)""
+        def f(self, option):
+            print(option)
 
-            from climetlab.normalize import ArgNormalizer, Date, Enum
-            norm = ArgNormalizer()
-            norm.add_argument("date", Date("%Y%m%d", single=False, valid=DEFAULT_DATE_LIST))
-            norm.add_argument("option", Enum(["foo", "bar"])
-            norm.available(date=DEFAULT_DATE_LIST, option=["foo", "bar"])
-            norm.not_available(date="20211231", option="bar"])
-            @norm
-            def __init__(self, date, option):
-                do_suff(date, option)
+- How to ensure that the value in the function is a list?
+    Add the keyword argument `multiple=True`. Not available for ``bounding-box``.
+  
+- How to ensure that the value in the function is not a list?
+    Add the keyword argument `multiple=False`.
 
-The following table lists the available normalizers:
-
-.. list-table::
-   :widths: 10 80 10
-   :header-rows: 1
-
-   * - Normalizer
-     - Trigger
-     - Example
-   * - :ref:`enum-normalizer`
-     - tuple
-     - ``option=("a", "b")``
-       ``option=Enum("a", "b")``
-   * - :ref:`enum-list-normalizer`
-     - list
-     - ``option=["a", "b"]``
-       ``option=EnumList("a", "b")``
-   * - :ref:`date-normalizer`
-     - "date("
-     - ``option="date("%Y%m%d")``
-       ``option="Date("%Y%m%d")``
-   * - :ref:`date-list-normalizer`
-     - "date-list("
-     - ``option="date-list("%Y%m%d")``
-       ``option="DateList("%Y%m%d")``
-   * - :ref:`bounding-box-normalizer`
-     - "bounding-box("
-     - TODO
-
-.. _enum-normalizer:
-
-Enum
-----
-
-The ``Enum`` normalizer pre-process the argument provided when
-calling the function, modifies it if needed, and provides a normalised
-value to the function. It ensures that the value in the function is an
-element of the list provided.
+- How to accept list or non-list as input?
+    Add the keyword argument `multiple=None`. Not available for ``bounding-box``.
 
 
-.. code-block:: python
+- How to add alias/shortcuts/special values to be replaced by actual predefined values?
+    Use the keyword argument `alias` and provide a dictionary.
 
-    @normalize_args(option=Enum("a", "b"))
-    def f(self, option):
-        assert option in ["a", "b"]
-        print(option)
+    .. code-block:: python
 
-    >>> f("a")
-    "a"
-    >>> f(None)
-    MissingArgument
+        from climetlab.decorator import normalize
 
+        @normalize( "x", aliases={"one": 1})
+        def f(x):
+            return x
+        
+    .. code-block:: python
 
-Shortcut: An ``Enum`` normalizer is created when a tuple is assigned
-to a parameter in @normalize_args.
+        from climetlab.decorator import normalize
 
-.. code-block:: python
-
-    @normalize_args(option=("a", "b"))
-
-.. _enum-list-normalizer:
-
-EnumList
---------
-
-The ``EnumList`` normalizer pre-process the argument provided when
-calling the function, modifies it if needed, and provides a normalised
-value to the function. It ensures the following:
-
-- The value (provided to the function) is a list.
-- Each element of this list belong to the list provided.
-- If None was provided by the user, the full list is used.
-
-.. code-block:: python
-
-    @normalize_args(option=EnumList("a", "b"))
-    def f(self, option):
-        for o in option:
-            assert o in ["a", "b"]
-        print(option)
-
-    >>> f("a")
-    ["a"]
-    >>> f(None)
-    ["a", "b"]
+        DATES = dict(
+            april=["20210401", "20210402", "20210403"],
+            june=["20210610", "20210611"],
+        )
+        @normalize( "x", "date-list(YYYYMMDD)", aliases=DATES)
+        def f(x):
+            return x
 
 
-Shortcut: An ``Enum`` normalizer is created when a list is assigned
-to a parameter in @normalize_args.
-
-.. code-block:: python
-
-    @normalize_args(option=["a", "b"])
-    def f(self, option):
-
-
-.. _date-normalizer:
-
-Date
-----
-
-Date and time argument used a lot in Climate and Meteorology code.
-The ``Date`` normalizer .
-
-.. code-block:: python
-
-    @normalize_args(date=Date("%Y%m%d"))
-    def f(self, date):
-
-
-Shortcut: An ``Date`` normalizer is created when a string
-starting with "date(" is assigned to a parameter in @normalize_args.
-
-.. code-block:: python
-
-    @normalize_args(date="date(%Y%m%d)")
-
-
-.. _date-list-normalizer:
-
-DateList
---------
-
-The ``DateList`` normalizer is to the ``Date`` normalizer what the ``EnumList`` is to ``Enum``.
-
-.. code-block:: python
-
-    @normalize_args(date=DateList("%Y%m%d"))
-    def f(self, date):
-
-
-Shortcut: An ``DateList`` normalizer is created when a string
-starting with "date-list(" is assigned to a parameter in @normalize_args.
-
-.. code-block:: python
-
-    @normalize_args(date="date-list(%Y%m%d)")
-
-
-.. _bounding-box-normalizer:
-
-BoundingBox
------------
-
-TODO
+Reference
+---------
 
 .. todo::
 
-    Add more normalizers.
-    For instance, for the "parameter" argument such as ```t2m``` or ```tp```.
+    This API is experimental, things may change.
+
+
+``@normalize(name, values, aliases={}, multiple=None, **kwargs)``
+
+The ``@normalize`` decorator the arguments provided when calling the
+the decorated function, modifies it if needed, and provides a normalised
+value to the function. It ensures that the value in the function is what
+is expected to be processed by the function.
+
+
+values
+    If `values` is a list, the list of allowed values for the parameter.
+    If `values` is a string, it is expected to be a shortcut similar to
+    "type(options)" where `type` is one of the following: 'date', 'date-list',
+    'bounding-box'.
+    These shorts cut aims at providing a easy way to define many options in
+    a more concise manner.
+    Example: "date-list(%Y%m%d)"
+
+type
+    Type of value expected by the function. The type should be one of the
+    following: 'str', 'int', 'float', 'date', 'date-list', 'str-list',
+    'int-list', 'float-list'.
+
+
+format
+    The keyword argument `format`
+    is available for `type`
+    ='date' and
+    'date-list'.
+    It provides the expected format according to `datetime.strftime`.
+    Example: format='%Y%m%d'
+
+convention
+    Experimental. To be documented.
+
+aliases={}
+    Replace a value by another using a dictionary of aliases.
+
+multiple
+    The keyword argument `multiple` is not available for ``bounding-box``.
+
+    `True`: Ensure a list value. Turn input into a list if needed.
+
+    `False`: Ensure a non-list value. Turn a list input as non-list if the
+    list has only one element. Fails with ValueError if the list has more
+    than one element.
+
+    `None`: Accept list and non-list values without transformations.
