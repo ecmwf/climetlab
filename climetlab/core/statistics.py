@@ -43,7 +43,10 @@ class Statistics:
             for k in ["parts", "blocks"]:
                 if k in self._current:
                     v = self._current[k]
-                    self._current["n" + k] = len(v)  # create nblocks and nparts
+                    # create nblocks and nparts
+                    self._current["n" + k] = len(v)
+                    # create size_blocks and size_parts
+                    self._current["size_" + k] = sum(x[1] for x in v)
                     v = [(p[0], p[1]) for p in v]
                     v = json.dumps(v)
                     self._current[k] = v

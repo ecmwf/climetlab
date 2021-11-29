@@ -188,7 +188,14 @@ def benchmark():
     df["server"] = df["url"].apply(url_to_server)
     df["speed"] = df["total"] / df["elapsed"] / (1024 * 1024)  # MB/s
     df["method"] = df["full_method"].apply(radix)
-    df["ratio"] = df.nparts / df.nblocks
+
+    df = df.rename(
+        dict(
+            size_parts="size_requested",
+            size_blocks="size_downloaded",
+        )
+    )
+    df["size_ratio"] = df["size_downloaded"] / df["size_requested"]
 
     path = f"climetlab_benchmark{run_id}.csv"
     df.to_csv(path)
