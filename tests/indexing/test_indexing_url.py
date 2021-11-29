@@ -30,6 +30,7 @@ CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 #  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
 
 
+@pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_indexed_s3(baseurl):
     PER_URL_INDEX = PerUrlIndex(
@@ -107,6 +108,7 @@ def check_grib_value(value, requested):
             return str(value) == str(requested)
 
 
+@pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_global_index(baseurl):
 
@@ -119,6 +121,7 @@ def test_global_index(baseurl):
     retrieve_and_check(index, request)
 
 
+@pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index(baseurl):
     index = PerUrlIndex(
