@@ -190,7 +190,7 @@ def benchmark():
     df["method"] = df["full_method"].apply(radix)
     df["ratio"] = df.nparts / df.nblocks
 
-    path = f"climetlab_benchmark{run_id}.json"
+    path = f"climetlab_benchmark{run_id}.csv"
     df.to_csv(path)
     # df.to_csv("climetlab_benchmark.csv")
     logfiles.append(path)
