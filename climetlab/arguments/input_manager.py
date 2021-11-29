@@ -59,6 +59,9 @@ class InputManager:
         for a in self.arguments:
             a.add_type_transformers(self._pipeline)
 
+        for a in self.arguments:
+            a.add_alias_transformers(self._pipeline)
+
         for availability in self.availabilities:
             transform = AvailabilityChecker(availability)
             self._pipeline.append(transform)
