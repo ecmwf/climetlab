@@ -1,7 +1,10 @@
 .. _normalize:
 
-Normalizer
-==========
+Normalizer decorator
+====================
+
+This section discuss the purpose of the `@normalize` decorator,
+and provides extensive docummentation on how to use it.
 
 Purpose
 -------
@@ -14,13 +17,14 @@ standard format.
 The python language offers the ability to accept a large
 range of input type on a unique function through `duck typing`.
 This leads to a better integration of the different objects
-at stake, for instance to use a ``xarray.Dataset`` as a list
-of dates.  TODO: elaborate on this.
+at stake, for instance using an object such as ``xarray.Dataset``
+or a ``pandas.DataFrame`` or ``pandas.Serie`` as input
+to provide a list of dates.
 
 
 CliMetLab offers predefined shortcuts to
 implement this. The short API aims to address 80% of
-the use cases using the ``@normalize_args`` decorator.
+the use cases using the ``@normalize`` decorator.
 The longer forms aims to tackle specific needs.
 
 Compare the following codes snippets:
