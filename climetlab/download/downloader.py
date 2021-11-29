@@ -57,18 +57,31 @@ class Downloader:
     def local_path(self):
         return None
 
-    def extension(self):
-        url_no_args = self.url.split("?")[0]
-        base = os.path.basename(url_no_args)
+    def extension(self, filename=None):
+        """Return extensions:
+        - from filename if not None.
+        - else from self.url
+        - else return ".unknonwn"
+        """
+        extensions = []
+        if filename:
+            extensions = self._extensions(filename)
+        if not extensions:
+            url_no_args = self.url.split("?")[0]
+            extensions = self._extensions(url_no_args)
+        if not extensions:
+            extensions.append(".unknown")
+        return "".join(reversed(extensions))
+
+    def _extensions(self, url_or_filename):
+        base = os.path.basename(url_or_filename)
         extensions = []
         while True:
             base, ext = os.path.splitext(base)
             if not ext:
                 break
             extensions.append(ext)
-        if not extensions:
-            extensions.append(".unknown")
-        return "".join(reversed(extensions))
+        return extensions
 
     def download(self, target):
         if os.path.exists(target):
