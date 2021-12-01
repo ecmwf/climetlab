@@ -24,7 +24,7 @@ def test_open_data():
         date=-2,
         stream="oper",
         type="fc",
-        param="167",
+        param="2t",
     )
     print(s.path)
 
