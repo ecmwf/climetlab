@@ -9,7 +9,6 @@
 
 from collections import defaultdict
 
-from climetlab.download.multipart import compress_parts
 from climetlab.utils.patterns import Pattern
 
 from .backends import IndexBackend, JsonIndexBackend
@@ -49,7 +48,7 @@ class GlobalIndex(Index):
             dic[url].append(parts)
 
         # and sort
-        dic = {url: compress_parts(sorted(parts)) for url, parts in dic.items()}
+        dic = {url: sorted(parts) for url, parts in dic.items()}
 
         urls_parts = [(k, v) for k, v in dic.items()]
 
@@ -125,7 +124,7 @@ class PerUrlIndex(Index):
                 dic[url].append(parts)
 
         # and sort
-        dic = {url: compress_parts(sorted(parts)) for url, parts in dic.items()}
+        dic = {url: sorted(parts) for url, parts in dic.items()}
 
         urls_parts = [(k, v) for k, v in dic.items()]
 

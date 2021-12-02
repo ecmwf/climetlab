@@ -10,14 +10,12 @@
 #
 
 import datetime
-import mimetypes
 import os
 import sys
 
 import pytest
 
 from climetlab import load_source
-from climetlab.download import canonical_extension
 from climetlab.testing import TEST_DATA_URL, climetlab_file
 
 
@@ -85,27 +83,6 @@ def test_url_source_3():
         "url",
         "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.nc",
     )
-
-
-def test_mimetypes():
-    assert mimetypes.guess_type("x.grib") == ("application/x-grib", None)
-    assert canonical_extension("x.grib") == ".grib"
-    assert canonical_extension("x.grib1") == ".grib"
-    assert canonical_extension("x.grib2") == ".grib"
-
-    assert mimetypes.guess_type("x.nc") == ("application/x-netcdf", None)
-    assert canonical_extension("x.nc") == ".nc"
-    assert canonical_extension("x.nc4") == ".nc"
-    assert canonical_extension("x.cdf") == ".nc"
-    assert canonical_extension("x.netcdf") == ".nc"
-
-
-def test_canonical_extension():
-    assert canonical_extension("x.tar") == ".tar"
-    assert canonical_extension("x.tgz") == ".tar.gz"
-    assert canonical_extension("x.foo") == ".foo"
-    assert canonical_extension("x.csv") == ".csv"
-    assert canonical_extension("x.csv.gz") == ".csv.gz"
 
 
 @pytest.mark.long_test

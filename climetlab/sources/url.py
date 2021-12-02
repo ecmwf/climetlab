@@ -10,9 +10,10 @@
 
 import logging
 
+from multiurl import Downloader
+
 from climetlab.core.settings import SETTINGS
 from climetlab.core.statistics import record_statistics
-from climetlab.download import get_downloader
 from climetlab.utils import tqdm
 from climetlab.utils.mirror import DEFAULT_MIRROR
 
@@ -64,7 +65,7 @@ class Url(FileSource):
         if mirror:
             url = mirror(url)
 
-        self.downloader = get_downloader(
+        self.downloader = Downloader(
             url,
             chunk_size=chunk_size,
             timeout=SETTINGS.get("url-download-timeout"),
@@ -75,6 +76,9 @@ class Url(FileSource):
             fake_headers=fake_headers,
             statistics_gatherer=record_statistics,
             progress_bar=progress_bar,
+            resume_transfers=True,
+            override_target_file=False,
+            download_file_extension=".download",
         )
 
         if extension and extension[0] != ".":

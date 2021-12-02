@@ -58,6 +58,7 @@ install_requires += [
     "cfgrib>=0.9.8.4",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
+    "multiurl>=0.0.6",
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
