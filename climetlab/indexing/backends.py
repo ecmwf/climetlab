@@ -10,17 +10,13 @@
 
 import json
 import os
-import pickle
 import sqlite3
-from datetime import datetime
 
 import requests
 from multiurl import robust
 
-import climetlab as cml
 from climetlab.core.caching import cache_file
-from climetlab.profiling import timer
-from climetlab.utils import download_and_cache, tqdm
+from climetlab.utils import tqdm
 
 
 class SqlJsonHelper:
@@ -41,13 +37,13 @@ class SqlJsonHelper:
         create_statement = f"""CREATE TABLE entries (
             offset  INTEGER,
             length  INTEGER,
-            {others} 
+            {others}
             );"""
         self.connection.execute(create_statement)
 
         commas = ",".join(["?" for _ in names])
         self.insert_statement = f"""INSERT INTO entries(
-                                           offset, length, {','.join(self.sql_names)}) 
+                                           offset, length, {','.join(self.sql_names)})
                                            VALUES(?,?,{commas});"""
 
     def to_sql_target(self, target):

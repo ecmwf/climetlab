@@ -72,12 +72,12 @@ def test_indexed_s3(baseurl):
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    parts = index.lookup_request(request)
+    # parts = index.lookup_request(request)
     print("range_method", range_method)
     print("REQUEST", request)
-    for url, p in parts:
-        total = len(index.get_backend(url).entries)
-        print(f"PARTS: {len(p)}/{total} parts in {url}")
+    #    for url, p in parts:
+    #        total = len(index.get_backend(url).entries)
+    #        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
     s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
