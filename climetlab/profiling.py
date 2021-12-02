@@ -22,6 +22,7 @@ PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))
 @contextmanager
 def timer(msg):
     start = time.time()
+    print(f"{msg}: Starting.")
     try:
         yield None
     finally:
