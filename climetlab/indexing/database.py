@@ -58,7 +58,8 @@ def create_table(target, names):
 
 
 class Database:
-    pass
+    def lookup(self, request):
+        raise NotImplementedError("")
 
 
 class SqlDatabase(Database):
