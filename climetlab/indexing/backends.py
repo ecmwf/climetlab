@@ -19,18 +19,32 @@ from climetlab.core.caching import cache_file
 from climetlab.utils import tqdm
 
 
-class SqlJsonHelper:
-    def __init__(self, filename):
-        self.filename = filename
-        self.connection = None
+class Database:
+    VERSION = 1
+
+    def __init__(self, url):
+        self._connection = None
+        self.url = url
+
+    @property
+    def connection(self):
+        if self._connection is not None:
+            return self._connection
+        path = cache_file(
+            "index",
+            self.to_sql_target,
+            self.url,
+            hash_extra=self.VERSION,
+            extension=".db",
+        )
+        self._connection = sqlite3.connect(path)
+        return self._connection
 
     def create_connection(self, target, names):
         if os.path.exists(target):
             os.unlink(target)
-        self.connection = sqlite3.connect(target)
+        self._connection = sqlite3.connect(target)
 
-        assert "offset" not in names
-        assert "length" not in names
         self.sql_names = [f"i_{n}" for n in names]
         others = ",".join([f"{n} TEXT" for n in self.sql_names])
 
@@ -39,22 +53,22 @@ class SqlJsonHelper:
             length  INTEGER,
             {others}
             );"""
-        self.connection.execute(create_statement)
+        self._connection.execute(create_statement)
 
         commas = ",".join(["?" for _ in names])
         self.insert_statement = f"""INSERT INTO entries(
                                            offset, length, {','.join(self.sql_names)})
                                            VALUES(?,?,{commas});"""
 
-    def to_sql_target(self, target):
+    def to_sql_target(self, target, ignore):
         count = 0
         size = None
         names = None
-        if os.path.exists(self.filename):
-            iterator = open(self.filename).readlines()
-            size = os.path.getsize(self.filename)
+        if os.path.exists(self.url):
+            iterator = open(self.url).readlines()
+            size = os.path.getsize(self.url)
         else:
-            r = robust(requests.get)(self.filename, stream=True)
+            r = robust(requests.get)(self.url, stream=True)
             r.raise_for_status()
             try:
                 size = int(r.headers.get("Content-Length"))
@@ -74,42 +88,23 @@ class SqlJsonHelper:
         )
         for line in pbar:
             entry = json.loads(line)
-            if self.connection is None:
+            if self._connection is None:
                 names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
                 self.create_connection(target, names)
             assert names is not None, names
             _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
             assert _names == names, (names, _names)
             values = [entry["_offset"], entry["_length"]] + [entry[n] for n in names]
-            self.connection.execute(self.insert_statement, tuple(values))
+            self._connection.execute(self.insert_statement, tuple(values))
             count += 1
             pbar.update(len(line) + 1)
 
+        # index is disabled because it is long to create.
         # for n in self.sql_names:
-        #     self.connection.execute(f"""CREATE INDEX {n}_index ON entries ({n});""")
-        self.connection.execute("COMMIT;")
-
-
-def json_to_sql(target, filename):
-    helper = SqlJsonHelper(filename)
-    helper.to_sql_target(target)
-
-
-class IndexBackend:
-    pass
-
-
-class JsonIndexBackend(IndexBackend):
-    def __init__(self, url):
-        # if os.path.exists(url):
-        #    path = url
-        # else:
-        #    path = download_and_cache(url)
-        path = cache_file("index", json_to_sql, url, extension=".db")
-        self.connection = sqlite3.connect(path)
+        #     self._connection.execute(f"""CREATE INDEX {n}_index ON entries ({n});""")
+        self._connection.execute("COMMIT;")
 
     def lookup(self, request):
-        parts = []
         conditions = []
         for k, b in request.items():
             if isinstance(b, (list, tuple)):
@@ -120,7 +115,22 @@ class JsonIndexBackend(IndexBackend):
                 conditions.append(f"i_{k} IN ({w})")
             else:
                 conditions.append(f"i_{k}='{b}'")
+
         statement = f"SELECT offset,length FROM entries WHERE {' AND '.join(conditions)} ORDER BY offset;"
+
+        parts = []
         for offset, length in self.connection.execute(statement):
             parts.append((None, (offset, length)))
         return parts
+
+
+class IndexBackend:
+    pass
+
+
+class JsonIndexBackend(IndexBackend):
+    def __init__(self, url):
+        self.db = Database(url=url)
+
+    def lookup(self, request):
+        return self.db.lookup(request)
