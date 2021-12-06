@@ -5,7 +5,7 @@
      This part of CliMetLab is still a work in progress. Documentation and code behaviour will change.
 
 
-Readers plugins
-===============
+How to create a reader plugins
+==============================
 
 TODO

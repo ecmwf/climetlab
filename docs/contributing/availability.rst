@@ -1,7 +1,7 @@
 .. _normalize:
 
-Availability
-============
+Availability (decorator)
+========================
 
 .. todo::
 

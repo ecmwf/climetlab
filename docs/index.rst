@@ -73,7 +73,7 @@ Documentation
    guide/pluginlist
    guide/cmdline
 
-**Contributor Guide**
+**Plugin Developer Guide**
 
 * :doc:`contributing/overview`
 * :doc:`contributing/datasets`
@@ -82,12 +82,11 @@ Documentation
 * :doc:`contributing/availability`
 * :doc:`contributing/readers`
 * :doc:`contributing/plotting`
-* :doc:`contributing/todolist`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Contributor Guide
+   :caption: Plugin Developer Guide
 
    contributing/overview
    contributing/datasets
@@ -96,13 +95,12 @@ Documentation
    contributing/availability
    contributing/readers
    contributing/plotting
-   contributing/todolist
 
 
-
-**Developer Guide**
+**CliMetLab Developer Guide**
 
 * :doc:`developer/overview`
+* :doc:`developer/todolist`
 * :doc:`developer/architecture`
 * :doc:`developer/datasets`
 * :doc:`developer/sources`
@@ -114,9 +112,10 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Developer Guide
+   :caption: CliMetLab Developer Guide
 
    developer/overview
+   developer/todolist
    developer/architecture
    developer/datasets
    developer/sources
@@ -124,17 +123,6 @@ Documentation
    developer/plotting
    developer/gallery
    developer/plugins
-
-**Reference**
-
-* :doc:`developer/api`
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Reference
-
-   developer/api
 
 
 License
