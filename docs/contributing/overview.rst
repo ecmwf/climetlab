@@ -15,7 +15,7 @@ Overview
   plugins is **mostly** stable and already usable.
 
 The **plugins developer guide** part of the CliMetLab documentation
-describes how to create plugins (or yaml files) to add
+describes how to create plugins (or YAML files) to add
 data and functionalities to CliMetLab, to make it available to the end-users.
 
 Sharing code using plugins

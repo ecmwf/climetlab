@@ -11,7 +11,7 @@ split as follow:
 - **Getting started**: General introduction with the main idea described there.
 - *User guide*: This is the part you should read if you are using CliMetLab
   and plugins developed by others.
-- *Contributor guide*: describes how to create plugins (or yaml files) to add
+- *Contributor guide*: describes how to create plugins (or YAML files) to add
   data and functionalities to CliMetLab, to make it available to the users
   above. In order to avoid rewriting the same code over and over, consider
   distributing it, the design of CliMetLab allows to do this with plugins.

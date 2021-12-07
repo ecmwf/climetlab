@@ -14,7 +14,7 @@ dedicated to processing the arguments of the functions
 or methods to check their value and normalize it to a
 standard format.
 
-The python language offers the ability to accept a large
+The Python language offers the ability to accept a large
 range of input type on a unique function through `duck typing`.
 This leads to a better integration of the different objects
 at stake, for instance using an object such as ``xarray.Dataset``
@@ -33,12 +33,12 @@ Compare the following codes snippets:
 .. dropdown:: Boilerplate code
     :open:
 
-    Tedious and error-prone python code is needed to check
+    Tedious and error-prone Python code is needed to check
     and normalize the values of the function arguments given
     by the user.
-    
+
     .. code-block:: python
-    
+
         def __init__(self, date, option):
             if date is None:
               date = DEFAULT_DATE_LIST
@@ -100,7 +100,7 @@ How to use
 
 - How to ensure that the value in the function is a list?
     Add the keyword argument `multiple=True`. Not available for ``bounding-box``.
-  
+
 - How to ensure that the value in the function is not a list?
     Add the keyword argument `multiple=False`.
 
@@ -118,7 +118,7 @@ How to use
         @normalize( "x", aliases={"one": 1})
         def f(x):
             return x
-        
+
     .. code-block:: python
 
         from climetlab.decorator import normalize

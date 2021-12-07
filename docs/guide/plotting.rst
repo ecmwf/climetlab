@@ -21,7 +21,7 @@ See also : https://confluence.ecmwf.int/display/MAGP/Reference+guide
 Projections
 -----------
 
-.. module-output:: file_content data/projections/global.yaml
+.. module-output:: file_content data/projections/global.YAML
 
 See `mmap <magics-mmap>`_.
 

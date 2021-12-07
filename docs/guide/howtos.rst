@@ -5,7 +5,7 @@ Howtos
 
   Add more standard recipes.
 
-How to install climetlab?
+How to install CliMetLab?
 -------------------------
 
 .. code-block:: bash
