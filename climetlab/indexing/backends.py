@@ -8,10 +8,7 @@
 #
 
 
-import json
-import os
-
-import climetlab as cml
+from .database import SqlDatabase
 
 
 class IndexBackend:
@@ -19,51 +16,8 @@ class IndexBackend:
 
 
 class JsonIndexBackend(IndexBackend):
-    def __init__(self, filename):
-        self._entries = None
-        self.filename = filename
-
-    @property
-    def entries(self):
-        if self._entries is not None:
-            return self._entries
-
-        self._entries = []
-
-        if os.path.exists(self.filename):
-            self.read_file_index(self.filename)
-            return self._entries
-
-        if self.filename.startswith("http://") or self.filename.startswith("https://"):
-            path = cml.load_source("url", self.filename).path
-            self.read_file_index(path)
-            return self._entries
-
-        raise Exception(f"Cannot load index data from {self.filename}")
-
-    def read_file_index(self, filename):
-        with open(filename, "r") as f:
-            lines = f.readlines()
-        for line in lines:
-            entry = json.loads(line)
-            self._entries.append(entry)
-
-    def match(self, entry, request):
-        for k, v in request.items():
-            if isinstance(v, (tuple, list)):
-                if not entry[k] in v:
-                    return False
-            else:
-                if entry[k] != v:
-                    return False
-        return True
+    def __init__(self, url):
+        self.db = SqlDatabase(url=url)
 
     def lookup(self, request):
-        parts = []
-        for e in self.entries:
-            if self.match(e, request):
-                path = e.get("_path", None)
-                offset = int(e["_offset"])
-                length = int(e["_length"])
-                parts.append((path, [offset, length]))
-        return parts
+        return self.db.lookup(request)

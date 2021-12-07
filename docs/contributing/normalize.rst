@@ -1,7 +1,7 @@
 .. _normalize:
 
-Normalizer decorator
-====================
+Normalize (decorator)
+=====================
 
 This section discuss the purpose of the `@normalize` decorator,
 show how to use it and provides reference documentation.

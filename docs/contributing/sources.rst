@@ -1,7 +1,7 @@
 .. _sources:
 
-Data sources plugins
-====================
+How to create a data source plugin
+==================================
 
 A :ref:`Data source <data-sources>` is a Python class that accesses data from a
 given location. CliMetLab has build-in sources (the most common being the "url"

@@ -94,16 +94,15 @@ class Url(FileSource):
         if force is None:
             force = self.out_of_date
 
-        def download(target, url):
+        def download(target, _):
             self.downloader.download(target)
             return self.downloader.cache_data()
 
         self.path = self.cache_file(
             download,
-            url,
+            dict(url=url, parts=parts),
             extension=extension,
             force=force,
-            hash_extra=parts,
         )
 
     def out_of_date(self, url, path, cache_data):

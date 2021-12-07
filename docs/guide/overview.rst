@@ -1,9 +1,9 @@
 Overview
 ========
 
-*"CliMetLab provides a common place to share code used in the Weather and
-Climate community to do preprocess data, plot it, and include additional
-tools, especially for machine leaning purposes."*
+  *"CliMetLab provides a common place to share code used in the Weather and
+  Climate community to preprocess data, plot it, and include additional
+  tools, especially for machine leaning purposes."*
 
 The is the **user guide** part of the CliMetLab documentation, which is
 split as follow:

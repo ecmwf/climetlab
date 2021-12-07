@@ -72,12 +72,12 @@ def test_indexed_s3(baseurl):
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    parts = index.lookup_request(request)
+    # parts = index.lookup_request(request)
     print("range_method", range_method)
     print("REQUEST", request)
-    for url, p in parts:
-        total = len(index.get_backend(url).entries)
-        print(f"PARTS: {len(p)}/{total} parts in {url}")
+    #    for url, p in parts:
+    #        total = len(index.get_backend(url).entries)
+    #        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
     s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
@@ -129,6 +129,20 @@ def test_per_url_index(baseurl):
     )
     request = dict(param="r")
     retrieve_and_check(index, request)
+
+
+@pytest.mark.long_test
+# @pytest.mark.parametrize("baseurl", CML_BASEURL_S3)
+def test_per_url_index_2():
+    baseurl = CML_BASEURL_S3
+    index = PerUrlIndex(
+        f"{baseurl}/test-data/big.grib",
+    )
+    request = dict(param="cin", date="20211125", step="6", number=["1", "3"])
+    retrieve_and_check(index, request)
+
+    # request = dict(param="cin", date="20211125", step="0", number="1")
+    # retrieve_and_check(index, request)
 
 
 def dev():
