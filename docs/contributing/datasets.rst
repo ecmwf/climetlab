@@ -37,7 +37,7 @@ the end-user can use this external plugin to access the class
 This is exhaustively described in the
 `Python reference documentation <https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/>`_
 and here are more details about
-:ref:`how on CliMetLab uses it.<plugins-reference>`.
+:ref:`how on CliMetLab uses it<plugins-reference>`.
 
 .. code-block:: python
   :emphasize-lines: 6-8
@@ -65,8 +65,7 @@ has a predefined dataset and is ready to be shared on github and
 distributed.
 
 
-Here is how to use it,
-(docummentation is in its `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
+For detailed information, please see its `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
 
 .. code-block:: bash
 
