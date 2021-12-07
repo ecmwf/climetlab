@@ -8,8 +8,8 @@ is a object created using ``cml.load_dataset(name, *args)`` with
 the appropriate name and arguments, which provides data.
 
 From the plugin's developer perspective, a **Dataset** is a Python class
-that inherits from the climetlab class ``climetlab.Dataset`` where
-Python code is located to provide specific helper functions
+that inherits from the CliMetLab class ``climetlab.Dataset``. This class
+contains the Python code providing specific helper functions
 and curated access to the data. Dataset can also be defined
 from :ref:`yaml files <dataset-yaml>` if they have no specific
 Python code and rely on (yet to defined) standard conventions.
@@ -24,7 +24,7 @@ And more examples can be found in the non-exhaustive
 With a Python package
 ---------------------
 
-Here is an minimal example of pip package defining a dataset plugin :
+Here is a minimal example of pip package defining a dataset plugin :
 https://github.com/ecmwf/climetlab-demo-dataset
 
 The plugin mechanism relies on using `entry_points`.
@@ -57,15 +57,15 @@ and here are more details about
 With a Python package (automated)
 ---------------------------------
 
-While creating manually the package from the documentation and from
+While creating the package manually from the documentation and from
 the example above is possible, there is also a semi-automated way relying
 on `cookiecutter <https://cookiecutter.readthedocs.io/en/latest/>`_
 to generate of a pip package from a template. The generated package
-has a predefined dataset and is ready to be shared on github and
+has a predefined dataset and is ready to be shared on Github and
 distributed.
 
 
-For detailed information, please see its `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
+For detailed information, please see the `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
 
 .. code-block:: bash
 
@@ -83,9 +83,10 @@ For detailed information, please see its `README file <https://github.com/ecmwf-
 With a YAML file
 ----------------
 
-Simple datasets are datasets that rely on existing built-in :ref:`data
-source <data-sources>`, and cannot be parametrised by users. This
-can be for example a single file downloadable from a URL.
+YAML file definitions can be used for simple datasets which rely on
+existing built-in :ref:`data source <data-sources>`, and cannot be
+as flexible to end-users. The following example shows how to use a
+source when the data consists of a single file downloadable from a URL.
 
 .. code-block:: yaml
 
@@ -100,9 +101,9 @@ can be for example a single file downloadable from a URL.
 
 
   .. todo::
-    Document the yaml file way to create dataset.
+    Document the YAML file way to create a dataset.
     Choose a good way to implement the workflow.
   
-   - Create a dataset yml file.
+   - Create a dataset YAML file.
    - distribute it.
 
