@@ -59,14 +59,14 @@ Compare the following codes snippets:
 .. dropdown:: Using CliMetLab short form API
     :open:
 
-    The decorator `@normalize_args` provides generic default behaviour
+    The decorator `@normalize` provides generic default behaviour
     to handle domain specific arguments (for dates, meteorological and climate
     parameters, bounding boxes, etc.)
 
     .. code-block:: python
 
-        from climetlab.normalize import normalize_args
-        @normalize_args(date="date(%Y%m%d)", option=["foo", "bar"])
+        from climetlab.decorator import normalize
+        @normalizes("date","date(%Y%m%d)", option=["foo", "bar"])
         def __init__(self, date, option):
             do_suff(date, option)
 
@@ -115,7 +115,7 @@ How to use
 
         from climetlab.decorator import normalize
 
-        @normalize( "x", aliases={"one": 1})
+        @normalize("x", aliases={"one": 1})
         def f(x):
             return x
         
@@ -127,7 +127,7 @@ How to use
             april=["20210401", "20210402", "20210403"],
             june=["20210610", "20210611"],
         )
-        @normalize( "x", "date-list(YYYYMMDD)", aliases=DATES)
+        @normalize("x", "date-list(YYYYMMDD)", aliases=DATES)
         def f(x):
             return x
 
@@ -142,14 +142,14 @@ Reference
 
 ``@normalize(name, values, aliases={}, multiple=None, **kwargs)``
 
-The ``@normalize`` decorator the arguments provided when calling the
+The ``@normalize`` decorator transforms the arguments provided when calling
 the decorated function, modifies it if needed, and provides a normalised
 value to the function. It ensures that the value in the function is what
 is expected to be processed by the function.
 
 
 values
-    If `values` is a list, the list of allowed values for the parameter.
+    If `values` is a list, the list provides allowed values for the parameter.
     If `values` is a string, it is expected to be a shortcut similar to
     "type(options)" where `type` is one of the following: 'date', 'date-list',
     'bounding-box'.

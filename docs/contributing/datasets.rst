@@ -9,10 +9,10 @@ the appropriate name and arguments, which provides data.
 
 From the plugin's developer perspective, a **Dataset** is a Python class
 that inherits from the climetlab class ``climetlab.Dataset`` where
-python code is located to provide specific helper functions
+Python code is located to provide specific helper functions
 and curated access to the data. Dataset can also be defined
 from :ref:`yaml files <dataset-yaml>` if they have no specific
-python code and rely on (yet to defined) standard conventions.
+Python code and rely on (yet to defined) standard conventions.
 
 CliMetLab has build-in example datasets for demo purposes.
 And more examples can be found in the non-exhaustive
@@ -21,7 +21,7 @@ And more examples can be found in the non-exhaustive
 
 .. _dataset-pip:
 
-With a python package
+With a Python package
 ---------------------
 
 Here is an minimal example of pip package defining a dataset plugin :
@@ -37,7 +37,7 @@ the end-user can use this external plugin to access the class
 This is exhaustively described in the
 `Python reference documentation <https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/>`_
 and here are more details about
-:ref:`how on CliMetLab uses it.<plugins-reference>`.
+:ref:`how on CliMetLab uses it<plugins-reference>`.
 
 .. code-block:: python
   :emphasize-lines: 6-8
@@ -54,7 +54,7 @@ and here are more details about
     )
 
 
-With a python package (automated)
+With a Python package (automated)
 ---------------------------------
 
 While creating manually the package from the documentation and from
@@ -65,8 +65,7 @@ has a predefined dataset and is ready to be shared on github and
 distributed.
 
 
-Here is how to use it,
-(docummentation is in its `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
+For detailed information, please see its `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
 
 .. code-block:: bash
 
@@ -81,7 +80,7 @@ Here is how to use it,
 
 .. _dataset-yaml:
 
-With a Yaml file
+With a YAML file
 ----------------
 
 Simple datasets are datasets that rely on existing built-in :ref:`data
