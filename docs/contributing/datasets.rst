@@ -60,7 +60,7 @@ With a Python package (automated)
 While creating the package manually from the documentation and from
 the example above is possible, there is also a semi-automated way relying
 on `cookiecutter <https://cookiecutter.readthedocs.io/en/latest/>`_
-to generate of a pip package from a template. The generated package
+to generate a pip package from a template. The generated package
 has a predefined dataset and is ready to be shared on Github and
 distributed.
 
