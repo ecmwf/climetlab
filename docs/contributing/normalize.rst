@@ -3,8 +3,8 @@
 Normalize (decorator)
 =====================
 
-This section discuss the purpose of the `@normalize` decorator,
-show how to use it and provides reference documentation.
+This section discusses the purpose of the `@normalize` decorator,
+shows how to use it and provides reference documentation.
 
 Purpose
 -------
@@ -16,7 +16,7 @@ standard format.
 
 The python language offers the ability to accept a large
 range of input type on a unique function through `duck typing`.
-This leads to a better integration of the different objects
+This leads to better integration of the different objects
 at stake, for instance using an object such as ``xarray.Dataset``
 or a ``pandas.DataFrame`` or ``pandas.Serie`` as input
 to provide a list of dates.
@@ -25,7 +25,7 @@ to provide a list of dates.
 CliMetLab offers predefined shortcuts to
 implement this. The short API aims to address 80% of
 the use cases using the ``@normalize`` decorator.
-The longer forms aims to tackle specific needs.
+The longer form aims to tackle specific needs.
 
 Compare the following codes snippets:
 
@@ -36,9 +36,9 @@ Compare the following codes snippets:
     Tedious and error-prone python code is needed to check
     and normalize the values of the function arguments given
     by the user.
-    
+
     .. code-block:: python
-    
+
         def __init__(self, date, option):
             if date is None:
               date = DEFAULT_DATE_LIST
@@ -60,13 +60,14 @@ Compare the following codes snippets:
     :open:
 
     The decorator `@normalize` provides generic default behaviour
-    to handle domain specific arguments (for dates, meteorological and climate
+    to handle domain-specific arguments (for dates, meteorological and climate
     parameters, bounding boxes, etc.)
 
     .. code-block:: python
 
         from climetlab.decorator import normalize
-        @normalizes("date","date(%Y%m%d)", option=["foo", "bar"])
+        @normalize("date","date(%Y%m%d)")
+        @normalize("option",["foo", "bar"])
         def __init__(self, date, option):
             do_suff(date, option)
 
@@ -76,7 +77,7 @@ Compare the following codes snippets:
 How to use
 ----------
 
-- How to ensure that the value in the function belong to a list ?
+- How to ensure that the value in the function belongs to a list?
 
     .. code-block:: python
 
@@ -99,17 +100,24 @@ How to use
             print(option)
 
 - How to ensure that the value in the function is a list?
-    Add the keyword argument `multiple=True`. Not available for ``bounding-box``.
-  
+
+   Add the keyword argument ``multiple=True``.
+    Not available for ``bounding-box``.
+
 - How to ensure that the value in the function is not a list?
-    Add the keyword argument `multiple=False`.
+
+    Add the keyword argument ``multiple=False``.
 
 - How to accept list or non-list as input?
-    Add the keyword argument `multiple=None`. Not available for ``bounding-box``.
+
+    Add the keyword argument ``multiple=None``.
+    Not available for ``bounding-box``.
 
 
-- How to add alias/shortcuts/special values to be replaced by actual predefined values?
-    Use the keyword argument `alias` and provide a dictionary.
+- How to add alias/shortcuts/special values to be replaced by actual
+  predefined values?
+
+    Use the keyword argument ``alias`` and provide a dictionary.
 
     .. code-block:: python
 
@@ -144,23 +152,24 @@ Reference
 
 The ``@normalize`` decorator transforms the arguments provided when calling
 the decorated function, modifies it if needed, and provides a normalised
-value to the function. It ensures that the value in the function is what
+value to the function. It ensures that the value of the argument is what
 is expected to be processed by the function.
 
 
 values
     If `values` is a list, the list provides allowed values for the parameter.
     If `values` is a string, it is expected to be a shortcut similar to
-    "type(options)" where `type` is one of the following: 'date', 'date-list',
-    'bounding-box'.
-    These shorts cut aims at providing a easy way to define many options in
+    `"type(options)"` where `type` is one of the following: ``"date"``, ``"date-list"``,
+    ``"bounding-box"``.
+    These shorts cut aims at providing an easy way to define many options in
     a more concise manner.
-    Example: "date-list(%Y%m%d)"
+
+    Example: ``"date-list(%Y%m%d)"``
 
 type
     Type of value expected by the function. The type should be one of the
-    following: 'str', 'int', 'float', 'date', 'date-list', 'str-list',
-    'int-list', 'float-list'.
+    following: ``"str"``, ``"int"``, ``"float"``, ``"date"``, ``"date-list"``,
+    ``"str-list"``, ``"int-list"``, ``"float-list"``.
 
 
 format
@@ -174,8 +183,8 @@ format
 convention
     Experimental. To be documented.
 
-aliases={}
-    Replace a value by another using a dictionary of aliases.
+aliases
+    Replace a value with another using a dictionary of aliases.
 
 multiple
     The keyword argument `multiple` is not available for ``bounding-box``.
