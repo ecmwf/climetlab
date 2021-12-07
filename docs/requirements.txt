@@ -11,3 +11,4 @@ markdown
 eccodes
 magics
 ecmwflibs
+termcolor
