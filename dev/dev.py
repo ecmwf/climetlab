@@ -7,7 +7,7 @@ def build_netcdf():
     )
     ds = source.to_xarray()
     ds.to_netcdf('test.nc')
-#build_netcdf()
+build_netcdf()
 
 
 import climetlab as cml
@@ -15,4 +15,5 @@ import xarray as xr
 ds = xr.open_dataset('test.nc')
 print(ds)
 
+# works on linux,  fails on windows
 cml.plot_map(ds, path='test.png')
