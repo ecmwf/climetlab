@@ -66,10 +66,10 @@ jobs:
           pip install -e .
           pip freeze
 
-      - run: df .
-        shell: bash
-
-      - run: climetlab df .
+      - name: climetlab df
+        run: |
+          df .
+          climetlab df .
 
       - run: climetlab versions
 
@@ -80,7 +80,7 @@ jobs:
           pip install pytest pytest-cov
           pip freeze
 
-      - name: Tests
+      - name: Run short tests
         run: |
           # -E flag is defined in conftest.py
-          pytest --durations=0 -vv -E short
+          pytest --durations=10 -vv -E short
