@@ -103,7 +103,7 @@ class normalize(Decorator):
         self.name = name
 
         if isinstance(values, str):
-            assert (
+            assert 
                 kwargs.get("type") is None
             ), f"Cannot mix values={values} and type={kwargs.get('type')}"
             if "(" in values:

@@ -175,7 +175,7 @@ convention
     Experimental. To be documented.
 
 aliases={}
-    Replace a value by another using a dictionary of aliases.
+    Replace a value with another using a dictionary of aliases.
 
 multiple
     The keyword argument `multiple` is not available for ``bounding-box``.
