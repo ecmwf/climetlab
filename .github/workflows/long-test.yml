@@ -32,6 +32,26 @@ jobs:
       - run: black --check .
       - run: flake8 .
 
+  test_build_doc:
+    name: Test building documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages needed to build the documentation
+        run: |
+          pip install sphinx
+          pip install -r docs/requirements.txt
+          sudo apt-get install pandoc
+          pip freeze
+
+      - name: Documentation
+        run: |
+          make clean
+          make html
+          # make linkcheck (don't run yet)
+        working-directory: docs
+
   checks:
     strategy:
       fail-fast: true
@@ -91,22 +111,6 @@ jobs:
       - name: Tests notebooks
         run: |
           pytest --durations=0 -E long tests/documentation/test_notebooks.py
-
-      - name: Install packages needed to build the documentation
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          pip install sphinx
-          pip install -r docs/requirements.txt
-          sudo apt-get install pandoc
-          pip freeze
-
-      - name: Documentation
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          make clean
-          make html
-          # make linkcheck (don't run yet)
-        working-directory: docs
 
       - name: Re-install packaging without -e
         run: |
