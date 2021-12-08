@@ -4,7 +4,7 @@ Installing
 ==========
 
 .. warning::
-  CliMetLab requires Python 3.6 or above. Depending on your installation
+  CliMetLab requires Python 3.7 or above. Depending on your installation,
   you may need to substitute ``pip`` to ``pip3`` in the examples below.
 
 
@@ -20,9 +20,12 @@ To install CliMetLab, simply run the following command:
 Conda install
 -------------
 
-No conda package has been created yet. `pip install climetlab` can be used in a conda environment.
+No conda package has been created yet.
+`pip install climetlab` can be used in a conda environment.
 
-Mixing ``pip`` and ``conda`` could create some dependencies issues, we recommend installing as many dependencies as possible with conda, then install CliMetLab with ``pip``, `as recommended by the anaconda team <https://www.anaconda.com/blog/using-pip-in-a-conda-environment>`_.
+Mixing ``pip`` and ``conda`` could create some dependencies issues,
+we recommend installing as many dependencies as possible with conda,
+then install CliMetLab with ``pip``, `as recommended by the anaconda team <https://www.anaconda.com/blog/using-pip-in-a-conda-environment>`_.
 
 .. todo::
 
@@ -43,7 +46,7 @@ If the installation fails with the following error:
     Could not find a version that satisfies the requirement ecmwflibs>=0.0.90 (from climetlab) (from versions: )
   No matching distribution found for ecmwflibs>=x.x.x (from climetlab)
 
-you will need to make sure that you are using the latest version of ``pip``:
+you will need to make sure that you are using the latest version of ``pip`` (>=21.0.0):
 
 .. code-block:: bash
 
@@ -58,8 +61,8 @@ If the installation fails with the following error:
 
   AttributeError: module 'enum' has no attribute 'IntFlag'
 
-this means that there is an old version of of the ``enum`` package on
-your system, that needs to be removed:
+This means that there is an old version of of the ``enum`` package on
+your system that needs to be removed:
 
 .. code-block:: bash
 
