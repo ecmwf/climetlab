@@ -90,7 +90,7 @@ How to use
 - How to ensure that the value in the function is a list?
 
    Add the keyword argument ``multiple=True``.
-    Not available for ``bounding-box``.
+   Not available for ``bounding-box``.
 
 - How to ensure that the value in the function is not a list?
 

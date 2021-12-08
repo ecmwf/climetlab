@@ -7,3 +7,6 @@ DATES = dict(
 @normalize("x", "date-list(YYYYMMDD)", aliases=DATES)
 def f(x):
     return x
+
+assert f("2021-06-10") == ["20210610"]
+assert f("june") == ["20210610", "20210611"]
