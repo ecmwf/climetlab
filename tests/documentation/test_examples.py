@@ -23,7 +23,7 @@ IGNORE = [
     "settings-2-set.py",
 ]
 
-EXAMPLES = climetlab_file("docs", "examples")
+EXAMPLES = climetlab_file("docs")
 
 
 def example_list():

@@ -65,7 +65,7 @@ Compare the following codes snippets:
 
     .. code-block:: python
 
-        from climetlab.decorator import normalize
+        from climetlab.decorators import normalize
         @normalize("date","date(%Y%m%d)")
         @normalize("option",["foo", "bar"])
         def __init__(self, date, option):
@@ -79,25 +79,13 @@ How to use
 
 - How to ensure that the value in the function belongs to a list?
 
-    .. code-block:: python
-
-        from climetlab.decorator import normalize
-
-        @normalize(param, ["tp", "gh"])
-        def f(self, param):
-            print(param)
+    .. literalinclude:: normalize-example-enum.py
 
 
 - How to ensure that the value in the function is a date
-  with format "YYYY-MM-DD"?
+  with this format "YYYY-MM-DD"?
 
-    .. code-block:: python
-
-        from climetlab.decorator import normalize
-
-        @normalize(option, "date(%Y-%m-%d)""
-        def f(self, option):
-            print(option)
+    .. literalinclude:: normalize-example-date.py
 
 - How to ensure that the value in the function is a list?
 
@@ -119,25 +107,9 @@ How to use
 
     Use the keyword argument ``alias`` and provide a dictionary.
 
-    .. code-block:: python
+    .. literalinclude:: normalize-example-alias.py
 
-        from climetlab.decorator import normalize
-
-        @normalize("x", aliases={"one": 1})
-        def f(x):
-            return x
-        
-    .. code-block:: python
-
-        from climetlab.decorator import normalize
-
-        DATES = dict(
-            april=["20210401", "20210402", "20210403"],
-            june=["20210610", "20210611"],
-        )
-        @normalize("x", "date-list(YYYYMMDD)", aliases=DATES)
-        def f(x):
-            return x
+    .. literalinclude:: normalize-example-alias-2.py
 
 
 Reference
