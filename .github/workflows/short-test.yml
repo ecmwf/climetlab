@@ -30,6 +30,26 @@ jobs:
       - run: black --check .
       - run: flake8 .
 
+  test_build_doc:
+    name: Test building documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages needed to build the documentation
+        run: |
+          pip install sphinx
+          pip install -r docs/requirements.txt
+          sudo apt-get install pandoc
+          pip freeze
+
+      - name: Documentation
+        run: |
+          make clean
+          make html
+          # make linkcheck (don't run yet)
+        working-directory: docs
+
   checks:
     strategy:
       fail-fast: false
@@ -66,10 +86,10 @@ jobs:
           pip install -e .
           pip freeze
 
-      - run: df .
-        shell: bash
-
-      - run: climetlab df .
+      - name: climetlab df
+        run: |
+          df .
+          climetlab df .
 
       - run: climetlab versions
 
@@ -80,7 +100,7 @@ jobs:
           pip install pytest pytest-cov
           pip freeze
 
-      - name: Tests
+      - name: Run short tests
         run: |
           # -E flag is defined in conftest.py
-          pytest --durations=0 -vv -E short
+          pytest --durations=10 -vv -E short

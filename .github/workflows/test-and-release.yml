@@ -40,6 +40,27 @@ jobs:
       - run: black --check .
       - run: flake8 .
 
+  test_build_doc:
+    if: startsWith(github.ref, 'refs/tags/')
+    name: Test building documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages needed to build the documentation
+        run: |
+          pip install sphinx
+          pip install -r docs/requirements.txt
+          sudo apt-get install pandoc
+          pip freeze
+
+      - name: Documentation
+        run: |
+          make clean
+          make html
+          # make linkcheck (don't run yet)
+        working-directory: docs
+
   checks:
     if: startsWith(github.ref, 'refs/tags/')
     strategy:
@@ -50,7 +71,7 @@ jobs:
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
-    needs: quality
+    needs: [quality, test_build_doc]
 
     steps:
       - uses: actions/checkout@v2
@@ -101,22 +122,6 @@ jobs:
       - name: Tests notebooks
         run: |
           pytest --durations=0 -E release tests/documentation/test_notebooks.py
-
-      - name: Install packages needed to build the documentation
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          pip install sphinx
-          pip install -r docs/requirements.txt
-          sudo apt-get install pandoc
-          pip freeze
-
-      - name: Documentation
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          make clean
-          make html
-          # make linkcheck (don't run yet)
-        working-directory: docs
 
       - name: Re-install packaging without -e
         run: |
