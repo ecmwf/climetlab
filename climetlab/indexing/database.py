@@ -133,7 +133,6 @@ class SqlDatabase(Database):
         connection.execute("COMMIT;")
         connection.close()
 
-
     def lookup(self, request):
         conditions = []
         for k, b in request.items():
