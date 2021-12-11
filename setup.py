@@ -59,7 +59,6 @@ install_requires += [
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "multiurl>=0.0.6",
-    "ecmwf.maps",
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
