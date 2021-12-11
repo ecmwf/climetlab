@@ -11,6 +11,8 @@
 
 import os
 
+import pytest
+
 from climetlab.indexing.backends import JsonIndexBackend
 
 index_jsonl = os.path.join(os.path.dirname(__file__), "index.jsonl")
@@ -44,8 +46,12 @@ REQUEST_2 = {
 }
 
 
-def test_indexing_json_1():
-    backend = JsonIndexBackend(index_jsonl)
+@pytest.fixture
+def backend():
+    return JsonIndexBackend(index_jsonl)
+
+
+def test_indexing_json_1(backend):
     parts = backend.lookup(REQUEST_1)
     assert len(parts) == 1
     assert parts[0][0] is None
@@ -53,8 +59,7 @@ def test_indexing_json_1():
     assert parts[0][1][1] == 23358
 
 
-def test_indexing_json_2():
-    backend = JsonIndexBackend(index_jsonl)
+def test_indexing_json_2(backend):
     parts = backend.lookup(REQUEST_2)
     assert len(parts) == 1
 
