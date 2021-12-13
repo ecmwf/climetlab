@@ -64,7 +64,7 @@ class Database:
 
 
 class SqlDatabase(Database):
-    VERSION = 1
+    VERSION = 2
 
     def __init__(
         self,
