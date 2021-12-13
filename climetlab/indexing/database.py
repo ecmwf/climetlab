@@ -121,15 +121,16 @@ class SqlDatabase(Database):
             # _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
             # assert _names == names, (names, _names)
 
-            values = [entry.get("_path", None), entry["_offset"], entry["_length"]] + [entry[n] for n in names]
+            values = [entry.get("_path", None), entry["_offset"], entry["_length"]] + [
+                entry[n] for n in names
+            ]
             connection.execute(insert_statement, tuple(values))
 
             count += 1
             pbar.update(len(line) + 1)
 
-#        connection.execute(f"CREATE INDEX path_index ON entries (path);")
-
         if self.create_index:
+            # connection.execute(f"CREATE INDEX path_index ON entries (path);")
             for n in sql_names:
                 connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")
 
