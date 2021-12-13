@@ -44,6 +44,7 @@ def create_table(target, names):
     others = ",".join([f"{n} TEXT" for n in sql_names])
 
     create_statement = f"""CREATE TABLE entries (
+        path    TEXT,
         offset  INTEGER,
         length  INTEGER,
         {others}
@@ -52,8 +53,8 @@ def create_table(target, names):
 
     commas = ",".join(["?" for _ in names])
     insert_statement = f"""INSERT INTO entries(
-                                       offset, length, {','.join(sql_names)})
-                                       VALUES(?,?,{commas});"""
+                                       path, offset, length, {','.join(sql_names)})
+                                       VALUES(?,?,?,{commas});"""
     return connection, insert_statement, sql_names
 
 
@@ -121,11 +122,13 @@ class SqlDatabase(Database):
             # _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
             # assert _names == names, (names, _names)
 
-            values = [entry["_offset"], entry["_length"]] + [entry[n] for n in names]
+            values = [entry.get("_path", None), entry["_offset"], entry["_length"]] + [entry[n] for n in names]
             connection.execute(insert_statement, tuple(values))
 
             count += 1
             pbar.update(len(line) + 1)
+
+#        connection.execute(f"CREATE INDEX path_index ON entries (path);")
 
         if self.create_index:
             for n in sql_names:
@@ -147,9 +150,9 @@ class SqlDatabase(Database):
             else:
                 conditions.append(f"i_{k}='{b}'")
 
-        statement = f"SELECT offset,length FROM entries WHERE {' AND '.join(conditions)} ORDER BY offset;"
+        statement = f"SELECT path,offset,length FROM entries WHERE {' AND '.join(conditions)} ORDER BY offset;"
 
         parts = []
-        for offset, length in self.connection.execute(statement):
-            parts.append((None, (offset, length)))
+        for path, offset, length in self.connection.execute(statement):
+            parts.append((path, (offset, length)))
         return parts
