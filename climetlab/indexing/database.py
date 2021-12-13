@@ -85,8 +85,7 @@ class SqlDatabase(Database):
                 hash_extra=self.VERSION,
                 extension=".db",
             )
-            if self._connection is None:
-                self._connection = sqlite3.connect(path)
+            self._connection = sqlite3.connect(path)
         return self._connection
 
     def to_sql_target(self, target, url):
@@ -135,8 +134,7 @@ class SqlDatabase(Database):
                 connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")
 
         connection.execute("COMMIT;")
-
-        self._connection = connection
+        connection.close()
 
     def lookup(self, request):
         conditions = []
