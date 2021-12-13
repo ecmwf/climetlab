@@ -100,9 +100,9 @@ source when the data consists of a single file downloadable from a URL.
       documentation: Sample BUFR file containing TEMP messages
 
 
-  .. todo::
-    Document the YAML file way to create a dataset.
-    Choose a good way to implement the workflow.
+.. todo::
+  Document the YAML file way to create a dataset.
+  Choose a good way to implement the workflow.
 
-   - Create a dataset YAML file.
-   - distribute it.
+ - Create a dataset YAML file.
+ - distribute it.
