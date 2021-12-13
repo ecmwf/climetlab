@@ -76,6 +76,10 @@ def test_zenodo_error_2():
         )
 
 
+@pytest.mark.skipif(
+    True,
+    reason="Zenodo disabled",
+)
 @pytest.mark.external_download
 def test_zenodo_read_nc():
     def file_filter(path):
