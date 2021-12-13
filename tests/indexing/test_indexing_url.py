@@ -117,7 +117,7 @@ def test_global_index(baseurl):
         baseurl=f"{baseurl}/test-data/input/indexed-urls",
     )
 
-    request = dict(param="r")
+    request = dict(param="r", time="1000", date="19970101")
     retrieve_and_check(index, request)
 
 
@@ -127,12 +127,12 @@ def test_per_url_index(baseurl):
     index = PerUrlIndex(
         f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
     )
-    request = dict(param="r")
+    request = dict(param="r", time="1000", date="19970101")
     retrieve_and_check(index, request)
 
 
 @pytest.mark.long_test
-# @pytest.mark.parametrize("baseurl", CML_BASEURL_S3)
+#@pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index_2():
     baseurl = CML_BASEURL_S3
     index = PerUrlIndex(
