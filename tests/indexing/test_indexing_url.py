@@ -132,7 +132,7 @@ def test_per_url_index(baseurl):
 
 
 @pytest.mark.long_test
-#@pytest.mark.parametrize("baseurl", CML_BASEURLS)
+# @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index_2():
     baseurl = CML_BASEURL_S3
     index = PerUrlIndex(
@@ -140,9 +140,6 @@ def test_per_url_index_2():
     )
     request = dict(param="cin", date="20211125", step="6", number=["1", "3"])
     retrieve_and_check(index, request)
-
-    # request = dict(param="cin", date="20211125", step="0", number="1")
-    # retrieve_and_check(index, request)
 
 
 def dev():
