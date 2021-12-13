@@ -54,7 +54,7 @@ def backend():
 def test_indexing_json_1(backend):
     parts = backend.lookup(REQUEST_1)
     assert len(parts) == 1
-    assert parts[0][0] is None
+    assert parts[0][0] == "data/02.grb"
     assert parts[0][1][0] == 94156098
     assert parts[0][1][1] == 23358
 
