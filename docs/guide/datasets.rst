@@ -3,78 +3,76 @@
 Datasets
 ========
 
-A ``Dataset`` is a Python class providing a curated set of data with specific helper functions.
+A **Dataset** is an object created using ``cml.load_dataset(name, *args)`` with
+the appropriate name and arguments,
+which provides data and metatada and additional functionalities:
 
-When working on data, we are often writing code to transform, preprocess, adapt the data to our needs.
-While it may be very nice to understand deeply to deep magic under the hood, this process could very time consuming.
-Once somebody else did the hard work of preparing the data for a given purpose and designing relevant functions to process it,
-their code can be integrated into a dataset plugin and made available to others through a CliMetLab plugin. 
+- The name is a string that uniquely identifies the dataset.
+- The arguments can be used to specify a subpart of the dataset.
+- The :ref:`metadata <dataset metadata>` attached to the dataset provides
+  additional information such as an URL, a citation, licence, etc.
+- Additional functionalities:
+  When working on data, we are often writing code to transform, preprocess,
+  adapt the data to our needs.
+  While it may be very nice to understand deeply to deep magic under the
+  hood, this process could be very time-consuming.
+  Once somebody else did the hard work of preparing the data for a given
+  purpose and designing relevant functions to process it, their code can
+  be integrated and made available to others through a CliMetLab dataset
+  plugin.
+  The Dataset object is an instance of a Python class in which
+  the plugin maintainers/users can share additional code.
 
-CliMetLab has build-in datasets (as examples) and most of the datasets are available as plugins.
+
+CliMetLab has build-in datasets (as examples) and most of the datasets are
+available as plugins (non-exhaustive
+:doc:`list of CliMetLab plugins <../guide/pluginlist>`).
+
 
 .. _accessing_data:
 
-Accessing data in a dataset
----------------------------
+How to load data?
+-----------------
 
-First, the relevant plugin has been installed, generally using pip
+The relevant plugin must be installed first, using pip.
 
     .. code-block:: bash
 
-        pip install --quiet climetlab-demo-dataset
+        pip install climetlab-demo-dataset
 
-Second, the dataset can be loaded with :py:func:`load_dataset()` as follows:
+This ensures that the dataset can be loaded with
+:py:func:`climetlab.load_dataset()`.
 
     .. code-block:: python
 
         >>> import climetlab as cml
         >>> ds = cml.load_dataset("demo-dataset")
 
-Notice that the relevant plugin package **must be installed** to access the
-dataset, with pip (such as ``pip install climetlab-demo-dataset``).
-If the package is not installed, CliMetLab will fail with a NameError
-exception.
+The dataset object provides methods to access and use its data, such as
+```to_xarray()``` or ```to_pandas()``` or other (see below).
 
     .. code-block:: python
 
-        >>> ds = climetlab.load_dataset("demo-dataset")
-        NameError: Cannot find dataset 'demo-dataset' (values are ...),
-
-
-When dataset ``some-dataset`` appears to be unavailable, this could be
-due to a typo in the dataset name (such as confusing ``some-dataset``
-with ``somedataset``).
+        >>> ds.to_xarray() # for gridded data
+        >>> ds.to_pandas() # for non-gridded data
 
 .. note::
-    When sharing a python notebook, it is a good practice to add
-    ``!pip install climetlab-...`` at the top of the notebook.
 
-The plugin name does not have to match the dataset name, and one plugin
-usually provides several datasets.
-As an example, the plugin ``climetlab_s2s_ai_challenge`` provides
-the datasets ``s2s-ai-challenge-training-input`` and ``s2s-ai-challenge-training-output``:
+    The name of a CliMetLab plugin usually starts with "climetlab-".
 
-.. code-block:: ipython
+.. note::
 
-    >>> !pip install climetlab_s2s_ai_challenge
-    >>> climetlab.load_dataset("s2s-ai-challenge-training-input")
-    >>> climetlab.load_dataset("s2s-ai-challenge-training-output")
+    The plugin name does not necessarily match the dataset name, and one plugin
+    can provide several datasets.
+    As an example, the plugin ``climetlab-s2s-ai-challenge`` provides
+    the datasets ``s2s-ai-challenge-training-input`` and
+    ``s2s-ai-challenge-training-output``:
 
+    .. code-block:: ipython
 
-There is no need to import the plugin package to enable load the dataset:
-
-.. code-block:: ipython
-
-    >> import climetlab_demo_dataset  # Not needed
-
-
-**Currently**, the best way to know which plugin needs to be installed to access 
-a given dataset is to look at :ref:`list of plugins <pluginlist>` (non-exhaustive).
-
-.. todo::
-
-    Design a streamlined way to register and publish plugins.
-
+        >>> !pip install climetlab-s2s-ai-challenge
+        >>> climetlab.load_dataset("s2s-ai-challenge-training-input")
+        >>> climetlab.load_dataset("s2s-ai-challenge-training-output")
 
 Xarray for gridded data
 -----------------------
@@ -82,38 +80,91 @@ Xarray for gridded data
 Gridded data typically are field data such as temperature or wind
 from climate or weather models or satellite images.
 
-    .. code-block:: python
+    .. doctest::
 
-        dsc = climetlab.load_dataset("dataset-name", **options)
-        dsc.to_xarray()
+        >>> import climetlab as cml
+        >>> ds = cml.load_dataset("demo-dataset")
+        >>> ds.to_xarray()
+        <xarray.Dataset>
+        Dimensions:    (latitude: 181, longitude: 360)
+        Coordinates:
+          * longitude  (longitude) float64 -180.0 -179.0 -178.0 ... 177.0 178.0 179.0
+          * latitude   (latitude) float64 90.0 89.0 88.0 87.0 ... -88.0 -89.0 -90.0
+        Data variables:
+            t2m        (latitude, longitude) float64 273.1 273.3 273.5 ... 250.7 250.6
+
 
 
 Pandas for non-gridded data
 ---------------------------
 
-None-gridded data typically is tabular non-structured data sucha as observations.
-It often includ a column for the latitude and longitude of the data.
+None-gridded data typically is tabular non-structured data such as
+observations.
+It often includes a column for the latitude and longitude of the data.
 
     .. code-block:: python
 
-        >>> dsc = climetlab.load_dataset("dataset-name", **options)
-        >>> dsc.to_pandas()
+        >>> import climetlab as cml
+        >>> ds = cml.load_dataset("dataset-name", **options)
+        >>> ds.to_pandas()
 
 
-Generic options
----------------
+cml.load_dataset()
+------------------
 
-.. todo::
-    Currently no options are added by CliMetLab.
-    Add documentation on merger and filter.
-
-Other arguments are defined by the plugin maintainer, and are be
+The first argument is the name of the dataset.
+It is used to find the relevant plugin and class to use.
+Other arguments are defined by the plugin maintainer and are
 documented in the plugin documentation.
 
-The plugin documentation url is provided by the plugin with :
 
-    .. code-block:: python
+.. _dataset metadata:
 
-        >>> dsc = climetlab.load_dataset("dataset-name")
-        >>> dsc = climetlab.dataset("dataset-name")
-        >>> dsc.documentation
+Metadata attached to a dataset
+------------------------------
+
+Metadata attached to a dataset include the following.
+
+    **home_page**: A link to the home page related to the dataset.
+
+    **licence**: A link to the licence of the dataset.
+
+    **documentation**: A link to the documentation related to the dataset.
+
+    **citation**: A citation related to the dataset.
+
+    **terms_of_use**: A text or link to the terms of use of the data.
+
+    .. doctest::
+
+        >>> import climetlab as cml
+        >>> ds = cml.load_dataset("demo-dataset")
+        >>> ds.home_page
+        'https://github.com/ecmwf/climetlab-demo-dataset'
+        >>> ds.documentation
+        'Generates a dummy temperature field'
+
+
+Best practices
+--------------
+.. note::
+    When sharing a python notebook, it is a good practice to add
+    ``!pip install climetlab-...`` at the top of the notebook.
+    If the package is not installed, CliMetLab fails with a NameError
+    exception.
+
+        .. code-block:: python
+
+            >>> # if the package climetlab-demo-dataset is not installed
+            >>> import climetlab as cml
+            >>> ds = cml.load_dataset("demo-dataset")
+            NameError: Cannot find dataset 'demo-dataset' (values are: ...),
+
+.. note::
+
+    There is no need to import the plugin package to enable
+    loading the dataset:
+
+    .. code-block:: ipython
+
+        >> import climetlab_demo_dataset  # Not needed

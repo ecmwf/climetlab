@@ -46,7 +46,6 @@ Documentation
 
 **User Guide (TODO)**
 
-* :doc:`guide/overview`
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
@@ -62,7 +61,6 @@ Documentation
    :hidden:
    :caption: User Guide
 
-   guide/overview
    guide/howtos
    guide/datasets
    guide/sources

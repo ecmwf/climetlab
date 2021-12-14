@@ -3,37 +3,41 @@
 Installing
 ==========
 
-.. warning::
-  CliMetLab requires Python 3.7 or above. Depending on your installation,
-  you may need to substitute ``pip`` to ``pip3`` in the examples below.
-
 
 Pip install
 -----------
 
-To install CliMetLab, simply run the following command:
+To install CliMetLab, just run the following command:
 
 .. code-block:: bash
 
-  % pip install climetlab
+  pip install climetlab
 
 Conda install
 -------------
 
 No conda package has been created yet.
-`pip install climetlab` can be used in a conda environment.
+``pip install climetlab`` can be used in a conda environment.
 
 Mixing ``pip`` and ``conda`` could create some dependencies issues,
 we recommend installing as many dependencies as possible with conda,
-then install CliMetLab with ``pip``, `as recommended by the anaconda team <https://www.anaconda.com/blog/using-pip-in-a-conda-environment>`_.
-
-.. todo::
-
-  Create a conda package for CliMetLab on conda-forge, with clean dependencies.
+then install CliMetLab with ``pip``, `as recommended by the anaconda team
+<https://www.anaconda.com/blog/using-pip-in-a-conda-environment>`_.
 
 
 Troubleshooting
 ---------------
+
+Python 3.7 or above is required
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  CliMetLab requires Python 3.7 or above. Depending on your installation,
+  you may need to substitute ``pip`` to ``pip3`` in the examples below.
+
+  .. todo::
+
+    Python 3.10 is not supported yet.
+
 
 No matching distribution found for ...
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -63,6 +63,7 @@ extensions = [
     # "sphinx.ext.intersphinx",
     # "sphinx.ext.extlinks",
     # "sphinx.ext.mathjax",
+    "sphinx.ext.doctest",
     "sphinx.ext.napoleon",
     # "sphinx.ext.viewcode", # Uncomment to add links to source code
     "sphinx.ext.todo",

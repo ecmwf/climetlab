@@ -1,5 +1,5 @@
-First Steps
-===========
+First Steps Tutorial
+====================
 
 This is an easy to follow tutorial that gets you up to speed with *CliMetLab*
 to access scientific climate data.
@@ -289,6 +289,10 @@ will output:
 
 Advanced plotting
 -----------------
+
+.. todo::
+
+  Improve documentation.
 
 There are two options to plot several datasets on the same map. If
 you do not need to specify data specific parameters (e.g. *style*),
