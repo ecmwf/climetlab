@@ -31,8 +31,8 @@ available as plugins (non-exhaustive
 
 .. _accessing_data:
 
-How to load data?
------------------
+How to load a dataset?
+----------------------
 
 The relevant plugin must be installed first, using pip.
 
