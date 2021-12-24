@@ -60,12 +60,27 @@ def merge(
         user_kwargs=kwargs,
     )
 
+    if reader_class is not None and hasattr(
+        reader_class, "to_xarray_multi_from_sources"
+    ):
+        return reader_class.to_xarray_multi_from_sources(
+            sources,
+            **options,
+        )
+
     if paths is not None:
-        if reader_class is not None and hasattr(reader_class, "to_xarray_multi"):
-            return reader_class.to_xarray_multi(paths, **options)
+        if reader_class is not None and hasattr(
+            reader_class, "to_xarray_multi_from_paths"
+        ):
+            return reader_class.to_xarray_multi_from_paths(
+                paths,
+                **options,
+            )
 
         return xr.open_mfdataset(paths, **options)
 
     return xr.open_mfdataset(
-        [WrappedSource(s) for s in sources], engine=CMLEngine, **options
+        [WrappedSource(s) for s in sources],
+        engine=CMLEngine,
+        **options,
     )

@@ -14,9 +14,11 @@ import datetime
 import json
 import logging
 import os
+import warnings
 
 import eccodes
 
+from climetlab import load_source
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
@@ -32,7 +34,13 @@ from . import Reader
 LOG = logging.getLogger(__name__)
 
 
-def mix_kwargs(user, default, forced={}, logging_owner="", logging_main_key=""):
+def mix_kwargs(
+    user,
+    default,
+    forced={},
+    logging_owner="",
+    logging_main_key="",
+):
     kwargs = copy.deepcopy(default)
 
     for k, v in user.items():
@@ -329,7 +337,7 @@ class GRIBFilter:
 
 # class MultiGribReaders(GriddedMultiReaders):
 #     engine = "cfgrib"
-#     backend_kwargs = {"squeeze": False}
+#     backend_kwargs = {"squeeze": True}
 
 
 class GRIBIndex:
@@ -337,6 +345,7 @@ class GRIBIndex:
     VERSION = 1
 
     def __init__(self, path):
+        assert isinstance(path, str), path
         self.path = path
         self.offsets = None
         self.lengths = None
@@ -395,11 +404,45 @@ class GRIBIndex:
         return False
 
 
+class FieldSetIterator:
+    def __init__(self, fieldset):
+        self.fieldset = fieldset
+        self.i = -1
+
+    def __next__(self):
+        self.i += 1
+        try:
+            return self.fieldset[self.i]
+        except IndexError:
+            raise StopIteration()
+
+
+class Field:
+    def __init__(self, field):
+        self.field = field
+
+    def __getitem__(self, name):
+        return self.field.handle.get(name)
+
+
+class FieldSet:
+    def __init__(self, sources):
+        self.indexes = [s._reader for s in sources]
+
+    def __iter__(self):
+        return FieldSetIterator(self)
+
+    def __getitem__(self, i):
+        j = i
+        for idx in self.indexes:
+            if j <= len(idx):
+                return Field(idx[j])
+            j -= len(idx)
+        raise IndexError(i)
+
+
 class GRIBReader(Reader):
     appendable = True  # GRIB messages can be added to the same file
-
-    open_mfdataset_backend_kwargs = {"squeeze": False}
-    open_mfdataset_engine = "cfgrib"
 
     def __init__(self, source, path):
         super().__init__(source, path)
@@ -438,7 +481,7 @@ class GRIBReader(Reader):
         return len(self.index.offsets)
 
     def to_xarray(self, **kwargs):
-        return type(self).to_xarray_multi([self.path], **kwargs)
+        return type(self).to_xarray_multi_from_sources([self.source], **kwargs)
 
     def to_tfdataset(self, **kwargs):
         # assert "label" in kwargs
@@ -483,33 +526,51 @@ class GRIBReader(Reader):
         )
 
     @classmethod
-    def to_xarray_multi(cls, paths, **kwargs):
+    def to_xarray_multi_from_sources(cls, sources, **kwargs):
+        readers = [source._reader for source in sources]
+        assert all(r.__class__ is cls for r in readers)
+
         import xarray as xr
 
-        xarray_open_mfdataset_kwargs = {}
+        xarray_open_dataset_kwargs = {}
 
-        user_xarray_open_mfdataset_kwargs = kwargs.get(
-            "xarray_open_mfdataset_kwargs", {}
-        )
+        if "xarray_open_mfdataset_kwargs" in kwargs:
+            warnings.warn(
+                "xarray_open_mfdataset_kwargs is deprecated, please use xarray_open_dataset_kwargs instead."
+            )
+            kwargs["xarray_open_dataset_kwargs"] = kwargs.pop(
+                "xarray_open_mfdataset_kwargs"
+            )
+
+        user_xarray_open_mfdataset_kwargs = kwargs.get("xarray_open_dataset_kwargs", {})
         for key in ["backend_kwargs"]:
-            xarray_open_mfdataset_kwargs[key] = mix_kwargs(
+            xarray_open_dataset_kwargs[key] = mix_kwargs(
                 user=user_xarray_open_mfdataset_kwargs.pop(key, {}),
-                default={"squeeze": False},
+                default={"errors": "raise"},
                 forced={},
-                logging_owner="xarray_open_mfdataset_kwargs",
+                logging_owner="xarray_open_dataset_kwargs",
                 logging_main_key=key,
             )
-        xarray_open_mfdataset_kwargs.update(
+        xarray_open_dataset_kwargs.update(
             mix_kwargs(
                 user=user_xarray_open_mfdataset_kwargs,
                 default={},
-                forced={"engine": "cfgrib"},
+                forced={
+                    "errors": "raise",
+                    "engine": "cfgrib",
+                },
             )
         )
 
-        return xr.open_mfdataset(
-            paths,
-            **xarray_open_mfdataset_kwargs,
+        return xr.open_dataset(
+            FieldSet(sources),
+            **xarray_open_dataset_kwargs,
+        )
+
+    @classmethod
+    def to_xarray_multi_from_paths(cls, paths, **kwargs):
+        return cls.to_xarray_multi_from_sources(
+            [load_source("file", path) for path in paths]
         )
 
     def to_metview(self):

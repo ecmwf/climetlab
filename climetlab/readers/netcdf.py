@@ -191,15 +191,7 @@ class NetCDFField(Base):
         )
 
 
-# class MultiNetcdfReaders(GriddedMultiReaders):
-#     engine = "netcdf4"
-
-
 class NetCDFReader(Reader):
-
-    open_mfdataset_backend_kwargs = {}
-    open_mfdataset_engine = None
-
     def __init__(self, source, path):
         super().__init__(source, path)
         self.fields = None
@@ -327,10 +319,10 @@ class NetCDFReader(Reader):
         return fields
 
     def to_xarray(self, **kwargs):
-        return type(self).to_xarray_multi([self.path], **kwargs)
+        return type(self).to_xarray_multi_from_paths([self.path], **kwargs)
 
     @classmethod
-    def to_xarray_multi(cls, paths, **kwargs):
+    def to_xarray_multi_from_paths(cls, paths, **kwargs):
         import xarray as xr
 
         options = dict()
