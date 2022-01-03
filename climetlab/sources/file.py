@@ -137,6 +137,9 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def to_bounding_box(self):
         return self._reader.to_bounding_box()
 
+    def statistics(self, **kwargs):
+        return self._reader.statistics(**kwargs)
+
 
 class File(FileSource):
     def __init__(

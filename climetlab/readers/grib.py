@@ -237,7 +237,9 @@ class GribField(Base):
         backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
-    def to_numpy(self):
+    def to_numpy(self, normalise=False):
+        if normalise:
+            return self.values.reshape(self.shape)
         return self.values.reshape(self.shape)
 
     def __repr__(self):
@@ -350,7 +352,7 @@ class GRIBIndex:
         self.offsets = None
         self.lengths = None
         self.cache = auxiliary_cache_file(
-            "grib",
+            "grib-index",
             path,
             content="null",
             extension=".json",
@@ -420,8 +422,13 @@ class FieldSetIterator:
 class Field:
     def __init__(self, field):
         self.field = field
+        self.keys = {}
+
+    def __del__(self):
+        print(self.keys)
 
     def __getitem__(self, name):
+        self.keys[name] = self.field.handle.get(name)
         return self.field.handle.get(name)
 
 
@@ -448,6 +455,7 @@ class GRIBReader(Reader):
         super().__init__(source, path)
         self._index = None
         self._reader = None
+        self._statistics = None
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -485,10 +493,42 @@ class GRIBReader(Reader):
 
     def to_tfdataset(self, **kwargs):
         # assert "label" in kwargs
+        if "offset" in kwargs:
+            return self._to_tfdataset_offset(**kwargs)
         if "label" in kwargs:
             return self._to_tfdataset_supervised(**kwargs)
         else:
             return self._to_tfdataset_unsupervised(**kwargs)
+
+    def _to_tfdataset_offset(self, offset, **kwargs):
+
+        # μ = self.statistics()["average"]
+        # σ = self.statistics()["stdev"]
+
+        def normalise(a):
+            return a
+            # return (a - μ) / σ
+
+        def generate():
+            fields = []
+            for s in self:
+                fields.append(normalise(s.to_numpy()))
+                if len(fields) >= offset:
+                    yield fields[0], fields[-1]
+                    fields.pop(0)
+
+        import tensorflow as tf
+
+        shape = self.first.shape
+
+        dtype = kwargs.get("dtype", tf.float32)
+        return tf.data.Dataset.from_generator(
+            generate,
+            output_signature=(
+                tf.TensorSpec(shape, dtype=dtype, name="input"),
+                tf.TensorSpec(shape, dtype=dtype, name="output"),
+            ),
+        )
 
     def _to_tfdataset_unsupervised(self, **kwargs):
         def generate():
@@ -574,6 +614,7 @@ class GRIBReader(Reader):
         )
 
     def to_metview(self):
+        return FieldSet([load_source("file", self.path)])
         from climetlab.metview import mv_read
 
         return mv_read(self.path)
@@ -612,6 +653,69 @@ class GRIBReader(Reader):
 
     def to_bounding_box(self):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self])
+
+    def statistics(self):
+        import numpy as np
+
+        if self._statistics is not None:
+            return self._statistics
+
+        cache = auxiliary_cache_file(
+            "grib-statistics--",
+            self.path,
+            content="null",
+            extension=".json",
+        )
+
+        with open(cache) as f:
+            self._statistics = json.load(f)
+
+        if self._statistics is not None:
+            return self._statistics
+
+        stdev = None
+        average = None
+        maximum = None
+        minimum = None
+        count = 0
+
+        for s in self:
+            v = s.values
+            if count:
+                stdev = np.add(stdev, np.multiply(v, v))
+                average = np.add(average, v)
+                maximum = np.maximum(maximum, v)
+                minimum = np.minimum(minimum, v)
+            else:
+                stdev = np.multiply(v, v)
+                average = v
+                maximum = v
+                minimum = v
+
+            count += 1
+
+        nans = np.count_nonzero(np.isnan(average))
+        assert nans == 0, "Statistics with missing values not yet implemented"
+
+        maximum = np.amax(maximum)
+        minimum = np.amin(minimum)
+        average = np.mean(average) / count
+        stdev = np.sqrt(np.mean(stdev) / count - average * average)
+
+        self._statistics = dict(
+            minimum=minimum,
+            maximum=maximum,
+            average=average,
+            stdev=stdev,
+            count=count,
+        )
+
+        with open(cache, "w") as f:
+            json.dump(self._statistics, f)
+
+        print(self._statistics)
+
+        return self._statistics
 
 
 def reader(source, path, magic=None, deeper_check=False):

@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import keras
 import tensorflow as tf
 
 # https://github.com/tensorflow/docs/blob/304a7e4a90e53751ac59cab46667d78e81736fa3/site/en/guide/data_performance_analysis.md
@@ -52,3 +53,15 @@ def make_label_one_hot(table, name=None, axis=-1):
         )
 
     return wrapped
+
+
+class PeriodicConv2D(keras.layers.Conv2D):
+    def call(self, inputs):
+        w, h = self.kernel_size
+        inputs = tf.concat([inputs, inputs[:, :, :w, :]], axis=2)
+        inputs = tf.pad(
+            inputs,
+            [[0, 0], [h // 22, h // 2], [0, 0], [0, 0]],
+            constant_values=0,
+        )
+        return super().call(inputs)
