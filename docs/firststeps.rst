@@ -10,18 +10,20 @@ So, let's start with what *CliMetLab* does best:
 Getting data
 ------------
 
-*CliMetLab* provides two main ways to access climate data
+*CliMetLab* provides two main ways to access climate and meteorological data
 
-1. Data Sources
-2. Datasets
+1. Data Sources (:doc:`details <guide/sources>`)
+2. Datasets (:doc:`details <guide/datasets>`)
 
 Data Sources
 ^^^^^^^^^^^^
 
-In *CliMetLab*, a *Data Source* refers to a local or remote storage server or data archive
-from where we can download or access files related to climate data.
+In *CliMetLab*, a *Data Source* refers to a local or remote storage server
+or data archive from where we can download or access files related to climate
+data.
 
-To get started, let us first import *CliMetLab* at the top of our Python notebook:
+To get started, let us first import *CliMetLab* at the top of our Python
+notebook:
 
 .. code-block:: python
 
@@ -32,7 +34,7 @@ Now download
 to your project directory, or if you have ``wget`` command available, run
 following in your notebook:
 
-.. code-block:: python
+.. code-block::
 
     !wget https://raw.githubusercontent.com/ecmwf/climetlab/main/docs/examples/test.grib
 

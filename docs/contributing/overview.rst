@@ -30,8 +30,8 @@ CliMetLab has several types of plugins.
    - :doc:`Dataset plugin<datasets>`
    - :doc:`Sources plugin<sources>`
    - :doc:`Reader plugin<readers>` (draft)
-   - :doc:`Helper plugin` (draft)
-   - :doc:`Machine learning plugin` (not yet implemented)
+   - Helper plugin (draft)
+   - Machine learning plugin (not yet implemented)
 
 
 Depending on the functionalities provided by your code, it can be integrated

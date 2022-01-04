@@ -58,7 +58,7 @@ SETTINGS_AND_HELP = {
     "cache-directory": _(
         os.path.join(tempfile.gettempdir(), "climetlab-%s" % (getpass.getuser(),)),
         """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
-        See :ref:`caching` for more information.""",
+        See :doc:`/guide/caching` for more information.""",
     ),
     "styles-directories": _(
         [os.path.join(DOT_CLIMETLAB, "styles")],
@@ -111,7 +111,7 @@ SETTINGS_AND_HELP = {
     "maximum-cache-disk-usage": _(
         "90%",
         """Disk usage threshold after which CliMetLab expires older cached entries (% of the full disk capacity).
-        See :ref:`caching` for more information.""",
+        See :doc:`/guide/caching` for more information.""",
         getter="_as_percent",
     ),
     "url-download-timeout": _(

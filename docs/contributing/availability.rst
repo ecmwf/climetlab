@@ -1,4 +1,4 @@
-.. _normalize:
+.. _availability:
 
 Availability (decorator)
 ========================
@@ -43,15 +43,12 @@ The following table lists the available constructors:
    * - Availability
      - Trigger
      - Example
-   * - :ref:`list`
+   * - list
      - tuple
      - ``option=("a", "b")``
-   * - :ref:`date`
+   * - date
      - list
      - ``option=date-list...["a", "b"]``
-   * - :ref:`date`
-     - TODO
-     - TODO
 
 Usage
 -----

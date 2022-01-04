@@ -3,4 +3,5 @@ Data sources
 
 .. todo::
 
-    Describe what is a data source.
+    Describe what is a class inheriting from :py:class:`cml.Source`.
+

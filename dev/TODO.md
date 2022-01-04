@@ -106,7 +106,6 @@ Use `doc8` instead of `rstcheck`
 
 - Collect use cases
 - Work on caching
-  - Use sqlite
   - Expiry
   - Size limit
   - Location
@@ -117,7 +116,6 @@ Use `doc8` instead of `rstcheck`
 - YAML files for:
   - Styles
   - Projections
-- Windows version
 - New magics
 - Code of conduct
 - Identify data sources
@@ -132,7 +130,6 @@ Use `doc8` instead of `rstcheck`
   - cml.add_catalog (catalogue)
 - Iterators?
   - plot_map(d) vs plot_map(d[0])
-- CI/CD
 
 ** Jupyter
 
@@ -142,7 +139,6 @@ Use `doc8` instead of `rstcheck`
 
 ** Doc
 - Check external links https://sublime-and-sphinx-guide.readthedocs.io/en/latest/references.html
--
 
 
 Check
