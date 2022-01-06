@@ -1,14 +1,15 @@
 # These are the requirements for readthedoc
-ipykernel
+eccodes
+ecmwflibs
 filelock
+ipykernel
+magics
+markdown
+multiurl
 nbsphinx
-sphinx_rtd_theme
-sphinx-panels
 pyyaml
 Pygments>=2.6.1
-tqdm
-markdown
-eccodes
-magics
-ecmwflibs
+sphinx-panels
+sphinx_rtd_theme
 termcolor
+tqdm
