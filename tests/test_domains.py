@@ -23,6 +23,7 @@ def test_domains():
     assert domain_to_area("uk") == (59.5, -10.5, 49.5, 2.0)
     assert domain_to_area_long_name("uk") == "United Kingdom"
 
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
