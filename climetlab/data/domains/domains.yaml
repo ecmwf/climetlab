@@ -1,0 +1,509 @@
+# This has been copied from vtb (verification toolbox)
+#
+# This is a copy of configuration files from /usr/local/share/vtb/etc/
+# which are shared across different systems of ECMWF.
+# Using these local files instead of the shared ones requires proper setting
+# in the [vtb] section of ${VTB_HOME}/vtb/_config/locals.yaml
+#
+doc: 
+  visualize: https://sites.ecmwf.int/mo5/verification/domains/
+
+areas:
+  # North West South East
+  adriatic:
+  - - 46.0
+    - 12.0
+    - 41.5
+    - 19.0
+  alps:
+  - - 49.0
+    - 5.0
+    - 44.0
+    - 16.0
+  antarctic:
+  - - -60.0
+    - -180.0
+    - -90.0
+    - 180.0
+  arabia:
+  - - 35.0
+    - 25.0
+    - 12.5
+    - 57.5
+  arctic:
+  - - 90.0
+    - -180.0
+    - 60.0
+    - 180.0
+  asia:
+  - - 80.0
+    - 45.0
+    - 25.0
+    - -170.0
+  asia.wmo:
+  - - 65.0
+    - 60.0
+    - 25.0
+    - 145.0
+  austnz:
+  - - -12.5
+    - 120.0
+    - -45.0
+    - 175.0
+  austnz.wmo:
+  - - -10.0
+    - 90.0
+    - -55.0
+    - 180.0
+  australia:
+  - - -10.0
+    - 112.0
+    - -44.5
+    - 156.25
+  austtrop:
+  - - -2.0
+    - 115.0
+    - -15.0
+    - 150.0
+  balkan:
+  - - 46.0
+    - 19.0
+    - 35.0
+    - 30.0
+  baltic:
+  - - 66.0
+    - 10.0
+    - 53.0
+    - 31.0
+  c.afr:
+  - - 12.5
+    - 5.0
+    - -12.5
+    - 42.5
+  c.europe:
+  - - 54.5
+    - 2.0
+    - 44.0
+    - 27.0
+  california.nevada:
+  - - 42.0
+    - -125.0
+    - 32.0
+    - -114.0
+  ce.europe:
+  - - 56.0
+    - 9.0
+    - 45.0
+    - 30.0
+  ce.trop.pac:
+  - - 20.0
+    - -180.0
+    - -20.0
+    - -90.0
+  ceur2:
+  - - 55.0
+    - -5.0
+    - 41.0
+    - 15.0
+  e.asia:
+  - - 60.0
+    - 102.5
+    - 25.0
+    - 150.0
+  e.trop.pac:
+  - - 10.0
+    - -140.0
+    - -20.0
+    - -90.0
+  eaustnz:
+  - - -20.0
+    - 145.0
+    - -50.0
+    - 180.0
+  eurnafr.wmo:
+  - - 70.0
+    - -10.0
+    - 25.0
+    - 28.0
+  euro.teps:
+  - - 82.0
+    - -23.0
+    - 24.0
+    - 50.0
+  euro.tepsn:
+  - - 82.0
+    - -15.0
+    - 50.0
+    - 50.0
+  europe:
+  - - 75.0
+    - -12.5
+    - 35.0
+    - 42.5
+  extrop30:
+  - - 90.0
+    - -180.0
+    - 30.0
+    - 180.0
+  - - -30.0
+    - -180.0
+    - -90.0
+    - 180.0
+  france:
+  - - 51.5
+    - -5.0
+    - 42.0
+    - 8.5
+  france2:
+  - - 53.0
+    - -5.5
+    - 42.3
+    - 8.2
+  germany:
+  - - 55.5
+    - 5.5
+    - 47.0
+    - 15.5
+  glameps:
+  - - 80.0
+    - -60.0
+    - 25.0
+    - 60.0
+  global:
+  - - 90.0
+    - -180.0
+    - -90.0
+    - 180.0
+  gulf.mexico:
+  - - 31.0
+    - -98.0
+    - 17.0
+    - -81.0
+  hawaii:
+  - - 30.0
+    - -180.0
+    - 10.0
+    - -140.0
+  iberian:
+  - - 44.0
+    - -10.0
+    - 35.0
+    - 3.5
+  ind.oc:
+  - - 30.0
+    - 50.0
+    - -10.0
+    - 100.0
+  india:
+  - - 32.5
+    - 75.0
+    - 5.0
+    - 102.5
+  indonesia:
+  - - 17.5
+    - 102.5
+    - -12.5
+    - 132.5
+  italian:
+  - - 47.0
+    - 6.5
+    - 35.0
+    - 19.0
+  japan:
+  - - 46.0
+    - 127.0
+    - 28.0
+    - 151.0
+  med:
+  - - 46.0
+    - -6.0
+    - 30.0
+    - 36.0
+  med2:
+  - - 46.0
+    - -1.0
+    - 30.0
+    - 36.0
+  n.amer:
+  - - 60.0
+    - -120.0
+    - 25.0
+    - -75.0
+  n.amer.wmo:
+  - - 60.0
+    - -145.0
+    - 25.0
+    - -50.0
+  n.atl:
+  - - 65.0
+    - -70.0
+    - 25.0
+    - -10.0
+  n.europe:
+  - - 75.0
+    - 5.0
+    - 55.0
+    - 35.0
+  n.hem:
+  - - 90.0
+    - -180.0
+    - 20.0
+    - 180.0
+  n.hem.full:
+  - - 90.0
+    - -180.0
+    - 0.0
+    - 180.0
+  n.hem.mid:
+  - - 65.0
+    - -180.0
+    - 35.0
+    - 180.0
+  n.hem.mid2:
+  - - 60.0
+    - -180.0
+    - 30.0
+    - 180.0
+  n.pac:
+  - - 60.0
+    - 145.0
+    - 25.0
+    - -130.0
+  n.pole:
+  - - 90.0
+    - -180.0
+    - 65.0
+    - 180.0
+  n.sea:
+  - - 62.0
+    - -1.0
+    - 51.5
+    - 10.0
+  n.subtropics:
+  - - 35.0
+    - -180.0
+    - 20.0
+    - 180.0
+  ne.atl:
+  - - 72.0
+    - -40.0
+    - 30.0
+    - -4.0
+  ne.pac:
+  - - 62.0
+    - -180.0
+    - 30.0
+    - -115.0
+  nw.afr:
+  - - 35.0
+    - -22.5
+    - 12.5
+    - 12.5
+  nw.atl:
+  - - 55.0
+    - -81.0
+    - 30.0
+    - -40.0
+  nw.pac:
+  - - 62.0
+    - 120.0
+    - 30.0
+    - 180.0
+  raq_europe:
+  - - 70.0
+    - -15.0
+    - 35.0
+    - 35.0
+  s.afr:
+  - - -12.5
+    - 10.0
+    - -47.5
+    - 52.5
+  s.amer.n:
+  - - 17.5
+    - -85.0
+    - -12.5
+    - -55.0
+  s.amer.s:
+  - - -12.5
+    - -80.0
+    - -57.5
+    - -42.5
+  s.hem:
+  - - -20.0
+    - -180.0
+    - -90.0
+    - 180.0
+  s.hem.full:
+  - - 0.0
+    - -180.0
+    - -90.0
+    - 180.0
+  s.hem.mid:
+  - - -35.0
+    - -180.0
+    - -65.0
+    - 180.0
+  s.hem.mid2:
+  - - -30.0
+    - -180.0
+    - -60.0
+    - 180.0
+  s.pole:
+  - - -65.0
+    - -180.0
+    - -90.0
+    - 180.0
+  s.subtropics:
+  - - -20.0
+    - -180.0
+    - -35.0
+    - 180.0
+  scandinavia:
+  - - 71.0
+    - 4.5
+    - 54.5
+    - 31.5
+  se.europe:
+  - - 45.0
+    - 10.0
+    - 32.5
+    - 32.5
+  sm.med:
+  - - 47.0
+    - 2.75
+    - 36.0
+    - 23.0
+  atl.hmdr:
+  - - 20.0
+    - -80.0
+    - 10.0
+    - -20.0
+  sn.atl.afr:
+  - - 45.0
+    - -60.0
+    - 0.0
+    - 60.0
+  ssw.australia:
+  - - -20.0
+    - 105.0
+    - -45.0
+    - 145.0
+  sw.europe:
+  - - 45.0
+    - -15.0
+    - 32.5
+    - 10.0
+  test:
+  - - 80.0
+    - 20.0
+    - 30.0
+    - 40.0
+  tropics:
+  - - 20.0
+    - -180.0
+    - -20.0
+    - 180.0
+  tropics30:
+  - - 30.0
+    - -180.0
+    - -30.0
+    - 180.0
+  uk:
+  - - 59.5
+    - -10.5
+    - 49.5
+    - 2.0
+  w.europe:
+  - - 58.0
+    - -7.5
+    - 43.0
+    - 9.0
+  western.usa:
+  - - 50.0
+    - -130.0
+    - 30.0
+    - -110.0
+areas_long_names:
+  adriatic: Adriatic Sea
+  alps: Alps
+  antarctic: Antarctic
+  arabia: Arabia
+  arctic: Arctic
+  asia: Asia
+  asia.wmo: Asia (WMO)
+  austnz: Australia N Zealand
+  austnz.wmo: Australia N Zealand (WMO)
+  australia: Australia
+  austtrop: Australia trop
+  balkan: Balkan
+  baltic: Baltic
+  c.afr: Central Africa
+  c.europe: Central Europe
+  california.nevada: California Nevada
+  ce.europe: Central Eastern Europe
+  ce.trop.pac: CentE Pacific trop
+  ceur2: Central Europe v2
+  e.asia: E Asia
+  e.trop.pac: E Pacific trop
+  eaustnz: Eastern Australia and New Zealand
+  eurnafr.wmo: Europe N Africa
+  euro.teps: Europe TEPS
+  euro.tepsn: Europe TEPS North
+  europe: Europe
+  extrop30: Extratropics
+  france: France
+  france2: France v2
+  germany: Germany
+  glameps: GLAMEPS
+  global: Global
+  gulf.mexico: Gulf of Mexico
+  hawaii: Hawaii
+  iberian: Iberian Peninsula
+  ind.oc: Indian Ocean
+  india: India
+  indonesia: Indonesia
+  italian: Italian Peninsula
+  japan: Japan
+  med: Mediterranean
+  med2: Mediterranean
+  n.amer: N America
+  n.amer.wmo: N America (WMO)
+  n.atl: N Atlantic
+  n.europe: N Europe
+  n.hem: NHem Extratropics
+  n.hem.full: N Hemisphere
+  n.hem.mid: NH Midlatitudes
+  n.hem.mid2: NH Midlatitudes
+  n.pac: N Pacific
+  n.pole: N Pole
+  n.sea: North Sea
+  n.subtropics: NH Subtropics
+  ne.atl: North East Atlantic
+  ne.pac: North East Pacific
+  nw.afr: NW Africa
+  nw.atl: North West Atlantic
+  nw.pac: North West Pacific
+  raq_europe: Europe RAQ
+  s.afr: S Africa
+  s.amer.n: S America (north)
+  s.amer.s: S America (south)
+  s.hem: SHem Extratropics
+  s.hem.full: S Hemisphere
+  s.hem.mid: SH Midlatitudes
+  s.hem.mid2: SH Midlatitudes
+  s.pole: S Pole
+  s.subtropics: SH Subtropics
+  scandinavia: Scandinavia
+  se.europe: SE Europe
+  sm.med: SM Med
+  atl.hmdr: Hurricane Main Devel Region
+  sn.atl.afr: SN Atl Afr
+  ssw.australia: South Southwestern Australia
+  sw.europe: SW Europe
+  test: Test
+  tropics: Tropics
+  tropics30: Tropics
+  uk: United Kingdom
+  w.europe: Western Europe
+  western.usa: Western USA

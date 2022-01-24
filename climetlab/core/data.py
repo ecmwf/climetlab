@@ -33,6 +33,9 @@ IGNORE = [
 
 
 def _guess(data, path):
+    if "areas" in data:
+        return "domains"
+
     if "dataset" in data:
         return "datasets"
 
