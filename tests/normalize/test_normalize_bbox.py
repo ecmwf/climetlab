@@ -63,6 +63,7 @@ def test_bbox():
     assert bbox_tuple(source[0]) == (73.0, -27.0, 33.0, 45.0)
 
     assert bbox_tuple("france") == (54.5, -6.0, 39.0, 9.5)
+    assert bbox_tuple("verification.france") == (51.5, -5.0, 42.0, 8.5)
 
 
 if __name__ == "__main__":

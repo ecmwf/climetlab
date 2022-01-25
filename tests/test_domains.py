@@ -17,11 +17,15 @@ def test_domains():
     assert domain_to_area("italy") == (50.5, 5.0, 35.0, 20.5)
     assert domain_to_area_long_name("italy") is None
 
-    assert domain_to_area("vtb.germany") == (55.5, 5.5, 47.0, 15.5)
-    assert domain_to_area_long_name("vtb.germany") == "Germany"
+    assert domain_to_area("verification.germany") == (55.5, 5.5, 47.0, 15.5)
+    assert domain_to_area_long_name("verification.germany") == "Germany"
 
-    assert domain_to_area("uk") == (59.5, -10.5, 49.5, 2.0)
-    assert domain_to_area_long_name("uk") == "United Kingdom"
+    assert domain_to_area("uk") == (63.5, -10.0, 48.0, 5.5)
+    assert domain_to_area("verification.uk") == (59.5, -10.5, 49.5, 2.0)
+    assert domain_to_area_long_name("verification.uk") == "United Kingdom"
+
+    assert domain_to_area("france") == (54.5, -6.0, 39.0, 9.5)
+    assert domain_to_area("verification.france") == (51.5, -5.0, 42.0, 8.5)
 
 
 if __name__ == "__main__":

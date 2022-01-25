@@ -25,8 +25,8 @@ areas = {
     "denmark": (64.0, 3.0, 48.5, 18.5),
     "estonia": (66.5, 17.5, 51.0, 33.0),
     "finland": (73.0, 18.5, 57.5, 34.0),
-    # "france": (54.5, -6.0, 39.0, 9.5),
-    # "germany": (59.0, 3.0, 43.5, 18.5),
+    "france": (54.5, -6.0, 39.0, 9.5),
+    "germany": (59.0, 3.0, 43.5, 18.5),
     "greece": (46.5, 16.5, 31.0, 32.0),
     "hungary": (55.0, 12.0, 39.5, 27.5),
     "iceland": (73.0, -26.0, 57.5, -10.5),
@@ -53,37 +53,33 @@ areas = {
     "sweden": (70.0, 10.0, 54.5, 25.5),
     "switzerland": (55.0, 0.5, 39.5, 16.0),
     "turkey": (47.0, 25.5, 31.5, 41.0),
-    # "united kingdom": (63.5, -10.0, 48.0, 5.5),
+    "united kingdom": (63.5, -10.0, 48.0, 5.5),
 }
+areas.update(
+    {
+        "uk": areas["united kingdom"],
+        "republic of serbia": areas["serbia"],
+    }
+)
 
 
 def _update_areas(old, new, prefix=""):
     for name, values in new.items():
+        name = prefix + name
+        assert name not in old, f"{name} already defined."
         if len(values) > 1:
             LOG.debug(
                 f"Area {name} has multiple values {values}. Not supported by CliMetLab."
             )
             continue
-        assert name not in old, f"{name} already defined."
-        value = values[0]
-        old[name] = value
-        if prefix:
-            old[prefix + "." + name] = value
+        old[name] = values[0]
 
 
-data = get_data_entry("domains", "domains").data
-_update_areas(areas, data["areas"], prefix="vtb")
-
-aliases = {
-    "united kingdom": areas["uk"],
-    "republic of serbia": areas["serbia"],
-}
-
-_update_areas(areas, aliases)
+data = get_data_entry("domains", "verification").data
+_update_areas(areas, data["areas"], prefix="verification.")
 
 AREAS = {k: tuple(v) for k, v in areas.items()}
-AREAS_LONG_NAMES = data["areas_long_names"]
-AREAS_LONG_NAMES.update({"vtb." + k: v for k, v in data["areas_long_names"].items()})
+AREAS_LONG_NAMES = {"verification." + k: v for k, v in data["areas_long_names"].items()}
 
 
 def domain_to_area(name):
