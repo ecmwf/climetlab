@@ -26,8 +26,6 @@ from climetlab.profiling import call_counter
 # from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
 
-from . import Reader
-
 # from collections import defaultdict
 
 
@@ -81,10 +79,11 @@ def _get_message_offsets(path):
         def get(count):
             buf = os.read(fd, count)
             assert len(buf) == count
-            n = 0
-            for i in buf:
-                n = n * 256 + int(i)
-            return n
+            return int.from_bytes(
+                buf,
+                byteorder="big",
+                signed=False,
+            )
 
         offset = 0
         while True:
@@ -103,9 +102,7 @@ def _get_message_offsets(path):
                 if length & 0x800000:
                     sec1len = get(3)
                     os.lseek(fd, 4, os.SEEK_CUR)
-                    flags = int.from_bytes(
-                        os.read(fd, 1), byteorder="big", signed=False
-                    )
+                    flags = get(1)
                     os.lseek(fd, sec1len - 8, os.SEEK_CUR)
 
                     if flags & (1 << 7):
@@ -195,11 +192,12 @@ class CodesReader:
 
 
 class GribField(Base):
-    def __init__(self, *, handle=None, reader=None, offset=None):
+    def __init__(self, reader, offset, length):
         assert reader
-        self._handle = handle
         self._reader = reader
         self._offset = offset
+        self._length = length
+        self._handle = None
 
     def __enter__(self):
         return self
@@ -418,87 +416,54 @@ class GRIBIndex:
         return False
 
 
-class FieldSetIterator:
-    def __init__(self, fieldset):
-        self.fieldset = fieldset
-        self.i = -1
+class GribFieldProxy:
+    def __init__(self, owner, path, offset, length):
+        self.owner = owner
+        self.path = path
+        self.offset = offset
+        self.length = length
+        self._field = None
 
-    def __next__(self):
-        self.i += 1
-        try:
-            return self.fieldset[self.i]
-        except IndexError:
-            raise StopIteration()
-
-
-class Field:
-    def __init__(self, field):
-        self.field = field
-        self.keys = {}
-
-    def __del__(self):
-        print(self.keys)
-
-    def __getitem__(self, name):
-        self.keys[name] = self.field.handle.get(name)
-        return self.field.handle.get(name)
-
-
-class FieldSet:
-    def __init__(self, sources):
-        self.indexes = [s._reader for s in sources]
-
-    def __iter__(self):
-        return FieldSetIterator(self)
-
-    def __getitem__(self, i):
-        j = i
-        for idx in self.indexes:
-            if j <= len(idx):
-                return Field(idx[j])
-            j -= len(idx)
-        raise IndexError(i)
-
-
-class GRIBReader(Reader):
-    appendable = True  # GRIB messages can be added to the same file
-
-    def __init__(self, source, path):
-        super().__init__(source, path)
-        self._index = None
-        self._reader = None
-        self._statistics = None
-
-    def __repr__(self):
-        return "GRIBReader(%s)" % (self.path,)
-
-    def __iter__(self):
-        return GRIBIterator(self.path)
+    def __getattr__(self, name):
+        return getattr(self.field, name)
 
     @property
-    def reader(self):
-        if self._reader is None:
-            self._reader = CodesReader(self.path)
-        return self._reader
+    def field(self):
+        if self._field is None:
+            reader = self.owner.reader(self.path)
+            self._field = GribField(reader, self.offset, self.length)
+        return self._field
 
-    @property
-    def index(self):
-        if self._index is None:
-            self._index = GRIBIndex(self.path)
-        return self._index
+
+class FieldSet(Base):
+    def __init__(self, paths=None):
+        self.readers = {}
+        self.fields = []
+        if paths is not None:
+            if not isinstance(paths, (list, tuple)):
+                paths = [paths]
+            for path in paths:
+                index = GRIBIndex(path)
+                for offset, length in zip(index.offsets, index.lengths):
+                    self.fields.append(GribFieldProxy(self, path, offset, length))
+
+    def reader(self, path):
+        if path not in self.readers:
+            self.readers[path] = CodesReader(path)
+        return self.readers[path]
+
+    def __iter__(self):
+        return iter(self.fields)
 
     def __getitem__(self, n):
-        return GribField(
-            reader=self.reader,
-            offset=self.index.offsets[n],
-        )
+        return self.fields[n]
 
     @property
     def first(self):
-        return GribField(reader=self.reader, offset=0)
+        return self[0]
 
     def __len__(self):
-        return len(self.index.offsets)
+        return len(self.fields)
 
     def to_xarray(self, **kwargs):
         return type(self).to_xarray_multi_from_sources([self.source], **kwargs)
@@ -730,15 +695,3 @@ class GRIBReader(Reader):
         print(self._statistics)
 
         return self._statistics
-
-    @classmethod
-    def merge(cls, readers):
-        from climetlab.mergers import merge_by_class
-
-        assert all(isinstance(s, GRIBReader) for s in readers)
-        assert False, readers
-
-
-def reader(source, path, magic=None, deeper_check=False):
-    if magic is None or magic[:4] == b"GRIB":
-        return GRIBReader(source, path)

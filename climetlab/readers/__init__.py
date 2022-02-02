@@ -93,8 +93,14 @@ def _readers():
     if not _READERS:
         here = os.path.dirname(__file__)
         for path in sorted(os.listdir(here)):
-            if path.endswith(".py") and path[0] not in ("_", "."):
+
+            if path[0] in ("_", "."):
+                continue
+
+            if path.endswith(".py") or os.path.isdir(os.path.join(here, path)):
+
                 name, _ = os.path.splitext(path)
+
                 try:
                     module = import_module(f".{name}", package=__name__)
                     if hasattr(module, "reader"):
@@ -105,6 +111,7 @@ def _readers():
                                 _READERS[a] = module.reader
                 except Exception:
                     LOG.exception("Error loading reader %s", name)
+
     return _READERS
 
 

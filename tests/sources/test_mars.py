@@ -42,7 +42,6 @@ def test_mars_grib_2():
         split_on="param",
     )
     assert len(s) == 2
-    assert len(s.sources) == 2
 
 
 if __name__ == "__main__":
