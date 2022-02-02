@@ -226,6 +226,8 @@ class DatasetMaker:
         return self.lookup(name, *args, **kwargs)
 
     def __getattr__(self, name):
+        if name.startswith("_"):
+            raise AttributeError(name)
         return self(name.replace("_", "-"))
 
 

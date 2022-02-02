@@ -214,28 +214,34 @@ def when(then, now=None, short=True):
     )
 
 
-def levenshtein(a, b):
-    if len(a) == 0:
-        return len(b)
+def string_distance(s, t):
+    import numpy as np
 
-    if len(b) == 0:
-        return len(a)
+    m = len(s)
+    n = len(t)
+    d = np.zeros((m + 1, n + 1), dtype=int)
 
-    if a[0] == b[0]:
-        return levenshtein(a[1:], b[1:])
+    one = np.int(1)
+    zero = np.int(0)
 
-    return 1 + min(
-        [
-            levenshtein(a[1:], b[1:]),
-            levenshtein(a[1:], b),
-            levenshtein(a, b[1:]),
-        ]
-    )
+    d[:, 0] = np.arange(m + 1)
+    d[0, :] = np.arange(n + 1)
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = zero if s[i - 1] == t[j - 1] else one
+            d[i, j] = min(
+                d[i - 1, j] + one,
+                d[i, j - 1] + one,
+                d[i - 1, j - 1] + cost,
+            )
+
+    return d[m, n]
 
 
 def did_you_mean(word, vocabulary):
 
-    distance, best = min((levenshtein(word, w), w) for w in vocabulary)
+    distance, best = min((string_distance(word, w), w) for w in vocabulary)
     # if distance < min(len(word), len(best)):
     return best
 

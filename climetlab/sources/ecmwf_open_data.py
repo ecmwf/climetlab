@@ -7,9 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .file import FileSource
-
 import ecmwf.opendata
+
+from .file import FileSource
 
 
 class EODRetriever(FileSource):
@@ -18,18 +18,16 @@ class EODRetriever(FileSource):
     EODRetriever
     """
 
-    def __init__(self, source='ecmwf', *args, **kwargs):
+    def __init__(self, source="ecmwf", *args, **kwargs):
         if len(args):
             assert len(args) == 1
             assert isinstance(args[0], dict)
             assert not kwargs
             kwargs = args[0]
 
-        self.client = ecmwf.opendata.Client(source=source,
-                                            preserve_request_order=True)
+        self.client = ecmwf.opendata.Client(source=source, preserve_request_order=True)
 
-
-        self.path  = self._retrieve(self.request(**kwargs))
+        self.path = self._retrieve(self.request(**kwargs))
 
     def _retrieve(self, request):
         def retrieve(target, request):
