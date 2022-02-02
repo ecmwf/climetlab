@@ -165,3 +165,4 @@ test
 .DS_Store
 *.grib2
 benchmark.json
+*.h5

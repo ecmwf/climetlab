@@ -77,6 +77,10 @@ class Base(metaclass=MetaBase):
     def to_bounding_box(self):
         self._not_implemented()
 
+    # For machine learning
+    def statistics(self):
+        self._not_implemented()
+
     #
     def _not_implemented(self):
         import inspect
