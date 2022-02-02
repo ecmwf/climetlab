@@ -11,7 +11,7 @@ import itertools
 import logging
 
 from climetlab.core.thread import SoftThreadPool
-from climetlab.mergers import make_merger
+from climetlab.mergers import make_merger, merge_by_class
 from climetlab.sources.empty import EmptySource
 from climetlab.utils import tqdm
 from climetlab.utils.bbox import BoundingBox
@@ -38,12 +38,16 @@ class MultiSource(Source):
         return len(self.sources) == 0
 
     def mutate(self):
-
-        if len(self.sources) == 1 and self.merger is None:
+        if len(self.sources) == 1:
             return self.sources[0].mutate()
 
         if len(self.sources) == 0:
             return EmptySource()
+
+        if self.merger is None:
+            merged = merge_by_class(self.sources)
+            if merged is not None:
+                return merged
 
         return self
 
@@ -99,6 +103,9 @@ class MultiSource(Source):
 
     def to_pandas(self, **kwargs):
         return make_merger(self.merger, self.sources).to_pandas(**kwargs)
+
+    def statistics(self, **kwargs):
+        return make_merger(self.merger, self.sources).statistics(**kwargs)
 
     def _load_sources(self, sources):
         callables = []

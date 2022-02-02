@@ -9,8 +9,8 @@ from tensorflow.keras.layers import (
     Dropout,
     Flatten,
     Input,
-    Reshape,
     Lambda,
+    Reshape,
 )
 from tensorflow.keras.models import Sequential
 
@@ -84,11 +84,17 @@ shape = dataset.element_spec[0].shape
 print(shape)
 
 
-model = Sequential(name=f"{param}_{ro}_{mu}")
+class MyModel(Sequential):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.foo = 42
+
+
+model = MyModel(name=f"{param}_{ro}_{mu}")
 model.add(Input(shape=(shape[-2], shape[-1])))
 model.add(Reshape((shape[-2], shape[-1], 1), name="add_depth"))
 for n in range(1):
-    model.add(Conv2D(44, kernel_size=(3, 3), activation="relu"))
+    model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
     model.add(Dropout(0.5))
 model.add(Flatten())
 model.add(Dense(shape[-2] * shape[-1]))
@@ -97,7 +103,7 @@ model.add(Reshape(target_shape=(shape[-2], shape[-1]), name="result"))
 
 model.summary()
 batch_size = 128
-epochs = 1000
+epochs = 1
 
 model.compile(
     loss="mse",

@@ -41,6 +41,11 @@ def _flatten(sources):
             yield s
 
 
+def merge_by_class(sources):
+    common = _nearest_common_class(sources)
+    return common.merge(sources)
+
+
 class Merger:
     def __init__(self, sources):
 

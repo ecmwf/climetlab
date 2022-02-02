@@ -55,10 +55,11 @@ install_requires += [
     # "s3fs",
     "dask",
     "netcdf4",
-    "cfgrib>=0.9.8.4",
+    "cfgrib>=0.9.10",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "multiurl>=0.0.8",
+    "ecmwf-opendata",
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
@@ -70,7 +71,6 @@ install_requires += [
     "pyyaml",
     "markdown",
     "termcolor",
-    "jellyfish",
     "entrypoints",
     "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
 ]

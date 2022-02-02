@@ -62,6 +62,13 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def ignore(self):
         return self._reader.ignore()
 
+    @classmethod
+    def merge(cls, sources):
+        from climetlab.mergers import merge_by_class
+
+        assert all(isinstance(s, FileSource) for s in sources)
+        return merge_by_class([s._reader for s in sources])
+
     @property
     def _reader(self):
         if self._reader_ is None:

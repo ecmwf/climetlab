@@ -34,6 +34,10 @@ from . import Reader
 LOG = logging.getLogger(__name__)
 
 
+def missing_is_none(x):
+    return None if x == 2147483647 else x
+
+
 def mix_kwargs(
     user,
     default,
@@ -99,7 +103,9 @@ def _get_message_offsets(path):
                 if length & 0x800000:
                     sec1len = get(3)
                     os.lseek(fd, 4, os.SEEK_CUR)
-                    flags = int(os.read(fd, 1))
+                    flags = int.from_bytes(
+                        os.read(fd, 1), byteorder="big", signed=False
+                    )
                     os.lseek(fd, sec1len - 8, os.SEEK_CUR)
 
                     if flags & (1 << 7):
@@ -225,7 +231,10 @@ class GribField(Base):
 
     @property
     def shape(self):
-        return self.handle.get("Nj"), self.handle.get("Ni")
+        return (
+            missing_is_none(self.handle.get("Nj")),
+            missing_is_none(self.handle.get("Ni")),
+        )
 
     def plot_map(self, backend):
         backend.bounding_box(
@@ -238,6 +247,9 @@ class GribField(Base):
 
     @call_counter
     def to_numpy(self, normalise=False):
+        shape = self.shape
+        if shape[0] is None or shape[1] is None:
+            return self.values
         if normalise:
             return self.values.reshape(self.shape)
         return self.values.reshape(self.shape)
@@ -491,7 +503,9 @@ class GRIBReader(Reader):
     def to_xarray(self, **kwargs):
         return type(self).to_xarray_multi_from_sources([self.source], **kwargs)
 
-    def to_tfdataset(self, **kwargs):
+    def to_tfdataset(
+        self, split=None, shuffle=None, normalize=None, batch_size=0, **kwargs
+    ):
         # assert "label" in kwargs
         if "offset" in kwargs:
             return self._to_tfdataset_offset(**kwargs)
@@ -716,6 +730,13 @@ class GRIBReader(Reader):
         print(self._statistics)
 
         return self._statistics
+
+    @classmethod
+    def merge(cls, readers):
+        from climetlab.mergers import merge_by_class
+
+        assert all(isinstance(s, GRIBReader) for s in readers)
+        assert False, readers
 
 
 def reader(source, path, magic=None, deeper_check=False):
