@@ -7,83 +7,43 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_source
-from climetlab.indexing import PerUrlIndex
-from climetlab.sources.multi import MultiSource
+from .file import FileSource
 
-from .prompt import APIKeyPrompt
+import ecmwf.opendata
 
 
-class EODKeyPrompt(APIKeyPrompt):
-    register_or_sign_in_url = "https://www.ecmwf.int/"
-    retrieve_api_key_url = "https://www.ecmwf.int"
-
-    prompts = [
-        dict(
-            name="url",
-            default="c",
-            title="API url",
-            validate=r"http.?://.*",
-        ),
-    ]
-
-    rcfile = "~/.ecmwf-open-data"
-
-
-class EODRetriever(MultiSource):
+class EODRetriever(FileSource):
 
     sphinxdoc = """
     EODRetriever
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, source='ecmwf', *args, **kwargs):
         if len(args):
             assert len(args) == 1
             assert isinstance(args[0], dict)
             assert not kwargs
             kwargs = args[0]
 
-        prompt = EODKeyPrompt()
-        self.config = prompt.check(load=True)
+        self.client = ecmwf.opendata.Client(source=source,
+                                            preserve_request_order=True)
 
-        options = dict(
-            url=self.config["url"],
-            date=-1,
-            step=0,
-            resol="0p4",
-            stream="oper",
-            type="fc",
-            extension=".grib2",
+
+        self.path  = self._retrieve(self.request(**kwargs))
+
+    def _retrieve(self, request):
+        def retrieve(target, request):
+            self.client.execute(request, target)
+
+        return self.cache_file(
+            retrieve,
+            request,
         )
-        options.update(kwargs)
-        # assert False, (kwargs, options)
-
-        sources = self.requests(**options)
-
-        super().__init__(sources)
 
     # @normalize("date", "date-list(%Y-%m-%d)")
     # @normalize("area", "bounding-box(list)")
-    def requests(self, **request):
-
-        for k, v in request.items():
-            if not isinstance(v, (list, tuple)):
-                request[k] = [v]
-
-        pattern = (
-            "{url}/{date:date(%Y%m%d)}/{date:date(%H)}z/{resol}/{stream}/"
-            "{date:date(%Y%m%d%H%M%S)}-{step}h-{stream}-{type}{extension}"
-        )
-
-        index = PerUrlIndex(pattern, substitute_extension=True)
-
-        # result = []
-        # for p in Pattern(pattern).substitute([], **kwargs):
-        #    result.append(load_source("url", p, lazily=True))# parts=[(0, 4)]))
-
-        sources = load_source("indexed-urls", index, request)
-
-        return sources
+    def request(self, **request):
+        return request
 
 
 source = EODRetriever
