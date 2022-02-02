@@ -18,6 +18,11 @@ CliMetLab has build-in example datasets for demo purposes.
 And more examples can be found in the non-exhaustive
 :doc:`list of CliMetLab plugins <../guide/pluginlist>`.
 
+.. note::
+
+  **Naming convention**: A plugin package name should preferably starts with ``climetlab-`` and use "-". The Python package to import should starts with
+  :py:class:`climetlab\_` and use "_".
+
 
 .. _dataset-pip:
 

@@ -1,7 +1,7 @@
 .. _caching:
 
-Caching
-=======
+Caching Settings
+================
 
 .. warning::
 
@@ -66,7 +66,10 @@ maximum-cache-disk-usage is relative (such as "90%" or "100%").
 
 
 
-Caching options
----------------
+Caching settings
+----------------
+.. todo::
+    
+    add pointer to the settings page.
 
-.. module-output:: generate_settings_rst .*-cache-.*
+.. module-output:: generate_settings_rst .*-cache-.* cache-.*

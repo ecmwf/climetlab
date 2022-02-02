@@ -27,7 +27,6 @@ or PyTorch_. See :ref:`overview` for more information.
 Documentation
 -------------
 
-**Getting Started**
 
 * :doc:`overview`
 * :doc:`installing`
@@ -37,7 +36,6 @@ Documentation
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Getting Started
 
    overview
    installing
@@ -78,7 +76,6 @@ Documentation
 * :doc:`contributing/sources`
 * :doc:`contributing/normalize`
 * :doc:`contributing/availability`
-* :doc:`contributing/readers`
 * :doc:`contributing/plotting`
 
 .. toctree::
@@ -91,7 +88,6 @@ Documentation
    contributing/sources
    contributing/normalize
    contributing/availability
-   contributing/readers
    contributing/plotting
 
 
@@ -100,9 +96,6 @@ Documentation
 * :doc:`developer/overview`
 * :doc:`developer/todolist`
 * :doc:`developer/architecture`
-* :doc:`developer/datasets`
-* :doc:`developer/sources`
-* :doc:`developer/api`
 * :doc:`developer/plotting`
 * :doc:`developer/gallery`
 * :doc:`developer/plugins`
@@ -115,9 +108,6 @@ Documentation
    developer/overview
    developer/todolist
    developer/architecture
-   developer/datasets
-   developer/sources
-   developer/api
    developer/plotting
    developer/gallery
    developer/plugins

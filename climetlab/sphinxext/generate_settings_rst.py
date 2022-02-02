@@ -52,7 +52,7 @@ def execute(*args):
     print("     - | Description")
     print()
     for k, v in sorted(tidy(SETTINGS_AND_HELP).items()):
-        if len(args) and not re.match(args[0], k):
+        if len(args) and not any(re.match(arg, k) for arg in args):
             continue
         print("   * - |", k.replace("-", "\u2011"))  # Non-breaking hyphen
         print("     - |", repr(v.default).replace("-", "\u2011"))
