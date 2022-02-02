@@ -142,13 +142,14 @@ def test_download_zip_2():
 #     # assert len(ds) == 1
 
 
-def xtest_multi_grib():
+def test_multi_grib():
     ds = load_source(
         "multi",
         load_source("dummy-source", kind="grib", date=20000101),
         load_source("dummy-source", kind="grib", date=20000102),
     )
     assert len(ds) == 2
+    ds.statistics()
 
 
 def test_multi_grib_mixed():
@@ -242,6 +243,7 @@ def test_multi_missing_url():
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    test_multi_grib()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)

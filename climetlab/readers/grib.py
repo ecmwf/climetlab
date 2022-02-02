@@ -14,9 +14,11 @@ import datetime
 import json
 import logging
 import os
+import warnings
 
 import eccodes
 
+from climetlab import load_source
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
@@ -32,7 +34,17 @@ from . import Reader
 LOG = logging.getLogger(__name__)
 
 
-def mix_kwargs(user, default, forced={}, logging_owner="", logging_main_key=""):
+def missing_is_none(x):
+    return None if x == 2147483647 else x
+
+
+def mix_kwargs(
+    user,
+    default,
+    forced={},
+    logging_owner="",
+    logging_main_key="",
+):
     kwargs = copy.deepcopy(default)
 
     for k, v in user.items():
@@ -91,7 +103,9 @@ def _get_message_offsets(path):
                 if length & 0x800000:
                     sec1len = get(3)
                     os.lseek(fd, 4, os.SEEK_CUR)
-                    flags = int(os.read(fd, 1))
+                    flags = int.from_bytes(
+                        os.read(fd, 1), byteorder="big", signed=False
+                    )
                     os.lseek(fd, sec1len - 8, os.SEEK_CUR)
 
                     if flags & (1 << 7):
@@ -217,7 +231,10 @@ class GribField(Base):
 
     @property
     def shape(self):
-        return self.handle.get("Nj"), self.handle.get("Ni")
+        return (
+            missing_is_none(self.handle.get("Nj")),
+            missing_is_none(self.handle.get("Ni")),
+        )
 
     def plot_map(self, backend):
         backend.bounding_box(
@@ -229,7 +246,12 @@ class GribField(Base):
         backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
-    def to_numpy(self):
+    def to_numpy(self, normalise=False):
+        shape = self.shape
+        if shape[0] is None or shape[1] is None:
+            return self.values
+        if normalise:
+            return self.values.reshape(self.shape)
         return self.values.reshape(self.shape)
 
     def __repr__(self):
@@ -329,7 +351,7 @@ class GRIBFilter:
 
 # class MultiGribReaders(GriddedMultiReaders):
 #     engine = "cfgrib"
-#     backend_kwargs = {"squeeze": False}
+#     backend_kwargs = {"squeeze": True}
 
 
 class GRIBIndex:
@@ -337,11 +359,12 @@ class GRIBIndex:
     VERSION = 1
 
     def __init__(self, path):
+        assert isinstance(path, str), path
         self.path = path
         self.offsets = None
         self.lengths = None
         self.cache = auxiliary_cache_file(
-            "grib",
+            "grib-index",
             path,
             content="null",
             extension=".json",
@@ -395,16 +418,56 @@ class GRIBIndex:
         return False
 
 
+class FieldSetIterator:
+    def __init__(self, fieldset):
+        self.fieldset = fieldset
+        self.i = -1
+
+    def __next__(self):
+        self.i += 1
+        try:
+            return self.fieldset[self.i]
+        except IndexError:
+            raise StopIteration()
+
+
+class Field:
+    def __init__(self, field):
+        self.field = field
+        self.keys = {}
+
+    def __del__(self):
+        print(self.keys)
+
+    def __getitem__(self, name):
+        self.keys[name] = self.field.handle.get(name)
+        return self.field.handle.get(name)
+
+
+class FieldSet:
+    def __init__(self, sources):
+        self.indexes = [s._reader for s in sources]
+
+    def __iter__(self):
+        return FieldSetIterator(self)
+
+    def __getitem__(self, i):
+        j = i
+        for idx in self.indexes:
+            if j <= len(idx):
+                return Field(idx[j])
+            j -= len(idx)
+        raise IndexError(i)
+
+
 class GRIBReader(Reader):
     appendable = True  # GRIB messages can be added to the same file
-
-    open_mfdataset_backend_kwargs = {"squeeze": False}
-    open_mfdataset_engine = "cfgrib"
 
     def __init__(self, source, path):
         super().__init__(source, path)
         self._index = None
         self._reader = None
+        self._statistics = None
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -438,14 +501,48 @@ class GRIBReader(Reader):
         return len(self.index.offsets)
 
     def to_xarray(self, **kwargs):
-        return type(self).to_xarray_multi([self.path], **kwargs)
+        return type(self).to_xarray_multi_from_sources([self.source], **kwargs)
 
-    def to_tfdataset(self, **kwargs):
+    def to_tfdataset(
+        self, split=None, shuffle=None, normalize=None, batch_size=0, **kwargs
+    ):
         # assert "label" in kwargs
+        if "offset" in kwargs:
+            return self._to_tfdataset_offset(**kwargs)
         if "label" in kwargs:
             return self._to_tfdataset_supervised(**kwargs)
         else:
             return self._to_tfdataset_unsupervised(**kwargs)
+
+    def _to_tfdataset_offset(self, offset, **kwargs):
+
+        # μ = self.statistics()["average"]
+        # σ = self.statistics()["stdev"]
+
+        def normalise(a):
+            return a
+            # return (a - μ) / σ
+
+        def generate():
+            fields = []
+            for s in self:
+                fields.append(normalise(s.to_numpy()))
+                if len(fields) >= offset:
+                    yield fields[0], fields[-1]
+                    fields.pop(0)
+
+        import tensorflow as tf
+
+        shape = self.first.shape
+
+        dtype = kwargs.get("dtype", tf.float32)
+        return tf.data.Dataset.from_generator(
+            generate,
+            output_signature=(
+                tf.TensorSpec(shape, dtype=dtype, name="input"),
+                tf.TensorSpec(shape, dtype=dtype, name="output"),
+            ),
+        )
 
     def _to_tfdataset_unsupervised(self, **kwargs):
         def generate():
@@ -483,36 +580,55 @@ class GRIBReader(Reader):
         )
 
     @classmethod
-    def to_xarray_multi(cls, paths, **kwargs):
+    def to_xarray_multi_from_sources(cls, sources, **kwargs):
+        readers = [source._reader for source in sources]
+        assert all(r.__class__ is cls for r in readers)
+
         import xarray as xr
 
-        xarray_open_mfdataset_kwargs = {}
+        xarray_open_dataset_kwargs = {}
 
-        user_xarray_open_mfdataset_kwargs = kwargs.get(
-            "xarray_open_mfdataset_kwargs", {}
-        )
+        if "xarray_open_mfdataset_kwargs" in kwargs:
+            warnings.warn(
+                "xarray_open_mfdataset_kwargs is deprecated, please use xarray_open_dataset_kwargs instead."
+            )
+            kwargs["xarray_open_dataset_kwargs"] = kwargs.pop(
+                "xarray_open_mfdataset_kwargs"
+            )
+
+        user_xarray_open_mfdataset_kwargs = kwargs.get("xarray_open_dataset_kwargs", {})
         for key in ["backend_kwargs"]:
-            xarray_open_mfdataset_kwargs[key] = mix_kwargs(
+            xarray_open_dataset_kwargs[key] = mix_kwargs(
                 user=user_xarray_open_mfdataset_kwargs.pop(key, {}),
-                default={"squeeze": False},
+                default={"errors": "raise"},
                 forced={},
-                logging_owner="xarray_open_mfdataset_kwargs",
+                logging_owner="xarray_open_dataset_kwargs",
                 logging_main_key=key,
             )
-        xarray_open_mfdataset_kwargs.update(
+        xarray_open_dataset_kwargs.update(
             mix_kwargs(
                 user=user_xarray_open_mfdataset_kwargs,
                 default={},
-                forced={"engine": "cfgrib"},
+                forced={
+                    "errors": "raise",
+                    "engine": "cfgrib",
+                },
             )
         )
 
-        return xr.open_mfdataset(
-            paths,
-            **xarray_open_mfdataset_kwargs,
+        return xr.open_dataset(
+            FieldSet(sources),
+            **xarray_open_dataset_kwargs,
+        )
+
+    @classmethod
+    def to_xarray_multi_from_paths(cls, paths, **kwargs):
+        return cls.to_xarray_multi_from_sources(
+            [load_source("file", path) for path in paths]
         )
 
     def to_metview(self):
+        return FieldSet([load_source("file", self.path)])
         from climetlab.metview import mv_read
 
         return mv_read(self.path)
@@ -551,6 +667,76 @@ class GRIBReader(Reader):
 
     def to_bounding_box(self):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self])
+
+    def statistics(self):
+        import numpy as np
+
+        if self._statistics is not None:
+            return self._statistics
+
+        cache = auxiliary_cache_file(
+            "grib-statistics--",
+            self.path,
+            content="null",
+            extension=".json",
+        )
+
+        with open(cache) as f:
+            self._statistics = json.load(f)
+
+        if self._statistics is not None:
+            return self._statistics
+
+        stdev = None
+        average = None
+        maximum = None
+        minimum = None
+        count = 0
+
+        for s in self:
+            v = s.values
+            if count:
+                stdev = np.add(stdev, np.multiply(v, v))
+                average = np.add(average, v)
+                maximum = np.maximum(maximum, v)
+                minimum = np.minimum(minimum, v)
+            else:
+                stdev = np.multiply(v, v)
+                average = v
+                maximum = v
+                minimum = v
+
+            count += 1
+
+        nans = np.count_nonzero(np.isnan(average))
+        assert nans == 0, "Statistics with missing values not yet implemented"
+
+        maximum = np.amax(maximum)
+        minimum = np.amin(minimum)
+        average = np.mean(average) / count
+        stdev = np.sqrt(np.mean(stdev) / count - average * average)
+
+        self._statistics = dict(
+            minimum=minimum,
+            maximum=maximum,
+            average=average,
+            stdev=stdev,
+            count=count,
+        )
+
+        with open(cache, "w") as f:
+            json.dump(self._statistics, f)
+
+        print(self._statistics)
+
+        return self._statistics
+
+    @classmethod
+    def merge(cls, readers):
+        from climetlab.mergers import merge_by_class
+
+        assert all(isinstance(s, GRIBReader) for s in readers)
+        assert False, readers
 
 
 def reader(source, path, magic=None, deeper_check=False):
