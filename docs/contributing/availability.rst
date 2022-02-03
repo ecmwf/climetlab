@@ -1,7 +1,7 @@
 .. _availability:
 
-Availability (decorator)
-========================
+Availability decorator
+======================
 
 .. todo::
 

@@ -6,8 +6,11 @@ Settings
 its behaviour.
 
 The settings are saved in ``~/.climetlab/settings.yaml``. They can
-be accessed from Python as shown below:
+be accessed from Python or using the ``climetlab`` command line as shown below:
 
+.. todo::
+
+    Add documentation for command line usage.
 
 Accessing settings
 ------------------

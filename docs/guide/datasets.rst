@@ -48,6 +48,11 @@ This ensures that the dataset can be loaded with
         >>> import climetlab as cml
         >>> ds = cml.load_dataset("demo-dataset")
 
+The first argument is the name of the dataset.
+It is used to find the relevant plugin and class to use.
+Other arguments are defined by the plugin maintainer and are
+documented in the plugin documentation (see :doc:`/guide/pluginlist`).
+
 The dataset object provides methods to access and use its data, such as
 ```to_xarray()``` or ```to_pandas()``` or other (see below).
 
@@ -107,15 +112,6 @@ It often includes a column for the latitude and longitude of the data.
         >>> import climetlab as cml
         >>> ds = cml.load_dataset("dataset-name", **options)
         >>> ds.to_pandas()
-
-
-cml.load_dataset()
-------------------
-
-The first argument is the name of the dataset.
-It is used to find the relevant plugin and class to use.
-Other arguments are defined by the plugin maintainer and are
-documented in the plugin documentation.
 
 
 .. _dataset metadata:
