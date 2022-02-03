@@ -7,29 +7,17 @@
 # nor does it submit to any jurisdiction.
 #
 
-import copy
-
-# import atexit
 import datetime
 import json
 import logging
 import os
-import warnings
 
 import eccodes
 
-from climetlab import load_source
 from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
-
-# from climetlab.decorators import dict_args
 from climetlab.utils.bbox import BoundingBox
-
-from . import Reader
-
-# from collections import defaultdict
-
 
 LOG = logging.getLogger(__name__)
 
@@ -158,13 +146,18 @@ class CodesReader:
     def offset(self):
         return self.file.tell()
 
+    def read(self, offset, length):
+        self.file.seek(offset, 0)
+        return self.file.read(length)
+
 
 class GribField(Base):
-    def __init__(self, *, handle=None, reader=None, offset=None):
+    def __init__(self, reader, offset, length):
         assert reader
-        self._handle = handle
         self._reader = reader
         self._offset = offset
+        self._length = length
+        self._handle = None
 
     def __enter__(self):
         return self
@@ -284,8 +277,20 @@ class GribField(Base):
             name = "paramId"
         return self.handle.get(name)
 
+    def __getitem__(self, name):
+        """For cfgrib"""
+        if ":" in name:
+            name, kind = name.split(":")
+            return dict(s=self.handle.get_string,)[
+                kind
+            ](name)
+        return self.handle.get(name)
 
-class GRIBIndex:
+    def write(self, f):
+        f.write(self._reader.read(self._offset, self._length))
+
+
+class GribIndex:
 
     VERSION = 1
 

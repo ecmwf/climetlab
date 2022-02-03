@@ -123,10 +123,11 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
         path = self.path
         if isinstance(self.path, str):
             path = path.replace(cache_dir, "CACHE:")
+        # reader_class_name = str(self._reader.__class__.name)
         try:
             reader_class_name = str(self._reader.__class__.name)
-        except AttributeError:  # TODO: improve this
-            reader_class_name = "unknown"
+        except AttributeError as e:  # TODO: improve this
+            reader_class_name = str(e)#"unknown"
         except:  # TODO: improve this # noqa: E722
             reader_class_name = "Unknown"
         return f"{self.__class__.__name__}({path},{reader_class_name})"

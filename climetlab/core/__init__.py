@@ -50,6 +50,10 @@ class Base(metaclass=MetaBase):
     def mutate(self):
         return self
 
+    @classmethod
+    def merge(cls, *args, **kwargs):
+        return None
+
     # Used when plotting
     def plot_map(self, backend):
         self._not_implemented()

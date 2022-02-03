@@ -243,7 +243,6 @@ def test_multi_missing_url():
 
 
 if __name__ == "__main__":
-    test_multi_grib()
-    # from climetlab.testing import main
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

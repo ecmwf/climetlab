@@ -44,7 +44,6 @@ def test_cds_grib_2():
         split_on="variable",
     )
     assert len(s) == 2
-    assert len(s.sources) == 2
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
