@@ -8,18 +8,16 @@
 #
 
 import copy
-import datetime
 import json
 import logging
 import warnings
 
-from climetlab.core import Base
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
 
-from .codes import CodesReader,  GribIndex, GribField
+from .codes import CodesReader, GribField, GribIndex
 
 LOG = logging.getLogger(__name__)
 
@@ -73,25 +71,23 @@ class FieldSet(Source):
             for path in paths:
                 index = GribIndex(path)
                 for offset, length in zip(index.offsets, index.lengths):
-                    self.fields.append(GribField(self.reader(path), offset, length))
+                    self.fields.append((path, offset, length))
 
     def reader(self, path):
         if path not in self.readers:
             self.readers[path] = CodesReader(path)
         return self.readers[path]
 
-    def __iter__(self):
-        return iter(self.fields)
-
     def __getitem__(self, n):
-        return self.fields[n]
+        path, offset, length = self.fields[n]
+        return GribField(self.reader(path), offset, length)
+
+    def __len__(self):
+        return len(self.fields)
 
     @property
     def first(self):
         return self[0]
-
-    def __len__(self):
-        return len(self.fields)
 
     def to_tfdataset(
         self, split=None, shuffle=None, normalize=None, batch_size=0, **kwargs

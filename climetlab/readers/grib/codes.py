@@ -110,6 +110,24 @@ class CodesHandle:
         except eccodes.KeyValueNotFoundError:
             return None
 
+    def get_long(self, name):
+        try:
+            return eccodes.codes_get_long(self.handle, name)
+        except eccodes.KeyValueNotFoundError:
+            return None
+
+    def get_string(self, name):
+        try:
+            return eccodes.codes_get_string(self.handle, name)
+        except eccodes.KeyValueNotFoundError:
+            return None
+
+    def get_double(self, name):
+        try:
+            return eccodes.codes_get_double(self.handle, name)
+        except eccodes.KeyValueNotFoundError:
+            return None
+
 
 class CodesReader:
     def __init__(self, path):
@@ -153,7 +171,6 @@ class CodesReader:
 
 class GribField(Base):
     def __init__(self, reader, offset, length):
-        assert reader
         self._reader = reader
         self._offset = offset
         self._length = length
@@ -245,7 +262,11 @@ class GribField(Base):
         date = self.handle.get("date")
         time = self.handle.get("time")
         return datetime.datetime(
-            date // 10000, date % 10000 // 100, date % 100, time // 100, time % 100
+            date // 10000,
+            date % 10000 // 100,
+            date % 100,
+            time // 100,
+            time % 100,
         )
 
     def valid_datetime(self):
@@ -279,12 +300,23 @@ class GribField(Base):
 
     def __getitem__(self, name):
         """For cfgrib"""
+
+        # print(name)
+
+        proc = self.handle.get
         if ":" in name:
-            name, kind = name.split(":")
-            return dict(s=self.handle.get_string,)[
-                kind
-            ](name)
-        return self.handle.get(name)
+            try:
+                name, kind = name.split(":")
+                proc = dict(
+                    str=self.handle.get_string,
+                    int=self.handle.get_long,
+                    float=self.handle.get_double,
+                )[kind]
+            except Exception:
+                LOG.exception(f"Unsupported kind '{kind}'")
+                raise ValueError(f"Unsupported kind '{kind}'")
+
+        return proc(name)
 
     def write(self, f):
         f.write(self._reader.read(self._offset, self._length))
