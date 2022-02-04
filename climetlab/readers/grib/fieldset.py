@@ -10,6 +10,7 @@
 import copy
 import json
 import logging
+import math
 import warnings
 
 from climetlab.core.caching import auxiliary_cache_file
@@ -199,10 +200,26 @@ class FieldSet(Source):
             )
         )
 
-        return xr.open_dataset(
+        result = xr.open_dataset(
             self,
             **xarray_open_dataset_kwargs,
         )
+
+        # Assumes last two dimensions are lat/lon coordinates
+        two_d_fields = sum(
+            math.prod(list(result[v].shape)[:-2]) for v in result.data_vars
+        )
+
+        # Make sure all the fields are converted
+        # There may be more 2D xarray fields than GRB fields
+        # if some missing dimension are filled with NaN values
+
+        assert two_d_fields >= len(self), (
+            "Not all GRIB fields were converted to xarray"
+            f" ({len(self)} GRIBs > {two_d_fields} 2D-field(s) in xarray)"
+        )
+
+        return result
 
     def to_metview(self):
         from climetlab.metview import mv_read
