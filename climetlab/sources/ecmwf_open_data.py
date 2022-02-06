@@ -31,7 +31,7 @@ class EODRetriever(FileSource):
 
     def _retrieve(self, request):
         def retrieve(target, request):
-            self.client.execute(request, target)
+            self.client.retrieve(request, target)
 
         return self.cache_file(
             retrieve,
