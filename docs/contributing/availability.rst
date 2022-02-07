@@ -34,21 +34,6 @@ Example:
 
 
 
-The following table lists the available constructors:
-
-.. list-table::
-   :widths: 10 80 10
-   :header-rows: 1
-
-   * - Availability
-     - Trigger
-     - Example
-   * - list
-     - tuple
-     - ``option=("a", "b")``
-   * - date
-     - list
-     - ``option=date-list...["a", "b"]``
 
 Usage
 -----

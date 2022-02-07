@@ -1,7 +1,7 @@
 import climetlab as cml
 
 # Change the location of the cache:
-cml.settings.set("cache-directory", "/big-disk")
+cml.settings.set("cache-directory", "/big-disk/climetlab-cache")
 
 # Set some default plotting options (e.g. all maps will
 # be 400 pixels wide by default):

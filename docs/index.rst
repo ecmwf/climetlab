@@ -76,6 +76,7 @@ Documentation
 * :doc:`contributing/sources`
 * :doc:`contributing/normalize`
 * :doc:`contributing/availability`
+* :doc:`contributing/grib`
 * :doc:`contributing/plotting`
 
 .. toctree::
@@ -88,6 +89,7 @@ Documentation
    contributing/sources
    contributing/normalize
    contributing/availability
+   contributing/grib
    contributing/plotting
 
 

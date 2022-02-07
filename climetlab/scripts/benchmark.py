@@ -9,7 +9,7 @@
 
 
 from .benchmarks.indexed_url import benchmark as benchmark_indexed_url
-from .tools import parse_args
+from .tools import experimental, parse_args
 
 
 class BenchmarkCmd:
@@ -18,9 +18,11 @@ class BenchmarkCmd:
             action="store_true",
             help="Benchmark on using indexed URL (byte-range) and various servers.",
         ),
-        full=dict(action="store_true", help="Run all benchmarks."),
+        all=dict(action="store_true", help="Run all benchmarks."),
     )
+    @experimental
     def do_benchmark(self, args):
-        if args.full or args.indexedurl:
+        """Run predefined benchmarks, for CliMetLab development purposes."""
+        if args.all or args.indexedurl:
             print("Starting benchmark.")
             benchmark_indexed_url()

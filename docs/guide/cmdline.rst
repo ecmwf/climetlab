@@ -21,7 +21,7 @@ Interactive prompt
 
 Running the ``climetlab`` command with no argument starts the
 interactive prompt. Autocompletion is enabled on the interactive
-prompt.
+prompt. To exit the interactive prompt use Control+D.
 
     .. code:: bash
 
@@ -29,7 +29,5 @@ prompt.
         (climetlab) <command> [options]
         (climetlab)
 
-Available commands
-------------------
 
 .. module-output:: generate_cmdline_help

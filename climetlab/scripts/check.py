@@ -16,7 +16,7 @@ from importlib import import_module
 
 from termcolor import colored
 
-from .tools import parse_args, print_table
+from .tools import experimental, parse_args, print_table
 
 
 def version(module):
@@ -67,8 +67,9 @@ def version(module):
 
 class CheckCmd:
     @parse_args()
+    @experimental
     def do_check(self, args):
-        """Experimental."""
+        """Experimental script to help debugging."""
         import climetlab
 
         print(

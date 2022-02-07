@@ -10,15 +10,23 @@
 
 import json
 
+from termcolor import colored
+
 from .tools import parse_args, print_table
 
 
 class SettingsCmd:
     @parse_args(
         json=dict(action="store_true", help="produce a JSON output"),
-        args=dict(metavar="ARG", type=str, nargs="*"),
+        args=dict(metavar="SETTING", type=str, nargs="*"),
     )
     def do_settings(self, args):
+        """
+        Display or change CliMetLab settings.
+        See https://climetlab.readthedocs.io/guide/settings.html for more details.
+
+        Examples: climetlab settings cache-directory /big-disk/climetlab-cache
+        """
         from climetlab import settings
 
         words = args.args
@@ -44,8 +52,57 @@ class SettingsCmd:
             value = words[1]
             settings.set(name, value)
 
+        if len(words) == 3:
+            name = words[0]
+            key = words[1]
+            value = words[2]
+            settings.set(name, {key: value})
+
     def complete_settings(self, text, line, start_index, end_index):
         from climetlab import settings
 
         names = [f[0] for f in settings.dump()]
         return [t for t in names if t.startswith(text)]
+
+    def complete_settings_reset(self, *args, **kwargs):
+        return self.complete_settings(*args, **kwargs)
+
+    @parse_args(
+        all=dict(action="store_true", help="All settings"),
+        args=dict(metavar="SETTING", type=str, nargs="*"),
+    )
+    def do_settings_reset(self, args):
+        """
+        Display or change CliMetLab settings.
+        See https://climetlab.readthedocs.io/guide/settings.html for more details.
+
+        Examples: climetlab settings cache-directory /big-disk/climetlab-cache
+        """
+        from climetlab import settings
+
+        words = args.args
+
+        if len(words) == 0:
+            if args.all:
+                settings.reset()
+                return
+
+            print(
+                colored(
+                    "To reset all settings, please use the --all flag. Use --help for more information.",
+                    "red",
+                )
+            )
+            return
+
+        if len(words) == 1:
+            name = words[0]
+            settings.reset(name)
+            return
+
+        print(
+            colored(
+                f"Too many settings to reset ({words}).",
+                "red",
+            )
+        )

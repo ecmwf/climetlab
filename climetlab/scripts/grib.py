@@ -92,7 +92,8 @@ class GribCmd:
     )
     def do_index_gribs(self, args):
         """Create index files for grib files.
-        If the option --baseurl is provided, create an index for multiple gribs."
+        If the option --baseurl is provided, create an index for multiple gribs.
+        See https://climetlab.readthedocs.io/contributing/grib.html for details.
         """
         for path_or_url in args.paths_or_urls:
             if args.baseurl:

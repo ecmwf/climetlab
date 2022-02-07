@@ -145,7 +145,7 @@ class Matcher:
 class CacheCmd:
     @parse_args(
         json=dict(action="store_true", help="produce a JSON output"),
-        full=dict(action="store_true"),
+        all=dict(action="store_true"),
         path=dict(
             action="store_true", help="print the path of cache directory and exit"
         ),
@@ -162,7 +162,10 @@ class CacheCmd:
     )
     def do_cache(self, args):
         """
-        cache command
+        Cache command to inspect the CliMetLab cache.
+        The selection arguments are the same as for the ``climetlab decache`` deletion
+        command.
+        Examples: climetlab cache --all
         """
         from climetlab.core.caching import cache_directory, dump_cache_database
 
@@ -201,7 +204,7 @@ class CacheCmd:
             print(json.dumps(cache, sort_keys=True, indent=4))
             return
 
-        if args.full:
+        if args.all:
 
             for entry in cache:
                 print(colored(entry.pop("path"), "blue"))
@@ -270,7 +273,9 @@ class CacheCmd:
     )
     def do_decache(self, args):
         """
-        decache command
+        Cache deletion command (decache) to clean the cache from selected files.
+        The selection arguments are the same as for the ``climetlab cache`` query
+        command.
         """
 
         from climetlab.core.caching import purge_cache

@@ -13,20 +13,40 @@ import argparse
 from climetlab.scripts.main import CliMetLabApp
 
 
+def iprint(*args, indent=2):
+    print(" " * indent, end="")
+    print(*args)
+
+
+def print_rst_underline(txt, padding="-", indent=0):
+    iprint(txt, indent=indent)
+
+
 def execute(*args):
 
-    for cmd in sorted([c for c in dir(CliMetLabApp) if c.startswith("do_")]):
-        func = getattr(CliMetLabApp, cmd)
-        if not hasattr(func, "_argparser"):
-            continue
+    cmd_list = [(cmd, getattr(CliMetLabApp, cmd)) for cmd in dir(CliMetLabApp)]
+    cmd_list = [(cmd, func) for (cmd, func) in cmd_list if cmd.startswith("do_")]
+    cmd_list = [(cmd, func) for (cmd, func) in cmd_list if hasattr(func, "_argparser")]
+    cmd_list = [(cmd[3:], func) for (cmd, func) in cmd_list]  # remove "do_"
+    cmd_list = sorted(cmd_list, key=lambda x: x[0])
 
-        cmd = cmd[3:]  # remove "do_"
+    assert len(cmd_list) > 0, "Documentation for climetlab CLI is empty"
 
+    for cmd, func in cmd_list:
+        module = func.__module__.split(".")[0]
+
+        print()
+        print("--------------------")
         print()
         print(f".. _{cmd}-command:")
         print()
-        print(cmd)
-        print("^" * len(cmd))
+        title = cmd
+        if module != "climetlab":
+            title = title + f"[{module}]"
+        if getattr(func, "_climetlab_experimental", False):
+            title = title + " (experimental)"
+        print(title)
+        print("-" * len(title))
         print()
 
         # Not garanteed to work with future versions of Python
@@ -41,30 +61,44 @@ def execute(*args):
         for n in func._argparser.format_help().split("\n"):
 
             if n.startswith("usage: "):
-                print()
-                print(".. code-block:: text")
-                print()
-                print(" ", n)
+                n = "climetlab " + n[7:]
+                print("Usage")
+                print('"""""')
+                iprint()
+                iprint(".. code-block:: text")
+                iprint()
+                iprint(" ", n)
                 continue
 
             if len(n.strip()) == 0:
-                print()
-                print()
+                iprint()
+                iprint()
                 continue
 
             if n.endswith(" arguments:"):
+                n = n[:-1]  # remove trailing ":"
                 print(n[0].upper() + n[1:])
                 print('"' * len(n))
-                print()
-                print(".. code-block:: text")
-                print()
+                iprint()
+                iprint(".. code-block:: text")
+                iprint()
+                continue
+
+            if n.lower().startswith("examples:"):
+                n = n[9:]
+                print("Examples")
+                print('""""""""')
+                iprint()
+                iprint(".. code-block:: text")
+                iprint()
+                iprint(" ", n)
                 continue
 
             if n.strip().startswith("-"):
-                print(" ", n)
+                iprint(" ", n)
                 continue
 
-            print(n)
+            iprint(n)
 
 
 if __name__ == "__main__":

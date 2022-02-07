@@ -115,7 +115,7 @@ How to use
 Reference
 ---------
 
-.. todo::
+.. warning::
 
     This API is experimental, things may change.
 
@@ -168,3 +168,12 @@ multiple
     than one element.
 
     `None`: Accept list and non-list values without transformations.
+
+
+.. todolist
+
+    Examples
+    --------
+
+    ..  todo::
+        Add example from tests.

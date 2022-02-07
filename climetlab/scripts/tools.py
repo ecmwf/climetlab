@@ -49,6 +49,11 @@ def parse_args(epilog="", **kwargs):
     return wrapper
 
 
+def experimental(func):
+    func._climetlab_experimental = True
+    return func
+
+
 def print_table(rows, colours=["blue"]):
     rows = list(rows)
     colours = list(colours)
