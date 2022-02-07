@@ -192,7 +192,7 @@ class FieldSet(Source):
         xarray_open_dataset_kwargs.update(
             mix_kwargs(
                 user=user_xarray_open_mfdataset_kwargs,
-                default={},
+                default={"squeeze": False},
                 forced={
                     "errors": "raise",
                     "engine": "cfgrib",
