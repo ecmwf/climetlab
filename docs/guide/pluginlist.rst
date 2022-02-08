@@ -24,10 +24,17 @@ a pull request to add it.
 
   Dataset provided: ``demo-dataset``
 
+
 - `climetlab-demo-source <https://github.com/ecmwf/climetlab-demo-source>`_:
   Demo plugin to illustrate to source plugin mechanism.
+  |climetlab-demo-source-build-status| 
 
-  Dataset provided: ``demo-source``
+  Data source provided: ``demo-source``
+
+.. |climetlab-demo-source-build-status| image:: https://github.com/ecmwf/climetlab-demo-source/actions/workflows/python-publish.yml/badge.svg
+    :alt: build status
+    :target: https://github.com/ecmwf/climetlab-demo-source/actions/workflows/python-publish.yml
+
 
 - `climetlab-tropical-cyclone-dataset <https://github.com/ecmwf-lab/climetlab-tropical-cyclone-dataset>`_:
   Tropical cyclones. In progress.

@@ -11,12 +11,17 @@ How to install CliMetLab?
 
 How to access data?
 -------------------
-   CliMetLab only provides a few demo datasets.
-   In order to access a dataset with :py:func:`cml.load_dataset`,
-   the relevant plugin must be installed (:doc:`details </guide/datasets>`).
+   There are two ways to access data using CliMetLab:
 
-   If there is no plugin for the data you are interested in,
-   use :py:func:`cml.load_source` (:doc:`details </guide/sources>`).
+   - :doc:`Using a Dataset </guide/datasets>`:
+     CliMetLab provides a few demo datasets.
+     In order to access other datasets with :py:func:`cml.load_dataset`,
+     the relevant plugin must be installed.
+
+   - :doc:`Using a data Source </guide/sources>`:
+     A data Source allows loading various kinds of data format and location through
+     :py:func:`cml.load_source`. Data sources should be used when there is no dataset
+     plugin for the data you are interested in.
 
 How to help others to use my data ?
 -----------------------------------

@@ -5,18 +5,52 @@ Data sources
 
 .. todo::
 
-    Explain what are Data sources. List the built-in ones.
+    List the built-in ones.
     Explain fields.to_xarray() and obs.to_pandas().
     Explain data[0]
 
+A Data Source is an object created using ``cml.load_source(name, *args, **kwargs)``
+with the appropriate name and arguments, which provides data and additional functionalities.
 
-.. code-block:: python
+    .. code-block:: python
 
-    import climetlab as cml
+        >>> import climetlab as cml
+        >>> source = cml.load_source(name, "argument1", "argument2", ...)
 
-    data = cml.load_source("source-name",
-                           "parameter1",
-                           "parameter2", ...)
+    - The **name** is a string that uniquely identifies the source type.
+
+    - The **arguments** are used to specify the data location to access the data.
+      They can include additional parameters to access the data.
+
+    - The **additional functionalities** include caching, plotting and interaction
+      with other data.
+
+    
+CliMetLab has built-in sources and some additional sources can be made available as plugins.
+
+Built-in data sources:
+
+    - :ref:`data-sources-file` source: Load data from a file.
+    - :ref:`data-sources-url` source: Load data from a URL.
+    - :ref:`data-sources-url-pattern` source: Load data from list of URL created from a pattern.
+    - :ref:`data-sources-cds` source: Load data from the Copernicus Data Store (CDS).
+    - :ref:`data-sources-mars` source: Load data from the Meteorological Archival and Retrieval System at ECMWF (MARS).
+    - :ref:`data-sources-multi` source: Aggregate multiple sources.
+    - :ref:`data-sources-zenodo` source (experimental): Load data from Zenodo.
+    - :ref:`data-sources-indexed-urls` source (experimental): Load data from GRIB urls with partial download.
+
+
+The data source object provides methods to access and use its data, such as
+``to_xarray()`` or ``to_pandas()`` or other.
+
+    .. code-block:: python
+
+        >>> source.to_xarray() # for gridded data
+        >>> source.to_pandas() # for non-gridded data
+
+
+----------------------------------
+
 
 .. _data-sources-file:
 
@@ -25,27 +59,81 @@ file
 
 The simplest data source is the *file* source that accesses a local file.
 
+    .. code:: python
 
-.. code-block:: python
-
-    import climetlab as cml
-
-    data = cml.load_source("file", "/path/to/file")
-
+        >>> import climetlab as cml
+        >>> data = cml.load_source("file", "path/to/file")
+        >>> data.to_xarray() # for gridded data
+        >>> data.to_pandas() # for non-gridded data
 
 *CliMetLab* will inspect the content of the file to check for any of the
 supported data formats listed below:
 
 - Fields:
     - NetCDF
-    - GRIB
+    - GRIB (see :ref:`grib_support`)
 
 - Observations:
-    - CSV
-    - BUFR
+    - CSV (comma-separated values)
+    - BUFR (https://en.wikipedia.org/wiki/BUFR)
     - ODB (a bespoke binary format for observations)
 
+Examples
+~~~~~~~~
 
+    .. doctest::
+
+        >>> import climetlab as cml
+        >>> data = cml.load_source("file", "examples/test.grib")
+        >>> data.to_xarray()
+        <xarray.Dataset>
+        Dimensions:     (number: 1, time: 1, step: 1, surface: 1, latitude: 11, longitude: 19)
+        Coordinates:
+          * number      (number) int64 0
+          * time        (time) datetime64[ns] 2020-05-13T12:00:00
+          * step        (step) timedelta64[ns] 00:00:00
+          * surface     (surface) float64 0.0
+          * latitude    (latitude) float64 73.0 69.0 65.0 61.0 ... 45.0 41.0 37.0 33.0
+          * longitude   (longitude) float64 -27.0 -23.0 -19.0 -15.0 ... 37.0 41.0 45.0
+            valid_time  (time, step) datetime64[ns] ...
+        Data variables:
+            t2m         (number, time, step, surface, latitude, longitude) float32 ...
+            msl         (number, time, step, surface, latitude, longitude) float32 ...
+        Attributes:
+            GRIB_edition:            1
+            GRIB_centre:             ecmf
+            GRIB_centreDescription:  European Centre for Medium-Range Weather Forecasts
+            GRIB_subCentre:          0
+            Conventions:             CF-1.7
+            institution:             European Centre for Medium-Range Weather Forecasts
+            history:                 2022-02-08T10:50 GRIB to CDM+CF via cfgrib-0.9.1...
+
+    .. doctest::
+
+        >>> import climetlab as cml
+        >>> data = cml.load_source("file", "examples/test.nc")
+        >>> data.to_xarray()
+        <xarray.Dataset>
+        Dimensions:     (number: 1, time: 1, step: 1, surface: 1, latitude: 11, longitude: 19)
+        Coordinates:
+          * number      (number) int64 0
+          * time        (time) datetime64[ns] 2020-05-13T12:00:00
+          * step        (step) timedelta64[ns] 00:00:00
+          * surface     (surface) float64 0.0
+          * latitude    (latitude) float64 73.0 69.0 65.0 61.0 ... 45.0 41.0 37.0 33.0
+          * longitude   (longitude) float64 -27.0 -23.0 -19.0 -15.0 ... 37.0 41.0 45.0
+            valid_time  (time, step) datetime64[ns] ...
+        Data variables:
+            t2m         (number, time, step, surface, latitude, longitude) float32 ...
+            msl         (number, time, step, surface, latitude, longitude) float32 ...
+        Attributes:
+            GRIB_edition:            1
+            GRIB_centre:             ecmf
+            GRIB_centreDescription:  European Centre for Medium-Range Weather Forecasts
+            GRIB_subCentre:          0
+            Conventions:             CF-1.7
+            institution:             European Centre for Medium-Range Weather Forecasts
+            history:                 2022-02-08T10:50 GRIB to CDM+CF via cfgrib-0.9.1...
 
 .. _data-sources-url:
 
@@ -58,9 +146,8 @@ data formats are the same as for the *file* data source above.
 
 .. code-block:: python
 
-    import climetlab as cml
-
-    data = cml.load_source("url", "https://www.example.com/data.csv")
+    >>> import climetlab as cml
+    >>> data = cml.load_source("url", "https://www.example.com/data.csv")
 
 
 
@@ -70,11 +157,10 @@ want to keep the downloaded file as is, pass ``unpack=False`` to the method.
 
 .. code-block:: python
 
-    import climetlab as cml
-
-    data = cml.load_source("url",
-                           "https://www.example.com/data.tgz",
-                           unpack=False)
+    >>> import climetlab as cml
+    >>> data = cml.load_source("url",
+                               "https://www.example.com/data.tgz",
+                               unpack=False)
 
 
 .. _data-sources-url-pattern:
@@ -111,13 +197,8 @@ The code above will download and process the data from the six following urls:
 
 If the urls are pointing to archive format, the data will be unpacked by
 ``url-pattern`` according to the **unpack** argument, similarly to what
-the source ``url`` does (see above :ref:`data-sources-url`)
+the source ``url`` does (see above the :ref:`data-sources-url` source).
 
-
-
-.. todo:
-
-    test `to_pandas()` with `url-pattern`.
 
 Once the data have been properly downloaded [and unpacked] and cached. It can
 can be accessed using ``to_xarray()`` or ``to_pandas()``.
@@ -125,32 +206,10 @@ can be accessed using ``to_xarray()`` or ``to_pandas()``.
 To provide a unique xarray.Dataset (or pandas.DataFrame), the different
 datasets are merged.
 The default merger strategy for field data is to use ``xarray.open_mfdataset``
-from `xarray`. This can be changed by providing a merger to the
-``url-pattern`` source:
-
-.. code-block:: python
-
-    import climetlab as cml
-    import xarray as xr
-
-    class MyMerger():
-        def __init__(self, *args, **kwargs):
-            pass
-        def merge(self, paths, **kwargs):
-            return xr.open_mfdataset(paths)
-
-    data = cml.load_source("url-pattern",
-         "https://www.example.com/data-{foo}-{bar}-{qux}.csv",
-         foo = [1,2,3],
-         bar = ["a", "b"],
-         qux = "unique"
-         merger = MyMerger()
-         )
+from `xarray`. This can be changed by providing a custom merger to the
+``url-pattern`` source. See :ref:`merging sources <custom-merge>`
 
 
-.. warning::
-
-    The merger functionality is experimental, the API may change.
 
 .. _data-sources-cds:
 
@@ -204,8 +263,6 @@ For more information, see the CDS `knowledge base`_.
 
 .. _data-sources-mars:
 
-
-
 mars
 ----
 
@@ -249,7 +306,59 @@ to perform the same operation with *CliMetLab*, use the following code:
 
 Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
 
+.. _data-sources-multi:
+
 multi
 -----
 
-TODO
+.. todo::
+
+    add documentation on multi-source.
+
+.. _data-sources-zenodo:
+
+zenodo
+------
+
+Experimental. Access data in zenodo.
+
+.. _data-sources-indexed-urls:
+
+indexed_urls
+------------
+
+Experimental. See :ref:`grib_support`.
+
+
+
+.. _custom-merge:
+
+Merging Data sources
+--------------------
+
+.. warning::
+
+    The merger functionality is experimental, the API may change.
+
+.. todo::
+
+    add documentation on merging.
+
+.. code-block:: python
+
+    import climetlab as cml
+    import xarray as xr
+
+    class MyMerger():
+        def __init__(self, *args, **kwargs):
+            pass
+        def merge(self, paths, **kwargs):
+            return xr.open_mfdataset(paths)
+
+    data = cml.load_source("url-pattern",
+         "https://www.example.com/data-{foo}-{bar}-{qux}.csv",
+         foo = [1,2,3],
+         bar = ["a", "b"],
+         qux = "unique"
+         merger = MyMerger()
+         )

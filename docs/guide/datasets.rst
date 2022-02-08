@@ -54,7 +54,7 @@ Other arguments are defined by the plugin maintainer and are
 documented in the plugin documentation (see :doc:`/guide/pluginlist`).
 
 The dataset object provides methods to access and use its data, such as
-```to_xarray()``` or ```to_pandas()``` or other (see below).
+``to_xarray()`` or ``to_pandas()`` or other (see below).
 
     .. code-block:: python
 
@@ -155,6 +155,7 @@ Best practices
             >>> import climetlab as cml
             >>> ds = cml.load_dataset("demo-dataset")
             NameError: Cannot find dataset 'demo-dataset' (values are: ...),
+
 
 .. note::
 
