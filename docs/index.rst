@@ -47,6 +47,7 @@ Documentation
 * :doc:`guide/howtos`
 * :doc:`guide/datasets`
 * :doc:`guide/sources`
+* :doc:`guide/data_handling`
 * :doc:`guide/mltools`
 * :doc:`guide/plotting`
 * :doc:`guide/caching`
@@ -62,6 +63,7 @@ Documentation
    guide/howtos
    guide/datasets
    guide/sources
+   guide/data_handling
    guide/mltools
    guide/plotting
    guide/caching
