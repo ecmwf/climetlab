@@ -28,6 +28,7 @@ __all__ = [
     "ALL",
     "cache",
     "dataset",
+    "debug",
     "Dataset",
     "Wrapper",
     "interactive_map",
@@ -46,5 +47,13 @@ __all__ = [
     "register_source",
     "__version__",
 ]
+
+
+def debug(status=True, level="DEBUG"):
+    if status in ["on", "ON", True]:
+        import logging
+
+        logging.basicConfig(level=level)
+
 
 initialise()
