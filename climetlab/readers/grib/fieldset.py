@@ -205,9 +205,18 @@ class FieldSet(Source):
             **xarray_open_dataset_kwargs,
         )
 
+        def math_prod(lst):
+            if not hasattr(math, "prod"):
+                # python 3.7 does not have math.prod
+                n = 1
+                for x in lst:
+                    n = n * x
+                return n
+            return math.prod(lst)
+
         # Assumes last two dimensions are lat/lon coordinates
         two_d_fields = sum(
-            math.prod(list(result[v].shape)[:-2]) for v in result.data_vars
+            math_prod(list(result[v].shape)[:-2]) for v in result.data_vars
         )
 
         # Make sure all the fields are converted
