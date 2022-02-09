@@ -15,8 +15,9 @@ import sys
 
 import pytest
 
-from climetlab import load_source
-from climetlab.testing import TEST_DATA_URL, climetlab_file
+from climetlab import load_source, settings
+from climetlab.core.temporary import temp_directory
+from climetlab.testing import TEST_DATA_URL, OfflineError, climetlab_file, network_off
 
 
 @pytest.mark.skipif(  # TODO: fix
@@ -69,6 +70,27 @@ def test_url_source_1():
         "url",
         "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
     )
+
+
+def test_url_source_check_out_of_date():
+    def load():
+        load_source(
+            "url",
+            "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        )
+
+    with temp_directory() as tmpdir:
+        with settings.temporary():
+            settings.set("cache-directory", tmpdir)
+            load()
+
+            settings.set("check-out-of-date-urls", False)
+            with network_off():
+                load()
+
+            settings.set("check-out-of-date-urls", True)
+            with network_off(), pytest.raises(OfflineError):
+                load()
 
 
 def test_url_source_2():

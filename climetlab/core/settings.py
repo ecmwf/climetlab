@@ -120,7 +120,7 @@ SETTINGS_AND_HELP = {
         getter="_as_seconds",
     ),
     "check-out-of-date-urls": _(
-        False,
+        True,
         "Perform a HTTP request to check if the remote version of a cache file has changed",
     ),
     "download-out-of-date-urls": _(

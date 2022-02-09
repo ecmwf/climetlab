@@ -106,7 +106,7 @@ class Url(FileSource):
         )
 
     def out_of_date(self, url, path, cache_data):
-        if SETTINGS.get("check-out-of-date-urls"):
+        if SETTINGS.get("check-out-of-date-urls") is False:
             return False
 
         if self.downloader.out_of_date(path, cache_data):
