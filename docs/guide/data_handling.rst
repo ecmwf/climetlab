@@ -3,8 +3,6 @@
 Data Manipulation
 =================
 
-
-
 .. _custom-merge:
 
 Merging Data sources

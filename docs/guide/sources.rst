@@ -41,13 +41,19 @@ Built-in data sources:
 
 
 The data source object provides methods to access and use its data, such as
-``to_xarray()`` or ``to_pandas()`` or other.
+``to_xarray()`` or ``to_pandas()`` or other. Depending on the data, some of
+these methods are or are not available.
 
     .. code-block:: python
 
         >>> source.to_xarray() # for gridded data
         >>> source.to_pandas() # for non-gridded data
+        >>> source.to_numpy() # Experimental
+        >>> source.to_tfrecord() # Experimental
 
+.. todo::
+
+    add here more details about these methods.
 
 ----------------------------------
 
@@ -311,6 +317,10 @@ Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
 multi
 -----
 
+    .. code:: python
+
+        >>> ds = load_source( "multi", source1, source2, ...)
+
 .. todo::
 
     add documentation on multi-source.
@@ -326,5 +336,9 @@ Experimental. Access data in zenodo.
 
 indexed_urls
 ------------
+
+    .. code:: python
+
+        >>> ds = load_source( "indexed-urls", index, request), source2, ...)
 
 Experimental. See :ref:`grib_support`.

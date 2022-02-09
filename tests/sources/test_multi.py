@@ -149,6 +149,7 @@ def test_multi_grib():
         load_source("dummy-source", kind="grib", date=20000102),
     )
     assert len(ds) == 2
+    ds.to_xarray()
     ds.statistics()
 
 
