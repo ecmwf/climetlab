@@ -11,6 +11,7 @@ import logging
 
 import s3fs
 import xarray as xr
+import zarr
 
 from . import Source
 
@@ -58,6 +59,8 @@ class ZarrS3(Source):
 
             store = Cache(store)
 
+            store = zarr.storage.KVStore(store)
+
             return store
 
         # adding a new dimension take a lot of memory
@@ -73,8 +76,6 @@ class ZarrS3(Source):
         stores = [url_to_store(url) for url in urls]
 
         dslist = []
-        import zarr
-
         for store, url in zip(stores, urls):
             try:
                 dslist.append(xr.open_dataset(store, engine="zarr", chunks="auto"))

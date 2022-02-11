@@ -56,6 +56,8 @@ def url_to_s3_store(url, user=None, password=None):
 
     store = Cache(store)
 
+    store = zarr.storage.KVStore(store)
+
     return store
 
 
