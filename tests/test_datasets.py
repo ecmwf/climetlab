@@ -33,6 +33,7 @@ def test_era5_temperature():
     cml.load_dataset("era5-temperature", period=(1979, 1982), domain="France", time=12)
 
 
+@pytest.mark.long_test
 def test_datetime():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
         pytest.skip("No ~/.cdsapirc")
