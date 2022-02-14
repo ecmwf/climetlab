@@ -15,7 +15,7 @@ from multiurl import Downloader
 from climetlab.core.settings import SETTINGS
 from climetlab.core.statistics import record_statistics
 from climetlab.utils import tqdm
-from climetlab.utils.mirror import DEFAULT_MIRROR
+from climetlab.utils.mirror import DEFAULT_MIRROR, mirror_writer
 
 from .file import FileSource
 
@@ -49,6 +49,7 @@ class Url(FileSource):
         http_headers=None,
         update_if_out_of_date=False,
         mirror=DEFAULT_MIRROR,
+        build_mirror=None,
         fake_headers=None,  # When HEAD is not allowed but you know the size
     ):
 
@@ -64,6 +65,8 @@ class Url(FileSource):
 
         if mirror:
             url = mirror(url)
+        if not build_mirror:
+            build_mirror = mirror_writer()
 
         self.downloader = Downloader(
             url,
@@ -104,6 +107,8 @@ class Url(FileSource):
             extension=extension,
             force=force,
         )
+        if build_mirror:
+            build_mirror.build_mirror(self.path, self.url)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:
