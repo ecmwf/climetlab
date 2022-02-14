@@ -47,7 +47,7 @@ class MultiSource(Source):
         if self.merger is None:
             merged = merge_by_class(self.sources)
             if merged is not None:
-                return merged
+                return merged.mutate()
 
         return self
 
