@@ -36,7 +36,7 @@ def test_mirror_url_source_1():
     with temp_directory() as cachedir, settings.temporary():
         settings.set("cache-directory", cachedir)
         with temp_directory() as tmpdir:
-            mirror = UrlMirror(f"https:// file://{tmpdir}/")
+            mirror = UrlMirror({"https://": f"file://{tmpdir}/"})
 
             with pytest.raises(OfflineError):
                 load_without_network(mirror=mirror)
@@ -58,7 +58,7 @@ def test_mirror_url_source_2():
     with temp_directory() as cachedir, settings.temporary():
         settings.set("cache-directory", cachedir)
         with temp_directory() as tmpdir:
-            mirror = UrlMirror(f"https:// file://{tmpdir}/")
+            mirror = UrlMirror({"https://": f"file://{tmpdir}/"})
 
             with pytest.raises(OfflineError):
                 load_without_network(mirror=mirror)
@@ -74,7 +74,7 @@ def test_mirror_url_source_2():
 
 
 if __name__ == "__main__":
-    test_mirror_url_source_1()
-    # from climetlab.testing import main
+    # test_mirror_url_source_1()
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
