@@ -1,11 +1,18 @@
 import code
 import inspect
 
+
+def get_locals(callers):
+    for c in callers[1:]:
+        if not c.filename.startswith("<frozen importlib"):
+            return c.frame.f_locals
+    import logging
+
+    logging.debug("Cannot find calling frame.")
+    return {}
+
+
 frame = inspect.currentframe()
 callers = inspect.getouterframes(frame, 0)
 
-# Hacky way to get the calling frame
-# It is number 6 in some cases
-local = callers[6].frame.f_locals
-
-code.interact(local=local)
+code.interact(local=get_locals(callers))
