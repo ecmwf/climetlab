@@ -22,4 +22,15 @@ def test_grib_index_eumetnet():
     print(xds)
 
 
+def test_grib_index_eumetnet_with_plugin():
+    ds = cml.load_dataset(
+        "eumetnet-postprocessing-benchmark-training-data-gridded-forecasts-efi",
+        date="2017-12-28",
+        parameter="2ti",
+    )
+    xds = ds.to_xarray()
+    print(xds)
+
+
 test_grib_index_eumetnet()
+test_grib_index_eumetnet_with_plugin()

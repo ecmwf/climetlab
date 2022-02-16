@@ -60,5 +60,6 @@ jobs:
 
       - name: Tests
         run: |
-          # pytest tests/sources/test_url.py  -k 'anonymous'
-          python dev/dev.py
+          git clone https://github.com/Climdyn/climetlab-eumetnet-postprocessing-benchmark.git
+          pip install -e ./climetlab-eumetnet-postprocessing-benchmark
+          python dev/dev.py # this passes
