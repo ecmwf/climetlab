@@ -23,7 +23,7 @@ from climetlab.testing import IN_GITHUB, MISSING, climetlab_file
 EXAMPLES = climetlab_file("docs", "examples")
 
 SKIP = (
-    "11-icoads.ipynb",
+    "13-icoads.ipynb",
     # "09-weatherbench.ipynb",
 )
 
