@@ -56,10 +56,19 @@ jobs:
       - name: Install test tools
         run: |
           pip install pytest pytest-cov
+          pip install nbformat nbconvert ipykernel matplotlib
           pip freeze
 
-      - name: Tests
+      - name: Install plugin
         run: |
           git clone https://github.com/Climdyn/climetlab-eumetnet-postprocessing-benchmark.git
           pip install -e ./climetlab-eumetnet-postprocessing-benchmark
+
+      - name: Run dev.py
+        run: |
           python dev/dev.py # this passes
+
+      - name: Run plugin tests
+        run: |
+          cd ./climetlab-eumetnet-postprocessing-benchmark/tests
+          pytest
