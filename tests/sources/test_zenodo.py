@@ -14,7 +14,7 @@ import pytest
 
 import climetlab as cml
 from climetlab.datasets import dataset_from_yaml
-from climetlab.testing import MISSING
+from climetlab.testing import IN_GITHUB, MISSING
 
 LOG = logging.getLogger(__name__)
 
@@ -109,6 +109,7 @@ def test_zenodo_read_nc_list_content():
     assert len(content) == 555
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_zenodo_read_nc_partial():
     ds = cml.load_source(
@@ -120,6 +121,7 @@ def test_zenodo_read_nc_partial():
     assert "t_min" in list(ds.keys())
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_partial_regexpr():
