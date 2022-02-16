@@ -3,23 +3,23 @@ import xarray as xr
 import climetlab as cml
 
 
-def build_netcdf():
+def test_grib_index_eumetnet():
     from climetlab import load_source
+    from climetlab.indexing import PerUrlIndex
 
-    source = load_source(
-        "dummy-source",
-        kind="netcdf",
-        dims=["lat", "lon"],
-    )
-    ds = source.to_xarray()
-    ds.to_netcdf("test.nc")
+    request = {
+        "param": "2ti",
+        "date": "20171228",
+        "step": ["0-24", "24-48", "48-72", "72-96", "96-120", "120-144", "144-168"],
+        # Parameters passed to the filename mangling
+        "url": "https://storage.ecmwf.europeanweather.cloud/eumetnet-postprocessing-benchmark-training-dataset/",
+        "month": "12",
+        "year": "2017",
+    }
+    PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
+    ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
+    xds = ds.to_xarray()
+    print(xds)
 
 
-build_netcdf()
-
-
-ds = xr.open_dataset("test.nc")
-print(ds)
-
-# works on linux,  fails on windows
-cml.plot_map(ds, path="test.png")
+test_grib_index_eumetnet()
