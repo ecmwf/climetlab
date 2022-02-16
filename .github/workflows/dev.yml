@@ -72,5 +72,5 @@ jobs:
 
       - name: Run plugin tests
         run: |
-          cd ./climetlab-eumetnet-postprocessing-benchmark/tests
+          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
           pytest test_training_data_forecasts.py
