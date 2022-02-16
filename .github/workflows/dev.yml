@@ -11,6 +11,8 @@ name: dev test
 on:
   push: {}
 
+  workflow_dispatch: {}
+
 jobs:
 
   checks:
