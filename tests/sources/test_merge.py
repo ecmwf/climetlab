@@ -15,6 +15,7 @@ import pytest
 import xarray as xr
 
 from climetlab import load_source
+from climetlab.testing import IN_GITHUB
 
 # These functionalities are variations around
 # http://xarray.pydata.org/en/stable/user-guide/combining.html#combining-multi
@@ -306,16 +307,19 @@ def test_nc_merge_concat_var():
     assert target.identical(merged)
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_merge_pangeo_1():
     _merge_pangeo(inner_merger="concat(concat_dim=time)")
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_merge_pangeo_2():
     _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_merge_pangeo_3():
