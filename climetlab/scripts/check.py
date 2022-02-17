@@ -95,7 +95,7 @@ class CheckCmd:
         for name in ["eccodes", "magics"]:
             try:
                 print(
-                    f"  {name} from ecwmlibs: ok {versions[name]} ({ecmwflibs.find(name)})"
+                    f"  {name} from ecmwflibs: ok {versions[name]} ({ecmwflibs.find(name)})"
                 )
             except Exception as e:  # noqa: F841
                 print(f"  {name} from ecmwflib: Warning: ecmwflibs cannot find {name}")
