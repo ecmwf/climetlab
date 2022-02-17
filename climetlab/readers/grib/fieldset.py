@@ -61,6 +61,29 @@ def mix_kwargs(
     return kwargs
 
 
+class FieldAdapter:
+    def __init__(self, field, ignore_keys):
+        self.field = field
+        self.ignore_keys = ignore_keys
+
+    def __getitem__(self, name):
+        if name in self.ignore_keys:
+            return None
+        return self.field[name]
+
+
+class FieldsetAdapter:
+    def __init__(self, fieldset, ignore_keys):
+        self.fieldset = fieldset
+        self.ignore_keys = ignore_keys
+
+    def __getitem__(self, n):
+        return FieldAdapter(self.fieldset[n], self.ignore_keys)
+
+    def __len__(self):
+        return len(self.fieldset)
+
+
 class FieldSet(Source):
     def __init__(self, *, paths=None):
         self._statistics = None
@@ -181,6 +204,13 @@ class FieldSet(Source):
             )
 
         user_xarray_open_dataset_kwargs = kwargs.get("xarray_open_dataset_kwargs", {})
+
+        # until ignore_keys is included into cfgrib,
+        # it is implemented here directly
+        ignore_keys = user_xarray_open_dataset_kwargs.get("backend_kwargs", {}).pop(
+            "ignore_keys", []
+        )
+
         for key in ["backend_kwargs"]:
             xarray_open_dataset_kwargs[key] = mix_kwargs(
                 user=user_xarray_open_dataset_kwargs.pop(key, {}),
@@ -201,7 +231,7 @@ class FieldSet(Source):
         )
 
         result = xr.open_dataset(
-            self,
+            FieldsetAdapter(self, ignore_keys=ignore_keys),
             **xarray_open_dataset_kwargs,
         )
 
