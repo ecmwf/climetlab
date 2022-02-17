@@ -180,10 +180,10 @@ class FieldSet(Source):
                 "xarray_open_mfdataset_kwargs"
             )
 
-        user_xarray_open_mfdataset_kwargs = kwargs.get("xarray_open_dataset_kwargs", {})
+        user_xarray_open_dataset_kwargs = kwargs.get("xarray_open_dataset_kwargs", {})
         for key in ["backend_kwargs"]:
             xarray_open_dataset_kwargs[key] = mix_kwargs(
-                user=user_xarray_open_mfdataset_kwargs.pop(key, {}),
+                user=user_xarray_open_dataset_kwargs.pop(key, {}),
                 default={"errors": "raise"},
                 forced={},
                 logging_owner="xarray_open_dataset_kwargs",
@@ -191,7 +191,7 @@ class FieldSet(Source):
             )
         xarray_open_dataset_kwargs.update(
             mix_kwargs(
-                user=user_xarray_open_mfdataset_kwargs,
+                user=user_xarray_open_dataset_kwargs,
                 default={"squeeze": False},
                 forced={
                     "errors": "raise",
