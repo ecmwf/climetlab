@@ -45,6 +45,7 @@ def test_zenodo_2():
     ds = ds.to_tfdataset()
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_zenodo_3():
     ds = cml.load_source(
@@ -57,6 +58,7 @@ def test_zenodo_3():
     ds = ds.to_pandas()
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_zenodo_error_1():
     with pytest.raises(ValueError, match=r"No .*"):
@@ -66,6 +68,7 @@ def test_zenodo_error_1():
         )
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
 def test_zenodo_error_2():
     with pytest.raises(ValueError, match=r"Invalid zenodo key.*"):
@@ -76,10 +79,7 @@ def test_zenodo_error_2():
         )
 
 
-@pytest.mark.skipif(
-    True,
-    reason="Zenodo disabled",
-)
+@pytest.mark.skipif(True, reason="Zenodo disabled")
 @pytest.mark.external_download
 def test_zenodo_read_nc():
     def file_filter(path):
