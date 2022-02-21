@@ -15,7 +15,7 @@ from multiurl import Downloader
 from climetlab.core.settings import SETTINGS
 from climetlab.core.statistics import record_statistics
 from climetlab.utils import tqdm
-from climetlab.utils.mirror import query_mirrors
+from climetlab.utils.mirror import get_mirrors
 
 from .file import FileSource
 
@@ -61,10 +61,10 @@ class Url(FileSource):
 
         self.update_if_out_of_date = update_if_out_of_date
 
-        mirrors, mutators = query_mirrors(self)
-        for mutator in mutators:
-            if mutator is not None:
-                self._mutator = mutator
+        mirrors = get_mirrors()
+        for m in mirrors:
+            m.mutate_url(self)
+            if self._mutator:
                 return
 
         self.downloader = Downloader(
@@ -108,16 +108,12 @@ class Url(FileSource):
         )
 
         for mirror in mirrors:
-            mirror.build_copy_if_needed(self, self.path)
+            mirror.build_copy_of_url(self)
 
-    def get_mirror_source_name(self):
-        return "url"
-
-    def get_mirror_keys(self):
-        return dict(source_name="url", source_key=self.url)
-        # import urlparse
-        # url = urlparse(self.url)
-        # return f'{url.scheme}/{url.netloc}/{url.path}'
+    def get_mirror_keys(self, url=None, origin_prefix=""):
+        if url is None:
+            url = self.url
+        return self._get_mirror_keys(url)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:

@@ -9,6 +9,7 @@
 import logging
 import os
 import shutil
+from urllib.parse import urlparse
 
 import climetlab as cml
 
@@ -18,25 +19,15 @@ global _MIRRORS
 
 
 class SourceMutator:
-    def __init__(self, source):
-        self.source = source
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
     def mutate_source(self):
-        return self.source
+        return cml.load_source(*self.args, **self.kwargs)
 
 
 class Mirrors(list):
-    def query_mirrors(self, source):
-        self.warn_unsupported()
-        mutators = []
-        for mirror in self:
-            assert isinstance(mirror, BaseMirror), mirror
-            mutator = mirror.to_mirror_if_exists(source)
-            if mutator is not None:
-                assert isinstance(mutator, SourceMutator), mutator
-            mutators.append(mutator)
-        return self, mutators
-
     def warn_unsupported(self):
         if len(self) <= 1:
             return
@@ -74,51 +65,23 @@ class BaseMirror:
         global _MIRRORS
         _MIRRORS.remove(self)
 
-    def contains(self, source):
-        item = Item(self, source)
-        value = self.contains_item(item)
-        assert value in [True, False], value
-        return value
+    def mutate_url(self, source, **kwargs):
+        if not self.contains(source, **kwargs):
+            return
+        self._mutate_url(source, **kwargs)
 
-    def to_mirror_if_exists(self, source):
-        item = Item(self, source)
-
-        if self.contains_item(item):
-            LOG.debug(f"Found mirrored file for {item}")
-            new_url = self.item_to_new_url(item)
-            new_source = cml.load_source("url", new_url)
-            return SourceMutator(new_source)
-        else:
-            LOG.debug(f"Cannot find mirrored file for {item}.")
-            return None
-
-    def build_copy_if_needed(self, source, path):
+    def build_copy_of_url(self, source, **kwargs):
         if not self._prefetch:
             LOG.debug(
                 f"Mirror {self} does not build copy of {source} because prefetch=False."
             )
             return
 
-        item = Item(self, source)
-
-        if self.contains_item(item):
-            LOG.debug(f"OK, mirrored file already exists {item}")
+        if self.contains(source, **kwargs):
+            LOG.debug(f"Mirror {self} already contains a copy of {source}")
             return
 
-        self.build_copy(item, path)
-
-    def contains_item(self, item):
-        raise NotImplementedError()
-
-    def build_copy(self, source, path):
-        raise NotImplementedError()
-
-    def item_to_new_url(self, item):
-        # TODO: this should be item_to_new_source
-        raise NotImplementedError()
-
-    def repr_item(self, item):
-        return ""
+        self._build_copy_of_url(source, **kwargs)
 
 
 class Mirror(BaseMirror):
@@ -126,44 +89,8 @@ class Mirror(BaseMirror):
     pass
 
 
-class EmptyMirror(BaseMirror):
-    name = "empty_mirror"
-
-    def contains_item(self, item):
-        return False
-
-    def build_copy(self, source, path):
-        return
-
-
-class Item:
-    def __init__(self, mirror, source):
-        self.source = source
-        self.mirror = mirror
-
-        self.keys = self.source.get_mirror_keys()
-
-    @property
-    def key(self):
-        return self.keys["source_key"]
-
-    @property
-    def source_name(self):
-        return self.keys["source_name"]
-
-    @property
-    def mirror_name(self):
-        return self.mirror.name
-
-    def __repr__(self):
-        rep = self.mirror.repr_item(self)
-        return f"Item({self.source_name}={self.key}, {self.mirror_name}={rep})"
-
-
 class DirectoryMirror(BaseMirror):
-    name = "directory_mirror"
-
-    def __init__(self, path, origin_prefix=None, **kwargs):
+    def __init__(self, path, origin_prefix="", **kwargs):
         self.path = path
         self.origin_prefix = origin_prefix
         self.kwargs = kwargs
@@ -171,54 +98,57 @@ class DirectoryMirror(BaseMirror):
     def __repr__(self):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
-    def item_to_path(self, item):
-        key = item.key
-        if self.origin_prefix:
-            if not key.startswith(self.origin_prefix):
-                return None
-            key = key[(len(self.origin_prefix) + 1) :]
+    def _mutate_url(self, source, **kwargs):
+        new_url = "file://" + self.realpath(source, **kwargs)
+        if new_url != source.url:
+            LOG.debug(f"Found mirrored file for {source} in {new_url}")
+            source._mutator = SourceMutator("url", new_url)
+
+    def contains(self, source, **kwargs):
+        path = self.realpath(source, **kwargs)
+        return os.path.exists(path)
+
+    def _build_copy_of_url(self, source, **kwargs):
+        source_path = source.path
+        path = self.realpath(source, **kwargs)
+        LOG.info(f"Building mirror for {source}: cp {source_path} {path}")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        shutil.copy2(source_path, path)
+
+    def realpath(self, source, **kwargs):
+        keys = self._url_to_keys(source, **kwargs)
+        assert isinstance(keys, (list, tuple)), type(keys)
         path = os.path.join(
             self.path,
-            item.source_name,
-            key,
+            *keys,
         )
         return os.path.realpath(path)
 
-    def item_to_new_url(self, item):
-        path = self.item_to_path(item)
-        assert path is not None, item
-        return "file://" + path
+    def _url_to_keys(self, source, **kwargs):
+        url = source.url
+        if not self.origin_prefix:
+            url = urlparse(url)
+            keys = [url.scheme, f"{url.netloc}/{url.path}"]
+            print("  keys=", ["url"] + keys)
+            return ["url"] + keys
 
-    def contains_item(self, item):
-        path = self.item_to_path(item)
-        if path is None:
-            return False
-        return os.path.exists(path)
+        if not url.startswith(self.origin_prefix):
+            LOG.debug(f"Cannot find mirrored file for {source}.")
+            return None
 
-    def build_copy(self, item, path):
-        new = self.item_to_path(item)
-
-        if new is None:
-            LOG.debug(f"Mirror {self} cannot build {item}")
-            return
-
-        LOG.info(f"Building mirror for {item}: cp {path} {new}")
-        os.makedirs(os.path.dirname(new), exist_ok=True)
-        shutil.copy2(path, new)
-
-    def repr_item(self, item):
-        return self.item_to_path(item)
+        key = url[(len(self.origin_prefix) + 1) :]
+        return ["url", key]
 
 
-def query_mirrors(source):
+def get_mirrors():
     global _MIRRORS
-    return _MIRRORS.query_mirrors(source)
+    _MIRRORS.warn_unsupported()
+    return _MIRRORS
 
 
 def _reset_mirrors(use_env_var):
     global _MIRRORS
     _MIRRORS = Mirrors()
-    # _MIRRORS.append(EmptyMirror())
     if not use_env_var:
         return
 
@@ -233,11 +163,6 @@ def _reset_mirrors(use_env_var):
     else:
         mirror = DirectoryMirror(path=env_var)
     _MIRRORS.append(mirror)
-
-
-def get_mirrors():
-    global _MIRRORS
-    return _MIRRORS
 
 
 _reset_mirrors(use_env_var=True)
