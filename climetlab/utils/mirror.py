@@ -77,7 +77,7 @@ class BaseMirror:
     def contains(self, source):
         item = Item(self, source)
         value = self.contains_item(item)
-        assert value in [True, False]
+        assert value in [True, False], value
         return value
 
     def to_mirror_if_exists(self, source):
@@ -89,7 +89,7 @@ class BaseMirror:
             new_source = cml.load_source("url", new_url)
             return SourceMutator(new_source)
         else:
-            LOG.debug(f"Mirrored file for {item} not found.")
+            LOG.debug(f"Cannot find mirrored file for {item}.")
             return None
 
     def build_copy_if_needed(self, source, path):
@@ -163,30 +163,44 @@ class Item:
 class DirectoryMirror(BaseMirror):
     name = "directory_mirror"
 
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, origin_prefix=None, **kwargs):
         self.path = path
+        self.origin_prefix = origin_prefix
         self.kwargs = kwargs
 
     def __repr__(self):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
     def item_to_path(self, item):
+        key = item.key
+        if self.origin_prefix:
+            if not key.startswith(self.origin_prefix):
+                return None
+            key = key[(len(self.origin_prefix) + 1) :]
         path = os.path.join(
             self.path,
             item.source_name,
-            item.key,
+            key,
         )
         return os.path.realpath(path)
 
     def item_to_new_url(self, item):
-        return "file://" + self.item_to_path(item)
+        path = self.item_to_path(item)
+        assert path is not None, item
+        return "file://" + path
 
     def contains_item(self, item):
         path = self.item_to_path(item)
+        if path is None:
+            return False
         return os.path.exists(path)
 
     def build_copy(self, item, path):
         new = self.item_to_path(item)
+
+        if new is None:
+            LOG.debug(f"Mirror {self} cannot build {item}")
+            return
 
         LOG.info(f"Building mirror for {item}: cp {path} {new}")
         os.makedirs(os.path.dirname(new), exist_ok=True)
@@ -201,10 +215,24 @@ def query_mirrors(source):
     return _MIRRORS.query_mirrors(source)
 
 
-def _reset_mirrors():
+def _reset_mirrors(use_env_var):
     global _MIRRORS
     _MIRRORS = Mirrors()
     # _MIRRORS.append(EmptyMirror())
+    if not use_env_var:
+        return
+
+    env_var = os.environ.get("CLIMETLAB_MIRROR")
+    if " ":
+        # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
+        LOG.warning(
+            "Deprecation warning:  using CLIMETLAB_MIRROR environment variable string to define a mirror is deprecated."
+        )
+        origin_prefix, path = env_var.split(" ")
+        mirror = DirectoryMirror(path=path, origin_prefix=origin_prefix)
+    else:
+        mirror = DirectoryMirror(path=env_var)
+    _MIRRORS.append(mirror)
 
 
 def get_mirrors():
@@ -212,8 +240,4 @@ def get_mirrors():
     return _MIRRORS
 
 
-_reset_mirrors()
-
-# TODO: use this
-MIRROR_ENV_VAR = os.environ.get("CLIMETLAB_MIRROR")
-# export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
+_reset_mirrors(use_env_var=True)

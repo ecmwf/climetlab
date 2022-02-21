@@ -10,6 +10,8 @@
 #
 
 
+import os
+
 import pytest
 
 from climetlab import load_source, settings
@@ -43,7 +45,7 @@ def mirror_dirs():
             settings.set("cache-directory", cachedir)
             with temp_directory() as mirrordir:
                 with temp_directory() as mirrordir2:
-                    _reset_mirrors()
+                    _reset_mirrors(use_env_var=False)
                     yield mirrordir, mirrordir2
 
 
@@ -109,6 +111,39 @@ def test_mirror_url_source_3(mirror_dirs):
     mirror = DirectoryMirror(path=tmpdir)
     with mirror:
         load_without_network(force=True)
+
+
+def test_mirror_url_source_env_var_1(mirror_dirs):
+    mirror_dir, _ = mirror_dirs
+
+    origin_prefix = "https://github.com/ecmwf/climetlab/raw/main/docs"
+    os.environ["CLIMETLAB_MIRROR"] = f"{origin_prefix} file://{mirror_dir}"
+
+    _reset_mirrors(use_env_var=False)
+    assert len(get_mirrors()) == 0, get_mirrors()
+
+    _reset_mirrors(use_env_var=True)
+    assert len(get_mirrors()) == 1, get_mirrors()
+
+
+def test_mirror_url_source_env_var_2(mirror_dirs):
+    mirror_dir, _ = mirror_dirs
+    source = load(force=True)
+
+    os.makedirs(f"{mirror_dir}/url/examples", exist_ok=True)
+    source.save(f"{mirror_dir}/url/examples/test.grib")
+
+    origin_prefix = "https://github.com/ecmwf/climetlab/raw/main/docs"
+    os.environ["CLIMETLAB_MIRROR"] = f"{origin_prefix} file://{mirror_dir}"
+
+    m = DirectoryMirror(path=mirror_dir, origin_prefix=origin_prefix)
+    with m:
+        source2 = load_without_network(force=True)
+
+    assert m.contains(source)
+
+    assert str(source) == f"Url({origin_prefix}/examples/test.grib)"
+    assert str(source2) == f"Url(file://{mirror_dir}/url/examples/test.grib)"
 
 
 @pytest.mark.skipif(True, reason="Not implemented yet")
