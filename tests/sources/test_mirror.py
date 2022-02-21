@@ -15,62 +15,159 @@ import pytest
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
 from climetlab.testing import OfflineError, network_off
-from climetlab.utils.mirror import UrlMirror, prefetch
+from climetlab.utils.mirror import DirectoryMirror, _reset_mirrors, get_mirrors
 
 
 def load(**kwargs):
     return load_source(
         "url",
         "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib",
-        force=True,
         **kwargs,
     )
 
 
 def load_without_network(**kwargs):
     with network_off():
-        load(**kwargs)
+        return load(**kwargs)
 
 
-def test_mirror_url_source_1():
-    with temp_directory() as cachedir, settings.temporary():
-        settings.set("cache-directory", cachedir)
-        with temp_directory() as tmpdir:
-            mirror = UrlMirror({"https://": f"file://{tmpdir}/"})
-
-            with pytest.raises(OfflineError):
-                load_without_network(mirror=mirror)
-
-            # load is not enough, as we are not using the cache (force=True)
-            load()
-
-            with pytest.raises(OfflineError):
-                load_without_network(mirror=mirror)
-
-            # building the mirror
-            with prefetch(tmpdir):
-                load()
-
-            load_without_network(mirror=mirror)
+@pytest.fixture()
+def mirror_dirs():
+    """Setup for mirror tests:
+    - a temporary cache dir,
+    - temporary settings,
+    - two temporary directories
+    """
+    with temp_directory() as cachedir:
+        with settings.temporary():
+            settings.set("cache-directory", cachedir)
+            with temp_directory() as mirrordir:
+                with temp_directory() as mirrordir2:
+                    _reset_mirrors()
+                    yield mirrordir, mirrordir2
 
 
-def test_mirror_url_source_2():
-    with temp_directory() as cachedir, settings.temporary():
-        settings.set("cache-directory", cachedir)
-        with temp_directory() as tmpdir:
-            mirror = UrlMirror({"https://": f"file://{tmpdir}/"})
+def test_mirror_url_source_0(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+    mirror.activate()
 
-            with pytest.raises(OfflineError):
-                load_without_network(mirror=mirror)
+    with pytest.raises(OfflineError):
+        load_without_network(force=True)
 
-            load()
 
-            with pytest.raises(OfflineError):
-                load_without_network(mirror=mirror)
+def test_mirror_url_source_1(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+    mirror.activate()
 
-            load(build_mirror=mirror)
+    # load is not enough, as we are not using the cache ()
+    load(force=True)
+    with pytest.raises(OfflineError):
+        load_without_network(force=True)
 
-            load_without_network(mirror=mirror)
+
+def test_mirror_url_source_1bis(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+
+    # load is not enough, as we are not using the cache ()
+    with mirror:
+        load(force=True)
+        with pytest.raises(OfflineError):
+            load_without_network(force=True)
+
+
+def test_mirror_url_source_2(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+    mirror.activate(prefetch=True)
+
+    # load is enough with prefetch
+    load(force=True)
+    load_without_network(force=True)
+
+
+def test_mirror_url_source_2bis(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+
+    # load is enough with prefetch
+    with mirror.prefetch():
+        load(force=True)
+
+        load_without_network(force=True)
+
+
+def test_mirror_url_source_3(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+    mirror = DirectoryMirror(path=tmpdir)
+
+    with mirror.prefetch():
+        load(force=True)
+
+    mirror = DirectoryMirror(path=tmpdir)
+    with mirror:
+        load_without_network(force=True)
+
+
+@pytest.mark.skipif(True, reason="Not implemented yet")
+@pytest.mark.parametrize("m1", [False, True])
+@pytest.mark.parametrize("m2", [False, True])
+def test_mirror_url_source_multiple(mirror_dirs, m1, m2):
+    dir1, dir2 = mirror_dirs
+
+    assert len(get_mirrors()) == 0, [f"{m}" for m in get_mirrors()]
+    mirror1 = DirectoryMirror(path=dir1)
+    mirror2 = DirectoryMirror(path=dir2)
+    mirror1.activate(prefetch=m1)
+    mirror2.activate(prefetch=m2)
+    load(force=True)
+    mirror1.deactivate()
+    mirror2.deactivate()
+
+    assert len(get_mirrors()) == 0, get_mirrors()
+
+    mirror1 = DirectoryMirror(path=dir1)
+    mirror2 = DirectoryMirror(path=dir2)
+    mirror1.activate()
+    mirror2.activate()
+    assert len(get_mirrors()) == 2
+    if m1 or m2:
+        load_without_network(force=True)
+    else:
+        with pytest.raises(OfflineError):
+            load_without_network(force=True)
+    mirror1.deactivate()
+    mirror2.deactivate()
+    assert len(get_mirrors()) == 0, get_mirrors()
+
+
+@pytest.mark.skipif(True, reason="Not implemented yet")
+def test_mirror_url_source_multiple_copy(mirror_dirs):
+    dir1, dir2 = mirror_dirs
+
+    mirror1 = DirectoryMirror(path=dir1)
+    mirror2 = DirectoryMirror(path=dir2)
+
+    with mirror2:
+        with mirror1.prefetch():
+            assert len(get_mirrors()) == 2
+            source = load(force=True)
+
+    assert not get_mirrors()
+    assert mirror1.contains(source)
+    assert not mirror2.contains(source)
+
+    print("mirror.....................")
+
+    with mirror2.prefetch():
+        with mirror1:
+            assert len(get_mirrors()) == 2, get_mirrors()
+            source2 = load_without_network(force=True)
+            assert str(source2) == str(source), source2
+    assert len(get_mirrors()) == 0, get_mirrors()
+    # assert mirror2.contains(source2)
 
 
 if __name__ == "__main__":

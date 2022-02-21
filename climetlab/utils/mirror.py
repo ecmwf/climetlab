@@ -10,81 +10,210 @@ import logging
 import os
 import shutil
 
+import climetlab as cml
+
 LOG = logging.getLogger(__name__)
 
+global _MIRRORS
 
-class UrlMirror:
-    def __init__(self, redirections={}, env_var=None):
-        if env_var:
-            origin, copy = env_var.split(" ")
-            redirections[origin] = copy
 
-        self.redirections = redirections
+class SourceMutator:
+    def __init__(self, source):
+        self.source = source
 
-    def to_mirror_url(self, url):
-        new = url
-        for origin, copy in self.redirections.items():
-            # Todo: sanitatize url? Use folders?
-            new = new.replace(origin, copy)
+    def mutate_source(self):
+        return self.source
 
-        if new != url:
-            LOG.debug("Looking for mirrored data at %s instead of %s", new, url)
 
-        return new
+class Mirrors(list):
+    def query_mirrors(self, source):
+        self.warn_unsupported()
+        mutators = []
+        for mirror in self:
+            assert isinstance(mirror, BaseMirror), mirror
+            mutator = mirror.to_mirror_if_exists(source)
+            if mutator is not None:
+                assert isinstance(mutator, SourceMutator), mutator
+            mutators.append(mutator)
+        return self, mutators
 
-    def __call__(self, url):
-        new = self.to_mirror_url(url)
-
-        if os.path.exists(new):
-            LOG.info("Mirror found at %s", new)
-            return new
-
-        if new.startswith("file://") and os.path.exists(new.replace("file://", "")):
-            LOG.info("Mirror found at %s", new)
-            return new
-
-        LOG.debug("Mirror not found at %s for %s", new, url)
-        return url
-
-    def build_mirror(self, path, url):
-        new = self.to_mirror_url(url)
-        assert new.startswith(
-            "file://"
-        ), f"Only building file mirror is supported ({new})"
-        new = new[len("file://") :]
-        if os.path.exists(new):
+    def warn_unsupported(self):
+        if len(self) <= 1:
             return
-        LOG.info(f"Building mirror: {new}")
+        for m in self:
+            if m._prefetch:
+                LOG.error("Using prefetch with multiple mirrors is not supported.")
+                raise Exception(
+                    "Using prefetch with multiple mirrors is not supported."
+                )
+        return
+
+
+class BaseMirror:
+
+    _prefetch = False
+
+    def __enter__(self):
+        self.activate(prefetch=self._prefetch)
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.deactivate()
+
+    def prefetch(self):
+        self._prefetch = True
+        return self
+
+    def activate(self, prefetch=False):
+        self._prefetch = prefetch
+        global _MIRRORS
+        _MIRRORS.append(self)
+
+    def deactivate(self):
+        self._prefetch = False
+        global _MIRRORS
+        _MIRRORS.remove(self)
+
+    def contains(self, source):
+        item = Item(self, source)
+        value = self.contains_item(item)
+        assert value in [True, False]
+        return value
+
+    def to_mirror_if_exists(self, source):
+        item = Item(self, source)
+
+        if self.contains_item(item):
+            LOG.debug(f"Found mirrored file for {item}")
+            new_url = self.item_to_new_url(item)
+            new_source = cml.load_source("url", new_url)
+            return SourceMutator(new_source)
+        else:
+            LOG.debug(f"Mirrored file for {item} not found.")
+            return None
+
+    def build_copy_if_needed(self, source, path):
+        if not self._prefetch:
+            LOG.debug(
+                f"Mirror {self} does not build copy of {source} because prefetch=False."
+            )
+            return
+
+        item = Item(self, source)
+
+        if self.contains_item(item):
+            LOG.debug(f"OK, mirrored file already exists {item}")
+            return
+
+        self.build_copy(item, path)
+
+    def contains_item(self, item):
+        raise NotImplementedError()
+
+    def build_copy(self, source, path):
+        raise NotImplementedError()
+
+    def item_to_new_url(self, item):
+        # TODO: this should be item_to_new_source
+        raise NotImplementedError()
+
+    def repr_item(self, item):
+        return ""
+
+
+class Mirror(BaseMirror):
+    # TODO: build mirror from json config
+    pass
+
+
+class EmptyMirror(BaseMirror):
+    name = "empty_mirror"
+
+    def contains_item(self, item):
+        return False
+
+    def build_copy(self, source, path):
+        return
+
+
+class Item:
+    def __init__(self, mirror, source):
+        self.source = source
+        self.mirror = mirror
+
+        self.keys = self.source.get_mirror_keys()
+
+    @property
+    def key(self):
+        return self.keys["source_key"]
+
+    @property
+    def source_name(self):
+        return self.keys["source_name"]
+
+    @property
+    def mirror_name(self):
+        return self.mirror.name
+
+    def __repr__(self):
+        rep = self.mirror.repr_item(self)
+        return f"Item({self.source_name}={self.key}, {self.mirror_name}={rep})"
+
+
+class DirectoryMirror(BaseMirror):
+    name = "directory_mirror"
+
+    def __init__(self, path, **kwargs):
+        self.path = path
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        return f"DirectoryMirror({self.path}, {self.kwargs})"
+
+    def item_to_path(self, item):
+        path = os.path.join(
+            self.path,
+            item.source_name,
+            item.key,
+        )
+        return os.path.realpath(path)
+
+    def item_to_new_url(self, item):
+        return "file://" + self.item_to_path(item)
+
+    def contains_item(self, item):
+        path = self.item_to_path(item)
+        return os.path.exists(path)
+
+    def build_copy(self, item, path):
+        new = self.item_to_path(item)
+
+        LOG.info(f"Building mirror for {item}: cp {path} {new}")
         os.makedirs(os.path.dirname(new), exist_ok=True)
         shutil.copy2(path, new)
 
-
-global _MIRROR_WRITER
-_MIRROR_WRITER = None
-
-
-class prefetch:
-    def __init__(self, directory):
-        global _MIRROR_WRITER
-        _MIRROR_WRITER = UrlMirror(redirections={"https://": f"file://{directory}/"})
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args, **kwargs):
-        global _MIRROR_WRITER
-        _MIRROR_WRITER = None
+    def repr_item(self, item):
+        return self.item_to_path(item)
 
 
-def mirror_writer():
-    return _MIRROR_WRITER
+def query_mirrors(source):
+    global _MIRRORS
+    return _MIRRORS.query_mirrors(source)
 
 
-# TODO: move this to another file
+def _reset_mirrors():
+    global _MIRRORS
+    _MIRRORS = Mirrors()
+    # _MIRRORS.append(EmptyMirror())
+
+
+def get_mirrors():
+    global _MIRRORS
+    return _MIRRORS
+
+
+_reset_mirrors()
+
+# TODO: use this
 MIRROR_ENV_VAR = os.environ.get("CLIMETLAB_MIRROR")
 # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
-
-if MIRROR_ENV_VAR:
-    DEFAULT_MIRROR = UrlMirror(env_var=MIRROR_ENV_VAR)
-else:
-    DEFAULT_MIRROR = None
