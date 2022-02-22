@@ -151,29 +151,31 @@ def get_mirrors():
     return _MIRRORS
 
 
+def build_mirror_from_env_var():
+    env_var = os.environ.get("CLIMETLAB_MIRROR")
+    if not env_var:
+        return None
+
+    if " " in env_var:
+        # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
+        LOG.warning(
+            "Deprecation warning:  this use of CLIMETLAB_MIRROR environment variable"
+            " to define a mirror will be deprecated."
+        )
+        origin_prefix, path = env_var.split(" ")
+        return DirectoryMirror(path=path, origin_prefix=origin_prefix)
+
+    return DirectoryMirror(path=env_var)
+
+
 def _reset_mirrors(use_env_var):
     global _MIRRORS
     _MIRRORS = Mirrors()
 
-    def build_mirror_from_env_var():
-        env_var = os.environ.get("CLIMETLAB_MIRROR")
-        if not env_var:
-            return None
-
-        if " " in env_var:
-            # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
-            LOG.warning(
-                "Deprecation warning:  this use of CLIMETLAB_MIRROR environment variable"
-                " to define a mirror will be deprecated."
-            )
-            origin_prefix, path = env_var.split(" ")
-            return DirectoryMirror(path=path, origin_prefix=origin_prefix)
-
-        return DirectoryMirror(path=env_var)
-
     if use_env_var:
         mirror = build_mirror_from_env_var()
-        _MIRRORS.append(mirror)
+        if mirror:
+            _MIRRORS.append(mirror)
 
 
 _reset_mirrors(use_env_var=True)
