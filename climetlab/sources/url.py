@@ -108,7 +108,7 @@ class Url(FileSource):
         self.copy_to_mirrors(source_kwargs={})
 
     def connect_to_mirror(self, mirror, source_kwargs):
-        return mirror.mirror_interface_for_url(self, source_kwargs)
+        return mirror.connection_for_url(self, source_kwargs)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:

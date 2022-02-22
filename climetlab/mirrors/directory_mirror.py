@@ -17,9 +17,20 @@ from .source_mutator import SourceMutator
 LOG = logging.getLogger(__name__)
 
 
-class DirectoryMirrorForUrl(XMirrorForY):
+class DirectoryMirrorForY(XMirrorForY):
+    def _realpath(self):
+        keys = self._to_keys()
+        assert isinstance(keys, (list, tuple)), type(keys)
+        path = os.path.join(
+            self.mirror.path,
+            *keys,
+        )
+        return os.path.realpath(path)
+
+
+class DirectoryMirrorForUrl(DirectoryMirrorForY):
     def _mutator(self):
-        new_url = "file://" + self.mirror._realpath(self.source, **self.source_kwargs)
+        new_url = "file://" + self._realpath()
         source_url = self.source.url
         if new_url != source_url:
             LOG.debug(f"Found mirrored file for {source_url} in {new_url}")
@@ -27,18 +38,26 @@ class DirectoryMirrorForUrl(XMirrorForY):
         return None
 
     def contains(self):
-        url = self.source.url
-        if not url.startswith(self.mirror.origin_prefix):
+        if not self.source.url.startswith(self.mirror.origin_prefix):
             return False
-        path = self.mirror._realpath(self.source, **self.source_kwargs)
-        return os.path.exists(path)
+        return os.path.exists(self._realpath())
 
     def _copy(self):
         source_path = self.source.path
-        path = self.mirror._realpath(self.source, **self.source_kwargs)
+        path = self._realpath()
         LOG.info(f"Building mirror for {self.source}: cp {source_path} {path}")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         shutil.copy2(source_path, path)
+
+    def _to_keys(self):
+        url = self.source.url
+        if self.mirror.origin_prefix:
+            key = url[(len(self.mirror.origin_prefix) + 1) :]
+            return ["url", key]
+
+        url = urlparse(url)
+        keys = [url.scheme, f"{url.netloc}/{url.path}"]
+        return ["url"] + keys
 
 
 class DirectoryMirror(BaseMirror):
@@ -50,24 +69,5 @@ class DirectoryMirror(BaseMirror):
     def __repr__(self):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
-    def mirror_interface_for_url(self, source, source_kwargs):
+    def connection_for_url(self, source, source_kwargs):
         return DirectoryMirrorForUrl(self, source, source_kwargs)
-
-    def _realpath(self, source, **kwargs):
-        keys = self._url_to_keys(source, **kwargs)
-        assert isinstance(keys, (list, tuple)), type(keys)
-        path = os.path.join(
-            self.path,
-            *keys,
-        )
-        return os.path.realpath(path)
-
-    def _url_to_keys(self, source, **kwargs):
-        url = source.url
-        if self.origin_prefix:
-            key = url[(len(self.origin_prefix) + 1) :]
-            return ["url", key]
-
-        url = urlparse(url)
-        keys = [url.scheme, f"{url.netloc}/{url.path}"]
-        return ["url"] + keys

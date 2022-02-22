@@ -106,10 +106,12 @@ def build_mirror_from_env_var():
     if " " in env_var:
         # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
         LOG.warning(
-            "Deprecation warning:  this use of CLIMETLAB_MIRROR environment variable"
+            "Deprecation warning: this use of CLIMETLAB_MIRROR environment variable"
             " to define a mirror will be deprecated."
         )
         origin_prefix, path = env_var.split(" ")
+        # assert is_url(origin_prefix), "Cannot parse CLIMETLAB_MIRROR={env_var}."
+        # assert is_url(path), "Cannot parse CLIMETLAB_MIRROR={env_var}."
         return DirectoryMirror(path=path, origin_prefix=origin_prefix)
 
     return DirectoryMirror(path=env_var)
