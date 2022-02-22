@@ -48,6 +48,16 @@ class Mirrors(list):
                 return mutator
         return None
 
+    def copy(self, source, **kwargs):
+        for m in self:
+            if not m._prefetch:
+                LOG.debug(f"Mirror {m}: No copy of {source} because prefetch=False.")
+                continue
+            if m.contains(source, **kwargs):
+                LOG.debug(f"Mirror {m}: No copy of {source} because already there.")
+                continue
+            source.copy_to_mirror(m, **kwargs)
+
 
 class BaseMirror:
 
@@ -75,22 +85,9 @@ class BaseMirror:
         _MIRRORS.remove(self)
 
     def contains(self, source, **kwargs):
-        if hasattr(source, "is_contained_by"):
-            return source.is_contained_by(self, **kwargs)
+        if hasattr(source, "is_contained_by_mirror"):
+            return source.is_contained_by_mirror(self, **kwargs)
         return False
-
-    def build_copy_of_url(self, source, **kwargs):
-        if not self._prefetch:
-            LOG.debug(
-                f"Mirror {self} does not build copy of {source} because prefetch=False."
-            )
-            return
-
-        if self.contains(source, **kwargs):
-            LOG.debug(f"Mirror {self} already contains a copy of {source}")
-            return
-
-        self._build_copy_of_url(source, **kwargs)
 
 
 class Mirror(BaseMirror):
@@ -108,7 +105,7 @@ class DirectoryMirror(BaseMirror):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
     def mutator_for_url(self, source, **kwargs):
-        new_url = "file://" + self.realpath(source, **kwargs)
+        new_url = "file://" + self._realpath(source, **kwargs)
         if new_url != source.url:
             LOG.debug(f"Found mirrored file for {source} in {new_url}")
             return SourceMutator("url", new_url)
@@ -118,17 +115,17 @@ class DirectoryMirror(BaseMirror):
         url = source.url
         if not url.startswith(self.origin_prefix):
             return False
-        path = self.realpath(source, **kwargs)
+        path = self._realpath(source, **kwargs)
         return os.path.exists(path)
 
-    def _build_copy_of_url(self, source, **kwargs):
+    def copy_url(self, source, **kwargs):
         source_path = source.path
-        path = self.realpath(source, **kwargs)
+        path = self._realpath(source, **kwargs)
         LOG.info(f"Building mirror for {source}: cp {source_path} {path}")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         shutil.copy2(source_path, path)
 
-    def realpath(self, source, **kwargs):
+    def _realpath(self, source, **kwargs):
         keys = self._url_to_keys(source, **kwargs)
         assert isinstance(keys, (list, tuple)), type(keys)
         path = os.path.join(
@@ -157,20 +154,26 @@ def get_mirrors():
 def _reset_mirrors(use_env_var):
     global _MIRRORS
     _MIRRORS = Mirrors()
-    if not use_env_var:
-        return
 
-    env_var = os.environ.get("CLIMETLAB_MIRROR")
-    if " ":
-        # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
-        LOG.warning(
-            "Deprecation warning:  using CLIMETLAB_MIRROR environment variable string to define a mirror is deprecated."
-        )
-        origin_prefix, path = env_var.split(" ")
-        mirror = DirectoryMirror(path=path, origin_prefix=origin_prefix)
-    else:
-        mirror = DirectoryMirror(path=env_var)
-    _MIRRORS.append(mirror)
+    def build_mirror_from_env_var():
+        env_var = os.environ.get("CLIMETLAB_MIRROR")
+        if not env_var:
+            return None
+
+        if " " in env_var:
+            # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
+            LOG.warning(
+                "Deprecation warning:  this use of CLIMETLAB_MIRROR environment variable"
+                " to define a mirror will be deprecated."
+            )
+            origin_prefix, path = env_var.split(" ")
+            return DirectoryMirror(path=path, origin_prefix=origin_prefix)
+
+        return DirectoryMirror(path=env_var)
+
+    if use_env_var:
+        mirror = build_mirror_from_env_var()
+        _MIRRORS.append(mirror)
 
 
 _reset_mirrors(use_env_var=True)

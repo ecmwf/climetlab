@@ -107,14 +107,16 @@ class Url(FileSource):
             force=force,
         )
 
-        for mirror in mirrors:
-            mirror.build_copy_of_url(self)
+        mirrors.copy(self)
 
-    def is_contained_by(self, mirror, **kwargs):
+    def is_contained_by_mirror(self, mirror, **kwargs):
         return mirror.contains_url(self, **kwargs)
 
     def get_mirror_mutator(self, mirror, **kwargs):
         return mirror.mutator_for_url(self, **kwargs)
+
+    def copy_to_mirror(self, mirror, **kwargs):
+        return mirror.copy_url(self, **kwargs)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:
