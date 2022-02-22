@@ -44,14 +44,12 @@ class Mirrors(list):
             if not m.contains(source, **kwargs):
                 LOG.debug(f"Cannot find a copy of {source} in mirror {m}.")
                 continue
-            if not hasattr(source, "get_mirror_mutator"):
-                LOG.debug(f"No mirroring for {source}: not implemented with {m}.")
-                continue
             mutator = source.get_mirror_mutator(m, **kwargs)
-            if mutator:
-                LOG.debug(f"Found a copy of {source} in mirror {m}.")
-                return mutator
-            LOG.debug(f"Not redirecting {source} to its copy in mirror {m}.")
+            if not mutator:
+                LOG.debug(f"Not redirecting {source} to its copy in mirror {m}.")
+                continue
+            LOG.debug(f"Found a copy of {source} in mirror {m}.")
+            return mutator
         return None
 
     def copy(self, source, **kwargs):
@@ -62,10 +60,6 @@ class Mirrors(list):
             if m.contains(source, **kwargs):
                 LOG.debug(f"Mirror {m}: No copy of {source} because already there.")
                 continue
-            if not hasattr(source, "copy_to_mirror"):
-                LOG.debug(f"No copy of {source} on mirror {m}: not implemented yet.")
-                continue
-            LOG.debug(f"Mirror {m}: Creating copy of {source}.")
             source.copy_to_mirror(m, **kwargs)
 
 
@@ -95,9 +89,7 @@ class BaseMirror:
         _MIRRORS.remove(self)
 
     def contains(self, source, **kwargs):
-        if hasattr(source, "is_contained_by_mirror"):
-            return source.is_contained_by_mirror(self, **kwargs)
-        return False
+        return source.is_contained_by_mirror(self, **kwargs)
 
 
 class Mirror(BaseMirror):
