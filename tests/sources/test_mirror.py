@@ -16,7 +16,7 @@ import pytest
 
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
-from climetlab.testing import OfflineError, network_off
+from climetlab.testing import IN_GITHUB, OfflineError, network_off
 from climetlab.utils.mirror import DirectoryMirror, _reset_mirrors, get_mirrors
 
 
@@ -143,7 +143,8 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
     assert m.contains(source)
 
     assert str(source) == f"Url({origin_prefix}/examples/test.grib)"
-    assert str(source2) == f"Url(file://{mirror_dir}/url/examples/test.grib)"
+    if not IN_GITHUB:
+        assert str(source2) == f"Url(file://{mirror_dir}/url/examples/test.grib)"
 
 
 @pytest.mark.skipif(True, reason="Not implemented yet")

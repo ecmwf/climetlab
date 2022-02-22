@@ -42,10 +42,13 @@ class Mirrors(list):
     def mutator(self, source, **kwargs):
         for m in self:
             if not m.contains(source, **kwargs):
+                LOG.debug(f"Cannot find a copy of {source} in mirror {m}.")
                 continue
             mutator = source.get_mirror_mutator(m, **kwargs)
             if mutator:
+                LOG.debug(f"Found a copy of {source} in mirror {m}.")
                 return mutator
+            LOG.debug(f"Not redirecting {source} to its copy in mirror {m}.")
         return None
 
     def copy(self, source, **kwargs):
@@ -56,6 +59,7 @@ class Mirrors(list):
             if m.contains(source, **kwargs):
                 LOG.debug(f"Mirror {m}: No copy of {source} because already there.")
                 continue
+            LOG.debug(f"Mirror {m}: Creating copy of {source}.")
             source.copy_to_mirror(m, **kwargs)
 
 
@@ -106,8 +110,9 @@ class DirectoryMirror(BaseMirror):
 
     def mutator_for_url(self, source, **kwargs):
         new_url = "file://" + self._realpath(source, **kwargs)
-        if new_url != source.url:
-            LOG.debug(f"Found mirrored file for {source} in {new_url}")
+        source_url = source.url
+        if new_url != source_url:
+            LOG.debug(f"Found mirrored file for {source_url} in {new_url}")
             return SourceMutator("url", new_url)
         return None
 
