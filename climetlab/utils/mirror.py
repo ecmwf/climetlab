@@ -105,6 +105,9 @@ class DirectoryMirror(BaseMirror):
             source._mutator = SourceMutator("url", new_url)
 
     def contains(self, source, **kwargs):
+        url = source.url
+        if not url.startswith(self.origin_prefix):
+            return False
         path = self.realpath(source, **kwargs)
         return os.path.exists(path)
 
@@ -126,18 +129,13 @@ class DirectoryMirror(BaseMirror):
 
     def _url_to_keys(self, source, **kwargs):
         url = source.url
-        if not self.origin_prefix:
-            url = urlparse(url)
-            keys = [url.scheme, f"{url.netloc}/{url.path}"]
-            print("  keys=", ["url"] + keys)
-            return ["url"] + keys
+        if self.origin_prefix:
+            key = url[(len(self.origin_prefix) + 1) :]
+            return ["url", key]
 
-        if not url.startswith(self.origin_prefix):
-            LOG.debug(f"Cannot find mirrored file for {source}.")
-            return None
-
-        key = url[(len(self.origin_prefix) + 1) :]
-        return ["url", key]
+        url = urlparse(url)
+        keys = [url.scheme, f"{url.netloc}/{url.path}"]
+        return ["url"] + keys
 
 
 def get_mirrors():

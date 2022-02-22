@@ -110,11 +110,6 @@ class Url(FileSource):
         for mirror in mirrors:
             mirror.build_copy_of_url(self)
 
-    def get_mirror_keys(self, url=None, origin_prefix=""):
-        if url is None:
-            url = self.url
-        return self._get_mirror_keys(url)
-
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:
             return False
