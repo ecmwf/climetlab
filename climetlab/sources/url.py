@@ -62,10 +62,10 @@ class Url(FileSource):
         self.update_if_out_of_date = update_if_out_of_date
 
         mirrors = get_mirrors()
-        for m in mirrors:
-            m.mutate_url(self)
-            if self._mutator:
-                return
+        mutator = mirrors.mutator(self)
+        if mutator:
+            self._mutator = mutator
+            return
 
         self.downloader = Downloader(
             url,
@@ -109,6 +109,12 @@ class Url(FileSource):
 
         for mirror in mirrors:
             mirror.build_copy_of_url(self)
+
+    def is_contained_by(self, mirror, **kwargs):
+        return mirror.contains_url(self, **kwargs)
+
+    def get_mirror_mutator(self, mirror, **kwargs):
+        return mirror.mutator_for_url(self, **kwargs)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:

@@ -39,6 +39,15 @@ class Mirrors(list):
                 )
         return
 
+    def mutator(self, source, **kwargs):
+        for m in self:
+            if not m.contains(source, **kwargs):
+                continue
+            mutator = source.get_mirror_mutator(m, **kwargs)
+            if mutator:
+                return mutator
+        return None
+
 
 class BaseMirror:
 
@@ -65,10 +74,10 @@ class BaseMirror:
         global _MIRRORS
         _MIRRORS.remove(self)
 
-    def mutate_url(self, source, **kwargs):
-        if not self.contains(source, **kwargs):
-            return
-        self._mutate_url(source, **kwargs)
+    def contains(self, source, **kwargs):
+        if hasattr(source, "is_contained_by"):
+            return source.is_contained_by(self, **kwargs)
+        return False
 
     def build_copy_of_url(self, source, **kwargs):
         if not self._prefetch:
@@ -98,13 +107,14 @@ class DirectoryMirror(BaseMirror):
     def __repr__(self):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
-    def _mutate_url(self, source, **kwargs):
+    def mutator_for_url(self, source, **kwargs):
         new_url = "file://" + self.realpath(source, **kwargs)
         if new_url != source.url:
             LOG.debug(f"Found mirrored file for {source} in {new_url}")
-            source._mutator = SourceMutator("url", new_url)
+            return SourceMutator("url", new_url)
+        return None
 
-    def contains(self, source, **kwargs):
+    def contains_url(self, source, **kwargs):
         url = source.url
         if not url.startswith(self.origin_prefix):
             return False
