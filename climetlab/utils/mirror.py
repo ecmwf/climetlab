@@ -31,36 +31,20 @@ class Mirrors(list):
     def warn_unsupported(self):
         if len(self) <= 1:
             return
-        for m in self:
-            if m._prefetch:
-                LOG.error("Using prefetch with multiple mirrors is not supported.")
-                raise Exception(
-                    "Using prefetch with multiple mirrors is not supported."
-                )
-        return
+        if any([m._prefetch for m in self]):
+            LOG.error("Using prefetch with multiple mirrors is not supported.")
+            raise Exception("Unsupported use of prefetch with multiple mirrors {self}.")
 
     def mutator(self, source, **kwargs):
         for m in self:
-            if not m.contains(source, **kwargs):
-                LOG.debug(f"Cannot find a copy of {source} in mirror {m}.")
-                continue
-            mutator = source.get_mirror_mutator(m, **kwargs)
-            if not mutator:
-                LOG.debug(f"Not redirecting {source} to its copy in mirror {m}.")
-                continue
-            LOG.debug(f"Found a copy of {source} in mirror {m}.")
-            return mutator
+            mutator = m.mutator(source, **kwargs)
+            if mutator:
+                return mutator
         return None
 
     def copy(self, source, **kwargs):
         for m in self:
-            if not m._prefetch:
-                LOG.debug(f"Mirror {m}: No copy of {source} because prefetch=False.")
-                continue
-            if m.contains(source, **kwargs):
-                LOG.debug(f"Mirror {m}: No copy of {source} because already there.")
-                continue
-            source.copy_to_mirror(m, **kwargs)
+            m.copy(source, **kwargs)
 
 
 class BaseMirror:
@@ -90,6 +74,26 @@ class BaseMirror:
 
     def contains(self, source, **kwargs):
         return source.is_contained_by_mirror(self, **kwargs)
+
+    def mutator(self, source, **kwargs):
+        if not self.contains(source, **kwargs):
+            LOG.debug(f"Cannot find a copy of {source} in mirror {self}.")
+            return None
+        mutator = source.get_mirror_mutator(self, **kwargs)
+        if not mutator:
+            LOG.debug(f"Not redirecting {source} to its copy in mirror {self}.")
+            return None
+        LOG.debug(f"Found a copy of {source} in mirror {self}.")
+        return mutator
+
+    def copy(self, source, **kwargs):
+        if not self._prefetch:
+            LOG.debug(f"Mirror {self}: No copy of {source} because prefetch=False.")
+            return
+        if self.contains(source, **kwargs):
+            LOG.debug(f"Mirror {self}: No copy of {source} because already there.")
+            return
+        source.copy_to_mirror(self, **kwargs)
 
 
 class Mirror(BaseMirror):
