@@ -87,6 +87,31 @@ class Source(Base):
     def graph(self, depth=0):
         print(" " * depth, self)
 
+    # Mirroring
+    def get_mirrors_mutator(self, source_kwargs):
+        from climetlab.mirrors import get_mirrors
+        from climetlab.sources import Base
+
+        assert isinstance(self, Base)
+        for m in get_mirrors():
+            connection = self.connect_to_mirror(m, source_kwargs)
+            if not connection:
+                continue
+            mutator = connection.mutator()
+            if mutator:
+                return mutator
+
+    def copy_to_mirrors(self, source_kwargs):
+        from climetlab.mirrors import get_mirrors
+
+        for m in get_mirrors():
+            connection = self.connect_to_mirror(m, source_kwargs)
+            if connection:
+                connection.copy()
+
+    def connect_to_mirror(self, mirror, source_kwargs):
+        return None
+
 
 class SourceLoader:
 

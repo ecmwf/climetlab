@@ -49,17 +49,6 @@ class Base(metaclass=MetaBase):
     def to_metview(self, **kwargs):
         self._not_implemented()
 
-    # Mirroring
-    def is_contained_by_mirror(self, mirror, **kwargs):
-        return False
-
-    def get_mirror_mutator(self, *args, **kwargs):
-        LOG.debug(f"No mirroring for {self}: not implemented.")
-        return None
-
-    def copy_to_mirror(self, mirror, **kwargs):
-        LOG.debug(f"No copy of {self} on mirror {mirror}: not implemented yet.")
-
     # Change class
     def mutate(self):
         return self

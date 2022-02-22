@@ -16,16 +16,19 @@ import pytest
 
 from climetlab import load_source, settings
 from climetlab.core.temporary import temp_directory
+from climetlab.mirrors import _reset_mirrors, get_mirrors
+from climetlab.mirrors.directory_mirror import DirectoryMirror
 from climetlab.testing import IN_GITHUB, OfflineError, network_off
-from climetlab.utils.mirror import DirectoryMirror, _reset_mirrors, get_mirrors
 
 
 def load(**kwargs):
-    return load_source(
+    source = load_source(
         "url",
         "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib",
         **kwargs,
     )
+    assert len(source) == 2, source
+    return source
 
 
 def load_without_network(**kwargs):
@@ -140,7 +143,7 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
     with m:
         source2 = load_without_network(force=True)
 
-    assert m.contains(source)
+    assert source.connect_to_mirror(m, {}).contains()
 
     assert str(source) == f"Url({origin_prefix}/examples/test.grib)"
     if not IN_GITHUB:
@@ -148,62 +151,51 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
 
 
 @pytest.mark.skipif(True, reason="Not implemented yet")
-@pytest.mark.parametrize("m1", [False, True])
-@pytest.mark.parametrize("m2", [False, True])
-def test_mirror_url_source_multiple(mirror_dirs, m1, m2):
+@pytest.mark.parametrize("b2", ["__", "b2"])
+@pytest.mark.parametrize("a2", ["__", "a2"])
+@pytest.mark.parametrize("b1", ["__", "b1"])
+@pytest.mark.parametrize("a1", ["__", "a1"])
+def test_mirror_url_source_multiple_copy(
+    mirror_dirs,
+    a1,
+    b1,
+    a2,
+    b2,
+):
     dir1, dir2 = mirror_dirs
-
-    assert len(get_mirrors()) == 0, [f"{m}" for m in get_mirrors()]
-    mirror1 = DirectoryMirror(path=dir1)
-    mirror2 = DirectoryMirror(path=dir2)
-    mirror1.activate(prefetch=m1)
-    mirror2.activate(prefetch=m2)
-    load(force=True)
-    mirror1.deactivate()
-    mirror2.deactivate()
-
-    assert len(get_mirrors()) == 0, get_mirrors()
-
-    mirror1 = DirectoryMirror(path=dir1)
-    mirror2 = DirectoryMirror(path=dir2)
-    mirror1.activate()
-    mirror2.activate()
-    assert len(get_mirrors()) == 2
-    if m1 or m2:
-        load_without_network(force=True)
-    else:
-        with pytest.raises(OfflineError):
-            load_without_network(force=True)
-    mirror1.deactivate()
-    mirror2.deactivate()
-    assert len(get_mirrors()) == 0, get_mirrors()
-
-
-@pytest.mark.skipif(True, reason="Not implemented yet")
-def test_mirror_url_source_multiple_copy(mirror_dirs):
-    dir1, dir2 = mirror_dirs
+    a1 = a1 == "a1"
+    b1 = b1 == "b1"
+    a2 = a2 == "a2"
+    b2 = b2 == "b2"
 
     mirror1 = DirectoryMirror(path=dir1)
     mirror2 = DirectoryMirror(path=dir2)
 
-    with mirror2:
+    source = load(force=True)
+
+    if a1:
         with mirror1.prefetch():
+            load(force=True)
+    if b1:
+        with mirror2.prefetch():
+            load(force=True)
+
+    assert mirror1.contains(source, {}) == a1, "Prefetching failed for a2"
+    assert mirror2.contains(source, {}) == b1, "Prefetching failed for b2"
+
+    if a2:
+        mirror1.prefetch()
+    if b2:
+        mirror2.prefetch()
+    with mirror1:
+        with mirror2:
             assert len(get_mirrors()) == 2
-            source = load(force=True)
+            source2 = load(force=True)
 
-    assert not get_mirrors()
-    assert mirror1.contains(source)
-    assert not mirror2.contains(source)
-
-    print("mirror.....................")
-
-    with mirror2.prefetch():
-        with mirror1:
-            assert len(get_mirrors()) == 2, get_mirrors()
-            source2 = load_without_network(force=True)
-            assert str(source2) == str(source), source2
-    assert len(get_mirrors()) == 0, get_mirrors()
-    # assert mirror2.contains(source2)
+    assert mirror1.contains(source, {}) == (a2 or a1), f"mirror 1: a2={a2} or a1={a1}"
+    assert mirror2.contains(source, {}) == (b2 or b1), f"mirror 2: b2={b2} or b1={b1}"
+    if a1 or b1 or a2 or b2:
+        assert str(source2) != str(source)
 
 
 if __name__ == "__main__":
