@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 global _MIRRORS
 
 
-class XMirrorConnectionForY:
+class MirrorConnection:
     def __init__(self, mirror, source, source_kwargs):
         self.mirror = mirror
         self.source = source
@@ -40,13 +40,14 @@ class XMirrorConnectionForY:
         if self.contains():
             LOG.debug(f"No copy of {self.source} into {self.mirror}: already contains.")
             return
-        self._copy()
+        LOG.info(f"Building mirror for {self.source}.")
+        self.copy()
 
     def mutator(self):
         LOG.debug(f"No mirroring of {self.source} into {self.mirror}: not implemented.")
         return None
 
-    def _copy(self):
+    def copy(self):
         LOG.debug(f"No copy of {self.source} into {self.mirror}: not implemented.")
         return
 
@@ -54,11 +55,11 @@ class XMirrorConnectionForY:
         return False
 
 
-class DummyMirrorConnectionForY(XMirrorConnectionForY):
+class DummyMirrorConnection(MirrorConnection):
     def mutator(self):
         return None
 
-    def _copy(self):
+    def copy(self):
         return
 
 

@@ -16,7 +16,6 @@ from climetlab.core import Base
 from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin, register
 from climetlab.core.settings import SETTINGS
-from climetlab.mirrors import DummyMirrorConnectionForY
 from climetlab.utils.html import table
 
 
@@ -108,7 +107,9 @@ class Source(Base):
             connection.copy_if_needed()
 
     def connect_to_mirror(self, mirror, source_kwargs):
-        return DummyMirrorConnectionForY()
+        from climetlab.mirrors import DummyMirrorConnection
+
+        return DummyMirrorConnection()
 
 
 class SourceLoader:

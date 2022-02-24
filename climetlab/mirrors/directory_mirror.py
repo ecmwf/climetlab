@@ -11,13 +11,16 @@ import os
 import shutil
 from urllib.parse import urlparse
 
-from . import BaseMirror, XMirrorConnectionForY
+from climetlab.sources.file import FileSource
+from climetlab.sources.url import Url
+
+from . import BaseMirror, MirrorConnection
 from .source_mutator import SourceMutator
 
 LOG = logging.getLogger(__name__)
 
 
-class DirectoryMirrorConnectionForY(XMirrorConnectionForY):
+class DirectoryMirrorConnection(MirrorConnection):
     def _realpath(self):
         keys = self._to_keys()
         assert isinstance(keys, (list, tuple)), type(keys)
@@ -27,8 +30,30 @@ class DirectoryMirrorConnectionForY(XMirrorConnectionForY):
         )
         return os.path.realpath(path)
 
+    def contains(self):
+        return os.path.exists(self._realpath())
 
-class DirectoryMirrorConnectionForUrl(DirectoryMirrorConnectionForY):
+
+class DirectoryMirrorConnectionForFile(DirectoryMirrorConnection):
+    def __init__(self, mirror, source: FileSource, source_kwargs):
+        assert isinstance(source, FileSource), source
+        assert hasattr(source, "path")
+        return super().__init__(mirror, source, source_kwargs)
+
+    def copy(self):
+        origin_path = self.source.path
+        path = self._realpath()
+        LOG.debug(f"Building mirror: cp {origin_path} {path}")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        shutil.copy2(origin_path, path)
+
+
+class DirectoryMirrorConnectionForUrl(DirectoryMirrorConnectionForFile):
+    def __init__(self, mirror, source: Url, source_kwargs):
+        assert isinstance(source, Url), source
+        assert hasattr(source, "url")
+        return super().__init__(mirror, source, source_kwargs)
+
     def mutator(self):
         new_url = "file://" + self._realpath()
         source_url = self.source.url
@@ -40,14 +65,7 @@ class DirectoryMirrorConnectionForUrl(DirectoryMirrorConnectionForY):
     def contains(self):
         if not self.source.url.startswith(self.mirror.origin_prefix):
             return False
-        return os.path.exists(self._realpath())
-
-    def _copy(self):
-        source_path = self.source.path
-        path = self._realpath()
-        LOG.info(f"Building mirror for {self.source}: cp {source_path} {path}")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        shutil.copy2(source_path, path)
+        return super().contains()
 
     def _to_keys(self):
         url = self.source.url
