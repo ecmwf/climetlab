@@ -1,16 +1,11 @@
 Settings
 ========
 
-
 *CliMetLab* is maintaining a set of global settings which control
 its behaviour.
 
 The settings are saved in ``~/.climetlab/settings.yaml``. They can
-be accessed from Python or using the ``climetlab`` command line as shown below:
-
-.. todo::
-
-    Add documentation for command line usage.
+be accessed from Python or using the ``climetlab`` command line.
 
 Accessing settings
 ------------------
@@ -90,6 +85,9 @@ Or using the ``climetlab`` interactive prompt:
     (climetlab) settings_reset --all
     (climetlab) Ctrl^D
 
+
+.. _settings_table:
+ 
 Default values
 --------------
 

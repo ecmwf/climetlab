@@ -3,15 +3,22 @@
 Datasets
 ========
 
-A **Dataset** is an object created using ``cml.load_dataset(name, *args)`` with
-the appropriate name and arguments,
-which provides data and metatada and additional functionalities:
+A **Dataset** is an object created using ``cml.load_dataset(name, arg1, arg2=..., ...)``
+with the appropriate **name** and **arguments**, which provides access to the **data**.
+It also provides **metatada** and **additional functionalities**:
 
-- The name is a string that uniquely identifies the dataset.
-- The arguments can be used to specify a subpart of the dataset.
-- The :ref:`metadata <dataset metadata>` attached to the dataset provides
-  additional information such as an URL, a citation, licence, etc.
-- Additional functionalities:
+- The **name** is a string that uniquely identifies the dataset.
+
+- The **argument(s)** ``arg1`` and keyword argument(s) ``arg2`` can be used to specify
+  a subset of the dataset.
+
+- The **data** can be accessed using methods such as ``to_xarray()`` or ``to_pandas()``
+  or other.
+
+- Relevant **metadata** are attached directly to the dataset to provides
+  additional information such as :ref:`an URL, a citation, licence, etc. <dataset metadata>` 
+
+- **Additional functionalities**:
   When working on data, we are often writing code to transform, preprocess,
   adapt the data to our needs.
   While it may be very nice to understand deeply to deep magic under the

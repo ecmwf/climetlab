@@ -9,67 +9,111 @@ Caching
      and code behaviour will change.
 
 
+Purpose
+-------
 
-CliMetLab cache configuration is managed through the CliMetLab
-:doc:`settings`.
-
-The **cache location** is defined by `cache‑directory`.  This cache
-location does not matter when you are using a unique disk (this is
-the case for most laptops).  Linux system are different, the default
-location is assigned by the system for temporary files. If this
-default location is ``/tmp`` and if ``/tmp`` is mounted separately,
-it may have size to small for the data you intent to download.
-Changing the cache location is detailed in the :doc:`settings`
-documentation.
-
-
-The **maximum-cache-size** option ensures that CliMetLab does not
-use to much disk space.  Its value sets the maximum disk space used
-by CliMetLab cache.  When CliMetLab cache disk usage goes above
-this limit, CliMetLab triggers its cache cleaning mechanism  before
-downloading additional data.  The value of cache-maximum-size is
-absolute (such as "10G", "10M", "1K").
-
-The **maximum-cache-disk-usage** option ensures that CliMetLab
-leaves does not fill your disk.  Its values sets the maximum disk
-usage space that must be left on the filesystem.  When the disk
-space goes below this limit, CliMetLab triggers its cache cleaning
-mechanism before downloading additional data.  The value of
-maximum-cache-disk-usage is relative (such as "90%" or "100%").
-
-.. warning::
-    Notice that the value of `maximum-cache-disk-usage` should not
-    be too small.  indeed, your disk may be filled by another
-    application, leading to disk usage higher than the value specified
-    in your `maximum-cache-disk-usage` setting. In such case,
-    CliMetLab will happily delete the data in its cache to make
-    room for the other application.
-
-    For instance, setting `maximum-cache-disk-usage` to 80% on a
-    1T disk already 70% full, CliMetLab will not cache more than
-    100G of data.  When this 80% limit is reached, running an
-    external script which writes 100G of data with make it 90%.  On
-    the next run, CliMetLab will delete its cache completely.
-
+CliMetLab caches most of the remote data access on a local cache. Running again
+``cml.load_dataset`` or ``cml.load_source`` will use the cached data instead of
+downloading it again.
+When the cache is full, cached data is deleted according it cache policy
+(i.e. oldest data is deleted first).
+CliMetLab cache configuration is managed through the CliMetLab :doc:`settings`.
 
 .. warning::
 
-    Setting limits to the cache disk usage ensures that CliMetLab
-    triggers its cache cleaning mechanism before downloading
-    additional data, but it has some limitations.  As long as the
-    limits are not reached, CliMetLab can add more data into the
-    cache.
-
-    For instance, when downloading a 100G file on your empty disk
-    of 10G total, the download is attempted (since the limits are
-    not reached) and fills the disk and fails with a disk full.
-
-
-
-Caching settings
-----------------
-.. todo::
+    The CliMetLab cache is intended to be used by a single user.
+    Sharing cache with **multiple users is not recommended**.
+    Downloading a local copy of data on a shared disk to have multiple
+    users working is a different use case and should be supported
+    through using mirrors.
+    `Feedback and feature requests are welcome. <https://github.com/ecmwf/climetlab/issues>`_
     
-    add pointer to the settings page.
+
+Cache location
+--------------
+
+  The cache location is defined by the ``cache‑directory`` setting. Its default
+  value depends on your system. 
+  (`/tmp/climetlab-$USER` for linux, 
+  `C:\\Users\\$USER\\AppData\\Local\\Temp\\climetlab-$USER` for Windows,
+  `/tmp/.../climetlab-$USER` for MacOS)
+
+  
+  The cache location can be read and modified either with shell command or within python.
+  
+  .. note::
+
+    It is recommended to restart your Jupyter kernels after changing
+    the cache location.
+
+  From a shell with the ``climetlab`` command:
+
+  .. code:: bash
+
+    # Find the current cache directory
+    $ climetlab settings cache-directory
+    /tmp/climetlab-$USER
+
+    # Change the value of the setting
+    $ climetlab settings cache-directory /big-disk/climetlab-cache
+
+    # Cache directory has been modified
+    $ climetlab settings cache-directory
+    /big-disk/climetlab-cache
+
+  From a python notebook or python script:
+
+  .. code:: python
+
+    >>> import climetlab as cml
+    >>> cml.settings.get("cache-directory") # Find the current cache directory
+    /tmp/climetlab-$USER
+    >>> # Change the value of the setting
+    >>> cml.settings.set("cache-directory", "/big-disk/climetlab-cache")
+
+    # Python kernel restarted
+
+    >>> import climetlab as cml
+    >>> cml.settings.get("cache-directory") # Cache directory has been modified
+    /big-disk/climetlab-cache
+
+  More generally, the CliMetLab settings can be read, modified, reset 
+  to their default values using the ``climetlab`` command or from python,
+  see the :doc:`Settings documentation <settings>`.
+
+Cache limits
+------------
+
+Maximum-cache-size
+  The ``maximum-cache-size`` setting ensures that CliMetLab does not
+  use to much disk space.  Its value sets the maximum disk space used
+  by CliMetLab cache.  When CliMetLab cache disk usage goes above
+  this limit, CliMetLab triggers its cache cleaning mechanism  before
+  downloading additional data.  The value of cache-maximum-size is
+  absolute (such as "10G", "10M", "1K").
+
+Maximum-cache-disk-usage
+  The ``maximum-cache-disk-usage`` setting ensures that CliMetLab
+  leaves does not fill your disk.
+  Its values sets the maximum disk usage of the filesystem containing the cache
+  directory. When the disk space goes below this limit, CliMetLab triggers
+  its cache cleaning mechanism before downloading additional data.
+  The value of maximum-cache-disk-usage is relative (such as "90%" or "100%").
+
+.. warning::
+    If your disk is filled by another application, CliMetLab will happily
+    delete its cached data to make room for the other application as soon
+    as it has a chance.
+
+.. note::
+    When tweaking the cache settings, it is recommended to set the
+    ``maximum-cache-size`` to a value below the user disk quota (if appliable)
+    and ``maximum-cache-disk-usage`` to ``None``.
+
+
+Caching settings default values
+-------------------------------
 
 .. module-output:: generate_settings_rst .*-cache-.* cache-.*
+
+Other CliMetLab settings can be found :ref:`here <settings_table>`.
