@@ -16,6 +16,7 @@ from climetlab.core import Base
 from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin, register
 from climetlab.core.settings import SETTINGS
+from climetlab.mirrors import DummyMirrorConnectionForY
 from climetlab.utils.html import table
 
 
@@ -95,9 +96,7 @@ class Source(Base):
         assert isinstance(self, Base)
         for m in get_mirrors():
             connection = self.connect_to_mirror(m, source_kwargs)
-            if not connection:
-                continue
-            mutator = connection.mutator()
+            mutator = connection.mutator_if_needed()
             if mutator:
                 return mutator
 
@@ -106,11 +105,10 @@ class Source(Base):
 
         for m in get_mirrors():
             connection = self.connect_to_mirror(m, source_kwargs)
-            if connection:
-                connection.copy()
+            connection.copy_if_needed()
 
     def connect_to_mirror(self, mirror, source_kwargs):
-        return None
+        return DummyMirrorConnectionForY()
 
 
 class SourceLoader:

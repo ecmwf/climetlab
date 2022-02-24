@@ -14,17 +14,17 @@ LOG = logging.getLogger(__name__)
 global _MIRRORS
 
 
-class XMirrorForY:
+class XMirrorConnectionForY:
     def __init__(self, mirror, source, source_kwargs):
         self.mirror = mirror
         self.source = source
         self.source_kwargs = source_kwargs
 
-    def mutator(self):
+    def mutator_if_needed(self):
         if not self.contains():
             LOG.debug(f"Cannot find a copy of {self.source} in mirror {self.mirror}.")
             return None
-        mutator = self._mutator()
+        mutator = self.mutator()
         if not mutator:
             LOG.debug(
                 f"Not redirecting {self.source} to its copy in mirror {self.mirror}."
@@ -33,7 +33,7 @@ class XMirrorForY:
         LOG.debug(f"Found a copy of {self.source} in mirror {self.mirror}.")
         return mutator
 
-    def copy(self):
+    def copy_if_needed(self):
         if not self.mirror._prefetch:
             LOG.debug(f"No copy of {self.source} into {self.mirror}: prefetch=False.")
             return
@@ -42,7 +42,7 @@ class XMirrorForY:
             return
         self._copy()
 
-    def _mutator(self):
+    def mutator(self):
         LOG.debug(f"No mirroring of {self.source} into {self.mirror}: not implemented.")
         return None
 
@@ -52,6 +52,14 @@ class XMirrorForY:
 
     def contains(self):
         return False
+
+
+class DummyMirrorConnectionForY(XMirrorConnectionForY):
+    def mutator(self):
+        return None
+
+    def _copy(self):
+        return
 
 
 class BaseMirror:

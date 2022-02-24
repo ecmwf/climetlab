@@ -11,13 +11,13 @@ import os
 import shutil
 from urllib.parse import urlparse
 
-from . import BaseMirror, XMirrorForY
+from . import BaseMirror, XMirrorConnectionForY
 from .source_mutator import SourceMutator
 
 LOG = logging.getLogger(__name__)
 
 
-class DirectoryMirrorForY(XMirrorForY):
+class DirectoryMirrorConnectionForY(XMirrorConnectionForY):
     def _realpath(self):
         keys = self._to_keys()
         assert isinstance(keys, (list, tuple)), type(keys)
@@ -28,8 +28,8 @@ class DirectoryMirrorForY(XMirrorForY):
         return os.path.realpath(path)
 
 
-class DirectoryMirrorForUrl(DirectoryMirrorForY):
-    def _mutator(self):
+class DirectoryMirrorConnectionForUrl(DirectoryMirrorConnectionForY):
+    def mutator(self):
         new_url = "file://" + self._realpath()
         source_url = self.source.url
         if new_url != source_url:
@@ -70,4 +70,4 @@ class DirectoryMirror(BaseMirror):
         return f"DirectoryMirror({self.path}, {self.kwargs})"
 
     def connection_for_url(self, source, source_kwargs):
-        return DirectoryMirrorForUrl(self, source, source_kwargs)
+        return DirectoryMirrorConnectionForUrl(self, source, source_kwargs)

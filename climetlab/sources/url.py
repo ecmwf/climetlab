@@ -60,9 +60,8 @@ class Url(FileSource):
 
         self.update_if_out_of_date = update_if_out_of_date
 
-        mutator = self.get_mirrors_mutator(source_kwargs={})
-        if mutator:
-            self._mutator = mutator
+        self._mutator = self.get_mirrors_mutator(source_kwargs={})
+        if self._mutator:
             return
 
         self.downloader = Downloader(
