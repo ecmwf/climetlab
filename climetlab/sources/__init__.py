@@ -109,7 +109,7 @@ class Source(Base):
     def connect_to_mirror(self, mirror, source_kwargs):
         from climetlab.mirrors import DummyMirrorConnection
 
-        return DummyMirrorConnection()
+        return DummyMirrorConnection(mirror, self, source_kwargs)
 
 
 class SourceLoader:

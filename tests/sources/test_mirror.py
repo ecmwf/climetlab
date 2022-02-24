@@ -15,10 +15,11 @@ import os
 import pytest
 
 from climetlab import load_source, settings
+from climetlab.core.caching import purge_cache
 from climetlab.core.temporary import temp_directory
 from climetlab.mirrors import _reset_mirrors, get_mirrors
 from climetlab.mirrors.directory_mirror import DirectoryMirror
-from climetlab.testing import IN_GITHUB, OfflineError, network_off
+from climetlab.testing import IN_GITHUB, NO_EOD, OfflineError, network_off
 
 
 def load(**kwargs):
@@ -196,6 +197,47 @@ def test_mirror_url_source_multiple_copy(
     assert mirror2.contains(source, {}) == (b2 or b1), f"mirror 2: b2={b2} or b1={b1}"
     if a1 or b1 or a2 or b2:
         assert str(source2) != str(source)
+
+
+def load_eod(**kwargs):
+    s = load_source(
+        "ecmwf-open-data",
+        step=24,
+        date=-1,
+        stream="enfo",
+        type="ef",
+        param="2t",
+        source="azure",
+        number="1",
+        **kwargs,
+        # force=True,
+    )
+    print(s)
+    print(len(s))
+    return s
+
+
+def load_eod_without_network(**kwargs):
+    with network_off():
+        return load_eod(**kwargs)
+
+
+@pytest.mark.skipif(NO_EOD, reason="No access to Open data")
+def test_mirror_eod(mirror_dirs):
+    tmpdir, _ = mirror_dirs
+
+    mirror = DirectoryMirror(path=tmpdir)
+
+    with mirror.prefetch():
+        source = load_eod()
+
+    purge_cache(matcher=lambda x: not x["path"].endswith(".json"))
+
+    with mirror:
+        source2 = load_eod_without_network()
+
+    assert str(source).startswith("EODRetriever("), source
+    assert str(source2).startswith("Url(file://"), source2
 
 
 if __name__ == "__main__":

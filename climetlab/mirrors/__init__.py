@@ -90,7 +90,7 @@ class BaseMirror:
 
     # Convenience method used for testing.
     def contains(self, source, source_kwargs):
-        connection = source.connect_to_mirror(self, {})
+        connection = source.connect_to_mirror(self, source_kwargs)
         if not connection:
             return False
         return connection.contains()

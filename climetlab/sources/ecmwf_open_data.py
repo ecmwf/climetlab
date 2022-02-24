@@ -25,9 +25,20 @@ class EODRetriever(FileSource):
             assert not kwargs
             kwargs = args[0]
 
+        source_kwargs = self.request(**kwargs)
+
+        self._mutator = self.get_mirrors_mutator(source_kwargs=source_kwargs)
+        if self._mutator:
+            return
+
         self.client = ecmwf.opendata.Client(source=source, preserve_request_order=True)
 
-        self.path = self._retrieve(self.request(**kwargs))
+        self.path = self._retrieve(source_kwargs)
+
+        self.copy_to_mirrors(source_kwargs=source_kwargs)
+
+    def connect_to_mirror(self, mirror, source_kwargs):
+        return mirror.connection_for_eod(self, source_kwargs)
 
     def _retrieve(self, request):
         def retrieve(target, request):
