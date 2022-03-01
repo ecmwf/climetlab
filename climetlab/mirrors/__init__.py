@@ -15,52 +15,31 @@ global _MIRRORS
 
 
 class MirrorConnection:
-    def __init__(self, mirror, source, source_kwargs):
+    def __init__(self, mirror, source):
         self.mirror = mirror
         self.source = source
-        self.source_kwargs = source_kwargs
 
-    def mutator_if_needed(self):
-        if not self.contains():
-            LOG.debug(f"Cannot find a copy of {self.source} in mirror {self.mirror}.")
-            return None
-        mutator = self.mutator()
-        if not mutator:
+    def get_file(self, create, args):
+        if self.resource():
             LOG.debug(
-                f"Not redirecting {self.source} to its copy in mirror {self.mirror}."
+                f"Found a copy of {self.source} in mirror {self.mirror}: {self.resource()}."
             )
-            return None
-        LOG.debug(f"Found a copy of {self.source} in mirror {self.mirror}.")
-        return mutator
-
-    def copy_if_needed(self):
+            return self.resource()
         if not self.mirror._prefetch:
             LOG.debug(f"No copy of {self.source} into {self.mirror}: prefetch=False.")
-            return
-        if self.contains():
-            LOG.debug(f"No copy of {self.source} into {self.mirror}: already contains.")
-            return
-        LOG.info(f"Building mirror for {self.source}.")
-        self.copy()
+            return None
+        LOG.info(f"Building mirror for {self.source} in mirror {self.mirror}.")
+        return self.create_copy(create, args)
 
-    def mutator(self):
-        LOG.debug(f"No mirroring of {self.source} into {self.mirror}: not implemented.")
+    def resource(self):
+        LOG.info(f"Not implemented. {self.source} not in mirror {self.mirror}.")
         return None
 
-    def copy(self):
-        LOG.debug(f"No copy of {self.source} into {self.mirror}: not implemented.")
-        return
-
-    def contains(self):
-        return False
-
-
-class DummyMirrorConnection(MirrorConnection):
-    def mutator(self):
+    def create_copy(self, create, args):
+        LOG.info(
+            f"Not implemented. Not creating anything for {self.source} in mirror {self.mirror}."
+        )
         return None
-
-    def copy(self):
-        return
 
 
 class BaseMirror:
@@ -88,16 +67,15 @@ class BaseMirror:
         global _MIRRORS
         _MIRRORS.remove(self)
 
-    # Convenience method used for testing.
-    def contains(self, source, source_kwargs):
-        connection = source.connect_to_mirror(self, source_kwargs)
-        if not connection:
-            return False
-        return connection.contains()
+    # convenience method for testing purposes
+    def contains(self, source):
+        return source.connect_to_mirror(self).resource() is not None
 
-    # We could add this if needed.
-    # def connect_to_source(self, source, source_kwargs):
-    #    return source.connect_to_mirror(self, source_kwargs)
+    def connection_for_url(self, source, *args, **kwargs):
+        return None
+
+    def connection_for_eod(self, source, *args, **kwargs):
+        return None
 
 
 class Mirror(BaseMirror):
@@ -126,12 +104,8 @@ def build_mirror_from_env_var():
     return DirectoryMirror(path=env_var)
 
 
-def get_mirrors():
+def get_active_mirrors():
     global _MIRRORS
-    lst = _MIRRORS
-    if len(lst) > 1 and any([m._prefetch for m in lst]):
-        LOG.error("Using prefetch with multiple mirrors is not supported.")
-        raise Exception(f"Unsupported use of prefetch with multiple mirrors {lst}.")
     return _MIRRORS
 
 

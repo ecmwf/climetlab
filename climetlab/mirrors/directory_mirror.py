@@ -9,7 +9,6 @@
 import inspect
 import logging
 import os
-import shutil
 from urllib.parse import urlparse
 
 from climetlab.sources.ecmwf_open_data import EODRetriever
@@ -17,7 +16,6 @@ from climetlab.sources.file import FileSource
 from climetlab.sources.url import Url
 
 from . import BaseMirror, MirrorConnection
-from .source_mutator import SourceMutator
 
 LOG = logging.getLogger(__name__)
 
@@ -42,19 +40,23 @@ def strict_init(cls):
 
 
 class DirectoryMirror(BaseMirror):
-    def __init__(self, path, origin_prefix="", **kwargs):
+    def __init__(self, path, origin_prefix=""):
         self.path = path
         self.origin_prefix = origin_prefix
-        self.kwargs = kwargs
 
     def __repr__(self):
-        return f"DirectoryMirror({self.path}, {self.kwargs})"
+        return f"DirectoryMirror({self.path}, {self.origin_prefix})"
 
-    def connection_for_url(self, source, source_kwargs):
-        return DirectoryMirrorConnectionForUrl(self, source, source_kwargs)
+    def connection_for_url(self, source, url, parts):
+        if not url.startswith(self.origin_prefix):
+            return None
+        if parts:
+            # return DirectoryMirrorConnectionForUrlWithPargs(self, source, url, parts)
+            return None
+        return DirectoryMirrorConnectionForUrl(self, source)
 
-    def connection_for_eod(self, source, source_kwargs):
-        return DirectoryMirrorConnectionForEODRetriever(self, source, source_kwargs)
+    def connection_for_eod(self, source):
+        return DirectoryMirrorConnectionForEODRetriever(self, source)
 
 
 class DirectoryMirrorConnection(MirrorConnection):
@@ -67,35 +69,33 @@ class DirectoryMirrorConnection(MirrorConnection):
         )
         return os.path.realpath(path)
 
-    def contains(self):
-        return os.path.exists(self._realpath())
-
 
 class DirectoryMirrorConnectionForFile(DirectoryMirrorConnection):
-    def __init__(self, mirror: DirectoryMirror, source: FileSource, source_kwargs):
+    def __init__(self, mirror: DirectoryMirror, source: FileSource):
         assert isinstance(source, FileSource)
-        return super().__init__(mirror, source, source_kwargs)
+        return super().__init__(mirror, source)
 
-    def copy(self):
-        origin_path = self.source.path
+    def resource(self):
         path = self._realpath()
-        LOG.debug(f"Building mirror: cp {origin_path} {path}")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        shutil.copy2(origin_path, path)
+        if os.path.exists(path):
+            return path
+        else:
+            return None
 
-    def mutator(self):
-        new_url = "file://" + self._realpath()
-        LOG.debug(f"Found mirrored file for {self.source} in {new_url}")
-        return SourceMutator("url", new_url)
+    def create_copy(self, create, args):
+        path = self._realpath()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        create(path, args)
+        return path
 
 
 class DirectoryMirrorConnectionForEODRetriever(DirectoryMirrorConnectionForFile):
-    def __init__(self, mirror: DirectoryMirror, source: EODRetriever, source_kwargs):
+    def __init__(self, mirror: DirectoryMirror, source: EODRetriever):
         assert isinstance(source, EODRetriever)
-        return super().__init__(mirror, source, source_kwargs)
+        return super().__init__(mirror, source)
 
     def _to_keys(self):
-        request = self.source_kwargs
+        request = self.source.source_kwargs
         keys = []
         for k in request.keys():
             keys.append(k)
@@ -104,19 +104,9 @@ class DirectoryMirrorConnectionForEODRetriever(DirectoryMirrorConnectionForFile)
 
 
 class DirectoryMirrorConnectionForUrl(DirectoryMirrorConnectionForFile):
-    def __init__(self, mirror: DirectoryMirror, source: Url, source_kwargs):
+    def __init__(self, mirror: DirectoryMirror, source: Url):
         assert isinstance(source, Url)
-        return super().__init__(mirror, source, source_kwargs)
-
-    def mutator(self):
-        if self.source.url == "file://" + self._realpath():
-            return None  # avoid infinite loop
-        return super().mutator()
-
-    def contains(self):
-        if not self.source.url.startswith(self.mirror.origin_prefix):
-            return False
-        return super().contains()
+        return super().__init__(mirror, source)
 
     def _to_keys(self):
         url = self.source.url

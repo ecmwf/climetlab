@@ -17,7 +17,7 @@ import pytest
 from climetlab import load_source, settings
 from climetlab.core.caching import purge_cache
 from climetlab.core.temporary import temp_directory
-from climetlab.mirrors import _reset_mirrors, get_mirrors
+from climetlab.mirrors import _reset_mirrors, get_active_mirrors
 from climetlab.mirrors.directory_mirror import DirectoryMirror
 from climetlab.testing import IN_GITHUB, NO_EOD, OfflineError, network_off
 
@@ -124,10 +124,10 @@ def test_mirror_url_source_env_var_1(mirror_dirs):
     os.environ["CLIMETLAB_MIRROR"] = f"{origin_prefix} file://{mirror_dir}"
 
     _reset_mirrors(use_env_var=False)
-    assert len(get_mirrors()) == 0, get_mirrors()
+    assert len(get_active_mirrors()) == 0, get_active_mirrors()
 
     _reset_mirrors(use_env_var=True)
-    assert len(get_mirrors()) == 1, get_mirrors()
+    assert len(get_active_mirrors()) == 1, get_active_mirrors()
 
 
 def test_mirror_url_source_env_var_2(mirror_dirs):
@@ -144,14 +144,13 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
     with m:
         source2 = load_without_network(force=True)
 
-    assert source.connect_to_mirror(m, {}).contains()
+    assert source.connect_to_mirror(m).resource()
 
     assert str(source) == f"Url({origin_prefix}/examples/test.grib)"
     if not IN_GITHUB:
-        assert str(source2) == f"Url(file://{mirror_dir}/url/examples/test.grib)"
+        assert str(source2) == str(source)
 
 
-@pytest.mark.skipif(True, reason="Not implemented yet")
 @pytest.mark.parametrize("b2", ["__", "b2"])
 @pytest.mark.parametrize("a2", ["__", "a2"])
 @pytest.mark.parametrize("b1", ["__", "b1"])
@@ -168,35 +167,43 @@ def test_mirror_url_source_multiple_copy(
     b1 = b1 == "b1"
     a2 = a2 == "a2"
     b2 = b2 == "b2"
+    force = True
 
-    mirror1 = DirectoryMirror(path=dir1)
-    mirror2 = DirectoryMirror(path=dir2)
+    mirror_a = DirectoryMirror(path=dir1)
+    mirror_b = DirectoryMirror(path=dir2)
 
-    source = load(force=True)
+    def contains(mirror, source):
+        path = mirror.contains(source)
+        if path:
+            assert os.path.exists(path)
+        return path
+
+    source = load(force=force)
 
     if a1:
-        with mirror1.prefetch():
-            load(force=True)
+        with mirror_a.prefetch():
+            load(force=force)
     if b1:
-        with mirror2.prefetch():
-            load(force=True)
+        with mirror_b.prefetch():
+            load(force=force)
 
-    assert mirror1.contains(source, {}) == a1, "Prefetching failed for a2"
-    assert mirror2.contains(source, {}) == b1, "Prefetching failed for b2"
+    assert contains(mirror_a, source) == a1, "Prefetching failed for a1"
+    assert contains(mirror_b, source) == b1, "Prefetching failed for b1"
 
     if a2:
-        mirror1.prefetch()
+        mirror_a.prefetch()
     if b2:
-        mirror2.prefetch()
-    with mirror1:
-        with mirror2:
-            assert len(get_mirrors()) == 2
-            source2 = load(force=True)
+        mirror_b.prefetch()
+    with mirror_a:
+        with mirror_b:
+            assert len(get_active_mirrors()) == 2
+            source2 = load(force=force)
 
-    assert mirror1.contains(source, {}) == (a2 or a1), f"mirror 1: a2={a2} or a1={a1}"
-    assert mirror2.contains(source, {}) == (b2 or b1), f"mirror 2: b2={b2} or b1={b1}"
+    assert contains(mirror_a, source) == (a1 or a2), "Prefetching failed for a"
+    assert contains(mirror_b, source) == (b1 or b2), "Prefetching failed for b"
+
     if a1 or b1 or a2 or b2:
-        assert str(source2) != str(source)
+        assert str(source2) == str(source)
 
 
 def load_eod(**kwargs):
@@ -237,7 +244,8 @@ def test_mirror_eod(mirror_dirs):
         source2 = load_eod_without_network()
 
     assert str(source).startswith("EODRetriever("), source
-    assert str(source2).startswith("Url(file://"), source2
+    assert str(source2).startswith("EODRetriever("), source2
+    assert str(source2) == str(source)
 
 
 if __name__ == "__main__":

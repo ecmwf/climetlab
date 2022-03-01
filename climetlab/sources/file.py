@@ -32,7 +32,6 @@ class FileSourceMeta(type(Source), type(os.PathLike)):
 class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
 
     _reader_ = None
-    _mutator = None
 
     def __init__(self, path=None, filter=None, merger=None):
         self.path = path
@@ -40,11 +39,6 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
         self.merger = merger
 
     def mutate(self):
-
-        if self._mutator:
-            source = self._mutator.mutate_source()
-            source._parent = self
-            return source
 
         if isinstance(self.path, (list, tuple)):
             if len(self.path) == 1:

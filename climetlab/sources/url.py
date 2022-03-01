@@ -56,13 +56,10 @@ class Url(FileSource):
         extension = None
 
         self.url = url
+        self.parts = parts
         LOG.debug("URL %s", url)
 
         self.update_if_out_of_date = update_if_out_of_date
-
-        self._mutator = self.get_mirrors_mutator(source_kwargs={})
-        if self._mutator:
-            return
 
         self.downloader = Downloader(
             url,
@@ -104,10 +101,8 @@ class Url(FileSource):
             force=force,
         )
 
-        self.copy_to_mirrors(source_kwargs={})
-
-    def connect_to_mirror(self, mirror, source_kwargs):
-        return mirror.connection_for_url(self, source_kwargs)
+    def connect_to_mirror(self, mirror):
+        return mirror.connection_for_url(self, self.url, self.parts)
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:

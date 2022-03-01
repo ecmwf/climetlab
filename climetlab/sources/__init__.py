@@ -47,13 +47,20 @@ class Source(Base):
         # Used by multi-source
         return False
 
-    def cache_file(self, *args, **kwargs):
+    def cache_file(self, create, args, **kwargs):
         owner = self.name
         if self.dataset:
             owner = self.dataset.name
         if owner is None:
             owner = re.sub(r"(?!^)([A-Z]+)", r"-\1", self.__class__.__name__).lower()
-        return cache_file(owner, *args, **kwargs)
+
+        resource = None
+        for connection in self.connect_to_mirrors():
+            resource = connection.get_file(create, args)
+        if resource:
+            return resource
+
+        return cache_file(owner, create, args, **kwargs)
 
     @property
     def dataset(self):
@@ -88,28 +95,19 @@ class Source(Base):
         print(" " * depth, self)
 
     # Mirroring
-    def get_mirrors_mutator(self, source_kwargs):
-        from climetlab.mirrors import get_mirrors
-        from climetlab.sources import Base
+    def connect_to_mirrors(self):
+        result = []
+        from climetlab.mirrors import get_active_mirrors
 
-        assert isinstance(self, Base)
-        for m in get_mirrors():
-            connection = self.connect_to_mirror(m, source_kwargs)
-            mutator = connection.mutator_if_needed()
-            if mutator:
-                return mutator
+        for mirror in get_active_mirrors():
+            c = self.connect_to_mirror(mirror)
+            if c is None:
+                continue
+            result.append(c)
+        return result
 
-    def copy_to_mirrors(self, source_kwargs):
-        from climetlab.mirrors import get_mirrors
-
-        for m in get_mirrors():
-            connection = self.connect_to_mirror(m, source_kwargs)
-            connection.copy_if_needed()
-
-    def connect_to_mirror(self, mirror, source_kwargs):
-        from climetlab.mirrors import DummyMirrorConnection
-
-        return DummyMirrorConnection(mirror, self, source_kwargs)
+    def connect_to_mirror(self, mirror):
+        return None
 
 
 class SourceLoader:
