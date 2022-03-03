@@ -14,7 +14,7 @@ from importlib import import_module
 
 from climetlab.core import Base
 from climetlab.core.caching import cache_file
-from climetlab.core.plugins import find_plugin, register
+from climetlab.core.plugins import find_plugin
 from climetlab.core.settings import SETTINGS
 from climetlab.utils.html import table
 
@@ -150,10 +150,6 @@ class SourceMaker:
 
 
 get_source = SourceMaker()
-
-
-def register_source(module):
-    register("source", module)
 
 
 def load_source(name: str, *args, lazily=False, **kwargs) -> Source:

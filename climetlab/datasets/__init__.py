@@ -16,7 +16,7 @@ import yaml
 import climetlab
 from climetlab.core import Base
 from climetlab.core.metadata import annotate
-from climetlab.core.plugins import find_plugin, register
+from climetlab.core.plugins import find_plugin
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import download_and_cache
 from climetlab.utils.html import table
@@ -208,10 +208,6 @@ class DatasetLoader:
                 return self.load_yaml(path)
 
         return None
-
-
-def register_dataset(module):
-    register("dataset", module)
 
 
 class DatasetMaker:

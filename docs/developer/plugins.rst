@@ -50,25 +50,6 @@ See the individual documentation for each plugin type for detailed examples and
 the standard `Python plugin documentation<https://packaging.python.org/guides/creating-and-discovering-plugins>`_.
 
 
-Updating the list of plugins
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: python
-
-  >>> cml.load_source('demo-source')
-
-  >>> !pip install climetlab-demo-source
-  >>> cml.load_source('demo-source')
-
-  >>> import climetlab_demo_source
-  >>> cml.register_source(climetlab_demo_source)
-  >>> cml.load_source('demo-source')
-
-
-.. todo::
-
-  Link to documentation about climetlab.plugin.register().
-
 Plugin as YAML files
 --------------------
 

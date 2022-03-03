@@ -34,34 +34,17 @@ PLUGINS = {}
 
 REGISTERED = defaultdict(dict)
 
+AVAILABLE_KINDS = ["dataset", "source"]
 
-def register(kind, name_or_module, module_or_none=None):
-    """Register a plugin manually.
 
-    When installing a plugin (for instance with `!pip install` in a notebook), the pip package with register the plugin with the `entry_points` mechanism, but the currently runnning kernel will need to be restarted to take the change into account. Using :py:func:`register` alleviates this issue.
-
-    Parameters
-    ----------
-    kind : str
-        Type of plugind.
-    name_or_module : str or module
-        Name of the installed plugin to registed.
-    module_or_none : module, optional
-        Module recently installed to be registered.
-
-    """  # noqa: E501
-
-    if isinstance(name_or_module, str):
-        name = name_or_module
-        module = module_or_none
-    else:
-        assert module_or_none is None, (
-            f"Value of module_or_none({module_or_none}) is ignored when "
-            + "name_or_module ({name_or_module}) is not of type str."
-        )
-        module = name_or_module
-        name = module.__name__.replace("_", "-")
-    REGISTERED[kind][name] = module
+def refresh(kind=None):
+    if kind in PLUGINS:
+        PLUGINS.pop(kind)
+        return
+    if kind is None:
+        PLUGINS.clear()
+        return
+    assert kind in AVAILABLE_KINDS, (kind, AVAILABLE_KINDS)
 
 
 def _load_plugins(kind):
@@ -84,7 +67,7 @@ def load_plugins(kind):
     return PLUGINS[kind]
 
 
-def find_plugin(directories: Union[str, List[str]], name: str, loader):
+def find_plugin(directories: Union[str, List[str]], name: str, loader, refreshed=False):
     """Find a plugin by name .
 
     Parameters
@@ -150,6 +133,11 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
                     if p == name:
                         return loader.load_module(full.replace("/", "."))
 
+    if not refreshed:
+        LOG.debug("Cannot find {loader.kind} 'name'. Refreshing plugin list.")
+        refresh(loader.kind)
+        return find_plugin(directories, name, loader, refreshed=True)
+
     module = loader.load_remote(name)
     if module is not None:
         return module
@@ -165,6 +153,7 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader):
         )
 
     candidates = ", ".join(sorted(c for c in candidates if "-" in c))
+
     raise NameError(f"Cannot find {loader.kind} '{name}' (values are: {candidates})")
 
 
