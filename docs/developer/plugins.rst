@@ -3,18 +3,23 @@
 Climetlab Plugin mechanism
 ==========================
 
-The generic CliMetLab plugin mechanism relies on creating a Python package using
-the `Python plugin <https://packaging.python.org/guides/creating-and-discovering-plugins>`_
-mechanism based on ``entry_points``.
-Additionally, :doc:`dataset plugins </contributing/datasets>` plugins can be
-created using YAML file.
-A Dataset plugin template (https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset)
-has been designed to create the boilerplate code for a plugin.
+This document discuss how plugins are integrated into CliMetLab. There are two ways to add 
+a plugin into CliMetLab:
 
-After installation, the plugin registers itself thanks to the entry points
-in the setup.py file, making CliMetLab aware of the new capabilities.
+- A Python package using the standard `Python plugin <https://packaging.python.org/guides/creating-and-discovering-plugins>`_
+  mechanism based on ``entry_points``. This is the generic CliMetLab plugin mechanism.
+
+- A YAML file can be also be used to create plugins, when the plugin is simple enough
+  and used only generic predefined code. 
+  (currently only for :doc:`dataset plugins </contributing/datasets>`).
+
+Plugin as python packages using ``entry_points``
+------------------------------------------------
+
+During the installation of the pip package, the plugin registers itself thanks to 
+the entry points in its setup.py file, making CliMetLab aware of the new capabilities.
 Then, the user can take advantage of the shared code though the enhanced
-:py:func:`climetlab.load_dataset()`, :py:func:`climetlab.load_dataset()`
+:py:func:`climetlab.load_dataset()`, :py:func:`climetlab.load_source()`
 and :py:func:`climetlab.plot_map()`, etc.
 
 For ``pip`` packages using ``setuptools``, creating a plugin consists in adding
@@ -41,8 +46,36 @@ The **<plugintype>** is one of the plugin type in the table above:
 :ref:`sources <sources>`,
 :ref:`readers <readers>`,
 etc.
-See the individual documentation for each plugin type for detailed examples.
+See the individual documentation for each plugin type for detailed examples and
+the standard `Python plugin documentation<https://packaging.python.org/guides/creating-and-discovering-plugins>`_.
+
+
+Updating the list of plugins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+  >>> cml.load_source('demo-source')
+
+  >>> !pip install climetlab-demo-source
+  >>> cml.load_source('demo-source')
+
+  >>> import climetlab_demo_source
+  >>> cml.register_source(climetlab_demo_source)
+  >>> cml.load_source('demo-source')
+
 
 .. todo::
 
   Link to documentation about climetlab.plugin.register().
+
+Plugin as YAML files
+--------------------
+
+.. todo::
+
+  This is still a work-in-progress.
+
+Additionally, for :doc:`dataset plugins </contributing/datasets>` only, CliMetLab
+search for known locations to find a YAML file with a name matching the requested dataset.
+The YAML files are used to create an appropriate class.
