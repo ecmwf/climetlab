@@ -23,7 +23,9 @@ def command_list():
     return [
         func[3:]
         for func in dir(CliMetLabApp)
-        if callable(getattr(CliMetLabApp, func)) and func.startswith("do_")
+        if callable(getattr(CliMetLabApp, func))
+        and func.startswith("do_")
+        and getattr(CliMetLabApp, func).__module__.startswith("climetlab.")
     ]
 
 

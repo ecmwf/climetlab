@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../climetlab-eumetsat"
+		},
+		{
+			"path": "../climetlab-script-plugin-tools"
 		}
 	],
 	"settings": {
