@@ -104,8 +104,9 @@ class CodesHandle:
         try:
             if name == "values":
                 return eccodes.codes_get_values(self.handle)
-            if name in ("distinctLatitudes", "distinctLongitudes"):
-                return eccodes.codes_get_double_array(self.handle, name)
+            size = eccodes.codes_get_size(self.handle, name)
+            if size and size > 1:
+                return eccodes.codes_get_array(self.handle, name)
             return eccodes.codes_get(self.handle, name)
         except eccodes.KeyValueNotFoundError:
             return None
