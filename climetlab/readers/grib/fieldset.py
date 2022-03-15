@@ -244,10 +244,15 @@ class FieldSet(Source):
                 return n
             return math.prod(lst)
 
-        # Assumes last two dimensions are lat/lon coordinates
-        two_d_fields = sum(
-            math_prod(list(result[v].shape)[:-2]) for v in result.data_vars
-        )
+        def number_of_gribs(da):
+            if da.dims[-1] == "values":
+                # Assumes last dimension is the one-dimensional
+                # lat/lon coordinate (non-regular grid)
+                return math_prod(list(da.shape)[:-1])
+            # Assumes last two dimensions are lat/lon coordinates
+            return math_prod(list(da.shape)[:-2])
+
+        two_d_fields = sum(number_of_gribs(result[v]) for v in result.data_vars)
 
         # Make sure all the fields are converted
         # There may be more 2D xarray fields than GRB fields
