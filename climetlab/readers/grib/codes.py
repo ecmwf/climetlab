@@ -105,6 +105,7 @@ class CodesHandle:
             if name == "values":
                 return eccodes.codes_get_values(self.handle)
             size = eccodes.codes_get_size(self.handle, name)
+            LOG.debug(f"{name}:{size}")
             if size and size > 1:
                 return eccodes.codes_get_array(self.handle, name)
             return eccodes.codes_get(self.handle, name)

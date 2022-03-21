@@ -245,12 +245,13 @@ class FieldSet(Source):
             return math.prod(lst)
 
         def number_of_gribs(da):
+            # Assumes last two dimensions are lat/lon coordinates
+            skip = 2
             if da.dims[-1] == "values":
                 # Assumes last dimension is the one-dimensional
                 # lat/lon coordinate (non-regular grid)
-                return math_prod(list(da.shape)[:-1])
-            # Assumes last two dimensions are lat/lon coordinates
-            return math_prod(list(da.shape)[:-2])
+                skip = 1
+            return math_prod(list(da.shape)[:-skip])
 
         two_d_fields = sum(number_of_gribs(result[v]) for v in result.data_vars)
 
