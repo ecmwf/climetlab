@@ -1,7 +1,9 @@
 .. _datasets-plugins:
 
-How to create a dataset plugin
-==============================
+.. _dataset-pip:
+
+How to create a dataset plugin (pip)
+====================================
 
 :doc:`From the end-user's perspective <../guide/datasets>`, a **Dataset**
 is a object created using ``cml.load_dataset(name, *args)`` with
@@ -19,95 +21,139 @@ And more examples can be found in the non-exhaustive
 :doc:`list of CliMetLab plugins <../guide/pluginlist>`.
 
 .. note::
+  
+  **Naming convention**
 
-  **Naming convention**: A plugin package name should preferably starts with ``climetlab-`` and use "-". The Python package to import should starts with
-  :py:class:`climetlab\_` and use "_".
+  - A plugin package name (pip) should preferably start with ``climetlab-``
+    and use dashes "-". 
+  - The Python package to import should start with
+    :py:class:`climetlab\_` and must use underscores "_".
+  - A CliMetLab dataset defined by a plugin should start with
+    the plugin name and must use dashes "-".
+
+Blueprint
+~~~~~~~~~
+
+Automatic creation script
+-------------------------
+
+While creating the package manually from the documentation and from
+the example above is possible, there is also a semi-automated way
+to generate a pip package from a template. The generated package
+has a predefined dataset and is ready to be shared on Github and
+distributed with pip.
+
+.. code-block:: bash
+
+    $ pip install climetlab-plugin-tools
+    $ climetlab plugin_create_dataset
+    # Answer the questions
+    # Only the first question (plugin name) and the latest (licence) are required.
+    # Other have sensible default values.
+
+Here is a `verbose output of running the plugin creation script <https://raw.githubusercontent.com/ecmwf-lab/climetlab-plugin-tools/main/tests/dataset/generic/test_dataset_for_doc.stdout>`_.
 
 
-.. _dataset-pip:
+.. note::
 
-With a Python package
----------------------
+  **"Unknown command plugin_create_dataset"** This error 
+  happens if you have not installed the package `climetlab-plugin-tools`.
 
-Here is a minimal example of pip package defining a dataset plugin :
-https://github.com/ecmwf/climetlab-demo-dataset
+    .. code-block:: bash
+
+      $ climetlab plugin_create_dataset
+      Unknown command plugin_create_dataset. Type help for the list of known command names.
+
+Dataset names
+-------------
 
 The plugin mechanism relies on using `entry_points`.
 The three lines highlighted below
-are registering the class `climetlab_demo_dataset.DemoDataset`
-with entry_points. Then as seen in the `example notebook`_,
-the end-user can use this external plugin to access the class
-``cml.load_dataset("demo-dataset")``.
-
-This is exhaustively described in the
+are registering the class `climetlab_dataset_plugin.rain_observations:RainObservations`
+with `entry_points` to a CliMetLab dataset called  ``dataset-plugin-rain-observations``.
+The python plugin mechanism is exhaustively described in the
 `Python reference documentation <https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/>`_
-and here are more details about
-:ref:`how on CliMetLab uses it<plugins-reference>`.
+and here are more details about :ref:`how on CliMetLab uses it<plugins-reference>`.
 
 .. code-block:: python
   :emphasize-lines: 6-8
 
-    setuptools.setup(
-        name="climetlab-demo-dataset",
-        version="0.0.1",
-        description="Example climetlab external dataset plugin",
+  setuptools.setup(
+   name="climetlab-dataset-plugin",
+   version="0.0.1",
+   description="Example climetlab external dataset plugin",
 
-        entry_points={"climetlab.datasets":
-                ["demo-dataset = climetlab_demo_dataset:DemoDataset"]
-        },
+   entry_points={"climetlab.datasets":
+    ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
+   },
 
-    )
+  )
 
+Once `entry_point` has registered the class, the end-user can use this external plugin to access it
 
-With a Python package (automated)
----------------------------------
-
-While creating the package manually from the documentation and from
-the example above is possible, there is also a semi-automated way relying
-on `cookiecutter <https://cookiecutter.readthedocs.io/en/latest/>`_
-to generate a pip package from a template. The generated package
-has a predefined dataset and is ready to be shared on Github and
-distributed.
+.. code-block:: python
+  
+  import climetlab as cml
+  cml.load_dataset("dataset-plugin-rain-observations")
 
 
-For detailed information, please see the `README file <https://github.com/ecmwf-lab/climetlab-cookiecutter-dataset/blob/main/README.md>`_).
+Automatic testing of the plugin
+-------------------------------
 
-.. code-block:: bash
+In the folder ``tests`` are set up automatic tests of the plugin using pytest.
+If the repository is hosted on github, the tests triggers automatically when pushing to the repository.
+Additionally, code quality is enabled using black, isort and flake.
 
-    pip install cookiecutter
-    cookiecutter https://github.com/ecmwf-lab/climetlab-cookiecutter/dataset
+All tests could be disabled or adapted in the ``.github/workflows/`` folder.
+
+Notebooks as documentation
+--------------------------
+
+The folder ``notebooks`` in each plugin can be used to store usage example
+or demo on how to use the data, such as this `notebook <https://github.com/ecmwf-lab/climetlab-plugin-tools/blob/main/tests/dataset/generic/climetlab-dataset-plugin.ref/notebooks/demo_rain_observations.ipynb>`_,
+Notebook are automatically tested if the repository is on github.
+
+Links on the README file are pointing to binder, colab, etc. to run the automatically created notebook. 
+
+Manually creating the Python package
+------------------------------------
+
+Here is a minimal example of pip package defining a dataset plugin :
+https://github.com/ecmwf/climetlab-demo-dataset
 
 
+Adapting plugin code
+~~~~~~~~~~~~~~~~~~~~
 
-.. _example notebook: ../examples/12-external-plugins.ipynb
+Renaming a dataset
+------------------
 
-.. https://nbsphinx.readthedocs.io/en/0.7.1/a-normal-rst-file.html
+The dataset name can be changed by changing the ``setup.py`` file.
 
-.. _dataset-yaml:
+.. code-block:: python
 
-With a YAML file
-----------------
+   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
+   + ["dataset-plugin-new-name         =climetlab_dataset_plugin.rain_observations:RainObservations"]  
 
-YAML file definitions can be used for simple datasets which rely on
-existing built-in :ref:`data source <data-sources>`, and cannot be
-as flexible to end-users. The following example shows how to use a
-source when the data consists of a single file downloadable from a URL.
+A good practice is to change keep the class name in sync with the dataset name.
 
-.. code-block:: yaml
 
-  ---
-  dataset:
-    source: url
-    args:
-      url: http://download.ecmwf.int/test-data/metview/gallery/temp.bufr
+Adding a dataset to a plugin
+----------------------------
 
-    metadata:
-      documentation: Sample BUFR file containing TEMP messages
+New datasets can be added to the plugin, as long as the corresponding class is created:
 
+.. code-block:: python
+
+   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
+   + ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations",  
+   +  "dataset-plugin-rain-forecast    =climetlab_dataset_plugin.rain_observations:RainForecast"]
+
+
+CliMetLab hooks
+---------------
 
 .. todo::
-  Document the YAML file way to create a dataset.
-  Choose a good way to implement the workflow.
 
- - Create a dataset YAML file.
- - distribute it.
+  Document .source attribute, to_xarray(), to_pandas(), to_etc()
+  Point to decorator

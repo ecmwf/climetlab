@@ -75,6 +75,7 @@ Documentation
 
 * :doc:`contributing/overview`
 * :doc:`contributing/datasets`
+* :doc:`contributing/datasets_yaml`
 * :doc:`contributing/sources`
 * :doc:`contributing/normalize`
 * :doc:`contributing/availability`
@@ -88,6 +89,7 @@ Documentation
 
    contributing/overview
    contributing/datasets
+   contributing/datasets_yaml
    contributing/sources
    contributing/normalize
    contributing/availability

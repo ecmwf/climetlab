@@ -22,7 +22,7 @@
 			"path": "../climetlab-eumetsat"
 		},
 		{
-			"path": "../climetlab-script-plugin-tools"
+			"path": "../climetlab-plugin-tools"
 		}
 	],
 	"settings": {

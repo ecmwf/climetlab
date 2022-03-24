@@ -1,10 +1,9 @@
 .. _pluginlist:
 
-List of CliMetLab plugins
-=========================
+Non-exhaustive list of CliMetLab plugins
+========================================
 
-If there is a missing plugin in this list, please submit
-a pull request to add it.
+If you would like you plugin to be in this list, please submit a pull request to add it.
 
 
 - `climetlab-s2s-ai-challenge <https://github.com/ecmwf-lab/climetlab-s2s-ai-challenge>`_:
