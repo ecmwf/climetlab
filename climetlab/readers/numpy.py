@@ -21,6 +21,9 @@ class NumpyReader(Reader):
     def to_numpy(self, numpy_load_kwargs={}):
         return np.load(self.path, **numpy_load_kwargs)
 
+    def __iter__(self):
+        return iter([self])
+
 
 class NumpyZipReader(Reader):
     def __init__(self, source, path):
