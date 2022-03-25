@@ -9,6 +9,8 @@
 
 import os
 
+import numpy as np
+
 from . import Reader
 
 
@@ -16,10 +18,16 @@ class NumpyReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
 
+    def to_numpy(self, numpy_load_kwargs={}):
+        return np.load(self.path, **numpy_load_kwargs)
+
 
 class NumpyZipReader(Reader):
     def __init__(self, source, path):
         super().__init__(source, path)
+
+    def to_numpy(self, numpy_load_kwargs={}):
+        return np.load(self.path, **numpy_load_kwargs)
 
 
 def reader(source, path, magic=None, deeper_check=False):

@@ -82,6 +82,11 @@ def probe_csv(
             sniffer = csv.Sniffer()
             dialect, has_header = sniffer.sniff(sample), sniffer.has_header(sample)
 
+            LOG.debug("dialect = %s", dialect)
+            LOG.debug("has_header = %s", has_header)
+            if hasattr(dialect, "delimiter"):
+                LOG.debug("delimiter = '%s'", dialect.delimiter)
+
             if for_is_csv:
                 # Check that it is not a trivial text file.
                 reader = csv.reader(io.StringIO(sample), dialect)
@@ -91,9 +96,14 @@ def probe_csv(
                     if len(header) < minimum_columns:
                         return None, False
                 cnt = 0
+                length = None
                 for row in reader:
                     cnt += 1
                     LOG.debug("for_is_csv row %s %s", cnt, row)
+                    if length is None:
+                        length = len(row)
+                    if length != len(row):
+                        return None, False
                     if cnt >= minimum_rows:
                         break
 
