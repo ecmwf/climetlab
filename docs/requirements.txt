@@ -13,3 +13,4 @@ sphinx-panels
 sphinx_rtd_theme
 termcolor
 tqdm
+markupsafe==2.0.1
