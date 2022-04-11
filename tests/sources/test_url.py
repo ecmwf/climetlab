@@ -45,10 +45,6 @@ def test_url_ftp_source_anonymous():
 
 
 @pytest.mark.ftp
-@pytest.mark.skipif(
-    sys.version_info > (3, 9),
-    reason="Python > 3.9 to limit the number of concurrent connections",
-)
 def test_url_ftp_source_with_user_pass():
     import ftplib
 
@@ -66,6 +62,7 @@ def test_url_ftp_source_with_user_pass():
     except (ftplib.error_temp, ftplib.error_perm):
         # Sometimes this site returns:
         # ftplib.error_temp: 421 Maximum number of connections exceeded (500)
+        # ftplib.error_perm: 530 The maximum number of ftp connections have been reached (2001)
         pass
 
 
