@@ -46,8 +46,8 @@ def test_url_ftp_source_anonymous():
 
 @pytest.mark.ftp
 @pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason="Python < 3.10 to limit the number of concurrent connections",
+    sys.version_info > (3, 9),
+    reason="Python > 3.9 to limit the number of concurrent connections",
 )
 def test_url_ftp_source_with_user_pass():
     import ftplib
