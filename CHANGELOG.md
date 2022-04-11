@@ -6,6 +6,11 @@ Notice that CliMetLab is still alpha. Things will break, public API will change.
 
 ## [Unreleased]
 
+## [0.11.1] - 2022-04-11
+
+- Added support to python 3.10.
+- Dropped support for python 3.6 (not supported by numpy anymore).
+
 ## [0.10.1] - 2022-02-17
 
 ### Changed
