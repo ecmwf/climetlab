@@ -63,7 +63,7 @@ def test_url_ftp_source_with_user_pass():
             ),
             {"date": date},
         )
-    except ftplib.error_temp:
+    except (ftplib.error_temp, ftplib.error_perm):
         # Sometimes this site returns:
         # ftplib.error_temp: 421 Maximum number of connections exceeded (500)
         pass
