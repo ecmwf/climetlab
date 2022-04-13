@@ -25,6 +25,8 @@ from .grib import GribCmd
 from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
 
+LOG = logging.getLogger(__name__)
+
 try:
     import readline
 except ImportError:  # Not availabe on win32
@@ -45,6 +47,9 @@ def get_plugins():
     for e in entrypoints.get_group_all("climetlab.scripts"):
         module = import_module(e.module_name)
         klass = getattr(module, e.object_name)
+        if klass in plugins:
+            LOG.error(f"Potential plugins conflict for {module} {klass}.")
+            continue
         plugins.append(klass)
     return plugins
 
