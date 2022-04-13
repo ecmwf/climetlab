@@ -87,6 +87,7 @@ class HurricaneDatabase(Dataset):
         with open(path) as f:
             lines = f
             for line in lines:
+
                 if line[0] in (" ", "<", "\n"):
                     continue
 
@@ -126,7 +127,6 @@ class HurricaneDatabase(Dataset):
                             pressure=pressure,
                         )
                     )
-
         self.cyclones = self.annotate(pd.DataFrame(p), style="cyclone-track")
 
     def to_pandas(self, **kwargs):

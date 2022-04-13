@@ -343,8 +343,9 @@ class Backend:
             # TODO: select best projection based on bbox
             self._projection = mmap(subpage_map_projection="cylindrical")
 
+        margins = self._options("margins", 0)
         if self._bounding_box is not None:
-            bbox = self._bounding_box.add_margins(self._options("margins", 0))
+            bbox = self._bounding_box.add_margins(margins)
             self._projection = apply(
                 value={
                     "=subpage_upper_right_longitude": bbox.east,
