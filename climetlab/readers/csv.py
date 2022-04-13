@@ -144,9 +144,6 @@ class CSVReader(Reader):
             pandas_read_csv_kwargs = dict(**pandas_read_csv_kwargs)
             pandas_read_csv_kwargs["compression"] = self.compression
 
-        if self.dialect is not None:
-            pandas_read_csv_kwargs["dialect"] = self.dialect
-
         LOG.debug("pandas.read_csv(%s,%s)", self.path, pandas_read_csv_kwargs)
         return pandas.read_csv(self.path, **pandas_read_csv_kwargs)
 
@@ -169,7 +166,9 @@ class CSVReader(Reader):
                 # column_defaults=None,
                 # label_name=None,
                 # select_columns=None,
-                field_delim=self.dialect.delimiter,
+                # # Do not trust the delimiter found by csv sniffer,
+                # # as it is wrong for files with only one column.
+                # field_delim=self.dialect.delimiter,
                 use_quote_delim=self.dialect.doublequote,  # Not sure about that one
                 # na_value="",
                 header=self.has_header,
