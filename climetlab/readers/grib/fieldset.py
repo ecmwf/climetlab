@@ -271,6 +271,11 @@ class FieldSet(Source):
 
         return mv_read(self.path)
 
+    def to_numpy(self):
+        import numpy as np
+
+        return np.array([f.to_numpy() for f in self])
+
     def plot_map(self, backend):
         return self.first.plot_map(backend)
 
