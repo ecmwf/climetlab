@@ -302,19 +302,26 @@ class Backend:
 
         if self._options("rivers", False):
             self._rivers = mcoast(
-                map_rivers=True, map_grid=False, map_coastline=False, map_label=False
+                map_rivers=True,
+                map_grid=False,
+                map_coastline=False,
+                map_label=False,
             )
 
         if self._options("cities", False):
             self._cities = mcoast(
-                map_cities=True, map_label=False, map_grid=False, map_coastline=False
+                map_cities=True,
+                map_label=False,
+                map_grid=False,
+                map_coastline=False,
             )
 
-    def show(self, display):
+    def render(self):
         width = self._options("width", 680)
 
         path = self._options(
-            "path", self.temporary_file("." + self._options("format", "png"))
+            "path",
+            self.temporary_file("." + self._options("format", "png")),
         )
 
         self.save(path)
@@ -326,7 +333,10 @@ class Backend:
         else:
             Display = Image  # noqa: N806
 
-        return display(Display(path, metadata=dict(width=width)))
+        return Display(path, metadata=dict(width=width))
+
+    def show(self, display):
+        return display(self.render(display))
 
     def save(self, path):
 

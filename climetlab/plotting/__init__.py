@@ -118,6 +118,9 @@ class Plot:
     def wms_layers(self):
         return self.backend.wms_layers()
 
+    def render(self):
+        return self.backend.render()
+
     def show(self):
         self.backend.show(display=display)
 
@@ -185,3 +188,9 @@ def interactive_map(data=None, **kwargs):
     from climetlab.plotting.wms import interactive_map as wms_map
 
     return wms_map(data, **kwargs)
+
+
+def new_table(*args, **kwargs):
+    from climetlab.notebook.table import Table
+
+    return Table(*args, **kwargs)
