@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
 
-class Settings:
+class Setting:
     def __init__(self, default, description, getter=None, none_ok=False, kind=None):
         self.default = default
         self.description = description
@@ -51,7 +51,7 @@ class Settings:
             yaml.dump({name: value}, f, default_flow_style=False)
 
 
-_ = Settings
+_ = Setting
 
 
 SETTINGS_AND_HELP = {
@@ -293,10 +293,9 @@ class Settings:
         html = [css("table")]
         html.append("<table class='climetlab'>")
         for k, v in sorted(self._settings.items()):
-            html.append(
-                "<tr><td>%s</td><td>%r</td><td>%r</td></td>"
-                % (k, v, SETTINGS_AND_HELP.get(k, (None, "..."))[0])
-            )
+            setting = SETTINGS_AND_HELP.get(k, None)
+            default = setting.default if setting else ""
+            html.append("<tr><td>%s</td><td>%r</td><td>%r</td></td>" % (k, v, default))
         html.append("</table>")
         return "".join(html)
 
