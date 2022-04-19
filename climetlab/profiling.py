@@ -36,10 +36,12 @@ class C:
 
     def start(self):
         self.n += 1
-        self.now = time.time()
+        if time is not None:
+            self.now = time.time()
 
     def end(self):
-        self.elapsed += time.time() - self.now
+        if time is not None:
+            self.elapsed += time.time() - self.now
 
     def __repr__(self):
         m = self.n if self.n else 1
@@ -69,13 +71,15 @@ class Counter:
         )
 
     def __enter__(self):
-        self._c.start()
-        self.threads[threading.current_thread()].start()
-        return self
+        if threading is not None:
+            self._c.start()
+            self.threads[threading.current_thread()].start()
+            return self
 
     def __exit__(self, *args, **kwargs):
-        self._c.end()
-        self.threads[threading.current_thread()].end()
+        if threading is not None:
+            self._c.end()
+            self.threads[threading.current_thread()].end()
 
 
 COUNTERS = []

@@ -15,6 +15,7 @@ from importlib import import_module
 from climetlab.core import Base
 from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin
+from climetlab.core.plugins import register as register_plugin
 from climetlab.core.settings import SETTINGS
 from climetlab.utils.html import table
 
@@ -171,20 +172,5 @@ def load_source_lazily(name, *args, **kwargs):
     return LazySource(name, *args, **kwargs)
 
 
-def list_entries():
-    here = os.path.realpath(os.path.dirname(__file__))
-    result = []
-
-    for n in os.listdir(here):
-        if n.startswith("."):
-            continue
-
-        if n.startswith("_"):
-            continue
-
-        if not n.endswith(".py"):
-            continue
-
-        result.append(n[:-3])
-
-    return result
+def register(name, proc):
+    register_plugin("source", name, proc)

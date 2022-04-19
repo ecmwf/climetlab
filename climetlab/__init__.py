@@ -14,7 +14,7 @@ from .core.settings import SETTINGS as settings
 from .datasets import Dataset
 from .datasets import get_dataset as dataset  # so the user can do: cml.dataset(...)
 from .datasets import load_dataset
-from .plotting import interactive_map, new_plot
+from .plotting import interactive_map, new_plot, new_table
 from .plotting import options as plotting_options
 from .plotting import plot_graph, plot_map
 from .readers import Reader
@@ -35,6 +35,7 @@ __all__ = [
     "load_source",
     "load_source_lazily",
     "new_plot",
+    "new_table",
     "plot_graph",
     "plot_map",
     "plotting_options",

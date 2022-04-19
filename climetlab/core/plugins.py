@@ -195,3 +195,16 @@ def directories(owner: bool = False) -> list:
         return result
 
     return [x[1] for x in result]
+
+
+class RegisteredPlugin:
+    pass
+
+
+def register(kind, name, proc):
+    assert name not in REGISTERED[kind], (kind, name, REGISTERED)
+    if not hasattr(proc, kind):
+        o = RegisteredPlugin()
+        setattr(o, kind, proc)
+        proc = o
+    REGISTERED[kind][name] = proc

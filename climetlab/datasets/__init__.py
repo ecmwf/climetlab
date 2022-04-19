@@ -17,6 +17,7 @@ import climetlab
 from climetlab.core import Base
 from climetlab.core.metadata import annotate
 from climetlab.core.plugins import find_plugin
+from climetlab.core.plugins import register as register_plugin
 from climetlab.core.settings import SETTINGS
 from climetlab.utils import download_and_cache
 from climetlab.utils.html import table
@@ -257,3 +258,7 @@ def load_dataset(name: str, *args, **kwargs) -> Dataset:
     if getattr(ds, "name", None) is None:
         ds.name = name
     return ds
+
+
+def register(name, proc):
+    register_plugin("dataset", name, proc)
