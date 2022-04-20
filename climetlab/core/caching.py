@@ -160,35 +160,40 @@ class Cache(threading.Thread):
     @property
     def connection(self):
         if self._connection is None:
-            cache_dir = SETTINGS.get("cache-directory")
-            if not os.path.exists(cache_dir):
-                os.makedirs(cache_dir, exist_ok=True)
-            cache_db = os.path.join(cache_dir, CACHE_DB)
-            LOG.debug("Cache database is %s", cache_db)
-            self._connection = sqlite3.connect(cache_db)
-            # So we can use rows as dictionaries
-            self._connection.row_factory = sqlite3.Row
+            self._connection = self.new_connection()
 
-            # If you change the schema, change VERSION above
-            self._connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS cache (
-                        path          TEXT PRIMARY KEY,
-                        owner         TEXT NOT NULL,
-                        args          TEXT NOT NULL,
-                        creation_date TEXT NOT NULL,
-                        flags         INTEGER DEFAULT 0,
-                        owner_data    TEXT,
-                        last_access   TEXT NOT NULL,
-                        type          TEXT,
-                        parent        TEXT,
-                        replaced      TEXT,
-                        extra         TEXT,
-                        expires       INTEGER,
-                        accesses      INTEGER,
-                        size          INTEGER);"""
-            )
         return self._connection
+
+    def new_connection(self):
+        cache_dir = SETTINGS.get("cache-directory")
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
+        cache_db = os.path.join(cache_dir, CACHE_DB)
+        LOG.debug("Cache database is %s", cache_db)
+        connection = sqlite3.connect(cache_db)
+        # So we can use rows as dictionaries
+        connection.row_factory = sqlite3.Row
+
+        # If you change the schema, change VERSION above
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cache (
+                    path          TEXT PRIMARY KEY,
+                    owner         TEXT NOT NULL,
+                    args          TEXT NOT NULL,
+                    creation_date TEXT NOT NULL,
+                    flags         INTEGER DEFAULT 0,
+                    owner_data    TEXT,
+                    last_access   TEXT NOT NULL,
+                    type          TEXT,
+                    parent        TEXT,
+                    replaced      TEXT,
+                    extra         TEXT,
+                    expires       INTEGER,
+                    accesses      INTEGER,
+                    size          INTEGER);"""
+        )
+        return connection
 
     def enqueue(self, func, *args, **kwargs):
         with self._condition:
@@ -554,7 +559,7 @@ class Cache(threading.Thread):
         """
 
         html = [css("table")]
-        with self.connection as db:
+        with self.new_connection() as db:
             for n in db.execute("SELECT * FROM cache"):
                 html.append("<table class='climetlab'>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
