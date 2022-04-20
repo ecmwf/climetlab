@@ -234,6 +234,7 @@ class Settings:
             assert len(args) == 1
             assert len(kwargs) == 0
             value = args[0]
+            value = klass(value)
 
         if klass is list:
             assert len(args) > 0
