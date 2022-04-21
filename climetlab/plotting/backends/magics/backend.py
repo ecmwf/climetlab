@@ -336,7 +336,7 @@ class Backend:
         return Display(path, metadata=dict(width=width))
 
     def show(self, display):
-        return display(self.render(display))
+        return display(self.render())
 
     def save(self, path):
 
