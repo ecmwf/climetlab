@@ -563,10 +563,12 @@ class Cache(threading.Thread):
         with self.new_connection() as db:
             for n in db.execute("SELECT * FROM cache"):
                 n = dict(n)
-                n['missing'] = not os.path.exists(n['path'])
-                n['temporary'] = os.path.exists(n['path'] + '.tmp') or os.path.exists(n['path'] + '.tmp.download') # TODO: decide how to handle temporary extension
-                if n['size'] is None:
-                    n['size'] = 0
+                n["missing"] = not os.path.exists(n["path"])
+                n["temporary"] = os.path.exists(n["path"] + ".tmp") or os.path.exists(
+                    n["path"] + ".tmp.download"
+                )  # TODO: decide how to handle temporary extension
+                if n["size"] is None:
+                    n["size"] = 0
                 html.append("<table class='climetlab'>")
                 html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
 
