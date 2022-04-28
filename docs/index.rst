@@ -9,7 +9,7 @@ meteorological datasets, allowing users to focus on science instead of
 technical issues such as data access and data formats. It is mostly intended
 to be used in Jupyter_ notebooks, and be interoperable with all popular data
 analytic packages, such as NumPy_, Pandas_, Xarray_, SciPy_, Matplotlib_, etc.
-and well as machine learning frameworks, such as TensorFlow_, Keras_
+as well as machine learning frameworks, such as TensorFlow_, Keras_
 or PyTorch_. See :ref:`overview` for more information.
 
 
