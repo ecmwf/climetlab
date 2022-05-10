@@ -11,8 +11,6 @@ import re
 
 from dateutil.parser import isoparse, parse
 
-from climetlab.utils.dates import mars_like_date_list
-from climetlab.utils.domains import domain_to_area
 from climetlab.wrappers import Wrapper
 
 VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
@@ -41,12 +39,15 @@ class StrWrapper(Wrapper):
         self.data = data
 
     def to_bounding_box(self):
+        from climetlab.utils.domains import domain_to_area
+
         return domain_to_area(self.data)
 
     def to_datetime(self):
         return parse_date(self.data)
 
     def to_datetime_list(self):
+        from climetlab.utils.dates import mars_like_date_list
 
         # MARS style lists
         bits = self.data.split("/")
