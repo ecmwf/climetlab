@@ -33,6 +33,7 @@ def infer_open_mfdataset_kwargs(
     user_kwargs={},
 ):
     result = {}
+    result.update(user_kwargs)
     if False:
         ds = sources[0].to_xarray()
         # lat_dims = [s.get_lat_dim() for s in sources]
