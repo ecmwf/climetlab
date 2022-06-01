@@ -24,7 +24,7 @@ EXAMPLES = climetlab_file("docs", "examples")
 
 SKIP = (
     "13-icoads.ipynb",
-    # "09-weatherbench.ipynb",
+    "06-era5-temperature.ipynb",  # TODO: re-enable when Mars move is done
 )
 
 MARS = (
