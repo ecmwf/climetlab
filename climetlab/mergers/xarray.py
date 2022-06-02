@@ -14,6 +14,7 @@ from xarray.backends.common import BackendEntrypoint
 
 LOG = logging.getLogger(__name__)
 
+
 # We wrap the sources because the FileSource is a os.PathLike and
 # since version 0.20, xarray checks the class and change os.PathLike to
 # strings. We don't want that, as we want to keep our objects
