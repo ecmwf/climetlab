@@ -7,9 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+
 import xarray as xr
 from xarray.backends.common import BackendEntrypoint
 
+LOG = logging.getLogger(__name__)
 
 # We wrap the sources because the FileSource is a os.PathLike and
 # since version 0.20, xarray checks the class and change os.PathLike to
@@ -33,7 +36,7 @@ def infer_open_mfdataset_kwargs(
     user_kwargs={},
 ):
     result = {}
-    result.update(user_kwargs)
+    result.update(user_kwargs.get("xarray_open_mfdataset_kwargs", {}))
     if False:
         ds = sources[0].to_xarray()
         # lat_dims = [s.get_lat_dim() for s in sources]
@@ -78,8 +81,10 @@ def merge(
                 **options,
             )
 
+        LOG.debug(f"xr.open_mfdataset with options={options}")
         return xr.open_mfdataset(paths, **options)
 
+    LOG.debug(f"xr.open_mfdataset with options= {options}")
     return xr.open_mfdataset(
         [WrappedSource(s) for s in sources],
         engine=CMLEngine,

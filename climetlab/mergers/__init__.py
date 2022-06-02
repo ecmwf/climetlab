@@ -145,6 +145,7 @@ class XarrayGenericMerger(Merger):
         options.update(self.default_options)
         options.update(self.options)
         options.update(kwargs)
+        LOG.debug(f"xr.open_mfdataset with options = {options}")
         return xr.open_mfdataset(
             self.paths,
             **options,
