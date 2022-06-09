@@ -85,13 +85,7 @@ class StandaloneMarsClient:
         req = ["retrieve,"]
 
         for k, v in request.items():
-            if k == "param":
-                v = "/".join(v)
-            if k == "date":
-                v = "/".join(v)
-            if k == "area":
-                v = "/".join([str(x) for x in v])
-            if k == "grid":
+            if isinstance(k, (list, tuple)):
                 v = "/".join([str(x) for x in v])
             req += [f"{k}={v},"]
 
