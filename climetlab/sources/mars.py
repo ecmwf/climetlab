@@ -7,14 +7,21 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+import os
+import subprocess
+
 import ecmwfapi
 
+from climetlab.core.temporary import temp_file
 from climetlab.core.thread import SoftThreadPool
 from climetlab.decorators import normalize
 from climetlab.utils import tqdm
 
 from .file import FileSource
 from .prompt import APIKeyPrompt
+
+LOG = logging.getLogger(__name__)
 
 
 class MARSAPIKeyPrompt(APIKeyPrompt):
@@ -44,7 +51,64 @@ class MARSAPIKeyPrompt(APIKeyPrompt):
     rcfile = "~/.ecmwfapirc"
 
 
+global _STANDALONE_MARS
+_STANDALONE_MARS = None
+
+
+def standalone_mars_exists():
+    def check():
+        if not os.path.exists(StandaloneMarsClient.EXE):
+            return False
+        for filename in [
+            os.path.join(os.environ["HOME"], ".marsrc", "mars.email"),
+            os.path.join(os.environ["HOME"], ".marsrc", "mars.token"),
+        ]:
+            if not os.path.exists(filename):
+                LOG.debug(f"Missing {filename}, required for using mars client.")
+                return False
+        LOG.warn(
+            f"Found mars client at {StandaloneMarsClient.EXE}. Using it instead of sending web requests."
+        )
+        return True
+
+    global _STANDALONE_MARS
+    if _STANDALONE_MARS is None:
+        _STANDALONE_MARS = check()
+
+    return _STANDALONE_MARS
+
+
+class StandaloneMarsClient:
+    EXE = "/usr/local/bin/mars"
+
+    def execute(self, request, target):
+        req = ["retrieve,"]
+
+        for k, v in request.items():
+            if k == "param":
+                v = "/".join(v)
+            if k == "date":
+                v = "/".join(v)
+            if k == "area":
+                v = "/".join([str(x) for x in v])
+            if k == "grid":
+                v = "/".join([str(x) for x in v])
+            req += [f"{k}={v},"]
+
+        req += [f'target="{target}"']
+        req_str = "\n".join(req)
+        with temp_file() as filename:
+            with open(filename, "w") as f:
+                f.write(req_str + "\n")
+            LOG.debug(f"Sending Mars request: '{req_str}'")
+
+            subprocess.run([self.EXE, filename], check=True)
+
+
 def service(name):
+    if name == "mars" and standalone_mars_exists():
+        return StandaloneMarsClient()
+
     prompt = MARSAPIKeyPrompt()
     prompt.check()
 
@@ -64,7 +128,7 @@ class MARSRetriever(FileSource):
 
         requests = self.requests(**kwargs)
 
-        service("mars")  # Trigger password prompt before thraeding
+        service("mars")  # Trigger password prompt before threading
 
         nthreads = min(self.settings("number-of-download-threads"), len(requests))
 
