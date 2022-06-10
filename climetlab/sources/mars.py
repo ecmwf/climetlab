@@ -13,6 +13,7 @@ import subprocess
 
 import ecmwfapi
 
+from climetlab.core.settings import SETTINGS
 from climetlab.core.temporary import temp_file
 from climetlab.core.thread import SoftThreadPool
 from climetlab.decorators import normalize
@@ -51,33 +52,6 @@ class MARSAPIKeyPrompt(APIKeyPrompt):
     rcfile = "~/.ecmwfapirc"
 
 
-global _STANDALONE_MARS
-_STANDALONE_MARS = None
-
-
-def standalone_mars_exists():
-    def check():
-        if not os.path.exists(StandaloneMarsClient.EXE):
-            return False
-        for filename in [
-            os.path.join(os.environ["HOME"], ".marsrc", "mars.email"),
-            os.path.join(os.environ["HOME"], ".marsrc", "mars.token"),
-        ]:
-            if not os.path.exists(filename):
-                LOG.debug(f"Missing {filename}, required for using mars client.")
-                return False
-        LOG.warn(
-            f"Found mars client at {StandaloneMarsClient.EXE}. Using it instead of sending web requests."
-        )
-        return True
-
-    global _STANDALONE_MARS
-    if _STANDALONE_MARS is None:
-        _STANDALONE_MARS = check()
-
-    return _STANDALONE_MARS
-
-
 class StandaloneMarsClient:
     EXE = "/usr/local/bin/mars"
 
@@ -99,19 +73,20 @@ class StandaloneMarsClient:
             subprocess.run([self.EXE, filename], check=True)
 
 
-def service(name):
-    if name == "mars" and standalone_mars_exists():
-        return StandaloneMarsClient()
+def service():
+    if SETTINGS.get("use-standalone-mars-client-when-available"):
+        if os.path.exists(StandaloneMarsClient.EXE):
+            return StandaloneMarsClient()
 
     prompt = MARSAPIKeyPrompt()
     prompt.check()
 
     try:
-        return ecmwfapi.ECMWFService(name)
+        return ecmwfapi.ECMWFService("mars")
     except Exception as e:
         if ".ecmwfapirc" in str(e):
             prompt.ask_user_and_save()
-            return ecmwfapi.ECMWFService(name)
+            return ecmwfapi.ECMWFService("mars")
 
         raise
 
@@ -122,7 +97,7 @@ class MARSRetriever(FileSource):
 
         requests = self.requests(**kwargs)
 
-        service("mars")  # Trigger password prompt before threading
+        service()  # Trigger password prompt before threading
 
         nthreads = min(self.settings("number-of-download-threads"), len(requests))
 
@@ -138,7 +113,7 @@ class MARSRetriever(FileSource):
 
     def _retrieve(self, request):
         def retrieve(target, request):
-            service("mars").execute(request, target)
+            service().execute(request, target)
 
         return self.cache_file(
             retrieve,
