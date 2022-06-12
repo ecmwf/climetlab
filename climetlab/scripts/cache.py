@@ -73,7 +73,11 @@ class Matcher:
 
         for k in MATCHER.keys():
             if k != "epilog":
-                setattr(self, k, getattr(args, k))
+                if isinstance(args, dict):
+                    value = args.get(k, None)
+                else:
+                    value = getattr(args, k)
+                setattr(self, k, value)
 
         if self.match is not None:
             self.message.append(f"matching '{self.match}'")
@@ -173,12 +177,16 @@ class CacheCmd:
             print(cache_directory())
             return
 
-        matcher = Matcher(args)
-        if not args.json and not matcher.undefined:
-            message = humanize.list_to_human(matcher.message)
-            print(colored(f"Entries {message}.", "green"))
+        self.matcher = Matcher(args)
+        cache = dump_cache_database(matcher=self.matcher)
+        return self.generate_output(cache, args)
 
-        cache = dump_cache_database(matcher=matcher)
+    def generate_output(self, cache, args):
+        from climetlab.core.caching import cache_directory
+
+        if not args.json and not self.matcher.undefined:
+            message = humanize.list_to_human(self.matcher.message)
+            print(colored(f"Entries {message}.", "green"))
 
         if args.sort:
             kind = None
@@ -201,7 +209,7 @@ class CacheCmd:
                 )
 
         if args.json:
-            print(json.dumps(cache, sort_keys=True, indent=4))
+            print(self.as_json(cache))
             return
 
         if args.all:
@@ -266,6 +274,9 @@ class CacheCmd:
                 )
 
         print_table(generate_table())
+
+    def as_json(self, cache):
+        return json.dumps(cache, sort_keys=True, indent=4)
 
     @parse_args(
         all=dict(action="store_true"),

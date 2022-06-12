@@ -38,6 +38,7 @@ def parse_args(epilog="", **kwargs):
                 p.add_argument(f"--{k}", **v)
 
         func._argparser = p
+        func._kwargs_specifications = kwargs
 
         @wraps(func)
         def wrapped(self, args):
