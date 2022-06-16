@@ -127,6 +127,10 @@ SETTINGS_AND_HELP = {
         False,
         "Re-download URLs when the remote version of a cached file as been changed",
     ),
+    "use-standalone-mars-client-when-available": _(
+        True,
+        "Use the standalone mars client when available instead of using the web API.",
+    ),
 }
 
 

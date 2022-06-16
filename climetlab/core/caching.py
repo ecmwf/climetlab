@@ -591,11 +591,20 @@ class Cache(threading.Thread):
                     result.append(n)
         return result
 
+    def _summary_dump_cache_database(self, matcher=lambda x: True):
+        result = self._dump_cache_database(matcher=matcher)
+        count = len(result)
+        size = 0
+        for r in result:
+            size += r.get("size", 0)
+        return count, size
+
 
 CACHE = Cache()
 CACHE.start()
 
 dump_cache_database = in_executor(CACHE._dump_cache_database)
+summary_dump_cache_database = in_executor(CACHE._summary_dump_cache_database)
 register_cache_file = in_executor(CACHE._register_cache_file)
 update_entry = in_executor(CACHE._update_entry)
 check_cache_size = in_executor_forget(CACHE._check_cache_size)
