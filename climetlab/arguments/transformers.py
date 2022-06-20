@@ -26,6 +26,9 @@ class Action:
     def execute(self, kwargs):
         raise NotImplementedError()
 
+    def execute_before_default(self, kwargs):
+        return kwargs
+
     def __repr__(self) -> str:
         return f"{self.__class__}"
 
@@ -155,4 +158,31 @@ class AvailabilityChecker(Action):
         for line in self.availability.tree().split("\n"):
             if line:
                 txt += "\n    " + line
+        return txt
+
+
+class KwargsAliasTransformer(Action):
+    def __init__(self, kwargs_alias) -> None:
+        self.aliases = kwargs_alias.kwargs
+
+    def execute(self, kwargs):
+        return kwargs
+
+    def execute_before_default(self, kwargs):
+        LOG.debug("Transforming kwargs names with aliases for %s", kwargs)
+        assert isinstance(kwargs, dict), kwargs
+        for target, aliases in self.aliases.items():
+            for k in list(kwargs.keys()):
+                if k in aliases:
+                    assert (
+                        target not in kwargs
+                    ), "Error: Multiple values were given for aliased arguments: '{k}' is an alias for '{target}'"
+                    v = kwargs[k]
+                    del kwargs[k]
+                    kwargs[target] = v
+        return kwargs
+
+    def __repr__(self) -> str:
+        txt = "KwargsAlias:"
+        txt += ",".join([f"{v}->{k}" for k, v in self.aliases.items()])
         return txt

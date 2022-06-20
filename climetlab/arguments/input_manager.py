@@ -9,7 +9,7 @@
 import logging
 
 from .argument import Argument
-from .transformers import AvailabilityChecker
+from .transformers import AvailabilityChecker, KwargsAliasTransformer
 
 LOG = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class InputManager:
     ):
         self.decorators = decorators
         self._pipeline = None
+        self.kwargs_alias = None
         self.availabilities = []
         self.arguments = {}
 
@@ -42,6 +43,9 @@ class InputManager:
             self.arguments[decorator.name] = Argument(decorator.name)
         self.arguments[decorator.name].normalize = decorator.kwargs
 
+    def register_kwargs_alias(self, decorator):
+        self.kwargs_alias = decorator
+
     def build_pipeline(self):
         self._pipeline = []
         LOG.debug("Building arguments from decorators:\n %s", self.decorators)
@@ -52,6 +56,10 @@ class InputManager:
             decorator.register(self)
 
         self.arguments = list(self.arguments.values())
+
+        if self.kwargs_alias:
+            transform = KwargsAliasTransformer(self.kwargs_alias)
+            self._pipeline.append(transform)
 
         for a in self.arguments:
             a.add_alias_transformers(self._pipeline)
@@ -68,6 +76,19 @@ class InputManager:
 
         for a in self.arguments:
             a.add_format_transformers(self._pipeline)
+
+    def apply_to_kwargs_before_default(self, kwargs):
+        LOG.debug(f"Apply pipeline to kwargs before resolving default values: {kwargs}")
+        for t in self.pipeline:
+            if hasattr(t, "name"):
+                LOG.debug(f" - {t.name}: apply {t}.")
+            else:
+                LOG.debug(f" - apply {t}.")
+
+            kwargs = t.execute_before_default(kwargs)
+            LOG.debug(f"       kwargs: {kwargs}")
+
+        return kwargs
 
     def apply_to_kwargs(self, kwargs):
         LOG.debug(f"Apply pipeline to kwargs: {kwargs}")
@@ -123,6 +144,9 @@ class InputManager:
         from climetlab.arguments.args_kwargs import ArgsKwargs
 
         args_kwargs = ArgsKwargs(args, kwargs, func=func)
+        LOG.debug("Applying decorator stack (before default) to: %s %s", args, kwargs)
+        args_kwargs.kwargs = self.apply_to_kwargs_before_default(args_kwargs.kwargs)
+
         args_kwargs.add_default_values_and_kwargs()
         self.consolidate_defaults(args_kwargs.defaults)
 

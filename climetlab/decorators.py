@@ -92,6 +92,28 @@ OPTIONS = {
 }
 
 
+class kwargs_alias(Decorator):
+    def __init__(
+        self,
+        **kwargs,
+    ):
+        self.kwargs = kwargs
+
+        # check for duplicate aliases
+        for k, v in self.kwargs.items():
+            for k_, v_ in self.kwargs.items():
+                if k == k_:
+                    continue
+                intersection = set(v).intersection(set(v_))
+                if intersection:
+                    raise ValueError(
+                        f"Error: kwargs_alias cannot alias '{list(intersection)[0]}' to '{k}' and '{k_}'"
+                    )
+
+    def register(self, manager):
+        manager.register_kwargs_alias(self)
+
+
 class normalize(Decorator):
     def __init__(
         self,
