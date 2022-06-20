@@ -97,6 +97,18 @@ class kwargs_alias(Decorator):
         self,
         **kwargs,
     ):
+        for k, v in kwargs.items():
+            if isinstance(v, (list, tuple)):
+                continue
+            if isinstance(v, str):
+                kwargs[k] = [v]
+                continue
+            if isinstance(v, dict):
+                raise ValueError(
+                    f"Error: kwargs_alias is expecting a list or str. You may be looking for: @normalize(aliases={kwargs})"
+                )
+            raise ValueError(f"Wrong alias list for '{k}':{v}")
+
         self.kwargs = kwargs
 
         # check for duplicate aliases

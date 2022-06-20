@@ -37,6 +37,13 @@ def test_kwargs_alias_1():
     assert f(alias=1) == 1
     assert f(x=1) == 1
 
+    f = kwargs_alias(x="alias")(func_x)
+    assert f(alias=1) == 1
+    assert f(x=1) == 1
+
+    with pytest.raises(ValueError):
+        f = kwargs_alias(x={"alias": "value"})(func_x)
+
     f = kwargs_alias(x=["alias", "blias"])(func_x)
     assert f(alias=1) == 1
 
