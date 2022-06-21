@@ -11,7 +11,7 @@
 
 import pytest
 
-from climetlab.decorators import kwargs_alias, normalize
+from climetlab.decorators import alias_argument, normalize
 
 
 def func_x(x):
@@ -26,37 +26,45 @@ def func_xyz(x, y, z):
     return x, y, z
 
 
-def test_kwargs_alias_1():
-    f = kwargs_alias()(func_x)
+def test_alias_argument_1():
+    f = alias_argument()(func_x)
     assert f(1) == 1
     assert f(x=1) == 1
     with pytest.raises(TypeError):
         assert f(unk=1) == 1
 
-    f = kwargs_alias(x=["alias"])(func_x)
+    f = alias_argument(x=["alias"])(func_x)
     assert f(alias=1) == 1
     assert f(x=1) == 1
 
-    f = kwargs_alias(x="alias")(func_x)
+    f = alias_argument(x="alias")(func_x)
     assert f(alias=1) == 1
     assert f(x=1) == 1
 
     with pytest.raises(ValueError):
-        f = kwargs_alias(x={"alias": "value"})(func_x)
+        f = alias_argument(x={"alias": "value"})(func_x)
 
-    f = kwargs_alias(x=["alias", "blias"])(func_x)
+    f = alias_argument(x=["alias", "blias"])(func_x)
     assert f(alias=1) == 1
 
     with pytest.raises(TypeError):
-        f = kwargs_alias(unk=["x"])(func_x)
+        f = alias_argument(unk=["x"])(func_x)
         assert f(x=1) == 1
 
 
-def test_kwargs_alias_2():
-    f = kwargs_alias(y=["alias", "blias"])(func_xy)
+def test_alias_argument_1_bis():
+    f = alias_argument("x", ["alias"])(func_x)
+    assert f(alias=1) == 1
+
+    f = alias_argument("x", "alias")(func_x)
+    assert f(alias=1) == 1
+
+
+def test_alias_argument_2():
+    f = alias_argument(y=["alias", "blias"])(func_xy)
     assert f(1, alias=2) == (1, 2)
 
-    f = kwargs_alias(y=["alias", "blias"])(func_xy)
+    f = alias_argument(y=["alias", "blias"])(func_xy)
     assert f(1, alias=2) == (1, 2)
     assert f(1, blias=2) == (1, 2)
     assert f(1, y=2) == (1, 2)
@@ -65,8 +73,8 @@ def test_kwargs_alias_2():
     assert f(x=1, y=2) == (1, 2)
 
 
-def test_kwargs_alias_3():
-    f = kwargs_alias(y=["alias", "blias"])(func_xyz)
+def test_alias_argument_3():
+    f = alias_argument(y=["alias", "blias"])(func_xyz)
     assert f(1, alias=2, z=3) == (1, 2, 3)
     assert f(1, blias=2, z=3) == (1, 2, 3)
     assert f(z=3, alias=2, x=1) == (1, 2, 3)
@@ -74,15 +82,15 @@ def test_kwargs_alias_3():
     assert f(x=1, z=3, blias=2) == (1, 2, 3)
     assert f(x=1, y=2, z=3) == (1, 2, 3)
 
-    f = kwargs_alias(y=["y_alias"], x=["x_alias"])(func_xyz)
+    f = alias_argument(y=["y_alias"], x=["x_alias"])(func_xyz)
     assert f(y_alias=2, x_alias=1, z=3) == (1, 2, 3)
 
     with pytest.raises(ValueError):
-        f = kwargs_alias(x=["alias"], y=["alias"])(func_xyz)
+        f = alias_argument(x=["alias"], y=["alias"])(func_xyz)
     with pytest.raises(ValueError):
-        f = kwargs_alias(x=["alias", "blias"], y=["alias"])(func_xyz)
+        f = alias_argument(x=["alias", "blias"], y=["alias"])(func_xyz)
     with pytest.raises(ValueError):
-        f = kwargs_alias(x=["alias", "blias"], y=["alias", "blias"])(func_xyz)
+        f = alias_argument(x=["alias", "blias"], y=["alias", "blias"])(func_xyz)
 
 
 @pytest.mark.parametrize("typ", [str, int, float])

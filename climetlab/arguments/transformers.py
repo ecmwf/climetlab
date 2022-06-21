@@ -162,8 +162,8 @@ class AvailabilityChecker(Action):
 
 
 class KwargsAliasTransformer(Action):
-    def __init__(self, kwargs_alias) -> None:
-        self.aliases = kwargs_alias.kwargs
+    def __init__(self, alias_argument) -> None:
+        self.aliases = alias_argument.kwargs
 
     def execute(self, kwargs):
         return kwargs

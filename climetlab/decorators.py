@@ -92,11 +92,18 @@ OPTIONS = {
 }
 
 
-class kwargs_alias(Decorator):
+class alias_argument(Decorator):
     def __init__(
         self,
+        name=None,
+        lst=None,
         **kwargs,
     ):
+        if name is not None:
+            assert lst is not None
+            assert not kwargs
+            kwargs = {name:lst}
+
         for k, v in kwargs.items():
             if isinstance(v, (list, tuple)):
                 continue
@@ -105,7 +112,7 @@ class kwargs_alias(Decorator):
                 continue
             if isinstance(v, dict):
                 raise ValueError(
-                    f"Error: kwargs_alias is expecting a list or str. You may be looking for: @normalize(aliases={kwargs})"
+                    f"Error: alias_argument is expecting a list or str. You may be looking for: @normalize(aliases={kwargs})"
                 )
             raise ValueError(f"Wrong alias list for '{k}':{v}")
 
@@ -119,11 +126,11 @@ class kwargs_alias(Decorator):
                 intersection = set(v).intersection(set(v_))
                 if intersection:
                     raise ValueError(
-                        f"Error: kwargs_alias cannot alias '{list(intersection)[0]}' to '{k}' and '{k_}'"
+                        f"Error: alias_argument cannot alias '{list(intersection)[0]}' to '{k}' and '{k_}'"
                     )
 
     def register(self, manager):
-        manager.register_kwargs_alias(self)
+        manager.register_alias_argument(self)
 
 
 class normalize(Decorator):

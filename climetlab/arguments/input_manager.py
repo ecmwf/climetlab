@@ -21,7 +21,7 @@ class InputManager:
     ):
         self.decorators = decorators
         self._pipeline = None
-        self.kwargs_alias = None
+        self.alias_argument = None
         self.availabilities = []
         self.arguments = {}
 
@@ -43,8 +43,8 @@ class InputManager:
             self.arguments[decorator.name] = Argument(decorator.name)
         self.arguments[decorator.name].normalize = decorator.kwargs
 
-    def register_kwargs_alias(self, decorator):
-        self.kwargs_alias = decorator
+    def register_alias_argument(self, decorator):
+        self.alias_argument = decorator
 
     def build_pipeline(self):
         self._pipeline = []
@@ -57,8 +57,8 @@ class InputManager:
 
         self.arguments = list(self.arguments.values())
 
-        if self.kwargs_alias:
-            transform = KwargsAliasTransformer(self.kwargs_alias)
+        if self.alias_argument:
+            transform = KwargsAliasTransformer(self.alias_argument)
             self._pipeline.append(transform)
 
         for a in self.arguments:
