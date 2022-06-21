@@ -102,7 +102,7 @@ class alias_argument(Decorator):
         if name is not None:
             assert lst is not None
             assert not kwargs
-            kwargs = {name:lst}
+            kwargs = {name: lst}
 
         for k, v in kwargs.items():
             if isinstance(v, (list, tuple)):
@@ -112,7 +112,10 @@ class alias_argument(Decorator):
                 continue
             if isinstance(v, dict):
                 raise ValueError(
-                    f"Error: alias_argument is expecting a list or str. You may be looking for: @normalize(aliases={kwargs})"
+                    (
+                        "Error: alias_argument is expecting a list or str."
+                        f" You may be looking for: @normalize(aliases={kwargs})"
+                    )
                 )
             raise ValueError(f"Wrong alias list for '{k}':{v}")
 
