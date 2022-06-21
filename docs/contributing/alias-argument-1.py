@@ -2,7 +2,7 @@ from climetlab.decorators import alias_argument
 
 
 @alias_argument(param="parameter")
-def func(self, param, other):
+def func(param, other):
     return "param=" + param
 
 
