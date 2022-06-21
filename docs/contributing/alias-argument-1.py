@@ -6,8 +6,8 @@ def func(param, other):
     return "param=" + param
 
 
-func(param="tp")
+func(param="tp", other=1)
 # -> param=tp
 
-func(parameter="tp")
+func(parameter="tp", other=1)
 # -> param=tp
