@@ -79,6 +79,7 @@ Documentation
 * :doc:`contributing/sources`
 * :doc:`contributing/normalize`
 * :doc:`contributing/availability`
+* :doc:`contributing/alias_argument`
 * :doc:`contributing/grib`
 * :doc:`contributing/plotting`
 
@@ -93,6 +94,7 @@ Documentation
    contributing/sources
    contributing/normalize
    contributing/availability
+   contributing/alias_argument
    contributing/grib
    contributing/plotting
 
