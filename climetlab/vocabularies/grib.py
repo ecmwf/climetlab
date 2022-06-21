@@ -13,17 +13,34 @@ from climetlab.utils import download_and_cache
 
 URL = "https://apps.ecmwf.int/codes/grib/json/"
 
+PARAMS = {}
 
-def grib_database():
-    path = download_and_cache(URL)
-    with open(path) as f:
-        entries = json.load(f)
 
-    for entry in entries["parameters"]:
-        yield entry
+def _param_id_dict():
+    if not PARAMS:
+        path = download_and_cache(URL)
+        with open(path) as f:
+            entries = json.load(f)
+
+        for entry in entries["parameters"]:
+            PARAMS[int(entry["param_id"])] = entry
+
+    return PARAMS
+
+
+def param_id_to_dict(param_id):
+    dic = _param_id_dict()
+    return dic[param_id]
+
+
+def param_id_to_short_name(param_id):
+    entry = param_id_to_dict(param_id)
+    return entry["param_shortName"]
 
 
 if __name__ == "__main__":
 
-    for n in grib_database():
-        print(n)
+    import sys
+
+    for i in sys.argv[1:]:
+        print(param_id_to_short_name(int(i)))

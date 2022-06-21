@@ -22,6 +22,7 @@ from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
 from .grib import GribCmd
+from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
 
 try:
@@ -55,6 +56,7 @@ class CliMetLabApp(
     CheckCmd,
     GribCmd,
     BenchmarkCmd,
+    GribInfoCmd,
     *get_plugins(),
 ):
     # intro = 'Welcome to climetlab. Type ? to list commands.\n'
