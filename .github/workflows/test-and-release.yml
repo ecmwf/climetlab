@@ -115,6 +115,7 @@ jobs:
           pip install nbformat nbconvert ipykernel
 
       - name: Install climetlab full
+        if: ! ( ( ${{ matrix.python-version }} == "3.10" ) and ( ${{ matrix.platform }} == "macos-latest" ) )
         run: |
           pip install -e .[interactive,tensorflow,zarr]
           pip freeze
