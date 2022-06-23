@@ -130,7 +130,7 @@ jobs:
 
       - name: Tests notebooks
         run: |
-          for i in docs/examples/*.ipynb; do pytest -E release tests/documentation/test_notebooks.py -k $(basename $i); done
+          pytest -E release tests/documentation/test_notebooks.py
 
       - name: Re-install packaging without -e
         run: |
