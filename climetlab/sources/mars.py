@@ -28,7 +28,7 @@ class StandaloneMarsClient:
         req = ["retrieve,"]
 
         for k, v in request.items():
-            if isinstance(k, (list, tuple)):
+            if isinstance(v, (list, tuple)):
                 v = "/".join([str(x) for x in v])
             req += [f"{k}={v},"]
 
