@@ -1,0 +1,68 @@
+[
+    {
+        "runs_on":"ubuntu-latest",
+        "platform":"ubuntu-latest",
+        "python-version": "3.7",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"ubuntu-latest",
+        "platform":"ubuntu-latest",
+        "python-version": "3.8",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"ubuntu-latest",
+        "platform":"ubuntu-latest",
+        "python-version": "3.9",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"ubuntu-latest",
+        "platform":"ubuntu-latest",
+        "python-version": "3.10",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"windows-latest",
+        "platform":"windows-latest",
+        "python-version": "3.7",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"windows-latest",
+        "platform":"windows-latest",
+        "python-version": "3.8",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"windows-latest",
+        "platform":"windows-latest",
+        "python-version": "3.9",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"windows-latest",
+        "platform":"windows-latest",
+        "python-version": "3.10",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"macos-latest",
+        "platform":"macos-latest",
+        "python-version": "3.7",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"macos-latest",
+        "platform":"macos-latest",
+        "python-version": "3.8",
+        "runOn":"always"
+    },
+    {
+        "runs_on":"macos-latest",
+        "platform":"macos-latest",
+        "python-version": "3.9",
+        "runOn":"always"
+    }
+]
