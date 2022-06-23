@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-name: nightly build
+name: Nightly build
 
 on:
   # schedule:
