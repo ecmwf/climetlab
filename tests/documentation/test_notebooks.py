@@ -30,7 +30,8 @@ SKIP = (
 MARS = (
     "04-source-mars.ipynb",
     "08-mars-odb.ipynb",
-    "11-icoads.ipynb",
+    "11-weatherbench.ipynb",
+    "13-icoads.ipynb",
 )
 
 CDS = (
