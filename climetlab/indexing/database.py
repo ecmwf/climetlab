@@ -9,6 +9,7 @@
 
 
 import json
+import logging
 import os
 import sqlite3
 
@@ -17,6 +18,8 @@ from multiurl import robust
 
 from climetlab.core.caching import cache_file
 from climetlab.utils import tqdm
+
+LOG = logging.getLogger(__name__)
 
 
 def get_iterator_and_size(url):
@@ -35,27 +38,70 @@ def get_iterator_and_size(url):
     return iterator, size
 
 
+GRIB_INDEX_KEYS = [
+    "date",
+    "hdate",
+    "andate",
+    "time",
+    "antime",
+    "reference",
+    "step",
+    "anoffset",
+    "verify",
+    "fcmonth",
+    "fcperiod",
+    "leadtime",
+    "opttime",
+    "expver",
+    "origin",
+    "domain",
+    "method",
+    "diagnostic",
+    "iteration",
+    "number",
+    "quantile",
+    "levelist",
+    "latitude",
+    "longitude",
+    "range",
+    "param",
+    "ident",
+    "obstype",
+    "instrument",
+    "reportype",
+    "frequency",  # for 2-d wave-spectra products
+    "direction",  # for 2-d wave-spectra products
+    "channel",  # for ea, ef
+]
+
+
 def create_table(target, names):
     if os.path.exists(target):
         os.unlink(target)
     connection = sqlite3.connect(target)
 
-    sql_names = [f"i_{n}" for n in names]
-    others = ",".join([f"{n} TEXT" for n in sql_names])
+    all_names = [n for n in GRIB_INDEX_KEYS]
+    for n in names:
+        if n not in GRIB_INDEX_KEYS:
+            all_names.append(n)
+            LOG.debug(f"Warning: Adding an unknown grib index key {n}")
+    sql_names = [f"i_{n}" for n in all_names]
 
+    sql_names_headers = ",".join([f"{n} TEXT" for n in sql_names])
     create_statement = f"""CREATE TABLE entries (
         path    TEXT,
         offset  INTEGER,
         length  INTEGER,
-        {others}
+        {sql_names_headers}
         );"""
+    LOG.debug(create_statement)
     connection.execute(create_statement)
 
-    commas = ",".join(["?" for _ in names])
+    commas = ",".join(["?" for _ in sql_names])
     insert_statement = f"""INSERT INTO entries(
                                        path, offset, length, {','.join(sql_names)})
                                        VALUES(?,?,?,{commas});"""
-    return connection, insert_statement, sql_names
+    return connection, insert_statement, sql_names, all_names
 
 
 class Database:
@@ -110,20 +156,24 @@ class SqlDatabase(Database):
             if connection is None:
                 # this is done only for the first entry only
                 names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
-                connection, insert_statement, sql_names = create_table(target, names)
+                connection, insert_statement, sql_names, all_names = create_table(
+                    target, names
+                )
 
             assert names is not None, names
             assert connection is not None, connection
             assert insert_statement is not None
-            assert len(sql_names) == len(names), (sql_names, names)
+            assert len(sql_names) == len(all_names), (sql_names, all_names)
 
             # additional check is disabled
             # _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
             # assert _names == names, (names, _names)
 
             values = [entry.get("_path", None), entry["_offset"], entry["_length"]] + [
-                entry[n] for n in names
+                entry.get(n, None) for n in all_names
             ]
+            LOG.debug(insert_statement)
+
             connection.execute(insert_statement, tuple(values))
 
             count += 1
