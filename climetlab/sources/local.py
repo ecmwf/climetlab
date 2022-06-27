@@ -95,7 +95,7 @@ class LocalSource(FieldSet):
         # TODO: create .tmp file and move it (use cache_file)
         with open(self._index_file, "w") as f:
             for e in entries:
-                print(json.dump(e, f))
+                json.dump(e, f)
                 print("", file=f)
 
         print("Created index file", self._index_file)
