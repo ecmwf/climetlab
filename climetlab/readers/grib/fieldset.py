@@ -85,11 +85,20 @@ class FieldsetAdapter:
 
 
 class FieldSet(Source):
-    def __init__(self, *, paths=None):
+    def __init__(self, *, paths=None, fields=None):
         self._statistics = None
         self.readers = {}
         self.fields = []
+
+        if fields is not None:
+            if paths is not None:
+                raise Exception
+            self.fields = fields
+            return
+
         if paths is not None:
+            if fields is not None:
+                raise Exception
             if not isinstance(paths, (list, tuple)):
                 paths = [paths]
             for path in paths:
