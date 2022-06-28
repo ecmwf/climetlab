@@ -448,3 +448,11 @@ class GribIndex:
             LOG.exception("Load from cache failed %s", self.cache)
 
         return False
+
+    def get_path_offset_length(self, request=None):
+        if request is not None:
+            raise NotImplementedError(
+                f"Providing request is not supported: request={request}."
+            )
+        for offset, length in zip(self.offsets, self.lengths):
+            yield (self.path, offset, length)

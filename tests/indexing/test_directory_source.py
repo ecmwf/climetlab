@@ -6,9 +6,9 @@ here = os.path.dirname(__file__)
 
 
 def test_a():
-    s = cml.load_source("local", os.path.join(here, "gribs", "a"), param="t")
+    s = cml.load_source("directory", os.path.join(here, "gribs", "a"), param="t")
     s = cml.load_source(
-        "local", os.path.join(here, "gribs", "a"), param="t", level="1000"
+        "directory", os.path.join(here, "gribs", "a"), param="t", level="1000"
     )
     print(s, len(s))
     ds = s.to_xarray()
@@ -17,7 +17,7 @@ def test_a():
 
 def test_b():
     s = cml.load_source(
-        "local", os.path.join(here, "gribs", "b"), param="2t", realization="0"
+        "directory", os.path.join(here, "gribs", "b"), param="2t", realization="0"
     )
     print(s, len(s))
     ds = s.to_xarray()
@@ -26,7 +26,7 @@ def test_b():
 
 def test_c():
     s = cml.load_source(
-        "local", os.path.join(here, "gribs", "c"), param="2t", realization="0"
+        "directory", os.path.join(here, "gribs", "c"), param="2t", realization="0"
     )
     print(s, len(s))
     ds = s.to_xarray()

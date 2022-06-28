@@ -30,6 +30,11 @@ CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 #  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
 
 
+def check(ds, i, ref):
+    mean = ds[i].to_numpy().mean()
+    assert abs(mean - ref) < 1e-6, (mean, ref)
+
+
 @pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_indexed_s3(baseurl):
@@ -66,13 +71,14 @@ def test_indexed_s3(baseurl):
             "n": ["1", "2"],
         }
     )
+    check(a, 0, 49.86508481081071)
     ds = a.to_xarray()
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    # parts = index.lookup_request(request)
+    # parts = index.get_path_offset_length(request)
     print("range_method", range_method)
     print("REQUEST", request)
     #    for url, p in parts:
@@ -219,6 +225,11 @@ def test_grib_index_eumetnet():
     }
     PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
     ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
+    assert len(ds) == 7, len(ds)
+    check(ds, 0, -0.16334878510300832)
+    check(ds, 1, -0.06413754859021915)
+    check(ds, 2, 0.23404628380396034)
+    check(ds, 3, 0.3207112379535552)
     xds = ds.to_xarray()
     print(xds)
 

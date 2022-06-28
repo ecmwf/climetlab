@@ -60,6 +60,12 @@ def test_alias_argument_1_bis():
     assert f(alias=1) == 1
 
 
+def test_alias_argument_2_bis():
+    f = alias_argument("x", ["alias_x"])(func_xy)
+    f = alias_argument("y", ["alias_y"])(f)
+    assert f(alias_x=1, alias_y=2) == (1, 2)
+
+
 def test_alias_argument_2():
     f = alias_argument(y=["alias", "blias"])(func_xy)
     assert f(1, alias=2) == (1, 2)

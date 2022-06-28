@@ -95,14 +95,17 @@ OPTIONS = {
 class alias_argument(Decorator):
     def __init__(
         self,
-        name=None,
-        lst=None,
+        target=None,
+        aliases=None,
         **kwargs,
     ):
-        if name is not None:
-            assert lst is not None
+        """target: actual argument name in the function to decorate.
+        aliases: str or list of str to create aliases to target.
+        """
+        if target is not None:
+            assert aliases is not None
             assert not kwargs
-            kwargs = {name: lst}
+            kwargs = {target: aliases}
 
         for k, v in kwargs.items():
             if isinstance(v, (list, tuple)):

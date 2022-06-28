@@ -9,41 +9,28 @@
 
 from collections import defaultdict
 
+from climetlab.sources.indexed import Index, SqlIndex
 from climetlab.utils.patterns import Pattern
 
-from .backends import IndexBackend, JsonIndexBackend
 
-
-class Index:
-    def __init__(self, backend=None) -> None:
-        if backend is None:
-            backend = JsonIndexBackend
-        assert issubclass(backend, IndexBackend), backend
-        self._backend_constructor = backend
-
-
-class GlobalIndex(Index):
-    def __init__(self, index_location, baseurl, backend=None) -> None:
+class GlobalIndex(SqlIndex):
+    def __init__(self, index_location, baseurl) -> None:
         """The GloblaIndex has one index managing multiple urls/files.
         This unique index is found at "index_location"
         The path of each file is written in the index as a relative path.
         It is relative to a base url: "baseurl".
         """
 
-        super().__init__(backend=backend)
         self.baseurl = baseurl
         # if is url index_location
         #   download index_location
-        self.backend = self._backend_constructor(index_location)
+        super().__init__(url=index_location)
 
-    def get_backend(self, url=None):
-        return self.backend
-
-    def lookup_request(self, request):
+    def get_path_offset_length(self, request):
         dic = defaultdict(list)
 
         # group parts by url
-        for path, parts in self.backend.lookup(request):
+        for path, parts in self.lookup(request, order="offset"):
             url = f"{self.baseurl}/{path}"
             dic[url].append(parts)
 
@@ -63,7 +50,6 @@ class PerUrlIndex(Index):
     def __init__(
         self,
         pattern,
-        backend=None,
         substitute_extension=False,
         index_extension=".index",
     ) -> None:
@@ -77,9 +63,9 @@ class PerUrlIndex(Index):
         index_extension (".index"): extension for the index url.
         substitute_extension (False): if set to True, substitute the index_extension
         to build the index url instead of appending.
-        lookup_request(): get the urls and parts for a given request.
+        get_path_offset_length(): get the urls and parts for a given request.
         """
-        super().__init__(backend=backend)
+        super().__init__()
         self.pattern = pattern
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
@@ -93,17 +79,19 @@ class PerUrlIndex(Index):
         return url + self.index_extension
 
     def get_backend(self, url):
+        from climetlab.sources.indexed import SqlIndex
+
         if url in self.backends:
             return self.backends[url]
         assert isinstance(url, str), url
 
         index_url = self._build_index_file(url)
-        backend = self._backend_constructor(index_url)
+        backend = SqlIndex(index_url)
 
         self.backends[url] = backend
         return self.backends[url]
 
-    def lookup_request(self, request):
+    def get_path_offset_length(self, request):
         dic = defaultdict(list)
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
@@ -120,7 +108,7 @@ class PerUrlIndex(Index):
         # group parts by url
         for url in urls:
             backend = self.get_backend(url)
-            for _, parts in backend.lookup(request):
+            for _, parts in backend.lookup(request, order="offset"):
                 dic[url].append(parts)
 
         # and sort

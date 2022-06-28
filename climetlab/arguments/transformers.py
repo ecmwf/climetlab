@@ -171,16 +171,26 @@ class KwargsAliasTransformer(Action):
     def execute_before_default(self, kwargs):
         LOG.debug("Transforming kwargs names with aliases for %s", kwargs)
         assert isinstance(kwargs, dict), kwargs
+        new_kwargs = {}
+        for k, v in kwargs.items():
+            new_k = self.reversed_aliases.get(k, k)
+            assert (
+                new_k not in new_kwargs
+            ), "Error: Multiple values were given for aliased arguments: with '{k}' and '{new_k}'."
+            new_kwargs[new_k] = v
+        return new_kwargs
+
+    @property
+    def reversed_aliases(self):
+        reversed = {}
         for target, aliases in self.aliases.items():
-            for k in list(kwargs.keys()):
-                if k in aliases:
-                    assert (
-                        target not in kwargs
-                    ), "Error: Multiple values were given for aliased arguments: '{k}' is an alias for '{target}'"
-                    v = kwargs[k]
-                    del kwargs[k]
-                    kwargs[target] = v
-        return kwargs
+            for alias in aliases:
+                assert alias not in reversed, (
+                    "Error: Multiple target value for alias "
+                    " argument '{alias}': '{target}' and '{reversed[alias]}'"
+                )
+                reversed[alias] = target
+        return reversed
 
     def __repr__(self) -> str:
         txt = "KwargsAlias:"

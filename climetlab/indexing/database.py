@@ -16,17 +16,25 @@ import sqlite3
 import requests
 from multiurl import robust
 
+import climetlab as cml
 from climetlab.core.caching import cache_file
 from climetlab.utils import tqdm
 
 LOG = logging.getLogger(__name__)
 
 
+def get_iterator_and_size_from_path(path):
+    iterator = open(path).readlines()
+    size = os.path.getsize(path)
+    return iterator, size
+
+
 def get_iterator_and_size(url):
     if os.path.exists(url):
-        iterator = open(url).readlines()
-        size = os.path.getsize(url)
-        return iterator, size
+        return get_iterator_and_size_from_path(path=url)
+
+    if url.startswith("file://") and os.path.exists(url[7:]):
+        return get_iterator_and_size_from_path(path=url[7:])
 
     r = robust(requests.get)(url, stream=True)
     r.raise_for_status()
@@ -39,6 +47,10 @@ def get_iterator_and_size(url):
 
 
 GRIB_INDEX_KEYS = [
+    "class",
+    "stream",
+    "levtype",
+    "type",
     "date",
     "hdate",
     "andate",
@@ -105,7 +117,7 @@ def create_table(target, names):
 
 
 class Database:
-    def lookup(self, request):
+    def lookup(self, request, order=None):
         raise NotImplementedError("")
 
 
@@ -115,11 +127,11 @@ class SqlDatabase(Database):
     def __init__(
         self,
         url,
-        create_index=False,  # index is disabled by default because it is long to create.
+        create_index_in_sql_db=False,  # index is disabled by default because it is long to create.
     ):
         self._connection = None
         self.url = url
-        self.create_index = create_index
+        self.create_index_in_sql_db = create_index_in_sql_db
 
     @property
     def connection(self):
@@ -179,7 +191,7 @@ class SqlDatabase(Database):
             count += 1
             pbar.update(len(line) + 1)
 
-        if self.create_index:
+        if self.create_index_in_sql_db:
             # connection.execute(f"CREATE INDEX path_index ON entries (path);")
             for n in sql_names:
                 connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")
@@ -187,10 +199,12 @@ class SqlDatabase(Database):
         connection.execute("COMMIT;")
         connection.close()
 
-    def lookup(self, request):
+    def lookup(self, request, order=None):
         conditions = []
         for k, b in request.items():
-            if isinstance(b, (list, tuple)):
+            if b is None or b == cml.ALL:
+                continue
+            elif isinstance(b, (list, tuple)):
                 if len(b) == 1:
                     conditions.append(f"i_{k}='{b[0]}'")
                     continue
@@ -199,8 +213,35 @@ class SqlDatabase(Database):
             else:
                 conditions.append(f"i_{k}='{b}'")
 
-        statement = f"SELECT path,offset,length FROM entries WHERE {' AND '.join(conditions)} ORDER BY offset;"
+        conditions_str = ""
+        if conditions:
+            conditions_str = " WHERE " + " AND ".join(conditions)
 
+        def build_order_by(order):
+            if order is None:
+                return ""
+
+            if order == True:
+                if not request:
+                    return ""
+                order = [f"i_{k}" for k in request.keys()]
+                return "ORDER BY " + ",".join(order)
+
+            if isinstance(order, str):
+                order = [order]
+
+            if isinstance(order, (list, tuple)):
+                return "ORDER BY " + ",".join(order)
+
+            raise NotImplementedError(str(order))
+
+        order_by = build_order_by(order)
+
+        statement = (
+            f"SELECT path,offset,length FROM entries {conditions_str} {order_by};"
+        )
+
+        LOG.debug(statement)
         parts = []
         for path, offset, length in self.connection.execute(statement):
             parts.append((path, (offset, length)))

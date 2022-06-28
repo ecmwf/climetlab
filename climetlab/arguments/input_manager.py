@@ -22,6 +22,7 @@ class InputManager:
         self.decorators = decorators
         self._pipeline = None
         self.alias_argument = None
+        self.alias_arguments = []
         self.availabilities = []
         self.arguments = {}
 
@@ -44,7 +45,7 @@ class InputManager:
         self.arguments[decorator.name].normalize = decorator.kwargs
 
     def register_alias_argument(self, decorator):
-        self.alias_argument = decorator
+        self.alias_arguments.append(decorator)
 
     def build_pipeline(self):
         self._pipeline = []
@@ -57,8 +58,8 @@ class InputManager:
 
         self.arguments = list(self.arguments.values())
 
-        if self.alias_argument:
-            transform = KwargsAliasTransformer(self.alias_argument)
+        for a in self.alias_arguments:
+            transform = KwargsAliasTransformer(a)
             self._pipeline.append(transform)
 
         for a in self.arguments:
@@ -78,7 +79,9 @@ class InputManager:
             a.add_format_transformers(self._pipeline)
 
     def apply_to_kwargs_before_default(self, kwargs):
-        LOG.debug(f"Apply pipeline to kwargs before resolving default values: {kwargs}")
+        LOG.debug(
+            f"Apply pipeline to kwargs before resolving default values: {safe_to_str(kwargs)}"
+        )
         for t in self.pipeline:
             if hasattr(t, "name"):
                 LOG.debug(f" - {t.name}: apply {t}.")
@@ -86,12 +89,12 @@ class InputManager:
                 LOG.debug(f" - apply {t}.")
 
             kwargs = t.execute_before_default(kwargs)
-            LOG.debug(f"       kwargs: {kwargs}")
+            LOG.debug(f"       kwargs: {safe_to_str(kwargs)}")
 
         return kwargs
 
     def apply_to_kwargs(self, kwargs):
-        LOG.debug(f"Apply pipeline to kwargs: {kwargs}")
+        LOG.debug(f"Apply pipeline to kwargs: {safe_to_str(kwargs)}")
         for t in self.pipeline:
             if hasattr(t, "name"):
                 LOG.debug(f" - {t.name}: apply {t}.")
@@ -99,7 +102,7 @@ class InputManager:
                 LOG.debug(f" - apply {t}.")
 
             kwargs = t.execute(kwargs)
-            LOG.debug(f"       kwargs: {kwargs}")
+            LOG.debug(f"       kwargs: {safe_to_str(kwargs)}")
 
         return kwargs
 
@@ -163,3 +166,14 @@ class InputManager:
 
 def normaliser(*args, **kwargs):
     return Argument("no-name", *args, **kwargs)
+
+
+def safe_to_str(dic):
+    lst = []
+    for k, v in dic.items():
+        try:
+            v = str(v)
+        except:  # noqa: E722
+            v = "..."
+        lst.append(f"{k}={v}")
+    return ",".join(lst)

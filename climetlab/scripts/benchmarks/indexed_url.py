@@ -12,7 +12,6 @@ import time
 
 from climetlab import load_source
 from climetlab.core.statistics import collect_statistics, retrieve_statistics
-from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
@@ -54,7 +53,7 @@ def check_grib_value(value, requested):
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    parts = index.lookup_request(request)
+    parts = index.get_path_offset_length(request)
     print("range_method", range_method)
     print("REQUEST", request)
     for url, p in parts:
@@ -152,6 +151,8 @@ def benchmark():
     failed = []
     successfull = 0
     import tqdm
+
+    from climetlab.indexing import PerUrlIndex
 
     for request in tqdm.tqdm(requests):
         for range_method in tqdm.tqdm(methods):
