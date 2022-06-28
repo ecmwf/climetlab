@@ -52,7 +52,9 @@ def benchmark_dataloading(*args):
             dates = sorted(dates)
             i_times = sorted(i_times)
 
-            dic = {"date": dates, "time": "0000", "step": "0"}
+            # dic = {"date": dates}
+            dic = {"date": dates, "time": "0000"}
+            # dic = {"date": dates, "time": "0000", "step": "0"}
             # dic = {"param":"z", "time": "0000", "step": "0"}
             # dic = {}
             # dic = {"date": "19990115"}
@@ -74,8 +76,8 @@ def benchmark_dataloading(*args):
 
             elif args[1] == "xr":
                 xds = self.ds.to_xarray()
-                # print(xds)
-                for v in tqdm(xds.variables):
+                print(xds)
+                for v in xds.variables:
                     print(v, xds[v].values.shape)
                 return
 
