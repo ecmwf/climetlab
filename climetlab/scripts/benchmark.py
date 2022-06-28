@@ -49,6 +49,8 @@ def benchmark_dataloading(*args):
                 dates.append(date)
             assert len(dates) == n, (n, dates)
             print(dates)
+            dates = sorted(dates)
+            i_times = sorted(i_times)
 
             dic = {"date": dates, "time": "0000", "step": "0"}
             # dic = {"param":"z", "time": "0000", "step": "0"}
@@ -144,17 +146,15 @@ def benchmark_dataloading(*args):
         raise NotImplementedError()
 
     start = now()
-    print(start)
-
     exp.get_ds()
-
-    print(now())
-
+    step_1 = now()
     exp.get_values()
-
     end = now()
-    print(end)
-    print(end - start)
+
+    print("------------------")
+    print("Time to get dataset handle:", step_1 - start)
+    print("Time read the data from the dataset handle:", end - step_1)
+    print("Total Time to actually read the data:", end - start)
 
 
 class BenchmarkCmd:
