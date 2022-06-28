@@ -7,9 +7,154 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
+import os
+import random
+
+import pandas as pd
+import xarray as xr
+from tqdm import tqdm
+
+import climetlab as cml
 
 from .benchmarks.indexed_url import benchmark as benchmark_indexed_url
 from .tools import experimental, parse_args
+
+home = os.environ["HOME"]
+DATA_DATALOADING = {
+    "grib": f"{home}/links/weather-bench-links/data-from-mat-chantry-symlinks-to-files-small/grib",
+    "netcdf": f"{home}/links/weather-bench-links/data-from-mihai-alexe/netcdf/pl_1999.nc",
+    "b": f"{home}/dev/climetlab/tests/sources/gribs/b",
+}
+
+
+def benchmark_dataloading(*args):
+
+    now = datetime.datetime.now
+
+    class Exp:
+        def __init__(self, directory):
+            self.directory = directory
+
+        def _get_selection(self):
+            i_times = []
+            dates = []
+            n = int(args[2])  # number of dates to generate
+            while len(i_times) < n:
+                day = random.randint(1, 365)
+                if day in i_times:
+                    continue
+                i_times.append(day)
+                date = "1999" + pd.to_datetime(day, format="%j").strftime("%m%d")
+                dates.append(date)
+            assert len(dates) == n, (n, dates)
+            print(dates)
+
+            dic = {"date": dates, "time": "0000", "step": "0"}
+            # dic = {"param":"z", "time": "0000", "step": "0"}
+            # dic = {}
+            # dic = {"date": "19990115"}
+            # dic = {"date": ["19990115", "19990116"]}
+            # dic = {"date": ["19990115", "19990116", "19990117", "19990118"]}
+            return dic, dict(time=i_times)
+
+    class GribExp(Exp):
+        def get_ds(self):
+            dic, isel_dic = self._get_selection()
+            self.ds = cml.load_source("local", self.directory, dic)
+            print(len(self.ds))
+
+        def get_values(self):
+            if args[1] == "direct":
+                for one in tqdm(self.ds):
+                    one.values.shape
+                return
+
+            elif args[1] == "xr":
+                xds = self.ds.to_xarray()
+                # print(xds)
+                for v in tqdm(xds.variables):
+                    print(v, xds[v].values.shape)
+                return
+
+            raise NotImplementedError()
+
+    class NetcdfExp(Exp):
+        def get_ds(self):
+            self.ds = xr.open_dataset(self.directory)
+            print(len(self.ds))
+
+        def get_values(self):
+            print(self.ds)
+
+            dic, isel_dic = self._get_selection()
+            ds = self.ds.isel(**isel_dic)
+
+            for v in ds.variables:
+                print(v, ds[v].values.shape)
+
+    class ExpOnB(Exp):
+        def _get_selection(self):
+            return dict(param="2t", realization="0"), None
+
+    def usage():
+        print(
+            """
+        Usage:
+
+        This script runs benchmark to get data, with two steps:
+        1 - Get a handle on the dataset.
+        2 - Then read the actual data.
+
+        $0 grib direct 5:
+        Read grib data with custom index.
+        (Building climetlab.index json file if needed. Building .db in the database if needed.)
+        Then read data directly asking eccode to decode the grib data.
+        Using 5 dates.
+
+        $0 grib xr 5:
+        Same as above, but use to_xarray to read the data.
+        This xarray calls cfgrib engine which calls climetlab which calls eccodes.
+
+        $0 netcdf _ 5:
+        Read the same data on netcdf files (second argument _ is a dummy argument) (TODO:yes, we need to use argparse).
+
+        """
+        )
+
+    if len(args) == 0:
+        usage()
+        return
+
+    d = args[0]
+    d = DATA_DATALOADING.get(d, d)
+    print(f"Using d={d}")
+
+    if d.endswith(".nc") or d.endswith("netcdf"):
+        exp = NetcdfExp(d)
+
+    elif d.endswith("grib"):
+        exp = GribExp(d)
+
+    elif d.endswith("/b"):
+        print("Todo fix this one")
+        exp = ExpOnB(d)
+
+    else:
+        raise NotImplementedError()
+
+    start = now()
+    print(start)
+
+    exp.get_ds()
+
+    print(now())
+
+    exp.get_values()
+
+    end = now()
+    print(end)
+    print(end - start)
 
 
 class BenchmarkCmd:
@@ -18,6 +163,11 @@ class BenchmarkCmd:
             action="store_true",
             help="Benchmark on using indexed URL (byte-range) and various servers.",
         ),
+        dataloading=dict(
+            action="store_true",
+            help="Test loading some data.",
+        ),
+        nargs=dict(nargs="*"),
         all=dict(action="store_true", help="Run all benchmarks."),
     )
     @experimental
@@ -26,3 +176,7 @@ class BenchmarkCmd:
         if args.all or args.indexedurl:
             print("Starting benchmark.")
             benchmark_indexed_url()
+
+        if args.all or args.dataloading:
+            print("Starting benchmark.")
+            benchmark_dataloading(*args.nargs)

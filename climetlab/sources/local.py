@@ -24,12 +24,20 @@ class LocalSource(FieldSet):
 
     _reader_ = None
 
-    def __init__(self, path=None, filter=None, merger=None, **kwargs):
+    def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
         self.path = path
         self._index_file = os.path.join(path, "climetlab.index")
         self._index = None
         self.filter = filter
         self.merger = merger
+
+        if dic:
+            assert isinstance(
+                dic, dict
+            ), f"Expected a dict, but argument was dic={dic}."
+            for k, v in dic.items():
+                assert k not in kwargs, f"Duplicated key {k}={v} and {k}={kwargs[k]}"
+                kwargs[k] = v
 
         PARAMS_ALIASES = {
             "level": "levelist",
@@ -68,7 +76,6 @@ class LocalSource(FieldSet):
         return f"{self.__class__.__name__}({path})"
 
     def _create_index(self):
-        print("Creating index for", self.path)
         assert os.path.isdir(self.path)
         for root, _, files in os.walk(self.path):
             for name in files:
@@ -88,9 +95,9 @@ class LocalSource(FieldSet):
         if os.path.exists(self._index_file):
             # TODO: adapt GlobalIndex to process files.
             self._index = GlobalIndex(self._index_file, baseurl="file:")
-            print("Read index file", self._index_file)
             return self._index
 
+        print("Creating index for", self.path, " into ", self._index_file)
         entries = self._create_index()
         # TODO: create .tmp file and move it (use cache_file)
         with open(self._index_file, "w") as f:

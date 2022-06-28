@@ -187,6 +187,9 @@ class CheckCmd:
                             if module:
                                 modules.add(module)
 
+        modules.add("dask")
+        modules.add("distributed")
+        modules.add("asyncssh")
         return modules
 
     @parse_args(

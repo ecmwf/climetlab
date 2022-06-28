@@ -26,6 +26,43 @@ def missing_is_none(x):
     return None if x == 2147483647 else x
 
 
+# See also CHEAT
+# FORCED_VALUES = {
+#     "NV": 0,
+#     "Nx": 360,
+#     "Ny": 181,
+#     "centre": "ecmf",
+#     "centreDescription": "European Centre for Medium-Range Weather Forecasts",
+#     "dataType": "pf",
+#     "directionNumber": None,
+#     "edition": 2,
+#     "endStep": 0,
+#     "frequencyNumber": None,
+#     "gridDefinitionDescription": "Latitude/Longitude Grid",
+#     "gridType": "regular_ll",
+#     "iDirectionIncrementInDegrees": 1.0,
+#     "iScansNegatively": 0,
+#     "jDirectionIncrementInDegrees": 1.0,
+#     "jPointsAreConsecutive": 0,
+#     "jScansPositively": 0,
+#     "latitudeOfFirstGridPointInDegrees": 90.0,
+#     "latitudeOfLastGridPointInDegrees": -90.0,
+#     "longitudeOfFirstGridPointInDegrees": 0.0,
+#     "longitudeOfLastGridPointInDegrees": 359.0,
+#     "missingValue": 9999,
+#     "number": 0,
+#     "numberOfDirections": None,
+#     "numberOfFrequencies": None,
+#     "numberOfPoints": 29040,
+#     "stepType": "accum",
+#     "stepUnits": 1,
+#     "subCentre": 0,
+#     "totalNumber": 0,
+#     "typeOfLevel": "surface",
+# }
+FORCED_VALUES = {}
+
+
 # This does not belong here, should be in the C library
 def _get_message_offsets(path):
 
@@ -90,6 +127,28 @@ def _get_message_offsets(path):
 eccodes_codes_release = call_counter(eccodes.codes_release)
 eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
+# See also FORCED_VALUES
+# CHEAT = {
+#     "centre": "ecmf",
+#     "centreDescription": "European Centre for Medium-Range Weather Forecasts",
+#     # "dataDate" : "20200102",
+#     # "dataTime" : "0",
+#     "dataType": "pf",
+#     "edition": 2,
+#     # "endStep" : 768,
+#     "gridType": "regular_ll",
+#     # "number" : 14,
+#     "numberOfPoints": 29040,
+#     # "paramId" : 228228,
+#     "stepUnits": 1,
+#     "stepType": "accum",
+#     "subCentre": 0,
+#     "typeOfLevel": "surface",
+# }
+CHEAT = {}
+global COUNT
+COUNT = 0
+
 
 class CodesHandle:
     def __init__(self, handle, path, offset):
@@ -101,6 +160,9 @@ class CodesHandle:
         eccodes_codes_release(self.handle)
 
     def get(self, name):
+        # LOG.warn(str(self) + str(name))
+        if name in CHEAT:
+            return CHEAT[name]
         try:
             if name == "values":
                 return eccodes.codes_get_values(self.handle)
@@ -302,8 +364,8 @@ class GribField(Base):
 
     def __getitem__(self, name):
         """For cfgrib"""
-
-        # print(name)
+        if name in FORCED_VALUES:
+            return FORCED_VALUES[name]
 
         proc = self.handle.get
         if ":" in name:
