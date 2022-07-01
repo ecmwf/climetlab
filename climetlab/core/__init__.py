@@ -7,6 +7,7 @@
 #
 
 import logging
+from abc import abstractmethod
 
 LOG = logging.getLogger(__name__)
 
@@ -37,15 +38,19 @@ class Base(metaclass=MetaBase):
     def to_numpy(self, **kwargs):
         self._not_implemented()
 
+    @abstractmethod
     def to_xarray(self, **kwargs):
         self._not_implemented()
 
+    @abstractmethod
     def to_pandas(self, **kwargs):
         self._not_implemented()
 
+    @abstractmethod
     def to_tfdataset(self, **kwargs):
         self._not_implemented()
 
+    @abstractmethod
     def to_metview(self, **kwargs):
         self._not_implemented()
 
@@ -58,33 +63,42 @@ class Base(metaclass=MetaBase):
         return None
 
     # Used when plotting
+    @abstractmethod
     def plot_map(self, backend):
         self._not_implemented()
 
+    @abstractmethod
     def plot_graph(self, backend):
         self._not_implemented()
 
+    @abstractmethod
     def field_metadata(self):
         self._not_implemented()
 
     # I/O
+    @abstractmethod
     def save(self, path):
         self._not_implemented()
 
+    @abstractmethod
     def write(self, f):
         self._not_implemented()
 
     # Used by normalisers
+    @abstractmethod
     def to_datetime(self):
         self._not_implemented()
 
+    @abstractmethod
     def to_datetime_list(self):
         self._not_implemented()
 
+    @abstractmethod
     def to_bounding_box(self):
         self._not_implemented()
 
     # For machine learning
+    @abstractmethod
     def statistics(self):
         self._not_implemented()
 

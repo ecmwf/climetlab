@@ -22,28 +22,16 @@ except ImportError:
     from tqdm import tqdm  # noqa F401
 
 
-def download_and_cache(
-    url: str,
-    update_if_out_of_date=False,
-    return_none_on_404=False,
-    **kwargs,
-) -> str:
-    """[summary]
-
-    :param url: [description]
-    :type url: str
-    :return: [description]
-    :rtype: str
-    """
-    from climetlab import load_source
+def download_and_cache(url, return_none_on_404=False, **kwargs):
+    from climetlab.sources.url import download_and_cache
 
     try:
-        return load_source("url", url, **kwargs).path
+        return download_and_cache(url, **kwargs)
     except requests.HTTPError as e:
         if return_none_on_404:
             if e.response is not None and e.response.status_code == 404:
                 return None
-        raise e
+        raise
 
 
 def get_json(url: str, cache=False):
@@ -165,3 +153,17 @@ def load_json_or_yaml(path):
         raise ValueError(
             f"Cannot read file {path}. Need json or yaml with appropriate extension."
         )
+
+
+def progress_bar(*, total=None, iterable=None, initial=0, desc=None):
+    return tqdm(
+        iterable=iterable,
+        total=total,
+        initial=initial,
+        unit_scale=True,
+        unit_divisor=1024,
+        unit="B",
+        disable=False,
+        leave=False,
+        desc=desc,
+    )

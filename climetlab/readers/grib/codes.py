@@ -8,14 +8,13 @@
 #
 
 import datetime
-import json
 import logging
 import os
+import threading
 
 import eccodes
 
 from climetlab.core import Base
-from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
 
@@ -64,7 +63,7 @@ FORCED_VALUES = {}
 
 
 # This does not belong here, should be in the C library
-def _get_message_offsets(path):
+def get_messages_positions(path):
 
     fd = os.open(path, os.O_RDONLY)
     try:
@@ -157,7 +156,12 @@ class CodesHandle:
         self.offset = offset
 
     def __del__(self):
-        eccodes_codes_release(self.handle)
+        try:
+            eccodes_codes_release(self.handle)
+        except TypeError:
+            # This happens when eccodes is unloaded before
+            # this object is deleted
+            pass
 
     def get(self, name):
         # LOG.warn(str(self) + str(name))
@@ -196,13 +200,24 @@ class CodesHandle:
 class CodesReader:
     def __init__(self, path):
         self.path = path
-        self.file = open(self.path, "rb")
+        self.lock = threading.Lock()
+        self._files = {}
+
+    @property
+    def file(self):
+        with self.lock:
+            thread = threading.current_thread()
+            f = self._files.get(thread)
+            if f is None:
+                f = self._files[thread] = open(self.path, "rb")
+            return f
 
     def __del__(self):
-        try:
-            self.file.close()
-        except Exception:
-            pass
+        for f in self._files.values():
+            try:
+                f.close()
+            except Exception:
+                pass
 
     def at_offset(self, offset):
         self.file.seek(offset, 0)
@@ -362,6 +377,9 @@ class GribField(Base):
             name = "paramId"
         return self.handle.get(name)
 
+    def metadata(self, name):
+        return self[name]
+
     def __getitem__(self, name):
         """For cfgrib"""
         if name in FORCED_VALUES:
@@ -384,67 +402,3 @@ class GribField(Base):
 
     def write(self, f):
         f.write(self._reader.read(self._offset, self._length))
-
-
-class GribIndex:
-
-    VERSION = 1
-
-    def __init__(self, path):
-        assert isinstance(path, str), path
-        self.path = path
-        self.offsets = None
-        self.lengths = None
-        self.cache = auxiliary_cache_file(
-            "grib-index",
-            path,
-            content="null",
-            extension=".json",
-        )
-
-        if not self._load_cache():
-            self._build_index()
-
-    def _build_index(self):
-
-        offsets = []
-        lengths = []
-
-        for offset, length in _get_message_offsets(self.path):
-            offsets.append(offset)
-            lengths.append(length)
-
-        self.offsets = offsets
-        self.lengths = lengths
-
-        self._save_cache()
-
-    def _save_cache(self):
-        try:
-            with open(self.cache, "w") as f:
-                json.dump(
-                    dict(
-                        version=self.VERSION,
-                        offsets=self.offsets,
-                        lengths=self.lengths,
-                    ),
-                    f,
-                )
-        except Exception:
-            LOG.exception("Write to cache failed %s", self.cache)
-
-    def _load_cache(self):
-        try:
-            with open(self.cache) as f:
-                c = json.load(f)
-                if not isinstance(c, dict):
-                    return False
-
-                assert c["version"] == self.VERSION
-                self.offsets = c["offsets"]
-                self.lengths = c["lengths"]
-                return True
-        except Exception:
-            LOG.exception("Load from cache failed %s", self.cache)
-
-        return False

@@ -6,12 +6,12 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import functools
 import inspect
 import logging
 import os
 import re
 import threading
-from functools import wraps
 
 from climetlab.utils import load_json_or_yaml
 from climetlab.utils.availability import Availability
@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 def dict_args(func):
-    @wraps(func)
+    @functools.wraps(func)
     def wrapped(*args, **kwargs):
         m = []
         p = {}
@@ -39,7 +39,7 @@ LOCK = threading.RLock()
 
 
 def locked(func):
-    @wraps(func)
+    @functools.wraps(func)
     def wrapped(*args, **kwargs):
         with LOCK:
             return func(*args, **kwargs)
@@ -72,7 +72,7 @@ class Decorator:
 
         manager = InputManager(decorators=decorators)
 
-        @wraps(unwrapped)
+        @functools.wraps(unwrapped)
         def newfunc(*args, **kwargs):
             args, kwargs = manager.apply_to_arg_kwargs(args, kwargs, func=unwrapped)
             return unwrapped(*args, **kwargs)
@@ -95,14 +95,17 @@ OPTIONS = {
 class alias_argument(Decorator):
     def __init__(
         self,
-        name=None,
-        lst=None,
+        target=None,
+        aliases=None,
         **kwargs,
     ):
-        if name is not None:
-            assert lst is not None
+        """target: actual argument name in the function to decorate.
+        aliases: str or list of str to create aliases to target.
+        """
+        if target is not None:
+            assert aliases is not None
             assert not kwargs
-            kwargs = {name: lst}
+            kwargs = {target: aliases}
 
         for k, v in kwargs.items():
             if isinstance(v, (list, tuple)):
@@ -194,3 +197,15 @@ class availability(Decorator):
 
     def register(self, manager):
         manager.register_availability(self)
+
+
+def cached_method(method):
+    name = f"_{method.__name__}"
+
+    @functools.wraps(method)
+    def wrapped(self):
+        if getattr(self, name, None) is None:
+            setattr(self, name, method(self))
+        return getattr(self, name)
+
+    return wrapped

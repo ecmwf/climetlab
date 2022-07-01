@@ -193,11 +193,14 @@ class CheckCmd:
         return modules
 
     @parse_args(
-        modules=dict(
-            metavar="PACKAGE",
-            type=str,
-            nargs="*",
-            help="optional list of Python packages",
+        modules=(
+            "modules",
+            dict(
+                metavar="PACKAGE",
+                type=str,
+                nargs="*",
+                help="optional list of Python packages",
+            ),
         ),
         json=dict(action="store_true", help="produce a JSON output"),
         all=dict(action="store_true"),

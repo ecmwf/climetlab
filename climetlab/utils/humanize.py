@@ -221,8 +221,8 @@ def string_distance(s, t):
     n = len(t)
     d = np.zeros((m + 1, n + 1), dtype=int)
 
-    one = np.int(1)
-    zero = np.int(0)
+    one = int(1)
+    zero = int(0)
 
     d[:, 0] = np.arange(m + 1)
     d[0, :] = np.arange(n + 1)

@@ -8,80 +8,26 @@
 #
 
 import json
+import logging
 import os
 
-import climetlab as cml
+from climetlab.readers.grib import _index_path, _index_url, _parse_files
 
 from .tools import parse_args
 
-
-def _index_grib_file(path, path_name=None):
-    import eccodes
-
-    with open(path, "rb") as f:
-
-        h = eccodes.codes_grib_new_from_file(f)
-
-        while h:
-            try:
-                field = dict()
-
-                if isinstance(path_name, str):
-                    field["_path"] = path_name
-                elif path_name is False:
-                    pass
-                elif path_name is None:
-                    field["_path"] = path
-                else:
-                    raise ValueError(f"Value of path_name cannot be '{path_name}.'")
-
-                i = eccodes.codes_keys_iterator_new(h, "mars")
-                try:
-                    while eccodes.codes_keys_iterator_next(i):
-                        name = eccodes.codes_keys_iterator_get_name(i)
-                        value = eccodes.codes_get_string(h, name)
-                        field[name] = value
-
-                finally:
-                    eccodes.codes_keys_iterator_delete(i)
-
-                field["_offset"] = eccodes.codes_get_long(h, "offset")
-                field["_length"] = eccodes.codes_get_long(h, "totalLength")
-
-                field["_param_id"] = eccodes.codes_get_string(h, "paramId")
-                field["param"] = eccodes.codes_get_string(h, "shortName")
-
-                yield field
-
-            finally:
-                eccodes.codes_release(h)
-
-            h = eccodes.codes_grib_new_from_file(f)
-
-
-def _index_url(path_name, url):
-    path = cml.load_source("url", url).path
-    # TODO: or use download_and_cache?
-    # path = download_and_cache(url)
-    yield from _index_grib_file(path, path_name=path_name)
-
-
-def _index_path(path):
-    if os.path.isdir(path):
-        for root, _, files in os.walk(path):
-            for name in files:
-                yield from _index_grib_file(os.path.join(root, name))
-    else:
-        yield from _index_grib_file(path)
+LOG = logging.getLogger(__name__)
 
 
 class GribCmd:
     @parse_args(
-        paths_or_urls=dict(
-            metavar="PATH_OR_URL",
-            type=str,
-            nargs="+",
-            help="list of files or directories or urls to index",
+        paths_or_urls=(
+            None,
+            dict(
+                metavar="PATH_OR_URL",
+                type=str,
+                nargs="+",
+                help="list of files or directories or urls to index",
+            ),
         ),
         # json=dict(action="store_true", help="produce a JSON output"),
         baseurl=dict(
@@ -109,3 +55,100 @@ class GribCmd:
 
             for e in entries:
                 print(json.dumps(e))
+
+    @parse_args(
+        directory=(None, dict(help="Directory containing the GRIB files to index.")),
+        # format=dict(
+        #    default="sql",
+        #    metavar="FORMAT",
+        #    type=str,
+        #    help="sql or json or stdout.",
+        # ),
+        force=dict(action="store_true", help="overwrite existing index."),
+        output=(
+            "--output",
+            dict(
+                help="Custom location of the database file, will write absolute filenames in the database."
+            ),
+        ),
+    )
+    def do_index_directory(self, args):
+        """Index a directory containing GRIB files."""
+        directory = args.directory
+        db_path = args.output
+        force = args.force
+
+        assert os.path.isdir(directory), directory
+
+        from climetlab.sources.directory import DirectorySource
+
+        if db_path is None:
+            db_path = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+            relative_paths = True
+        else:
+            relative_paths = False
+
+        def check_overwrite(filename):
+            if not os.path.exists(filename):
+                return
+            if force:
+                print(f"File {filename} already exists, overwriting it.")
+                os.unlink(filename)
+                return
+            raise Exception(
+                f"ERROR: File {filename} already exists (use --force to overwrite)."
+            )
+
+        check_overwrite(db_path)
+
+        _index_directory(directory, db_path=db_path, relative_paths=relative_paths)
+
+    @parse_args(
+        filename=(None, dict(help="Database filename.")),
+    )
+    def do_dump_index(self, args):
+        from climetlab.indexing.database.sql import SqlDatabase
+
+        db = SqlDatabase(db_path=args.filename)
+        for d in db.dump_dicts():
+            print(json.dumps(d))
+
+
+def _index_directory(directory, db_path, relative_paths):
+    from climetlab.indexing.database.sql import SqlDatabase
+    from climetlab.sources.directory import DirectorySource
+
+    ignore = [
+        DirectorySource.DEFAULT_DB_FILE,
+        DirectorySource.DEFAULT_JSON_FILE,
+        db_path,
+    ]
+    db = SqlDatabase(db_path)
+    iterator = _parse_files(directory, ignore=ignore, relative_paths=relative_paths)
+    db.load(iterator)
+    # TODO: print(f"Found {len(s)} fields in {directory}")
+    return
+
+    # TODO: do json output too.
+
+    # def do_sql():
+    #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+    #     if origin_db_path == filename:
+    #         return
+    #     check_overwrite(filename)
+    #     print(f"Writing index in {filename}")
+    #     db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
+
+    # def do_json():
+    #     filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
+    #     check_overwrite(filename)
+    #     print(f"Writing index in {filename}")
+    #     with open(filename, "w") as f:
+    #         for d in db.dump_dicts(relative_paths=True, base_dir=directory):
+    #             print(json.dumps(d), file=f)
+
+    # do = {"sql": do_sql, "json": do_json}[args.format]
+    # try:
+    #     do()
+    # except AlreadyExistsError as e:
+    #     print(e)

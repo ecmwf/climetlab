@@ -9,13 +9,19 @@
 
 import datetime
 import json
+import logging
+import os
+import shutil
 
 from termcolor import colored
 
+from climetlab.core.settings import SETTINGS
 from climetlab.utils import humanize
 from climetlab.utils.dates import to_datetime
 
 from .tools import parse_args, print_table
+
+LOG = logging.getLogger(__name__)
 
 EPILOG = """
 SIZE can be expressed using suffixes such a K, M, G, etc. For example
@@ -308,6 +314,144 @@ class CacheCmd:
                 "red",
             )
         )
+
+    @parse_args(
+        directory=(
+            None,
+            dict(
+                type=str,
+                metavar="DIRECTORY",
+                help="Output directory where to copy the cache content.",
+            ),
+        ),
+        **MATCHER,
+        permissions=dict(
+            type=str,
+            help="""
+            By default, the exported data is public and writable by its owner.
+            read-only: Make the data public and read only.
+            disabled: do not tweak the files or directories permissions.
+            """,
+        ),
+    )
+    def do_export_cache(self, args):
+        """
+        Copy part of the cache content to a directory.
+        """
+        import stat
+
+        from climetlab.core.caching import dump_cache_database
+
+        directory = args.directory
+
+        def permissions(perms):
+            if perms:
+                perms = perms.replace("-", "").replace("_", "")
+
+            def make_directory_writeable():
+                mode = os.stat(directory).st_mode
+                os.chmod(directory, stat.S_IWUSR | stat.S_IXUSR | mode)
+
+            def check_readable():
+                st = os.stat(directory)
+                if not bool(st.st_mode & stat.S_IROTH):
+                    LOG.warning(
+                        f"The directory {directory} is not readable by others. Please make sure this is what you want."
+                    )
+
+            if perms == "readonly":
+                return (0o555, 0o444, [make_directory_writeable, check_readable])
+
+            if perms == "disabled":
+                return (False, False, [])
+
+            if perms is None:  # default
+                return (0o755, 0o644, [make_directory_writeable, check_readable])
+
+            raise ValueError(perms)
+
+        permissions_dirs, permissions_files, finalize = permissions(args.permissions)
+
+        class Dirs:
+            def __init__(self):
+                self.new_dirs = []
+
+            def append(self, d):
+                if d in self.new_dirs:
+                    return
+                if not d:
+                    return
+                if os.path.exists(d) and os.path.isdir(d):
+                    return
+                parent = os.path.dirname(d)
+                self.append(parent)
+
+                os.mkdir(d)
+                self.new_dirs.append(d)
+
+            def update_permission_dirs(self, perms):
+                # order may matter:
+                # self.new_dirs = sorted(self.new_dirs)
+                for d in self.new_dirs:
+                    os.chmod(d, perms)
+
+        new_dirs = Dirs()
+
+        new_dirs.append(directory)
+
+        matcher = Matcher(args)
+        if not matcher.undefined:
+            message = humanize.list_to_human(matcher.message)
+            print(colored(f"Copying cache entries {message} to {directory}.", "green"))
+
+        cache = dump_cache_database(matcher=matcher)
+
+        def filter(entry):
+            if "path" not in entry:
+                print(f"No path. Cannot copy {entry}")
+                return False
+            # path = entry["path"]
+            if entry.get("owner") == "grib-index":
+                return False
+            return True
+
+        cache_dir = SETTINGS.get("cache-directory")
+
+        def copy(path, dest):
+            path_display = path.replace(cache_dir, "CACHE:")
+            LOG.debug(f"Copying {path_display} to {dest}")
+            print(f"Copying {path} to {dest}")
+
+            if os.path.isdir(path):
+                shutil.copytree(path, dest)
+                new_dirs.append(dest)
+            else:
+                shutil.copy2(path, dest)
+                if permissions_files:
+                    os.chmod(dest, permissions_files)
+
+        for entry in cache:
+            if not filter(entry):
+                continue
+
+            path = entry["path"]
+
+            assert os.path.dirname(path) == cache_dir, path
+            basename = os.path.basename(path)
+            dest = os.path.join(directory, basename)
+
+            new_dirs.append(os.path.dirname(dest))
+
+            copy(path, dest)
+
+        if permissions_dirs:
+            LOG.info("All entries copied. Now setting permissions.")
+            new_dirs.update_permission_dirs(permissions_dirs)
+
+        print(colored(f"Copied {len(cache)} cache entries to {directory}.", "green"))
+
+        for f in finalize:
+            f()
 
 
 CacheCmd.do_decache.__doc__ += "Hello"

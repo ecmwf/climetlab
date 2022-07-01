@@ -7,12 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import functools
 import getpass
 import logging
 import os
 import tempfile
 from contextlib import contextmanager
-from functools import wraps
 from typing import Callable
 
 import yaml
@@ -151,7 +151,7 @@ def new_settings(s):
 
 
 def forward(func):
-    @wraps(func)
+    @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         if self._stack:
             return func(self._stack[-1], *args, **kwargs)

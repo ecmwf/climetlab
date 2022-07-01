@@ -166,3 +166,5 @@ test
 *.grib2
 benchmark.json
 *.h5
+*.grib
+tempCodeRunnerFile.py

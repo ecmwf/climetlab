@@ -55,5 +55,6 @@
         "latex",
         "plaintext"
     ],
-    "restructuredtext.confPath": "${workspaceFolder}/docs"
+    "restructuredtext.confPath": "${workspaceFolder}/docs",
+    "esbonio.sphinx.confDir": "${workspaceFolder}/docs"
 }

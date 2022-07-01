@@ -74,6 +74,12 @@ def _annotation_xarray(xr):
     return xr.climetlab._metadata
 
 
+def _annotation_numpy(array):
+    # TODO
+    # See https://numpy.org/doc/stable/user/basics.subclassing.html
+    pass
+
+
 def annotate(obj, owner, **kwargs):
     if hasattr(obj, "_metadata"):
         _annotate_pandas(obj, owner, **kwargs)

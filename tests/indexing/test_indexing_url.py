@@ -13,10 +13,10 @@ import time
 
 import pytest
 
-from climetlab import load_source
-from climetlab.datasets import Dataset
+from climetlab import Dataset, load_source, settings
+from climetlab.core.temporary import temp_directory
 from climetlab.decorators import normalize
-from climetlab.indexing import GlobalIndex, PerUrlIndex
+from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
@@ -28,6 +28,11 @@ CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 #  climetlab index_gribs $BASEURL/large_grib_1.grb > large_grib_1.grb.index
 #  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
 #  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
+
+
+def check(ds, i, ref):
+    mean = ds[i].to_numpy().mean()
+    assert abs(mean - ref) < 1e-6, (mean, ref)
 
 
 @pytest.mark.long_test
@@ -46,7 +51,15 @@ def test_indexed_s3(baseurl):
         )
         def __init__(self, option="abc", **request):
             self.source = load_source(
-                "indexed-urls", PER_URL_INDEX, request, range_method="auto"
+                "indexed-urls",
+                PER_URL_INDEX,
+                request,
+            )
+
+            self.source = load_source(
+                "indexed-urls",
+                baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
+                request,
             )
 
     a = Mydataset(
@@ -66,13 +79,17 @@ def test_indexed_s3(baseurl):
             "n": ["1", "2"],
         }
     )
+    check(a, 0, 49.86508481081071)
     ds = a.to_xarray()
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
+def retrieve_and_check_url(*args, **kwargs):
+    load_source(*args, **kwargs)
+
+
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    # parts = index.lookup_request(request)
     print("range_method", range_method)
     print("REQUEST", request)
     #    for url, p in parts:
@@ -80,21 +97,27 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     #        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
-    s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
+    s = load_source(  # noqa F841
+        "indexed-urls",
+        index,
+        request,
+        range_method=range_method,
+        **kwargs,
+    )
     elapsed = time.time() - now
-    print("ELAPSED", elapsed)
-    try:
-        paths = [s.path]
-    except AttributeError:
-        paths = [p.path for p in s.sources]
+    # print("ELAPSED", elapsed)
+    # try:
+    #     paths = [s.path]
+    # except AttributeError:
+    #     paths = [p.path for p in s.sources]
 
-    for path in paths:
-        # check that the downloaded gribs match the request
-        for grib in load_source("file", path):
-            for k, v in request.items():
-                if k == "param":
-                    k = "shortName"
-                assert check_grib_value(grib._get(k), v), (grib._get(k), v)
+    # for path in paths:
+    #     # check that the downloaded gribs match the request
+    #     for grib in load_source("file", path):
+    #         for k, v in request.items():
+    #             if k == "param":
+    #                 k = "shortName"
+    #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
     return elapsed
 
 
@@ -111,14 +134,33 @@ def check_grib_value(value, requested):
 @pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_global_index(baseurl):
+    with temp_directory() as tmpdir:
+        with settings.temporary():
+            settings.set("cache-directory", tmpdir)
 
-    index = GlobalIndex(
-        f"{baseurl}/test-data/input/indexed-urls/global_index.index",
-        baseurl=f"{baseurl}/test-data/input/indexed-urls",
-    )
+            print(f"{baseurl}/test-data/input/indexed-urls/global_index.index")
+            s = load_source(
+                "indexed-url",
+                f"{baseurl}/test-data/input/indexed-urls/global_index.index",
+                # baseurl=f"{baseurl}/test-data/input/indexed-urls",
+                param="r",
+                time="1000",
+                date="19970101",
+                index_type="json",
+                # db_path='./here.json'
+            )
+            for _ in s:
+                print(_)
+                break
+            s.to_xarray()
 
-    request = dict(param="r", time="1000", date="19970101")
-    retrieve_and_check(index, request)
+            # for path in paths:
+            #     # check that the downloaded gribs match the request
+            #     for grib in load_source("file", path):
+            #         for k, v in request.items():
+            #             if k == "param":
+            #                 k = "shortName"
+            #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
 
 
 @pytest.mark.long_test
@@ -219,14 +261,20 @@ def test_grib_index_eumetnet():
     }
     PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
     ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
+    assert len(ds) == 7, len(ds)
+    check(ds, 0, -0.16334878510300832)
+    check(ds, 1, -0.06413754859021915)
+    check(ds, 2, 0.23404628380396034)
+    check(ds, 3, 0.3207112379535552)
     xds = ds.to_xarray()
     print(xds)
 
 
 if __name__ == "__main__":
-    # test_global_index(CML_BASEURL_CDS)
-    # test_indexed_s3(CML_BASEURL_S3)
+    # test_per_url_index(CML_BASEURL_CDS)
+    test_indexed_s3(CML_BASEURL_S3)
     # timing()
-    from climetlab.testing import main
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)
+    # test_grib_index_eumetnet()

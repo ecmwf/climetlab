@@ -13,12 +13,11 @@ import logging
 import math
 import warnings
 
+import numpy as np
+
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
-from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
-
-from .codes import CodesReader, GribField, GribIndex
 
 LOG = logging.getLogger(__name__)
 
@@ -61,69 +60,45 @@ def mix_kwargs(
     return kwargs
 
 
-class FieldAdapter:
-    def __init__(self, field, ignore_keys):
-        self.field = field
+class ItemWrapperForCfGrib:
+    def __init__(self, item, ignore_keys=[]):
+        self.item = item
         self.ignore_keys = ignore_keys
 
-    def __getitem__(self, name):
-        if name in self.ignore_keys:
+    def __getitem__(self, n):
+        if n in self.ignore_keys:
             return None
-        return self.field[name]
+        if n == "values":
+            return self.item.values
+        return self.item.metadata(n)
 
 
-class FieldsetAdapter:
-    def __init__(self, fieldset, ignore_keys):
-        self.fieldset = fieldset
+class IndexWrapperForCfGrib:
+    def __init__(self, index, ignore_keys=[]):
+        self.index = index
         self.ignore_keys = ignore_keys
 
     def __getitem__(self, n):
-        return FieldAdapter(self.fieldset[n], self.ignore_keys)
+        return ItemWrapperForCfGrib(self.index[n], ignore_keys=self.ignore_keys)
 
     def __len__(self):
-        return len(self.fieldset)
+        return len(self.index)
 
 
-class FieldSet(Source):
-    def __init__(self, *, paths=None, fields=None):
-        self._statistics = None
-        self.readers = {}
-        self.fields = []
-
-        if fields is not None:
-            if paths is not None:
-                raise Exception
-            self.fields = fields
-            return
-
-        if paths is not None:
-            if fields is not None:
-                raise Exception
-            if not isinstance(paths, (list, tuple)):
-                paths = [paths]
-            for path in paths:
-                index = GribIndex(path)
-                for offset, length in zip(index.offsets, index.lengths):
-                    self.fields.append((path, offset, length))
-
-    def reader(self, path):
-        if path not in self.readers:
-            self.readers[path] = CodesReader(path)
-        return self.readers[path]
-
-    def __getitem__(self, n):
-        path, offset, length = self.fields[n]
-        return GribField(self.reader(path), offset, length)
-
-    def __len__(self):
-        return len(self.fields)
+class FieldSet:
+    _statistics = None
 
     @property
     def first(self):
         return self[0]
 
     def to_tfdataset(
-        self, split=None, shuffle=None, normalize=None, batch_size=0, **kwargs
+        self,
+        split=None,
+        shuffle=None,
+        normalize=None,
+        batch_size=0,
+        **kwargs,
     ):
         # assert "label" in kwargs
         if "offset" in kwargs:
@@ -176,10 +151,15 @@ class FieldSet(Source):
         return tf.data.Dataset.from_generator(generate, dtype)
 
     def _to_tfdataset_supervised(self, label, **kwargs):
+
+        if isinstance(label, str):
+            label_ = label
+            label = lambda s: s.handle.get(label_)  # noqa: E731
+
         @call_counter
         def generate():
             for s in self:
-                yield s.to_numpy(), s.handle.get(label)
+                yield s.to_numpy(), label(s)
 
         import tensorflow as tf
 
@@ -196,6 +176,70 @@ class FieldSet(Source):
                 tf.TensorSpec(shape, dtype=dtype, name="data"),
                 tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
             ),
+        )
+
+    def to_pytorch(self, offset, data_loader_kwargs=None):
+        import torch
+
+        # sometimes (!) causes an Exception:
+        # gribapi.errors.UnsupportedEditionError: Edition not supported.
+        num_workers = 1
+
+        out = self._to_pytorch_wrapper_class()(self, offset)
+
+        DATA_LOADER_KWARGS_DEFAULT = dict(
+            batch_size=128,
+            # multi-process data loading
+            # use as many workers as you have cores on your machine
+            num_workers=num_workers,
+            # default: no shuffle, so need to explicitly set it here
+            shuffle=True,
+            # uses pinned memory to speed up CPU-to-GPU data transfers
+            # see https://pytorch.org/docs/stable/notes/cuda.html#cuda-memory-pinning
+            pin_memory=True,
+            # function used to collate samples into batches
+            # if None then Pytorch uses the default collate_fn (see below)
+            collate_fn=None,
+        )
+        data_loader_kwargs_ = {k: v for k, v in DATA_LOADER_KWARGS_DEFAULT.items()}
+        if data_loader_kwargs:
+            data_loader_kwargs_.update(data_loader_kwargs)
+
+        return torch.utils.data.DataLoader(out, **data_loader_kwargs_)
+
+    def _to_pytorch_wrapper_class(self):
+        import torch
+
+        class WrapperWeatherBenchDataset(torch.utils.data.Dataset):
+            def __init__(self, ds, offset) -> None:
+                super().__init__()
+                self.ds = ds
+                self.stats = ds.statistics()
+                self.offset = offset
+
+            def __len__(self):
+                """Returns the length of the dataset. This is important! Pytorch must know this."""
+                return len(self.ds) - self.offset
+                return self.ds.stats["count"] - self.ds.offset
+
+            def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
+                """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
+                # Q: if self is a iterator, would ds[i] read the data from 0 to i, just to provide i?
+
+                x, Y = (
+                    self.ds[i].to_numpy()[None, ...],
+                    self.ds[i + self.offset].to_numpy()[None, ...],
+                )
+                x = x.astype(np.float32)
+                Y = Y.astype(np.float32)
+                return x, Y
+
+        return WrapperWeatherBenchDataset
+
+    def xarray_open_dataset_kwargs(self):
+        return dict(
+            cache=True,  # Set to false to prevent loading the whole dataset
+            chunks=None,  # Set to 'auto' for lazy loading
         )
 
     def to_xarray(self, **kwargs):
@@ -228,10 +272,14 @@ class FieldSet(Source):
                 logging_owner="xarray_open_dataset_kwargs",
                 logging_main_key=key,
             )
+
+        default = dict(squeeze=False)  # TODO:Documenet me
+        default.update(self.xarray_open_dataset_kwargs())
+
         xarray_open_dataset_kwargs.update(
             mix_kwargs(
                 user=user_xarray_open_dataset_kwargs,
-                default={"squeeze": False},
+                default=default,
                 forced={
                     "errors": "raise",
                     "engine": "cfgrib",
@@ -240,7 +288,7 @@ class FieldSet(Source):
         )
 
         result = xr.open_dataset(
-            FieldsetAdapter(self, ignore_keys=ignore_keys),
+            IndexWrapperForCfGrib(self, ignore_keys=ignore_keys),
             **xarray_open_dataset_kwargs,
         )
 
@@ -382,10 +430,6 @@ class FieldSet(Source):
                 json.dump(self._statistics, f)
 
         return self._statistics
-
-    # def graph(self):
-    #     # Compatibility with multi
-    #     print("FieldSet.graph() not yet implemented")
 
     def save(self, filename):
         with open(filename, "wb") as f:

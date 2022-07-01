@@ -108,4 +108,4 @@ def test_bbox():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(__file__)
+    main()

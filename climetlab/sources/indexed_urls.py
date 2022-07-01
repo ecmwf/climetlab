@@ -7,48 +7,64 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab import load_source
-from climetlab.core.statistics import record_statistics
+import warnings
 
-from .multi import MultiSource
+from climetlab.indexing import PerUrlIndex
+from climetlab.readers.grib.index import MultiGribIndex, SqlIndex
+from climetlab.sources.indexed import IndexedSource
+from climetlab.utils.patterns import Pattern
 
 
-class IndexedUrls(MultiSource):
+class IndexedUrls(IndexedSource):
     def __init__(
         self,
-        index,
+        pattern,
         request,
-        *args,
-        filter=None,
-        merger=None,
-        force=None,
+        substitute_extension=False,
+        index_extension=".index",
+        range_method=None,
         **kwargs,
     ):
+        if isinstance(pattern, PerUrlIndex):
+            warnings.warn(
+                "Passing a PerUrlIndex object is obsolete, please update your code."
+            )
+            # substitute_extension = pattern.substitute_extension
+            index_extension = pattern.index_extension
+            pattern = pattern.pattern
 
-        urls_parts = index.lookup_request(request)
-        record_statistics(
-            "indexed-urls",
-            request=str(request),
+        print("PATTERN", pattern)
+        pattern = Pattern(pattern, ignore_missing_keys=True)
+        urls = pattern.substitute(**request)
+        if not isinstance(urls, list):
+            urls = [urls]
+
+        request = dict(**request)  # deepcopy to avoid changing the user's request
+        for used in pattern.names:
+            # consume arguments used by Pattern to build the urls
+            # This is to avoid keeping them on the request
+            request.pop(used)
+
+        def add_path(url):
+            def wrapped(entry):
+                entry["_path"] = url
+
+            return wrapped
+
+        def index_url(url):
+            # TODO: implement
+            return url + index_extension
+
+        index = MultiGribIndex(
+            SqlIndex.from_url(
+                index_url(url),
+                selection=request,
+                patch_entry=add_path(url),
+            )
+            for url in urls
         )
 
-        sources = []
-        for url, parts in urls_parts:
-            source = load_source(
-                "url",
-                url=url,
-                parts=parts,
-                filter=filter,
-                merger=merger,
-                force=force,
-                # Load lazily so we can do parallel downloads
-                # lazily=True,
-                **kwargs,
-            )
-            sources.append(source)
-        if not sources:
-            raise ValueError("Empty request: no match.")
-
-        super().__init__(sources, filter=filter, merger=merger)
+        super().__init__(index, **kwargs)
 
 
 source = IndexedUrls

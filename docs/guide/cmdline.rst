@@ -1,7 +1,8 @@
 Command line tool
 =================
 
-Installing climetlab also make available the ``climetlab`` utility command line interface.
+Installing climetlab also make available the ``climetlab`` utility
+command line interface.
 
 Usage
 ------
@@ -31,3 +32,4 @@ prompt. To exit the interactive prompt use Control+D.
 
 
 .. module-output:: generate_cmdline_help
+

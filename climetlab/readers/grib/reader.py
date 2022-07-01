@@ -9,18 +9,18 @@
 
 import logging
 
-from .. import Reader
-from .fieldset import FieldSet
+from climetlab.readers import Reader
+from climetlab.readers.grib.index import GribFileIndex, MultiGribIndex
 
 LOG = logging.getLogger(__name__)
 
 
-class GRIBReader(FieldSet, Reader):
+class GRIBReader(GribFileIndex, Reader):
     appendable = True  # GRIB messages can be added to the same file
 
     def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        FieldSet.__init__(self, paths=[path])
+        GribFileIndex.__init__(self, path)
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -31,4 +31,4 @@ class GRIBReader(FieldSet, Reader):
         assert all(isinstance(s, GRIBReader) for s in readers), readers
         assert len(readers) > 1
 
-        return FieldSet(paths=[r.path for r in readers])
+        return MultiGribIndex(readers)
