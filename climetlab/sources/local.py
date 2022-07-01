@@ -26,7 +26,8 @@ class LocalSource(FieldSet):
 
     def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
         self.path = path
-        self._index_file = os.path.join(path, "climetlab.index")
+        self.abspath = os.path.abspath(path)
+        self._index_file = os.path.join(self.abspath, "climetlab.index")
         self._index = None
         self.filter = filter
         self.merger = merger
@@ -70,10 +71,10 @@ class LocalSource(FieldSet):
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
-        path = getattr(self, "path", None)
+        path = self.path
         if isinstance(path, str):
             path = path.replace(cache_dir, "CACHE:")
-        return f"{self.__class__.__name__}({path})"
+        return f"{self.__class__.__name__}({path}, {self.abspath})"
 
     def _create_index(self):
         assert os.path.isdir(self.path)
@@ -81,9 +82,14 @@ class LocalSource(FieldSet):
             for name in files:
                 if name == "climetlab.index":
                     continue
-                p = os.path.join(root, name)
-                # p = os.path.relpath(name, start = self.path)
-                yield from _index_grib_file(p)
+                # print('---')
+                # print(name)
+                p = os.path.abspath(os.path.join(root, name))
+                # print(name)
+                # name = os.path.relpath(name, start = self.abspath)
+                # print(name)
+                # print('*')
+                yield from _index_grib_file(p, path_name=name)
 
     @property
     def index(self):
@@ -94,7 +100,9 @@ class LocalSource(FieldSet):
 
         if os.path.exists(self._index_file):
             # TODO: adapt GlobalIndex to process files.
-            self._index = GlobalIndex(self._index_file, baseurl="file:")
+            self._index = GlobalIndex(
+                self._index_file, baseurl="file://" + self.abspath
+            )
             return self._index
 
         print("Creating index for", self.path, " into ", self._index_file)

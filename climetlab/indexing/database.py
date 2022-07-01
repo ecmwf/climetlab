@@ -199,8 +199,14 @@ class SqlDatabase(Database):
             else:
                 conditions.append(f"i_{k}='{b}'")
 
-        statement = f"SELECT path,offset,length FROM entries WHERE {' AND '.join(conditions)} ORDER BY offset;"
+        conditions_str = ""
+        if conditions:
+            conditions_str = " WHERE " + " AND ".join(conditions)
+        statement = (
+            f"SELECT path,offset,length FROM entries {conditions_str} ORDER BY offset;"
+        )
 
+        LOG.debug(statement)
         parts = []
         for path, offset, length in self.connection.execute(statement):
             parts.append((path, (offset, length)))
