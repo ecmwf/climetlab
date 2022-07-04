@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 # TODO: rename 'local' to a more meaningful name
-class LocalSource(FieldSet):
+class IndexedSource(FieldSet):
 
     _reader_ = None
 
@@ -57,6 +57,7 @@ class LocalSource(FieldSet):
         # self.source = load_source("indexed-urls", self.index, kwargs)
         fields = []
         for path, parts in self.index.lookup_request(kwargs):
+            assert path[:5] == "file:", path
             path = path[5:]  # hack to remove 'file:'
             for offset, length in parts:
                 fields.append((path, offset, length))
@@ -117,4 +118,4 @@ class LocalSource(FieldSet):
         return self.index
 
 
-source = LocalSource
+source = IndexedSource
