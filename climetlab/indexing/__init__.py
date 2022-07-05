@@ -22,6 +22,37 @@ class Index:
         self._backend_constructor = backend
 
 
+class DirectoryGlobalIndex(Index):
+    def __init__(self, index_location, path, backend=None) -> None:
+        super().__init__(backend=backend)
+        self.path = path
+        self.backend = self._backend_constructor(index_location)
+
+    def get_backend(self, url=None):
+        return self.backend
+
+    def lookup_request(self, request):
+        dic = defaultdict(list)
+
+        # group parts by url
+        for path, parts in self.backend.lookup(request):
+            url = f"{self.path}/{path}"
+            dic[url].append(parts)
+
+        # and sort
+        dic = {url: sorted(parts) for url, parts in dic.items()}
+
+        urls_parts = [(k, v) for k, v in dic.items()]
+        return urls_parts
+
+    def lookup_request_alt(self, request):
+        urls_parts = []
+        for path, parts in self.backend.lookup(request):
+            url = f"{self.path}/{path}"
+            urls_parts.append((url, [parts]))
+        return urls_parts
+
+
 class GlobalIndex(Index):
     def __init__(self, index_location, baseurl, backend=None) -> None:
         """The GloblaIndex has one index managing multiple urls/files.

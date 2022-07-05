@@ -12,6 +12,7 @@ import json
 import logging
 import os
 
+import numpy as np
 from tqdm import tqdm
 
 from climetlab.core.settings import SETTINGS
@@ -34,7 +35,7 @@ class IndexedSource(FieldSet):
     def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
         self.path = path
         self.abspath = os.path.abspath(path)
-        self._index_file = os.path.join(self.abspath, "climetlab.index")
+        self._climetlab_index_file = os.path.join(self.abspath, "climetlab.index")
         self._index = None
         self.filter = filter
         self.merger = merger
@@ -47,42 +48,42 @@ class IndexedSource(FieldSet):
                 assert k not in kwargs, f"Duplicated key {k}={v} and {k}={kwargs[k]}"
                 kwargs[k] = v
 
-        PARAMS_ALIASES = {
-            "level": "levelist",
-            "klass": "class",
-            "parameter": "param",
-            "variable": "param",
-            "realization": "number",
-        }
-        for k, target in PARAMS_ALIASES.items():
-            if k not in kwargs:
-                continue
-            assert target not in kwargs, (k, target)
-            kwargs[target] = kwargs[k]
-            del kwargs[k]
+        self.kwargs_selection = kwargs
 
-        # self.source = load_source("indexed-urls", self.index, kwargs)
-        fields = []
-        for path, parts in self.index.lookup_request(kwargs):
+        fields = self.kwargs_to_fields(kwargs)
+        LOG.debug("Got iterator")
+        fields = list(fields)
+        LOG.debug("Transformed into list")
+        super().__init__(fields=fields)
+
+    def kwargs_to_fields(self, kwargs):
+        for path, parts in tqdm(self.index.lookup_request(kwargs)):
             assert path[:5] == "file:", path
             path = path[5:]  # hack to remove 'file:'
             for offset, length in parts:
-                fields.append((path, offset, length))
+                yield (path, offset, length)
 
-        super().__init__(fields=fields)
-
-    # def __len__(self):
-    #     return len(self.source)
-
-    # def to_xarray(self):
-    #     return self.source.to_xarray()
+    def sel(self, **kwargs):
+        new_kwargs = {k: v for k, v in self.kwargs_selection.items()}
+        new_kwargs.update(kwargs)
+        return IndexedSource(
+            self.path, filter=self.filter, merger=self.merger, **new_kwargs
+        )
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
-        path = self.path
+        if hasattr(self, "path"):
+            path = self.path
+        else:
+            path = "..."
+        if hasattr(self, "abspath"):
+            abspath = self.abspath
+        else:
+            abspath = "..."
+
         if isinstance(path, str):
             path = path.replace(cache_dir, "CACHE:")
-        return f"{self.__class__.__name__}({path}, {self.abspath})"
+        return f"{self.__class__.__name__}({path}, {abspath})"
 
     def _create_index(self):
         assert os.path.isdir(self.path)
@@ -98,25 +99,93 @@ class IndexedSource(FieldSet):
         if self._index is not None:
             return self._index
 
-        from climetlab.indexing import GlobalIndex
+        from climetlab.indexing import DirectoryGlobalIndex
 
-        if os.path.exists(self._index_file):
-            # TODO: adapt GlobalIndex to process files.
-            self._index = GlobalIndex(
-                self._index_file, baseurl="file://" + self.abspath
+        if os.path.exists(self._climetlab_index_file):
+            self._index = DirectoryGlobalIndex(
+                self._climetlab_index_file, path="file://" + self.abspath
             )
             return self._index
 
-        print("Creating index for", self.path, " into ", self._index_file)
+        print("Creating index for", self.path, " into ", self._climetlab_index_file)
         entries = self._create_index()
         # TODO: create .tmp file and move it (use cache_file)
-        with open(self._index_file, "w") as f:
+        with open(self._climetlab_index_file, "w") as f:
             for e in entries:
                 json.dump(e, f)
                 print("", file=f)
 
-        print("Created index file", self._index_file)
+        print("Created index file", self._climetlab_index_file)
         return self.index
+
+    def to_pytorch(self, offset, data_loader_kwargs=None):
+        import torch
+
+        # Settings num_workers > 1 sometimes lead to GRIB read error
+        #   line 382, in raise_grib_error raise ERROR_MAP[errid](errid) gribapi.errors.UnsupportedEditionError: Edition not supported.
+        # Will work on it if speed is needed.
+        num_workers = 10
+
+        out = get_wrapper_class()(self, offset)
+
+        DATA_LOADER_KWARGS_DEFAULT = dict(
+            batch_size=128,
+            # multi-process data loading
+            # use as many workers as you have cores on your machine
+            num_workers=num_workers,
+            # default: no shuffle, so need to explicitly set it here
+            shuffle=True,
+            # uses pinned memory to speed up CPU-to-GPU data transfers
+            # see https://pytorch.org/docs/stable/notes/cuda.html#cuda-memory-pinning
+            pin_memory=True,
+            # function used to collate samples into batches
+            # if None then Pytorch uses the default collate_fn (see below)
+            collate_fn=None,
+        )
+        data_loader_kwargs_ = {k: v for k, v in DATA_LOADER_KWARGS_DEFAULT.items()}
+        if data_loader_kwargs:
+            data_loader_kwargs_.update(data_loader_kwargs)
+
+        return torch.utils.data.DataLoader(out, **data_loader_kwargs_)
+
+
+global WRAPPER
+WRAPPER = None
+
+
+def get_wrapper_class():
+    global WRAPPER
+    if WRAPPER is not None:
+        return WRAPPER
+    import torch
+
+    class WrapperWeatherBenchDataset(torch.utils.data.Dataset):
+        def __init__(self, ds, offset) -> None:
+            super().__init__()
+
+            self.ds = ds
+
+            self.stats = self.ds.statistics()
+            self.offset = offset
+
+        def __len__(self):
+            """Returns the length of the dataset. This is important! Pytorch must know this."""
+            return self.stats["count"] - self.offset
+
+        def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
+            # Q: if ds[i] is a iterator, would ds[i] read the data from 0 to i, just to provide i?
+            """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
+            # print('getting',i)
+            x, Y = (
+                self.ds[i].to_numpy()[None, ...],
+                self.ds[i + self.offset].to_numpy()[None, ...],
+            )
+            x = x.astype(np.float32)
+            Y = Y.astype(np.float32)
+            return x, Y
+
+    WRAPPER = WrapperWeatherBenchDataset
+    return get_wrapper_class()
 
 
 source = IndexedSource
