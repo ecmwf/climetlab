@@ -12,7 +12,10 @@ import json
 import logging
 import os
 
+from tqdm import tqdm
+
 from climetlab.core.settings import SETTINGS
+from climetlab.decorators import alias_argument
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.scripts.grib import _index_grib_file
 
@@ -24,6 +27,10 @@ class IndexedSource(FieldSet):
 
     _reader_ = None
 
+    @alias_argument("levelist", ["level"])
+    @alias_argument("param", ["variable", "parameter"])
+    @alias_argument("number", ["realization", "realisation"])
+    @alias_argument("class", "klass")
     def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
         self.path = path
         self.abspath = os.path.abspath(path)
@@ -83,13 +90,7 @@ class IndexedSource(FieldSet):
             for name in files:
                 if name == "climetlab.index":
                     continue
-                # print('---')
-                # print(name)
                 p = os.path.abspath(os.path.join(root, name))
-                # print(name)
-                # name = os.path.relpath(name, start = self.abspath)
-                # print(name)
-                # print('*')
                 yield from _index_grib_file(p, path_name=name)
 
     @property
