@@ -23,7 +23,6 @@ from climetlab.scripts.grib import _index_grib_file
 LOG = logging.getLogger(__name__)
 
 
-# TODO: rename 'local' to a more meaningful name
 class IndexedSource(FieldSet):
 
     _reader_ = None
@@ -121,9 +120,6 @@ class IndexedSource(FieldSet):
     def to_pytorch(self, offset, data_loader_kwargs=None):
         import torch
 
-        # Settings num_workers > 1 sometimes lead to GRIB read error
-        #   line 382, in raise_grib_error raise ERROR_MAP[errid](errid) gribapi.errors.UnsupportedEditionError: Edition not supported.
-        # Will work on it if speed is needed.
         num_workers = 10
 
         out = get_wrapper_class()(self, offset)

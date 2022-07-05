@@ -173,7 +173,7 @@ def safe_to_str(dic):
     for k, v in dic.items():
         try:
             v = str(v)
-        except:
+        except:  # noqa: E722
             v = "..."
         lst.append(f"{k}={v}")
     return ",".join(lst)
