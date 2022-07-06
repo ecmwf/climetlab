@@ -16,6 +16,7 @@ import sqlite3
 import requests
 from multiurl import robust
 
+import climetlab as cml
 from climetlab.core.caching import cache_file
 from climetlab.utils import tqdm
 
@@ -190,7 +191,7 @@ class SqlDatabase(Database):
     def lookup(self, request, order=None):
         conditions = []
         for k, b in request.items():
-            if b is None:
+            if b is None or b == cml.ALL:
                 continue
             elif isinstance(b, (list, tuple)):
                 if len(b) == 1:
