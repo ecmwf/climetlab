@@ -32,24 +32,10 @@ class DirectoryGlobalIndex(Index):
         return self.backend
 
     def lookup_request(self, request):
-        dic = defaultdict(list)
-
-        # group parts by url
-        for path, parts in self.backend.lookup(request):
-            url = f"{self.path}/{path}"
-            dic[url].append(parts)
-
-        # and sort
-        dic = {url: sorted(parts) for url, parts in dic.items()}
-
-        urls_parts = [(k, v) for k, v in dic.items()]
-        return urls_parts
-
-    def lookup_request_alt(self, request):
         urls_parts = []
-        for path, parts in self.backend.lookup(request):
+        for path, part in self.backend.lookup(request, order=True):
             url = f"{self.path}/{path}"
-            urls_parts.append((url, [parts]))
+            urls_parts.append((url, [part]))
         return urls_parts
 
 
@@ -74,7 +60,7 @@ class GlobalIndex(Index):
         dic = defaultdict(list)
 
         # group parts by url
-        for path, parts in self.backend.lookup(request):
+        for path, parts in self.backend.lookup(request, order="offset"):
             url = f"{self.baseurl}/{path}"
             dic[url].append(parts)
 
@@ -151,7 +137,7 @@ class PerUrlIndex(Index):
         # group parts by url
         for url in urls:
             backend = self.get_backend(url)
-            for _, parts in backend.lookup(request):
+            for _, parts in backend.lookup(request, order="offset"):
                 dic[url].append(parts)
 
         # and sort

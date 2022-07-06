@@ -13,6 +13,8 @@ import logging
 import math
 import warnings
 
+import numpy as np
+
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.sources import Source
@@ -197,6 +199,62 @@ class FieldSet(Source):
                 tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
             ),
         )
+
+    def to_pytorch(self, offset, data_loader_kwargs=None):
+        import torch
+
+        num_workers = 10
+
+        out = self._to_pytorch_wrapper_class()(self, offset)
+
+        DATA_LOADER_KWARGS_DEFAULT = dict(
+            batch_size=128,
+            # multi-process data loading
+            # use as many workers as you have cores on your machine
+            num_workers=num_workers,
+            # default: no shuffle, so need to explicitly set it here
+            shuffle=True,
+            # uses pinned memory to speed up CPU-to-GPU data transfers
+            # see https://pytorch.org/docs/stable/notes/cuda.html#cuda-memory-pinning
+            pin_memory=True,
+            # function used to collate samples into batches
+            # if None then Pytorch uses the default collate_fn (see below)
+            collate_fn=None,
+        )
+        data_loader_kwargs_ = {k: v for k, v in DATA_LOADER_KWARGS_DEFAULT.items()}
+        if data_loader_kwargs:
+            data_loader_kwargs_.update(data_loader_kwargs)
+
+        return torch.utils.data.DataLoader(out, **data_loader_kwargs_)
+
+    def _to_pytorch_wrapper_class(self):
+        import torch
+
+        class WrapperWeatherBenchDataset(torch.utils.data.Dataset):
+            def __init__(self, ds, offset) -> None:
+                super().__init__()
+                self.ds = ds
+                self.stats = ds.statistics()
+                self.offset = offset
+
+            def __len__(self):
+                """Returns the length of the dataset. This is important! Pytorch must know this."""
+                return len(self.ds) - self.offset
+                return self.ds.stats["count"] - self.ds.offset
+
+            def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
+                """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
+                # Q: if self is a iterator, would ds[i] read the data from 0 to i, just to provide i?
+
+                x, Y = (
+                    self.ds[i].to_numpy()[None, ...],
+                    self.ds[i + self.offset].to_numpy()[None, ...],
+                )
+                x = x.astype(np.float32)
+                Y = Y.astype(np.float32)
+                return x, Y
+
+        return WrapperWeatherBenchDataset
 
     def to_xarray(self, **kwargs):
 

@@ -105,7 +105,7 @@ def create_table(target, names):
 
 
 class Database:
-    def lookup(self, request):
+    def lookup(self, request, order=None):
         raise NotImplementedError("")
 
 
@@ -187,7 +187,7 @@ class SqlDatabase(Database):
         connection.execute("COMMIT;")
         connection.close()
 
-    def lookup(self, request):
+    def lookup(self, request, order=None):
         conditions = []
         for k, b in request.items():
             if isinstance(b, (list, tuple)):
@@ -202,8 +202,29 @@ class SqlDatabase(Database):
         conditions_str = ""
         if conditions:
             conditions_str = " WHERE " + " AND ".join(conditions)
+
+        def build_order_by(order):
+            if order is None:
+                return ""
+
+            if order == True:
+                if not request:
+                    return ""
+                order = [f"i_{k}" for k in request.keys()]
+                return "ORDER BY " + ",".join(order)
+
+            if isinstance(order, str):
+                order = [order]
+
+            if isinstance(order, (list, tuple)):
+                return "ORDER BY " + ",".join(order)
+
+            raise NotImplementedError(str(order))
+
+        order_by = build_order_by(order)
+
         statement = (
-            f"SELECT path,offset,length FROM entries {conditions_str} ORDER BY offset;"
+            f"SELECT path,offset,length FROM entries {conditions_str} {order_by};"
         )
 
         LOG.debug(statement)

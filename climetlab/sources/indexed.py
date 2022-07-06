@@ -12,7 +12,6 @@ import json
 import logging
 import os
 
-import numpy as np
 from tqdm import tqdm
 
 from climetlab.core.settings import SETTINGS
@@ -32,6 +31,7 @@ class IndexedSource(FieldSet):
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
     def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
+        print(kwargs)
         self.path = path
         self.abspath = os.path.abspath(path)
         self._climetlab_index_file = os.path.join(self.abspath, "climetlab.index")
@@ -52,13 +52,13 @@ class IndexedSource(FieldSet):
         fields = self.kwargs_to_fields(kwargs)
         LOG.debug("Got iterator")
         fields = list(fields)
-        LOG.debug("Transformed into list")
+        LOG.debug("Transformed into a list of ({len(fields)} elements.")
         super().__init__(fields=fields)
 
     def kwargs_to_fields(self, kwargs):
         for path, parts in tqdm(self.index.lookup_request(kwargs)):
             assert path[:5] == "file:", path
-            path = path[5:]  # hack to remove 'file:'
+            path = path[5:]
             for offset, length in parts:
                 yield (path, offset, length)
 
@@ -71,17 +71,18 @@ class IndexedSource(FieldSet):
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
-        if hasattr(self, "path"):
-            path = self.path
-        else:
-            path = "..."
-        if hasattr(self, "abspath"):
-            abspath = self.abspath
-        else:
-            abspath = "..."
 
-        if isinstance(path, str):
-            path = path.replace(cache_dir, "CACHE:")
+        def to_str(attr):
+            if hasattr(self, attr):
+                out = getattr(self, attr)
+            else:
+                out = "..."
+            if isinstance(out, str):
+                out = out.replace(cache_dir, "CACHE:")
+            return out
+
+        path = to_str("path")
+        abspath = to_str("abspath")
         return f"{self.__class__.__name__}({path}, {abspath})"
 
     def _create_index(self):
@@ -116,72 +117,6 @@ class IndexedSource(FieldSet):
 
         print("Created index file", self._climetlab_index_file)
         return self.index
-
-    def to_pytorch(self, offset, data_loader_kwargs=None):
-        import torch
-
-        num_workers = 10
-
-        out = get_wrapper_class()(self, offset)
-
-        DATA_LOADER_KWARGS_DEFAULT = dict(
-            batch_size=128,
-            # multi-process data loading
-            # use as many workers as you have cores on your machine
-            num_workers=num_workers,
-            # default: no shuffle, so need to explicitly set it here
-            shuffle=True,
-            # uses pinned memory to speed up CPU-to-GPU data transfers
-            # see https://pytorch.org/docs/stable/notes/cuda.html#cuda-memory-pinning
-            pin_memory=True,
-            # function used to collate samples into batches
-            # if None then Pytorch uses the default collate_fn (see below)
-            collate_fn=None,
-        )
-        data_loader_kwargs_ = {k: v for k, v in DATA_LOADER_KWARGS_DEFAULT.items()}
-        if data_loader_kwargs:
-            data_loader_kwargs_.update(data_loader_kwargs)
-
-        return torch.utils.data.DataLoader(out, **data_loader_kwargs_)
-
-
-global WRAPPER
-WRAPPER = None
-
-
-def get_wrapper_class():
-    global WRAPPER
-    if WRAPPER is not None:
-        return WRAPPER
-    import torch
-
-    class WrapperWeatherBenchDataset(torch.utils.data.Dataset):
-        def __init__(self, ds, offset) -> None:
-            super().__init__()
-
-            self.ds = ds
-
-            self.stats = self.ds.statistics()
-            self.offset = offset
-
-        def __len__(self):
-            """Returns the length of the dataset. This is important! Pytorch must know this."""
-            return self.stats["count"] - self.offset
-
-        def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
-            # Q: if ds[i] is a iterator, would ds[i] read the data from 0 to i, just to provide i?
-            """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
-            # print('getting',i)
-            x, Y = (
-                self.ds[i].to_numpy()[None, ...],
-                self.ds[i + self.offset].to_numpy()[None, ...],
-            )
-            x = x.astype(np.float32)
-            Y = Y.astype(np.float32)
-            return x, Y
-
-    WRAPPER = WrapperWeatherBenchDataset
-    return get_wrapper_class()
 
 
 source = IndexedSource

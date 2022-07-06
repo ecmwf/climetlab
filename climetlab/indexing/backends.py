@@ -19,5 +19,5 @@ class JsonIndexBackend(IndexBackend):
     def __init__(self, url):
         self.db = SqlDatabase(url=url)
 
-    def lookup(self, request):
-        return self.db.lookup(request)
+    def lookup(self, request, **kwargs):
+        return self.db.lookup(request, **kwargs)
