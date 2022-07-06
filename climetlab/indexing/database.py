@@ -190,7 +190,9 @@ class SqlDatabase(Database):
     def lookup(self, request, order=None):
         conditions = []
         for k, b in request.items():
-            if isinstance(b, (list, tuple)):
+            if b is None:
+                continue
+            elif isinstance(b, (list, tuple)):
                 if len(b) == 1:
                     conditions.append(f"i_{k}='{b[0]}'")
                     continue
