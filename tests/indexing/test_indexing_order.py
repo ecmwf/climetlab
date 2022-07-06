@@ -14,7 +14,7 @@ import pytest
 import climetlab as cml
 
 
-@pytest.mark.parametrize("params", (["t", "z"], ["t", "z"]))
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 def source_1(params, levels):
     ds = cml.load_source(
@@ -36,13 +36,55 @@ def source_1(params, levels):
     print()
 
 
-@pytest.mark.parametrize("params", (["t", "z"], ["t", "z"]))
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 def test_order_directory_source_2(params, levels):
     ds = cml.load_source(
         "directory",
         "test_indexing_order.py.grib",
         level=levels,
+        variable=params,
+        date=20070101,
+        time="1200",
+    )
+    print(params)
+    print(len(ds))
+    for i in ds:
+        print(i)
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[1]
+    assert ds[2].handle.get("shortName") == params[0]
+    assert ds[3].handle.get("shortName") == params[1]
+    print()
+
+
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+def _test_order_directory_source_with_none_1(params):
+    ds = cml.load_source(
+        "directory",
+        "test_indexing_order.py.grib",
+        variable=params,
+        level=None,
+        date=20070101,
+        time="1200",
+    )
+    print(params)
+    print(len(ds))
+    for i in ds:
+        print(i)
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[1]
+    assert ds[2].handle.get("shortName") == params[0]
+    assert ds[3].handle.get("shortName") == params[1]
+    print()
+
+
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+def _test_order_directory_source_with_none_2(params):
+    ds = cml.load_source(
+        "directory",
+        "test_indexing_order.py.grib",
+        level=None,
         variable=params,
         date=20070101,
         time="1200",
