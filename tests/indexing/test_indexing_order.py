@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+# (C) Copyright 2020 ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+#
+
+import pytest
+
+import climetlab as cml
+
+
+@pytest.mark.parametrize("params", (["t", "z"], ["t", "z"]))
+@pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
+def source_1(params, levels):
+    ds = cml.load_source(
+        "directory",
+        "/perm/mafp/weather-bench-links/data-from-mat-chantry-symlinks-to-files",
+        variable=params,
+        level=levels,
+        date=20070101,
+        time="1200",
+    )
+    print(params)
+    print(len(ds))
+    for i in ds:
+        print(i)
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[0]
+    assert ds[2].handle.get("shortName") == params[1]
+    assert ds[3].handle.get("shortName") == params[1]
+    print()
+
+
+@pytest.mark.parametrize("params", (["t", "z"], ["t", "z"]))
+@pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
+def test_order_directory_source_2(params, levels):
+    ds = cml.load_source(
+        "directory",
+        "test_indexing_order.py.grib",
+        level=levels,
+        variable=params,
+        date=20070101,
+        time="1200",
+    )
+    print(params)
+    print(len(ds))
+    for i in ds:
+        print(i)
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[1]
+    assert ds[2].handle.get("shortName") == params[0]
+    assert ds[3].handle.get("shortName") == params[1]
+    print()
+
+
+if __name__ == "__main__":
+    from climetlab.testing import main
+
+    main(__file__)

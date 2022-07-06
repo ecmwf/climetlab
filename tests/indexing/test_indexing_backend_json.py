@@ -52,7 +52,7 @@ def backend():
 
 
 def test_indexing_json_1(backend):
-    parts = backend.lookup(REQUEST_1, order='offset')
+    parts = backend.lookup(REQUEST_1, order="offset")
     assert len(parts) == 1
     assert parts[0][0] == "data/02.grb"
     assert parts[0][1][0] == 94156098
@@ -60,7 +60,7 @@ def test_indexing_json_1(backend):
 
 
 def test_indexing_json_2(backend):
-    parts = backend.lookup(REQUEST_2, order='offset')
+    parts = backend.lookup(REQUEST_2, order="offset")
     assert len(parts) == 1
 
 
