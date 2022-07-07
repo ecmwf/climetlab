@@ -61,9 +61,6 @@ class IndexedSource(Source):
 
         super().__init__()
 
-    def lookup_index(self):
-        return self.index.get_path_offset_length(self.kwargs_selection)
-
     def sel(self, **kwargs):
         new_kwargs = {k: v for k, v in self.kwargs_selection.items()}
         new_kwargs.update(kwargs)

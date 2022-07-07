@@ -101,7 +101,9 @@ class FieldSet(Source):
             for path in paths:
                 # TODO: GribIndex should follow the Index interface
                 # and remove NoSelectionFieldSet
-                self.index = GribIndex(path)
+                index = GribIndex(path)
+                fields = index.get_path_offset_length()
+                fields = list(fields)
 
         if fields is not None:
             self.fields = fields
