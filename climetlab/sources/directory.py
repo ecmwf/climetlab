@@ -10,6 +10,7 @@ import json
 import logging
 import os
 
+from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.scripts.grib import _index_grib_file
 from climetlab.sources.indexed import IndexedSource, SqlIndex
 
@@ -19,7 +20,6 @@ LOG = logging.getLogger(__name__)
 class DirectoryIndex(SqlIndex):
     def __init__(self, index_location, path) -> None:
         self.path = path
-
         self.abspath = os.path.abspath(path)
         self._climetlab_index_file = index_location
 
@@ -58,6 +58,7 @@ class DirectoryIndex(SqlIndex):
 class DirectorySource(IndexedSource):
     def __init__(self, path, **kwargs):
         self.path = path
+        self.data_provider = None  # data_provider = reader?
 
         index = DirectoryIndex(
             index_location=os.path.join(os.path.abspath(path), "climetlab.index"),
@@ -65,6 +66,13 @@ class DirectorySource(IndexedSource):
         )
 
         super().__init__(index, **kwargs)
+
+    def _set_selection(self, kwargs):
+        fields = []
+        for path, parts in self.index.get_path_offset_length(kwargs):
+            for offset, length in parts:
+                fields.append((path, offset, length))
+        self.data_provider = FieldSet(fields=fields)
 
 
 source = DirectorySource

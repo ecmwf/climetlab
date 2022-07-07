@@ -15,8 +15,8 @@ import os
 from climetlab.core import Base
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
-from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.scripts.grib import _index_grib_file
+from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class SqlIndex(Index):
         return self.db.lookup(request, **kwargs)
 
 
-class IndexedSource(FieldSet):
+class IndexedSource(Source):
 
     _reader_ = None
 
@@ -56,7 +56,10 @@ class IndexedSource(FieldSet):
         self.merger = merger
         self.index = index
         self.kwargs_selection = kwargs
-        super().__init__(index=index)
+
+        self._set_selection(kwargs)  # todo make it lazy
+
+        super().__init__()
 
     def lookup_index(self):
         return self.index.get_path_offset_length(self.kwargs_selection)
@@ -71,6 +74,13 @@ class IndexedSource(FieldSet):
             index=self.index,
             **new_kwargs,
         )
+
+    def __getitem__(self, n):
+        return self.data_provider[n]
+
+    def __len__(self):
+        # todo ask index?
+        return len(self.data_provider)
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")

@@ -87,7 +87,10 @@ class FieldsetAdapter:
 
 
 class FieldSet(Source):
-    def __init__(self, *, paths=None, index=None):
+    def __init__(self, *, paths=None, fields=None, index=None):
+
+        # should this class know about the index?
+
         self._statistics = None
         self.readers = {}
         self.fields = []
@@ -100,21 +103,13 @@ class FieldSet(Source):
                 # and remove NoSelectionFieldSet
                 self.index = GribIndex(path)
 
-        if index is not None:
-            self.load_fields()
-
-    def load_fields(self):
-        for path, parts in self.lookup_index():
-            for offset, length in parts:
-                self.fields.append((path, offset, length))
+        if fields is not None:
+            self.fields = fields
 
     def reader(self, path):
         if path not in self.readers:
             self.readers[path] = CodesReader(path)
         return self.readers[path]
-
-    def getitem_from_part(self, path, offset, length):
-        return GribField(self.reader(path), offset, length)
 
     def __getitem__(self, n):
         path, offset, length = self.fields[n]
