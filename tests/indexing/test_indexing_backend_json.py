@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from climetlab.indexing.backends import JsonIndexBackend
+from climetlab.sources.indexed import SqlIndex
 
 index_jsonl = os.path.join(os.path.dirname(__file__), "index.jsonl")
 
@@ -48,7 +48,7 @@ REQUEST_2 = {
 
 @pytest.fixture
 def backend():
-    return JsonIndexBackend(index_jsonl)
+    return SqlIndex(index_jsonl)
 
 
 def test_indexing_json_1(backend):

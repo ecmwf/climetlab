@@ -8,14 +8,11 @@
 #
 
 
-import json
 import logging
-import os
 
 from climetlab.core import Base
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
-from climetlab.scripts.grib import _index_grib_file
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
@@ -32,11 +29,10 @@ class Index(Base):
         self._not_implemented()
 
 
-from climetlab.indexing.database import SqlDatabase
-
-
 class SqlIndex(Index):
     def __init__(self, url):
+        from climetlab.indexing.database import SqlDatabase
+
         self.db = SqlDatabase(url=url)
 
     def lookup(self, request, **kwargs):
