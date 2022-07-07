@@ -51,31 +51,15 @@ class IndexedSource(FieldSet):
     @alias_argument("param", ["variable", "parameter"])
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
-    def __init__(self, index=None, dic=None, filter=None, merger=None, **kwargs):
+    def __init__(self, index=None, filter=None, merger=None, **kwargs):
         self.filter = filter
         self.merger = merger
         self.index = index
-
-        if dic:
-            assert isinstance(
-                dic, dict
-            ), f"Expected a dict, but argument was dic={dic}."
-            for k, v in dic.items():
-                assert k not in kwargs, f"Duplicated key {k}={v} and {k}={kwargs[k]}"
-                kwargs[k] = v
-
         self.kwargs_selection = kwargs
+        super().__init__(index=index)
 
-        def build_fields_iterator():
-            for path, parts in self.index.lookup_request(kwargs):
-                for offset, length in parts:
-                    yield (path, offset, length)
-
-        fields = build_fields_iterator()
-        LOG.debug("Got iterator")
-        fields = list(fields)
-        LOG.debug("Transformed into a list of ({len(fields)} elements.")
-        super().__init__(fields=fields)
+    def lookup_index(self):
+        return self.index.get_path_offset_length(self.kwargs_selection)
 
     def sel(self, **kwargs):
         new_kwargs = {k: v for k, v in self.kwargs_selection.items()}
@@ -92,14 +76,14 @@ class IndexedSource(FieldSet):
         cache_dir = SETTINGS.get("cache-directory")
 
         def to_str(attr):
-            if hasattr(self, attr):
-                out = getattr(self, attr)
-            else:
-                out = "..."
+            if not hasattr(self, attr):
+                return None
+            out = getattr(self, attr)
             if isinstance(out, str):
                 out = out.replace(cache_dir, "CACHE:")
             return out
 
-        path = to_str("path")
-        abspath = to_str("abspath")
-        return f"{self.__class__.__name__}({path}, {abspath})"
+        args = [f"{x}={to_str(x)}" for x in ("path", "abspath")]
+        args = [x for x in args if x is not None]
+        args = ",".join(args)
+        return f"{self.__class__.__name__}({args})"

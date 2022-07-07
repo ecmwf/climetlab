@@ -35,7 +35,7 @@ class DirectoryIndex(SqlIndex):
 
         super().__init__(self._climetlab_index_file)
 
-    def lookup_request(self, request):
+    def get_path_offset_length(self, request):
         urls_parts = []
         for path, part in self.lookup(request, order=True):
             url = f"{self.path}/{path}"
@@ -44,16 +44,15 @@ class DirectoryIndex(SqlIndex):
         return urls_parts
 
     def _parse_files(self, path, ignore=("climetlab.index")):
+        LOG.debug(f"Parsing files in {path}")
         assert os.path.isdir(path)
         for root, _, files in os.walk(path):
             for name in files:
                 if name in ignore:
                     continue
                 p = os.path.abspath(os.path.join(root, name))
+                LOG.debug(f"Parsing file in {p}")
                 yield from _index_grib_file(p, path_name=name)
-
-
-...
 
 
 class DirectorySource(IndexedSource):

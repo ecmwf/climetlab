@@ -25,7 +25,7 @@ class IndexedUrls(MultiSource):
         **kwargs,
     ):
 
-        urls_parts = index.lookup_request(request)
+        urls_parts = index.get_path_offset_length(request)
         record_statistics(
             "indexed-urls",
             request=str(request),

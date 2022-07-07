@@ -39,7 +39,7 @@ class GlobalIndex(Index):
     def get_backend(self, url=None):
         return self.backend
 
-    def lookup_request(self, request):
+    def get_path_offset_length(self, request):
         dic = defaultdict(list)
 
         # group parts by url
@@ -77,7 +77,7 @@ class PerUrlIndex(Index):
         index_extension (".index"): extension for the index url.
         substitute_extension (False): if set to True, substitute the index_extension
         to build the index url instead of appending.
-        lookup_request(): get the urls and parts for a given request.
+        get_path_offset_length(): get the urls and parts for a given request.
         """
         super().__init__(backend=backend)
         self.pattern = pattern
@@ -103,7 +103,7 @@ class PerUrlIndex(Index):
         self.backends[url] = backend
         return self.backends[url]
 
-    def lookup_request(self, request):
+    def get_path_offset_length(self, request):
         dic = defaultdict(list)
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)

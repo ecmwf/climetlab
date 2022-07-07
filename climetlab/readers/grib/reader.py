@@ -15,12 +15,17 @@ from .fieldset import FieldSet
 LOG = logging.getLogger(__name__)
 
 
-class GRIBReader(FieldSet, Reader):
+class NoSelectionFieldSet(FieldSet):
+    def lookup_index(self):
+        return self.index.get_path_offset_length()
+
+
+class GRIBReader(NoSelectionFieldSet, Reader):
     appendable = True  # GRIB messages can be added to the same file
 
     def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        FieldSet.__init__(self, paths=[path])
+        NoSelectionFieldSet.__init__(self, paths=[path])
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -31,4 +36,4 @@ class GRIBReader(FieldSet, Reader):
         assert all(isinstance(s, GRIBReader) for s in readers), readers
         assert len(readers) > 1
 
-        return FieldSet(paths=[r.path for r in readers])
+        return NoSelectionFieldSet(paths=[r.path for r in readers])

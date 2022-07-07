@@ -72,7 +72,7 @@ def test_indexed_s3(baseurl):
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    # parts = index.lookup_request(request)
+    # parts = index.get_path_offset_length(request)
     print("range_method", range_method)
     print("REQUEST", request)
     #    for url, p in parts:
