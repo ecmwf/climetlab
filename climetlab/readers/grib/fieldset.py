@@ -208,7 +208,9 @@ class FieldSet(Source):
     def to_pytorch(self, offset, data_loader_kwargs=None):
         import torch
 
-        num_workers = 10
+        # sometimes (!) causes an Exception:
+        # gribapi.errors.UnsupportedEditionError: Edition not supported.
+        num_workers = 1
 
         out = self._to_pytorch_wrapper_class()(self, offset)
 
