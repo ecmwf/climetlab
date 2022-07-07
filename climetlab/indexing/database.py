@@ -47,6 +47,10 @@ def get_iterator_and_size(url):
 
 
 GRIB_INDEX_KEYS = [
+    "class",
+    "stream",
+    "levtype",
+    "type",
     "date",
     "hdate",
     "andate",
