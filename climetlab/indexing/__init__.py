@@ -9,14 +9,11 @@
 
 from collections import defaultdict
 
+from climetlab.sources.indexed import Index, SqlIndex
 from climetlab.utils.patterns import Pattern
 
 
-class Index:
-    pass
-
-
-class GlobalIndex(Index):
+class GlobalIndex(SqlIndex):
     def __init__(self, index_location, baseurl) -> None:
         """The GloblaIndex has one index managing multiple urls/files.
         This unique index is found at "index_location"
@@ -27,18 +24,13 @@ class GlobalIndex(Index):
         self.baseurl = baseurl
         # if is url index_location
         #   download index_location
-        self.backend = self.get_backend(index_location)
-
-    def get_backend(self, url):
-        from climetlab.sources.indexed import SqlIndex
-
-        return SqlIndex(url)
+        super().__init__(url=index_location)
 
     def get_path_offset_length(self, request):
         dic = defaultdict(list)
 
         # group parts by url
-        for path, parts in self.backend.lookup(request, order="offset"):
+        for path, parts in self.lookup(request, order="offset"):
             url = f"{self.baseurl}/{path}"
             dic[url].append(parts)
 

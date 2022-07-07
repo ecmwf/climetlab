@@ -12,7 +12,6 @@ import time
 
 from climetlab import load_source
 from climetlab.core.statistics import collect_statistics, retrieve_statistics
-from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
@@ -152,6 +151,8 @@ def benchmark():
     failed = []
     successfull = 0
     import tqdm
+
+    from climetlab.indexing import PerUrlIndex
 
     for request in tqdm.tqdm(requests):
         for range_method in tqdm.tqdm(methods):
