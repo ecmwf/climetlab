@@ -178,10 +178,15 @@ class FieldSet(Source):
         return tf.data.Dataset.from_generator(generate, dtype)
 
     def _to_tfdataset_supervised(self, label, **kwargs):
+
+        if isinstance(label, str):
+            label_ = label
+            label = lambda s: s.handle.get(label_)
+
         @call_counter
         def generate():
             for s in self:
-                yield s.to_numpy(), s.handle.get(label)
+                yield s.to_numpy(), label(s)
 
         import tensorflow as tf
 
