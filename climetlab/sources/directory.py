@@ -6,17 +6,66 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-
-
+import json
 import logging
+import os
 
-from climetlab.sources.indexed import IndexedSource
+from climetlab.scripts.grib import _index_grib_file
+from climetlab.sources.indexed import IndexedSource, SqlIndex
 
 LOG = logging.getLogger(__name__)
 
 
+class DirectoryIndex(SqlIndex):
+    def __init__(self, index_location, path) -> None:
+        self.path = path
+
+        self.abspath = os.path.abspath(path)
+        self._climetlab_index_file = index_location
+
+        if not os.path.exists(self._climetlab_index_file):
+            print("Creating index for", self.path, " into ", self._climetlab_index_file)
+            entries = self._parse_files(self.path)
+            # TODO: create .tmp file and move it (use cache_file)
+            with open(self._climetlab_index_file, "w") as f:
+                for e in entries:
+                    json.dump(e, f)
+                    print("", file=f)
+            print("Created index file", self._climetlab_index_file)
+
+        super().__init__(self._climetlab_index_file)
+
+    def lookup_request(self, request):
+        urls_parts = []
+        for path, part in self.lookup(request, order=True):
+            url = f"{self.path}/{path}"
+            urls_parts.append((url, [part]))
+        # TODO : here need to reorder according to user request?
+        return urls_parts
+
+    def _parse_files(self, path, ignore=("climetlab.index")):
+        assert os.path.isdir(path)
+        for root, _, files in os.walk(path):
+            for name in files:
+                if name in ignore:
+                    continue
+                p = os.path.abspath(os.path.join(root, name))
+                yield from _index_grib_file(p, path_name=name)
+
+
+...
+
+
 class DirectorySource(IndexedSource):
-    pass
+    def __init__(self, path, **kwargs):
+        self.path = path
+
+        index = DirectoryIndex(
+            index_location=os.path.join(os.path.abspath(path), "climetlab.index"),
+            path=path,
+        )
+
+        super().__init__(index, **kwargs)
 
 
 source = DirectorySource

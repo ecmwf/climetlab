@@ -23,11 +23,18 @@ from climetlab.utils import tqdm
 LOG = logging.getLogger(__name__)
 
 
+def get_iterator_and_size_from_path(path):
+    iterator = open(path).readlines()
+    size = os.path.getsize(path)
+    return iterator, size
+
+
 def get_iterator_and_size(url):
     if os.path.exists(url):
-        iterator = open(url).readlines()
-        size = os.path.getsize(url)
-        return iterator, size
+        return get_iterator_and_size_from_path(path=url)
+
+    if url.startswith("file://") and os.path.exists(url[7:]):
+        return get_iterator_and_size_from_path(path=url[7:])
 
     r = robust(requests.get)(url, stream=True)
     r.raise_for_status()
@@ -116,11 +123,11 @@ class SqlDatabase(Database):
     def __init__(
         self,
         url,
-        create_index=False,  # index is disabled by default because it is long to create.
+        create_index_in_sql_db=False,  # index is disabled by default because it is long to create.
     ):
         self._connection = None
         self.url = url
-        self.create_index = create_index
+        self.create_index_in_sql_db = create_index_in_sql_db
 
     @property
     def connection(self):
@@ -180,7 +187,7 @@ class SqlDatabase(Database):
             count += 1
             pbar.update(len(line) + 1)
 
-        if self.create_index:
+        if self.create_index_in_sql_db:
             # connection.execute(f"CREATE INDEX path_index ON entries (path);")
             for n in sql_names:
                 connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")

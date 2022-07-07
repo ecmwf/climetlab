@@ -11,13 +11,11 @@
 from .database import SqlDatabase
 
 
-class IndexBackend:
-    pass
-
-
-class JsonIndexBackend(IndexBackend):
+class JsonIndexBackend:
     def __init__(self, url):
+        assert False
         self.db = SqlDatabase(url=url)
 
     def lookup(self, request, **kwargs):
+        assert False
         return self.db.lookup(request, **kwargs)

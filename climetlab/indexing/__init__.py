@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from climetlab.utils.patterns import Pattern
 
-from .backends import IndexBackend, JsonIndexBackend
+from .backends import JsonIndexBackend
 
 
 class Index:
@@ -20,23 +20,6 @@ class Index:
             backend = JsonIndexBackend
         assert issubclass(backend, IndexBackend), backend
         self._backend_constructor = backend
-
-
-class DirectoryGlobalIndex(Index):
-    def __init__(self, index_location, path, backend=None) -> None:
-        super().__init__(backend=backend)
-        self.path = path
-        self.backend = self._backend_constructor(index_location)
-
-    def get_backend(self, url=None):
-        return self.backend
-
-    def lookup_request(self, request):
-        urls_parts = []
-        for path, part in self.backend.lookup(request, order=True):
-            url = f"{self.path}/{path}"
-            urls_parts.append((url, [part]))
-        return urls_parts
 
 
 class GlobalIndex(Index):

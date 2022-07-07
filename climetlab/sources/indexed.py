@@ -12,14 +12,35 @@ import json
 import logging
 import os
 
-from tqdm import tqdm
-
+from climetlab.core import Base
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.scripts.grib import _index_grib_file
 
 LOG = logging.getLogger(__name__)
+
+
+class Index(Base):
+    def __getitem__(self, n):
+        self._not_implemented()
+
+    def __len__(self):
+        self._not_implemented()
+
+    def sel(self, kwargs):
+        self._not_implemented()
+
+
+from climetlab.indexing.database import SqlDatabase
+
+
+class SqlIndex(Index):
+    def __init__(self, url):
+        self.db = SqlDatabase(url=url)
+
+    def lookup(self, request, **kwargs):
+        return self.db.lookup(request, **kwargs)
 
 
 class IndexedSource(FieldSet):
@@ -30,14 +51,10 @@ class IndexedSource(FieldSet):
     @alias_argument("param", ["variable", "parameter"])
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
-    def __init__(self, path=None, dic=None, filter=None, merger=None, **kwargs):
-        print(kwargs)
-        self.path = path
-        self.abspath = os.path.abspath(path)
-        self._climetlab_index_file = os.path.join(self.abspath, "climetlab.index")
-        self._index = None
+    def __init__(self, index=None, dic=None, filter=None, merger=None, **kwargs):
         self.filter = filter
         self.merger = merger
+        self.index = index
 
         if dic:
             assert isinstance(
@@ -49,24 +66,26 @@ class IndexedSource(FieldSet):
 
         self.kwargs_selection = kwargs
 
-        fields = self.kwargs_to_fields(kwargs)
+        def build_fields_iterator():
+            for path, parts in self.index.lookup_request(kwargs):
+                for offset, length in parts:
+                    yield (path, offset, length)
+
+        fields = build_fields_iterator()
         LOG.debug("Got iterator")
         fields = list(fields)
         LOG.debug("Transformed into a list of ({len(fields)} elements.")
         super().__init__(fields=fields)
 
-    def kwargs_to_fields(self, kwargs):
-        for path, parts in tqdm(self.index.lookup_request(kwargs)):
-            assert path[:5] == "file:", path
-            path = path[5:]
-            for offset, length in parts:
-                yield (path, offset, length)
-
     def sel(self, **kwargs):
         new_kwargs = {k: v for k, v in self.kwargs_selection.items()}
         new_kwargs.update(kwargs)
         return IndexedSource(
-            self.path, filter=self.filter, merger=self.merger, **new_kwargs
+            self.path,
+            filter=self.filter,
+            merger=self.merger,
+            index=self.index,
+            **new_kwargs,
         )
 
     def __repr__(self):
@@ -84,39 +103,3 @@ class IndexedSource(FieldSet):
         path = to_str("path")
         abspath = to_str("abspath")
         return f"{self.__class__.__name__}({path}, {abspath})"
-
-    def _create_index(self):
-        assert os.path.isdir(self.path)
-        for root, _, files in os.walk(self.path):
-            for name in files:
-                if name == "climetlab.index":
-                    continue
-                p = os.path.abspath(os.path.join(root, name))
-                yield from _index_grib_file(p, path_name=name)
-
-    @property
-    def index(self):
-        if self._index is not None:
-            return self._index
-
-        from climetlab.indexing import DirectoryGlobalIndex
-
-        if os.path.exists(self._climetlab_index_file):
-            self._index = DirectoryGlobalIndex(
-                self._climetlab_index_file, path="file://" + self.abspath
-            )
-            return self._index
-
-        print("Creating index for", self.path, " into ", self._climetlab_index_file)
-        entries = self._create_index()
-        # TODO: create .tmp file and move it (use cache_file)
-        with open(self._climetlab_index_file, "w") as f:
-            for e in entries:
-                json.dump(e, f)
-                print("", file=f)
-
-        print("Created index file", self._climetlab_index_file)
-        return self.index
-
-
-source = IndexedSource
