@@ -74,5 +74,17 @@ class DirectorySource(IndexedSource):
                 fields.append((path, offset, length))
         self.data_provider = FieldSet(fields=fields)
 
+    def to_tfdataset(self, *args, **kwargs):
+        return self.data_provider.to_tfdataset(*args, **kwargs)
+
+    def to_pytorch(self, *args, **kwargs):
+        return self.data_provider.to_pytorch(*args, **kwargs)
+
+    def to_numpy(self, *args, **kwargs):
+        return self.data_provider.to_numpy(*args, **kwargs)
+
+    def to_xarray(self, *args, **kwargs):
+        return self.data_provider.to_xarray(*args, **kwargs)
+
 
 source = DirectorySource
