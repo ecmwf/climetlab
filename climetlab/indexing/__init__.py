@@ -29,10 +29,10 @@ class GlobalIndex(Index):
         #   download index_location
         self.backend = self.get_backend(index_location)
 
-    def get_backend(self, url=None):
+    def get_backend(self, url):
         from climetlab.sources.indexed import SqlIndex
 
-        return SqlIndex
+        return SqlIndex(url)
 
     def get_path_offset_length(self, request):
         dic = defaultdict(list)
