@@ -39,6 +39,8 @@ class DirectoryIndex(SqlIndex):
         urls_parts = []
         for path, part in self.lookup(request, order=True):
             url = f"{self.path}/{path}"
+            # more conversion from  (path, (o,l)) into (path, [(o, l)])
+            # should not happen
             urls_parts.append((url, [part]))
         # TODO : here need to reorder according to user request?
         return urls_parts
@@ -71,6 +73,8 @@ class DirectorySource(IndexedSource):
         fields = []
         for path, parts in self.index.get_path_offset_length(kwargs):
             for offset, length in parts:
+                # conversion from  (path, (o,l)) into (path, o, l)
+                # should not happen
                 fields.append((path, offset, length))
         self.data_provider = FieldSet(fields=fields)
 

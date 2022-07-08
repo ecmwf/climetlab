@@ -10,9 +10,17 @@
 import logging
 
 from .. import Reader
+from .codes import GribIndex
 from .fieldset import FieldSet
 
 LOG = logging.getLogger(__name__)
+
+
+def path_to_fields(paths):
+    for path in paths:
+        index = GribIndex(path)
+        for f in index.get_path_offset_length():
+            yield f
 
 
 class GRIBReader(FieldSet, Reader):
@@ -20,7 +28,8 @@ class GRIBReader(FieldSet, Reader):
 
     def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        FieldSet.__init__(self, paths=[path])
+        fields = path_to_fields([path])
+        FieldSet.__init__(self, fields)
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
@@ -31,4 +40,5 @@ class GRIBReader(FieldSet, Reader):
         assert all(isinstance(s, GRIBReader) for s in readers), readers
         assert len(readers) > 1
 
-        return FieldSet(paths=[r.path for r in readers])
+        fields = path_to_fields([r.path for r in readers])
+        return FieldSet(fields)

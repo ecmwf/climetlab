@@ -19,8 +19,9 @@ from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
+from climetlab.utils.parts import Parts
 
-from .codes import CodesReader, GribField, GribIndex
+from .codes import CodesReader, GribField
 
 LOG = logging.getLogger(__name__)
 
@@ -87,27 +88,11 @@ class FieldsetAdapter:
 
 
 class FieldSet(Source):
-    def __init__(self, *, paths=None, fields=None, index=None):
-
-        # should this class know about the index?
-
+    def __init__(self, fields=None, index=None):
         self._statistics = None
         self.readers = {}
-        self.fields = []
-
-        if fields is not None:
-            self.fields = fields
-            return
-
-        if paths is not None:
-            if not isinstance(paths, (list, tuple)):
-                paths = [paths]
-            for path in paths:
-                # TODO: GribIndex should follow the Index interface
-                # and remove NoSelectionFieldSet
-                index = GribIndex(path)
-                fields = index.get_path_offset_length()
-                self.fields += list(fields)
+        fields = Parts(fields)
+        self.fields = fields
 
     def reader(self, path):
         if path not in self.readers:
@@ -115,7 +100,7 @@ class FieldSet(Source):
         return self.readers[path]
 
     def __getitem__(self, n):
-        path, offset, length = self.fields[n]
+        path, offset, length = self.fields.as_list[n]
         return GribField(self.reader(path), offset, length)
 
     def __len__(self):
