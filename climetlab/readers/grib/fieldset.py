@@ -95,6 +95,10 @@ class FieldSet(Source):
         self.readers = {}
         self.fields = []
 
+        if fields is not None:
+            self.fields = fields
+            return
+
         if paths is not None:
             if not isinstance(paths, (list, tuple)):
                 paths = [paths]
@@ -103,10 +107,7 @@ class FieldSet(Source):
                 # and remove NoSelectionFieldSet
                 index = GribIndex(path)
                 fields = index.get_path_offset_length()
-                fields = list(fields)
-
-        if fields is not None:
-            self.fields = fields
+                self.fields += list(fields)
 
     def reader(self, path):
         if path not in self.readers:
