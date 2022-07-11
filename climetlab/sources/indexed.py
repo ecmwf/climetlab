@@ -14,6 +14,7 @@ from climetlab.core import Base
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
 from climetlab.sources import Source
+from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
 
@@ -33,10 +34,25 @@ class SqlIndex(Index):
     def __init__(self, url):
         from climetlab.indexing.database import SqlDatabase
 
+        self._availability = None
+
         self.db = SqlDatabase(url=url)
 
     def lookup(self, request, **kwargs):
         return self.db.lookup(request, **kwargs)
+
+    @property
+    def availability(self, request=None):
+        if request is None and self._availability is not None:
+            return self._availability
+
+        entries = self.lookup({}, select_values=True)
+        availability = Availability(entries)
+
+        if request is None:
+            self._availability = availability
+
+        return availability
 
 
 class IndexedSource(Source):
@@ -56,6 +72,10 @@ class IndexedSource(Source):
         self._set_selection(kwargs)  # todo make it lazy
 
         super().__init__()
+
+    @property
+    def availability(self):
+        return self.index.availability
 
     def sel(self, **kwargs):
         new_kwargs = {k: v for k, v in self.kwargs_selection.items()}

@@ -199,7 +199,7 @@ class SqlDatabase(Database):
         connection.execute("COMMIT;")
         connection.close()
 
-    def lookup(self, request, order=None):
+    def _conditions(self, request):
         conditions = []
         for k, b in request.items():
             if b is None or b == cml.ALL:
@@ -212,37 +212,65 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k} IN ({w})")
             else:
                 conditions.append(f"i_{k}='{b}'")
+        return conditions
+
+    def _order_by(self, request, order):
+        if order is None:
+            return None
+
+        if order == True:
+            if not request:
+                return None
+            return [f"i_{k}" for k in request.keys()]
+
+        if isinstance(order, str):
+            return [order]
+
+        raise NotImplementedError(str(order))
+
+    def _columns_names_with_no_i_(self):
+        cursor = self.connection.execute("PRAGMA table_info(entries)")
+        out = []
+        for x in cursor.fetchall():
+            name = x[1]
+            if name.startswith("i_"):
+                name = name[2:]  # remove "i_"
+                out.append(name)
+        return out
+
+    def lookup(self, request, select_values=False, order=None):
 
         conditions_str = ""
+        conditions = self._conditions(request)
         if conditions:
             conditions_str = " WHERE " + " AND ".join(conditions)
 
-        def build_order_by(order):
-            if order is None:
-                return ""
+        order_by_str = ""
+        order_by = self._order_by(request, order)
+        if order_by:
+            order_by_str = "ORDER BY " + ",".join(order_by)
 
-            if order == True:
-                if not request:
-                    return ""
-                order = [f"i_{k}" for k in request.keys()]
-                return "ORDER BY " + ",".join(order)
+        if select_values:
+            if select_values is True:
+                select_values = self._columns_names_with_no_i_()
 
-            if isinstance(order, str):
-                order = [order]
+            select_values_str = ",".join([f"i_{x}" for x in select_values])
+            statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str};"
 
-            if isinstance(order, (list, tuple)):
-                return "ORDER BY " + ",".join(order)
+            LOG.debug(statement)
+            parts = []
+            for tupl in self.connection.execute(statement):
+                dic = {k: v for k, v in zip(select_values, tupl)}
+                parts.append(dic)
 
-            raise NotImplementedError(str(order))
+        else:
+            statement = (
+                f"SELECT path,offset,length FROM entries {conditions_str} {order_by};"
+            )
 
-        order_by = build_order_by(order)
+            LOG.debug(statement)
+            parts = []
+            for path, offset, length in self.connection.execute(statement):
+                parts.append((path, (offset, length)))
 
-        statement = (
-            f"SELECT path,offset,length FROM entries {conditions_str} {order_by};"
-        )
-
-        LOG.debug(statement)
-        parts = []
-        for path, offset, length in self.connection.execute(statement):
-            parts.append((path, (offset, length)))
         return parts
