@@ -20,7 +20,7 @@ TEST_DIR = os.path.join(os.path.dirname(__file__), "test_indexing_order.py.grib"
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def source_1(params, levels):
+def _test_order_directory_source_1(params, levels):
     ds = cml.load_source(
         "directory",
         "/perm/mafp/weather-bench-links/data-from-mat-chantry-symlinks-to-files",
@@ -42,7 +42,7 @@ def source_1(params, levels):
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def test_order_directory_source_2(params, levels):
+def _test_order_directory_source_2(params, levels):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
