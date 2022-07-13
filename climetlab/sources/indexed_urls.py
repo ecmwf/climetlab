@@ -7,8 +7,11 @@
 # nor does it submit to any jurisdiction.
 #
 
+import warnings
+
 from climetlab import load_source
 from climetlab.core.statistics import record_statistics
+from climetlab.indexing import PerUrlIndex
 
 from .multi import MultiSource
 
@@ -24,15 +27,25 @@ class IndexedUrls(MultiSource):
         force=None,
         **kwargs,
     ):
+        if isinstance(index, PerUrlIndex):
+            warnings.warn(
+                "Passing a PerUrlIndex object is obsolete, please update your code."
+            )
+            index.source = self
+        else:
+            raise ValueError(
+                "Source 'indexed-url' is deprecated. Use source 'remote-indexed' instead..."
+            )
 
-        urls_parts = index.get_path_offset_length(request)
+        per_url_iterator = index.get_urls_parts(request)
+
         record_statistics(
             "indexed-urls",
             request=str(request),
         )
 
         sources = []
-        for url, parts in urls_parts:
+        for url, parts in per_url_iterator:
             source = load_source(
                 "url",
                 url=url,

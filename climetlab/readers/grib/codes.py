@@ -386,7 +386,7 @@ class GribField(Base):
         f.write(self._reader.read(self._offset, self._length))
 
 
-class GribIndex:
+class GribFileIndex:
 
     VERSION = 1
 
@@ -449,10 +449,6 @@ class GribIndex:
 
         return False
 
-    def get_path_offset_length(self, request=None):
-        if request is not None:
-            raise NotImplementedError(
-                f"Providing request is not supported: request={request}."
-            )
+    def get_path_offset_length(self):
         for offset, length in zip(self.offsets, self.lengths):
             yield (self.path, offset, length)

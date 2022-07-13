@@ -6,89 +6,58 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import json
 import logging
 import os
 
-from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.scripts.grib import _index_grib_file
-from climetlab.sources.indexed import IndexedSource, SqlIndex
+from climetlab.sources.indexed import IndexedSource, InMemoryIndex, JsonIndex, SqlIndex
 
 LOG = logging.getLogger(__name__)
 
 
-class DirectoryIndex(SqlIndex):
-    def __init__(self, index_location, path) -> None:
-        self.path = path
-        self.abspath = os.path.abspath(path)
-        self._climetlab_index_file = index_location
-
-        if not os.path.exists(self._climetlab_index_file):
-            print("Creating index for", self.path, " into ", self._climetlab_index_file)
-            entries = self._parse_files(self.path)
-            # TODO: create .tmp file and move it (use cache_file)
-            with open(self._climetlab_index_file, "w") as f:
-                for e in entries:
-                    json.dump(e, f)
-                    print("", file=f)
-            print("Created index file", self._climetlab_index_file)
-
-        super().__init__(self._climetlab_index_file)
-
-    def get_path_offset_length(self, request):
-        urls_parts = []
-        for path, part in self.lookup(request, order=True):
-            url = f"{self.path}/{path}"
-            # more conversion from  (path, (o,l)) into (path, [(o, l)])
-            # should not happen
-            urls_parts.append((url, [part]))
-        # TODO : here need to reorder according to user request?
-        return urls_parts
-
-    def _parse_files(self, path, ignore=("climetlab.index")):
-        LOG.debug(f"Parsing files in {path}")
-        assert os.path.isdir(path)
-        for root, _, files in os.walk(path):
-            for name in files:
-                if name in ignore:
-                    continue
-                p = os.path.abspath(os.path.join(root, name))
-                LOG.debug(f"Parsing file in {p}")
-                yield from _index_grib_file(p, path_name=name)
+def _parse_files(path, ignore=("climetlab.index", "climetlab.index.db")):
+    LOG.debug(f"Parsing files in {path}")
+    assert os.path.isdir(path)
+    for root, _, files in os.walk(path):
+        for name in files:
+            if name in ignore:
+                continue
+            relpath = os.path.join(root, name)
+            p = os.path.abspath(relpath)
+            LOG.debug(f"Parsing file in {p}")
+            yield from _index_grib_file(p)  # , path_name=relpath)
 
 
 class DirectorySource(IndexedSource):
-    def __init__(self, path, **kwargs):
-        self.path = path
-        self.data_provider = None  # data_provider = reader?
+    INDEX_BASE_FILENAME = "climetlab.index"
 
-        index = DirectoryIndex(
-            index_location=os.path.join(os.path.abspath(path), "climetlab.index"),
-            path=path,
+    def __init__(self, path, index_next_to_data=True, index_type="sql", **kwargs):
+        self.path = path
+        self.abspath = os.path.abspath(path)
+
+        entries = _parse_files(self.path)
+
+        IndexClass = {
+            "sql": SqlIndex,
+            "json": JsonIndex,
+            "ram": InMemoryIndex,
+        }[index_type]
+        extension = {"sql": ".db", "json": ".json", "ram": ".ram"}[index_type]
+
+        self._db_path = None
+        if index_next_to_data:
+            self._db_path = os.path.join(
+                self.abspath,
+                self.INDEX_BASE_FILENAME + extension,
+            )
+
+        index = IndexClass.from_scanner(
+            entries,
+            db_path=self._db_path,
+            cache_metadata={"directory": self.path},
         )
 
         super().__init__(index, **kwargs)
-
-    def _set_selection(self, kwargs):
-        fields = []
-        for path, parts in self.index.get_path_offset_length(kwargs):
-            for offset, length in parts:
-                # conversion from  (path, (o,l)) into (path, o, l)
-                # should not happen
-                fields.append((path, offset, length))
-        self.data_provider = FieldSet(fields=fields)
-
-    def to_tfdataset(self, *args, **kwargs):
-        return self.data_provider.to_tfdataset(*args, **kwargs)
-
-    def to_pytorch(self, *args, **kwargs):
-        return self.data_provider.to_pytorch(*args, **kwargs)
-
-    def to_numpy(self, *args, **kwargs):
-        return self.data_provider.to_numpy(*args, **kwargs)
-
-    def to_xarray(self, *args, **kwargs):
-        return self.data_provider.to_xarray(*args, **kwargs)
 
 
 source = DirectorySource

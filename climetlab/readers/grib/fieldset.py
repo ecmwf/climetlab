@@ -19,7 +19,6 @@ from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
-from climetlab.utils.parts import Parts
 
 from .codes import CodesReader, GribField
 
@@ -88,10 +87,9 @@ class FieldsetAdapter:
 
 
 class FieldSet(Source):
-    def __init__(self, fields=None, index=None):
+    def __init__(self, fields=None):
         self._statistics = None
         self.readers = {}
-        fields = Parts(fields)
         self.fields = fields
 
     def reader(self, path):
@@ -100,11 +98,13 @@ class FieldSet(Source):
         return self.readers[path]
 
     def __getitem__(self, n):
-        path, offset, length = self.fields.as_list[n]
+        print(self.fields)
+        print(self.fields.part(n))
+        path, offset, length = self.fields.part(n)
         return GribField(self.reader(path), offset, length)
 
     def __len__(self):
-        return len(self.fields)
+        return self.fields.number_of_parts()
 
     @property
     def first(self):
@@ -167,7 +167,7 @@ class FieldSet(Source):
 
         if isinstance(label, str):
             label_ = label
-            label = lambda s: s.handle.get(label_)
+            label = lambda s: s.handle.get(label_)  # noqa: E731
 
         @call_counter
         def generate():

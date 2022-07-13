@@ -8,9 +8,17 @@
 #
 
 
+import json
 import logging
+import os
+from urllib.parse import urljoin
+
+import requests
+from multiurl import robust
+from tqdm import tqdm
 
 from climetlab.core import Base
+from climetlab.core.caching import cache_file
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
 from climetlab.sources import Source
@@ -30,16 +38,133 @@ class Index(Base):
         self._not_implemented()
 
 
-class SqlIndex(Index):
-    def __init__(self, url):
-        from climetlab.indexing.database import SqlDatabase
+class GribIndex(Index):
+    VERSION = 3
+    EXTENSION = ".DB"
+
+    def __init__(
+        self,
+        iterator,
+        cache_metadata,
+        selection=None,
+        order=None,
+        db=None,
+        db_path=None,
+    ):
 
         self._availability = None
+        self.selection = selection
+        self.order = order
+        self.cache_metadata = cache_metadata
+        self.iterator = iterator
 
-        self.db = SqlDatabase(url=url)
+        self.db = db
 
-    def lookup(self, request, **kwargs):
-        return self.db.lookup(request, **kwargs)
+        self._cache = None  # first, length, result
+
+        if self.db is not None:
+            return
+
+        if db_path is not None:
+            self.db = self.database_class(iterator=iterator, db_path=db_path)
+            return
+
+        def load(target, *args):
+            print("Building db in ", target)
+            self.db = self.database_class(iterator=iterator, db_path=target)
+
+        db_path = cache_file(
+            "index",
+            load,
+            cache_metadata,
+            hash_extra=self.VERSION,
+            extension=self.EXTENSION,
+        )
+
+        self.db.reset_connection(db_path=db_path)
+
+    @classmethod
+    def from_url(cls, url, db_path=None):
+        if os.path.exists(url):
+            return cls.from_file(path=url, db_path=db_path)
+
+        if url.startswith("file://") and os.path.exists(url[7:]):
+            return cls.from_file(path=url[7:], db_path=db_path)
+
+        r = robust(requests.get)(url, stream=True)
+        r.raise_for_status()
+        try:
+            size = int(r.headers.get("Content-Length"))
+        except Exception:
+            size = None
+
+        def progress(lines):
+            pbar = tqdm(
+                lines,
+                desc="Downloading index",
+                total=size,
+                unit_scale=True,
+                unit="B",
+                leave=False,
+                disable=False,
+                unit_divisor=1024,
+            )
+            for line in pbar(lines):
+                yield line
+                pbar.update(len(line) + 1)
+
+        def parse_lines(lines):
+            for line in lines:
+                entry = json.loads(line)
+                entry["_path"] = urljoin(url, entry["_path"])
+                yield entry
+
+        iterator = r.iter_lines()
+        iterator = progress(iterator)
+        iterator = parse_lines(iterator, url)
+
+        return cls(
+            iterator=iterator,
+            db_path=db_path,
+            cache_metadata={"url": url},
+        )
+
+    @classmethod
+    def from_file(cls, path, db_path=None):
+        directory = os.path.dirname(path)
+
+        def parse_lines(lines):
+            for line in lines:
+                entry = json.loads(line)
+                if not os.path.isabs(entry["_path"]):
+                    entry["_path"] = os.path.join(directory, entry["_path"])
+                yield entry
+
+        return cls(
+            iterator=parse_lines(open(path).readlines()),
+            db_path=db_path,
+            cache_metadata={"path": path},
+        )
+
+    @classmethod
+    def from_scanner(cls, scanner, db_path=None, cache_metadata=None):
+        if cache_metadata is None:
+            cache_metadata = {}
+        return cls(iterator=scanner, db_path=db_path, cache_metadata=cache_metadata)
+
+    def sort_index(self, order):
+        return SqlIndex(self.url, selection=self.selection, order=order, db=self.db)
+
+    def sel(self, selection):
+        sel = {}
+        if self.selection:
+            sel.update(self.selection)
+        if selection:
+            sel.update(selection)
+        if not selection:
+            return self
+        return SelectionIndex(self, selection=sel)
+        # return SqlIndex(self.url, selection=sel, order=self.order, db=self.db)
 
     @property
     def availability(self, request=None):
@@ -54,6 +179,122 @@ class SqlIndex(Index):
 
         return availability
 
+    def __len__(self):
+        return len(self.lookup())
+
+    #####################
+
+    @property
+    def fieldset(self):
+        from climetlab.readers.grib.fieldset import FieldSet
+
+        return FieldSet(self)
+
+    def to_xarray(self, **kwargs):
+        return self.fieldset.to_xarray(**kwargs)
+
+    def number_of_parts(self):
+        return len(self)
+
+    def part(self, n):
+        item = self[n]
+        return item
+
+
+class MaskIndex(Index):
+    def __init__(self, index, indices):
+        self.index = index
+        self.indices = indices
+
+    def __getitem__(self, n):
+        n = self.indices[n]
+        return self.index[n]
+
+    def __len__(self):
+        return len(self.indices)
+
+
+class MultiIndex(Index):
+    def __init__(self, indexes):
+        self.indexes = list(indexes)
+
+    def sel(self, *args, **kwargs):
+        return MultiIndex(i.sel(*args, **kwargs) for i in self.indexes)
+
+    def __getitem__(self, n):
+        k = 0
+        while n > len(self.indexes[k]):
+            k += 1
+            n -= len(self.indexes[k])
+        return self.indexes[k][n]
+
+    def __len__(self):
+        return sum(len(i) for i in self.indexes)
+
+
+class Cache:
+    def __init__(self, first, length, result):
+        self.first = first
+        self.length = length
+        self.result = result
+
+
+class InMemoryIndex(GribIndex):
+    EXTENSION = None
+
+    @property
+    def database_class(self):
+        from climetlab.indexing.database import InMemoryDatabase
+
+        return InMemoryDatabase
+
+    def lookup(self, **kwargs):
+        entries = self.db.lookup(self.selection, order=self.order, **kwargs)
+        return [(x["_path"], x["_offset"], x["_length"]) for x in entries]
+
+    def __getitem__(self, n):
+        return self.lookup()[n]
+
+
+class JsonIndex(GribIndex):
+    EXTENSION = ".JSON"
+
+    @property
+    def database_class(self):
+        from climetlab.indexing.database import JsonDatabase
+
+        return JsonDatabase
+
+    def lookup(self, **kwargs):
+        entries = self.db.lookup(self.selection, order=self.order, **kwargs)
+        return [(x["_path"], x["_offset"], x["_length"]) for x in entries]
+
+    def __getitem__(self, n):
+        return self.lookup()[n]
+
+
+class SqlIndex(GribIndex):
+    EXTENSION = ".SQL"
+    CHUNK = 50000
+
+    @property
+    def database_class(self):
+        from climetlab.indexing.database import SqlDatabase
+
+        return SqlDatabase
+
+    def lookup(self, **kwargs):
+        return self.db.lookup(self.selection, order=self.order, **kwargs)
+
+    def __getitem__(self, n):
+        if self._cache is None or not (
+            self._cache.first <= n < self._cache.first + self._cache.length
+        ):
+            first = n // self.CHUNK
+            result = self.lookup(limit=self.CHUNK, offset=first)
+            self._cache = Cache(first, len(result), result)
+        return self._cache.result[n]
+
 
 class IndexedSource(Source):
 
@@ -66,10 +307,7 @@ class IndexedSource(Source):
     def __init__(self, index=None, filter=None, merger=None, **kwargs):
         self.filter = filter
         self.merger = merger
-        self.index = index
-        self.kwargs_selection = kwargs
-
-        self._set_selection(kwargs)  # todo make it lazy
+        self.index = index.sel(kwargs)
 
         super().__init__()
 
@@ -78,22 +316,18 @@ class IndexedSource(Source):
         return self.index.availability
 
     def sel(self, **kwargs):
-        new_kwargs = {k: v for k, v in self.kwargs_selection.items()}
-        new_kwargs.update(kwargs)
         return IndexedSource(
             self.path,
             filter=self.filter,
             merger=self.merger,
-            index=self.index,
-            **new_kwargs,
+            index=self.index.sel(**kwargs),
         )
 
     def __getitem__(self, n):
-        return self.data_provider[n]
+        return self.index[n]
 
     def __len__(self):
-        # todo ask index?
-        return len(self.data_provider)
+        return len(self.index)
 
     def __repr__(self):
         cache_dir = SETTINGS.get("cache-directory")
@@ -110,3 +344,15 @@ class IndexedSource(Source):
         args = [x for x in args if x is not None]
         args = ",".join(args)
         return f"{self.__class__.__name__}({args})"
+
+    def to_tfdataset(self, *args, **kwargs):
+        return self.index.to_tfdataset(*args, **kwargs)
+
+    def to_pytorch(self, *args, **kwargs):
+        return self.index.to_pytorch(*args, **kwargs)
+
+    def to_numpy(self, *args, **kwargs):
+        return self.index.to_numpy(*args, **kwargs)
+
+    def to_xarray(self, *args, **kwargs):
+        return self.index.to_xarray(*args, **kwargs)

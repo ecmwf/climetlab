@@ -54,6 +54,13 @@ def test_indexed_s3(baseurl):
                 "indexed-urls", PER_URL_INDEX, request, range_method="auto"
             )
 
+            self.source = load_source(
+                "indexed-urls",
+                request,
+                pattern=baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
+                range_method="auto",
+            )
+
     a = Mydataset(
         **{
             "domain": "g",
@@ -78,7 +85,6 @@ def test_indexed_s3(baseurl):
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
-    # parts = index.get_path_offset_length(request)
     print("range_method", range_method)
     print("REQUEST", request)
     #    for url, p in parts:

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import warnings
 from collections import defaultdict
 
 from climetlab.sources.indexed import Index, SqlIndex
@@ -15,34 +16,34 @@ from climetlab.utils.patterns import Pattern
 
 class GlobalIndex(SqlIndex):
     def __init__(self, index_location, baseurl) -> None:
+        warnings.warn(
+            "GlobalIndex is obsolete. Please update your code and use the 'directory' source"
+        )
+        raise NotImplementedError(
+            "GlobalIndex is obsolete. Please update your code and use the 'directory' source"
+        )
         """The GloblaIndex has one index managing multiple urls/files.
         This unique index is found at "index_location"
         The path of each file is written in the index as a relative path.
         It is relative to a base url: "baseurl".
         """
 
-        self.baseurl = baseurl
-        # if is url index_location
-        #   download index_location
-        super().__init__(url=index_location)
+    # def get_path_offset_length(self, request):
+    #    dic = defaultdict(list)
 
-    def get_path_offset_length(self, request):
-        dic = defaultdict(list)
+    #    # group parts by url
+    #    for path, parts in self.sel(request):
+    #        dic[path].append(parts)
 
-        # group parts by url
-        for path, parts in self.lookup(request, order="offset"):
-            url = f"{self.baseurl}/{path}"
-            dic[url].append(parts)
+    #    # and sort
+    #    dic = {url: sorted(parts) for url, parts in dic.items()}
 
-        # and sort
-        dic = {url: sorted(parts) for url, parts in dic.items()}
+    #    urls_parts = [(k, v) for k, v in dic.items()]
 
-        urls_parts = [(k, v) for k, v in dic.items()]
-
-        return urls_parts
+    #    return urls_parts
 
 
-class PerUrlIndex(Index):
+class PerUrlIndex:
     # index2 : 1 index per url.
     #        2a: index location = url location + '.jsonl'
     #        2b: index location = url location - '.grib' + '.jsonl'
@@ -52,6 +53,7 @@ class PerUrlIndex(Index):
         pattern,
         substitute_extension=False,
         index_extension=".index",
+        source=None,
     ) -> None:
         """The PerUrlIndex uses one index for each urls/files that it manages.
 
@@ -66,32 +68,39 @@ class PerUrlIndex(Index):
         get_path_offset_length(): get the urls and parts for a given request.
         """
         super().__init__()
+        self.source = source
         self.pattern = pattern
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
         self.backends = {}
 
-    def _build_index_file(self, url):
+        self._indexes = {}
+
+    def _resolve_extension(self, url):
         if callable(self.substitute_extension):
             return self.substitute_extension(url)
         if self.substitute_extension:
             url = url.rsplit(".", 1)[0]
         return url + self.index_extension
 
-    def get_backend(self, url):
-        from climetlab.sources.indexed import SqlIndex
-
-        if url in self.backends:
-            return self.backends[url]
+    def get_index(self, url, request):
         assert isinstance(url, str), url
 
-        index_url = self._build_index_file(url)
-        backend = SqlIndex(index_url)
+        from climetlab.sources.indexed import SqlIndex
 
-        self.backends[url] = backend
-        return self.backends[url]
+        if url in self._indexes:
+            return self._indexes[url]
 
-    def get_path_offset_length(self, request):
+        index_url = self._resolve_extension(url)
+
+        download
+        index = build(url_index)
+
+        self._indexes[url] = index_url
+        # backend = SqlIndex(order=["offset"], cache_metadata=dict(index_url=index_url), )
+        return self._indexes[url]
+
+    def get_urls_parts(self, request):
         dic = defaultdict(list)
 
         pattern = Pattern(self.pattern, ignore_missing_keys=True)
@@ -106,9 +115,10 @@ class PerUrlIndex(Index):
             request.pop(used)
 
         # group parts by url
+        raise NotImplementedError(" per_url_index_is_broken ")
         for url in urls:
-            backend = self.get_backend(url)
-            for _, parts in backend.lookup(request, order="offset"):
+            backend = self.get_index(url, initial_request)
+            for _, parts in backend.sel(request):
                 dic[url].append(parts)
 
         # and sort

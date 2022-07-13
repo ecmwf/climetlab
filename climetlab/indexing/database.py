@@ -8,42 +8,14 @@
 #
 
 
-import json
 import logging
 import os
 import sqlite3
 
-import requests
-from multiurl import robust
-
 import climetlab as cml
-from climetlab.core.caching import cache_file
-from climetlab.utils import tqdm
+from climetlab.utils.parts import Part
 
 LOG = logging.getLogger(__name__)
-
-
-def get_iterator_and_size_from_path(path):
-    iterator = open(path).readlines()
-    size = os.path.getsize(path)
-    return iterator, size
-
-
-def get_iterator_and_size(url):
-    if os.path.exists(url):
-        return get_iterator_and_size_from_path(path=url)
-
-    if url.startswith("file://") and os.path.exists(url[7:]):
-        return get_iterator_and_size_from_path(path=url[7:])
-
-    r = robust(requests.get)(url, stream=True)
-    r.raise_for_status()
-    try:
-        size = int(r.headers.get("Content-Length"))
-    except Exception:
-        size = None
-    iterator = r.iter_lines()
-    return iterator, size
 
 
 GRIB_INDEX_KEYS = [
@@ -51,6 +23,7 @@ GRIB_INDEX_KEYS = [
     "stream",
     "levtype",
     "type",
+    "expver",
     "date",
     "hdate",
     "andate",
@@ -64,7 +37,6 @@ GRIB_INDEX_KEYS = [
     "fcperiod",
     "leadtime",
     "opttime",
-    "expver",
     "origin",
     "domain",
     "method",
@@ -121,55 +93,100 @@ class Database:
         raise NotImplementedError("")
 
 
+class InMemoryDatabase(Database):
+    def __init__(
+        self,
+        db_path,
+        iterator=None,
+    ):
+        self.entries = list(iterator)
+
+    def lookup(self, request, **kwargs):
+        if kwargs.get("order") is not None:
+            raise NotImplementedError()
+        if request is None:
+            return self.entries
+        # DUPLICATED CODE ?
+        matching = []
+        for e in self.entries:
+            for k, v in e.items():
+                if v not in request.get(k, None):
+                    continue
+            matching.append(e)
+        return matching
+
+
+class JsonDatabase(Database):
+    def __init__(
+        self,
+        db_path,
+        iterator=None,
+    ):
+        self.entries = list(iterator)
+        print(self.entries)
+        print("todo write and read json file")
+
+    def lookup(self, request, **kwargs):
+        if kwargs.get("order") is not None:
+            raise NotImplementedError()
+        if request is None:
+            return self.entries
+        matching = []
+        for e in self.entries:
+            for k, v in e.items():
+                if v not in request.get(k, None):
+                    continue
+            matching.append(e)
+        return matching
+
+
 class SqlDatabase(Database):
     VERSION = 2
 
     def __init__(
         self,
-        url,
+        db_path,
+        iterator=None,
         create_index_in_sql_db=False,  # index is disabled by default because it is long to create.
+        # create_entry_in_db=None,
     ):
         self._connection = None
-        self.url = url
+        self.db_path = db_path
+
         self.create_index_in_sql_db = create_index_in_sql_db
+
+        if iterator is not None:
+            self.load(iterator)
+
+    def reset_connection(self, db_path):
+        self._connection = None
+        self.db_path = db_path
 
     @property
     def connection(self):
         if self._connection is None:
-            path = cache_file(
-                "index",
-                self.to_sql_target,
-                self.url,
-                hash_extra=self.VERSION,
-                extension=".db",
-            )
-            self._connection = sqlite3.connect(path)
+            self._connection = sqlite3.connect(self.db_path)
+        print("Connecting to db in ", self.db_path)
         return self._connection
 
-    def to_sql_target(self, target, url):
-        iterator, size = get_iterator_and_size(url)
+    def load(self, iterator):
+        # is_url = (
+        #    url.startswith("http://")
+        #    or url.startswith("https://")
+        #    or url.startswith("ftp://")
+        # )
 
         count = 0
         names = None
         connection = None
         insert_statement = None
-        pbar = tqdm(
-            iterator,
-            desc="Downloading index",
-            total=size,
-            unit_scale=True,
-            unit="B",
-            leave=False,
-            disable=False,
-            unit_divisor=1024,
-        )
-        for line in pbar:
-            entry = json.loads(line)
+
+        for entry in iterator:
             if connection is None:
                 # this is done only for the first entry only
                 names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
                 connection, insert_statement, sql_names, all_names = create_table(
-                    target, names
+                    self.db_path, names
                 )
 
             assert names is not None, names
@@ -180,16 +197,25 @@ class SqlDatabase(Database):
             # additional check is disabled
             # _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
             # assert _names == names, (names, _names)
+            path, offset, length = entry["_path"], entry["_offset"], entry["_length"]
+            # if path is not None:
+            #    if is_url:
+            #        from urllib.parse import urljoin
+            #        path = urljoin(url, path)
+            #
+            #    else:
+            #        if not os.path.isabs(path):
+            #            path = os.path.join(os.path.dirname(url), path)
+            # else:
+            #    path = self.the_path_from__init__
 
-            values = [entry.get("_path", None), entry["_offset"], entry["_length"]] + [
-                entry.get(n, None) for n in all_names
-            ]
+            print(path)
+            values = [path, offset, length] + [entry.get(n, None) for n in all_names]
+
             LOG.debug(insert_statement)
-
             connection.execute(insert_statement, tuple(values))
 
             count += 1
-            pbar.update(len(line) + 1)
 
         if self.create_index_in_sql_db:
             # connection.execute(f"CREATE INDEX path_index ON entries (path);")
@@ -218,7 +244,7 @@ class SqlDatabase(Database):
         if order is None:
             return None
 
-        if order == True:
+        if order is True:
             if not request:
                 return None
             return [f"i_{k}" for k in request.keys()]
@@ -226,9 +252,12 @@ class SqlDatabase(Database):
         if isinstance(order, str):
             return [order]
 
+        if isinstance(order, (list, tuple)):
+            return order
+
         raise NotImplementedError(str(order))
 
-    def _columns_names_with_no_i_(self):
+    def _columns_names_without_i_(self):
         cursor = self.connection.execute("PRAGMA table_info(entries)")
         out = []
         for x in cursor.fetchall():
@@ -238,7 +267,9 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
-    def lookup(self, request, select_values=False, order=None):
+    def lookup(self, request, select_values=False, order=None, limit=None, offset=None):
+        if request is None:
+            request = {}
 
         conditions_str = ""
         conditions = self._conditions(request)
@@ -249,10 +280,11 @@ class SqlDatabase(Database):
         order_by = self._order_by(request, order)
         if order_by:
             order_by_str = "ORDER BY " + ",".join(order_by)
+        print(order_by_str)
 
         if select_values:
             if select_values is True:
-                select_values = self._columns_names_with_no_i_()
+                select_values = self._columns_names_without_i_()
 
             select_values_str = ",".join([f"i_{x}" for x in select_values])
             statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str};"
@@ -262,15 +294,13 @@ class SqlDatabase(Database):
             for tupl in self.connection.execute(statement):
                 dic = {k: v for k, v in zip(select_values, tupl)}
                 parts.append(dic)
+            return parts
 
         else:
-            statement = (
-                f"SELECT path,offset,length FROM entries {conditions_str} {order_by};"
-            )
+            statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str};"
 
             LOG.debug(statement)
             parts = []
             for path, offset, length in self.connection.execute(statement):
-                parts.append((path, (offset, length)))
-
-        return parts
+                parts.append(Part(path, offset, length))
+            return parts

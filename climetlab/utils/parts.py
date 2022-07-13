@@ -1,5 +1,7 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from collections.abc import Iterable
+
+Part = namedtuple("Part", ["path", "offset", "length"])
 
 
 class Parts:
@@ -51,3 +53,9 @@ class Parts:
 
     def __len__(self):
         return len(self.as_list)
+
+    def number_of_parts(self):
+        return len(self)
+
+    def part(self, n):
+        return Part(*self.as_list[n])
