@@ -69,23 +69,22 @@ class GribIndex(Index):
             # self.db.reset_connection(db_path=db_path)
             return
 
-        if db_path is not None:
-            self.db = self.database_class(iterator=iterator, db_path=db_path)
-            return
-
         def load(target, *args):
             print("Building db in ", target)
             self.db = self.database_class(iterator=iterator, db_path=target)
 
-        db_path = cache_file(
-            "index",
-            load,
-            cache_metadata,
-            hash_extra=self.VERSION,
-            extension=self.EXTENSION,
-        )
+        if db_path is not None:
+            load(db_path)
+        else:
+            db_path = cache_file(
+                "index",
+                load,
+                cache_metadata,
+                hash_extra=self.VERSION,
+                extension=self.EXTENSION,
+            )
 
-        self.db.reset_connection(db_path=db_path)
+            self.db.reset_connection(db_path=db_path)
 
     @classmethod
     def from_url(cls, url, db_path=None):
