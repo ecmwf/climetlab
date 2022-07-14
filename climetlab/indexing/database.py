@@ -61,6 +61,7 @@ GRIB_INDEX_KEYS = [
 
 
 def create_table(target, names):
+    LOG.debug(f"Create_table connecting to {target}")
     if os.path.exists(target):
         os.unlink(target)
     connection = sqlite3.connect(target)
@@ -123,7 +124,6 @@ class JsonDatabase(Database):
 
         parts = []
         for e in self.entries:
-            print(e)
             for k, v in e.items():
                 if v not in request.get(k, []):
                     continue
@@ -160,7 +160,7 @@ class SqlDatabase(Database):
     def connection(self):
         if self._connection is None:
             self._connection = sqlite3.connect(self.db_path)
-        print("Connecting to db in ", self.db_path)
+        LOG.debug(f"Connecting to db in {self.db_path}")
         return self._connection
 
     def load(self, iterator):
@@ -203,7 +203,6 @@ class SqlDatabase(Database):
             # else:
             #    path = self.the_path_from__init__
 
-            print(path)
             values = [path, offset, length] + [entry.get(n, None) for n in all_names]
 
             LOG.debug(insert_statement)
@@ -274,7 +273,6 @@ class SqlDatabase(Database):
         order_by = self._order_by(request, order)
         if order_by:
             order_by_str = "ORDER BY " + ",".join(order_by)
-        print(order_by_str)
 
         if select_values:
             if select_values is True:

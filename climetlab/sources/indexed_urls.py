@@ -12,6 +12,8 @@ import warnings
 from climetlab import load_source
 from climetlab.core.statistics import record_statistics
 from climetlab.indexing import PerUrlIndex
+from climetlab.sources import Source
+from climetlab.sources.indexed import IndexedSource, JsonIndex, SqlIndex
 
 from .multi import MultiSource
 
@@ -22,6 +24,7 @@ class IndexedUrls(MultiSource):
         index,
         request,
         *args,
+        baseurl=None,
         filter=None,
         merger=None,
         force=None,

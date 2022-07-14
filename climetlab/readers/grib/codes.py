@@ -387,6 +387,9 @@ class GribField(Base):
 
 
 class GribFileIndex:
+    """This class take a grib file (path)
+    and provides .offsets and .lengths each grib in the file.
+    It caches this information in the climetlab cache."""
 
     VERSION = 1
 
@@ -448,7 +451,3 @@ class GribFileIndex:
             LOG.exception("Load from cache failed %s", self.cache)
 
         return False
-
-    def get_path_offset_length(self):
-        for offset, length in zip(self.offsets, self.lengths):
-            yield (self.path, offset, length)

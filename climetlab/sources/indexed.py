@@ -16,13 +16,13 @@ from urllib.parse import urljoin
 
 import requests
 from multiurl import robust
-from tqdm import tqdm
 
 from climetlab.core import Base
 from climetlab.core.caching import cache_file
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
 from climetlab.sources import Source
+from climetlab.utils import tqdm
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -59,6 +59,7 @@ class GribIndex(Index):
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
+        self._readers = {}
 
     @classmethod
     def from_iterator(
@@ -67,7 +68,7 @@ class GribIndex(Index):
         db_ = {}
 
         def load(target, *args):
-            print("Building db in ", target)
+            LOG.debug(f"Building db in {target}")
             db_["db"] = cls.database_class(iterator=iterator, db_path=target)
 
         if db_path is not None:
@@ -109,7 +110,7 @@ class GribIndex(Index):
 
         def progress(lines):
             pbar = tqdm(
-                lines,
+                iterable=lines,
                 desc="Downloading index",
                 total=size,
                 unit_scale=True,
@@ -118,7 +119,7 @@ class GribIndex(Index):
                 disable=False,
                 unit_divisor=1024,
             )
-            for line in pbar(lines):
+            for line in pbar:
                 yield line
                 pbar.update(len(line) + 1)
 
@@ -130,7 +131,7 @@ class GribIndex(Index):
 
         iterator = r.iter_lines()
         iterator = progress(iterator)
-        iterator = parse_lines(iterator, url)
+        iterator = parse_lines(iterator)
 
         return cls.from_iterator(
             iterator=iterator, db_path=db_path, cache_metadata={"url": url}
