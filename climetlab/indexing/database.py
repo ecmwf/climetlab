@@ -8,6 +8,7 @@
 #
 
 
+import json
 import logging
 import os
 import sqlite3
@@ -92,6 +93,9 @@ class Database:
     def lookup(self, request, order=None):
         raise NotImplementedError("")
 
+    def reset_connection(self, *args, **kwargs):
+        raise NotImplementedError("")
+
 
 class InMemoryDatabase(Database):
     def __init__(
@@ -106,38 +110,34 @@ class InMemoryDatabase(Database):
             raise NotImplementedError()
         if request is None:
             return self.entries
-        # DUPLICATED CODE ?
-        matching = []
+        parts = []
         for e in self.entries:
+            print(e)
             for k, v in e.items():
-                if v not in request.get(k, None):
+                if v not in request.get(k, []):
                     continue
-            matching.append(e)
-        return matching
+            parts.append(Part(e["_path"], e["_offset"], e["_length"]))
+        return parts
+
+    def reset_connection(self, *args, **kwargs):
+        pass
 
 
-class JsonDatabase(Database):
+class JsonDatabase(InMemoryDatabase):
     def __init__(
         self,
         db_path,
         iterator=None,
     ):
         self.entries = list(iterator)
-        print(self.entries)
-        print("todo write and read json file")
 
-    def lookup(self, request, **kwargs):
-        if kwargs.get("order") is not None:
-            raise NotImplementedError()
-        if request is None:
-            return self.entries
-        matching = []
-        for e in self.entries:
-            for k, v in e.items():
-                if v not in request.get(k, None):
-                    continue
-            matching.append(e)
-        return matching
+        if not os.path.exists(db_path):
+            # TODO: any bug here?
+            # due to unfinished download in cache?
+            # or concurrent download?
+            with open(db_path, "w") as f:
+                for entry in self.entries:
+                    f.write(json.dumps(entry) + "\n")
 
 
 class SqlDatabase(Database):

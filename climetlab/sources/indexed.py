@@ -41,9 +41,12 @@ class Index(Base):
 
 class GribIndex(Index):
     VERSION = 3
-    EXTENSION = ".DB"
+    EXTENSION = ".DB"  # should be overrided
 
     def __init__(self, db, cache_metadata, db_path=None, selection=None, order=None):
+        """Should not be instanciated directly.
+        The public API are the constructors "_from*()" class methods.
+        """
 
         self._availability = None
         self.selection = selection
@@ -53,12 +56,14 @@ class GribIndex(Index):
         self.db_path = db_path
         # self.db.reset_connection(db_path=db_path)
 
-        # cache is a tuple : (first, length, result). It holds one chunk of the db.
+        # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
 
     @classmethod
-    def from_iterator( cls, iterator, cache_metadata, selection=None, order=None, db_path=None):
+    def from_iterator(
+        cls, iterator, cache_metadata, selection=None, order=None, db_path=None
+    ):
         db_ = {}
 
         def load(target, *args):
@@ -79,7 +84,13 @@ class GribIndex(Index):
 
         db = db_["db"]
 
-        return cls( db=db, db_path=db_path, cache_metadata=cache_metadata, selection=selection, order=order)
+        return cls(
+            db=db,
+            db_path=db_path,
+            cache_metadata=cache_metadata,
+            selection=selection,
+            order=order,
+        )
 
     @classmethod
     def from_url(cls, url, db_path=None):
@@ -135,6 +146,7 @@ class GribIndex(Index):
                 if not os.path.isabs(entry["_path"]):
                     entry["_path"] = os.path.join(directory, entry["_path"])
                 yield entry
+
         iterator = parse_lines(open(path).readlines())
 
         return cls.from_iterator(

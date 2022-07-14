@@ -19,14 +19,14 @@ def temp_cache_dir(f):
     return wrapped
 
 
-# @pytest.mark.parametrize("index_type", ["sql", "json"])
-@pytest.mark.parametrize("index_type", ["sql"])
+@pytest.mark.parametrize("index_type", ["sql", "json"])
+# @pytest.mark.parametrize("index_type", ["sql"])
 def test_directory_with_local_index_file(index_type):
     temp_cache_dir(_test_directory)(index_type, True)
 
 
-@pytest.mark.parametrize("index_type", ["sql"])
-# @pytest.mark.parametrize("index_type", ["sql", "json", "ram"])
+# @pytest.mark.parametrize("index_type", ["sql"])
+@pytest.mark.parametrize("index_type", ["sql", "json", "ram"])
 def test_directory_with_cached_index_file(index_type):
     temp_cache_dir(_test_directory)(index_type, False)
 
