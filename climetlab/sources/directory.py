@@ -15,27 +15,12 @@ from climetlab.sources.indexed import IndexedSource, InMemoryIndex, JsonIndex, S
 LOG = logging.getLogger(__name__)
 
 
-def _parse_files(path, ignore=("climetlab.index", "climetlab.index.db")):
-    LOG.debug(f"Parsing files in {path}")
-    assert os.path.isdir(path)
-    for root, _, files in os.walk(path):
-        for name in files:
-            if name in ignore:
-                continue
-            relpath = os.path.join(root, name)
-            p = os.path.abspath(relpath)
-            LOG.debug(f"Parsing file in {p}")
-            yield from _index_grib_file(p)  # , path_name=relpath)
-
-
 class DirectorySource(IndexedSource):
     INDEX_BASE_FILENAME = "climetlab.index"
 
     def __init__(self, path, index_next_to_data=True, index_type="sql", **kwargs):
         self.path = path
         self.abspath = os.path.abspath(path)
-
-        entries = _parse_files(self.path)
 
         IndexClass = {
             "sql": SqlIndex,
@@ -51,6 +36,8 @@ class DirectorySource(IndexedSource):
                 self.INDEX_BASE_FILENAME + extension,
             )
 
+        entries = self._parse_files(path)
+
         index = IndexClass.from_scanner(
             entries,
             db_path=self._db_path,
@@ -58,6 +45,21 @@ class DirectorySource(IndexedSource):
         )
 
         super().__init__(index, **kwargs)
+
+    def _parse_files(self, path):
+        ignore = ["climetlab.index", "climetlab.index.db"]
+        ignore.append(self._db_path)
+
+        LOG.debug(f"Parsing files in {path}")
+        assert os.path.isdir(path)
+        for root, _, files in os.walk(path):
+            for name in files:
+                if name in ignore:
+                    continue
+                relpath = os.path.join(root, name)
+                p = os.path.abspath(relpath)
+                LOG.debug(f"Parsing file in {p}")
+                yield from _index_grib_file(p)  # , path_name=relpath)
 
 
 source = DirectorySource

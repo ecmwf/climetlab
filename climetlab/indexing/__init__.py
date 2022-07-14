@@ -10,7 +10,7 @@
 import warnings
 from collections import defaultdict
 
-from climetlab.sources.indexed import Index, SqlIndex
+from climetlab.sources.indexed import SqlIndex
 from climetlab.utils.patterns import Pattern
 
 

@@ -11,6 +11,7 @@
 import json
 import logging
 import os
+from collections import namedtuple
 from urllib.parse import urljoin
 
 import requests
@@ -44,8 +45,8 @@ class GribIndex(Index):
 
     def __init__(
         self,
-        iterator,
         cache_metadata,
+        iterator=None,
         selection=None,
         order=None,
         db=None,
@@ -58,11 +59,14 @@ class GribIndex(Index):
         self.cache_metadata = cache_metadata
         self.iterator = iterator
 
-        self.db = db
+        # cache is a tuple : (first, length, result). It holds one chunk of the db.
+        # The third element (result) is a list of size length.
+        self._cache = None
 
-        self._cache = None  # first, length, result
-
-        if self.db is not None:
+        if db is not None:
+            self.db = db
+            self.db_path = db_path
+            # self.db.reset_connection(db_path=db_path)
             return
 
         if db_path is not None:
@@ -161,10 +165,12 @@ class GribIndex(Index):
             sel.update(self.selection)
         if selection:
             sel.update(selection)
-        if not selection:
-            return self
-        return SelectionIndex(self, selection=sel)
-        # return SqlIndex(self.url, selection=sel, order=self.order, db=self.db)
+        return SqlIndex(
+            selection=sel,
+            order=self.order,
+            db=self.db,
+            cache_metadata=self.cache_metadata,
+        )
 
     @property
     def availability(self, request=None):
@@ -232,11 +238,7 @@ class MultiIndex(Index):
         return sum(len(i) for i in self.indexes)
 
 
-class Cache:
-    def __init__(self, first, length, result):
-        self.first = first
-        self.length = length
-        self.result = result
+Cache = namedtuple("Cache", ["first", "length", "result"])
 
 
 class InMemoryIndex(GribIndex):
