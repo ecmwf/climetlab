@@ -47,8 +47,8 @@ class IndexWrapperForCfGrib:
     def __len__(self):
         return len(self.index)
 
-class GribIndex(Index):
 
+class GribIndex(Index):
     def __init__(self, selection=None, order=None):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -69,7 +69,7 @@ class GribDBIndex(GribIndex):
         """
 
         self.cache_metadata = cache_metadata
-        
+
         self.db = db
         self.db_path = db_path
         # self.db.reset_connection(db_path=db_path)
@@ -77,7 +77,6 @@ class GribDBIndex(GribIndex):
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
-        self._readers = {}
 
         super().__init__(selection=selection, order=order)
 
@@ -85,11 +84,12 @@ class GribDBIndex(GribIndex):
     def from_iterator(
         cls, iterator, cache_metadata, selection=None, order=None, db_path=None
     ):
-        db_ = {}
+        db = None
 
         def load(target, *args):
             LOG.debug(f"Building db in {target}")
-            db_["db"] = cls.database_class(iterator=iterator, db_path=target)
+            nonlocal db  # to make sure to use the variable db outside of the function
+            db = cls.database_class(iterator=iterator, db_path=target)
 
         if db_path is not None:
             load(db_path)
@@ -101,9 +101,7 @@ class GribDBIndex(GribIndex):
                 hash_extra=cls.VERSION,
                 extension=cls.EXTENSION,
             )
-            db_["db"].reset_connection(db_path=db_path)
-
-        db = db_["db"]
+            db.reset_connection(db_path=db_path)
 
         return cls(
             db=db,
@@ -194,7 +192,7 @@ class GribDBIndex(GribIndex):
 
         if self.selection:
             sel.update(self.selection)
-        
+
         for a in args:
             sel.update(a)
 
