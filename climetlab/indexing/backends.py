@@ -7,15 +7,15 @@
 # nor does it submit to any jurisdiction.
 #
 
-
-from .database import SqlDatabase
-
-
-class JsonIndexBackend:
-    def __init__(self, url):
-        assert False
-        self.db = SqlDatabase(url=url)
-
-    def lookup(self, request, **kwargs):
-        assert False
-        return self.db.lookup(request, **kwargs)
+#
+# from .database import SqlDatabase
+#
+#
+# class JsonIndexBackend:
+#    def __init__(self, url):
+#        assert False
+#        self.db = SqlDatabase(url=url)
+#
+#    def lookup(self, request, **kwargs):
+#        assert False
+#        return self.db.lookup(request, **kwargs)

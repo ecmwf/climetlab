@@ -9,8 +9,9 @@
 import logging
 import os
 
+from climetlab.readers.grib.index import JsonIndex, SqlIndex
 from climetlab.scripts.grib import _index_grib_file
-from climetlab.sources.indexed import IndexedSource, JsonIndex, SqlIndex
+from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
 

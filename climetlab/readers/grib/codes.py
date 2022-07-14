@@ -362,6 +362,9 @@ class GribField(Base):
             name = "paramId"
         return self.handle.get(name)
 
+    def metadata(self, name):
+        return self[name]
+
     def __getitem__(self, name):
         """For cfgrib"""
         if name in FORCED_VALUES:

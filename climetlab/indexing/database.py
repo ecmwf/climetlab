@@ -260,6 +260,22 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
+    def count(self, request):
+        if request is None:
+            request = {}
+
+        conditions_str = ""
+        conditions = self._conditions(request)
+        if conditions:
+            conditions_str = " WHERE " + " AND ".join(conditions)
+
+        statement = f"SELECT COUNT(*) FROM entries {conditions_str};"
+
+        LOG.debug(statement)
+        for result in self.connection.execute(statement):
+            return result[0]
+        assert False
+
     def lookup(self, request, select_values=False, order=None, limit=None, offset=None):
         if request is None:
             request = {}
