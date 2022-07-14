@@ -10,7 +10,7 @@ import logging
 import os
 
 from climetlab.scripts.grib import _index_grib_file
-from climetlab.sources.indexed import IndexedSource, InMemoryIndex, JsonIndex, SqlIndex
+from climetlab.sources.indexed import IndexedSource, JsonIndex, SqlIndex
 
 LOG = logging.getLogger(__name__)
 
@@ -25,9 +25,8 @@ class DirectorySource(IndexedSource):
         IndexClass = {
             "sql": SqlIndex,
             "json": JsonIndex,
-            "ram": InMemoryIndex,
         }[index_type]
-        extension = {"sql": ".db", "json": ".json", "ram": ".ram"}[index_type]
+        extension = {"sql": ".db", "json": ".json"}[index_type]
 
         self._db_path = None
         if index_next_to_data:

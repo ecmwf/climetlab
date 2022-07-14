@@ -20,13 +20,11 @@ def temp_cache_dir(f):
 
 
 @pytest.mark.parametrize("index_type", ["sql", "json"])
-# @pytest.mark.parametrize("index_type", ["sql"])
 def test_directory_with_local_index_file(index_type):
     temp_cache_dir(_test_directory)(index_type, True)
 
 
-# @pytest.mark.parametrize("index_type", ["sql"])
-@pytest.mark.parametrize("index_type", ["sql", "json", "ram"])
+@pytest.mark.parametrize("index_type", ["sql", "json"])
 def test_directory_with_cached_index_file(index_type):
     temp_cache_dir(_test_directory)(index_type, False)
 
@@ -47,7 +45,7 @@ def test_db_with_cache():
     s = cml.load_source(
         "directory",
         os.path.join(here, "gribs", "y"),
-        index_type="sql",
+        index_type="json",
         index_next_to_data=False,
     )
     print(s, len(s))
@@ -59,7 +57,7 @@ def test_db_no_cache():
     s = cml.load_source(
         "directory",
         os.path.join(here, "gribs", "y"),
-        index_type="sql",
+        index_type="json",
         index_next_to_data=True,
     )
     print(s, len(s))
@@ -107,5 +105,4 @@ if __name__ == "__main__":
     # test_json_local()
     test_db_with_cache()
     print("--------------")
-    test_db_no_cache()
-    # test_json()
+    # test_db_no_cache()

@@ -248,24 +248,6 @@ class MultiIndex(Index):
 Cache = namedtuple("Cache", ["first", "length", "result"])
 
 
-class InMemoryIndex(GribIndex):
-    EXTENSION = None
-
-    @classmethod
-    @property
-    def database_class(self):
-        from climetlab.indexing.database import InMemoryDatabase
-
-        return InMemoryDatabase
-
-    def lookup(self, **kwargs):
-        entries = self.db.lookup(self.selection, order=self.order, **kwargs)
-        return [(x["_path"], x["_offset"], x["_length"]) for x in entries]
-
-    def __getitem__(self, n):
-        return self.lookup()[n]
-
-
 class JsonIndex(GribIndex):
     EXTENSION = ".JSON"
 

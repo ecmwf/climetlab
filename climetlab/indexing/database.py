@@ -97,33 +97,7 @@ class Database:
         raise NotImplementedError("")
 
 
-class InMemoryDatabase(Database):
-    def __init__(
-        self,
-        db_path,
-        iterator=None,
-    ):
-        self.entries = list(iterator)
-
-    def lookup(self, request, **kwargs):
-        if kwargs.get("order") is not None:
-            raise NotImplementedError()
-        if request is None:
-            return self.entries
-        parts = []
-        for e in self.entries:
-            print(e)
-            for k, v in e.items():
-                if v not in request.get(k, []):
-                    continue
-            parts.append(Part(e["_path"], e["_offset"], e["_length"]))
-        return parts
-
-    def reset_connection(self, *args, **kwargs):
-        pass
-
-
-class JsonDatabase(InMemoryDatabase):
+class JsonDatabase(Database):
     def __init__(
         self,
         db_path,
@@ -138,6 +112,26 @@ class JsonDatabase(InMemoryDatabase):
             with open(db_path, "w") as f:
                 for entry in self.entries:
                     f.write(json.dumps(entry) + "\n")
+
+    def lookup(self, request, **kwargs):
+
+        if kwargs.get("order") is not None:
+            raise NotImplementedError()
+
+        if request is None:
+            return self.entries
+
+        parts = []
+        for e in self.entries:
+            print(e)
+            for k, v in e.items():
+                if v not in request.get(k, []):
+                    continue
+            parts.append(Part(e["_path"], e["_offset"], e["_length"]))
+        return parts
+
+    def reset_connection(self, *args, **kwargs):
+        pass
 
 
 class SqlDatabase(Database):
