@@ -43,35 +43,27 @@ class GribIndex(Index):
     VERSION = 3
     EXTENSION = ".DB"
 
-    def __init__(
-        self,
-        cache_metadata,
-        iterator=None,
-        selection=None,
-        order=None,
-        db=None,
-        db_path=None,
-    ):
+    def __init__(self, db, cache_metadata, db_path=None, selection=None, order=None):
 
         self._availability = None
         self.selection = selection
         self.order = order
         self.cache_metadata = cache_metadata
-        self.iterator = iterator
+        self.db = db
+        self.db_path = db_path
+        # self.db.reset_connection(db_path=db_path)
 
         # cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
 
-        if db is not None:
-            self.db = db
-            self.db_path = db_path
-            # self.db.reset_connection(db_path=db_path)
-            return
+    @classmethod
+    def from_iterator( cls, iterator, cache_metadata, selection=None, order=None, db_path=None):
+        db_ = {}
 
         def load(target, *args):
             print("Building db in ", target)
-            self.db = self.database_class(iterator=iterator, db_path=target)
+            db_["db"] = cls.database_class(iterator=iterator, db_path=target)
 
         if db_path is not None:
             load(db_path)
@@ -80,11 +72,14 @@ class GribIndex(Index):
                 "index",
                 load,
                 cache_metadata,
-                hash_extra=self.VERSION,
-                extension=self.EXTENSION,
+                hash_extra=cls.VERSION,
+                extension=cls.EXTENSION,
             )
+            db_["db"].reset_connection(db_path=db_path)
 
-            self.db.reset_connection(db_path=db_path)
+        db = db_["db"]
+
+        return cls( db=db, db_path=db_path, cache_metadata=cache_metadata, selection=selection, order=order)
 
     @classmethod
     def from_url(cls, url, db_path=None):
@@ -126,10 +121,8 @@ class GribIndex(Index):
         iterator = progress(iterator)
         iterator = parse_lines(iterator, url)
 
-        return cls(
-            iterator=iterator,
-            db_path=db_path,
-            cache_metadata={"url": url},
+        return cls.from_iterator(
+            iterator=iterator, db_path=db_path, cache_metadata={"url": url}
         )
 
     @classmethod
@@ -142,9 +135,10 @@ class GribIndex(Index):
                 if not os.path.isabs(entry["_path"]):
                     entry["_path"] = os.path.join(directory, entry["_path"])
                 yield entry
+        iterator = parse_lines(open(path).readlines())
 
-        return cls(
-            iterator=parse_lines(open(path).readlines()),
+        return cls.from_iterator(
+            iterator=iterator,
             db_path=db_path,
             cache_metadata={"path": path},
         )
@@ -153,7 +147,9 @@ class GribIndex(Index):
     def from_scanner(cls, scanner, db_path=None, cache_metadata=None):
         if cache_metadata is None:
             cache_metadata = {}
-        return cls(iterator=scanner, db_path=db_path, cache_metadata=cache_metadata)
+        return cls.from_iterator(
+            iterator=scanner, db_path=db_path, cache_metadata=cache_metadata
+        )
 
     def sort_index(self, order):
         return SqlIndex(self.url, selection=self.selection, order=order, db=self.db)
@@ -243,6 +239,7 @@ Cache = namedtuple("Cache", ["first", "length", "result"])
 class InMemoryIndex(GribIndex):
     EXTENSION = None
 
+    @classmethod
     @property
     def database_class(self):
         from climetlab.indexing.database import InMemoryDatabase
@@ -260,6 +257,7 @@ class InMemoryIndex(GribIndex):
 class JsonIndex(GribIndex):
     EXTENSION = ".JSON"
 
+    @classmethod
     @property
     def database_class(self):
         from climetlab.indexing.database import JsonDatabase
@@ -278,6 +276,7 @@ class SqlIndex(GribIndex):
     EXTENSION = ".SQL"
     CHUNK = 50000
 
+    @classmethod
     @property
     def database_class(self):
         from climetlab.indexing.database import SqlDatabase
