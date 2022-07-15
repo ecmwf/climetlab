@@ -37,7 +37,7 @@ class IndexedSource(Source):
         return self.index.availability
 
     def sel(self, **kwargs):
-        return IndexedSource(
+        return self.__class__(
             self.path,
             filter=self.filter,
             merger=self.merger,
