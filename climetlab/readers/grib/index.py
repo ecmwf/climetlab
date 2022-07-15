@@ -10,6 +10,7 @@
 import json
 import logging
 import os
+import warnings
 from collections import namedtuple
 from urllib.parse import urljoin
 
@@ -91,7 +92,25 @@ class GribDBIndex(GribIndex):
             nonlocal db  # to make sure to use the variable db outside of the function
             db = cls.database_class()(iterator=iterator, db_path=target)
 
-        if db_path is not None:
+        def is_writable(path):
+            dirname = os.path.dirname(path)
+            import stat
+
+            uid = os.geteuid()
+            gid = os.getegid()
+            s = os.stat(dirname)
+            mode = s[stat.ST_MODE]
+            if (
+                ((s[stat.ST_UID] == uid) and (mode & stat.S_IWUSR))
+                or ((s[stat.ST_GID] == gid) and (mode & stat.S_IWGRP))
+                or (mode & stat.S_IWOTH)
+            ):
+                return True
+            else:
+                warnings.warn(f"Cannot write index file at {path}, writing in cache.")
+                return False
+
+        if db_path is not None and is_writable(db_path):
             load(db_path)
         else:
             db_path = cache_file(

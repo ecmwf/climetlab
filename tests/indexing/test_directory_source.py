@@ -1,7 +1,5 @@
 import os
 
-import pytest
-
 import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
@@ -19,44 +17,11 @@ def temp_cache_dir(f):
     return wrapped
 
 
-@pytest.mark.parametrize("index_type", ["sql", "json"])
-def test_directory_with_local_index_file(index_type):
-    temp_cache_dir(_test_directory)(index_type, True)
-
-
-@pytest.mark.parametrize("index_type", ["sql", "json"])
-def test_directory_with_cached_index_file(index_type):
-    temp_cache_dir(_test_directory)(index_type, False)
-
-
-def _test_directory(index_type, cache):
-    s = cml.load_source(
-        "directory",
-        os.path.join(here, "gribs", "y"),
-        index_type=index_type,
-        index_next_to_data=cache,
-    )
-    print(s, len(s))
-    print(s.to_xarray())
-
-
-@temp_cache_dir
-def test_db_with_cache():
-    s = cml.load_source(
-        "directory",
-        os.path.join(here, "gribs", "y"),
-    )
-    print(s, len(s))
-    print(s.to_xarray())
-
-
 @temp_cache_dir
 def test_db_no_cache():
     s = cml.load_source(
         "directory",
         os.path.join(here, "gribs", "y"),
-        index_type="json",
-        index_next_to_data=True,
     )
     print(s, len(s))
     print(s.to_xarray())
@@ -101,6 +66,6 @@ def test_c():
 
 if __name__ == "__main__":
     # test_json_local()
-    test_db_with_cache()
+    test_db_no_cache()
     print("--------------")
     # test_db_no_cache()
