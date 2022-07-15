@@ -45,8 +45,6 @@ def test_db_with_cache():
     s = cml.load_source(
         "directory",
         os.path.join(here, "gribs", "y"),
-        index_type="json",
-        index_next_to_data=False,
     )
     print(s, len(s))
     print(s.to_xarray())

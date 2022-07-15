@@ -37,12 +37,7 @@ class IndexedSource(Source):
         return self.index.availability
 
     def sel(self, **kwargs):
-        return self.__class__(
-            self.path,
-            filter=self.filter,
-            merger=self.merger,
-            index=self.index.sel(**kwargs),
-        )
+        return self._not_implemented()
 
     def __getitem__(self, n):
         return self.index[n]

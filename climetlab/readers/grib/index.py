@@ -89,7 +89,7 @@ class GribDBIndex(GribIndex):
         def load(target, *args):
             LOG.debug(f"Building db in {target}")
             nonlocal db  # to make sure to use the variable db outside of the function
-            db = cls.database_class(iterator=iterator, db_path=target)
+            db = cls.database_class()(iterator=iterator, db_path=target)
 
         if db_path is not None:
             load(db_path)
@@ -172,6 +172,14 @@ class GribDBIndex(GribIndex):
             iterator=iterator,
             db_path=db_path,
             cache_metadata={"path": path},
+        )
+
+    @classmethod
+    def from_db_path(cls, db_path):
+        return cls.from_iterator(
+            iterator=None,
+            db_path=db_path,
+            cache_metadata=None,
         )
 
     @classmethod
@@ -283,7 +291,6 @@ class JsonIndex(GribIndexFromFile):
     EXTENSION = ".json"
 
     @classmethod
-    @property
     def database_class(self):
         from climetlab.indexing.database import JsonDatabase
 
@@ -305,7 +312,6 @@ class SqlIndex(GribIndexFromFile):
     CHUNK = 50000
 
     @classmethod
-    @property
     def database_class(self):
         from climetlab.indexing.database import SqlDatabase
 
