@@ -9,9 +9,8 @@
 
 import warnings
 
-from climetlab.core.index import MultiIndex
 from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import JsonIndex
+from climetlab.readers.grib.index import JsonIndex, MultiGribIndex
 from climetlab.sources.indexed import IndexedSource
 from climetlab.utils.patterns import Pattern
 
@@ -29,7 +28,7 @@ class IndexedUrls(IndexedSource):
             warnings.warn(
                 "Passing a PerUrlIndex object is obsolete, please update your code."
             )
-            substitute_extension = pattern.substitute_extension
+            # substitute_extension = pattern.substitute_extension
             index_extension = pattern.index_extension
             pattern = pattern.pattern
 
@@ -55,7 +54,7 @@ class IndexedUrls(IndexedSource):
             # TODO: implement
             return url + index_extension
 
-        index = MultiIndex(
+        index = MultiGribIndex(
             JsonIndex.from_url(
                 index_url(url),
                 selection=request,
@@ -63,6 +62,8 @@ class IndexedUrls(IndexedSource):
             )
             for url in urls
         )
+
+        # assert False, index
 
         super().__init__(index, **kwargs)
 

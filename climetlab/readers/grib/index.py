@@ -16,42 +16,21 @@ from urllib.parse import urljoin
 import requests
 from multiurl import robust
 
-from climetlab.core.caching import cache_file
-from climetlab.core.index import Index
+from climetlab.core.caching import auxiliary_cache_file, cache_file
+from climetlab.core.index import Index, MultiIndex
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
-from climetlab.readers.grib.codes import CodesReader, GribField
-from climetlab.utils import tqdm
+from climetlab.readers.grib.codes import CodesReader, GribField, get_messages_positions
+from climetlab.readers.grib.fieldset import FieldSet
+from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
+from climetlab.utils.parts import Part
 
 LOG = logging.getLogger(__name__)
 
 
-class ItemWrapperForCfGrib:
-    def __init__(self, item):
-        self.item = item
-
-    def __getitem__(self, n):
-        print("asking for key:", n, self.item)
-        if n == "values":
-            return self.item.values
-        return self.item.metadata(n)
-
-
-class IndexWrapperForCfGrib:
-    def __init__(self, index):
-        self.index = index
-
-    def __getitem__(self, n):
-        print(n, len(self))
-        return ItemWrapperForCfGrib(self.index[n])
-
-    def __len__(self):
-        return len(self.index)
-
-
-class GribIndex(Index):
+class GribIndex(FieldSet, Index):
     def __init__(self, selection=None, order=None):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -60,6 +39,11 @@ class GribIndex(Index):
         self._availability = None
         self.selection = selection
         self.order = order
+
+
+class MultiGribIndex(FieldSet, MultiIndex):
+    def __init__(self, *args, **kwargs):
+        MultiIndex.__init__(self, *args, **kwargs)
 
 
 class GribDBIndex(GribIndex):
@@ -126,16 +110,7 @@ class GribDBIndex(GribIndex):
             patch_entry = absolute_url
 
         def progress(lines):
-            pbar = tqdm(
-                iterable=lines,
-                desc="Downloading index",
-                total=size,
-                unit_scale=True,
-                unit="B",
-                leave=False,
-                disable=False,
-                unit_divisor=1024,
-            )
+            pbar = progress_bar(iterable=lines, desc="Downloading index", total=size)
             for line in pbar:
                 yield line
                 pbar.update(len(line) + 1)
@@ -163,16 +138,7 @@ class GribDBIndex(GribIndex):
         size = os.path.getsize(path)
 
         def progress(lines):
-            pbar = tqdm(
-                iterable=lines,
-                desc="Parsing index",
-                total=size,
-                unit_scale=True,
-                unit="B",
-                leave=False,
-                disable=False,
-                unit_divisor=1024,
-            )
+            pbar = progress_bar(iterable=lines, desc="Parsing index", total=size)
             for line in pbar:
                 yield line
                 pbar.update(len(line) + 1)
@@ -237,14 +203,6 @@ class GribDBIndex(GribIndex):
 
         return availability
 
-    def to_xarray(self, **kwargs):
-        # return self.fieldset.to_xarray(**kwargs)
-
-        wrapped = IndexWrapperForCfGrib(self)
-        import xarray as xr
-
-        return xr.open_dataset(wrapped, engine="cfgrib")
-
     def __getitem__(self, n):
         self._not_implemented()
 
@@ -280,9 +238,9 @@ class GribIndexFromFile(GribDBIndex):
         return self._readers[path]
 
     def __getitem__(self, n):
-        path, offset, length = self.part(n)
-        reader = self._reader(path)
-        field = GribField(reader, offset, length)
+        part = self.part(n)
+        reader = self._reader(part.path)
+        field = GribField(reader, part.offset, part.length)
         return field
 
     def __len__(self):
@@ -334,3 +292,72 @@ class SqlIndex(GribIndexFromFile):
     @cached_method
     def number_of_parts(self):
         return self.db.count(self.selection)
+
+
+class GribFileIndex(GribIndexFromFile):
+    VERSION = 1
+
+    def __init__(self, path):
+        assert isinstance(path, str), path
+        self.path = path
+        self.offsets = None
+        self.lengths = None
+        self.cache = auxiliary_cache_file(
+            "grib-index",
+            path,
+            content="null",
+            extension=".json",
+        )
+
+        if not self._load_cache():
+            self._build_index()
+
+    def _build_index(self):
+
+        offsets = []
+        lengths = []
+
+        for offset, length in get_messages_positions(self.path):
+            offsets.append(offset)
+            lengths.append(length)
+
+        self.offsets = offsets
+        self.lengths = lengths
+
+        self._save_cache()
+
+    def _save_cache(self):
+        try:
+            with open(self.cache, "w") as f:
+                json.dump(
+                    dict(
+                        version=self.VERSION,
+                        offsets=self.offsets,
+                        lengths=self.lengths,
+                    ),
+                    f,
+                )
+        except Exception:
+            LOG.exception("Write to cache failed %s", self.cache)
+
+    def _load_cache(self):
+        try:
+            with open(self.cache) as f:
+                c = json.load(f)
+                if not isinstance(c, dict):
+                    return False
+
+                assert c["version"] == self.VERSION
+                self.offsets = c["offsets"]
+                self.lengths = c["lengths"]
+                return True
+        except Exception:
+            LOG.exception("Load from cache failed %s", self.cache)
+
+        return False
+
+    def part(self, n):
+        return Part(self.path, self.offsets[n], self.lengths[n])
+
+    def number_of_parts(self):
+        return len(self.offsets)

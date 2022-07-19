@@ -9,8 +9,6 @@
 
 import warnings
 
-from climetlab.utils.patterns import Pattern
-
 
 class GlobalIndex:
     def __init__(self, index_location, baseurl) -> None:

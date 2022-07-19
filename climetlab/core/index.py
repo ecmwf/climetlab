@@ -44,7 +44,7 @@ class MultiIndex(Index):
         self.indexes = list(indexes)
 
     def sel(self, *args, **kwargs):
-        return MultiIndex(i.sel(*args, **kwargs) for i in self.indexes)
+        return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
     def __getitem__(self, n):
         k = 0

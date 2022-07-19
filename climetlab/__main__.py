@@ -1,4 +1,6 @@
-# (C) Copyright 2021 ECMWF.
+#!/usr/bin/env python3
+
+# (C) Copyright 2022 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -7,11 +9,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import logging
+from climetlab.scripts.main import main
 
-LOG = logging.getLogger(__name__)
-
-
-class Database:
-    def lookup(self, request, order=None):
-        raise NotImplementedError("")
+main()

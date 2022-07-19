@@ -64,7 +64,7 @@ FORCED_VALUES = {}
 
 
 # This does not belong here, should be in the C library
-def _get_message_offsets(path):
+def get_messages_positions(path):
 
     fd = os.open(path, os.O_RDONLY)
     try:
@@ -387,70 +387,3 @@ class GribField(Base):
 
     def write(self, f):
         f.write(self._reader.read(self._offset, self._length))
-
-
-class GribFileIndex:
-    """This class take a grib file (path)
-    and provides .offsets and .lengths each grib in the file.
-    It caches this information in the climetlab cache."""
-
-    VERSION = 1
-
-    def __init__(self, path):
-        assert isinstance(path, str), path
-        self.path = path
-        self.offsets = None
-        self.lengths = None
-        self.cache = auxiliary_cache_file(
-            "grib-index",
-            path,
-            content="null",
-            extension=".json",
-        )
-
-        if not self._load_cache():
-            self._build_index()
-
-    def _build_index(self):
-
-        offsets = []
-        lengths = []
-
-        for offset, length in _get_message_offsets(self.path):
-            offsets.append(offset)
-            lengths.append(length)
-
-        self.offsets = offsets
-        self.lengths = lengths
-
-        self._save_cache()
-
-    def _save_cache(self):
-        try:
-            with open(self.cache, "w") as f:
-                json.dump(
-                    dict(
-                        version=self.VERSION,
-                        offsets=self.offsets,
-                        lengths=self.lengths,
-                    ),
-                    f,
-                )
-        except Exception:
-            LOG.exception("Write to cache failed %s", self.cache)
-
-    def _load_cache(self):
-        try:
-            with open(self.cache) as f:
-                c = json.load(f)
-                if not isinstance(c, dict):
-                    return False
-
-                assert c["version"] == self.VERSION
-                self.offsets = c["offsets"]
-                self.lengths = c["lengths"]
-                return True
-        except Exception:
-            LOG.exception("Load from cache failed %s", self.cache)
-
-        return False

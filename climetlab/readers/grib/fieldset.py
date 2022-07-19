@@ -17,10 +17,9 @@ import numpy as np
 
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
+from climetlab.readers.grib.codes import CodesReader, GribField
 from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
-
-from .codes import CodesReader, GribField
 
 LOG = logging.getLogger(__name__)
 
@@ -63,55 +62,46 @@ def mix_kwargs(
     return kwargs
 
 
-class FieldAdapter:
-    def __init__(self, field, ignore_keys):
-        self.field = field
+class ItemWrapperForCfGrib:
+    def __init__(self, item, ignore_keys=[]):
+        self.item = item
         self.ignore_keys = ignore_keys
 
-    def __getitem__(self, name):
-        if name in self.ignore_keys:
+    def __getitem__(self, n):
+        if n in self.ignore_keys:
             return None
-        return self.field[name]
+        if n == "values":
+            return self.item.values
+        return self.item.metadata(n)
 
 
-class FieldsetAdapter:
-    def __init__(self, fieldset, ignore_keys):
-        self.fieldset = fieldset
+class IndexWrapperForCfGrib:
+    def __init__(self, index, ignore_keys=[]):
+        self.index = index
         self.ignore_keys = ignore_keys
 
     def __getitem__(self, n):
-        return FieldAdapter(self.fieldset[n], self.ignore_keys)
+        print(n, len(self))
+        return ItemWrapperForCfGrib(self.index[n], ignore_keys=self.ignore_keys)
 
     def __len__(self):
-        return len(self.fieldset)
+        return len(self.index)
 
 
-class FieldSet(Source):
-    def __init__(self, fields=None):
-        self._statistics = None
-        self.readers = {}
-        self.fields = fields
-
-    def reader(self, path):
-        if path not in self.readers:
-            self.readers[path] = CodesReader(path)
-        return self.readers[path]
-
-    def __getitem__(self, n):
-        print(self.fields)
-        print(self.fields.part(n))
-        path, offset, length = self.fields.part(n)
-        return GribField(self.reader(path), offset, length)
-
-    def __len__(self):
-        return self.fields.number_of_parts()
+class FieldSet:
+    _statistics = None
 
     @property
     def first(self):
         return self[0]
 
     def to_tfdataset(
-        self, split=None, shuffle=None, normalize=None, batch_size=0, **kwargs
+        self,
+        split=None,
+        shuffle=None,
+        normalize=None,
+        batch_size=0,
+        **kwargs,
     ):
         # assert "label" in kwargs
         if "offset" in kwargs:
@@ -291,7 +281,7 @@ class FieldSet(Source):
         )
 
         result = xr.open_dataset(
-            FieldsetAdapter(self, ignore_keys=ignore_keys),
+            IndexWrapperForCfGrib(self, ignore_keys=ignore_keys),
             **xarray_open_dataset_kwargs,
         )
 

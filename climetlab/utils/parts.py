@@ -1,61 +1,44 @@
-from collections import defaultdict, namedtuple
-from collections.abc import Iterable
+from collections import defaultdict
 
-Part = namedtuple("Part", ["path", "offset", "length"])
+from climetlab.utils import download_and_cache
 
 
-class Parts:
-    def __init__(self, list_or_dict):
-        """
-        list_or_dict must be either:
-        - A list as [(loc, offset, length), ...]
-        - A dict as {loc: [(offset, length), ...] , ... ]
+class Part:
+    def __init__(self, path, offset, length):
+        assert path is not None
+        self.path = path
+        self.offset = offset
+        self.length = length
 
-        Not supported:
-        - A list as [(loc, (offset, length)), ...]
-        """
+    def __eq__(self, other):
+        return (
+            self.path == other.path
+            and self.offset == other.offset
+            and self.length == other.length
+        )
 
-        if isinstance(list_or_dict, Iterable):
-            list_or_dict = list(list_or_dict)
+    @classmethod
+    def resolve(cls, parts):
+        paths = defaultdict(list)
+        for i, part in enumerate(parts):
+            paths[part.path].append(part)
 
-        if isinstance(list_or_dict, (list, tuple)):
-            if list_or_dict:
-                assert not isinstance(list_or_dict[0][1], (tuple, list)), list_or_dict[
-                    0
-                ]
-            self._list = list_or_dict
-            return
+        for path, bits in paths.items():
+            if (
+                path.startswith("http://")
+                or path.startswith("https://")
+                or path.startswith("ftp://")
+            ):
+                newpath = download_and_cache(
+                    path, parts=[(p.offset, p.length) for p in bits]
+                )
+                newoffset = 0
+                for p in bits:
+                    p.path = newpath
+                    p.offset = newoffset
+                    newoffset += p.length
 
-        if isinstance(list_or_dict, dict):
-            self._dict = list_or_dict
-            return
+        return parts
 
-        raise Exception(str(type(list_or_dict)))
-
-    @property
-    def as_dict(self):
-        if not hasattr(self, "_dict"):
-            self._dict = defaultdict(list)
-            for loc, offset, length in self._list:
-                self._dict[loc].append = (offset, length)
-
-        return self._dict
-
-    @property
-    def as_list(self):
-        if not hasattr(self, "_list"):
-            self._list = []
-            for loc, parts in self._dict.items():
-                for offset, length in parts:
-                    self._list.append((loc, offset, length))
-
-        return self._list
-
-    def __len__(self):
-        return len(self.as_list)
-
-    def number_of_parts(self):
-        return len(self)
-
-    def part(self, n):
-        return Part(*self.as_list[n])
+    def __repr__(self):
+        return f"Part[{self.path},{self.offset},{self.length}]"

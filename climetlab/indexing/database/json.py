@@ -11,9 +11,7 @@
 import json
 import logging
 import os
-import sqlite3
 
-import climetlab as cml
 from climetlab.utils.parts import Part
 
 from . import Database
@@ -57,5 +55,5 @@ class JsonDatabase(Database):
                     match = False
                     break
             if match:
-                parts.append(Part(e["_url"], e["_offset"], e["_length"]))
-        return parts
+                parts.append(Part(e["_path"], e["_offset"], e["_length"]))
+        return Part.resolve(parts)

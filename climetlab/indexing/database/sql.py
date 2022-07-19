@@ -8,7 +8,6 @@
 #
 
 
-import json
 import logging
 import os
 import sqlite3
@@ -88,7 +87,7 @@ def create_table(target, names):
     commas = ",".join(["?" for _ in sql_names])
     insert_statement = f"""INSERT INTO entries(
                                        path, offset, length, {','.join(sql_names)})
-                                       VALUES(?,?,?,?,{commas});"""
+                                       VALUES(?,?,?,{commas});"""
     return connection, insert_statement, sql_names, all_names
 
 
@@ -255,4 +254,4 @@ class SqlDatabase(Database):
             parts = []
             for path, offset, length in self.connection.execute(statement):
                 parts.append(Part(path, offset, length))
-            return parts
+            return Part.resolve(parts)
