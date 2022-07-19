@@ -42,15 +42,16 @@ class MaskIndex(Index):
 class MultiIndex(Index):
     def __init__(self, indexes):
         self.indexes = list(indexes)
+        # self.indexes = list(i for i in indexes if len(i))
 
     def sel(self, *args, **kwargs):
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
     def __getitem__(self, n):
         k = 0
-        while n > len(self.indexes[k]):
-            k += 1
+        while n >= len(self.indexes[k]):
             n -= len(self.indexes[k])
+            k += 1
         return self.indexes[k][n]
 
     def __len__(self):

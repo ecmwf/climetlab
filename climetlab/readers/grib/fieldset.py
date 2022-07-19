@@ -17,8 +17,6 @@ import numpy as np
 
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
-from climetlab.readers.grib.codes import CodesReader, GribField
-from climetlab.sources import Source
 from climetlab.utils.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)

@@ -10,7 +10,7 @@
 import warnings
 
 from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import JsonIndex, MultiGribIndex
+from climetlab.readers.grib.index import MultiGribIndex, SqlIndex
 from climetlab.sources.indexed import IndexedSource
 from climetlab.utils.patterns import Pattern
 
@@ -22,6 +22,7 @@ class IndexedUrls(IndexedSource):
         request,
         substitute_extension=False,
         index_extension=".index",
+        range_method=None,
         **kwargs,
     ):
         if isinstance(pattern, PerUrlIndex):
@@ -55,15 +56,13 @@ class IndexedUrls(IndexedSource):
             return url + index_extension
 
         index = MultiGribIndex(
-            JsonIndex.from_url(
+            SqlIndex.from_url(
                 index_url(url),
                 selection=request,
                 patch_entry=add_path(url),
             )
             for url in urls
         )
-
-        # assert False, index
 
         super().__init__(index, **kwargs)
 

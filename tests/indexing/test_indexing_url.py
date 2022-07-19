@@ -51,14 +51,15 @@ def test_indexed_s3(baseurl):
         )
         def __init__(self, option="abc", **request):
             self.source = load_source(
-                "indexed-urls", PER_URL_INDEX, request, range_method="auto"
+                "indexed-urls",
+                PER_URL_INDEX,
+                request,
             )
 
             self.source = load_source(
                 "indexed-urls",
+                baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
                 request,
-                pattern=baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
-                range_method="auto",
             )
 
     a = Mydataset(
@@ -98,19 +99,19 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     now = time.time()
     s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
     elapsed = time.time() - now
-    print("ELAPSED", elapsed)
-    try:
-        paths = [s.path]
-    except AttributeError:
-        paths = [p.path for p in s.sources]
+    # print("ELAPSED", elapsed)
+    # try:
+    #     paths = [s.path]
+    # except AttributeError:
+    #     paths = [p.path for p in s.sources]
 
-    for path in paths:
-        # check that the downloaded gribs match the request
-        for grib in load_source("file", path):
-            for k, v in request.items():
-                if k == "param":
-                    k = "shortName"
-                assert check_grib_value(grib._get(k), v), (grib._get(k), v)
+    # for path in paths:
+    #     # check that the downloaded gribs match the request
+    #     for grib in load_source("file", path):
+    #         for k, v in request.items():
+    #             if k == "param":
+    #                 k = "shortName"
+    #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
     return elapsed
 
 
@@ -265,9 +266,9 @@ def test_grib_index_eumetnet():
 
 if __name__ == "__main__":
     # test_per_url_index(CML_BASEURL_CDS)
-    # test_indexed_s3(CML_BASEURL_S3)
+    test_indexed_s3(CML_BASEURL_S3)
     # timing()
     # from climetlab.testing import main
 
     # main(__file__)
-    test_grib_index_eumetnet()
+    # test_grib_index_eumetnet()

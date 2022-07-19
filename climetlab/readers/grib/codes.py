@@ -8,14 +8,12 @@
 #
 
 import datetime
-import json
 import logging
 import os
 
 import eccodes
 
 from climetlab.core import Base
-from climetlab.core.caching import auxiliary_cache_file
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
 

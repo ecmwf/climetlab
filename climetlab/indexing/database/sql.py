@@ -9,7 +9,6 @@
 
 
 import logging
-import os
 import sqlite3
 
 import climetlab as cml
@@ -61,36 +60,6 @@ GRIB_INDEX_KEYS = [
 ]
 
 
-def create_table(target, names):
-    LOG.debug(f"Create_table connecting to {target}")
-    if os.path.exists(target):
-        os.unlink(target)
-    connection = sqlite3.connect(target)
-
-    all_names = [n for n in GRIB_INDEX_KEYS]
-    for n in names:
-        if n not in GRIB_INDEX_KEYS:
-            all_names.append(n)
-            LOG.debug(f"Warning: Adding an unknown grib index key {n}")
-    sql_names = [f"i_{n}" for n in all_names]
-
-    sql_names_headers = ",".join([f"{n} TEXT" for n in sql_names])
-    create_statement = f"""CREATE TABLE entries (
-        path    TEXT,
-        offset  INTEGER,
-        length  INTEGER,
-        {sql_names_headers}
-        );"""
-    LOG.debug(create_statement)
-    connection.execute(create_statement)
-
-    commas = ",".join(["?" for _ in sql_names])
-    insert_statement = f"""INSERT INTO entries(
-                                       path, offset, length, {','.join(sql_names)})
-                                       VALUES(?,?,?,{commas});"""
-    return connection, insert_statement, sql_names, all_names
-
-
 class SqlDatabase(Database):
     VERSION = 3
     EXTENSION = ".db"
@@ -100,52 +69,54 @@ class SqlDatabase(Database):
         db_path,
         create_index=False,  # index is disabled by default because it is long to create.
     ):
-        self._connection = None
+
         self.db_path = db_path
         self.create_index = create_index
+        self.connection = sqlite3.connect(self.db_path)
 
-    @property
-    def connection(self):
-        if self._connection is None:
-            self._connection = sqlite3.connect(self.db_path)
-        LOG.debug(f"Connecting to db in {self.db_path}")
-        return self._connection
+        LOG.debug("DB %s", self.db_path)
 
     def load(self, iterator):
-        count = 0
-        names = None
-        connection = None
-        insert_statement = None
+        with self.connection as conn:
 
-        for entry in iterator:
-            if connection is None:
-                # this is done only for the first entry only
-                names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
-                connection, insert_statement, sql_names, all_names = create_table(
-                    self.db_path, names
-                )
+            # The i_ is to avoid clashes with SQL keywords
+            i_columns = [f"i_{n}" for n in GRIB_INDEX_KEYS]
+            columns_defs = ",".join([f"{c} TEXT" for c in i_columns])
+            create_statement = f"""CREATE TABLE IF NOT EXISTS entries (
+                path    TEXT,
+                offset  INTEGER,
+                length  INTEGER,
+                {columns_defs}
+                );"""
+            LOG.debug("%s", create_statement)
+            conn.execute(create_statement)
 
-            assert names is not None, names
-            assert connection is not None, connection
-            assert insert_statement is not None
-            assert len(sql_names) == len(all_names), (sql_names, all_names)
+            columns = ",".join(i_columns)
+            values = ",".join(["?"] * (3 + len(i_columns)))
+            insert_statement = f"""
+            INSERT INTO entries (path, offset, length, {columns})
+            VALUES({values});
+            """
+            LOG.debug("%s", insert_statement)
 
-            path, offset, length = entry["_path"], entry["_offset"], entry["_length"]
+            count = 0
 
-            values = [path, offset, length] + [entry.get(n, None) for n in all_names]
+            for entry in iterator:
+                values = [entry["_path"], entry["_offset"], entry["_length"]] + [
+                    entry.get(n) for n in GRIB_INDEX_KEYS
+                ]
+                conn.execute(insert_statement, tuple(values))
+                count += 1
 
-            LOG.debug(insert_statement)
-            connection.execute(insert_statement, tuple(values))
+            assert count >= 1
+            LOG.warning("Added %d entries", count)
 
-            count += 1
-
-        if self.create_index:
-            # connection.execute(f"CREATE INDEX path_index ON entries (path);")
-            for n in sql_names:
-                connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")
-
-        connection.execute("COMMIT;")
-        connection.close()
+            if self.create_index:
+                # connection.execute(f"CREATE INDEX path_index ON entries (path);")
+                for n in i_columns:
+                    conn.execute(
+                        f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
+                    )
 
     def _conditions(self, request):
         conditions = []
@@ -240,18 +211,16 @@ class SqlDatabase(Database):
             select_values_str = ",".join([f"i_{x}" for x in select_values])
             statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
 
-            LOG.debug(statement)
+            LOG.debug("%s", statement)
             parts = []
             for tupl in self.connection.execute(statement):
                 dic = {k: v for k, v in zip(select_values, tupl)}
                 parts.append(dic)
             return parts
 
-        else:
-            statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
-
-            LOG.debug(statement)
-            parts = []
-            for path, offset, length in self.connection.execute(statement):
-                parts.append(Part(path, offset, length))
-            return Part.resolve(parts)
+        statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
+        LOG.debug("%s", statement)
+        parts = []
+        for path, offset, length in self.connection.execute(statement):
+            parts.append(Part(path, offset, length))
+        return Part.resolve(parts)
