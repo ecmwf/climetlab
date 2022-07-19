@@ -9,62 +9,59 @@
 
 import warnings
 
-from climetlab import load_source
-from climetlab.core.statistics import record_statistics
+from climetlab.core.index import MultiIndex
 from climetlab.indexing import PerUrlIndex
-from climetlab.sources import Source
-from climetlab.sources.indexed import IndexedSource, JsonIndex, SqlIndex
+from climetlab.readers.grib.index import JsonIndex
+from climetlab.sources.indexed import IndexedSource
+from climetlab.utils.patterns import Pattern
 
-from .multi import MultiSource
 
-
-class IndexedUrls(MultiSource):
+class IndexedUrls(IndexedSource):
     def __init__(
         self,
-        index,
+        pattern,
         request,
-        *args,
-        baseurl=None,
-        filter=None,
-        merger=None,
-        force=None,
+        substitute_extension=False,
+        index_extension=".index",
         **kwargs,
     ):
-        if isinstance(index, PerUrlIndex):
+        if isinstance(pattern, PerUrlIndex):
             warnings.warn(
                 "Passing a PerUrlIndex object is obsolete, please update your code."
             )
-            index.source = self
-        else:
-            raise ValueError(
-                "Source 'indexed-url' is deprecated. Use source 'remote-indexed' instead..."
+            substitute_extension = pattern.substitute_extension
+            index_extension = pattern.index_extension
+            pattern = pattern.pattern
+
+        print("PATTERN", pattern)
+        pattern = Pattern(pattern, ignore_missing_keys=True)
+        urls = pattern.substitute(**request)
+        if not isinstance(urls, list):
+            urls = [urls]
+
+        request = dict(**request)  # deepcopy to avoid changing the user's request
+        for used in pattern.names:
+            # consume arguments used by Pattern to build the urls
+            # This is to avoid keeping them on the request
+            request.pop(used)
+
+        def add_path(url):
+            def wrapped(entry):
+                entry["_url"] = url
+                entry.pop("_path", None)
+
+            return wrapped
+
+        index = MultiIndex(
+            JsonIndex.from_url(
+                url + index_extension,
+                selection=request,
+                patch_entry=add_path(url),
             )
-
-        per_url_iterator = index.get_urls_parts(request)
-
-        record_statistics(
-            "indexed-urls",
-            request=str(request),
+            for url in urls
         )
 
-        sources = []
-        for url, parts in per_url_iterator:
-            source = load_source(
-                "url",
-                url=url,
-                parts=parts,
-                filter=filter,
-                merger=merger,
-                force=force,
-                # Load lazily so we can do parallel downloads
-                # lazily=True,
-                **kwargs,
-            )
-            sources.append(source)
-        if not sources:
-            raise ValueError("Empty request: no match.")
-
-        super().__init__(sources, filter=filter, merger=merger)
+        super().__init__(index, **kwargs)
 
 
 source = IndexedUrls

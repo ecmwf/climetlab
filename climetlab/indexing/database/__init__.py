@@ -1,4 +1,4 @@
-# (C) Copyright 2020 ECMWF.
+# (C) Copyright 2021 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -8,14 +8,17 @@
 #
 
 
-from climetlab.readers.grib.index import JsonIndex
-from climetlab.sources.indexed import IndexedSource
+import json
+import logging
+import os
+import sqlite3
+
+import climetlab as cml
+from climetlab.utils.parts import Part
+
+LOG = logging.getLogger(__name__)
 
 
-class IndexedUrl(IndexedSource):
-    def __init__(self, url, **kwargs):
-
-        super().__init__(JsonIndex.from_url(url), **kwargs)
-
-
-source = IndexedUrl
+class Database:
+    def lookup(self, request, order=None):
+        raise NotImplementedError("")

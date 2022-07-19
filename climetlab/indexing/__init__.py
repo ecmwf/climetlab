@@ -8,13 +8,11 @@
 #
 
 import warnings
-from collections import defaultdict
 
-from climetlab.readers.grib.index import SqlIndex
 from climetlab.utils.patterns import Pattern
 
 
-class GlobalIndex(SqlIndex):
+class GlobalIndex:
     def __init__(self, index_location, baseurl) -> None:
         warnings.warn(
             "GlobalIndex is obsolete. Please update your code and use the 'directory' source"
@@ -28,20 +26,6 @@ class GlobalIndex(SqlIndex):
         It is relative to a base url: "baseurl".
         """
 
-    # def get_path_offset_length(self, request):
-    #    dic = defaultdict(list)
-
-    #    # group parts by url
-    #    for path, parts in self.sel(request):
-    #        dic[path].append(parts)
-
-    #    # and sort
-    #    dic = {url: sorted(parts) for url, parts in dic.items()}
-
-    #    urls_parts = [(k, v) for k, v in dic.items()]
-
-    #    return urls_parts
-
 
 class PerUrlIndex:
     # index2 : 1 index per url.
@@ -53,7 +37,7 @@ class PerUrlIndex:
         pattern,
         substitute_extension=False,
         index_extension=".index",
-        source=None,
+        # source=None,
     ) -> None:
         """The PerUrlIndex uses one index for each urls/files that it manages.
 
@@ -68,65 +52,7 @@ class PerUrlIndex:
         get_path_offset_length(): get the urls and parts for a given request.
         """
         super().__init__()
-        self.source = source
+        # self.source = source
         self.pattern = pattern
         self.substitute_extension = substitute_extension
         self.index_extension = index_extension
-        self.backends = {}
-
-        self._indexes = {}
-
-    def _resolve_extension(self, url):
-        if callable(self.substitute_extension):
-            return self.substitute_extension(url)
-        if self.substitute_extension:
-            url = url.rsplit(".", 1)[0]
-        return url + self.index_extension
-
-    def get_index(self, url, request):
-        assert isinstance(url, str), url
-
-        from climetlab.sources.indexed import SqlIndex
-
-        if url in self._indexes:
-            return self._indexes[url]
-
-        index_url = self._resolve_extension(url)
-
-        download
-        index = build(url_index)
-
-        self._indexes[url] = index_url
-        # backend = SqlIndex(order=["offset"], cache_metadata=dict(index_url=index_url), )
-        return self._indexes[url]
-
-    def get_urls_parts(self, request):
-        dic = defaultdict(list)
-
-        pattern = Pattern(self.pattern, ignore_missing_keys=True)
-        urls = pattern.substitute(**request)
-        if not isinstance(urls, list):
-            urls = [urls]
-
-        request = dict(**request)  # deepcopy to avoid changing the user's request
-        for used in pattern.names:
-            # consume arguments used by Pattern to build the urls
-            # This is to avoid keeping them on the request
-            request.pop(used)
-
-        # group parts by url
-        raise NotImplementedError(" per_url_index_is_broken ")
-        for url in urls:
-            backend = self.get_index(url, initial_request)
-            for _, parts in backend.sel(request):
-                dic[url].append(parts)
-
-        # and sort
-        dic = {url: sorted(parts) for url, parts in dic.items()}
-
-        urls_parts = [(k, v) for k, v in dic.items()]
-
-        return urls_parts
-
-    def __repr__(self) -> str:
-        return f"PerUrlIndex(pattern={self.pattern})"

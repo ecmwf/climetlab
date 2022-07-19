@@ -6,7 +6,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import functools
 import inspect
 import json
 import re
@@ -166,15 +165,3 @@ def load_json_or_yaml(path):
         raise ValueError(
             f"Cannot read file {path}. Need json or yaml with appropriate extension."
         )
-
-
-def cached_method(method):
-    name = f"_{method.__name__}"
-
-    @functools.wraps(method)
-    def wrapped(self):
-        if getattr(self, name, None) is None:
-            setattr(self, name, method(self))
-        return getattr(self, name)
-
-    return wrapped

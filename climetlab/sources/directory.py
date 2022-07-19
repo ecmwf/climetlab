@@ -53,7 +53,7 @@ class DirectorySource(IndexedSource):
         # Try to use db_path if it exists:
         if db_path is not None and os.path.exists(db_path):
             LOG.info(f"Using index file {db_path}")
-            index = SqlIndex.from_db_path(db_path=db_path)
+            index = SqlIndex.from_existing_db(db_path=db_path)
             super().__init__(index, **kwargs)
             return
 
@@ -67,18 +67,14 @@ class DirectorySource(IndexedSource):
         # Try to use index_file (json) if it exists:
         if os.path.exists(index_file):
             LOG.info(f"Using index file {index_file}")
-            index = SqlIndex.from_file(
-                path=index_file,
-                db_path=db_path,
-            )
+            index = SqlIndex.from_file(path=index_file)
             super().__init__(index, **kwargs)
             return
 
         # Create the db_path file (or use the one in cache)
         LOG.info(f"Did not find index files in {db_path} or {index_file}")
-        index = SqlIndex.from_scanner(
+        index = SqlIndex.from_iterator(
             self._parse_files(path, ignore=db_path),
-            db_path=db_path,
             cache_metadata={"directory": self.path},
         )
         super().__init__(index, **kwargs)
@@ -87,11 +83,12 @@ class DirectorySource(IndexedSource):
         return self.__class__(self, _index=self.index.sel(**kwargs))
 
     def _parse_files(self, path, ignore=None):
-        ignore = ["climetlab.index"]
-        if ignore:
-            ignore.append(ignore)
-        ignore.append(self.DEFAULT_DB_FILE)
-        ignore.append(self.DEFAULT_JSON_FILE)
+        if ignore is None:
+            ignore = set()
+        if not isinstance(ignore, set):
+            ignore = set(ignore)
+        ignore.add(self.DEFAULT_DB_FILE)
+        ignore.add(self.DEFAULT_JSON_FILE)
 
         LOG.debug(f"Parsing files in {path}")
         assert os.path.isdir(path)

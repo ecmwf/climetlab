@@ -10,7 +10,6 @@
 import json
 import logging
 import os
-import warnings
 from collections import namedtuple
 from urllib.parse import urljoin
 
@@ -19,8 +18,11 @@ from multiurl import robust
 
 from climetlab.core.caching import cache_file
 from climetlab.core.index import Index
+from climetlab.decorators import cached_method
+from climetlab.indexing.database.json import JsonDatabase
+from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import CodesReader, GribField
-from climetlab.utils import cached_method, tqdm
+from climetlab.utils import tqdm
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
@@ -61,82 +63,54 @@ class GribIndex(Index):
 
 
 class GribDBIndex(GribIndex):
-    VERSION = 3
-    EXTENSION = None  # should be overrided
-
-    def __init__(self, db, cache_metadata, db_path=None, selection=None, order=None):
+    def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
         """
 
-        self.cache_metadata = cache_metadata
-
         self.db = db
-        self.db_path = db_path
-        # self.db.reset_connection(db_path=db_path)
 
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
 
-        super().__init__(selection=selection, order=order)
+        super().__init__(**kwargs)
 
     @classmethod
     def from_iterator(
-        cls, iterator, cache_metadata, selection=None, order=None, db_path=None
+        cls,
+        iterator,
+        cache_metadata,
+        **kwargs,
     ):
         db = None
 
         def load(target, *args):
             LOG.debug(f"Building db in {target}")
             nonlocal db  # to make sure to use the variable db outside of the function
-            db = cls.database_class()(iterator=iterator, db_path=target)
+            db = cls.DBCLASS(target)
+            db.load(iterator)
 
-        def is_writable(path):
-            dirname = os.path.dirname(path)
-            import stat
-
-            uid = os.geteuid()
-            gid = os.getegid()
-            s = os.stat(dirname)
-            mode = s[stat.ST_MODE]
-            if (
-                ((s[stat.ST_UID] == uid) and (mode & stat.S_IWUSR))
-                or ((s[stat.ST_GID] == gid) and (mode & stat.S_IWGRP))
-                or (mode & stat.S_IWOTH)
-            ):
-                return True
-            else:
-                warnings.warn(f"Cannot write index file at {path}, writing in cache.")
-                return False
-
-        if db_path is not None and is_writable(db_path):
-            load(db_path)
-        else:
-            db_path = cache_file(
-                "grib-index",
-                load,
-                cache_metadata,
-                hash_extra=cls.VERSION,
-                extension=cls.EXTENSION,
-            )
-            db.reset_connection(db_path=db_path)
-
-        return cls(
-            db=db,
-            db_path=db_path,
-            cache_metadata=cache_metadata,
-            selection=selection,
-            order=order,
+        db_name = cache_file(
+            "grib-index",
+            load,
+            cache_metadata,
+            hash_extra=cls.DBCLASS.VERSION,
+            extension=cls.DBCLASS.EXTENSION,
         )
 
+        if db is None:  # load() was not called
+            db = cls.DBCLASS(db_name)
+
+        return cls(db=db, **kwargs)
+
     @classmethod
-    def from_url(cls, url, db_path=None):
+    def from_url(cls, url, patch_entry=None, **kwargs):
         if os.path.exists(url):
-            return cls.from_file(path=url, db_path=db_path)
+            return cls.from_file(path=url, **kwargs)
 
         if url.startswith("file://") and os.path.exists(url[7:]):
-            return cls.from_file(path=url[7:], db_path=db_path)
+            return cls.from_file(path=url[7:], **kwargs)
 
         r = robust(requests.get)(url, stream=True)
         r.raise_for_status()
@@ -144,6 +118,12 @@ class GribDBIndex(GribIndex):
             size = int(r.headers.get("Content-Length"))
         except Exception:
             size = None
+
+        def absolute_url(entry):
+            entry["_url"] = urljoin(url, entry.pop("_path"))
+
+        if patch_entry is None:
+            patch_entry = absolute_url
 
         def progress(lines):
             pbar = tqdm(
@@ -162,8 +142,9 @@ class GribDBIndex(GribIndex):
 
         def parse_lines(lines):
             for line in lines:
+                # print(line)
                 entry = json.loads(line)
-                entry["_path"] = urljoin(url, entry["_path"])
+                patch_entry(entry)
                 yield entry
 
         iterator = r.iter_lines()
@@ -171,12 +152,30 @@ class GribDBIndex(GribIndex):
         iterator = parse_lines(iterator)
 
         return cls.from_iterator(
-            iterator=iterator, db_path=db_path, cache_metadata={"url": url}
+            iterator=iterator,
+            cache_metadata={"url": url},
+            **kwargs,
         )
 
     @classmethod
-    def from_file(cls, path, db_path=None):
+    def from_file(cls, path, **kwargs):
         directory = os.path.dirname(path)
+        size = os.path.getsize(path)
+
+        def progress(lines):
+            pbar = tqdm(
+                iterable=lines,
+                desc="Parsing index",
+                total=size,
+                unit_scale=True,
+                unit="B",
+                leave=False,
+                disable=False,
+                unit_divisor=1024,
+            )
+            for line in pbar:
+                yield line
+                pbar.update(len(line) + 1)
 
         def parse_lines(lines):
             for line in lines:
@@ -185,33 +184,27 @@ class GribDBIndex(GribIndex):
                     entry["_path"] = os.path.join(directory, entry["_path"])
                 yield entry
 
-        iterator = parse_lines(open(path).readlines())
+        iterator = open(path)
+        iterator = progress(iterator)
+        iterator = parse_lines(iterator)
 
         return cls.from_iterator(
             iterator=iterator,
-            db_path=db_path,
             cache_metadata={"path": path},
+            **kwargs,
         )
 
     @classmethod
-    def from_db_path(cls, db_path):
-        return cls.from_iterator(
-            iterator=None,
-            db_path=db_path,
-            cache_metadata=None,
-        )
-
-    @classmethod
-    def from_scanner(cls, scanner, db_path=None, cache_metadata=None):
-        if cache_metadata is None:
-            cache_metadata = {}
-        return cls.from_iterator(
-            iterator=scanner, db_path=db_path, cache_metadata=cache_metadata
-        )
+    def from_existing_db(cls, db_path, **kwargs):
+        assert os.path.exists(db_path)
+        return cls(cls.DBCLASS(db_path), **kwargs)
 
     def sort_index(self, order):
         return self.__class__(
-            self.url, selection=self.selection, order=order, db=self.db
+            self.url,
+            selection=self.selection,
+            order=order,
+            db=self.db,
         )
 
     def sel(self, *args, **kwargs):
@@ -229,7 +222,6 @@ class GribDBIndex(GribIndex):
             selection=sel,
             order=self.order,
             db=self.db,
-            cache_metadata=self.cache_metadata,
         )
 
     @property
@@ -307,13 +299,7 @@ Cache = namedtuple("Cache", ["first", "length", "result"])
 
 
 class JsonIndex(GribIndexFromFile):
-    EXTENSION = ".json"
-
-    @classmethod
-    def database_class(self):
-        from climetlab.indexing.database import JsonDatabase
-
-        return JsonDatabase
+    DBCLASS = JsonDatabase
 
     @cached_method
     def _lookup(self):
@@ -327,24 +313,19 @@ class JsonIndex(GribIndexFromFile):
 
 
 class SqlIndex(GribIndexFromFile):
-    EXTENSION = ".db"
-    CHUNK = 50000
 
-    @classmethod
-    def database_class(self):
-        from climetlab.indexing.database import SqlDatabase
-
-        return SqlDatabase
+    DBCLASS = SqlDatabase
+    CHUNKING = 50000
 
     def part(self, n):
         if self._cache is None or not (
             self._cache.first <= n < self._cache.first + self._cache.length
         ):
-            first = n // self.CHUNK
+            first = n // self.CHUNKING
             result = self.db.lookup(
                 self.selection,
                 order=self.order,
-                limit=self.CHUNK,
+                limit=self.CHUNKING,
                 offset=first,
             )
             self._cache = Cache(first, len(result), result)

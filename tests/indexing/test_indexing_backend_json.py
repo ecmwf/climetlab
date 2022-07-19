@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from climetlab.sources.indexed import SqlIndex
+from climetlab.readers.grib.index import JsonIndex
 
 index_jsonl = os.path.join(os.path.dirname(__file__), "index.jsonl")
 
@@ -48,20 +48,21 @@ REQUEST_2 = {
 
 @pytest.fixture
 def backend():
-    return SqlIndex(index_jsonl, order=["offset"])
+    return JsonIndex.from_existing_db(index_jsonl)
 
 
 def test_indexing_json_1(backend):
-    parts = backend.sel(REQUEST_1).lookup()
-    assert len(parts) == 1
-    assert parts[0][0] == "data/02.grb"
-    assert parts[0][1][0] == 94156098
-    assert parts[0][1][1] == 23358
+    s = backend.sel(REQUEST_1)
+    assert s.number_of_parts() == 1
+    p = s.part(0)
+    assert p.path == "data/02.grb"
+    assert p.offset == 94156098
+    assert p.length == 23358
 
 
 def test_indexing_json_2(backend):
-    parts = backend.sel(REQUEST_2).lookup()
-    assert len(parts) == 1
+    s = backend.sel(REQUEST_2)
+    assert s.number_of_parts() == 1
 
 
 if __name__ == "__main__":

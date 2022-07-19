@@ -55,7 +55,7 @@ install_requires += [
     # "s3fs",
     "dask",
     "netcdf4",
-    "cfgrib>=0.9.10",
+    "cfgrib>=0.9.10.1",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "multiurl>=0.0.16",

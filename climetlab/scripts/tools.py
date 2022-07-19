@@ -8,9 +8,9 @@
 #
 
 import argparse
+import functools
 import shlex
 import textwrap
-from functools import wraps
 from itertools import cycle
 
 from termcolor import colored
@@ -40,7 +40,7 @@ def parse_args(epilog="", **kwargs):
         func._argparser = p
         func._kwargs_specifications = kwargs
 
-        @wraps(func)
+        @functools.wraps(func)
         def wrapped(self, args):
             args = p.parse_args(shlex.split(args))
             return func(self, args)

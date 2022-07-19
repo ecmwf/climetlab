@@ -16,7 +16,7 @@ import pytest
 from climetlab import Dataset, load_source, settings
 from climetlab.core.temporary import temp_directory
 from climetlab.decorators import normalize
-from climetlab.indexing import GlobalIndex, PerUrlIndex
+from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
@@ -84,7 +84,7 @@ def test_indexed_s3(baseurl):
 
 
 def retrieve_and_check_url(*args, **kwargs):
-    s = load_source(*args, **kwargs)
+    load_source(*args, **kwargs)
 
 
 def retrieve_and_check(index, request, range_method=None, **kwargs):
@@ -147,13 +147,13 @@ def test_global_index(baseurl):
                 break
             s.to_xarray()
 
-            for path in paths:
-                # check that the downloaded gribs match the request
-                for grib in load_source("file", path):
-                    for k, v in request.items():
-                        if k == "param":
-                            k = "shortName"
-                        assert check_grib_value(grib._get(k), v), (grib._get(k), v)
+            # for path in paths:
+            #     # check that the downloaded gribs match the request
+            #     for grib in load_source("file", path):
+            #         for k, v in request.items():
+            #             if k == "param":
+            #                 k = "shortName"
+            #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
 
 
 @pytest.mark.long_test
@@ -264,9 +264,10 @@ def test_grib_index_eumetnet():
 
 
 if __name__ == "__main__":
-    test_global_index(CML_BASEURL_CDS)
+    # test_per_url_index(CML_BASEURL_CDS)
     # test_indexed_s3(CML_BASEURL_S3)
     # timing()
     # from climetlab.testing import main
 
     # main(__file__)
+    test_grib_index_eumetnet()

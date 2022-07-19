@@ -8,11 +8,12 @@
 #
 
 import atexit
+import functools
 import os
 import threading
 import time
 from collections import defaultdict
-from contextlib import contextmanager, wraps
+from contextlib import contextmanager
 
 from climetlab.utils.humanize import number, seconds
 
@@ -106,7 +107,7 @@ def call_counter(name=None):
     COUNTERS.append(counter)
 
     def decorate(func):
-        @wraps(func)
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
             with counter:
                 return func(*args, **kwargs)

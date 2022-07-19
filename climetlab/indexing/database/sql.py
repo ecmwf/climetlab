@@ -16,6 +16,8 @@ import sqlite3
 import climetlab as cml
 from climetlab.utils.parts import Part
 
+from . import Database
+
 LOG = logging.getLogger(__name__)
 
 
@@ -76,6 +78,7 @@ def create_table(target, names):
     sql_names_headers = ",".join([f"{n} TEXT" for n in sql_names])
     create_statement = f"""CREATE TABLE entries (
         path    TEXT,
+        url     TEXT,
         offset  INTEGER,
         length  INTEGER,
         {sql_names_headers}
@@ -85,76 +88,23 @@ def create_table(target, names):
 
     commas = ",".join(["?" for _ in sql_names])
     insert_statement = f"""INSERT INTO entries(
-                                       path, offset, length, {','.join(sql_names)})
-                                       VALUES(?,?,?,{commas});"""
+                                       path, url, offset, length, {','.join(sql_names)})
+                                       VALUES(?,?,?,?,{commas});"""
     return connection, insert_statement, sql_names, all_names
 
 
-class Database:
-    def lookup(self, request, order=None):
-        raise NotImplementedError("")
-
-    def reset_connection(self, *args, **kwargs):
-        raise NotImplementedError("")
-
-
-class JsonDatabase(Database):
-    def __init__(
-        self,
-        db_path,
-        iterator=None,
-    ):
-        self.entries = list(iterator)
-
-        if not os.path.exists(db_path):
-            # TODO: any bug here?
-            # due to unfinished download in cache?
-            # or concurrent download?
-            with open(db_path, "w") as f:
-                for entry in self.entries:
-                    f.write(json.dumps(entry) + "\n")
-
-    def lookup(self, request, **kwargs):
-
-        if kwargs.get("order") is not None:
-            raise NotImplementedError()
-
-        if request is None:
-            return self.entries
-
-        parts = []
-        for e in self.entries:
-            for k, v in e.items():
-                if v not in request.get(k, []):
-                    continue
-            parts.append(Part(e["_path"], e["_offset"], e["_length"]))
-        return parts
-
-    def reset_connection(self, *args, **kwargs):
-        pass
-
-
 class SqlDatabase(Database):
-    VERSION = 2
+    VERSION = 3
+    EXTENSION = ".db"
 
     def __init__(
         self,
         db_path,
-        iterator=None,
-        create_index_in_sql_db=False,  # index is disabled by default because it is long to create.
-        # create_entry_in_db=None,
+        create_index=False,  # index is disabled by default because it is long to create.
     ):
         self._connection = None
         self.db_path = db_path
-
-        self.create_index_in_sql_db = create_index_in_sql_db
-
-        if iterator is not None:
-            self.load(iterator)
-
-    def reset_connection(self, db_path):
-        self._connection = None
-        self.db_path = db_path
+        self.create_index = create_index
 
     @property
     def connection(self):
@@ -164,12 +114,6 @@ class SqlDatabase(Database):
         return self._connection
 
     def load(self, iterator):
-        # is_url = (
-        #    url.startswith("http://")
-        #    or url.startswith("https://")
-        #    or url.startswith("ftp://")
-        # )
-
         count = 0
         names = None
         connection = None
@@ -188,20 +132,7 @@ class SqlDatabase(Database):
             assert insert_statement is not None
             assert len(sql_names) == len(all_names), (sql_names, all_names)
 
-            # additional check is disabled
-            # _names = [n for n in sorted(entry.keys()) if not n.startswith("_")]
-            # assert _names == names, (names, _names)
             path, offset, length = entry["_path"], entry["_offset"], entry["_length"]
-            # if path is not None:
-            #    if is_url:
-            #        from urllib.parse import urljoin
-            #        path = urljoin(url, path)
-            #
-            #    else:
-            #        if not os.path.isabs(path):
-            #            path = os.path.join(os.path.dirname(url), path)
-            # else:
-            #    path = self.the_path_from__init__
 
             values = [path, offset, length] + [entry.get(n, None) for n in all_names]
 
@@ -210,7 +141,7 @@ class SqlDatabase(Database):
 
             count += 1
 
-        if self.create_index_in_sql_db:
+        if self.create_index:
             # connection.execute(f"CREATE INDEX path_index ON entries (path);")
             for n in sql_names:
                 connection.execute(f"CREATE INDEX {n}_index ON entries ({n});")
@@ -276,7 +207,14 @@ class SqlDatabase(Database):
             return result[0]
         assert False
 
-    def lookup(self, request, select_values=False, order=None, limit=None, offset=None):
+    def lookup(
+        self,
+        request,
+        select_values=False,
+        order=None,
+        limit=None,
+        offset=None,
+    ):
         if request is None:
             request = {}
 
@@ -290,12 +228,19 @@ class SqlDatabase(Database):
         if order_by:
             order_by_str = "ORDER BY " + ",".join(order_by)
 
+        paging_str = ""
+        if limit is not None:
+            paging_str += f" LIMIT {limit}"
+
+        if offset is not None:
+            paging_str += f" OFFSET {offset}"
+
         if select_values:
             if select_values is True:
                 select_values = self._columns_names_without_i_()
 
             select_values_str = ",".join([f"i_{x}" for x in select_values])
-            statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str};"
+            statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
 
             LOG.debug(statement)
             parts = []
@@ -305,7 +250,7 @@ class SqlDatabase(Database):
             return parts
 
         else:
-            statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str};"
+            statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
 
             LOG.debug(statement)
             parts = []

@@ -1,3 +1,4 @@
+import functools
 import os
 
 import climetlab as cml
@@ -8,6 +9,7 @@ here = os.path.dirname(__file__)
 
 
 def temp_cache_dir(f):
+    @functools.wraps(f)
     def wrapped(*args, **kwargs):
         with temp_directory() as tmpdir:
             with settings.temporary():

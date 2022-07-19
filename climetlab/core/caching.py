@@ -19,6 +19,7 @@ decide to read it or create it.
 
 import ctypes
 import datetime
+import functools
 import hashlib
 import json
 import logging
@@ -28,7 +29,6 @@ import shutil
 import sqlite3
 import threading
 import time
-from functools import wraps
 
 from filelock import FileLock
 
@@ -94,7 +94,7 @@ def default_serialiser(o):
 
 
 def in_executor(func):
-    @wraps(func)
+    @functools.wraps(func)
     def wrapped(*args, **kwargs):
         global CACHE
         s = CACHE.enqueue(func, *args, **kwargs)
@@ -104,7 +104,7 @@ def in_executor(func):
 
 
 def in_executor_forget(func):
-    @wraps(func)
+    @functools.wraps(func)
     def wrapped(*args, **kwargs):
         global CACHE
         CACHE.enqueue(func, *args, **kwargs)
