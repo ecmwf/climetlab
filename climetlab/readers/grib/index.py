@@ -286,7 +286,6 @@ class SqlIndex(GribIndexFromFile):
                 limit=self.CHUNKING,
                 offset=first,
             )
-            print(len(result))
             self._cache = Cache(first, len(result), result)
         return self._cache.result[n % self.CHUNKING]
 
