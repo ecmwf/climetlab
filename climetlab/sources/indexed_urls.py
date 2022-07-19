@@ -47,14 +47,17 @@ class IndexedUrls(IndexedSource):
 
         def add_path(url):
             def wrapped(entry):
-                entry["_url"] = url
-                entry.pop("_path", None)
+                entry["_path"] = url
 
             return wrapped
 
+        def index_url(url):
+            # TODO: implement
+            return url + index_extension
+
         index = MultiIndex(
             JsonIndex.from_url(
-                url + index_extension,
+                index_url(url),
                 selection=request,
                 patch_entry=add_path(url),
             )

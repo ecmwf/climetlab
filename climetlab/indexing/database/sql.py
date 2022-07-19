@@ -78,7 +78,6 @@ def create_table(target, names):
     sql_names_headers = ",".join([f"{n} TEXT" for n in sql_names])
     create_statement = f"""CREATE TABLE entries (
         path    TEXT,
-        url     TEXT,
         offset  INTEGER,
         length  INTEGER,
         {sql_names_headers}
@@ -88,7 +87,7 @@ def create_table(target, names):
 
     commas = ",".join(["?" for _ in sql_names])
     insert_statement = f"""INSERT INTO entries(
-                                       path, url, offset, length, {','.join(sql_names)})
+                                       path, offset, length, {','.join(sql_names)})
                                        VALUES(?,?,?,?,{commas});"""
     return connection, insert_statement, sql_names, all_names
 

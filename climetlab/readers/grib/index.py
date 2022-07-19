@@ -120,7 +120,7 @@ class GribDBIndex(GribIndex):
             size = None
 
         def absolute_url(entry):
-            entry["_url"] = urljoin(url, entry.pop("_path"))
+            entry["_path"] = urljoin(url, entry.pop("_path"))
 
         if patch_entry is None:
             patch_entry = absolute_url
