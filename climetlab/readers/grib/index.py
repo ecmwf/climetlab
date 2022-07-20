@@ -253,9 +253,6 @@ class GribIndexFromFile(GribDBIndex):
         self._not_implemented()
 
 
-Cache = namedtuple("Cache", ["first", "length", "result"])
-
-
 class JsonIndex(GribIndexFromFile):
     DBCLASS = JsonDatabase
 
@@ -268,6 +265,9 @@ class JsonIndex(GribIndexFromFile):
 
     def number_of_parts(self):
         return len(self._lookup())
+
+
+SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
 
 
 class SqlIndex(GribIndexFromFile):
@@ -286,7 +286,7 @@ class SqlIndex(GribIndexFromFile):
                 limit=self.CHUNKING,
                 offset=first,
             )
-            self._cache = Cache(first, len(result), result)
+            self._cache = SqlIndexCache(first, len(result), result)
         return self._cache.result[n % self.CHUNKING]
 
     @cached_method

@@ -10,12 +10,12 @@
 
 import logging
 
-from climetlab.core import Base
+from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
 
-class Index(Base):
+class Index(Source):
     def __getitem__(self, n):
         self._not_implemented()
 
@@ -56,3 +56,8 @@ class MultiIndex(Index):
 
     def __len__(self):
         return sum(len(i) for i in self.indexes)
+
+    def graph(self, depth=0):
+        print(" " * depth, self.__class__.__name__)
+        for s in self.indexes:
+            s.graph(depth + 3)
