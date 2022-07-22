@@ -117,7 +117,6 @@ class GribDBIndex(GribIndex):
 
         def parse_lines(lines):
             for line in lines:
-                # print(line)
                 entry = json.loads(line)
                 patch_entry(entry)
                 yield entry
