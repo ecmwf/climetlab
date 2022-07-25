@@ -207,7 +207,7 @@ class GribDBIndex(GribIndex):
         self._not_implemented()
 
 
-class GribIndexFromDicts(GribDBIndex):
+class GribIndexFromDicts(GribIndex):
     def __init__(self, list_of_dicts):
         self.list_of_dicts = list_of_dicts
 
