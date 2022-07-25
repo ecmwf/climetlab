@@ -20,17 +20,15 @@ def test_open_data():
 
     s = load_source(
         "ecmwf-open-data",
-        step=24,
-        date=-2,
-        stream="enfo",
-        type="ef",
-        param="2t",
+        step=240,
+        type="fc",
+        param="msl",
     )
     print(s.path)
 
 
 if __name__ == "__main__":
-    test_open_data()
-    # from climetlab.testing import main
+    # test_open_data()
+    from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)

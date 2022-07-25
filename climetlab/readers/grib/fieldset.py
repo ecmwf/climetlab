@@ -79,7 +79,6 @@ class IndexWrapperForCfGrib:
         self.ignore_keys = ignore_keys
 
     def __getitem__(self, n):
-        print(n, len(self))
         return ItemWrapperForCfGrib(self.index[n], ignore_keys=self.ignore_keys)
 
     def __len__(self):
@@ -421,10 +420,6 @@ class FieldSet:
                 json.dump(self._statistics, f)
 
         return self._statistics
-
-    # def graph(self):
-    #     # Compatibility with multi
-    #     print("FieldSet.graph() not yet implemented")
 
     def save(self, filename):
         with open(filename, "wb") as f:

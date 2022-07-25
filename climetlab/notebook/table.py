@@ -38,9 +38,5 @@ class Table:
 
     def render(self, element):
         e = element.render()
-        # print(e)
-        # print(dir(e))
-        # a =  e._repr_html_()
-        # print(a)
         src, attrs = e._repr_png_()
         return f'<img src="data:image/png;base64, {src}">'
