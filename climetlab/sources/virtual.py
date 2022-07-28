@@ -49,13 +49,25 @@ class VirtualField:
         return fields[(dd - 1) * 24 + self.time].values
 
 
+class DictOveray(dict):
+    def __init__(self, field):
+        self.field = field
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            self[key] = self.field[key]
+            return self[key]
+
+
 class Virtual(GribIndex):
     SIZE = int(365.25 * 24 * (2022 - 1959))
     # SIZE = 100
 
     def __init__(self):
         super().__init__()
-        self.reference = cml.load_source(
+        self.reference = DictOveray(cml.load_source(
             "cds",
             "reanalysis-era5-single-levels",
             product_type="reanalysis",
@@ -63,7 +75,7 @@ class Virtual(GribIndex):
             param="2t",
             time=0,
             grid="10/10",
-        )[0]
+        )[0])
 
         self.fields = {}
         self.lock = threading.Lock()
