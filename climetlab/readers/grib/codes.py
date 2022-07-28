@@ -10,6 +10,7 @@
 import datetime
 import logging
 import os
+import threading
 
 import eccodes
 
@@ -199,13 +200,24 @@ class CodesHandle:
 class CodesReader:
     def __init__(self, path):
         self.path = path
-        self.file = open(self.path, "rb")
+        self.lock = threading.Lock()
+        self._files = {}
+
+    @property
+    def file(self):
+        with self.lock:
+            thread = threading.current_thread()
+            f = self._files.get(thread)
+            if f is None:
+                f = self._files[thread] = open(self.path, "rb")
+            return f
 
     def __del__(self):
-        try:
-            self.file.close()
-        except Exception:
-            pass
+        for f in self._files.values():
+            try:
+                f.close()
+            except Exception:
+                pass
 
     def at_offset(self, offset):
         self.file.seek(offset, 0)

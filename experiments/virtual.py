@@ -9,10 +9,10 @@ client = Client(cluster)
 
 
 ds = cml.load_source("virtual")
-now =  time.time()
+now = time.time()
 print("a", len(ds), now)
 x = ds.to_xarray()
-print("b", time.time()-now)
+print("b", time.time() - now)
 # exit(0)
 # print(x.chunks)
 

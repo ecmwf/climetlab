@@ -67,15 +67,17 @@ class Virtual(GribIndex):
 
     def __init__(self):
         super().__init__()
-        self.reference = DictOveray(cml.load_source(
-            "cds",
-            "reanalysis-era5-single-levels",
-            product_type="reanalysis",
-            date=19590101,
-            param="2t",
-            time=0,
-            grid="10/10",
-        )[0])
+        self.reference = DictOveray(
+            cml.load_source(
+                "cds",
+                "reanalysis-era5-single-levels",
+                product_type="reanalysis",
+                date=19590101,
+                param="2t",
+                time=0,
+                grid="10/10",
+            )[0]
+        )
 
         self.fields = {}
         self.lock = threading.Lock()
