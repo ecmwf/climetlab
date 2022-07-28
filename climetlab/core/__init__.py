@@ -7,7 +7,7 @@
 #
 
 import logging
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 LOG = logging.getLogger(__name__)
 
