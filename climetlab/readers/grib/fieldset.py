@@ -236,6 +236,12 @@ class FieldSet:
 
         return WrapperWeatherBenchDataset
 
+    def xarray_open_dataset_kwargs(self):
+        return dict(
+            cache=True,  # Set to false to prevent loading the whole dataset
+            chunks=None,  # Set to 'auto' for lazy loading
+        )
+
     def to_xarray(self, **kwargs):
 
         import xarray as xr
@@ -266,10 +272,14 @@ class FieldSet:
                 logging_owner="xarray_open_dataset_kwargs",
                 logging_main_key=key,
             )
+
+        default = dict(squeeze=False)  # TODO:Documenet me
+        default.update(self.xarray_open_dataset_kwargs())
+
         xarray_open_dataset_kwargs.update(
             mix_kwargs(
                 user=user_xarray_open_dataset_kwargs,
-                default={"squeeze": False},
+                default=default,
                 forced={
                     "errors": "raise",
                     "engine": "cfgrib",

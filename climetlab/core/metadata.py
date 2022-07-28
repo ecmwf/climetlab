@@ -76,7 +76,7 @@ def _annotation_xarray(xr):
 
 def _annotation_numpy(array):
     # TODO
-    # See https://numpy.org/doc/stable/user/basics.subclassing.html#slightly-more-realistic-example-attribute-added-to-existing-array
+    # See https://numpy.org/doc/stable/user/basics.subclassing.html
     pass
 
 

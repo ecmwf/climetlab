@@ -9,6 +9,7 @@
 
 
 import logging
+from abc import abstractmethod
 
 from climetlab.core.settings import SETTINGS
 from climetlab.decorators import alias_argument
@@ -36,6 +37,7 @@ class IndexedSource(Source):
     def availability(self):
         return self.index.availability
 
+    @abstractmethod
     def sel(self, **kwargs):
         return self._not_implemented()
 

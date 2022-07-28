@@ -10,6 +10,7 @@
 import json
 import logging
 import os
+from abc import abstractmethod
 from collections import namedtuple
 from urllib.parse import urljoin
 
@@ -202,6 +203,7 @@ class GribDBIndex(GribIndex):
 
         return availability
 
+    @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
 
@@ -245,9 +247,11 @@ class GribIndexFromFile(GribDBIndex):
     def __len__(self):
         return self.number_of_parts()
 
+    @abstractmethod
     def part(self, n):
         self._not_implemented()
 
+    @abstractmethod
     def number_of_parts(self):
         self._not_implemented()
 

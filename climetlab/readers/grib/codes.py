@@ -155,7 +155,12 @@ class CodesHandle:
         self.offset = offset
 
     def __del__(self):
-        eccodes_codes_release(self.handle)
+        try:
+            eccodes_codes_release(self.handle)
+        except TypeError:
+            # This happens when eccodes is unloaded before
+            # this object is deleted
+            pass
 
     def get(self, name):
         # LOG.warn(str(self) + str(name))

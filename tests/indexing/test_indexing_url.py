@@ -97,7 +97,13 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     #        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
     now = time.time()
-    s = load_source("indexed-urls", index, request, range_method=range_method, **kwargs)
+    s = load_source(  # noqa F841
+        "indexed-urls",
+        index,
+        request,
+        range_method=range_method,
+        **kwargs,
+    )
     elapsed = time.time() - now
     # print("ELAPSED", elapsed)
     # try:

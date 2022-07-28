@@ -9,6 +9,7 @@
 
 
 import logging
+from abc import abstractmethod
 
 from climetlab.sources import Source
 
@@ -16,12 +17,15 @@ LOG = logging.getLogger(__name__)
 
 
 class Index(Source):
+    @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
 
+    @abstractmethod
     def __len__(self):
         self._not_implemented()
 
+    @abstractmethod
     def sel(self, kwargs):
         self._not_implemented()
 
