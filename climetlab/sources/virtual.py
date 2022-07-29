@@ -65,17 +65,21 @@ class Virtual(GribIndex):
     SIZE = int(365.25 * 24 * (2022 - 1959))
     # SIZE = 100
 
+    DATASET = dict(
+        dataset="reanalysis-era5-single-levels",
+        product_type="reanalysis",
+        param="msl",
+        grid="10/10",
+    )
+
     def __init__(self):
         super().__init__()
         self.reference = DictOveray(
             cml.load_source(
                 "cds",
-                "reanalysis-era5-single-levels",
-                product_type="reanalysis",
                 date=19590101,
-                param="2t",
                 time=0,
-                grid="10/10",
+                **self.DATASET,
             )[0]
         )
 
@@ -128,14 +132,11 @@ class Virtual(GribIndex):
             last = calendar.monthrange(yyyy, mm)[1]
             fields = cml.load_source(
                 "cds",
-                "reanalysis-era5-single-levels",
-                product_type="reanalysis",
                 year=yyyy,
                 month=mm,
                 day=list(range(1, last + 1)),
-                param="2t",
                 time=list(range(0, 24)),
-                grid="10/10",
+                **self.DATASET,
             )
             self.fields[yyyymm] = fields
             return fields

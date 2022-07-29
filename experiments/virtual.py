@@ -18,8 +18,8 @@ print("b", time.time() - now)
 
 # print(x)
 
-print(x.t2m)
+print(x.msl)
 
-y = x.t2m
+y = x.msl
 # print(x.paramId_167.values)
 print(y.mean(dim="time").compute())
