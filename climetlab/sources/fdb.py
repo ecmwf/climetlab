@@ -12,7 +12,6 @@ import os
 
 import pyfdb
 
-import climetlab as cml
 from climetlab.readers.grib.index import GribIndexFromFile
 from climetlab.utils.parts import Part
 
@@ -42,7 +41,7 @@ class FDB(GribIndexFromFile):
 
     def part(self, i):
         f = self.fields[i]
-        return Part(f["path"], f["offset"], f["size"])
+        return Part(f["path"], f["offset"], f["length"])
 
 
 source = FDB
