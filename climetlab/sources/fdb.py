@@ -7,14 +7,15 @@
 # nor does it submit to any jurisdiction.
 #
 
-import calendar
-import datetime
 import logging
-import threading
+import os
+
+import pyfdb
 
 import climetlab as cml
-from climetlab.readers.grib.index import GribIndex
-import pyfdb
+from climetlab.readers.grib.index import GribIndexFromFile
+from climetlab.utils.parts import Part
+
 LOG = logging.getLogger(__name__)
 
 
@@ -26,47 +27,22 @@ class NoLock:
         pass
 
 
+class FDB(GribIndexFromFile):
+    def __init__(self, root=None, schema=None, request={}):
+        super().__init__(db=None)
+        if root:
+            os.environ["FDB_ROOT_DIRECTORY"] = root
+        if schema:
+            os.environ["FDB_SCHEMA_FILE"] = schema
 
-class FDB(GribIndex):
-    SIZE = int(365.25 * 24 * (2022 - 1959))
-    # SIZE = 100
+        self.fields = list(pyfdb.list(request))
 
-    DATASET = dict(
-        dataset="reanalysis-era5-single-levels",
-        product_type="reanalysis",
-        param="msl",
-        grid="10/10",
-    )
+    def number_of_parts(self):
+        return len(self.fields)
 
-    def __init__(self, request):
-        super().__init__()
-        for n in pyfdb.list(request):
-            print(n)
-
-    def __len__(self):
-        return self.SIZE
-
-    def __getitem__(self, i):
-        if i >= self.SIZE:
-            raise IndexError()
-
-        return VirtualField(i, self)
-
-    def xarray_open_dataset_kwargs(self):
-        return dict(
-            cache=False,  # Set to false to prevent loading the whole dataset
-            chunks={
-                "time": 24 * 31,
-                # "step": 1,
-                # "number": 1,
-                # "surface": 1,
-                "latitude": 721,
-                "longitude": 1440,
-            },
-            lock=NoLock(),
-        )
-
-
+    def part(self, i):
+        f = self.fields[i]
+        return Part(f["path"], f["offset"], f["size"])
 
 
 source = FDB
