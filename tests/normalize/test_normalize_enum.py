@@ -73,12 +73,15 @@ def test_enum_multiple():
 
 def test_enum_multiple_2():
     g = normalize("name", ["a", "b", "c"], multiple=True)(name_default_is_str_a)
-    assert g(
-        (
-            "a",
-            "b",
+    assert (
+        g(
+            (
+                "a",
+                "b",
+            )
         )
-    ) == ["a", "b"]
+        == ["a", "b"]
+    )
 
 
 def test_enum_multiple_ALL_1():

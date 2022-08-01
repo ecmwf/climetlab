@@ -7,8 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+import glob
 import logging
 import os
+import time
 
 import pyfdb
 
@@ -18,29 +20,30 @@ from climetlab.utils.parts import Part
 LOG = logging.getLogger(__name__)
 
 
-class NoLock:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args, **kwargs):
-        pass
-
-
 class FDB(GribIndexFromFile):
     def __init__(self, root=None, schema=None, request={}):
         super().__init__(db=None)
+
         if root:
             os.environ["FDB_ROOT_DIRECTORY"] = root
+
+        if schema is None and root is not None:
+            for n in glob.iglob(f"{root}/*/schema"):
+                schema = n
+                break
+
         if schema:
             os.environ["FDB_SCHEMA_FILE"] = schema
 
-        self.fields = list(pyfdb.list(request))
+        now = time.time()
+        self.parts = list(pyfdb.list(request))
+        print("pyfdb.list", time.time() - now)
 
     def number_of_parts(self):
-        return len(self.fields)
+        return len(self.parts)
 
     def part(self, i):
-        f = self.fields[i]
+        f = self.parts[i]
         return Part(f["path"], f["offset"], f["length"])
 
 
