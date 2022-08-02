@@ -20,7 +20,8 @@ import climetlab as cml
 from .benchmarks.indexed_url import benchmark as benchmark_indexed_url
 from .tools import experimental, parse_args
 
-home = os.environ["HOME"]
+home = os.path.expanduser("~")
+
 DATA_DATALOADING = {
     "grib": f"{home}/links/weather-bench-links/data-from-mat-chantry-symlinks-to-files-small/grib",
     "netcdf": f"{home}/links/weather-bench-links/data-from-mihai-alexe/netcdf/pl_1999.nc",
