@@ -10,9 +10,9 @@
 import json
 import logging
 import os
+import threading
 from abc import abstractmethod
 from collections import namedtuple
-import threading
 from urllib.parse import urljoin
 
 import requests
