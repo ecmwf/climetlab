@@ -10,6 +10,7 @@
 import json
 import logging
 import os
+import threading
 from abc import abstractmethod
 from collections import namedtuple
 from urllib.parse import urljoin
@@ -230,13 +231,18 @@ class GribIndexFromDicts(GribIndex):
 class GribIndexFromFile(GribDBIndex):
     _readers = None
 
-    def _reader(self, path):
-        if self._readers is None:
-            self._readers = {}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lock = threading.Lock()
 
-        if path not in self._readers:
-            self._readers[path] = CodesReader(path)
-        return self._readers[path]
+    def _reader(self, path):
+        with self.lock:
+            if self._readers is None:
+                self._readers = {}
+
+            if path not in self._readers:
+                self._readers[path] = CodesReader(path)
+            return self._readers[path]
 
     def __getitem__(self, n):
         part = self.part(n)
@@ -302,6 +308,7 @@ class GribFileIndex(GribIndexFromFile):
 
     def __init__(self, path):
         assert isinstance(path, str), path
+        super().__init__(db=None)
         self.path = path
         self.offsets = None
         self.lengths = None

@@ -44,9 +44,9 @@ class VirtualField:
 
     @property
     def values(self):
-        fields = self.owner.field(self.date)
+        source = self.owner.full_month(self.date)
         dd = self.date % 100
-        return fields[(dd - 1) * 24 + self.time].values
+        return source[(dd - 1) * 24 + self.time].values
 
 
 class DictOveray(dict):
@@ -110,7 +110,7 @@ class Virtual(GribIndex):
             lock=NoLock(),
         )
 
-    def field(self, date):
+    def full_month(self, date):
 
         yyyymm = date // 100
 
@@ -130,7 +130,7 @@ class Virtual(GribIndex):
             yyyy = yyyymm // 100
             mm = yyyymm % 100
             last = calendar.monthrange(yyyy, mm)[1]
-            fields = cml.load_source(
+            source = cml.load_source(
                 "cds",
                 year=yyyy,
                 month=mm,
@@ -138,8 +138,8 @@ class Virtual(GribIndex):
                 time=list(range(0, 24)),
                 **self.DATASET,
             )
-            self.fields[yyyymm] = fields
-            return fields
+            self.fields[yyyymm] = source
+            return source
 
 
 source = Virtual
