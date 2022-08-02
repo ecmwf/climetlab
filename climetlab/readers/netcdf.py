@@ -217,7 +217,7 @@ class NetCDFReader(Reader):
 
     def get_fields(self):
         with closing(
-            xr.open_mfdataset(self.path, combine="by_coords", engine="netcdf4")
+            xr.open_mfdataset(self.path, combine="by_coords")
         ) as ds:  # or nested
             return self._get_fields(DataSet(ds))
 
