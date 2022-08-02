@@ -308,6 +308,7 @@ class GribFileIndex(GribIndexFromFile):
 
     def __init__(self, path):
         assert isinstance(path, str), path
+        super().__init__(path)
         self.path = path
         self.offsets = None
         self.lengths = None
