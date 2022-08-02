@@ -17,10 +17,11 @@ import climetlab as cml
 
 TEST_DIR = os.path.join(os.path.dirname(__file__), "test_indexing_order.py.grib")
 
+
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 def _test_order_directory_source_1(params, levels):
-    home = os.path.expanduser('~')
+    home = os.path.expanduser("~")
     ds = cml.load_source(
         "directory",
         f"{home}/links/weather-bench-links/data-from-mc-symlinks-to-files",
