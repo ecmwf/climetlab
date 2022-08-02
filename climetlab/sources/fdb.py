@@ -13,6 +13,7 @@ import os
 import time
 
 import pyfdb
+import yaml
 
 from climetlab.readers.grib.index import GribIndexFromFile
 from climetlab.utils.parts import Part
@@ -24,19 +25,21 @@ class FDB(GribIndexFromFile):
     def __init__(self, root=None, schema=None, request={}):
         super().__init__(db=None)
 
-        if root:
-            os.environ["FDB_ROOT_DIRECTORY"] = root
-
         if schema is None and root is not None:
             for n in glob.iglob(f"{root}/*/schema"):
                 schema = n
                 break
 
-        if schema:
-            os.environ["FDB_SCHEMA_FILE"] = schema
+        config = {
+            "spaces": [{"roots": [{"path": root}]}],
+            "schema": schema,
+        }
+        os.environ["FDB5_CONFIG"] = yaml.dump(config)
 
         now = time.time()
-        self.parts = list(pyfdb.list(request))
+
+        fdb = pyfdb.FDB()
+        self.parts = list(fdb.list(request))
         print("pyfdb.list", time.time() - now)
 
     def number_of_parts(self):
