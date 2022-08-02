@@ -23,8 +23,8 @@ from .tools import experimental, parse_args
 home = os.path.expanduser("~")
 
 DATA_DATALOADING = {
-    "grib": f"{home}/links/weather-bench-links/data-from-mat-chantry-symlinks-to-files-small/grib",
-    "netcdf": f"{home}/links/weather-bench-links/data-from-mihai-alexe/netcdf/pl_1999.nc",
+    "grib": f"{home}/links/weather-bench-links/data-from-mc-symlinks-to-files-small/grib",
+    "netcdf": f"{home}/links/weather-bench-links/data-from-ma/netcdf/pl_1999.nc",
     "b": f"{home}/dev/climetlab/tests/sources/gribs/b",
 }
 
