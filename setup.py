@@ -54,6 +54,8 @@ install_requires += [
     # "zarr",
     # "s3fs",
     "dask",
+    "h5netcdf",
+    # "netcdf4",
     "cfgrib>=0.9.10.1",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
