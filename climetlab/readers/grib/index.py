@@ -69,11 +69,8 @@ class GribDBIndex(GribIndex):
         cache_metadata,
         **kwargs,
     ):
-        db = None
-
         def load(target, *args):
             LOG.debug(f"Building db in {target}")
-            nonlocal db  # to make sure to use the variable db outside of the function
             db = cls.DBCLASS(target)
             db.load(iterator)
 
@@ -85,8 +82,7 @@ class GribDBIndex(GribIndex):
             extension=cls.DBCLASS.EXTENSION,
         )
 
-        if db is None:  # load() was not called
-            db = cls.DBCLASS(db_name)
+        db = cls.DBCLASS(db_name)
 
         return cls(db=db, **kwargs)
 
