@@ -9,6 +9,7 @@
 
 
 import logging
+import os
 import sqlite3
 
 import climetlab as cml
@@ -102,6 +103,7 @@ class SqlDatabase(Database):
             count = 0
 
             for entry in iterator:
+                assert isinstance(entry, dict), (type(entry), entry)
                 values = [entry["_path"], entry["_offset"], entry["_length"]] + [
                     entry.get(n) for n in GRIB_INDEX_KEYS
                 ]
@@ -109,7 +111,7 @@ class SqlDatabase(Database):
                 count += 1
 
             assert count >= 1
-            LOG.warning("Added %d entries", count)
+            LOG.info("Added %d entries", count)
 
             if self.create_index:
                 # connection.execute(f"CREATE INDEX path_index ON entries (path);")
@@ -224,3 +226,47 @@ class SqlDatabase(Database):
         for path, offset, length in self.connection.execute(statement):
             parts.append(Part(path, offset, length))
         return Part.resolve(parts)
+
+    def _dump_dicts(self):
+        names = self._columns_names_without_i_()
+        names_str = ",".join([f"i_{x}" for x in names])
+        statement = f"SELECT path,offset,length,{names_str} FROM entries ;"
+        for tupl in self.connection.execute(statement):
+            yield {k: v for k, v in zip(["_path", "_offset", "_length"] + names, tupl)}
+
+    def dump_dicts(self, remove_none=True, relative_paths=None, base_dir=None):
+        def do_remove_none(dic):
+            return {k: v for k, v in dic.items() if v is not None}
+
+        def do_set_relative_path(dic):
+            abs_base_dir = os.path.abspath(base_dir)
+            path = dic["_path"]
+            assert os.path.isabs(path), path
+            assert path.startswith(abs_base_dir), (path, abs_base_dir)
+            dic["_path"] = os.path.relpath(path, base_dir)
+            return dic
+
+        def do_set_absolute_path(dic):
+            path = dic["_path"]
+            assert not os.path.isabs(path), path
+            dic["_path"] = os.path.join(base_dir, path)
+            return dic
+
+        def do_nothing(dic):
+            return dic
+
+        for dic in self._dump_dicts():
+            if remove_none:
+                dic = do_remove_none(dic)
+
+            dic = {
+                True: do_set_relative_path,
+                False: do_set_absolute_path,
+                None: do_nothing,
+            }[relative_paths](dic)
+
+            yield dic
+
+    def duplicate_db(self, filename, **kwargs):
+        new = SqlDatabase(db_path=filename)
+        new.load(self.dump_dicts(**kwargs))

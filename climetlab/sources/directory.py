@@ -9,6 +9,7 @@
 import logging
 import os
 
+import climetlab.debug
 from climetlab.readers.grib.index import SqlIndex
 from climetlab.scripts.grib import _index_grib_file
 from climetlab.sources.indexed import IndexedSource
@@ -23,18 +24,22 @@ def make_absolute(filename, root_dir, default):
     if os.path.isabs(filename):
         return filename
 
-    return os.path.join(root_dir, filename)
+    absolute = os.path.join(root_dir, filename)
+    LOG.debug("Transforming {filename} into absolute path {absolute}")
+    return absolute
 
 
 class DirectorySource(IndexedSource):
     DEFAULT_JSON_FILE = "climetlab.index"
     DEFAULT_DB_FILE = "climetlab.db"
 
-    def __init__(self, path, index_file=None, _index=None, **kwargs):
+    def __init__(self, path, db_path=None, index_file=None, _index=None, **kwargs):
         """index_file is the input index location. db_path is the actual used index.
         index_file = None,  db_path = None :  parse file to create the index.
         index_file = xxx ,  db_path = None :  create db_path in the cache from index_file if not exist
         index_file = xxx ,  db_path = yyy  :  create db_path in "db_path" from index_file if not exist
+
+        if _index is not None, ignore all other arguments.
         """
         if _index is not None:  # for .sel()
             super().__init__(_index, **kwargs)
@@ -43,15 +48,15 @@ class DirectorySource(IndexedSource):
         self.path = path
         self.abspath = os.path.abspath(path)
 
-        db_path = "climetlab.db"
-        db_path = make_absolute(
-            db_path,
-            self.abspath,
-            default=self.DEFAULT_DB_FILE,
-        )
+        if db_path is None:
+            db_path = make_absolute(
+                db_path,
+                self.abspath,
+                default=self.DEFAULT_DB_FILE,
+            )
 
         # Try to use db_path if it exists:
-        if db_path is not None and os.path.exists(db_path):
+        if os.path.exists(db_path):
             LOG.info(f"Using index file {db_path}")
             index = SqlIndex.from_existing_db(db_path=db_path)
             super().__init__(index, **kwargs)

@@ -335,6 +335,8 @@ class CacheCmd:
         """
         Copy part of the cache content to a directory.
         """
+        import stat
+
         from climetlab.core.caching import dump_cache_database
 
         directory = args.directory
@@ -343,12 +345,11 @@ class CacheCmd:
             if arg:
                 arg = arg.replace("-", "").replace("_", "")
 
-            def dummy():
-                return
+            def make_directory_writeable():
+                mode = os.stat(directory).st_mode
+                os.chmod(directory, stat.S_IWUSR | stat.S_IXUSR | mode)
 
             def check_readable():
-                import stat
-
                 st = os.stat(directory)
                 if bool(st.st_mode & stat.S_IROTH):
                     LOG.warning(
@@ -356,17 +357,17 @@ class CacheCmd:
                     )
 
             if arg == "readonly":
-                return (0o555, 0o444, check_readable)
+                return (0o555, 0o444, [make_directory_writeable, check_readable])
 
             if arg == "disabled":
-                return (False, False, dummy)
+                return (False, False, [])
 
             if arg is None:  # default
-                return (0o755, 0o644, check_readable)
+                return (0o755, 0o644, [make_directory_writeable, check_readable])
 
             raise ValueError(arg)
 
-        permissions_dir, permissions_file, final_check = permissions(args.permissions)
+        permissions_dirs, permissions_files, finalize = permissions(args.permissions)
 
         class Dirs:
             def __init__(self):
@@ -423,8 +424,8 @@ class CacheCmd:
                 new_dirs.append(dest)
             else:
                 shutil.copy2(path, dest)
-                if permissions_file:
-                    os.chmod(dest, permissions_file)
+                if permissions_files:
+                    os.chmod(dest, permissions_files)
 
         for entry in cache:
             if not filter(entry):
@@ -440,13 +441,14 @@ class CacheCmd:
 
             copy(path, dest)
 
-        if permissions_dir:
+        if permissions_dirs:
             LOG.info("All entries copied. Now setting permissions.")
-            new_dirs.update_permission_dirs(permissions_dir)
+            new_dirs.update_permission_dirs(permissions_dirs)
 
         print(colored(f"Copied {len(cache)} cache entries to {directory}.", "green"))
 
-        final_check()
+        for f in finalize:
+            f()
 
 
 CacheCmd.do_decache.__doc__ += "Hello"
