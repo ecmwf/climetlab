@@ -9,7 +9,6 @@
 import logging
 import os
 
-import climetlab.debug
 from climetlab.readers.grib.index import SqlIndex
 from climetlab.scripts.grib import _index_grib_file
 from climetlab.sources.indexed import IndexedSource

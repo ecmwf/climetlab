@@ -140,38 +140,48 @@ class GribCmd:
         # make sure the index exists (create it in cache if it does not exists)
         s = cml.load_source("directory", directory)
         print(f"Found {len(s)} fields in {directory}")
-
         db = s.index.db
-        LOG.debug(f"database located in {db.db_path}")
-        print(f"index is cached in {db.db_path}")
 
         # Then export it with relative filenames
-        def check_overwrite(filename):
-            if os.path.exists(filename):
-                return True
-            if args.force == True:
-                os.unlink(filename)
-                return True
-            print("File {filename} already exists.")
-            return False
+        class AlreadyExistsError(Exception):
+            pass
 
-        if args.format == "sql":
-            filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
-            if not check_overwrite(filename):
+        origin_db_path = db.db_path
+        LOG.debug(f"database located in {origin_db_path}")
+        print(f"Index is cached in {origin_db_path}")
+
+        def check_overwrite(filename):
+            if not os.path.exists(filename):
                 return
+            if args.force:
+                print(f"File {filename} already exists, overwriting it.")
+                os.unlink(filename)
+                return
+            raise AlreadyExistsError(
+                f"ERROR: File {filename} already exists (use --force to overwrite)."
+            )
+
+        def do_sql():
+            filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+            if origin_db_path == filename:
+                return
+            check_overwrite(filename)
             print(f"Writing index in {filename}")
             db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
-            return
 
-        if args.format == "json":
+        def do_json():
             filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
-            if not check_overwrite(filename):
-                return
+            check_overwrite(filename)
             print(f"Writing index in {filename}")
             with open(filename, "w") as f:
                 for d in db.dump_dicts(relative_paths=True, base_dir=directory):
                     print(json.dumps(d), file=f)
-            return
+
+        do = {"sql": do_sql, "json": do_json}[args.format]
+        try:
+            do()
+        except AlreadyExistsError as e:
+            print(e)
 
     @parse_args(
         filename=dict(
