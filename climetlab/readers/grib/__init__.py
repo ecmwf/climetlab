@@ -9,15 +9,13 @@
 import logging
 import os
 
-import climetlab as cml
-
-from .reader import GRIBReader
-
 LOG = logging.getLogger(__name__)
 
 
 def reader(source, path, magic=None, deeper_check=False):
     if magic is None or magic[:4] == b"GRIB":
+        from .reader import GRIBReader
+
         return GRIBReader(source, path)
 
 
@@ -66,6 +64,8 @@ def _index_grib_file(path, path_name=None):
 
 
 def _index_url(path_name, url):
+    import climetlab as cml
+
     path = cml.load_source("url", url).path
     # TODO: should use download_and_cache
     # path = download_and_cache(url)
