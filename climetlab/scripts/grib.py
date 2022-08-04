@@ -12,8 +12,8 @@ import logging
 import os
 
 import climetlab as cml
-from climetlab.readers.grib import _index_path, _index_url, _parse_files
 from climetlab.indexing.database.sql import SqlDatabase
+from climetlab.readers.grib import _index_path, _index_url, _parse_files
 
 from .tools import parse_args
 
@@ -100,27 +100,27 @@ class GribCmd:
         # print(f"Found {len(s)} fields in {directory}")
         return
 
-        def do_sql():
-            filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
-            if origin_db_path == filename:
-                return
-            check_overwrite(filename)
-            print(f"Writing index in {filename}")
-            db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
+        # def do_sql():
+        #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+        #     if origin_db_path == filename:
+        #         return
+        #     check_overwrite(filename)
+        #     print(f"Writing index in {filename}")
+        #     db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
 
-        def do_json():
-            filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
-            check_overwrite(filename)
-            print(f"Writing index in {filename}")
-            with open(filename, "w") as f:
-                for d in db.dump_dicts(relative_paths=True, base_dir=directory):
-                    print(json.dumps(d), file=f)
+        # def do_json():
+        #     filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
+        #     check_overwrite(filename)
+        #     print(f"Writing index in {filename}")
+        #     with open(filename, "w") as f:
+        #         for d in db.dump_dicts(relative_paths=True, base_dir=directory):
+        #             print(json.dumps(d), file=f)
 
-        do = {"sql": do_sql, "json": do_json}[args.format]
-        try:
-            do()
-        except AlreadyExistsError as e:
-            print(e)
+        # do = {"sql": do_sql, "json": do_json}[args.format]
+        # try:
+        #     do()
+        # except AlreadyExistsError as e:
+        #     print(e)
 
     @parse_args(
         filename=dict(

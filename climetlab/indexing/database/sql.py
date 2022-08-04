@@ -235,13 +235,9 @@ class SqlDatabase(Database):
             yield {k: v for k, v in zip(["_path", "_offset", "_length"] + names, tupl)}
 
     def dump_dicts(self, remove_none=True):
-        def do_remove_none(dic):
-            return {k: v for k, v in dic.items() if v is not None}
-
         for dic in self._dump_dicts():
             if remove_none:
-                dic = do_remove_none(dic)
-
+                dic = {k: v for k, v in dic.items() if v is not None}
             yield dic
 
     def duplicate_db(self, filename, **kwargs):
