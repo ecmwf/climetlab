@@ -72,7 +72,11 @@ def test_script_export_cache_cds(capsys):
 
 
 def test_script_index_directory(capsys):
-    with temp_directory() as directory:
+    #with temp_directory() as directory:
+        import shutil
+        directory = 'tmp_dir_test_script_index_directory'
+        shutil.rmtree(directory, ignore_errors=True)
+        os.makedirs(directory)
         with temp_directory(), temp_directory() as cache_dir:
             with settings.temporary():
                 settings.set("cache-directory", cache_dir)
@@ -101,6 +105,8 @@ def test_script_index_directory(capsys):
                 assert s.index.db.db_path == db_path
 
                 assert s.to_numpy().mean() == 277.31256510416665
+
+        shutil.rmtree(directory, ignore_errors=True)
 
 
 if __name__ == "__main__":
