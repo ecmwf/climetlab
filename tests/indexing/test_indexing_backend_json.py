@@ -55,7 +55,7 @@ def test_indexing_json_1(backend):
     s = backend.sel(REQUEST_1)
     assert s.number_of_parts() == 1
     p = s.part(0)
-    assert p.path == "data/02.grb"
+    assert p.path == os.path.realpath(os.path.join("data","02.grb"))
     assert p.offset == 94156098
     assert p.length == 23358
 
