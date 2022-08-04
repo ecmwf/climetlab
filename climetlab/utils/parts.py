@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 
 from climetlab.utils import download_and_cache
@@ -18,7 +19,7 @@ class Part:
         )
 
     @classmethod
-    def resolve(cls, parts):
+    def resolve(cls, parts, directory=None):
         paths = defaultdict(list)
         for i, part in enumerate(parts):
             paths[part.path].append(part)
@@ -37,6 +38,10 @@ class Part:
                     p.path = newpath
                     p.offset = newoffset
                     newoffset += p.length
+
+            elif directory and not os.path.isabs(path):
+                for p in bits:
+                    p.path = os.path.join(directory, path)
 
         return parts
 

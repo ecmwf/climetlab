@@ -9,8 +9,8 @@
 import logging
 import os
 
+from climetlab.readers.grib import _parse_files
 from climetlab.readers.grib.index import SqlIndex
-from climetlab.scripts.grib import _index_grib_file
 from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
@@ -75,35 +75,17 @@ class DirectorySource(IndexedSource):
             super().__init__(index, **kwargs)
             return
 
-        # Create the db_path file (or use the one in cache)
+        # Create the db_path file in cache (or used the cached one)
         LOG.info(f"Did not find index files in {db_path} or {index_file}")
+        ignore = [self.DEFAULT_DB_FILE, self.DEFAULT_JSON_FILE, db_path, index_file]
         index = SqlIndex.from_iterator(
-            self._parse_files(path, ignore=db_path),
+            _parse_files(path, ignore=ignore, relative_paths=False),
             cache_metadata={"directory": self.path},
         )
         super().__init__(index, **kwargs)
 
     def sel(self, **kwargs):
         return self.__class__(self, _index=self.index.sel(**kwargs))
-
-    def _parse_files(self, path, ignore=None):
-        if ignore is None:
-            ignore = set()
-        if not isinstance(ignore, set):
-            ignore = set(ignore)
-        ignore.add(self.DEFAULT_DB_FILE)
-        ignore.add(self.DEFAULT_JSON_FILE)
-
-        LOG.debug(f"Parsing files in {path}")
-        assert os.path.isdir(path)
-        for root, _, files in os.walk(path):
-            for name in files:
-                if name in ignore:
-                    continue
-                relpath = os.path.join(root, name)
-                p = os.path.abspath(relpath)
-                LOG.debug(f"Parsing file in {p}")
-                yield from _index_grib_file(p)  # , path_name=relpath)
 
 
 source = DirectorySource

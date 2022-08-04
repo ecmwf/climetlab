@@ -225,7 +225,7 @@ class SqlDatabase(Database):
         parts = []
         for path, offset, length in self.connection.execute(statement):
             parts.append(Part(path, offset, length))
-        return Part.resolve(parts)
+        return Part.resolve(parts, os.path.dirname(self.db_path))
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()
@@ -234,36 +234,13 @@ class SqlDatabase(Database):
         for tupl in self.connection.execute(statement):
             yield {k: v for k, v in zip(["_path", "_offset", "_length"] + names, tupl)}
 
-    def dump_dicts(self, remove_none=True, relative_paths=None, base_dir=None):
+    def dump_dicts(self, remove_none=True):
         def do_remove_none(dic):
             return {k: v for k, v in dic.items() if v is not None}
-
-        def do_set_relative_path(dic):
-            abs_base_dir = os.path.abspath(base_dir)
-            path = dic["_path"]
-            assert os.path.isabs(path), path
-            assert path.startswith(abs_base_dir), (path, abs_base_dir)
-            dic["_path"] = os.path.relpath(path, base_dir)
-            return dic
-
-        def do_set_absolute_path(dic):
-            path = dic["_path"]
-            assert not os.path.isabs(path), path
-            dic["_path"] = os.path.join(base_dir, path)
-            return dic
-
-        def do_nothing(dic):
-            return dic
 
         for dic in self._dump_dicts():
             if remove_none:
                 dic = do_remove_none(dic)
-
-            dic = {
-                True: do_set_relative_path,
-                False: do_set_absolute_path,
-                None: do_nothing,
-            }[relative_paths](dic)
 
             yield dic
 

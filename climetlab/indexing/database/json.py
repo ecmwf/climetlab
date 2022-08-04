@@ -56,4 +56,4 @@ class JsonDatabase(Database):
                     break
             if match:
                 parts.append(Part(e["_path"], e["_offset"], e["_length"]))
-        return Part.resolve(parts)
+        return Part.resolve(parts, os.path.dirname(self.db_path))

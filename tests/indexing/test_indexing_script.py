@@ -12,14 +12,15 @@
 import filecmp
 import glob
 import os
-import subprocess
 
 import pytest
 
 import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
+from climetlab.scripts.main import CliMetLabApp
 from climetlab.testing import NO_CDS
+
 
 def fill_cache_with_cds():
     cml.load_source(
@@ -47,73 +48,69 @@ def fill_cache_with_cds():
 
     return path
 
+
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds():
-    # Since we are using a system call to test the script,
-    # the actual settings file is modified
-    # The value of cache-directory is set back to its original value
-    # using a try/finally
-    original_cachedir = settings.get("cache-directory")
+def test_script_export_cache_cds(capsys):
     with temp_directory() as export_dir:
         with temp_directory(), temp_directory() as cache_dir:
             with settings.temporary():
                 settings.set("cache-directory", cache_dir)
-                cmd = f"climetlab settings cache-directory {cache_dir}"
-                out = subprocess.check_output(cmd.split(" ")).decode("utf-8")
-                print(cmd, out)
 
-                try:
-                    path_in_cache = fill_cache_with_cds()
+                original = fill_cache_with_cds()
 
-                    cmd = f'climetlab export_cache --match "era5" --directory {export_dir}'
-                    out = subprocess.check_output(cmd.split(" ")).decode("utf-8")
-                    print(cmd, out)
-                finally:
-                    cmd = f"climetlab settings cache-directory {original_cachedir}"
-                    subprocess.check_output(cmd.split(" ")).decode("utf-8")
-
-                exported_files = glob.glob(f"{export_dir}/*")
-                assert len(exported_files) == 2, exported_files
-
-                path_in_target = f"{export_dir}/{os.path.basename(path_in_cache)}"
-                assert filecmp.cmp(
-                    path_in_cache, path_in_target
-                ), f"Exported {path_in_target} differs from original file {path_in_cache}"
-
-def test_script_export_cache_cds():
-    # Since we are using a system call to test the script,
-    # the actual settings file is modified
-    # The value of cache-directory is set back to its original value
-    # using a try/finally
-    original_cachedir = settings.get("cache-directory")
-    with temp_directory() as export_dir:
-        with temp_directory(), temp_directory() as cache_dir:
-            with settings.temporary():
-                settings.set("cache-directory", cache_dir)
-                cmd = f"climetlab settings cache-directory {cache_dir}"
-                out = subprocess.check_output(cmd.split(" ")).decode("utf-8")
-                print(cmd, out)
-
-                try:
-                    path_in_cache = fill_cache()
-
-                    cmd = f'climetlab export_cache --match "era5" --directory {export_dir}'
-                    out = subprocess.check_output(cmd.split(" ")).decode("utf-8")
-                    print(cmd, out)
-                finally:
-                    cmd = f"climetlab settings cache-directory {original_cachedir}"
-                    subprocess.check_output(cmd.split(" ")).decode("utf-8")
+                app = CliMetLabApp()
+                app.onecmd(f'export_cache --match "era5" --directory {export_dir}')
+                out, err = capsys.readouterr()
+                print(out)
+                print(err)
 
                 exported_files = glob.glob(os.path.join(export_dir, "*"))
                 assert len(exported_files) == 2, exported_files
 
-                path_in_target = f"{export_dir}/{os.path.basename(path_in_cache)}"
-                assert filecmp.cmp(
-                    path_in_cache, path_in_target
-                ), f"Exported {path_in_target} differs from original file {path_in_cache}"
+                target = f"{export_dir}/{os.path.basename(original)}"
+                assert filecmp.cmp(original, target), (original, target)
+
+
+def test_script_index_directory(capsys):
+    with temp_directory() as directory:
+        with temp_directory(), temp_directory() as cache_dir:
+            with settings.temporary():
+                settings.set("cache-directory", cache_dir)
+
+                s1 = cml.load_source(
+                    "dummy-source",
+                    kind="grib",
+                    date=[20150418],
+                )
+                assert len(s1) > 0
+                os.makedirs(os.path.join(directory, "a"))
+                s1.save(os.path.join(directory, "a", "x.grib"))
+
+                s2 = cml.load_source(
+                    "dummy-source",
+                    kind="grib",
+                    date=[20111202],
+                )
+                assert len(s2) > 0
+                s2.save(os.path.join(directory, "b.grib"))
+
+                files = glob.glob(os.path.join(directory, "*"))
+                assert len(files) == 2, files
+
+                app = CliMetLabApp()
+                app.onecmd(f"index_directory --directory {directory}")
+                out, err = capsys.readouterr()
+                assert err == "", err
+                print(out)
+
+                s = cml.load_source("directory", directory)
+                assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
+                db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
+                assert s.index.db.db_path == db_path
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
 
     main(__file__)
-    # test_script_export_cache_cds()
+    # test_script_index_directory()

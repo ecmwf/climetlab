@@ -12,70 +12,12 @@ import logging
 import os
 
 import climetlab as cml
+from climetlab.readers.grib import _index_path, _index_url, _parse_files
+from climetlab.indexing.database.sql import SqlDatabase
 
 from .tools import parse_args
 
 LOG = logging.getLogger(__name__)
-
-
-def _index_grib_file(path, path_name=None):
-    import eccodes
-
-    with open(path, "rb") as f:
-
-        h = eccodes.codes_grib_new_from_file(f)
-
-        while h:
-            try:
-                field = dict()
-
-                if isinstance(path_name, str):
-                    field["_path"] = path_name
-                elif path_name is False:
-                    pass
-                elif path_name is None:
-                    field["_path"] = path
-                else:
-                    raise ValueError(f"Value of path_name cannot be '{path_name}.'")
-
-                i = eccodes.codes_keys_iterator_new(h, "mars")
-                try:
-                    while eccodes.codes_keys_iterator_next(i):
-                        name = eccodes.codes_keys_iterator_get_name(i)
-                        value = eccodes.codes_get_string(h, name)
-                        field[name] = value
-
-                finally:
-                    eccodes.codes_keys_iterator_delete(i)
-
-                field["_offset"] = eccodes.codes_get_long(h, "offset")
-                field["_length"] = eccodes.codes_get_long(h, "totalLength")
-
-                field["_param_id"] = eccodes.codes_get_string(h, "paramId")
-                field["param"] = eccodes.codes_get_string(h, "shortName")
-
-                yield field
-
-            finally:
-                eccodes.codes_release(h)
-
-            h = eccodes.codes_grib_new_from_file(f)
-
-
-def _index_url(path_name, url):
-    path = cml.load_source("url", url).path
-    # TODO: or use download_and_cache?
-    # path = download_and_cache(url)
-    yield from _index_grib_file(path, path_name=path_name)
-
-
-def _index_path(path):
-    if os.path.isdir(path):
-        for root, _, files in os.walk(path):
-            for name in files:
-                yield from _index_grib_file(os.path.join(root, name))
-    else:
-        yield from _index_grib_file(path)
 
 
 class GribCmd:
@@ -137,18 +79,7 @@ class GribCmd:
 
         from climetlab.sources.directory import DirectorySource
 
-        # make sure the index exists (create it in cache if it does not exists)
-        s = cml.load_source("directory", directory)
-        print(f"Found {len(s)} fields in {directory}")
-        db = s.index.db
-
-        # Then export it with relative filenames
-        class AlreadyExistsError(Exception):
-            pass
-
-        origin_db_path = db.db_path
-        LOG.debug(f"database located in {origin_db_path}")
-        print(f"Index is cached in {origin_db_path}")
+        db_path = os.path.join(directory,DirectorySource.DEFAULT_DB_FILE)
 
         def check_overwrite(filename):
             if not os.path.exists(filename):
@@ -157,9 +88,17 @@ class GribCmd:
                 print(f"File {filename} already exists, overwriting it.")
                 os.unlink(filename)
                 return
-            raise AlreadyExistsError(
+            raise Exception(
                 f"ERROR: File {filename} already exists (use --force to overwrite)."
             )
+        check_overwrite(db_path)
+
+        ignore = [DirectorySource.DEFAULT_DB_FILE, DirectorySource.DEFAULT_JSON_FILE, db_path]
+        db = SqlDatabase(db_path)
+        iterator =  _parse_files(directory, ignore=ignore, relative_paths=True)
+        db.load(iterator)
+        # print(f"Found {len(s)} fields in {directory}")
+        return
 
         def do_sql():
             filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
