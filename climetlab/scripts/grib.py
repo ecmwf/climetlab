@@ -11,8 +11,6 @@ import json
 import logging
 import os
 
-import climetlab as cml
-from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib import _index_path, _index_url, _parse_files
 
 from .tools import parse_args
@@ -22,11 +20,14 @@ LOG = logging.getLogger(__name__)
 
 class GribCmd:
     @parse_args(
-        paths_or_urls=dict(
-            metavar="PATH_OR_URL",
-            type=str,
-            nargs="+",
-            help="list of files or directories or urls to index",
+        paths_or_urls=(
+            None,
+            dict(
+                metavar="PATH_OR_URL",
+                type=str,
+                nargs="+",
+                help="list of files or directories or urls to index",
+            ),
         ),
         # json=dict(action="store_true", help="produce a JSON output"),
         baseurl=dict(
@@ -56,49 +57,63 @@ class GribCmd:
                 print(json.dumps(e))
 
     @parse_args(
-        directory=dict(
-            metavar="DIRECTORY",
-            type=str,
-            help="Directory containing the GRIB files to index.",
-        ),
-        format=dict(
-            default="sql",
-            metavar="FORMAT",
-            type=str,
-            help="sql or json.",
-        ),
-        relative_paths=dict(
-            action="store_true", help="Write paths relative to DIRECTORY."
-        ),
+        directory=(None, dict(help="Directory containing the GRIB files to index.")),
+        # format=dict(
+        #    default="sql",
+        #    metavar="FORMAT",
+        #    type=str,
+        #    help="sql or json or stdout.",
+        # ),
         force=dict(action="store_true", help="overwrite existing index."),
+        output=(
+            None,
+            dict(
+                help="Custom location of the database file, will write absolute filenames in the database."
+            ),
+        ),
     )
     def do_index_directory(self, args):
         """Index a directory containing GRIB files."""
         directory = args.directory
+        db_path = args.output
+        force = args.force
+
         assert os.path.isdir(directory), directory
 
+        from climetlab.indexing.database.sql import SqlDatabase
         from climetlab.sources.directory import DirectorySource
 
-        db_path = os.path.join(directory,DirectorySource.DEFAULT_DB_FILE)
+        if db_path is None:
+            db_path = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+            relative_paths = True
+        else:
+            relative_paths = False
 
         def check_overwrite(filename):
             if not os.path.exists(filename):
                 return
-            if args.force:
+            if force:
                 print(f"File {filename} already exists, overwriting it.")
                 os.unlink(filename)
                 return
             raise Exception(
                 f"ERROR: File {filename} already exists (use --force to overwrite)."
             )
+
         check_overwrite(db_path)
 
-        ignore = [DirectorySource.DEFAULT_DB_FILE, DirectorySource.DEFAULT_JSON_FILE, db_path]
+        ignore = [
+            DirectorySource.DEFAULT_DB_FILE,
+            DirectorySource.DEFAULT_JSON_FILE,
+            db_path,
+        ]
         db = SqlDatabase(db_path)
-        iterator =  _parse_files(directory, ignore=ignore, relative_paths=True)
+        iterator = _parse_files(directory, ignore=ignore, relative_paths=relative_paths)
         db.load(iterator)
-        # print(f"Found {len(s)} fields in {directory}")
+        # TODO: print(f"Found {len(s)} fields in {directory}")
         return
+
+        # TODO: do json output too.
 
         # def do_sql():
         #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
@@ -123,20 +138,9 @@ class GribCmd:
         #     print(e)
 
     @parse_args(
-        filename=dict(
-            metavar="DB",
-            type=str,
-            help="Database filename.",
-        ),
-        format=dict(
-            default="sql",
-            metavar="FORMAT",
-            type=str,
-            help="sql or json.",
-        ),
+        filename=(None, dict(help="Database filename.")),
     )
     def do_dump_index(self, args):
-        """Dump content of a GRIB index climetlab database as a list dictionaries."""
         from climetlab.indexing.database.sql import SqlDatabase
 
         db = SqlDatabase(db_path=args.filename)

@@ -114,7 +114,7 @@ class CliMetLabApp(
 
 
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(add_help=False)
     p.add_argument(
         "--debug",
         action="store_true",
@@ -126,8 +126,18 @@ def main():
         metavar="CMD",
         nargs=argparse.REMAINDER,
     )
+
+    p.add_argument(
+        "-h", "--help", action="store_true", help="show this help message and exit"
+    )
     args = p.parse_args()
-    sys.argv[1:] = cmdline = args.cmdline
+    if args.help:
+        p.print_help()
+        cmdline = ["help"]
+    else:
+        cmdline = args.cmdline
+
+    sys.argv[1:] = cmdline  # TODO: remove this?
 
     logging.basicConfig(level=args.debug and "DEBUG" or "WARN")
 

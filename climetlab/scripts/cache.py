@@ -316,18 +316,21 @@ class CacheCmd:
         )
 
     @parse_args(
-        directory=dict(
-            type=str,
-            metavar="DIRECTORY",
-            help="Output directory where to copy the cache content.",
+        directory=(
+            None,
+            dict(
+                type=str,
+                metavar="DIRECTORY",
+                help="Output directory where to copy the cache content.",
+            ),
         ),
         **MATCHER,
         permissions=dict(
             type=str,
             help="""
             By default, the exported data is public and writable by its owner.
-            read-only: Make the data read only.
-            disabled: do not change files or directories permissions.
+            read-only: Make the data public and read only.
+            disabled: do not tweak the files or directories permissions.
             """,
         ),
     )
@@ -341,9 +344,9 @@ class CacheCmd:
 
         directory = args.directory
 
-        def permissions(arg):
-            if arg:
-                arg = arg.replace("-", "").replace("_", "")
+        def permissions(perms):
+            if perms:
+                perms = perms.replace("-", "").replace("_", "")
 
             def make_directory_writeable():
                 mode = os.stat(directory).st_mode
@@ -351,21 +354,21 @@ class CacheCmd:
 
             def check_readable():
                 st = os.stat(directory)
-                if bool(st.st_mode & stat.S_IROTH):
+                if not bool(st.st_mode & stat.S_IROTH):
                     LOG.warning(
                         f"The directory {directory} is not readable by others. Please make sure this is what you want."
                     )
 
-            if arg == "readonly":
+            if perms == "readonly":
                 return (0o555, 0o444, [make_directory_writeable, check_readable])
 
-            if arg == "disabled":
+            if perms == "disabled":
                 return (False, False, [])
 
-            if arg is None:  # default
+            if perms is None:  # default
                 return (0o755, 0o644, [make_directory_writeable, check_readable])
 
-            raise ValueError(arg)
+            raise ValueError(perms)
 
         permissions_dirs, permissions_files, finalize = permissions(args.permissions)
 

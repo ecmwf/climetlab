@@ -17,8 +17,8 @@ from .tools import parse_args, print_table
 
 class SettingsCmd:
     @parse_args(
+        args=(None, dict(metavar="SETTING", type=str, nargs="*")),
         json=dict(action="store_true", help="produce a JSON output"),
-        args=dict(metavar="SETTING", type=str, nargs="*"),
     )
     def do_settings(self, args):
         """
@@ -69,7 +69,7 @@ class SettingsCmd:
 
     @parse_args(
         all=dict(action="store_true", help="All settings"),
-        args=dict(metavar="SETTING", type=str, nargs="*"),
+        args=("args", dict(metavar="SETTING", type=str, nargs="*")),
     )
     def do_settings_reset(self, args):
         """

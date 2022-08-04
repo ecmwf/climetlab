@@ -29,20 +29,43 @@ def parse_args(epilog="", **kwargs):
             func.__name__.replace("do_", ""),
             description=textwrap.dedent(doc),
             epilog=textwrap.dedent(epilog),
+            add_help=False,
+        )
+        # custom help to avoid exiting from climetlab cli.
+        p.add_argument(
+            "-h", "--help", action="store_true", help="show this help message and exit"
         )
 
         for k, v in kwargs.items():
-            if "nargs" in v:
-                p.add_argument(k, **v)
-            else:
+            k = k.replace("_", "-")
+
+            if isinstance(v, dict):  # short form is handled directly
                 p.add_argument(f"--{k}", **v)
+                continue
+
+            assert isinstance(v, (list, tuple)), v
+            lst, dic = v[:-1], v[-1]
+            assert isinstance(dic, dict), dic
+            lst = list(lst)
+            if len(lst) == 0:
+                lst = [k]
+            if lst[0] is None:
+                lst[0] = k
+            if not lst[0] in [k, f"--{k}"]:
+                lst = [f"--{k}"] + lst
+
+            p.add_argument(*lst, **dic)
 
         func._argparser = p
         func._kwargs_specifications = kwargs
 
         @functools.wraps(func)
         def wrapped(self, args):
-            args = p.parse_args(shlex.split(args))
+            args = shlex.split(args)  # shlex honors the quotes
+            args = p.parse_args(args)
+            if args.help:
+                p.print_help()
+                return
             return func(self, args)
 
         return wrapped

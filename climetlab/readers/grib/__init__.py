@@ -98,7 +98,7 @@ def _parse_files(directory, relative_paths, ignore=None):
             LOG.debug(f"Parsing file {path}")
 
             if relative_paths is True:
-                _path =  os.path.relpath(path, directory)
+                _path = os.path.relpath(path, directory)
             elif relative_paths is False:
                 _path = os.path.abspath(path)
             elif relative_paths is None:
@@ -106,4 +106,4 @@ def _parse_files(directory, relative_paths, ignore=None):
             else:
                 assert False, relative_paths
 
-            yield from _index_grib_file(path, path_name = _path)
+            yield from _index_grib_file(path, path_name=_path)
