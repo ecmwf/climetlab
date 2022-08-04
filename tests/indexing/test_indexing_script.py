@@ -59,7 +59,7 @@ def test_script_export_cache_cds(capsys):
                 original = fill_cache_with_cds()
 
                 app = CliMetLabApp()
-                app.onecmd(f'export_cache --match "era5" --directory {export_dir}')
+                app.onecmd(f'export_cache --match "era5" {export_dir}')
                 out, err = capsys.readouterr()
                 print(out)
                 print(err)
@@ -90,7 +90,7 @@ def test_script_index_directory(capsys):
                 assert len(files) == 2, files
 
                 app = CliMetLabApp()
-                app.onecmd(f"index_directory --directory {directory}")
+                app.onecmd(f"index_directory {directory}")
                 out, err = capsys.readouterr()
                 assert err == "", err
                 print(out)

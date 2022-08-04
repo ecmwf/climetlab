@@ -66,7 +66,7 @@ class GribCmd:
         # ),
         force=dict(action="store_true", help="overwrite existing index."),
         output=(
-            None,
+            "--output",
             dict(
                 help="Custom location of the database file, will write absolute filenames in the database."
             ),
@@ -80,7 +80,6 @@ class GribCmd:
 
         assert os.path.isdir(directory), directory
 
-        from climetlab.indexing.database.sql import SqlDatabase
         from climetlab.sources.directory import DirectorySource
 
         if db_path is None:
@@ -102,40 +101,7 @@ class GribCmd:
 
         check_overwrite(db_path)
 
-        ignore = [
-            DirectorySource.DEFAULT_DB_FILE,
-            DirectorySource.DEFAULT_JSON_FILE,
-            db_path,
-        ]
-        db = SqlDatabase(db_path)
-        iterator = _parse_files(directory, ignore=ignore, relative_paths=relative_paths)
-        db.load(iterator)
-        # TODO: print(f"Found {len(s)} fields in {directory}")
-        return
-
-        # TODO: do json output too.
-
-        # def do_sql():
-        #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
-        #     if origin_db_path == filename:
-        #         return
-        #     check_overwrite(filename)
-        #     print(f"Writing index in {filename}")
-        #     db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
-
-        # def do_json():
-        #     filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
-        #     check_overwrite(filename)
-        #     print(f"Writing index in {filename}")
-        #     with open(filename, "w") as f:
-        #         for d in db.dump_dicts(relative_paths=True, base_dir=directory):
-        #             print(json.dumps(d), file=f)
-
-        # do = {"sql": do_sql, "json": do_json}[args.format]
-        # try:
-        #     do()
-        # except AlreadyExistsError as e:
-        #     print(e)
+        _index_directory(directory, db_path=db_path, relative_paths=relative_paths)
 
     @parse_args(
         filename=(None, dict(help="Database filename.")),
@@ -146,3 +112,43 @@ class GribCmd:
         db = SqlDatabase(db_path=args.filename)
         for d in db.dump_dicts():
             print(json.dumps(d))
+
+
+def _index_directory(directory, db_path, relative_paths):
+    from climetlab.indexing.database.sql import SqlDatabase
+    from climetlab.sources.directory import DirectorySource
+
+    ignore = [
+        DirectorySource.DEFAULT_DB_FILE,
+        DirectorySource.DEFAULT_JSON_FILE,
+        db_path,
+    ]
+    db = SqlDatabase(db_path)
+    iterator = _parse_files(directory, ignore=ignore, relative_paths=relative_paths)
+    db.load(iterator)
+    # TODO: print(f"Found {len(s)} fields in {directory}")
+    return
+
+    # TODO: do json output too.
+
+    # def do_sql():
+    #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+    #     if origin_db_path == filename:
+    #         return
+    #     check_overwrite(filename)
+    #     print(f"Writing index in {filename}")
+    #     db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
+
+    # def do_json():
+    #     filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
+    #     check_overwrite(filename)
+    #     print(f"Writing index in {filename}")
+    #     with open(filename, "w") as f:
+    #         for d in db.dump_dicts(relative_paths=True, base_dir=directory):
+    #             print(json.dumps(d), file=f)
+
+    # do = {"sql": do_sql, "json": do_json}[args.format]
+    # try:
+    #     do()
+    # except AlreadyExistsError as e:
+    #     print(e)
