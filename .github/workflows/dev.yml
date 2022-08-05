@@ -61,10 +61,6 @@ jobs:
 #           pip install -e ./climetlab-eumetnet-postprocessing-benchmark
 #           cd climetlab
 
-      - name: Run dev.py
-        run: |
-          python tests/test_dev.py
-
 #      - name: Run plugin tests
 #        run: |
 #          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
@@ -76,7 +72,8 @@ jobs:
           pip install nbformat nbconvert ipykernel matplotlib
           pip freeze
 
-      - name: pytest dev.py
+
+      - name: pytest
         run: |
           cd tests/
           pytest test_dev.py
