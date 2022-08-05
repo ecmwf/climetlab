@@ -3,10 +3,14 @@ import glob
 import os
 import shutil
 
+import pytest
+
 import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
+from climetlab.testing import NO_CDS
+
 
 
 
@@ -56,12 +60,6 @@ def test_this():
             target = f"{export_dir}/{os.path.basename(original)}"
             assert filecmp.cmp(original, target), (original, target)
 
-            print("Finishing settings.temporary()")
-            print("finishing settings.temporary()")
-        print("Finishing tmp cache_dir")
-        print("finishing tmp cache_dir")
-    print("Finishing")
-    print("finishing")
     shutil.rmtree(export_dir)
 
 
