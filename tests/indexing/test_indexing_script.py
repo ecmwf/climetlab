@@ -51,7 +51,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds(capsys):
+def test_script_export_cache_cds():
     export_dir = "tmpdir.test_script_export_cache_cds"
     shutil.rmtree(export_dir, ignore_errors=True)
     os.makedirs(export_dir)
@@ -64,9 +64,6 @@ def test_script_export_cache_cds(capsys):
 
             app = CliMetLabApp()
             app.onecmd(f'export_cache --match "era5" {export_dir}')
-            out, err = capsys.readouterr()
-            print(out)
-            print(err)
 
             exported_files = glob.glob(os.path.join(export_dir, "*"))
             assert len(exported_files) == 2, exported_files
@@ -77,7 +74,7 @@ def test_script_export_cache_cds(capsys):
     shutil.rmtree(export_dir)
 
 
-def test_script_index_directory(capsys):
+def test_script_index_directory(capsysbinary):
     directory = "tmpdir.test_script_index_directory"
     shutil.rmtree(directory, ignore_errors=True)
     os.makedirs(directory)
@@ -99,9 +96,8 @@ def test_script_index_directory(capsys):
 
             app = CliMetLabApp()
             app.onecmd(f"index_directory {directory}")
-            out, err = capsys.readouterr()
-            assert err == "", err
-            print(out)
+            out, err = capsysbinary.readouterr()
+            assert not err, err
 
             s = cml.load_source("directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
