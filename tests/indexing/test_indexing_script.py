@@ -112,7 +112,10 @@ def test_script_index_directory(capsys):
 
             assert s.to_numpy().mean() == 277.31256510416665
             print('finishing settings.temporary()')
+            print('finishing settings.temporary()')
         print('finishing tmp cache_dir')
+        print('finishing tmp cache_dir')
+    print('finishing')
     print('finishing')
 
     #shutil.rmtree(cache_dir)

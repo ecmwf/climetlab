@@ -36,6 +36,12 @@ def test_this():
             assert s.index.db.db_path == db_path
 
             assert s.to_numpy().mean() == 277.31256510416665
+            print('finishing settings.temporary()')
+            print('finishing settings.temporary()')
+        print('finishing tmp cache_dir')
+        print('finishing tmp cache_dir')
+    print('finishing')
+    print('finishing')
     
 if __name__ == "__main__":
     test_this()
