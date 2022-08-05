@@ -71,6 +71,7 @@ class DirectorySource(IndexedSource):
         # Try to use index_file (json) if it exists:
         if os.path.exists(index_file):
             LOG.info(f"Using index file {index_file}")
+            print(f"Using index file {index_file} (will happen only once).")
             index = SqlIndex.from_file(path=index_file)
             super().__init__(index, **kwargs)
             return

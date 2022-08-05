@@ -65,6 +65,7 @@ class GribCmd:
         #    help="sql or json or stdout.",
         # ),
         force=dict(action="store_true", help="overwrite existing index."),
+        no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
         output=(
             "--output",
             dict(
@@ -77,6 +78,10 @@ class GribCmd:
         directory = args.directory
         db_path = args.output
         force = args.force
+
+        followlinks = True
+        if args.no_follow_links:
+            followlinks = False
 
         assert os.path.isdir(directory), directory
 
@@ -101,7 +106,12 @@ class GribCmd:
 
         check_overwrite(db_path)
 
-        _index_directory(directory, db_path=db_path, relative_paths=relative_paths)
+        _index_directory(
+            directory,
+            db_path=db_path,
+            relative_paths=relative_paths,
+            followlinks=followlinks,
+        )
 
     @parse_args(
         filename=(None, dict(help="Database filename.")),
@@ -114,7 +124,7 @@ class GribCmd:
             print(json.dumps(d))
 
 
-def _index_directory(directory, db_path, relative_paths):
+def _index_directory(directory, db_path, relative_paths, followlinks):
     from climetlab.indexing.database.sql import SqlDatabase
     from climetlab.sources.directory import DirectorySource
 
@@ -124,7 +134,9 @@ def _index_directory(directory, db_path, relative_paths):
         db_path,
     ]
     db = SqlDatabase(db_path)
-    iterator = _parse_files(directory, ignore=ignore, relative_paths=relative_paths)
+    iterator = _parse_files(
+        directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks
+    )
     db.load(iterator)
     # TODO: print(f"Found {len(s)} fields in {directory}")
     return
