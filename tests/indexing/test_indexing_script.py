@@ -50,7 +50,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds(capsys):
+def _test_script_export_cache_cds(capsys):
     with temp_directory() as export_dir:
         with temp_directory() as cache_dir:
             with settings.temporary():
@@ -79,11 +79,11 @@ def test_script_index_directory(capsys):
     shutil.rmtree(directory, ignore_errors=True)
     os.makedirs(directory)
 
-    cache_dir = "tmpcache_dir_test_script_index_directory"
-    shutil.rmtree(cache_dir, ignore_errors=True)
-    os.makedirs(cache_dir)
-    if True:
-    #with temp_directory() as cache_dir:
+    #cache_dir = "tmpcache_dir_test_script_index_directory"
+    #shutil.rmtree(cache_dir, ignore_errors=True)
+    #os.makedirs(cache_dir)
+    #if True:
+    with temp_directory() as cache_dir:
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
 
@@ -111,8 +111,11 @@ def test_script_index_directory(capsys):
             assert s.index.db.db_path == db_path
 
             assert s.to_numpy().mean() == 277.31256510416665
+            print('finishing settings.temporary()')
+        print('finishing tmp cache_dir')
+    print('finishing')
 
-    shutil.rmtree(cache_dir)
+    #shutil.rmtree(cache_dir)
 
 
 if __name__ == "__main__":

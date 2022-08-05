@@ -53,12 +53,6 @@ jobs:
           pip install -e .
           pip freeze
 
-#      - name: Install test tools
-#        run: |
-#          pip install pytest pytest-cov
-#          pip install nbformat nbconvert ipykernel matplotlib
-#          pip freeze
-
 # 
 #       - name: Install plugin
 #         run: |
@@ -75,3 +69,13 @@ jobs:
 #        run: |
 #          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
 #          pytest test_training_data_forecasts.py
+
+      - name: Install test tools
+        run: |
+          pip install pytest pytest-cov
+          pip install nbformat nbconvert ipykernel matplotlib
+          pip freeze
+
+      - name: pytest dev.py
+        run: |
+          pytest dev/dev.py
