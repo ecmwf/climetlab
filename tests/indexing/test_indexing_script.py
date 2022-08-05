@@ -51,7 +51,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds():
+def test_script_export_cache_cds(capsys):
     export_dir = "tmpdir.test_script_export_cache_cds"
     shutil.rmtree(export_dir, ignore_errors=True)
     os.makedirs(export_dir)
@@ -64,7 +64,7 @@ def test_script_export_cache_cds():
 
             app = CliMetLabApp()
             app.onecmd(f'export_cache --match "era5" {export_dir}')
-            #out, err = capsys.readouterr()
+            out, err = capsys.readouterr()
             #print(out)
             #print(err)
 
