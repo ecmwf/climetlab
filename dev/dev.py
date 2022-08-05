@@ -9,7 +9,7 @@ from climetlab.scripts.main import CliMetLabApp
 
 def test_this():
     directory = 'tata'
-    shutil.rmtree(directory)
+    shutil.rmtree(directory, ignore_errors=True)
 
     with temp_directory() as cache_dir:
         with settings.temporary():
