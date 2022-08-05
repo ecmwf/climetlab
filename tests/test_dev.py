@@ -40,6 +40,7 @@ def fill_cache_with_cds():
 
     return path
 
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_this():
     export_dir = "dev.tmpdir.test_script_export_cache_cds"
     shutil.rmtree(export_dir, ignore_errors=True)

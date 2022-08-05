@@ -64,9 +64,9 @@ def test_script_export_cache_cds(capsys):
 
             app = CliMetLabApp()
             app.onecmd(f'export_cache --match "era5" {export_dir}')
-            out, err = capsys.readouterr()
-            print(out)
-            print(err)
+            #out, err = capsys.readouterr()
+            #print(out)
+            #print(err)
 
             exported_files = glob.glob(os.path.join(export_dir, "*"))
             assert len(exported_files) == 2, exported_files
