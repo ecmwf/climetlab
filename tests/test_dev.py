@@ -7,6 +7,7 @@ from climetlab import settings
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
 
+
 def test_this():
     directory = "tmp_dir_test_script_index_directory"
     shutil.rmtree(directory, ignore_errors=True)
@@ -42,13 +43,14 @@ def test_this():
             s1 = None
             s2 = None
 
-            print('Finishing settings.temporary()')
-            print('finishing settings.temporary()')
-        print('Finishing tmp cache_dir')
-        print('finishing tmp cache_dir')
-    print('Finishing')
-    print('finishing')
+            print("Finishing settings.temporary()")
+            print("finishing settings.temporary()")
+        print("Finishing tmp cache_dir")
+        print("finishing tmp cache_dir")
+    print("Finishing")
+    print("finishing")
     shutil.rmtree(directory)
-    
+
+
 if __name__ == "__main__":
     test_this()
