@@ -1,36 +1,38 @@
-import xarray as xr
-
+import glob
+import os
 import climetlab as cml
+from climetlab.core.temporary import temp_directory
+from climetlab import settings
+from climetlab.scripts.main import CliMetLabApp
+
+directory = 'tata'
+
+def go():
+    s1 = cml.load_source("dummy-source", kind="grib", date=20150418)
+    assert len(s1) > 0
+    os.makedirs(os.path.join(directory, "a"))
+    s1.save(os.path.join(directory, "a", "x.grib"))
+
+    s2 = cml.load_source("dummy-source", kind="grib", date=20111202)
+    assert len(s2) > 0
+    s2.save(os.path.join(directory, "b.grib"))
+
+    files = glob.glob(os.path.join(directory, "*"))
+    assert len(files) == 2, files
+
+    app = CliMetLabApp()
+    app.onecmd(f"index_directory {directory}")
+
+    s = cml.load_source("directory", directory)
+    assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
+    db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
+    assert s.index.db.db_path == db_path
+
+    assert s.to_numpy().mean() == 277.31256510416665
 
 
-def test_grib_index_eumetnet():
-    from climetlab import load_source
-    from climetlab.indexing import PerUrlIndex
-
-    request = {
-        "param": "2ti",
-        "date": "20171228",
-        "step": ["0-24", "24-48", "48-72", "72-96", "96-120", "120-144", "144-168"],
-        # Parameters passed to the filename mangling
-        "url": "https://storage.ecmwf.europeanweather.cloud/eumetnet-postprocessing-benchmark-training-dataset/",
-        "month": "12",
-        "year": "2017",
-    }
-    PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
-    ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
-    xds = ds.to_xarray()
-    print(xds)
-
-
-def test_grib_index_eumetnet_with_plugin():
-    ds = cml.load_dataset(
-        "eumetnet-postprocessing-benchmark-training-data-gridded-forecasts-efi",
-        date="2017-12-28",
-        parameter="2ti",
-    )
-    xds = ds.to_xarray()
-    print(xds)
-
-
-test_grib_index_eumetnet()
-test_grib_index_eumetnet_with_plugin()
+with temp_directory() as cache_dir:
+        with settings.temporary():
+            settings.set("cache-directory", cache_dir)
+            go()
+            import climetlab.prompt

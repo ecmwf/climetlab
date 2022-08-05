@@ -11,6 +11,7 @@ name: Dev test
 on:
 
   workflow_dispatch: {}
+  push: {}
 
 jobs:
 
@@ -57,19 +58,19 @@ jobs:
           pip install pytest pytest-cov
           pip install nbformat nbconvert ipykernel matplotlib
           pip freeze
-
-      - name: Install plugin
-        run: |
-          cd ..
-          git clone https://github.com/Climdyn/climetlab-eumetnet-postprocessing-benchmark.git
-          pip install -e ./climetlab-eumetnet-postprocessing-benchmark
-          cd climetlab
+# 
+#       - name: Install plugin
+#         run: |
+#           cd ..
+#           git clone https://github.com/Climdyn/climetlab-eumetnet-postprocessing-benchmark.git
+#           pip install -e ./climetlab-eumetnet-postprocessing-benchmark
+#           cd climetlab
 
       - name: Run dev.py
         run: |
-          python dev/dev.py # this passes
+          python dev/dev.py
 
-      - name: Run plugin tests
-        run: |
-          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
-          pytest test_training_data_forecasts.py
+#      - name: Run plugin tests
+#        run: |
+#          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
+#          pytest test_training_data_forecasts.py
