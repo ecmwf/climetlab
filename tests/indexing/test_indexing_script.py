@@ -51,7 +51,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds(capsys):
+def test_script_export_cache_cds():
     export_dir = "tmpdir.test_script_export_cache_cds"
     shutil.rmtree(export_dir, ignore_errors=True)
     os.makedirs(export_dir)
