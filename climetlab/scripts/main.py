@@ -23,6 +23,7 @@ from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
 from .create import LoadersCmd
+from .completion import CompletionCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
@@ -59,6 +60,7 @@ def get_plugins():
 class CliMetLabApp(
     cmd.Cmd,
     SettingsCmd,
+    CompletionCmd,
     CacheCmd,
     CheckCmd,
     GribCmd,
@@ -161,6 +163,16 @@ def main():
         return app.onecmd(" ".join(cmdline))
     else:
         app.cmdloop()
+
+
+def command_list():
+    return [
+        func[3:]
+        for func in dir(CliMetLabApp)
+        if callable(getattr(CliMetLabApp, func))
+        and func.startswith("do_")
+        and getattr(CliMetLabApp, func).__module__.startswith("climetlab.")
+    ]
 
 
 if __name__ == "__main__":

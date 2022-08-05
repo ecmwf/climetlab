@@ -19,17 +19,7 @@ from climetlab.scripts.main import CliMetLabApp
 LOG = logging.getLogger(__name__)
 
 
-def command_list():
-    return [
-        func[3:]
-        for func in dir(CliMetLabApp)
-        if callable(getattr(CliMetLabApp, func))
-        and func.startswith("do_")
-        and getattr(CliMetLabApp, func).__module__.startswith("climetlab.")
-    ]
-
-
-@pytest.mark.parametrize("command", command_list())
+@pytest.mark.parametrize("command", CliMetLabApp.command_list)
 def test_cli_no_args(command, capsys):
     app = CliMetLabApp()
     app.onecmd(command)
