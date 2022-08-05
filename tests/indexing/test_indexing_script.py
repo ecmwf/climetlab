@@ -50,7 +50,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def _test_script_export_cache_cds(capsys):
+def test_script_export_cache_cds(capsys):
     with temp_directory() as export_dir:
         with temp_directory() as cache_dir:
             with settings.temporary():
@@ -69,6 +69,11 @@ def _test_script_export_cache_cds(capsys):
 
                 target = f"{export_dir}/{os.path.basename(original)}"
                 assert filecmp.cmp(original, target), (original, target)
+
+                # to make sure the file descriptors are closed.
+                s = None
+                s1 = None
+                s2 = None
 
 
 def test_script_index_directory(capsys):
@@ -102,6 +107,7 @@ def test_script_index_directory(capsys):
 
                 assert s.to_numpy().mean() == 277.31256510416665
 
+                # to make sure the file descriptors are closed.
                 s = None
                 s1 = None
                 s2 = None
