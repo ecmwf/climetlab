@@ -74,7 +74,7 @@ def test_script_export_cache_cds():
     shutil.rmtree(export_dir)
 
 
-def test_script_index_directory(capsysbinary):
+def test_script_index_directory():
     directory = "tmpdir.test_script_index_directory"
     shutil.rmtree(directory, ignore_errors=True)
     os.makedirs(directory)
@@ -96,8 +96,6 @@ def test_script_index_directory(capsysbinary):
 
             app = CliMetLabApp()
             app.onecmd(f"index_directory {directory}")
-            out, err = capsysbinary.readouterr()
-            assert not err, err
 
             s = cml.load_source("directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
