@@ -75,7 +75,3 @@ jobs:
           pip install pytest pytest-cov
           pip install nbformat nbconvert ipykernel matplotlib
           pip freeze
-
-      - name: pytest dev.py
-        run: |
-          pytest dev/dev.py
