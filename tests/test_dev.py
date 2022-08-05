@@ -12,8 +12,6 @@ from climetlab.scripts.main import CliMetLabApp
 from climetlab.testing import NO_CDS
 
 
-
-
 def fill_cache_with_cds():
     cml.load_source(
         "cds",
