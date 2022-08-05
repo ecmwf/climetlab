@@ -53,11 +53,12 @@ jobs:
           pip install -e .
           pip freeze
 
-      - name: Install test tools
-        run: |
-          pip install pytest pytest-cov
-          pip install nbformat nbconvert ipykernel matplotlib
-          pip freeze
+#      - name: Install test tools
+#        run: |
+#          pip install pytest pytest-cov
+#          pip install nbformat nbconvert ipykernel matplotlib
+#          pip freeze
+
 # 
 #       - name: Install plugin
 #         run: |
