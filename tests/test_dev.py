@@ -1,3 +1,4 @@
+import filecmp
 import glob
 import os
 import shutil
@@ -8,40 +9,52 @@ from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
 
 
+
+def fill_cache_with_cds():
+    cml.load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2011-12-02",
+        time="12:00",
+    )
+
+    s = cml.load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2008-07-19",
+        time="12:00",
+    )
+    path = s.path
+
+    assert len(s) == 2
+
+    return path
+
 def test_this():
-    directory = "tmp_dir_test_script_index_directory"
-    shutil.rmtree(directory, ignore_errors=True)
-    os.makedirs(directory)
+    export_dir = "dev.tmpdir.test_script_export_cache_cds"
+    shutil.rmtree(export_dir, ignore_errors=True)
+    os.makedirs(export_dir)
 
     with temp_directory() as cache_dir:
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
 
-            s1 = cml.load_source("dummy-source", kind="grib", date=20150418)
-            assert len(s1) > 0
-            os.makedirs(os.path.join(directory, "a"))
-            s1.save(os.path.join(directory, "a", "x.grib"))
-
-            s2 = cml.load_source("dummy-source", kind="grib", date=20111202)
-            assert len(s2) > 0
-            s2.save(os.path.join(directory, "b.grib"))
-
-            files = glob.glob(os.path.join(directory, "*"))
-            assert len(files) == 2, files
+            original = fill_cache_with_cds()
 
             app = CliMetLabApp()
-            app.onecmd(f"index_directory {directory}")
+            app.onecmd(f'export_cache --match "era5" {export_dir}')
 
-            s = cml.load_source("directory", directory)
-            assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
-            db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
-            assert s.index.db.db_path == db_path, (s.index.db.db_path, db_path)
+            exported_files = glob.glob(os.path.join(export_dir, "*"))
+            assert len(exported_files) == 2, exported_files
 
-            assert s.to_numpy().mean() == 277.31256510416665
-
-            s = None
-            s1 = None
-            s2 = None
+            target = f"{export_dir}/{os.path.basename(original)}"
+            assert filecmp.cmp(original, target), (original, target)
 
             print("Finishing settings.temporary()")
             print("finishing settings.temporary()")
@@ -49,7 +62,7 @@ def test_this():
         print("finishing tmp cache_dir")
     print("Finishing")
     print("finishing")
-    shutil.rmtree(directory)
+    shutil.rmtree(export_dir)
 
 
 if __name__ == "__main__":
