@@ -112,6 +112,8 @@ def test_script_index_directory(capsys):
 
             assert s.to_numpy().mean() == 277.31256510416665
 
+    shutil.rmtree(cache_dir)
+
 
 if __name__ == "__main__":
     from climetlab.testing import main
