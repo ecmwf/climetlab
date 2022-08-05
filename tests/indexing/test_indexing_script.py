@@ -12,6 +12,7 @@
 import filecmp
 import glob
 import os
+import shutil
 
 import pytest
 
@@ -50,7 +51,10 @@ def fill_cache_with_cds():
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def _test_script_export_cache_cds(capsys):
-    with temp_directory() as export_dir:
+        directory = "tmp_dir_test_script_index_directory"
+        shutil.rmtree(directory, ignore_errors=True)
+        os.makedirs(directory)
+
         with temp_directory() as cache_dir:
             with settings.temporary():
                 settings.set("cache-directory", cache_dir)
@@ -67,49 +71,53 @@ def _test_script_export_cache_cds(capsys):
                 assert len(exported_files) == 2, exported_files
 
                 target = f"{export_dir}/{os.path.basename(original)}"
-                assert filecmp.cmp(original, target), (original, target)
 
                 # to make sure the file descriptors are closed.
                 s = None
                 s1 = None
                 s2 = None
+                s2 = None
+
+        shutil.rmtree(directory)
 
 
 def test_script_index_directory(capsys):
-    with temp_directory() as directory:
-        with temp_directory() as cache_dir:
+        directory = "tmp_dir_test_script_index_directory"
+        shutil.rmtree(directory, ignore_errors=True)
+        os.makedirs(directory)
+        with  temp_directory() as cache_dir:
             with settings.temporary():
                 settings.set("cache-directory", cache_dir)
-
+    
                 s1 = cml.load_source("dummy-source", kind="grib", date=20150418)
                 assert len(s1) > 0
                 os.makedirs(os.path.join(directory, "a"))
                 s1.save(os.path.join(directory, "a", "x.grib"))
-
+    
                 s2 = cml.load_source("dummy-source", kind="grib", date=20111202)
                 assert len(s2) > 0
                 s2.save(os.path.join(directory, "b.grib"))
-
+    
                 files = glob.glob(os.path.join(directory, "*"))
                 assert len(files) == 2, files
-
+    
                 app = CliMetLabApp()
                 app.onecmd(f"index_directory {directory}")
                 out, err = capsys.readouterr()
                 assert err == "", err
                 print(out)
-
+    
                 s = cml.load_source("directory", directory)
                 assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
                 db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
                 assert s.index.db.db_path == db_path
-
+    
                 assert s.to_numpy().mean() == 277.31256510416665
-
                 # to make sure the file descriptors are closed.
                 s = None
                 s1 = None
                 s2 = None
+        shutil.rmtree(directory)
 
 
 

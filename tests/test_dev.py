@@ -8,8 +8,10 @@ from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
 
 def test_this():
+    directory = "tmp_dir_test_script_index_directory"
+    shutil.rmtree(directory, ignore_errors=True)
+    os.makedirs(directory)
 
-  with temp_directory() as directory:
     with temp_directory() as cache_dir:
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
@@ -32,24 +34,21 @@ def test_this():
             s = cml.load_source("directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
             db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
-            assert s.index.db.db_path == db_path
+            assert s.index.db.db_path == db_path, (s.index.db.db_path, db_path)
 
             assert s.to_numpy().mean() == 277.31256510416665
 
-            print('prompt 1', directory)
-            import code
-#            code.interact()
             s = None
             s1 = None
             s2 = None
-            print('prompt 2', directory)
-            code.interact()
+
+            print('Finishing settings.temporary()')
             print('finishing settings.temporary()')
-            print('finishing settings.temporary()')
+        print('Finishing tmp cache_dir')
         print('finishing tmp cache_dir')
-        print('finishing tmp cache_dir')
+    print('Finishing')
     print('finishing')
-    print('finishing')
+    shutil.rmtree(directory)
     
 if __name__ == "__main__":
     test_this()
