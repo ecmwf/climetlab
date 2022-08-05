@@ -63,7 +63,7 @@ jobs:
 
       - name: Run dev.py
         run: |
-          python dev/dev.py
+          python tests/test_dev.py
 
 #      - name: Run plugin tests
 #        run: |
@@ -75,3 +75,8 @@ jobs:
           pip install pytest pytest-cov
           pip install nbformat nbconvert ipykernel matplotlib
           pip freeze
+
+      - name: pytest dev.py
+        run: |
+          cd tests/
+          pytest test_dev.py

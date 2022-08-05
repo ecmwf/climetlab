@@ -8,9 +8,8 @@ from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
 
 def test_this():
-    directory = 'tata'
-    shutil.rmtree(directory, ignore_errors=True)
 
+  with temp_directory() as directory:
     with temp_directory() as cache_dir:
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
@@ -37,10 +36,14 @@ def test_this():
 
             assert s.to_numpy().mean() == 277.31256510416665
 
-            print('prompt 1', cache_dir)
+            print('prompt 1', directory)
+            import code
+#            code.interact()
             s = None
             s1 = None
             s2 = None
+            print('prompt 2', directory)
+            code.interact()
             print('finishing settings.temporary()')
             print('finishing settings.temporary()')
         print('finishing tmp cache_dir')

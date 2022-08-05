@@ -48,9 +48,8 @@ def fill_cache_with_cds():
 
     return path
 
-
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds(capsys):
+def _test_script_export_cache_cds(capsys):
     with temp_directory() as export_dir:
         with temp_directory() as cache_dir:
             with settings.temporary():
