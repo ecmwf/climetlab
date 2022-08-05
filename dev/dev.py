@@ -1,8 +1,9 @@
 import glob
 import os
+
 import climetlab as cml
-from climetlab.core.temporary import temp_directory
 from climetlab import settings
+from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
 
 directory = 'tata'
@@ -35,4 +36,3 @@ with temp_directory() as cache_dir:
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
             go()
-            import climetlab.prompt
