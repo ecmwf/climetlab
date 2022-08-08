@@ -65,6 +65,7 @@ class GribCmd:
         #    help="sql or json or stdout.",
         # ),
         force=dict(action="store_true", help="overwrite existing index."),
+        ignore=dict(help="files to ignore.", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
         output=(
             "--output",
@@ -78,6 +79,7 @@ class GribCmd:
         directory = args.directory
         db_path = args.output
         force = args.force
+        ignore = args.ignore
 
         followlinks = True
         if args.no_follow_links:
@@ -106,11 +108,27 @@ class GribCmd:
 
         check_overwrite(db_path)
 
+        if ignore is None:
+            ignore = []
+        ignore.append(DirectorySource.DEFAULT_DB_FILE)
+        ignore.append(DirectorySource.DEFAULT_JSON_FILE)
+        ignore.append("climetlab.index.*")
+        ignore.append("*.idx")
+        ignore.append("*.json")
+        ignore.append("*.yaml")
+        ignore.append("*.yml")
+        ignore.append("*.pdf")
+        ignore.append("*.txt")
+        ignore.append("*.html")
+        ignore.append(".*")
+        ignore.append(db_path)
+
         _index_directory(
             directory,
             db_path=db_path,
             relative_paths=relative_paths,
             followlinks=followlinks,
+            ignore=ignore,
         )
 
     @parse_args(
@@ -124,15 +142,9 @@ class GribCmd:
             print(json.dumps(d))
 
 
-def _index_directory(directory, db_path, relative_paths, followlinks):
+def _index_directory(directory, db_path, relative_paths, followlinks, ignore):
     from climetlab.indexing.database.sql import SqlDatabase
-    from climetlab.sources.directory import DirectorySource
 
-    ignore = [
-        DirectorySource.DEFAULT_DB_FILE,
-        DirectorySource.DEFAULT_JSON_FILE,
-        db_path,
-    ]
     db = SqlDatabase(db_path)
     iterator = _parse_files(
         directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks

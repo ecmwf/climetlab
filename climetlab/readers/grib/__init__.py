@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import fnmatch
 import logging
 import os
 
@@ -97,20 +98,6 @@ def _parse_files(
     if ignore is None:
         ignore = []
 
-    if isinstance(ignore, (list, tuple)):
-        _ignore = [x for x in ignore]
-
-        def ignore(name, path):
-            if name in _ignore:
-                return True
-
-            with open(path, "rb") as f:
-                magic = f.read(8)
-                if magic[:4] == b"GRIB":
-                    return True
-
-            return False
-
     LOG.debug(f"Parsing files in {directory}")
     assert os.path.isdir(directory)
 
@@ -119,8 +106,11 @@ def _parse_files(
         for name in files:
             path = os.path.join(root, name)
 
-            if ignore(name, path):
-                LOG.debug(f"Ignoring file {path}")
+            if any([fnmatch.fnmatch(name, i) for i in ignore]):
+                LOG.debug(f"Ignoring filename {path}")
+                continue
+            if any([fnmatch.fnmatch(path, i) for i in ignore]):
+                LOG.debug(f"Ignoring path {path}")
                 continue
             LOG.debug(f"Parsing file {path}")
 
