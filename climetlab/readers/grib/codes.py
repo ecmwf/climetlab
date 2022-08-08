@@ -196,6 +196,22 @@ class CodesHandle:
         except eccodes.KeyValueNotFoundError:
             return None
 
+    def get_data(self):
+        return eccodes.codes_grib_get_data(self.handle)
+
+    def as_mars(self, param="shortName"):
+        r = {}
+        it = eccodes.codes_keys_iterator_new(self.handle, "mars")
+
+        try:
+            while eccodes.codes_keys_iterator_next(it):
+                key = eccodes.codes_keys_iterator_get_name(it)
+                r[key] = self.get(param if key == "param" else key)
+        finally:
+            eccodes.codes_keys_iterator_delete(it)
+
+        return r
+
 
 class CodesReader:
     def __init__(self, path):
@@ -399,6 +415,13 @@ class GribField(Base):
                 raise ValueError(f"Unsupported kind '{kind}'")
 
         return proc(name)
+
+    @property
+    def data(self):
+        return self.handle.get_data()
+
+    def as_mars(self, param="shortName"):
+        return self.handle.as_mars(param)
 
     def write(self, f):
         f.write(self._reader.read(self._offset, self._length))

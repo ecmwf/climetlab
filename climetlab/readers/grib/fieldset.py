@@ -438,3 +438,15 @@ class FieldSet:
     def write(self, f):
         for s in self:
             s.write(f)
+
+    def to_pandas(self, **kwargs):
+        import pandas as pd
+
+        frames = []
+        for s in self:
+            df = pd.DataFrame(s.data)
+            df["datetime"] = s.valid_datetime()
+            for k, v in s.as_mars().items():
+                df[k] = v
+            frames.append(df)
+        return pd.concat(frames)
