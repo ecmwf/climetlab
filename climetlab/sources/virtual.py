@@ -52,6 +52,11 @@ class VirtualField:
         source = self.owner.full_month(self.date)
         return source[self.index].to_numpy()
 
+    @property
+    def shape(self):
+        source = self.owner.full_month(self.date)
+        return source[self.index].shape
+
 
 class DictOveray(dict):
     def __init__(self, field):
@@ -69,21 +74,22 @@ class Virtual(GribIndex):
     SIZE = int(365.25 * 24 * (2022 - 1959))
     # SIZE = 100
 
-    DATASET = dict(
-        dataset="reanalysis-era5-single-levels",
-        product_type="reanalysis",
-        param="2t",
-        grid="10/10",
-    )
-
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
+        self.request = dict(
+            dataset="reanalysis-era5-single-levels",
+            product_type="reanalysis",
+            param="2t",
+            grid="10/10",
+        )
+        self.request.update(kwargs)
+
         self.reference = DictOveray(
             cml.load_source(
                 "cds",
                 date=19590101,
                 time=0,
-                **self.DATASET,
+                **self.request,
             )[0]
         )
 
@@ -140,10 +146,24 @@ class Virtual(GribIndex):
                 month=mm,
                 day=list(range(1, last + 1)),
                 time=list(range(0, 24)),
-                **self.DATASET,
+                **self.request,
             )
             self.fields[yyyymm] = source
             return source
+
+    def to_tfdataset(self, **kwargs):
+
+        import tensorflow as tf
+
+        def map_fn(i):
+            return self[int(i)].to_numpy()
+
+        @tf.function
+        def tf_map_fn(i):
+            return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
+
+        ds = tf.data.Dataset.range(len(self))
+        return ds.map(tf_map_fn, num_parallel_calls=10).prefetch(1024)
 
 
 source = Virtual
