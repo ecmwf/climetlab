@@ -32,6 +32,7 @@ class VirtualField:
         date = datetime.datetime(1959, 1, 1) + datetime.timedelta(hours=h)
         self.date = date.year * 10000 + date.month * 100 + date.day
         self.time = date.hour
+        self.index = (self.date % 100 - 1) * 24 + self.time
 
     def metadata(self, n):
         if n == "dataDate":
@@ -45,8 +46,11 @@ class VirtualField:
     @property
     def values(self):
         source = self.owner.full_month(self.date)
-        dd = self.date % 100
-        return source[(dd - 1) * 24 + self.time].values
+        return source[self.index].values
+
+    def to_numpy(self):
+        source = self.owner.full_month(self.date)
+        return source[self.index].to_numpy()
 
 
 class DictOveray(dict):
@@ -68,7 +72,7 @@ class Virtual(GribIndex):
     DATASET = dict(
         dataset="reanalysis-era5-single-levels",
         product_type="reanalysis",
-        param="msl",
+        param="2t",
         grid="10/10",
     )
 

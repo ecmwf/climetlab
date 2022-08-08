@@ -1,4 +1,4 @@
-import time
+# import time
 
 from dask.distributed import Client, LocalCluster
 
@@ -9,17 +9,19 @@ client = Client(cluster)
 
 
 ds = cml.load_source("virtual")
-now = time.time()
-print("a", len(ds), now)
-x = ds.to_xarray()
-print("b", time.time() - now)
-# exit(0)
-# print(x.chunks)
+# now = time.time()
+# print("a", len(ds), now)
+# x = ds.to_xarray()
+# print("b", time.time() - now)
 
-# print(x)
 
-print(x.msl)
+# print(x.msl)
 
-y = x.msl
-# print(x.paramId_167.values)
-print(y.mean(dim="time").compute())
+# y = x.msl
+# print(y.mean(dim="time").compute())
+
+
+tf = ds.to_tfdataset()
+print(dir(tf))
+for p in tf.take(1).as_numpy_iterator():
+    print(p)
