@@ -96,18 +96,32 @@ def _parse_files(
 ):
     if ignore is None:
         ignore = []
-    assert isinstance(ignore, (list, tuple))
+
+    if isinstance(ignore, (list, tuple)):
+        _ignore = [x for x in ignore]
+
+        def ignore(name, path):
+            if name in _ignore:
+                return True
+
+            with open(path, "rb") as f:
+                magic = f.read(8)
+                if magic[:4] == b"GRIB":
+                    return True
+
+            return False
 
     LOG.debug(f"Parsing files in {directory}")
     assert os.path.isdir(directory)
 
-    todo = []
+    tasks = []
     for root, _, files in os.walk(directory, followlinks=followlinks):
         for name in files:
-            if name in ignore:
-                continue
-
             path = os.path.join(root, name)
+
+            if ignore(name, path):
+                LOG.debug(f"Ignoring file {path}")
+                continue
             LOG.debug(f"Parsing file {path}")
 
             if relative_paths is True:
@@ -119,14 +133,14 @@ def _parse_files(
             else:
                 assert False, relative_paths
 
-            todo.append(([path], dict(path_name=_path)))
+            tasks.append(([path], dict(path_name=_path)))
 
-    if todo:
+    if tasks:
         if verbose:
-            print(f"Found {len(todo)} files to index.")
+            print(f"Found {len(tasks)} files to index.")
     else:
         LOG.error(f"Could not find any files to index in {directory}.")
 
-    todo = tqdm(todo)
-    for _args, _kwargs in todo:
+    tasks = tqdm(tasks)
+    for _args, _kwargs in tasks:
         yield from _index_grib_file(*_args, **_kwargs)
