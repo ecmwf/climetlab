@@ -32,7 +32,14 @@ class DirectorySource(IndexedSource):
     DEFAULT_JSON_FILE = "climetlab.index"
     DEFAULT_DB_FILE = "climetlab.db"
 
-    def __init__(self, path, db_path=None, index_file=None, _index=None, **kwargs):
+    def __init__(
+        self,
+        path,
+        db_path=None,
+        index_file=None,
+        _index=None,
+        **kwargs,
+    ):
         """index_file is the input index location. db_path is the actual used index.
         index_file = None,  db_path = None :  parse file to create the index.
         index_file = xxx ,  db_path = None :  create db_path in the cache from index_file if not exist

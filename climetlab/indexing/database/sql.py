@@ -11,8 +11,10 @@
 import logging
 import os
 import sqlite3
+import time
 
 import climetlab as cml
+from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
 from . import Database
@@ -68,7 +70,7 @@ class SqlDatabase(Database):
     def __init__(
         self,
         db_path,
-        create_index=False,  # index is disabled by default because it is long to create.
+        create_index=True,
     ):
 
         self.db_path = db_path
@@ -115,10 +117,14 @@ class SqlDatabase(Database):
 
             if self.create_index:
                 # connection.execute(f"CREATE INDEX path_index ON entries (path);")
-                for n in i_columns:
+                pbar = tqdm(i_columns + ["path"], desc=f"Building indexes")
+                for n in pbar:
+                    pbar.set_description(f"Building index for {n}")
                     conn.execute(
                         f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
                     )
+
+            return count
 
     def _conditions(self, request):
         conditions = []

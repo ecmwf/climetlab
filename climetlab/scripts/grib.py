@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import json
 import logging
 import os
@@ -95,7 +96,7 @@ class GribCmd:
         else:
             relative_paths = False
 
-        def check_overwrite(filename):
+        def check_overwrite(filename, force):
             if not os.path.exists(filename):
                 return
             if force:
@@ -106,7 +107,7 @@ class GribCmd:
                 f"ERROR: File {filename} already exists (use --force to overwrite)."
             )
 
-        check_overwrite(db_path)
+        check_overwrite(db_path, force)
 
         if ignore is None:
             ignore = []
@@ -149,8 +150,12 @@ def _index_directory(directory, db_path, relative_paths, followlinks, ignore):
     iterator = _parse_files(
         directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks
     )
-    db.load(iterator)
-    # TODO: print(f"Found {len(s)} fields in {directory}")
+    start = datetime.datetime.now()
+    count = db.load(iterator)
+    end = datetime.datetime.now()
+    print(
+        f"Indexed {count} fields in {(end - start)} ({(end - start).total_seconds()} seconds)."
+    )
     return
 
     # TODO: do json output too.
