@@ -11,7 +11,6 @@
 import logging
 import os
 import sqlite3
-import time
 
 import climetlab as cml
 from climetlab.utils import tqdm
@@ -117,7 +116,7 @@ class SqlDatabase(Database):
 
             if self.create_index:
                 # connection.execute(f"CREATE INDEX path_index ON entries (path);")
-                pbar = tqdm(i_columns + ["path"], desc=f"Building indexes")
+                pbar = tqdm(i_columns + ["path"], desc="Building indexes")
                 for n in pbar:
                     pbar.set_description(f"Building index for {n}")
                     conn.execute(

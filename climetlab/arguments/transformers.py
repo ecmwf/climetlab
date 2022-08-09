@@ -169,7 +169,8 @@ class KwargsAliasTransformer(Action):
         return kwargs
 
     def execute_before_default(self, kwargs):
-        LOG.debug("Transforming kwargs names with aliases for %s", kwargs)
+        if kwargs:
+            LOG.debug("Transforming kwargs names with aliases for %s", kwargs)
         assert isinstance(kwargs, dict), kwargs
         new_kwargs = {}
         for k, v in kwargs.items():

@@ -92,45 +92,75 @@ def _index_path(path):
         yield from _index_grib_file(path)
 
 
+class DirectoryParserIterator:
+    """This class delays parsing the directory for the list of files
+    until the iterator is actually used (calling __iter__)
+    """
+
+    def __init__(
+        self, directory, relative_paths, ignore=None, followlinks=True, verbose=False
+    ):
+        if ignore is None:
+            ignore = []
+        self.ignore = ignore
+        self.directory = directory
+        self.relative_paths = relative_paths
+        self.followlinks = followlinks
+        self.verbose = verbose
+
+        self._tasks = None
+
+    def __iter__(self):
+        for func, args, kwargs in self.tasks:
+            for entry in func(*args, **kwargs):
+                yield entry
+
+    @property
+    def tasks(self):
+        if self._tasks is not None:
+            return self._tasks
+
+        LOG.debug(f"Parsing files in {self.directory}")
+        assert os.path.isdir(self.directory)
+
+        tasks = []
+        for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
+            for name in files:
+                path = os.path.join(root, name)
+
+                if any([fnmatch.fnmatch(name, i) for i in self.ignore]):
+                    LOG.debug(f"Ignoring filename {path}")
+                    continue
+                if any([fnmatch.fnmatch(path, i) for i in self.ignore]):
+                    LOG.debug(f"Ignoring path {path}")
+                    continue
+                LOG.debug(f"Parsing file {path}")
+
+                if self.relative_paths is True:
+                    _path = os.path.relpath(path, self.directory)
+                elif self.relative_paths is False:
+                    _path = os.path.abspath(path)
+                elif self.relative_paths is None:
+                    _path = path
+                else:
+                    assert False, self.relative_paths
+
+                tasks.append((_index_grib_file, [path], dict(path_name=_path)))
+
+        if tasks:
+            if self.verbose:
+                print(f"Found {len(tasks)} files to index.")
+        else:
+            LOG.error(f"Could not find any files to index in {self.directory}.")
+
+        self._tasks = tqdm(tasks)
+
+        return self.tasks
+
+
 def _parse_files(
     directory, relative_paths, ignore=None, followlinks=True, verbose=False
 ):
-    if ignore is None:
-        ignore = []
-
-    LOG.debug(f"Parsing files in {directory}")
-    assert os.path.isdir(directory)
-
-    tasks = []
-    for root, _, files in os.walk(directory, followlinks=followlinks):
-        for name in files:
-            path = os.path.join(root, name)
-
-            if any([fnmatch.fnmatch(name, i) for i in ignore]):
-                LOG.debug(f"Ignoring filename {path}")
-                continue
-            if any([fnmatch.fnmatch(path, i) for i in ignore]):
-                LOG.debug(f"Ignoring path {path}")
-                continue
-            LOG.debug(f"Parsing file {path}")
-
-            if relative_paths is True:
-                _path = os.path.relpath(path, directory)
-            elif relative_paths is False:
-                _path = os.path.abspath(path)
-            elif relative_paths is None:
-                _path = path
-            else:
-                assert False, relative_paths
-
-            tasks.append(([path], dict(path_name=_path)))
-
-    if tasks:
-        if verbose:
-            print(f"Found {len(tasks)} files to index.")
-    else:
-        LOG.error(f"Could not find any files to index in {directory}.")
-
-    tasks = tqdm(tasks)
-    for _args, _kwargs in tasks:
-        yield from _index_grib_file(*_args, **_kwargs)
+    return DirectoryParserIterator(
+        directory, relative_paths, ignore=None, followlinks=True, verbose=False
+    )

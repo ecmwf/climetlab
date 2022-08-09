@@ -24,7 +24,7 @@ def make_absolute(filename, root_dir, default):
         return filename
 
     absolute = os.path.join(root_dir, filename)
-    LOG.debug("Transforming {filename} into absolute path {absolute}")
+    LOG.debug(f"Transforming {filename} into absolute path {absolute}")
     return absolute
 
 
