@@ -1,14 +1,19 @@
 import tensorflow as tf
+from keras import backend as K
 from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
 from tensorflow.keras.models import Sequential
 
 import climetlab as cml
 
+jobs = 10
+
+print(K.get_session())
+
 print("xxx", tf.config.threading.get_inter_op_parallelism_threads())
 print("xxx", tf.config.threading.get_intra_op_parallelism_threads())
 
-tf.config.threading.set_inter_op_parallelism_threads(10)
-tf.config.threading.set_intra_op_parallelism_threads(10)
+# tf.config.threading.set_inter_op_parallelism_threads(10)
+# tf.config.threading.set_intra_op_parallelism_threads(10)
 
 print("xxx", tf.config.threading.get_inter_op_parallelism_threads())
 print("xxx", tf.config.threading.get_intra_op_parallelism_threads())
@@ -30,11 +35,12 @@ def dataset(ds):
 
     return (
         ds.to_tfdataset()
-        .with_options(options)
+        # .with_options(options)
         .batch(10240, num_parallel_calls=tf.data.AUTOTUNE)
         # .batch(1024, num_parallel_calls=10)
         # .batch(1024)
-        .take(100).prefetch(10)
+        .take(100)
+        # .prefetch(10)
     )
 
 

@@ -162,8 +162,13 @@ class Virtual(GribIndex):
         def tf_map_fn(i):
             return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
 
-        ds = tf.data.Dataset.range(len(self))
-        return ds.map(tf_map_fn, num_parallel_calls=10).prefetch(1024)
+        ds = (
+            tf.data.Dataset.range(len(self))
+            .shuffle(len(self))
+            .map(tf_map_fn, num_parallel_calls=10)
+            .prefetch(1024)
+        )
+        return ds
 
 
 source = Virtual
