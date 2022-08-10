@@ -10,7 +10,6 @@
 import json
 import logging
 import os
-import threading
 from abc import abstractmethod
 from collections import namedtuple
 from urllib.parse import urljoin
@@ -23,7 +22,7 @@ from climetlab.core.index import Index, MultiIndex
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
-from climetlab.readers.grib.codes import CodesReader, GribField, get_messages_positions
+from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
@@ -225,26 +224,12 @@ class GribIndexFromDicts(GribIndex):
 
 
 class GribIndexFromFile(GribDBIndex):
-    _readers = None
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.lock = threading.Lock()
-
-    def _reader(self, path):
-        with self.lock:
-            if self._readers is None:
-                self._readers = {}
-
-            if path not in self._readers:
-                self._readers[path] = CodesReader(path)
-            return self._readers[path]
 
     def __getitem__(self, n):
         part = self.part(n)
-        reader = self._reader(part.path)
-        field = GribField(reader, part.offset, part.length)
-        return field
+        return GribField(part.path, part.offset, part.length)
 
     def __len__(self):
         return self.number_of_parts()
