@@ -165,8 +165,7 @@ class Virtual(GribIndex):
         ds = (
             tf.data.Dataset.range(len(self))
             .shuffle(len(self))
-            .map(tf_map_fn, num_parallel_calls=10)
-            .prefetch(1024)
+            .map(tf_map_fn, num_parallel_calls=10).prefetch(1024)
         )
         return ds
 

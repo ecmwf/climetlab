@@ -11,6 +11,7 @@ import datetime
 import logging
 import os
 import threading
+import time
 
 import eccodes
 
@@ -23,43 +24,6 @@ LOG = logging.getLogger(__name__)
 
 def missing_is_none(x):
     return None if x == 2147483647 else x
-
-
-# See also CHEAT
-# FORCED_VALUES = {
-#     "NV": 0,
-#     "Nx": 360,
-#     "Ny": 181,
-#     "centre": "ecmf",
-#     "centreDescription": "European Centre for Medium-Range Weather Forecasts",
-#     "dataType": "pf",
-#     "directionNumber": None,
-#     "edition": 2,
-#     "endStep": 0,
-#     "frequencyNumber": None,
-#     "gridDefinitionDescription": "Latitude/Longitude Grid",
-#     "gridType": "regular_ll",
-#     "iDirectionIncrementInDegrees": 1.0,
-#     "iScansNegatively": 0,
-#     "jDirectionIncrementInDegrees": 1.0,
-#     "jPointsAreConsecutive": 0,
-#     "jScansPositively": 0,
-#     "latitudeOfFirstGridPointInDegrees": 90.0,
-#     "latitudeOfLastGridPointInDegrees": -90.0,
-#     "longitudeOfFirstGridPointInDegrees": 0.0,
-#     "longitudeOfLastGridPointInDegrees": 359.0,
-#     "missingValue": 9999,
-#     "number": 0,
-#     "numberOfDirections": None,
-#     "numberOfFrequencies": None,
-#     "numberOfPoints": 29040,
-#     "stepType": "accum",
-#     "stepUnits": 1,
-#     "subCentre": 0,
-#     "totalNumber": 0,
-#     "typeOfLevel": "surface",
-# }
-FORCED_VALUES = {}
 
 
 # This does not belong here, should be in the C library
@@ -126,28 +90,6 @@ def get_messages_positions(path):
 eccodes_codes_release = call_counter(eccodes.codes_release)
 eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
-# See also FORCED_VALUES
-# CHEAT = {
-#     "centre": "ecmf",
-#     "centreDescription": "European Centre for Medium-Range Weather Forecasts",
-#     # "dataDate" : "20200102",
-#     # "dataTime" : "0",
-#     "dataType": "pf",
-#     "edition": 2,
-#     # "endStep" : 768,
-#     "gridType": "regular_ll",
-#     # "number" : 14,
-#     "numberOfPoints": 29040,
-#     # "paramId" : 228228,
-#     "stepUnits": 1,
-#     "stepType": "accum",
-#     "subCentre": 0,
-#     "typeOfLevel": "surface",
-# }
-CHEAT = {}
-global COUNT
-COUNT = 0
-
 
 class CodesHandle:
     def __init__(self, handle, path, offset):
@@ -164,9 +106,6 @@ class CodesHandle:
             pass
 
     def get(self, name):
-        # LOG.warn(str(self) + str(name))
-        if name in CHEAT:
-            return CHEAT[name]
         try:
             if name == "values":
                 return eccodes.codes_get_values(self.handle)
@@ -213,60 +152,64 @@ class CodesHandle:
         return r
 
 
+class ReaderLRUCache(dict):
+    def __init__(self, size):
+        self.readers = dict()
+        self.lock = threading.Lock()
+        self.size = size
+
+    def __getitem__(self, path):
+        with self.lock:
+            try:
+                return super().__getitem__(path)
+            except KeyError:
+                pass
+
+            c = self[path] = CodesReader(path)
+            while len(self) >= self.size:
+                oldest = min((v.last, v.path) for v in self.values())
+                del self[oldest[1]]
+
+            return c
+
+
+cache = ReaderLRUCache(512)  # TODO: Add to config
+
+
 class CodesReader:
     def __init__(self, path):
         self.path = path
         self.lock = threading.Lock()
-        self._files = {}
-
-    @property
-    def file(self):
-        with self.lock:
-            thread = threading.current_thread()
-            f = self._files.get(thread)
-            if f is None:
-                f = self._files[thread] = open(self.path, "rb")
-            return f
+        # print("OPEN", self.path)
+        self.file = open(self.path, "rb")
+        self.last = time.time()
 
     def __del__(self):
-        for f in self._files.values():
-            try:
-                f.close()
-            except Exception:
-                pass
+        try:
+            # print("CLOSE", self.path)
+            self.file.close()
+        except Exception:
+            pass
+
+    @classmethod
+    def from_cache(cls, path):
+        return cache[path]
 
     def at_offset(self, offset):
-        self.file.seek(offset, 0)
-        return next(self)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        handle = self._next_handle()
-        if handle is None:
-            raise StopIteration()
-        return handle
-
-    def _next_handle(self):
-        offset = self.file.tell()
-        handle = eccodes_codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
-        if not handle:
-            return None
-        return CodesHandle(handle, self.path, offset)
-
-    @property
-    def offset(self):
-        return self.file.tell()
-
-    def read(self, offset, length):
-        self.file.seek(offset, 0)
-        return self.file.read(length)
+        with self.lock:
+            self.last = time.time()
+            self.file.seek(offset, 0)
+            handle = eccodes_codes_new_from_file(
+                self.file,
+                eccodes.CODES_PRODUCT_GRIB,
+            )
+            assert handle is not None
+            return CodesHandle(handle, self.path, offset)
 
 
 class GribField(Base):
-    def __init__(self, reader, offset, length):
-        self._reader = reader
+    def __init__(self, path, offset, length):
+        self.path = path
         self._offset = offset
         self._length = length
         self._handle = None
@@ -278,15 +221,10 @@ class GribField(Base):
         pass
 
     @property
-    def path(self):
-        return self.handle.path
-
-    @property
     def handle(self):
         if self._handle is None:
             assert self._offset is not None
-            assert self._reader is not None
-            self._handle = self._reader.at_offset(self._offset)
+            self._handle = CodesReader.from_cache(self.path).at_offset(self._offset)
         return self._handle
 
     @property
@@ -398,8 +336,6 @@ class GribField(Base):
 
     def __getitem__(self, name):
         """For cfgrib"""
-        if name in FORCED_VALUES:
-            return FORCED_VALUES[name]
 
         proc = self.handle.get
         if ":" in name:
