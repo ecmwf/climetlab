@@ -9,8 +9,8 @@
 import logging
 import os
 
-from climetlab.readers.grib import _parse_files
 from climetlab.readers.grib.index import SqlIndex
+from climetlab.readers.grib.parsing import _parse_files
 from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)

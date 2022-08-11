@@ -9,94 +9,24 @@
 
 import logging
 
-from climetlab.profiling import call_counter
-
 LOG = logging.getLogger(__name__)
 
 
 class TensorflowMixIn:
-    def to_tfdataset(
-        self,
-        split=None,
-        shuffle=None,
-        normalize=None,
-        batch_size=0,
-        **kwargs,
-    ):
-        # assert "label" in kwargs
-        if "offset" in kwargs:
-            return self._to_tfdataset_offset(**kwargs)
-        if "label" in kwargs:
-            return self._to_tfdataset_supervised(**kwargs)
-        else:
-            return self._to_tfdataset_unsupervised(**kwargs)
-
-    def _to_tfdataset_offset(self, offset, **kwargs):
-
-        # μ = self.statistics()["average"]
-        # σ = self.statistics()["stdev"]
-
-        def normalise(a):
-            return a
-            # return (a - μ) / σ
-
-        def generate():
-            fields = []
-            for s in self:
-                fields.append(normalise(s.to_numpy()))
-                if len(fields) >= offset:
-                    yield fields[0], fields[-1]
-                    fields.pop(0)
+    def to_tfdataset(self, labels=None, **kwargs):
 
         import tensorflow as tf
 
-        shape = self.first.shape
+        def map_fn(i):
+            return self[int(i)].to_numpy()
 
-        dtype = kwargs.get("dtype", tf.float32)
-        return tf.data.Dataset.from_generator(
-            generate,
-            output_signature=(
-                tf.TensorSpec(shape, dtype=dtype, name="input"),
-                tf.TensorSpec(shape, dtype=dtype, name="output"),
-            ),
+        @tf.function
+        def tf_map_fn(i):
+            return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
+
+        ds = (
+            tf.data.Dataset.range(len(self))
+            # .shuffle(len(self))
+            .map(tf_map_fn, num_parallel_calls=10).prefetch(1024)
         )
-
-    def _to_tfdataset_unsupervised(self, **kwargs):
-        def generate():
-            for s in self:
-                yield s.to_numpy()
-
-        import tensorflow as tf
-
-        # TODO check the cost of the conversion
-        # maybe default to float64
-        dtype = kwargs.get("dtype", tf.float32)
-        return tf.data.Dataset.from_generator(generate, dtype)
-
-    def _to_tfdataset_supervised(self, label, **kwargs):
-
-        if isinstance(label, str):
-            label_ = label
-            label = lambda s: s.handle.get(label_)  # noqa: E731
-
-        @call_counter
-        def generate():
-            for s in self:
-                yield s.to_numpy(), label(s)
-
-        import tensorflow as tf
-
-        # with timer("_to_tfdataset_supervised shape"):
-        shape = self.first.shape
-
-        # TODO check the cost of the conversion
-        # maybe default to float64
-        dtype = kwargs.get("dtype", tf.float32)
-        # with timer("tf.data.Dataset.from_generator"):
-        return tf.data.Dataset.from_generator(
-            generate,
-            output_signature=(
-                tf.TensorSpec(shape, dtype=dtype, name="data"),
-                tf.TensorSpec(tuple(), dtype=tf.int64, name=label),
-            ),
-        )
+        return ds

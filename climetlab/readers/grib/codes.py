@@ -214,11 +214,11 @@ class GribField(Base):
         self._length = length
         self._handle = None
 
-    def __enter__(self):
-        return self
+    # def __enter__(self):
+    #     return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+    # def __exit__(self, exc_type, exc_val, exc_tb):
+    #     pass
 
     @property
     def handle(self):

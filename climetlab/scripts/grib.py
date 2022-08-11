@@ -7,14 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
-import climetlab.debug
 import datetime
 import json
 import logging
 import os
-from re import I
 
-from climetlab.readers.grib import _index_path, _index_url, _parse_files
+from climetlab.readers.grib.parsing import _index_path, _index_url, _parse_files
 
 from .tools import parse_args
 
@@ -62,10 +60,10 @@ class GribCmd:
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
         format=dict(
-           default="sql",
-           metavar="FORMAT",
-           type=str,
-           help="sql or json or stdout.",
+            default="sql",
+            metavar="FORMAT",
+            type=str,
+            help="sql or json or stdout.",
         ),
         force=dict(action="store_true", help="overwrite existing index."),
         ignore=dict(help="files to ignore.", nargs="*"),
@@ -118,8 +116,8 @@ class GribCmd:
 
         def default_db_path():
             path = dict(
-                json=os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE), 
-                sql=os.path.join(directory, DirectorySource.DEFAULT_DB_FILE), 
+                json=os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE),
+                sql=os.path.join(directory, DirectorySource.DEFAULT_DB_FILE),
                 stdout=None,
             )[db_format]
             return path
@@ -154,7 +152,7 @@ class GribCmd:
         ignore.append("*.txt")
         ignore.append("*.html")
         ignore.append(".*")
-        if db_path is not None: 
+        if db_path is not None:
             ignore.append(db_path)
 
         _index_directory(
@@ -177,12 +175,16 @@ class GribCmd:
             print(json.dumps(d))
 
 
-def _index_directory(directory, db_path, relative_paths, followlinks, ignore, db_format):
-    from climetlab.indexing.database.sql import SqlDatabase
+def _index_directory(
+    directory, db_path, relative_paths, followlinks, ignore, db_format
+):
     from climetlab.indexing.database.json import JsonDatabase
+    from climetlab.indexing.database.sql import SqlDatabase
     from climetlab.indexing.database.stdout import StdoutDatabase
 
-    db = {'json': JsonDatabase, 'sql': SqlDatabase, 'stdout':StdoutDatabase}[db_format](db_path)
+    db = {"json": JsonDatabase, "sql": SqlDatabase, "stdout": StdoutDatabase}[
+        db_format
+    ](db_path)
     iterator = _parse_files(
         directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks
     )

@@ -7,15 +7,18 @@
 # nor does it submit to any jurisdiction.
 #
 
-import logging
 import json
+import logging
+
 from . import Database
 
 LOG = logging.getLogger(__name__)
 
+
 class StdoutDatabase(Database):
     def __init__(self, db_path):
         pass
+
     def load(self, iterator):
         for entry in iterator:
             print(json.dumps(entry))
