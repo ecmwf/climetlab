@@ -152,6 +152,3 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
         for field in r.index_content():
             field["_path"] = _path
             yield field
-
-
-_parse_files = GribIndexingDirectoryParserIterator

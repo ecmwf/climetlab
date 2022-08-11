@@ -10,7 +10,7 @@ import logging
 import os
 
 from climetlab.readers.grib.index import SqlIndex
-from climetlab.readers.grib.parsing import _parse_files
+from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
@@ -87,7 +87,9 @@ class DirectorySource(IndexedSource):
         LOG.info(f"Did not find index files in {db_path} or {index_file}")
         ignore = [self.DEFAULT_DB_FILE, self.DEFAULT_JSON_FILE, db_path, index_file]
         index = SqlIndex.from_iterator(
-            _parse_files(path, ignore=ignore, relative_paths=False),
+            GribIndexingDirectoryParserIterator(
+                path, ignore=ignore, relative_paths=False
+            ),
             cache_metadata={"directory": self.path},
         )
         super().__init__(index, **kwargs)

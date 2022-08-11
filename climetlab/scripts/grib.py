@@ -12,7 +12,12 @@ import json
 import logging
 import os
 
-from climetlab.readers.grib.parsing import _index_path, _index_url, _parse_files
+from climetlab.readers.grib.parsing import (
+    GribIndexingDirectoryParserIterator,
+    _index_path,
+    _index_url,
+)
+from climetlab.utils.humanize import plural, seconds
 
 from .tools import parse_args
 
@@ -182,15 +187,16 @@ def _index_directory(
     from climetlab.indexing.database.sql import SqlDatabase
     from climetlab.indexing.database.stdout import StdoutDatabase
 
-    db = {"json": JsonDatabase, "sql": SqlDatabase, "stdout": StdoutDatabase}[
+    db = dict(json=JsonDatabase, sql=SqlDatabase, stdout=StdoutDatabase,)[
         db_format
     ](db_path)
-    iterator = _parse_files(
-        directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks
+    iterator = GribIndexingDirectoryParserIterator(
+        directory,
+        ignore=ignore,
+        relative_paths=relative_paths,
+        followlinks=followlinks,
     )
     start = datetime.datetime.now()
     count = db.load(iterator)
     end = datetime.datetime.now()
-    print(
-        f"Indexed {count} fields in {(end - start)} ({(end - start).total_seconds()} seconds)."
-    )
+    print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
