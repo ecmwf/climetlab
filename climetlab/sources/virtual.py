@@ -151,24 +151,5 @@ class Virtual(GribIndex):
             self.fields[yyyymm] = source
             return source
 
-    def to_tfdataset(self, **kwargs):
-
-        import tensorflow as tf
-
-        def map_fn(i):
-            return self[int(i)].to_numpy()
-
-        @tf.function
-        def tf_map_fn(i):
-            return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
-
-        ds = (
-            tf.data.Dataset.range(len(self))
-            .shuffle(len(self))
-            .map(tf_map_fn, num_parallel_calls=10)
-            .prefetch(1024)
-        )
-        return ds
-
 
 source = Virtual

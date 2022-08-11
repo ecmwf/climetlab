@@ -15,4 +15,3 @@ LOG = logging.getLogger(__name__)
 class Database:
     def lookup(self, request, order=None):
         raise NotImplementedError("")
-

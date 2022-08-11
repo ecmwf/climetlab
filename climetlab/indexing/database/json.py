@@ -18,6 +18,7 @@ from . import Database
 
 LOG = logging.getLogger(__name__)
 
+
 class JsonDatabase(Database):
     VERSION = 1
     EXTENSION = ".json"
