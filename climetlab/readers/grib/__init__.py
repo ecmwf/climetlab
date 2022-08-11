@@ -131,7 +131,7 @@ class DirectoryParserIterator:
                 if any([fnmatch.fnmatch(name, i) for i in self.ignore]):
                     LOG.debug(f"Ignoring filename {path}")
                     continue
-                if any([fnmatch.fnmatch(path, i) for i in self.ignore]):
+                if any([path == i for i in self.ignore]):
                     LOG.debug(f"Ignoring path {path}")
                     continue
                 LOG.debug(f"Parsing file {path}")
@@ -145,22 +145,21 @@ class DirectoryParserIterator:
                 else:
                     assert False, self.relative_paths
 
-                tasks.append((_index_grib_file, [path], dict(path_name=_path)))
+                tasks.append((self.process_one_task, [path], dict(path_name=_path)))
 
         if tasks:
             if self.verbose:
                 print(f"Found {len(tasks)} files to index.")
         else:
-            LOG.error(f"Could not find any files to index in {self.directory}.")
+            LOG.error(f"Could not find any files to index in {self.directory}")
 
         self._tasks = tqdm(tasks)
 
         return self.tasks
 
+class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
+    def process_one_task(self, *args, **kwargs):
+        for entry in _index_grib_file(*args, **kwargs):
+            yield entry
 
-def _parse_files(
-    directory, relative_paths, ignore=None, followlinks=True, verbose=False
-):
-    return DirectoryParserIterator(
-        directory, relative_paths, ignore=None, followlinks=True, verbose=False
-    )
+_parse_files = GribIndexingDirectoryParserIterator
