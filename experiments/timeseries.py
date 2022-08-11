@@ -15,9 +15,9 @@ ds = cml.load_source(
     product_type="reanalysis",
     param="2t",
     grid="10/10",
-    date=19590101,
+    date="19590101/to/19590201",
     time=12,
 )
 
-df = ds.to_pandas()
+df = ds.to_pandas(latitude=0.0, longitude=0.0)
 print(df)
