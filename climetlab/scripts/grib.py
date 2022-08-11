@@ -7,10 +7,12 @@
 # nor does it submit to any jurisdiction.
 #
 
+import climetlab.debug
 import datetime
 import json
 import logging
 import os
+from re import I
 
 from climetlab.readers.grib import _index_path, _index_url, _parse_files
 
@@ -59,12 +61,12 @@ class GribCmd:
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
-        # format=dict(
-        #    default="sql",
-        #    metavar="FORMAT",
-        #    type=str,
-        #    help="sql or json or stdout.",
-        # ),
+        format=dict(
+           default="sql",
+           metavar="FORMAT",
+           type=str,
+           help="sql or json or stdout.",
+        ),
         force=dict(action="store_true", help="overwrite existing index."),
         ignore=dict(help="files to ignore.", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
@@ -90,6 +92,7 @@ class GribCmd:
         force = args.force
         ignore = args.ignore
         force_relative_paths_on = args.relative_paths
+        db_format = args.format
 
         followlinks = True
         if args.no_follow_links:
@@ -113,8 +116,16 @@ class GribCmd:
                 )
                 relative_paths = False
 
+        def default_db_path():
+            path = dict(
+                json=os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE), 
+                sql=os.path.join(directory, DirectorySource.DEFAULT_DB_FILE), 
+                stdout=None,
+            )[db_format]
+            return path
+
         if db_path is None:
-            db_path = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+            db_path = default_db_path()
 
         def check_overwrite(filename, force):
             if not os.path.exists(filename):
@@ -127,7 +138,8 @@ class GribCmd:
                 f"ERROR: File {filename} already exists (use --force to overwrite)."
             )
 
-        check_overwrite(db_path, force)
+        if db_path is not None:
+            check_overwrite(db_path, force)
 
         if ignore is None:
             ignore = []
@@ -142,7 +154,8 @@ class GribCmd:
         ignore.append("*.txt")
         ignore.append("*.html")
         ignore.append(".*")
-        ignore.append(db_path)
+        if db_path is not None: 
+            ignore.append(db_path)
 
         _index_directory(
             directory,
@@ -150,6 +163,7 @@ class GribCmd:
             relative_paths=relative_paths,
             followlinks=followlinks,
             ignore=ignore,
+            db_format=db_format,
         )
 
     @parse_args(
@@ -163,10 +177,12 @@ class GribCmd:
             print(json.dumps(d))
 
 
-def _index_directory(directory, db_path, relative_paths, followlinks, ignore):
+def _index_directory(directory, db_path, relative_paths, followlinks, ignore, db_format):
     from climetlab.indexing.database.sql import SqlDatabase
+    from climetlab.indexing.database.json import JsonDatabase
+    from climetlab.indexing.database.stdout import StdoutDatabase
 
-    db = SqlDatabase(db_path)
+    db = {'json': JsonDatabase, 'sql': SqlDatabase, 'stdout':StdoutDatabase}[db_format](db_path)
     iterator = _parse_files(
         directory, ignore=ignore, relative_paths=relative_paths, followlinks=followlinks
     )
@@ -176,28 +192,3 @@ def _index_directory(directory, db_path, relative_paths, followlinks, ignore):
     print(
         f"Indexed {count} fields in {(end - start)} ({(end - start).total_seconds()} seconds)."
     )
-    return
-
-    # TODO: do json output too.
-
-    # def do_sql():
-    #     filename = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
-    #     if origin_db_path == filename:
-    #         return
-    #     check_overwrite(filename)
-    #     print(f"Writing index in {filename}")
-    #     db.duplicate_db(relative_paths=True, base_dir=directory, filename=filename)
-
-    # def do_json():
-    #     filename = os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE)
-    #     check_overwrite(filename)
-    #     print(f"Writing index in {filename}")
-    #     with open(filename, "w") as f:
-    #         for d in db.dump_dicts(relative_paths=True, base_dir=directory):
-    #             print(json.dumps(d), file=f)
-
-    # do = {"sql": do_sql, "json": do_json}[args.format]
-    # try:
-    #     do()
-    # except AlreadyExistsError as e:
-    #     print(e)
