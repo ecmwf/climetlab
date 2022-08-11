@@ -439,12 +439,23 @@ class FieldSet:
         for s in self:
             s.write(f)
 
-    def to_pandas(self, **kwargs):
+    def to_pandas(self, latitude=None, longitude=None, **kwargs):
         import pandas as pd
+
+        def ident(x):
+            return x
+
+        filter = ident
+
+        def select_point(d):
+            return [x for x in d if x["lat"] == latitude and x["lon"] == longitude]
+
+        if latitude is not None or longitude is not None:
+            filter = select_point
 
         frames = []
         for s in self:
-            df = pd.DataFrame(s.data)
+            df = pd.DataFrame(filter(s.data))
             df["datetime"] = s.valid_datetime()
             for k, v in s.as_mars().items():
                 df[k] = v

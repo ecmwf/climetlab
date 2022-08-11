@@ -329,9 +329,10 @@ class CacheCmd:
             type=str,
             help="""
             By default, the exported data is public and writable by its owner.
-            read-only: Make the data public and read only.
-            disabled: do not tweak the files or directories permissions.
+            --permissions read-only : Make the data public and read only.
+            --permissions disabled : Do not tweak the files or directories permissions.
             """,
+            nargs="*",
         ),
     )
     def do_export_cache(self, args):
@@ -346,7 +347,7 @@ class CacheCmd:
 
         def permissions(perms):
             if perms:
-                perms = perms.replace("-", "").replace("_", "")
+                perms = [_.replace("-", "").replace("_", "") for _ in perms]
 
             def make_directory_writeable():
                 mode = os.stat(directory).st_mode
@@ -359,13 +360,13 @@ class CacheCmd:
                         f"The directory {directory} is not readable by others. Please make sure this is what you want."
                     )
 
-            if perms == "readonly":
-                return (0o555, 0o444, [make_directory_writeable, check_readable])
-
-            if perms == "disabled":
+            if "disabled" in perms:
                 return (False, False, [])
 
-            if perms is None:  # default
+            if "readonly" in perms:
+                return (0o555, 0o444, [make_directory_writeable, check_readable])
+
+            if not perms:  # default
                 return (0o755, 0o644, [make_directory_writeable, check_readable])
 
             raise ValueError(perms)
@@ -390,7 +391,7 @@ class CacheCmd:
                 self.new_dirs.append(d)
 
             def update_permission_dirs(self, perms):
-                # order may matter:
+                # order may matters:
                 # self.new_dirs = sorted(self.new_dirs)
                 for d in self.new_dirs:
                     os.chmod(d, perms)

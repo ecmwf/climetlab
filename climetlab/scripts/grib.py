@@ -68,6 +68,14 @@ class GribCmd:
         force=dict(action="store_true", help="overwrite existing index."),
         ignore=dict(help="files to ignore.", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
+        relative_paths=dict(
+            action="store_true",
+            help=(
+                "Use relative paths. Default is to use relative paths, "
+                "except when a custom location is provided for the index location. "
+                "(when the argument --output is used, default for --relative-path is False)"
+            ),
+        ),
         output=(
             "--output",
             dict(
@@ -81,6 +89,7 @@ class GribCmd:
         db_path = args.output
         force = args.force
         ignore = args.ignore
+        force_relative_paths_on = args.relative_paths
 
         followlinks = True
         if args.no_follow_links:
@@ -90,11 +99,22 @@ class GribCmd:
 
         from climetlab.sources.directory import DirectorySource
 
-        if db_path is None:
-            db_path = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
+        if force_relative_paths_on:
             relative_paths = True
         else:
-            relative_paths = False
+            if db_path is None:
+                relative_paths = True
+            else:
+                LOG.warning(
+                    (
+                        "Non-default location for the index file (--output),"
+                        " using absolute path in the index (i.e. setting option --relative-paths to False)."
+                    )
+                )
+                relative_paths = False
+
+        if db_path is None:
+            db_path = os.path.join(directory, DirectorySource.DEFAULT_DB_FILE)
 
         def check_overwrite(filename, force):
             if not os.path.exists(filename):
