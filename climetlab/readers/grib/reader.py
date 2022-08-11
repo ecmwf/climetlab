@@ -10,6 +10,7 @@
 import logging
 
 from climetlab.readers import Reader
+from climetlab.readers.grib import _index_grib_file
 from climetlab.readers.grib.index import GribFileIndex, MultiGribIndex
 
 LOG = logging.getLogger(__name__)
@@ -32,3 +33,6 @@ class GRIBReader(GribFileIndex, Reader):
         assert len(readers) > 1
 
         return MultiGribIndex(readers)
+
+    def index_content(self):
+        yield from _index_grib_file(self.path )

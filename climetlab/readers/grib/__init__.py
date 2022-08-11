@@ -28,6 +28,7 @@ def _index_grib_file(path, path_name=None):
     def parse_field(h):
         field = dict()
 
+        # TODO: move this out
         if isinstance(path_name, str):
             field["_path"] = path_name
         elif path_name is False:
@@ -111,8 +112,8 @@ class DirectoryParserIterator:
         self._tasks = None
 
     def __iter__(self):
-        for func, args, kwargs in self.tasks:
-            for entry in func(*args, **kwargs):
+        for path in self.tasks:
+            for entry in self.process_one_task(path):
                 yield entry
 
     @property
@@ -127,25 +128,7 @@ class DirectoryParserIterator:
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
-
-                if any([fnmatch.fnmatch(name, i) for i in self.ignore]):
-                    LOG.debug(f"Ignoring filename {path}")
-                    continue
-                if any([path == i for i in self.ignore]):
-                    LOG.debug(f"Ignoring path {path}")
-                    continue
-                LOG.debug(f"Parsing file {path}")
-
-                if self.relative_paths is True:
-                    _path = os.path.relpath(path, self.directory)
-                elif self.relative_paths is False:
-                    _path = os.path.abspath(path)
-                elif self.relative_paths is None:
-                    _path = path
-                else:
-                    assert False, self.relative_paths
-
-                tasks.append((self.process_one_task, [path], dict(path_name=_path)))
+                tasks.append(path)
 
         if tasks:
             if self.verbose:
@@ -158,8 +141,25 @@ class DirectoryParserIterator:
         return self.tasks
 
 class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
-    def process_one_task(self, *args, **kwargs):
-        for entry in _index_grib_file(*args, **kwargs):
-            yield entry
+    def process_one_task(self, path ):
+            LOG.debug(f"Parsing file {path}")
+
+            if self.relative_paths is True:
+                _path = os.path.relpath(path, self.directory)
+            elif self.relative_paths is False:
+                _path = os.path.abspath(path)
+            elif self.relative_paths is None:
+                _path = path
+            else:
+                assert False, self.relative_paths
+
+
+            from climetlab.readers import reader as main_reader
+            r = main_reader(self, path)
+            if r is None:
+                return
+            for field in r.index_content():
+                field['_path'] = _path
+                yield field
 
 _parse_files = GribIndexingDirectoryParserIterator

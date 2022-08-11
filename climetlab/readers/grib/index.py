@@ -173,6 +173,7 @@ class GribDBIndex(GribIndex):
         sel = {}
 
         if self.selection:
+            # TODO: actualy make intersection
             sel.update(self.selection)
 
         for a in args:
