@@ -82,6 +82,10 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
 
     def __fspath__(self):
         return self.path
+    
+    def index_content(self):
+        LOG.warning('index-content(): Ignoring {self.path}')
+        return []
 
 
 _READERS = {}
