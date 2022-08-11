@@ -38,6 +38,10 @@ def _plural(count):
 
 
 def seconds(seconds):
+
+    if isinstance(seconds, datetime.timedelta):
+        seconds = seconds.total_seconds()
+
     if seconds == 0:
         return "instantaneous"
 
