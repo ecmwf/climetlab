@@ -181,7 +181,12 @@ class GribCmd:
 
 
 def _index_directory(
-    directory, db_path, relative_paths, followlinks, ignore, db_format
+    directory,
+    db_path,
+    relative_paths,
+    followlinks,
+    ignore,
+    db_format,
 ):
     from climetlab.indexing.database.json import JsonDatabase
     from climetlab.indexing.database.sql import SqlDatabase

@@ -13,20 +13,45 @@ LOG = logging.getLogger(__name__)
 
 
 class TensorflowMixIn:
-    def to_tfdataset(self, labels=None, **kwargs):
+    def to_tfdataset(
+        self,
+        labels=None,
+        num_parallel_calls=10,
+        prefetch=1024,
+        **kwargs,
+    ):
 
         import tensorflow as tf
 
         def map_fn(i):
-            return self[int(i)].to_numpy()
+            i = int(i)
+            return self[i].to_numpy()
 
         @tf.function
         def tf_map_fn(i):
             return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
 
-        ds = (
-            tf.data.Dataset.range(len(self))
-            # .shuffle(len(self))
-            .map(tf_map_fn, num_parallel_calls=10).prefetch(1024)
+        def map_label_fn(i):
+            i = int(i)
+            return labels(i)
+
+        @tf.function
+        def tf_map_label_fn(i):
+            return tf.py_function(func=map_label_fn, inp=[i], Tout=tf.float32)
+
+        def dataset(mapping):
+            return (
+                tf.data.Dataset.range(len(self))
+                .map(mapping, num_parallel_calls=num_parallel_calls)
+                .prefetch(prefetch)
+            )
+
+        if labels is None:
+            return dataset(tf_map_fn)
+
+        return tf.data.Dataset.zip(
+            (
+                dataset(tf_map_fn),
+                dataset(tf_map_label_fn),
+            )
         )
-        return ds
