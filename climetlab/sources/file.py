@@ -115,6 +115,9 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def write(self, f):
         return self._reader.write(f)
 
+    def scaled(self, *args, **kwargs):
+        return self._reader.scaled(*args, **kwargs)
+
     def _attributes(self, names):
         return self._reader._attributes(names)
 

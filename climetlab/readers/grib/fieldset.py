@@ -11,6 +11,7 @@ import json
 import logging
 
 from climetlab.core.caching import auxiliary_cache_file
+from climetlab.core.index import ScaledIndex
 from climetlab.utils.bbox import BoundingBox
 
 from .pandas import PandasMixIn
@@ -143,3 +144,12 @@ class FieldSet(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
     def write(self, f):
         for s in self:
             s.write(f)
+
+    def scaled(self, method=None, offset=None, scaling=None):
+        if method == "minmax":
+            assert offset is None and scaling is None
+            stats = self.statistics()
+            offset = stats["minimum"]
+            scaling = 1.0 / (stats["maximum"] - stats["minimum"])
+
+        return ScaledIndex(self, offset, scaling)

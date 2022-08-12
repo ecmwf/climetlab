@@ -102,6 +102,10 @@ class Base(metaclass=MetaBase):
     def statistics(self):
         self._not_implemented()
 
+    @abstractmethod
+    def scaled(self, args, kwargs):
+        self._not_implemented()
+
     #
     def _not_implemented(self):
         import inspect

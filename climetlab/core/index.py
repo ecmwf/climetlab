@@ -67,21 +67,29 @@ class MultiIndex(Index):
             s.graph(depth + 3)
 
 
-class ScaledField:
-    def __init__(self, field, offset, scale):
-        self.field = field
-        self.offset = offset
-        self.scale = scale
-
-
-class ScaledIndex(Index):
-    def __init__(self, index, offset, scale):
+class ForewardingIndex(Index):
+    def __init__(self, index):
         self.index = index
-        self.offset = offset
-        self.scale = scale
-
-    def __getitem__(self, n):
-        return ScaledField(self.index[n])
 
     def __len__(self):
         return len(self.index)
+
+
+class ScaledField:
+    def __init__(self, field, offset, scaling):
+        self.field = field
+        self.offset = offset
+        self.scaling = scaling
+
+    def to_numpy(self):
+        return (self.field.to_numpy() - self.offset) * self.scaling
+
+
+class ScaledIndex(ForewardingIndex):
+    def __init__(self, index, offset, scaling):
+        super().__init__(index)
+        self.offset = offset
+        self.scaling = scaling
+
+    def __getitem__(self, n):
+        return ScaledField(self.index[n], self.offset, self.scaling)
