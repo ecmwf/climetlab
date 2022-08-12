@@ -1,5 +1,3 @@
-import tensorflow as tf
-from keras import backend as K
 from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
 from tensorflow.keras.models import Sequential
 
