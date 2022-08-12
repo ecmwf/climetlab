@@ -65,3 +65,23 @@ class MultiIndex(Index):
         print(" " * depth, self.__class__.__name__)
         for s in self.indexes:
             s.graph(depth + 3)
+
+
+class ScaledField:
+    def __init__(self, field, offset, scale):
+        self.field = field
+        self.offset = offset
+        self.scale = scale
+
+
+class ScaledIndex(Index):
+    def __init__(self, index, offset, scale):
+        self.index = index
+        self.offset = offset
+        self.scale = scale
+
+    def __getitem__(self, n):
+        return ScaledField(self.index[n])
+
+    def __len__(self):
+        return len(self.index)
