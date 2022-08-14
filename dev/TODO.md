@@ -157,7 +157,7 @@ ds = cml.open_dataset(name='s2s-ai-competition/training', origin=.)
 ds.to_xarray()
 
 cml.open_dataset(name='s2s-ai-competition/training', date=. , origin=., as_type=pd.DataFrame, format=., select_kwargs={})
-is a shortcut for 
+is a shortcut for
 cml.Dataset('s2s-ai-competition','training', format=.).select_or(date=. , origin=.).to_pandas()
 
 cml.Dataset('s2s-ai-competition','training', format='grib', debug=True).select_or(format='%02d', debug=True, date=. , origin=.).to_pandas()
@@ -199,7 +199,7 @@ ds.info
 
 ds = cml.Dataset('meteonet')
 ds.info
- -> list all datasets 
+ -> list all datasets
  -> citation, homepage, etc for meteonet
 
 ds = cml.Dataset('meteonet', 'radar')
@@ -213,7 +213,7 @@ ds.homepage
 --------------
 ## Filter/select the data : ds.find_a_name(...)
 
-ds.load(date=., origin=.) 
+ds.load(date=., origin=.)
 ds.select_or(date=., origin=.)
 ds.select_and(date=., origin=.)
 
@@ -227,8 +227,12 @@ ds.to_pandas()
 Do not use ds.astype
 
 
-## other ideas 
+## other ideas
 ds = cml.Dataset('meteonet', plugin='climetlab-meteonet')
 ds = cml.Dataset('meteonet', plugin='intake-meteonet')
 
 
+## LOOK AT
+
+https://pypi.org/project/lazy-object-proxy/
+https://wrapt.readthedocs.io/en/latest/wrappers.html#object-proxy
