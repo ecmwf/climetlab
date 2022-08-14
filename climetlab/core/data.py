@@ -132,11 +132,8 @@ def get_data_entry(kind, name):
 
     if name not in files[kind]:
         raise KeyError(
-            "No object '%s' in collection named '%s'"
-            % (
-                name,
-                kind,
-            )
+            "No object '%s' in collection named '%s' (%s)"
+            % (name, kind, sorted(files[kind].keys()))
         )
 
     choices = files[kind][name].choices()

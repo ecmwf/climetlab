@@ -157,6 +157,7 @@ class CodesHandle:
     def set_values(self, values):
         assert self.path is None, "Only cloned handles can have values changed"
         eccodes.codes_set_values(self.handle, values.flatten())
+        eccodes.codes_set_long(self.handle, "generatingProcessIdentifier", 254)
 
     def save(self, path):
         with open(path, "wb") as f:
