@@ -151,6 +151,19 @@ class CodesHandle:
 
         return r
 
+    def clone(self):
+        return CodesHandle(eccodes.codes_clone(self.handle), None, None)
+
+    def set_values(self, values):
+        assert self.path is None, "Only cloned handles can have values changed"
+        eccodes.codes_set_values(self.handle, values.flatten())
+
+    def save(self, path):
+        with open(path, "wb") as f:
+            eccodes.codes_write(self.handle, f)
+            self.path = path
+            self.offset = 0
+
 
 class ReaderLRUCache(dict):
     def __init__(self, size):
@@ -239,10 +252,11 @@ class GribField(Base):
 
     @property
     def shape(self):
-        return (
-            missing_is_none(self.handle.get("Nj")),
-            missing_is_none(self.handle.get("Ni")),
-        )
+        Nj = missing_is_none(self.handle.get("Nj"))
+        Ni = missing_is_none(self.handle.get("Ni"))
+        if Ni is None or Nj is None:
+            return self.handle.get("numberOfDataPoints")
+        return (Nj, Ni)
 
     def plot_map(self, backend):
         backend.bounding_box(
@@ -254,12 +268,7 @@ class GribField(Base):
         backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
-    def to_numpy(self, normalise=False):
-        shape = self.shape
-        if shape[0] is None or shape[1] is None:
-            return self.values
-        if normalise:
-            return self.values.reshape(self.shape)
+    def to_numpy(self):
         return self.values.reshape(self.shape)
 
     def __repr__(self):
@@ -361,3 +370,28 @@ class GribField(Base):
 
     def write(self, f):
         f.write(self._reader.read(self._offset, self._length))
+
+    def plot_numpy(self, backend, array):
+
+        if self.handle.get("gridType") == "regular_ll":
+            metadata = self.field_metadata()
+
+            backend.bounding_box(
+                north=metadata["north"],
+                south=metadata["south"],
+                west=metadata["west"],
+                east=metadata["east"],
+            )
+
+            backend.plot_numpy(
+                array.reshape(metadata.get("shape", self.shape)),
+                metadata=metadata,
+            )
+            return
+
+        # Non-regular field
+        tmp = backend.temporary_file(".grib")
+        clone = self.handle.clone()
+        clone.set_values(array)
+        clone.save(tmp)
+        GribField(tmp, 0, self._length).plot_map(backend)

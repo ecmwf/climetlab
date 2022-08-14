@@ -17,20 +17,21 @@ class NumpyArrayWrapper(Wrapper):
 
     def plot_map(self, backend):
 
-        metadata = get_wrapper(backend.option("metadata"))
-        metadata = metadata.field_metadata()
+        wrapper = get_wrapper(backend.option("metadata"))
+        wrapper.plot_numpy(backend, self.data)
+        # metadata = metadata.field_metadata()
 
-        backend.bounding_box(
-            north=metadata["north"],
-            south=metadata["south"],
-            west=metadata["west"],
-            east=metadata["east"],
-        )
+        # backend.bounding_box(
+        #     north=metadata["north"],
+        #     south=metadata["south"],
+        #     west=metadata["west"],
+        #     east=metadata["east"],
+        # )
 
-        backend.plot_numpy(
-            self.data.reshape(metadata.get("shape", self.data.shape)),
-            metadata=metadata,
-        )
+        # backend.plot_numpy(
+        #     self.data.reshape(metadata.get("shape", self.data.shape)),
+        #     metadata=metadata,
+        # )
 
     def to_datetime_list(self):
         return [datetime.datetime.fromtimestamp(x * 1e-9) for x in self.data.tolist()]
