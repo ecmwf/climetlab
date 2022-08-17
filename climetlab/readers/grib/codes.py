@@ -165,6 +165,12 @@ class CodesHandle:
             self.path = path
             self.offset = 0
 
+    def read_bytes(self, offset, length):
+        with open(self.path, "rb") as f:
+            f.seek(offset)
+            return f.read(length)
+
+
 
 class ReaderLRUCache(dict):
     def __init__(self, size):
@@ -370,7 +376,7 @@ class GribField(Base):
         return self.handle.as_mars(param)
 
     def write(self, f):
-        f.write(self._reader.read(self._offset, self._length))
+        f.write(self.handle.read_bytes(self._offset, self._length))
 
     def plot_numpy(self, backend, array):
 
