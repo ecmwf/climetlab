@@ -11,65 +11,69 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+
 def to_tfdataset(
-        features,
-        targets=None,
-        total_size=None,
-        num_parallel_calls=10,
-        prefetch=1024,
-        **kwargs,
-    ):
+    features,
+    targets=None,
+    total_size=None,
+    num_parallel_calls=10,
+    prefetch=1024,
+    **kwargs,
+):
 
-        import tensorflow as tf
-        
-        if not callable(features):
-            if total_size is None:
-                LOG.debug("No total_size specified, infering from features.")
-                total_size = len(features)
+    import tensorflow as tf
 
-            _features = features
-            def features(i):
-                return _features[i].to_numpy()
+    if not callable(features):
+        if total_size is None:
+            LOG.debug("No total_size specified, infering from features.")
+            total_size = len(features)
 
-        if not callable(targets):
-            _targets = targets
-            def targets(i):
-                return _targets[i].to_numpy()
+        _features = features
 
-        assert total_size is not None
+        def features(i):
+            return _features[i].to_numpy()
 
-        def map_fn(i):
-            i = int(i)
-            return features(i)
+    if not callable(targets):
+        _targets = targets
 
-        @tf.function
-        def tf_map_fn(i):
-            return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
+        def targets(i):
+            return _targets[i].to_numpy()
 
-        def map_label_fn(i):
-            i = int(i)
-            return targets(i)
+    assert total_size is not None
 
-        @tf.function
-        def tf_map_label_fn(i):
-            return tf.py_function(func=map_label_fn, inp=[i], Tout=tf.float32)
+    def map_fn(i):
+        i = int(i)
+        return features(i)
 
-        def dataset(mapping):
-            return (
-                tf.data.Dataset.range(total_size)
-                .map(mapping, num_parallel_calls=num_parallel_calls)
-                .prefetch(prefetch)
-            )
+    @tf.function
+    def tf_map_fn(i):
+        return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
 
-        if targets is None:
-            return dataset(tf_map_fn)
+    def map_label_fn(i):
+        i = int(i)
+        return targets(i)
 
-        return tf.data.Dataset.zip(
-            (
-                dataset(tf_map_fn),
-                dataset(tf_map_label_fn),
-            )
+    @tf.function
+    def tf_map_label_fn(i):
+        return tf.py_function(func=map_label_fn, inp=[i], Tout=tf.float32)
+
+    def dataset(mapping):
+        return (
+            tf.data.Dataset.range(total_size)
+            .map(mapping, num_parallel_calls=num_parallel_calls)
+            .prefetch(prefetch)
         )
+
+    if targets is None:
+        return dataset(tf_map_fn)
+
+    return tf.data.Dataset.zip(
+        (
+            dataset(tf_map_fn),
+            dataset(tf_map_label_fn),
+        )
+    )
+
 
 class TensorflowMixIn:
     def to_tfdataset(
@@ -78,6 +82,6 @@ class TensorflowMixIn:
         targets=None,
         **kwargs,
     ):
-        if targets is None: # rename "labels" into "targets" ?
+        if targets is None:  # rename "labels" into "targets" ?
             targets = labels
         return to_tfdataset(features=self, targets=targets, **kwargs)
