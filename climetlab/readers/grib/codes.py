@@ -171,7 +171,6 @@ class CodesHandle:
             return f.read(length)
 
 
-
 class ReaderLRUCache(dict):
     def __init__(self, size):
         self.readers = dict()
