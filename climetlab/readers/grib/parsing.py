@@ -15,21 +15,13 @@ from climetlab.utils import progress_bar, tqdm
 LOG = logging.getLogger(__name__)
 
 
-def _index_grib_file(path, path_name=None):
+def _index_grib_file(path):
     import eccodes
 
     def parse_field(h):
         field = dict()
 
-        # TODO: move this out
-        if isinstance(path_name, str):
-            field["_path"] = path_name
-        elif path_name is False:
-            pass
-        elif path_name is None:
-            field["_path"] = path
-        else:
-            raise ValueError(f"Value of path_name cannot be '{path_name}.'")
+        field["_path"] = path
 
         i = eccodes.codes_keys_iterator_new(h, "mars")
         try:
@@ -46,13 +38,14 @@ def _index_grib_file(path, path_name=None):
 
         field["_param_id"] = eccodes.codes_get_string(h, "paramId")
         field["param"] = eccodes.codes_get_string(h, "shortName")
+
         return field
 
     size = os.path.getsize(path)
     pbar = progress_bar(desc=f"Parsing {path}", total=size)
 
     with open(path, "rb") as f:
-        old_tell = f.tell()
+        old_position = f.tell()
         h = eccodes.codes_grib_new_from_file(f)
 
         while h:
@@ -61,9 +54,9 @@ def _index_grib_file(path, path_name=None):
             finally:
                 eccodes.codes_release(h)
 
-            tell = f.tell()
-            pbar.update(tell - old_tell)
-            old_tell = tell
+            position = f.tell()
+            pbar.update(position - old_position)
+            old_position = position
             h = eccodes.codes_grib_new_from_file(f)
     pbar.close()
 
@@ -74,7 +67,9 @@ def _index_url(path_name, url):
     path = cml.load_source("url", url).path
     # TODO: should use download_and_cache
     # path = download_and_cache(url)
-    yield from _index_grib_file(path, path_name=path_name)
+    for entry in _index_grib_file(path):
+        entry['_path'] = path_name
+        yield entry
 
 
 def _index_path(path):
