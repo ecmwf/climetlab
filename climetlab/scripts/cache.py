@@ -346,6 +346,9 @@ class CacheCmd:
         directory = args.directory
 
         def permissions(perms):
+            if perms is None:
+                perms = []
+
             if perms:
                 perms = [_.replace("-", "").replace("_", "") for _ in perms]
 

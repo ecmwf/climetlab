@@ -68,7 +68,7 @@ def _index_url(path_name, url):
     # TODO: should use download_and_cache
     # path = download_and_cache(url)
     for entry in _index_grib_file(path):
-        entry['_path'] = path_name
+        entry["_path"] = path_name
         yield entry
 
 
