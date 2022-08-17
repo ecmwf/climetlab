@@ -25,7 +25,11 @@ def match_other(i):
     return ds2[i].to_numpy() - ds1[i].to_numpy()
 
 
-input = ds1.to_tfdataset(labels=match_other)
+def ds1_(i):
+    return ds1_[i].to_numpy()
+
+
+input = ds1.to_tfdataset(features=ds1_, target=match_other)
 
 print(shape)
 # shape = tf1.element_spec.shape

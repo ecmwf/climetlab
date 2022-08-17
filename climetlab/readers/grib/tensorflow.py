@@ -11,21 +11,36 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
-
-class TensorflowMixIn:
-    def to_tfdataset(
-        self,
-        labels=None,
+def to_tfdataset(
+        features,
+        targets=None,
+        total_size=None,
         num_parallel_calls=10,
         prefetch=1024,
         **kwargs,
     ):
 
         import tensorflow as tf
+        
+        if not callable(features):
+            if total_size is None:
+                LOG.debug("No total_size specified, infering from features.")
+                total_size = len(features)
+
+            _features = features
+            def features(i):
+                return _features[i].to_numpy()
+
+        if not callable(targets):
+            _targets = targets
+            def targets(i):
+                return _targets[i].to_numpy()
+
+        assert total_size is not None
 
         def map_fn(i):
             i = int(i)
-            return self[i].to_numpy()
+            return features(i)
 
         @tf.function
         def tf_map_fn(i):
@@ -33,7 +48,7 @@ class TensorflowMixIn:
 
         def map_label_fn(i):
             i = int(i)
-            return labels(i)
+            return targets(i)
 
         @tf.function
         def tf_map_label_fn(i):
@@ -41,12 +56,12 @@ class TensorflowMixIn:
 
         def dataset(mapping):
             return (
-                tf.data.Dataset.range(len(self))
+                tf.data.Dataset.range(total_size)
                 .map(mapping, num_parallel_calls=num_parallel_calls)
                 .prefetch(prefetch)
             )
 
-        if labels is None:
+        if targets is None:
             return dataset(tf_map_fn)
 
         return tf.data.Dataset.zip(
@@ -55,3 +70,14 @@ class TensorflowMixIn:
                 dataset(tf_map_label_fn),
             )
         )
+
+class TensorflowMixIn:
+    def to_tfdataset(
+        self,
+        labels=None,
+        targets=None,
+        **kwargs,
+    ):
+        if targets is None: # rename "labels" into "targets" ?
+            targets = labels
+        return to_tfdataset(features=self, targets=targets, **kwargs)
