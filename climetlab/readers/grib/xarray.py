@@ -11,6 +11,8 @@ import copy
 import logging
 import math
 import warnings
+from climetlab.utils.serialise import serialise_state, deserialise_state
+
 
 LOG = logging.getLogger(__name__)
 
@@ -63,9 +65,16 @@ class ItemWrapperForCfGrib:
 
 
 class IndexWrapperForCfGrib:
-    def __init__(self, index, ignore_keys=[]):
+    def __init__(self, index=None, ignore_keys=[]):
         self.index = index
         self.ignore_keys = ignore_keys
+
+    def __getstate__(self):
+        return serialise_state(self.index)
+
+    def __setstate__(self, state):
+        self.index = deserialise_state(state)
+        self.ignore_keys = []
 
     def __getitem__(self, n):
         return ItemWrapperForCfGrib(
