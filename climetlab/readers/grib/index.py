@@ -27,6 +27,7 @@ from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
 from climetlab.utils.parts import Part
+from climetlab.utils.serialise import register_serialisation
 
 LOG = logging.getLogger(__name__)
 
@@ -283,6 +284,11 @@ class SqlIndex(GribIndexFromFile):
     @cached_method
     def number_of_parts(self):
         return self.db.count(self.selection)
+
+
+register_serialisation(
+    SqlIndex, lambda x: x.db.db_path, lambda x: SqlIndex(db=SqlDatabase(x))
+)
 
 
 class GribFileIndex(GribIndexFromFile):

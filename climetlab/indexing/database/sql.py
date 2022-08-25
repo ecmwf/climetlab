@@ -74,9 +74,12 @@ class SqlDatabase(Database):
 
         self.db_path = db_path
         self.create_index = create_index
-        self.connection = sqlite3.connect(self.db_path)
 
         LOG.debug("DB %s", self.db_path)
+
+    @property
+    def connection(self):
+        return sqlite3.connect(self.db_path)
 
     def load(self, iterator):
         with self.connection as conn:
