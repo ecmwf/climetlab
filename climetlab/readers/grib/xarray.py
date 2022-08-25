@@ -11,8 +11,8 @@ import copy
 import logging
 import math
 import warnings
-from climetlab.utils.serialise import serialise_state, deserialise_state
 
+from climetlab.utils.serialise import deserialise_state, serialise_state
 
 LOG = logging.getLogger(__name__)
 
@@ -70,11 +70,11 @@ class IndexWrapperForCfGrib:
         self.ignore_keys = ignore_keys
 
     def __getstate__(self):
-        return serialise_state(self.index)
+        return dict(index=serialise_state(self.index), ignore_keys=self.ignore_keys)
 
     def __setstate__(self, state):
-        self.index = deserialise_state(state)
-        self.ignore_keys = []
+        self.index = deserialise_state(state["index"])
+        self.ignore_keys = state["ignore_keys"]
 
     def __getitem__(self, n):
         return ItemWrapperForCfGrib(

@@ -14,6 +14,7 @@ import threading
 
 import climetlab as cml
 from climetlab.readers.grib.index import GribIndex
+from climetlab.utils.serialise import register_serialisation
 
 LOG = logging.getLogger(__name__)
 
@@ -150,6 +151,10 @@ class Virtual(GribIndex):
             )
             self.fields[yyyymm] = source
             return source
+
+register_serialisation(
+    Virtual, lambda x: None, lambda x: Virtual()
+)
 
 
 source = Virtual

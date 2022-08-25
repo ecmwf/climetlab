@@ -8,8 +8,7 @@
 #
 
 import logging
-import warnings
-
+from importlib import import_module
 
 LOG = logging.getLogger(__name__)
 
@@ -17,12 +16,12 @@ SERIALISATION = {}
 
 
 def register_serialisation(cls, serialise, create):
-    fullname = ".".join([cls.__module__, cls.__qualname__])
+    fullname = (cls.__module__, cls.__qualname__)
     SERIALISATION[fullname] = (serialise, create)
 
 
 def serialise_state(obj):
-    fullname = ".".join([obj.__class__.__module__, obj.__class__.__qualname__])
+    fullname = (obj.__class__.__module__, obj.__class__.__qualname__)
     LOG.info("serialise %s", fullname)
     return (fullname, SERIALISATION[fullname][0](obj))
 
@@ -32,7 +31,8 @@ def deserialise_state(state):
     LOG.info("deserialise %s %s", fullname, args)
     # warnings.warn('deserialise %s %s', fullname, args)
     # TODO: if KeyError, maybe the function is not imported
-    from climetlab.readers.grib.index import SqlIndex
+    module, _ = fullname
+    import_module(module)
 
     create = SERIALISATION[fullname][1]
     return create(args)
