@@ -16,11 +16,12 @@ LOG = logging.getLogger(__name__)
 def deep_update(old, new):
     # deep update, merging dictionaries
     assert isinstance(new, dict), f"Expecting a dict, but received: {new}"
-    for k in set(new.keys()).union(set(old.keys())):
+    for k, v in new.items():
         v = new[k]
         if k in old and isinstance(old[k], dict):
             deep_update(old[k], v)
-        old[k] = v
+        else:
+            old[k] = v
     return old
 
 
