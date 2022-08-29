@@ -176,6 +176,7 @@ def directories(owner: bool = False) -> list:
         "projections-directories",
         "layers-directories",
         "datasets-directories",
+        "dask-directories",
     ):
         for d in settings.get(conf):
             if os.path.exists(d) and os.path.isdir(d):
