@@ -7,48 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import copy
 import logging
 import math
 import warnings
 
+from climetlab.utils.kwargs import Kwargs
 from climetlab.utils.serialise import deserialise_state, serialise_state
 
 LOG = logging.getLogger(__name__)
-
-
-def _mix_kwargs(
-    user,
-    default,
-    forced={},
-    logging_owner="",
-    logging_main_key="",
-):
-    kwargs = copy.deepcopy(default)
-
-    for k, v in user.items():
-        if k in forced and v != forced[k]:
-            LOG.warning(
-                (
-                    f"In {logging_owner} {logging_main_key},"
-                    f"ignoring attempt to override {k}={forced[k]} with {k}={v}."
-                )
-            )
-            continue
-
-        if k in default and v != default[k]:
-            LOG.warning(
-                (
-                    f"In {logging_owner} {logging_main_key}, overriding the default value "
-                    f"({k}={default[k]}) with {k}={v} is not recommended."
-                )
-            )
-
-        kwargs[k] = v
-
-    kwargs.update(forced)
-
-    return kwargs
 
 
 class ItemWrapperForCfGrib:
@@ -116,7 +82,7 @@ class XarrayMixIn:
         )
 
         for key in ["backend_kwargs"]:
-            xarray_open_dataset_kwargs[key] = _mix_kwargs(
+            xarray_open_dataset_kwargs[key] = Kwargs(
                 user=user_xarray_open_dataset_kwargs.pop(key, {}),
                 default={"errors": "raise"},
                 forced={},
@@ -128,7 +94,7 @@ class XarrayMixIn:
         default.update(self.xarray_open_dataset_kwargs())
 
         xarray_open_dataset_kwargs.update(
-            _mix_kwargs(
+            Kwargs(
                 user=user_xarray_open_dataset_kwargs,
                 default=default,
                 forced={

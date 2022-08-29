@@ -17,6 +17,7 @@ import yaml
 from climetlab.core.plugins import directories
 from climetlab.decorators import locked
 from climetlab.utils.html import css
+from climetlab.utils.kwargs import merge_dicts
 
 LOG = logging.getLogger(__name__)
 
@@ -54,6 +55,10 @@ def _guess(data, path):
             return "projections"
 
         LOG.warning("Cannot guess collection for %s", path)
+
+    if "dask" in data:
+        return "dask"
+
     return "unknown"
 
 
@@ -84,6 +89,9 @@ class Entry:
         html.append("</table>")
         return "".join(html)
 
+    def __repr__(self):
+        return f"Entry({self.name}, path={self.path})"
+
     def choices(self):
         result = {self.owner: self}
         if self.next:
@@ -113,10 +121,11 @@ def _load_yaml_files():
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
                         e = Entry(name, kind, directory, path, data, owner)
-                        if name is collection:
-                            collection[name].append(e)
-                        else:
-                            collection[name] = e
+                        if kind == "dask":
+                            print(root, file)
+                        if name in collection:
+                            e.next = collection[name]
+                        collection[name] = e
 
                 except Exception:
                     LOG.exception("Cannot process YAML file %s (%s)", path, owner)
@@ -124,38 +133,73 @@ def _load_yaml_files():
     return YAML_FILES
 
 
-def get_data_entry(kind, name):
+def get_data_entry(kind, name, default=None, merge=False):
     files = _load_yaml_files()
 
     if kind not in files:
+        if default is not None:
+            return default
         raise KeyError("No collection named '%s'" % (kind,))
 
     if name not in files[kind]:
+        if default is not None:
+            return default
         raise KeyError(
             "No object '%s' in collection named '%s' (%s)"
             % (name, kind, sorted(files[kind].keys()))
         )
 
     choices = files[kind][name].choices()
+    assert len(choices) != 0
+
+    PRIORITIES = {
+        "user-settings": 4,
+        "plugins": 3,
+        "climetlab": 2,
+        "default": 1,
+    }
+
+    if default is not None:
+        choices["default"] = Entry(
+            name="default",
+            kind="default",
+            root=None,
+            path=None,
+            data=default,
+            owner="default",
+        )
 
     if len(choices) == 1:
         return list(choices.values())[0]
 
-    # Priority to user settings
-    if "user-settings" in choices:
-        return choices["user-settings"]
-
-    # Check if called from a plugin
+    print(choices)
+    print()
 
     frame = inspect.currentframe()
     caller = inspect.getouterframes(frame, 0)
-    for c in caller:
-        for o, e in choices.items():
-            if c.filename.startswith(e.root):
-                return e
 
-    # Default to climetlab
-    return choices["climetlab"]
+    def is_active(owner, entry):
+        # always active
+        if owner in PRIORITIES:
+            return True
+        # check if called from the code inside a plugin
+        for c in caller:
+            if c.filename.startswith(entry.root):
+                return True
+        return False
+
+    choices = {k: v for k, v in choices.items() if is_active(k, v)}
+    selected = [
+        v
+        for _, v in sorted(
+            choices.items(), key=lambda x: PRIORITIES.get(x[0], PRIORITIES["plugins"])
+        )
+    ]
+
+    if not merge:
+        return selected[0].data
+
+    return merge_dicts(*[v.data for v in result])
 
 
 def data_entries(kind=None):

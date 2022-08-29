@@ -75,6 +75,11 @@ SETTINGS_AND_HELP = {
         """List of directories where to search for layers definitions.
         See :ref:`layers` for more information.""",
     ),
+    "dask-directories": _(
+        [os.path.join(DOT_CLIMETLAB, "dask")],
+        """List of directories where to search for dask cluster definitions.
+        See :ref:`dask` for more information.""",
+    ),
     "datasets-directories": _(
         [os.path.join(DOT_CLIMETLAB, "datasets")],
         """List of directories where to search for datasets definitions.
