@@ -152,9 +152,8 @@ class Virtual(GribIndex):
             self.fields[yyyymm] = source
             return source
 
-register_serialisation(
-    Virtual, lambda x: None, lambda x: Virtual()
-)
+
+register_serialisation(Virtual, lambda x: None, lambda x: Virtual())
 
 
 source = Virtual

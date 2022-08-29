@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# (C) Copyright 2022 ECMWF.
+# (C} Copyright 2022 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -13,9 +13,13 @@ from climetlab.utils.kwargs import merge_dicts
 
 def test_merge_dicts():
 
-    assert merge_dicts(dict(a=1, b=2), dict(a=1, b=6)) == dict(a=1, b=6)
-    assert merge_dicts(dict(a=1), dict(a=1, b=6)) == dict(a=1, b=6)
-    assert merge_dicts(dict(a=1, b=2), dict(a=3)) == dict(a=3, b=2)
+    assert merge_dicts({"a": 1, "b": 2}, {"a": 1, "b": 6}) == {"a": 1, "b": 6}
+    assert merge_dicts({"a": 1}, {"a": 1, "b": 6}) == {"a": 1, "b": 6}
+    assert merge_dicts({"a": 1, "b": 2}, {"a": 3}) == {"a": 3, "b": 2}
+    assert merge_dicts({"a": 1, "b": 2}, {"c": 3}) == {"a": 1, "b": 2, "c": 3}
+
+    assert merge_dicts({"a": {"b": 2}}, {"c": 3}) == {"a": {"b": 2}, "c": 3}
+    assert merge_dicts({"a": {"b": 2}}, {"a": {"c": 4}}) == {"a": {"b": 2, "c": 4}}
 
 
 if __name__ == "__main__":
