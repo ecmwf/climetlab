@@ -1,4 +1,4 @@
 ---
 dask:
   kind: local
-  scale: None
+  scale: null
