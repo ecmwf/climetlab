@@ -140,30 +140,28 @@ def start(kind_or_yaml_filename="local", **kwargs):
             f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running)."
         )
 
-    yaml_config = {}
-    default_config = {}
+    if kind_or_yaml_filename not in CLUSTERS:
+        _, ext = os.path.splitext(kind_or_yaml_filename)
+        if ext in (".yaml", ".yml"):
+            with open(kind_or_yaml_filename) as f:
+                yaml_config = yaml.load(f, loader=yaml.SafeLoader)
+            if "dask" in yaml_config:
+                yaml_config = yaml_config["dask"]
+        else:
+            yaml_config = get_data_entry(
+                "dask",
+                kind=kind_or_yaml_filename,
+                merge=True,
+            )["dask"]
+
     system_config = {}
-    user_config = {}
-
-    try:
-        with open(kind_or_yaml_filename) as f:
-            yaml_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
-        kind = yaml_config["kind"]
-    except (FileNotFoundError, IsADirectoryError):
-        kind = kind_or_yaml_filename
-        yaml_config = {}
-
-    system_config_path = os.path.join("opt", "climetlab", "dask.yaml")
-    if os.path.exists(system_config_path):
-        with open(system_config_path) as f:
-            system_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
-
+    # system_config_path = os.path.join("opt", "climetlab", "dask.yaml")
+    # if os.path.exists(system_config_path):
+    #    with open(system_config_path) as f:
+    #        system_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
     # TODO: insert the priority of system_config between package config and user config?
-    package_and_user_config = get_data_entry(
-        "dask", kind, default=system_config, merge=True
-    )["dask"]
 
-    kwargs = merge_dicts(package_and_user_config, yaml_config, kwargs)
+    kwargs = merge_dicts(system_config, yaml_config, kwargs)
     deploy = DaskDeploy(**kwargs)
     CURRENT_DEPLOYS.append(deploy)
     return deploy

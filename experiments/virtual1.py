@@ -1,3 +1,4 @@
+import os
 import time
 
 from dask.distributed import Client, LocalCluster, Worker, SSHCluster
@@ -16,15 +17,13 @@ client = Client(cluster)
 
 import climetlab.debug
 start('ssh', cluster_kwargs= dict(
-    hosts = ['localhost','localhost','localhost', 'localhost'],
-    connect_options = [
-        {'port':5022, 'username':'vagrant', 'password':'vagrant'},
-        {'port':5023, 'username':'vagrant', 'password':'vagrant'},
-        {'port':5024, 'username':'vagrant', 'password':'vagrant'},
-        {'port':5025, 'username':'vagrant', 'password':'vagrant'},
-    ],
-    remote_python = '/usr/bin/python3',
+    hosts = [f'node{i}' for i in range(0,3)],
+    connect_options = dict(
+        config = os.path.expanduser('~/.ssh/vagrant_ssh_config'),
+        known_hosts = None,
 
+    ),
+    remote_python = '/usr/bin/python3',
 ))
 #start('ssh', hosts = ['node1:23', 'node2:78'])
 
