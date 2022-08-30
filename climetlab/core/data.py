@@ -121,8 +121,6 @@ def _load_yaml_files():
                         kind = _guess(data, path)
                         collection = YAML_FILES[kind]
                         e = Entry(name, kind, directory, path, data, owner)
-                        if kind == "dask":
-                            print(root, file)
                         if name in collection:
                             e.next = collection[name]
                         collection[name] = e
@@ -172,9 +170,6 @@ def get_data_entry(kind, name, default=None, merge=False):
     if len(choices) == 1:
         return list(choices.values())[0]
 
-    print(choices)
-    print()
-
     frame = inspect.currentframe()
     caller = inspect.getouterframes(frame, 0)
 
@@ -196,10 +191,13 @@ def get_data_entry(kind, name, default=None, merge=False):
         )
     ]
 
-    if not merge:
+    if merge is False:
         return selected[0].data
 
-    return merge_dicts(*[v.data for v in result])
+    if merge is True:
+        return merge_dicts(*[v.data for v in selected])
+
+    return merge(*[v.data for v in selected])
 
 
 def data_entries(kind=None):
