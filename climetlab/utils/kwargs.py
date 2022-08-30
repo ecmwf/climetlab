@@ -29,11 +29,15 @@ class Kwargs(dict):
     def __init__(
         self,
         user,
-        default,
-        forced={},
+        default=None,
+        forced=None,
         logging_owner="",
         logging_main_key="",
     ):
+        if default is None:
+            default = {}
+        if forced is None:
+            forced = {}
         kwargs = copy.deepcopy(default)
 
         for k, v in user.items():
