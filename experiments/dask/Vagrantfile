@@ -1,6 +1,9 @@
 # brew install qemu vagrant
-# vagrant install qemu-plugin
-# vagrant up
+# On MAC M1:
+#     vagrant plugin install vagrant-qemu
+#     vagrant up --provider=qemu
+# Elsewhere:
+#     vagrant up --provider=virtualbox
 # vagrant ssh-config > ~/.ssh/vagrant_ssh_config
 
 Vagrant.configure(2) do |config|
