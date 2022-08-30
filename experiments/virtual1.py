@@ -1,14 +1,14 @@
 import os
 import time
 
-from dask.distributed import Client, LocalCluster, Worker, SSHCluster
+# from dask.distributed import Client, LocalCluster, Worker, SSHCluster
 
 import climetlab as cml
 
 from climetlab.utils.dask import start
 
-cluster = LocalCluster(n_workers=10, processes=False)
-client = Client(cluster)
+# cluster = LocalCluster(n_workers=10, processes=False)
+# client = Client(cluster)
 
 # start(kind='local',cluster_kwargs=dict(n_workers=10, processes=False))
 
