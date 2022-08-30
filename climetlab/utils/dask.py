@@ -153,6 +153,8 @@ def start(kind_or_yaml_filename="local", **kwargs):
                 kind=kind_or_yaml_filename,
                 merge=True,
             )["dask"]
+    else:
+        yaml_config = dict(kind=kind_or_yaml_filename)
 
     system_config = {}
     # system_config_path = os.path.join("opt", "climetlab", "dask.yaml")
