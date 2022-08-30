@@ -36,8 +36,10 @@ class Kwargs(dict):
     ):
         if default is None:
             default = {}
+
         if forced is None:
             forced = {}
+
         kwargs = copy.deepcopy(default)
 
         for k, v in user.items():
@@ -62,7 +64,7 @@ class Kwargs(dict):
 
         kwargs.update(forced)
 
-        self.__init__(kwargs)
+        super().__init__(kwargs)
 
 
 # TODO: add test (and fix bugs)
