@@ -1,12 +1,7 @@
 # brew install qemu vagrant
 # vagrant install qemu-plugin
-
-$script = <<SCRIPT
-sudo apt-get update
-sudo apt-get install -y python3-pip
-pip3 install --upgrade git+https://github.com/ecmwf/climetlab.git@develop
-pip3 install --upgrade "dask[distributed]"
-SCRIPT
+# vagrant up
+# vagrant ssh-config > ~/.ssh/vagrant_ssh_config
 
 Vagrant.configure(2) do |config|
   config.vm.box = "generic/ubuntu2204"
@@ -16,14 +11,14 @@ Vagrant.configure(2) do |config|
   # config.vm.define "abc"
   # config.vm.hostname = "abc"
 
-  config.vm.provision "shell", inline: $script
+  config.vm.provision "shell", path: "provision.sh"
   config.vm.provision "file", source: "~/.cdsapirc", destination: ".cdsapirc"
   config.vm.provision "file", source: "~/.ecmwfapirc", destination: ".ecmwfapirc"
 
   (0..3).each do |i|
-    config.vm.provision "shell", inline: "sudo hostnamectl set-hostname node#{i}\n"
     config.vm.define "node#{i}" do |node|
-      node.vm.hostname = "node#{i}"
+      node.vm.provision "shell", inline: "sudo hostnamectl set-hostname node#{i}\n"
+      # node.vm.hostname = "node#{i}"
       node.vm.provider "qemu" do |qe|
         qe.memory = "2G"
         qe.arch = "x86_64"
@@ -35,7 +30,7 @@ Vagrant.configure(2) do |config|
       # node.vm.network :private_network, ip: "192.168.56.#{100 + i}"
 
       # Host IP address is 10.0.2.2
-      if (i == 0) then
+      if (i == 0)
         node.vm.network :forwarded_port, guest: 8786, host: 8786 # scheduler
         node.vm.network :forwarded_port, guest: 8787, host: 8787 # dashboard
       end
