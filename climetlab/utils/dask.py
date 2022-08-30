@@ -13,9 +13,9 @@ import warnings
 
 import yaml
 
-from climetlab.core.data import get_data_entries
+from climetlab.core.data import get_data_entry
 from climetlab.core.settings import SETTINGS
-from climetlab.utils.kwargs import Kwargs
+from climetlab.utils.kwargs import Kwargs, merge_dicts
 
 LOG = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class DaskDeploy:
 
         self.cluster_class = resolve_cluster_name(kind)
         self.cluster_kwargs = cluster_kwargs
-        print(cluster_kwargs)
+        print("Creating cluster: ", self.cluster_class, cluster_kwargs)
         self.cluster = self.cluster_class(**self.cluster_kwargs)
         print(f"Cluster= {self.cluster}")
 
@@ -91,6 +91,7 @@ class DaskDeploy:
     def scale(self):
         if not self._scale:
             return
+        print(f"Scaling to {self._scale}")
         self.cluster.scale(self._scale)
 
     def shutdown(self):
@@ -132,7 +133,7 @@ def deep_update(old, new):
     return old
 
 
-def start(kind_or_yaml_filename='local', **kwargs):
+def start(kind_or_yaml_filename="local", **kwargs):
 
     if len(CURRENT_DEPLOYS) > 0:
         warnings.warn(
@@ -144,45 +145,26 @@ def start(kind_or_yaml_filename='local', **kwargs):
     system_config = {}
     user_config = {}
 
-    if kind_or_yaml_filename in CLUSTERS:
+    try:
+        with open(kind_or_yaml_filename) as f:
+            yaml_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
+        kind = yaml_config["kind"]
+    except (FileNotFoundError, IsADirectoryError):
         kind = kind_or_yaml_filename
         yaml_config = {}
-    else:
-        with open(kind_or_yaml_filename) as f:
-            yaml_config = yaml.load(f, loader=yaml.SafeLoader)['dask']
-        kind = yaml_config['kind']
-
-    try:
-        configs = get_data_entries("dask", kind).as_list()
-        if "user-settings" in [x.owner for x in configs]:
-            user_config = [x.data for x in configs if x.owner='user-settings'][0]
-        if "user-settings" in [x.owner for x in configs]:
-            user_config = [x.data for x in configs if x.owner='user-settings'][0]
-        print(user_config)
-        print(default_config)
-        default_config = default_config.data['dask']
-    except KeyError:
-        warnings.warn(f"Cannot load climetlab config for '{kind}'.")
 
     system_config_path = os.path.join("opt", "climetlab", "dask.yaml")
     if os.path.exists(system_config_path):
         with open(system_config_path) as f:
-            system_config = yaml.load(f, loader=yaml.SafeLoader)['dask']
-    
-    print()
-    print('default_config', default_config)
-    print('system_config', system_config)
-    print('yaml_config', yaml_config)
+            system_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
 
-    deploy_kwargs = {}
-    deep_update(deploy_kwargs, default_config)
-    deep_update(deploy_kwargs, system_config)
-    deep_update(deploy_kwargs, yaml_config)
-    deep_update(deploy_kwargs, kwargs)
+    # TODO: insert the priority of system_config between package config and user config?
+    package_and_user_config = get_data_entry(
+        "dask", kind, default=system_config, merge=True
+    )["dask"]
 
-    print(deploy_kwargs)
-    exit()
-    deploy = DaskDeploy(**options)
+    kwargs = merge_dicts(package_and_user_config, yaml_config, kwargs)
+    deploy = DaskDeploy(**kwargs)
     CURRENT_DEPLOYS.append(deploy)
     return deploy
 

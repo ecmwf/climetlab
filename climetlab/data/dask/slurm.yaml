@@ -2,7 +2,7 @@
 dask:
   kind: slurm
   cluster_kwargs:
-    core: 4
+    cores: 4
     memory: 8G
     walltime: "00:30:00"
     # job_extra will be renamed job_extra_directives in next version of dask_jobqueue
@@ -13,5 +13,3 @@ dask:
     scheduler_options:
       dashboard_address: 12367
   scale: 8
-  logdir: 'dask-log'
-  hey: 'cml'
