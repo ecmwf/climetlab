@@ -21,6 +21,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "file", source: "~/.ecmwfapirc", destination: ".ecmwfapirc"
 
   (0..3).each do |i|
+#    config.vm.provision "shell", inline: "sudo hostnamectl set-hostname node#{i}"
     config.vm.define "node#{i}" do |node|
       node.vm.hostname = "node#{i}"
       node.vm.provider "qemu" do |qe|
