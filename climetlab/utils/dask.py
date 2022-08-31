@@ -170,8 +170,8 @@ def start(name_or_yaml_filename, **kwargs):
             name=name_or_yaml_filename,
             merge=True,
         )
-        print(config)
-        LOG.debug(f"Built config for dask {config}.")
+    print(config)
+    LOG.debug(f"Built config for dask {config}.")
 
     if "dask" in config:
         config = config["dask"]
