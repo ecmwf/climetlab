@@ -11,9 +11,6 @@ Vagrant.configure(2) do |config|
   # config.vm.box_version = "4.1.4"
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
-  # config.vm.define "abc"
-  # config.vm.hostname = "abc"
-
   config.vm.provision "file", source: "~/.cdsapirc", destination: ".cdsapirc"
   config.vm.provision "file", source: "~/.ecmwfapirc", destination: ".ecmwfapirc"
 
@@ -35,15 +32,11 @@ Vagrant.configure(2) do |config|
         qe.net_device = "virtio-net-pci"
         qe.ssh_port = 5022 + i
       end
-      # node.vm.network :private_network, ip: "192.168.56.#{100 + i}"
 
-      # Host IP address is 10.0.2.2
       if (i == 0)
         node.vm.network :forwarded_port, guest: 8786, host: 8786 # scheduler
         node.vm.network :forwarded_port, guest: 8787, host: 8787 # dashboard
-        node.vm.network :forwarded_port, guest: 18786, host: 18786 # scheduler
-        node.vm.network :forwarded_port, guest: 18787, host: 18787 # dashboard
-      end
+        end
     end
   end
 end
