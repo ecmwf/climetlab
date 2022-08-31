@@ -147,20 +147,21 @@ def start(name_or_yaml_filename, **kwargs):
 
     _, ext = os.path.splitext(name_or_yaml_filename)
     if ext in (".yaml", ".yml"):
-        system_config_path = os.path.join(
-            "opt", "climetlab", "dask", f"{name_or_yaml_filename}"
-        )
-        if os.path.exists(name_or_yaml_filename):
-            # The name (name_or_yaml_filename) IS a yaml file.
-            filename = name_or_yaml_filename
+        # system_config_path = os.path.join(
+        #     "opt", "climetlab", "dask", f"{name_or_yaml_filename}"
+        # )
+        filename = os.path.expanduser(name_or_yaml_filename)
+        # if os.path.exists(name_or_yaml_filename):
+        # The name (name_or_yaml_filename) IS a yaml file.
+        # pass
         # elif os.path.exists(system_config_path):
         #    # The name (name_or_yaml_filename) is refering to a system config file
-        #    # TODO: move system config into get_data_entry
+        #    # TODO: move system config into get_data_entry ?
         #    filename = system_config_path
 
         LOG.debug(f"Using yaml file {filename} to configure dask.")
         with open(filename) as f:
-            config = yaml.load(f, loader=yaml.SafeLoader)
+            config = yaml.load(f, Loader=yaml.SafeLoader)
 
     else:
         # The name (name_or_yaml_filename) refers to a yaml file in the climetlab//data or user config ($HOME/.climetlab/dask).
