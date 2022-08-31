@@ -1,6 +1,6 @@
 ---
 dask:
-  kind: slurm
+  cluster_cls: slurm
   cluster_kwargs:
     cores: 4
     memory: 8G

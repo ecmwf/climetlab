@@ -132,6 +132,7 @@ def _load_yaml_files():
 
 
 def get_data_entry(kind, name, default=None, merge=False):
+    # TODO: default is not used. Remove it?
     files = _load_yaml_files()
 
     if kind not in files:
@@ -168,7 +169,7 @@ def get_data_entry(kind, name, default=None, merge=False):
         )
 
     if len(choices) == 1:
-        return list(choices.values())[0]
+        return list(choices.values())[0].data
 
     frame = inspect.currentframe()
     caller = inspect.getouterframes(frame, 0)
