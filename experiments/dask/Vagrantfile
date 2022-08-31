@@ -17,8 +17,6 @@ Vagrant.configure(2) do |config|
   (0..3).each do |i|
     config.vm.define "node#{i}" do |node|
 
-      node.vm.hostname = "node#{i}"
-
       node.vm.provision "shell" do |s|
         s.path = "provision.sh"
         s.args = [i]
