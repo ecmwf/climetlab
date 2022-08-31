@@ -1,8 +1,11 @@
 import os
 import time
 
+import dask
+from distributed import Nanny
+
 import climetlab as cml
-import climetlab.debug
+import climetlab.debug  # noqa
 from climetlab.utils.dask import start
 
 # https://github.com/dask/dask-jobqueue/issues/548
@@ -17,15 +20,11 @@ start(
         ),
         remote_python="/usr/bin/python3",
         scheduler_options=dict(
-            contact_address="tcp://1.1.1.1:9999",
+            host="localhost",
+            port=8786,
         ),
-        worker_options=dict(contact_address="tcp://1.1.1.1:9999",),
-        worker_class="distributed.Worker",
     ),
 )
-# start('ssh', hosts = ['node1:23', 'node2:78'])
-
-
 ds = cml.load_source("virtual", param="msl")
 now = time.time()
 print("a", len(ds), now)
