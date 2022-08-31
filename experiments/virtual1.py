@@ -1,21 +1,11 @@
 import os
 import time
 
-# from dask.distributed import Client, LocalCluster, Worker, SSHCluster
-
 import climetlab as cml
-
+import climetlab.debug
 from climetlab.utils.dask import start
 
-# cluster = LocalCluster(n_workers=10, processes=False)
-# client = Client(cluster)
-
-# start(kind='local',cluster_kwargs=dict(n_workers=10, processes=False))
-
-# start('local-threads', n_workers=10)
-# start('local-processes', n_workers=10, threads_per_worker=2)
-
-import climetlab.debug
+# https://github.com/dask/dask-jobqueue/issues/548
 
 start(
     "ssh",
@@ -26,6 +16,11 @@ start(
             known_hosts=None,
         ),
         remote_python="/usr/bin/python3",
+        scheduler_options=dict(
+            contact_address="tcp://1.1.1.1:9999",
+        ),
+        worker_options=dict(contact_address="tcp://1.1.1.1:9999",),
+        worker_class="distributed.Worker",
     ),
 )
 # start('ssh', hosts = ['node1:23', 'node2:78'])
