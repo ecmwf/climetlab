@@ -42,8 +42,11 @@ def slurm():
 
 CLUSTERS = {
     "ssh": ssh,
+    "SSHCluster": ssh,
     "local": local,
+    "LocalCluster": local,
     "slurm": slurm,
+    "SLURMCluster": slurm,
 }
 
 
@@ -58,7 +61,7 @@ class DaskDeploy:
     def __init__(
         self,
         start_client=True,
-        kind=None,
+        cluster_cls=None,
         cluster_kwargs=None,
         client_kwargs=None,
         scale=None,
@@ -74,7 +77,7 @@ class DaskDeploy:
         self.client = None
         self._scale = scale
 
-        self.cluster_class = resolve_cluster_name(kind)
+        self.cluster_class = resolve_cluster_name(cluster_cls)
         self.cluster_kwargs = cluster_kwargs
         print("Creating cluster: ", self.cluster_class, cluster_kwargs)
         self.cluster = self.cluster_class(**self.cluster_kwargs)
@@ -87,6 +90,8 @@ class DaskDeploy:
             print(client_kwargs)
             self.client = Client(self.cluster, **self.client_kwargs)
             print(f"Client= {self.client}")
+
+        CURRENT_DEPLOYS.append(self)
 
     def scale(self):
         if not self._scale:
@@ -133,40 +138,47 @@ def deep_update(old, new):
     return old
 
 
-def start(kind_or_yaml_filename="local", **kwargs):
+def start(name_or_yaml_filename, **kwargs):
 
     if len(CURRENT_DEPLOYS) > 0:
         warnings.warn(
             f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running)."
         )
 
-    if kind_or_yaml_filename not in CLUSTERS:
-        _, ext = os.path.splitext(kind_or_yaml_filename)
-        if ext in (".yaml", ".yml"):
-            with open(kind_or_yaml_filename) as f:
-                yaml_config = yaml.load(f, loader=yaml.SafeLoader)
-            if "dask" in yaml_config:
-                yaml_config = yaml_config["dask"]
-        else:
-            yaml_config = get_data_entry(
-                "dask",
-                kind=kind_or_yaml_filename,
-                merge=True,
-            )["dask"]
+    _, ext = os.path.splitext(name_or_yaml_filename)
+    if ext in (".yaml", ".yml"):
+        system_config_path = os.path.join(
+            "opt", "climetlab", "dask", f"{name_or_yaml_filename}"
+        )
+        if os.path.exists(name_or_yaml_filename):
+            # The name (name_or_yaml_filename) IS a yaml file.
+            filename = name_or_yaml_filename
+        # elif os.path.exists(system_config_path):
+        #    # The name (name_or_yaml_filename) is refering to a system config file
+        #    # TODO: move system config into get_data_entry
+        #    filename = system_config_path
+
+        LOG.debug(f"Using yaml file {filename} to configure dask.")
+        with open(filename) as f:
+            config = yaml.load(f, loader=yaml.SafeLoader)
+
     else:
-        yaml_config = dict(kind=kind_or_yaml_filename)
+        # The name (name_or_yaml_filename) refers to a yaml file in the climetlab//data or user config ($HOME/.climetlab/dask).
+        config = get_data_entry(
+            "dask",
+            name=name_or_yaml_filename,
+            merge=True,
+        )
+        print(config)
+        LOG.debug(f"Built config for dask {config}.")
 
-    system_config = {}
-    # system_config_path = os.path.join("opt", "climetlab", "dask.yaml")
-    # if os.path.exists(system_config_path):
-    #    with open(system_config_path) as f:
-    #        system_config = yaml.load(f, loader=yaml.SafeLoader)["dask"]
-    # TODO: insert the priority of system_config between package config and user config?
+    if "dask" in config:
+        config = config["dask"]
 
-    kwargs = merge_dicts(system_config, yaml_config, kwargs)
-    deploy = DaskDeploy(**kwargs)
-    CURRENT_DEPLOYS.append(deploy)
-    return deploy
+    # kwargs always overwrite the config file values.
+    config = merge_dicts(config, kwargs)
+
+    return DaskDeploy(**config)
 
 
 def performance_report(*args, **kwargs):

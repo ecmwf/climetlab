@@ -1,12 +1,8 @@
 ---
 dask:
-  kind: ssh
+  cluster_cls: ssh
   cluster_kwargs:
-    scheduler_options:
-      port: 12366
-      dashboard_address: 12367
     hosts:
-      - localhost
       - localhost
       - localhost
   scale: null
