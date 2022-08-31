@@ -33,13 +33,10 @@ fi
 grep scheduler /etc/hosts
 if [[ $? -ne 0 ]]; then
    # 10.0.2.2 is the IP of the host machine
-   echo "10.0.2.15 node0 scheduler dashboard" >>/etc/hosts
+   echo "$node0 node0 scheduler dashboard" >>/etc/hosts
 fi
 
-
-if [[ ! -f /etc/systemd/system/simpleproxy.service ]]; then
-
-   cat <<"EOF" > /etc/systemd/system/simpleproxy.service
+cat <<EOF > /etc/systemd/system/simpleproxy.service
 [Service]
 Type=simple
 ExecStart=/usr/bin/simpleproxy $proxy
@@ -52,10 +49,7 @@ WantedBy=multi-user.target
 Description=Simple Proxy
 After=network.target
 EOF
-
-fi
-
-
+systemctl daemon-reload
 systemctl start simpleproxy
 
 hostnamectl set-hostname node$node
