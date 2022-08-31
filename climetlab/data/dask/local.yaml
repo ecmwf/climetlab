@@ -1,4 +1,4 @@
 ---
 dask:
-  kind: local
+  cluster_cls: local
   scale: null
