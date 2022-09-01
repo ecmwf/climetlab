@@ -108,37 +108,8 @@ class DaskDeploy:
         return f"Cluster={self.cluster}, Client={self.client}"
 
 
-def stop():
-    while len(CURRENT_DEPLOYS):
-        deploy = CURRENT_DEPLOYS.pop()  # TODO: make this CURRENT_DEPLOYS thread safe?
-        deploy.shutdown()
 
-
-###########################
-# def start(yaml_filename=None, kind=None, **kwargs):
-#    cml.dask.start_ssh() ?
-#    cml.dask.start()   --> use system default? depend on .climetlab/setting.yaml:dask ?
-#    cml.dask.start(...)
-#    cml.dask.start('ssh', ...)
-#    cml.dask.start('./ssh.yaml', ...) --> overwrite config? merge?
-# cml.dask.start('atos-ssh')
-# cml.dask.start('atos-slurm-2-nodes', cluster_kwargs={...})
-# cml.dask.start('atos-slurm-20-nodes')
-###########################
-
-
-# TODO: reuse cml.utils.Kwargs
-def deep_update(old, new):
-    # deep update, merging dictionaries
-    assert isinstance(new, dict), f"Expecting a dict, but received: {new}"
-    for k, v in new.items():
-        if k in old and isinstance(old[k], dict):
-            deep_update(old[k], v)
-        old[k] = v
-    return old
-
-
-def start(name_or_yaml_filename, **kwargs):
+def start_dask(name_or_yaml_filename, **kwargs):
 
     if len(CURRENT_DEPLOYS) > 0:
         warnings.warn(

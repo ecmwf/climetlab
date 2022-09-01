@@ -21,6 +21,7 @@ from .readers import Reader
 from .sources import Source
 from .sources import get_source as source  # so the user can do: cml.source(...)
 from .sources import load_source, load_source_lazily
+from .distributed.dask import start_dask
 from .version import __version__
 from .wrappers import Wrapper
 
@@ -43,6 +44,7 @@ __all__ = [
     "settings",
     "source",
     "Source",
+    "start_dask",
     "__version__",
 ]
 
