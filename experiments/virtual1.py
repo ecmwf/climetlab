@@ -1,9 +1,14 @@
 import os
 import time
+
+import dask
+from distributed import Nanny
+
 import climetlab as cml
 import climetlab.debug  # noqa
 from climetlab.utils.dask import start
 
+# https://github.com/dask/dask-jobqueue/issues/548
 # http://localhost:8787/status
 
 start(
@@ -18,6 +23,7 @@ start(
         scheduler_options=dict(
             host="localhost",
             port=8786,
+            dashboard_address= ":8787",
         ),
     ),
 )
