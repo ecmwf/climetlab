@@ -1,0 +1,22 @@
+logging:
+  version: 1
+  format: "%(asctime)s %(levelname)s %(message)s"
+  handlers:
+    file:
+      class: logging.handlers.RotatingFileHandler
+      filename: output.log
+      level: DEBUG
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+  loggers:
+    distributed.worker:
+      level: DEBUG
+      handlers:
+        - file
+        - console
+    distributed.scheduler:
+      level: DEBUG
+      handlers:
+        - file
+        - console

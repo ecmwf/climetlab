@@ -25,8 +25,8 @@ cml.start_dask(
         ),
         remote_python="/usr/bin/python3",
         scheduler_options=dict(
-            host="localhost",
-            port=8786,
+            host="node0",
+            port=9000,
             dashboard_address=":8787",
         ),
     ),
