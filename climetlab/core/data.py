@@ -132,7 +132,35 @@ def _load_yaml_files():
 
 
 def get_data_entry(kind, name, default=None, merge=False):
+    """Read various config files to get the config values of
+    a given kind.
+
+    kind: Can be "layers", "projections", "dask", etc..
+    name: The filename of the config file to read is something like {name}.yaml
+    default: is a default dict when no config file is found
+    merge: if False, only one config file will be used.
+           if True, config files will be merged according to a given priority order.
+
+    When looking for config files from a climetlab plugin, the config file provided
+    by the plugin (if it exists) will be given higher priority than the file provided by
+    climetlab.
+    User-defined settings are always higher priority.
+    """
+
+    PRIORITIES = {
+        # HIGHEST PRIORITY
+        # "environment-variable": 6,
+        "user-settings": 5,
+        # "system-settings": 4,
+        "plugins": 3,
+        "climetlab": 2,
+        "default": 1,
+        # LOWEST PRIORITY
+    }
+
     # TODO: default is not used. Remove it?
+    # TODO: merge is not used.Remove it?
+
     files = _load_yaml_files()
 
     if kind not in files:
@@ -150,13 +178,6 @@ def get_data_entry(kind, name, default=None, merge=False):
 
     choices = files[kind][name].choices()
     assert len(choices) != 0
-
-    PRIORITIES = {
-        "user-settings": 4,
-        "plugins": 3,
-        "climetlab": 2,
-        "default": 1,
-    }
 
     if default is not None:
         choices["default"] = Entry(

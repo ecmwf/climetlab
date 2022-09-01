@@ -9,13 +9,11 @@
 
 import logging
 import os
-import warnings
 
 import yaml
 
 from climetlab.core.data import get_data_entry
-from climetlab.core.settings import SETTINGS
-from climetlab.utils.kwargs import Kwargs, merge_dicts
+from climetlab.utils.kwargs import merge_dicts
 
 LOG = logging.getLogger(__name__)
 
@@ -79,17 +77,17 @@ class DaskDeploy:
 
         self.cluster_class = resolve_cluster_name(cluster_cls)
         self.cluster_kwargs = cluster_kwargs
-        print("Creating cluster: ", self.cluster_class, cluster_kwargs)
+        LOG.debug(f"Creating Dask cluster: {self.cluster_class}({cluster_kwargs})")
         self.cluster = self.cluster_class(**self.cluster_kwargs)
-        print(f"Cluster= {self.cluster}")
+        LOG.debug(f"Dask cluster={self.cluster}")
 
         self.scale()
 
         if start_client:
             self.client_kwargs = client_kwargs
-            print(client_kwargs)
+            LOG.debug(f"Starting client: {client_kwargs}")
             self.client = Client(self.cluster, **self.client_kwargs)
-            print(f"Client= {self.client}")
+            LOG.debug(f"Dask client={self.client}")
 
         CURRENT_DEPLOYS.append(self)
 
@@ -107,42 +105,30 @@ class DaskDeploy:
     def __str__(self):
         return f"Cluster={self.cluster}, Client={self.client}"
 
+    @property
+    def dashboard_link(self):
+        # TODO: make this work everywhere
+        return self.cluster.dashboard_link
 
 
 def start_dask(name_or_yaml_filename, **kwargs):
 
     if len(CURRENT_DEPLOYS) > 0:
-        warnings.warn(
+        LOG.warn(
             f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running)."
         )
 
     _, ext = os.path.splitext(name_or_yaml_filename)
     if ext in (".yaml", ".yml"):
-        # system_config_path = os.path.join(
-        #     "opt", "climetlab", "dask", f"{name_or_yaml_filename}"
-        # )
+        # Explicit yaml file is provided
         filename = os.path.expanduser(name_or_yaml_filename)
-        # if os.path.exists(name_or_yaml_filename):
-        # The name (name_or_yaml_filename) IS a yaml file.
-        # pass
-        # elif os.path.exists(system_config_path):
-        #    # The name (name_or_yaml_filename) is refering to a system config file
-        #    # TODO: move system config into get_data_entry ?
-        #    filename = system_config_path
-
         LOG.debug(f"Using yaml file {filename} to configure dask.")
         with open(filename) as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
-
     else:
-        # The name (name_or_yaml_filename) refers to a yaml file in the climetlab//data or user config ($HOME/.climetlab/dask).
-        config = get_data_entry(
-            "dask",
-            name=name_or_yaml_filename,
-            merge=True,
-        )
-    print(config)
-    LOG.debug(f"Built config for dask {config}.")
+        # The name (name_or_yaml_filename) refers to a yaml file in the climetlab//data
+        # or user config ($HOME/.climetlab/dask).
+        config = get_data_entry("dask", name=name_or_yaml_filename)
 
     if "dask" in config:
         config = config["dask"]
@@ -150,6 +136,7 @@ def start_dask(name_or_yaml_filename, **kwargs):
     # kwargs always overwrite the config file values.
     config = merge_dicts(config, kwargs)
 
+    LOG.debug(f"Creating a dask deployment with dask config {config}.")
     return DaskDeploy(**config)
 
 

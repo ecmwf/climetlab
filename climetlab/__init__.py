@@ -14,6 +14,7 @@ from .core.settings import SETTINGS as settings
 from .datasets import Dataset
 from .datasets import get_dataset as dataset  # so the user can do: cml.dataset(...)
 from .datasets import load_dataset
+from .distributed.dask import start_dask
 from .plotting import interactive_map, new_plot, new_table
 from .plotting import options as plotting_options
 from .plotting import plot_graph, plot_map
@@ -21,7 +22,6 @@ from .readers import Reader
 from .sources import Source
 from .sources import get_source as source  # so the user can do: cml.source(...)
 from .sources import load_source, load_source_lazily
-from .distributed.dask import start_dask
 from .version import __version__
 from .wrappers import Wrapper
 
