@@ -2,6 +2,7 @@
 #!/bin/bash
 set -x
 node=$1
+total=$2
 
 if [[ ! -f /usr/bin/pip3 ]]; then
    apt-get update
@@ -19,39 +20,32 @@ if [[ $? -ne 0 ]]; then
    pip3 install git+https://github.com/ecmwf/climetlab.git@develop
 fi
 
-if [[ $node -eq 0 ]]; then
+for n in $(seq 0 $total)
+do
+   grep node$n /etc/hosts
+   if [[ $? -ne 0 ]]; then
+      echo "192.168.56.$((n+10)) node$n" >>/etc/hosts
+   fi
+done
 
-   # 10.0.2.15 is this machine (guest of Vagrant)
-   node0=10.0.2.15
-   proxy="-Lnode0:8786 -Rlocalhost:8786"
+# cat <<EOF > /etc/systemd/system/simpleproxy$n.service
+# [Service]
+# Type=simple
+# ExecStart=/usr/bin/simpleproxy $proxy
+# Restart=always
 
-else
+# [Install]
+# WantedBy=multi-user.target
 
-   # 10.0.2.2 is the IP of the host machine
-   node0=10.0.2.2
-   proxy="-Rnode0:8786 -Llocalhost:8786"
-fi
+# [Unit]
+# Description=Simple Proxy
+# After=network.target
+# EOF
 
-grep scheduler /etc/hosts
-if [[ $? -ne 0 ]]; then
-   # 10.0.2.2 is the IP of the host machine
-   echo "$node0 node0 scheduler dashboard" >>/etc/hosts
-fi
 
-cat <<EOF > /etc/systemd/system/simpleproxy.service
-[Service]
-Type=simple
-ExecStart=/usr/bin/simpleproxy $proxy
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-
-[Unit]
-Description=Simple Proxy
-After=network.target
-EOF
-systemctl daemon-reload
-systemctl start simpleproxy
+#    systemctl daemon-reload
+#    systemctl start simpleproxy$n
+#    systemctl enable simpleproxy$n
+# done
 
 hostnamectl set-hostname node$node
