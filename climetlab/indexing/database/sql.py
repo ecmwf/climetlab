@@ -144,21 +144,29 @@ class SqlDatabase(Database):
         return conditions
 
     def _order_by(self, request, order):
-        if order is None:
-            return None
-
         if order is True:
             if not request:
                 return None
-            return [f"i_{k}" for k in request.keys()]
+            return [f"i_{k}" for k in request.keys()], None
 
-        if isinstance(order, str):
-            return [order]
+        # TODO: add default ordering
+        order_dic = dict()
+        order_lst = []
+        for key, lst in request.items():
+            # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
 
-        if isinstance(order, (list, tuple)):
-            return order
+            if not isinstance(lst, (list, tuple)):
+                lst = [lst]
 
-        raise NotImplementedError(str(order))
+            lst = [str(_) for _ in lst]  # processing only strings from now.
+
+            order_dic[key] = dict(zip(lst, range(len(lst))))
+            order_lst.append(f'user_order("{key}",i_{key})')
+
+        def order_func(key, value):
+            return order_dic[key][value]
+
+        return order_lst, order_func
 
     def _columns_names_without_i_(self):
         cursor = self.connection.execute("PRAGMA table_info(entries)")
@@ -202,17 +210,17 @@ class SqlDatabase(Database):
         if conditions:
             conditions_str = " WHERE " + " AND ".join(conditions)
 
-        order_by_str = ""
-        order_by = self._order_by(request, order)
-        if order_by:
-            order_by_str = "ORDER BY " + ",".join(order_by)
-
         paging_str = ""
         if limit is not None:
             paging_str += f" LIMIT {limit}"
 
         if offset is not None:
             paging_str += f" OFFSET {offset}"
+
+        order_by_str = ""
+        order_by, order_func = self._order_by(request, order)
+        if order_by:
+            order_by_str = "ORDER BY " + ",".join(order_by)
 
         if select_values:
             if select_values is True:
@@ -229,9 +237,13 @@ class SqlDatabase(Database):
             return parts
 
         statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
+        print(statement)
         LOG.debug("%s", statement)
+        connection = self.connection
+        if order_func is not None:
+            connection.create_function("user_order", 2, order_func)
         parts = []
-        for path, offset, length in self.connection.execute(statement):
+        for path, offset, length in connection.execute(statement):
             parts.append(Part(path, offset, length))
         return Part.resolve(parts, os.path.dirname(self.db_path))
 
