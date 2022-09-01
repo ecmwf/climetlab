@@ -21,7 +21,7 @@ fi
 
 if [[ $node -eq 0 ]]; then
 
-   # 10.0.2.15 is this host
+   # 10.0.2.15 is this machine (guest of Vagrant)
    node0=10.0.2.15
    proxy="-Lnode0:8786 -Rlocalhost:8786"
 
