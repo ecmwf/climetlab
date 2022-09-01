@@ -10,10 +10,6 @@ import climetlab.debug  # noqa
 # https://github.com/dask/dask-jobqueue/issues/548
 # http://localhost:8787/status
 
-import climetlab as cml
-
-
-
 
 cml.start_dask(
     "ssh",
