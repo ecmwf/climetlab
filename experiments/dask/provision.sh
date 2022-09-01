@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -x
 node=$1
@@ -13,6 +14,7 @@ fi
 
 pip3 freeze | grep climetlab
 if [[ $? -ne 0 ]]; then
+   pip3 install bokeh
    pip3 install "dask[distributed]"
    pip3 install git+https://github.com/ecmwf/climetlab.git@develop
 fi
