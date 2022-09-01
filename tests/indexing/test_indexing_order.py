@@ -43,7 +43,7 @@ def _test_order_directory_source_1(params, levels):
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def _test_order_directory_source_2(params, levels):
+def test_order_directory_source_2(params, levels):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
