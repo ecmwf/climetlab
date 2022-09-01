@@ -1,17 +1,12 @@
 import os
 import time
 
-import dask
-from distributed import Nanny
-
-import climetlab as cml
-import climetlab.debug  # noqa
 from climetlab.utils.dask import start
 
 # https://github.com/dask/dask-jobqueue/issues/548
 # http://localhost:8787/status
 
-start(
+client = start(
     "ssh",
     cluster_kwargs=dict(
         hosts=[f"node{i}" for i in range(0, 3)],
@@ -26,12 +21,12 @@ start(
             dashboard_address=":8787",
         ),
     ),
-)
-ds = cml.load_source("virtual", param="msl")
-now = time.time()
-print("a", len(ds), now)
-x = ds.to_xarray()
-print("b", time.time() - now)
+).client
 
-y = x.msl
-print(y.mean(dim="time").compute())
+
+def inc(x):
+    return x + 1
+
+
+x = client.submit(inc, 10)
+print(x.result())
