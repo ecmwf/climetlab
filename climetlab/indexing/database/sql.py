@@ -154,7 +154,6 @@ class SqlDatabase(Database):
         order_lst = []
         for key, lst in request.items():
             # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
-
             if not isinstance(lst, (list, tuple)):
                 lst = [lst]
 
