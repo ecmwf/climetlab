@@ -6,12 +6,16 @@ from distributed import Nanny
 
 import climetlab as cml
 import climetlab.debug  # noqa
-from climetlab.utils.dask import start
 
 # https://github.com/dask/dask-jobqueue/issues/548
 # http://localhost:8787/status
 
-start(
+import climetlab as cml
+
+
+
+
+cml.start_dask(
     "ssh",
     cluster_kwargs=dict(
         hosts=[f"node{i}" for i in range(0, 3)],

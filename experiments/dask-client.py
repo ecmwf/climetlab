@@ -1,12 +1,12 @@
 import os
 import time
 
-from climetlab.utils.dask import start
+import climetlab as cml
 
 # https://github.com/dask/dask-jobqueue/issues/548
 # http://localhost:8787/status
 
-client = start(
+client = cml.start_dask(
     "ssh",
     cluster_kwargs=dict(
         hosts=[f"node{i}" for i in range(0, 3)],
