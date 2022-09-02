@@ -15,3 +15,6 @@ LOG = logging.getLogger(__name__)
 class Database:
     def lookup(self, request, order=None):
         raise NotImplementedError("")
+
+    def count(self, request):
+        raise NotImplementedError("")

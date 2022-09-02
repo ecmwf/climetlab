@@ -143,27 +143,53 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k}='{b}'")
         return conditions
 
-    def _order_by(self, request, order):
+    def _order_by(self, order):
+        if not order:
+            return None, None
+        print("ORDER=", order)
         if order is True:
-            if not request:
+            if not order:
                 return None
-            return [f"i_{k}" for k in request.keys()], None
+            return [f"i_{k}" for k in order.keys()], None
 
         # TODO: add default ordering
-        order_dic = dict()
+        dict_of_dicts = dict()
         order_lst = []
-        for key, lst in request.items():
+
+        # Use mars keys order by default
+        # But make sure the order provided by the user
+        # in the order override this default order.
+        keys = [_ for _ in order.keys()]
+        keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
+
+        for key in keys:
+            lst = order.get(key, "ascending")  # Default is ascending order
+
+            if lst is None:
+                order_lst.append(f"i_{key}")
+                continue
+
+            if lst == "ascending":
+                order_lst.append(f"i_{key} ASC")
+                continue
+
+            if lst == "descending":
+                order_lst.append(f"i_{key} DESC")
+                continue
+
             # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
+
             if not isinstance(lst, (list, tuple)):
                 lst = [lst]
 
             lst = [str(_) for _ in lst]  # processing only strings from now.
 
-            order_dic[key] = dict(zip(lst, range(len(lst))))
+            dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
+            print(key, lst)
             order_lst.append(f'user_order("{key}",i_{key})')
 
         def order_func(key, value):
-            return order_dic[key][value]
+            return dict_of_dicts[key][value]
 
         return order_lst, order_func
 
@@ -196,13 +222,23 @@ class SqlDatabase(Database):
     def lookup(
         self,
         request,
-        select_values=False,
+        return_dicts=False,
         order=None,
         limit=None,
         offset=None,
     ):
+        """Look into the database and provide entries.
+
+        request: a dictionary containing the list of values to filter by.
+        return_dicts: Return dictionaries of entries instead of (path resolved) Part objects.
+        order: a dictionary to order the entries.
+        limit: Returns only "limit" entries (used for paging).
+        offset: Skip the first "offset" entries (used for paging).
+        """
         if request is None:
             request = {}
+        if order is None:
+            order = request
 
         conditions_str = ""
         conditions = self._conditions(request)
@@ -217,30 +253,29 @@ class SqlDatabase(Database):
             paging_str += f" OFFSET {offset}"
 
         order_by_str = ""
-        order_by, order_func = self._order_by(request, order)
+        order_by, order_func = self._order_by(order)
         if order_by:
             order_by_str = "ORDER BY " + ",".join(order_by)
 
-        if select_values:
-            if select_values is True:
-                select_values = self._columns_names_without_i_()
+        connection = self.connection
+        if order_func is not None:
+            connection.create_function("user_order", 2, order_func)
 
-            select_values_str = ",".join([f"i_{x}" for x in select_values])
-            statement = f"SELECT {select_values_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
+        if return_dicts:
+            _names = self._columns_names_without_i_()
+            _names_str = ",".join([f"i_{x}" for x in _names])
+            statement = f"SELECT {_names_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
 
             LOG.debug("%s", statement)
             parts = []
-            for tupl in self.connection.execute(statement):
-                dic = {k: v for k, v in zip(select_values, tupl)}
+            for tupl in connection.execute(statement):
+                dic = {k: v for k, v in zip(_names, tupl)}
                 parts.append(dic)
             return parts
 
         statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
         print(statement)
         LOG.debug("%s", statement)
-        connection = self.connection
-        if order_func is not None:
-            connection.create_function("user_order", 2, order_func)
         parts = []
         for path, offset, length in connection.execute(statement):
             parts.append(Part(path, offset, length))

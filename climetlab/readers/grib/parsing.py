@@ -110,7 +110,7 @@ class DirectoryParserIterator:
             return self._tasks
 
         LOG.debug(f"Parsing files in {self.directory}")
-        assert os.path.isdir(self.directory)
+        assert os.path.isdir(self.directory), self.directory
 
         tasks = []
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
