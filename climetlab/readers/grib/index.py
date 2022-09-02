@@ -158,8 +158,8 @@ class GribDBIndex(GribIndex):
         assert os.path.exists(db_path)
         return cls(cls.DBCLASS(db_path), **kwargs)
 
-    def order_by(self, order=None):
-        if order is None:
+    def order_by(self, order):
+        if not order:
             return self
         return self.__class__(
             selection=self.selection,
