@@ -162,7 +162,6 @@ class GribDBIndex(GribIndex):
         if order is None:
             return self
         return self.__class__(
-            self.url,
             selection=self.selection,
             order=order,
             db=self.db,
