@@ -1,5 +1,8 @@
+import logging
 import os
-import time, dask, logging
+import time
+
+import dask
 
 import climetlab as cml
 
@@ -7,9 +10,9 @@ import climetlab as cml
 # http://localhost:8787/status
 
 
-hosts =[f"node{i}" for i in range(0, 4)]
+hosts = [f"node{i}" for i in range(0, 4)]
 
-workers = list(i+1 for i in range(len(hosts)-1))
+workers = list(i + 1 for i in range(len(hosts) - 1))
 
 client = cml.start_dask(
     "ssh",
@@ -32,10 +35,12 @@ client = cml.start_dask(
 
 def inc(x):
     from distributed.worker import logger
-    w  = dask.distributed.get_worker()#.log('hello')
-    logger.info('xxxx', x)
+
+    w = dask.distributed.get_worker()  # .log('hello')
+    logger.info("xxxx", x)
     # assert False, type(w)
     return x + 1
+
 
 x = client.submit(inc, 10)
 
