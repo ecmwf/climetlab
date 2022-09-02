@@ -9,6 +9,7 @@
 import logging
 import os
 
+from climetlab.decorators import alias_argument
 from climetlab.readers.grib.index import SqlIndex
 from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources.indexed import IndexedSource
@@ -95,7 +96,21 @@ class DirectorySource(IndexedSource):
         super().__init__(index, **kwargs)
 
     def sel(self, **kwargs):
+        # TODO: move this to mother class
         return self.__class__(self, _index=self.index.sel(**kwargs))
+
+    # TODO: this is duplicated code
+    @alias_argument("levelist", ["level"])
+    @alias_argument("param", ["variable", "parameter"])
+    @alias_argument("number", ["realization", "realisation"])
+    @alias_argument("class", "klass")
+    def order_by(self, arg=None, **kwargs):
+        # TODO: move this to mother class
+        order = dict()
+        if arg:
+            order.update(arg)
+        order.update(kwargs)
+        return self.__class__(self, _index=self.index.order_by(order))
 
 
 source = DirectorySource

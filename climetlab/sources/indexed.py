@@ -26,10 +26,23 @@ class IndexedSource(Source):
     @alias_argument("param", ["variable", "parameter"])
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
-    def __init__(self, index=None, filter=None, merger=None, **kwargs):
+    def __init__(self, index=None, order_by=None, filter=None, merger=None, **kwargs):
         self.filter = filter
         self.merger = merger
         self.index = index.sel(kwargs)
+
+        # triplicated code
+        @alias_argument("levelist", ["level"])
+        @alias_argument("param", ["variable", "parameter"])
+        @alias_argument("number", ["realization", "realisation"])
+        @alias_argument("class", "klass")
+        def f(**_kwargs):
+            return _kwargs
+
+        if order_by is not None:
+            order_by = f(**order_by)
+
+        self.index = self.index.order_by(order_by)
 
         super().__init__()
 
@@ -39,6 +52,10 @@ class IndexedSource(Source):
 
     @abstractmethod
     def sel(self, **kwargs):
+        return self._not_implemented()
+
+    @abstractmethod
+    def order_by(self, **kwargs):
         return self._not_implemented()
 
     def __getitem__(self, n):

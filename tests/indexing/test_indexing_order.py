@@ -20,7 +20,7 @@ TEST_DIR = os.path.join(os.path.dirname(__file__), "test_indexing_order.py.grib"
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def _test_order_directory_source_1(params, levels):
+def _test_directory_source_1(params, levels):
     home = os.path.expanduser("~")
     ds = cml.load_source(
         "directory",
@@ -43,7 +43,7 @@ def _test_order_directory_source_1(params, levels):
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def test_order_directory_source_2(params, levels):
+def test_directory_source_order_with_request(params, levels):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
@@ -63,12 +63,16 @@ def test_order_directory_source_2(params, levels):
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
-def _test_order_directory_source_with_none_1(params):
+@pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
+def test_directory_source_order_with_order_by_method_1(params, levels):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
         variable=params,
-        level=None,
+        level=levels,
+    ).order_by(
+        level=levels,
+        variable=params,
         date=20070101,
         time="1200",
     )
@@ -79,11 +83,55 @@ def _test_order_directory_source_with_none_1(params):
     assert ds[1].handle.get("shortName") == params[1]
     assert ds[2].handle.get("shortName") == params[0]
     assert ds[3].handle.get("shortName") == params[1]
-    print()
+
+
+def test_directory_source_order_with_order_by_method_2():
+    params = ["z", "t"]
+    levels = [500, 850]
+    ds = cml.load_source(
+        "directory",
+        TEST_DIR,
+        variable=params,
+        level=levels,
+    ).order_by(
+        level="ascending",
+        variable="descending",
+    )
+    for i in ds:
+        print(i)
+    assert len(ds) == 4
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[1]
+    assert ds[2].handle.get("shortName") == params[0]
+    assert ds[3].handle.get("shortName") == params[1]
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
-def _test_order_directory_source_with_none_2(params):
+@pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
+def test_directory_source_order_with_order_by_keyword(params, levels):
+    ds = cml.load_source(
+        "directory",
+        TEST_DIR,
+        variable=params,
+        level=levels,
+        order_by=dict(
+            level=levels,
+            variable=params,
+            date=20070101,
+            time="1200",
+        ),
+    )
+    for i in ds:
+        print(i)
+    assert len(ds) == 4
+    assert ds[0].handle.get("shortName") == params[0]
+    assert ds[1].handle.get("shortName") == params[1]
+    assert ds[2].handle.get("shortName") == params[0]
+    assert ds[3].handle.get("shortName") == params[1]
+
+
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+def test_directory_source_with_none_1(params):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
@@ -92,18 +140,22 @@ def _test_order_directory_source_with_none_2(params):
         date=20070101,
         time="1200",
     )
-    print(params)
-    print(len(ds))
     for i in ds:
         print(i)
+    assert len(ds) == 4
     assert ds[0].handle.get("shortName") == params[0]
     assert ds[1].handle.get("shortName") == params[1]
     assert ds[2].handle.get("shortName") == params[0]
     assert ds[3].handle.get("shortName") == params[1]
-    print()
 
 
 if __name__ == "__main__":
     from climetlab.testing import main
 
     main(__file__)
+    # test_directory_source_with_none_2(
+    # test_directory_source_with_none_1(
+    #    # test_directory_source_order_by(
+    #    ["z", "t"],
+    #    #    [500, 850],
+    # )

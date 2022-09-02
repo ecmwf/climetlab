@@ -34,10 +34,6 @@ LOG = logging.getLogger(__name__)
 
 class GribIndex(FieldSet, Index):
     def __init__(self, selection=None, order=None):
-        """Should not be instanciated directly.
-        The public API are the constructors "_from*()" class methods.
-        """
-
         self._availability = None
         self.selection = selection
         self.order = order
@@ -162,7 +158,9 @@ class GribDBIndex(GribIndex):
         assert os.path.exists(db_path)
         return cls(cls.DBCLASS(db_path), **kwargs)
 
-    def sort_index(self, order):
+    def order_by(self, order=None):
+        if order is None:
+            return self
         return self.__class__(
             self.url,
             selection=self.selection,
@@ -193,7 +191,7 @@ class GribDBIndex(GribIndex):
         if request is None and self._availability is not None:
             return self._availability
 
-        entries = self.lookup({}, select_values=True)
+        entries = self.lookup({}, return_dicts=True)
         availability = Availability(entries)
 
         if request is None:
