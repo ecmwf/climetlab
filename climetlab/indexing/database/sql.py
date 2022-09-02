@@ -48,8 +48,8 @@ GRIB_INDEX_KEYS = [
     "number",
     "quantile",
     "levelist",
-    "latitude",
-    "longitude",
+    # "latitude",  # in the MARS vocabulary but not used.
+    # "longitude",  # in the MARS vocabulary but not used.
     "range",
     "param",
     "ident",
