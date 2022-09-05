@@ -97,20 +97,5 @@ class DirectorySource(IndexedSource):
         )
         super().__init__(index, **kwargs)
 
-    def sel(self, **kwargs):
-        # TODO: move this to mother class
-        kwargs = self.alias_arguments(**kwargs)
-        return self.__class__(self, _index=self.index.sel(**kwargs))
-
-    def order_by(self, arg=None, **kwargs):
-        # TODO: move this to mother class
-        kwargs = self.alias_arguments(**kwargs)
-        order = dict()
-        if arg:
-            arg = self.alias_arguments(**arg)
-            order.update(arg)
-        order.update(kwargs)
-        return self.__class__(self, _index=self.index.order_by(order))
-
 
 source = DirectorySource

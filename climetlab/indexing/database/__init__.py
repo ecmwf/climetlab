@@ -18,3 +18,6 @@ class Database:
 
     def count(self, request):
         raise NotImplementedError("")
+
+    def load(self, iterator):
+        raise NotImplementedError("")

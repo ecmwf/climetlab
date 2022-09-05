@@ -189,6 +189,7 @@ class GribDBIndex(GribIndex):
         if self._availability is not None:
             return self._availability.tree()
 
+        print('FIXME: TODO: bug here: should not call dump_dicts (dumping all dicts) but should call lookup(self.selection..) ')
         def f():
             for i in self.db.dump_dicts():
                 i = {k: v for k, v in i.items() if not k.startswith("_")}

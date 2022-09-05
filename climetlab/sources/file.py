@@ -87,6 +87,9 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def sel(self, **kwargs):
         return self._reader.sel(**kwargs)
 
+    def order_by(self, *args, **kwargs):
+        return self._reader.order_by(*args, **kwargs)
+
     def plot_graph(self, *args, **kwargs):
         return self._reader.plot_graph(*args, **kwargs)
 

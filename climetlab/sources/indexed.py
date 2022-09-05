@@ -50,13 +50,18 @@ class IndexedSource(Source):
     def availability(self):
         return self.index.availability
 
-    @abstractmethod
     def sel(self, **kwargs):
-        return self._not_implemented()
+        kwargs = self.alias_arguments(**kwargs)
+        return self.__class__(self, _index=self.index.sel(**kwargs))
 
-    @abstractmethod
-    def order_by(self, **kwargs):
-        return self._not_implemented()
+    def order_by(self, arg=None, **kwargs):
+        kwargs = self.alias_arguments(**kwargs)
+        order = dict()
+        if arg:
+            arg = self.alias_arguments(**arg)
+            order.update(arg)
+        order.update(kwargs)
+        return self.__class__(self, _index=self.index.order_by(order))
 
     def __getitem__(self, n):
         return self.index[n]
