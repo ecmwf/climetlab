@@ -25,7 +25,6 @@ from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.utils import progress_bar
-from climetlab.utils.availability import Availability
 from climetlab.utils.parts import Part
 from climetlab.utils.serialise import register_serialisation
 
@@ -184,19 +183,6 @@ class GribDBIndex(GribIndex):
             order=self.order,
             db=self.db,
         )
-
-    @property
-    def availability(self, request=None):
-        if request is None and self._availability is not None:
-            return self._availability
-
-        entries = self.lookup({}, return_dicts=True)
-        availability = Availability(entries)
-
-        if request is None:
-            self._availability = availability
-
-        return availability
 
     @abstractmethod
     def __getitem__(self, n):
