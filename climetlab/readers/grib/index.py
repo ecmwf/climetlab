@@ -184,6 +184,22 @@ class GribDBIndex(GribIndex):
             db=self.db,
         )
 
+    @property
+    def availability(self):
+        if self._availability is not None:
+            return self._availability.tree()
+
+        def f():
+            for i in self.db.dump_dicts():
+                i = {k: v for k, v in i.items() if not k.startswith("_")}
+                yield i
+
+        from climetlab.utils.availability import Availability
+
+        LOG.debug("Building availability")
+        self._availability = Availability(f())
+        return self.availability
+
     @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
