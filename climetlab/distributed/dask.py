@@ -128,7 +128,7 @@ def start_dask(name_or_yaml_filename, **kwargs):
     else:
         # The name (name_or_yaml_filename) refers to a yaml file in the climetlab//data
         # or user config ($HOME/.climetlab/dask).
-        config = get_data_entry("dask", name=name_or_yaml_filename)
+        config = get_data_entry("dask", name=name_or_yaml_filename).data
 
     if "dask" in config:
         config = config["dask"]

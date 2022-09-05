@@ -158,6 +158,16 @@ def get_data_entry(kind, name, default=None, merge=False):
         # LOWEST PRIORITY
     }
 
+    if default is not None:
+        default_entry = Entry(
+            name="default",
+            kind="default",
+            root=None,
+            path=None,
+            data=default,
+            owner="default",
+        )
+
     # TODO: default is not used. Remove it?
     # TODO: merge is not used.Remove it?
 
@@ -179,18 +189,8 @@ def get_data_entry(kind, name, default=None, merge=False):
     choices = files[kind][name].choices()
     assert len(choices) != 0
 
-    if default is not None:
-        choices["default"] = Entry(
-            name="default",
-            kind="default",
-            root=None,
-            path=None,
-            data=default,
-            owner="default",
-        )
-
     if len(choices) == 1:
-        return list(choices.values())[0].data
+        return list(choices.values())[0]
 
     frame = inspect.currentframe()
     caller = inspect.getouterframes(frame, 0)
@@ -205,6 +205,7 @@ def get_data_entry(kind, name, default=None, merge=False):
                 return True
         return False
 
+    choices["default"] = default_entry
     choices = {k: v for k, v in choices.items() if is_active(k, v)}
     selected = [
         v
@@ -213,13 +214,18 @@ def get_data_entry(kind, name, default=None, merge=False):
         )
     ]
 
-    if merge is False:
-        return selected[0].data
+    if not merge:
+        return selected[0]
 
-    if merge is True:
-        return merge_dicts(*[v.data for v in selected])
-
-    return merge(*[v.data for v in selected])
+    data = merge_dicts(*[v.data for v in selected])
+    return Entry(
+        name="merged",
+        kind=kind,
+        root=None,
+        path=None,
+        data=data,
+        owner="merged",
+    )
 
 
 def data_entries(kind=None):
