@@ -47,7 +47,6 @@ class DirectorySource(IndexedSource):
 
         if _index is not None, ignore all other arguments.
         """
-        self._availability = None
 
         if _index is not None:  # for .sel()
             super().__init__(_index, **kwargs)
@@ -112,24 +111,6 @@ class DirectorySource(IndexedSource):
             order.update(arg)
         order.update(kwargs)
         return self.__class__(self, _index=self.index.order_by(order))
-
-    @property
-    def availability(self):
-        # TODO: move this to the right location
-
-        if self._availability is not None:
-            return self._availability.tree()
-
-        def f():
-            for i in self.index.db.dump_dicts():
-                i = {k: v for k, v in i.items() if not k.startswith("_")}
-                yield i
-
-        LOG.debug("Building availability")
-        from climetlab.utils.availability import Availability
-
-        self._availability = Availability(f())
-        return self.availability
 
 
 source = DirectorySource
