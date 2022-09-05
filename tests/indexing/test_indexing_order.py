@@ -115,10 +115,8 @@ def test_directory_source_order_with_order_by_keyword(params, levels):
         variable=params,
         level=levels,
         order_by=dict(
-            level=levels,
             variable=params,
-            date=20070101,
-            time="1200",
+            # date=20070101,
         ),
     )
     for i in ds:
@@ -155,7 +153,8 @@ if __name__ == "__main__":
     main(__file__)
     # test_directory_source_with_none_2(
     # test_directory_source_with_none_1(
-    #    # test_directory_source_order_by(
+    #test_directory_source_order_with_order_by_method_2()
+    # test_directory_source_order_with_order_by_method_1(
     #    ["z", "t"],
-    #    #    [500, 850],
+    #    [500, 850],
     # )
