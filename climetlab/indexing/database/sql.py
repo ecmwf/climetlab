@@ -146,7 +146,6 @@ class SqlDatabase(Database):
     def _order_by(self, order):
         if not order:
             return None, None
-        print("ORDER=", order)
         if order is True:
             if not order:
                 return None
@@ -185,7 +184,6 @@ class SqlDatabase(Database):
             lst = [str(_) for _ in lst]  # processing only strings from now.
 
             dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-            print(key, lst)
             order_lst.append(f'user_order("{key}",i_{key})')
 
         def order_func(key, value):
