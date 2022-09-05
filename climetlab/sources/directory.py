@@ -51,6 +51,8 @@ class DirectorySource(IndexedSource):
             super().__init__(_index, **kwargs)
             return
 
+        path = os.path.expanduser(path)
+
         self.path = path
         self.abspath = os.path.abspath(path)
 

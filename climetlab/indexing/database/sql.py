@@ -274,7 +274,6 @@ class SqlDatabase(Database):
             return parts
 
         statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
-        print(statement)
         LOG.debug("%s", statement)
         parts = []
         for path, offset, length in connection.execute(statement):
