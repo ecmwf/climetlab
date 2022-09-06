@@ -229,6 +229,9 @@ class SqlDatabase(Database):
 
         request: a dictionary containing the list of values to filter by.
         return_dicts: Return dictionaries of entries instead of (path resolved) Part objects.
+            return_dicts = False: return list of Part(path, offset, length)
+            return_dicts = True: return dicts
+            return_dicts = [key1, key2]: return dicts with key1, key2 columns of the database.
         order: a dictionary to order the entries.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
@@ -237,6 +240,8 @@ class SqlDatabase(Database):
             request = {}
         if order is None:
             order = request
+        if return_dicts is True:
+            return_dicts = self._columns_names_without_i_()
 
         conditions_str = ""
         conditions = self._conditions(request)
@@ -259,24 +264,25 @@ class SqlDatabase(Database):
         if order_func is not None:
             connection.create_function("user_order", 2, order_func)
 
-        if return_dicts:
-            _names = self._columns_names_without_i_()
-            _names_str = ",".join([f"i_{x}" for x in _names])
+        if return_dicts is False:
+            _names = ["path", "offset", "length"]
+            _names_str = ",".join([x for x in _names])  # no i_
             statement = f"SELECT {_names_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
-
             LOG.debug("%s", statement)
             parts = []
-            for tupl in connection.execute(statement):
-                dic = {k: v for k, v in zip(_names, tupl)}
-                parts.append(dic)
-            return parts
+            for path, offset, length in connection.execute(statement):
+                parts.append(Part(path, offset, length))
+            return Part.resolve(parts, os.path.dirname(self.db_path))
 
-        statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
+        _names = return_dicts
+        _names_str = ",".join([f"i_{x}" for x in _names])
+        statement = f"SELECT {_names_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
         LOG.debug("%s", statement)
         parts = []
-        for path, offset, length in connection.execute(statement):
-            parts.append(Part(path, offset, length))
-        return Part.resolve(parts, os.path.dirname(self.db_path))
+        for tupl in connection.execute(statement):
+            dic = {k: v for k, v in zip(_names, tupl)}
+            parts.append(dic)
+        return parts
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()
