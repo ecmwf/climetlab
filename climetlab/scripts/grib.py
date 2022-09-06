@@ -71,7 +71,7 @@ class GribCmd:
             help="sql or json or stdout.",
         ),
         force=dict(action="store_true", help="overwrite existing index."),
-        ignore=dict(help="files to ignore.", nargs="*"),
+        # pattern=dict(help="Files to index (patterns).", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
         relative_paths=dict(
             action="store_true",
@@ -93,7 +93,6 @@ class GribCmd:
         directory = args.directory
         db_path = args.output
         force = args.force
-        ignore = args.ignore
         force_relative_paths_on = args.relative_paths
         db_format = args.format
 
@@ -144,19 +143,11 @@ class GribCmd:
         if db_path is not None:
             check_overwrite(db_path, force)
 
-        if ignore is None:
-            ignore = []
+        ignore = []
         ignore.append(DirectorySource.DEFAULT_DB_FILE)
         ignore.append(DirectorySource.DEFAULT_JSON_FILE)
-        ignore.append("climetlab.index.*")
+        # Do not add anything more to this ignore list, implement a pattern filter if needed.
         ignore.append("*.idx")
-        ignore.append("*.json")
-        ignore.append("*.yaml")
-        ignore.append("*.yml")
-        ignore.append("*.pdf")
-        ignore.append("*.txt")
-        ignore.append("*.html")
-        ignore.append(".*")
         if db_path is not None:
             ignore.append(db_path)
 
