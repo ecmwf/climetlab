@@ -18,7 +18,7 @@ import requests
 from multiurl import robust
 
 from climetlab.core.caching import auxiliary_cache_file, cache_file
-from climetlab.core.index import Index, MultiIndex
+from climetlab.core.index import Index, MultiIndex, Sorter
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
@@ -43,7 +43,6 @@ class MultiGribIndex(FieldSet, MultiIndex):
         MultiIndex.__init__(self, *args, **kwargs)
 
 
-
 class GribInFiles(GribIndex):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,6 +61,7 @@ class GribInFiles(GribIndex):
     @abstractmethod
     def number_of_parts(self):
         self._not_implemented()
+
 
 class GribDBIndex(GribInFiles):
     def __init__(self, db, **kwargs):
@@ -180,7 +180,7 @@ class GribDBIndex(GribInFiles):
     def order_by(self, *args, **kwargs):
         return self.__class__(
             selection=self.selection,
-            order=order,
+            order=Sorter(self, *args, **kwargs),
             db=self.db,
         )
 
@@ -249,9 +249,6 @@ class GribIndexFromDicts(GribIndex):
         return len(self.list_of_dicts)
 
 
-
-
-
 class JsonIndex(GribDBIndex):
     DBCLASS = JsonDatabase
 
@@ -294,7 +291,9 @@ class SqlIndex(GribDBIndex):
 
 
 register_serialisation(
-    SqlIndex, lambda x: x.db.db_path, lambda x: SqlIndex(db=SqlDatabase(x))
+    SqlIndex,
+    lambda x: x.db.db_path,
+    lambda x: SqlIndex(db=SqlDatabase(x)),
 )
 
 
