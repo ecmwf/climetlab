@@ -43,7 +43,27 @@ class MultiGribIndex(FieldSet, MultiIndex):
         MultiIndex.__init__(self, *args, **kwargs)
 
 
-class GribDBIndex(GribIndex):
+
+class GribInFiles(GribIndex):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, n):
+        part = self.part(n)
+        return GribField(part.path, part.offset, part.length)
+
+    def __len__(self):
+        return self.number_of_parts()
+
+    @abstractmethod
+    def part(self, n):
+        self._not_implemented()
+
+    @abstractmethod
+    def number_of_parts(self):
+        self._not_implemented()
+
+class GribDBIndex(GribInFiles):
     def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -157,14 +177,12 @@ class GribDBIndex(GribIndex):
         assert os.path.exists(db_path)
         return cls(cls.DBCLASS(db_path), **kwargs)
 
-    # def order_by(self, order):
-    #     if not order:
-    #         return self
-    #     return self.__class__(
-    #         selection=self.selection,
-    #         order=order,
-    #         db=self.db,
-    #     )
+    def order_by(self, *args, **kwargs):
+        return self.__class__(
+            selection=self.selection,
+            order=order,
+            db=self.db,
+        )
 
     def sel(self, *args, **kwargs):
         sel = {}
@@ -231,27 +249,10 @@ class GribIndexFromDicts(GribIndex):
         return len(self.list_of_dicts)
 
 
-class GribIndexFromFile(GribDBIndex):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __getitem__(self, n):
-        part = self.part(n)
-        return GribField(part.path, part.offset, part.length)
-
-    def __len__(self):
-        return self.number_of_parts()
-
-    @abstractmethod
-    def part(self, n):
-        self._not_implemented()
-
-    @abstractmethod
-    def number_of_parts(self):
-        self._not_implemented()
 
 
-class JsonIndex(GribIndexFromFile):
+
+class JsonIndex(GribDBIndex):
     DBCLASS = JsonDatabase
 
     @cached_method
@@ -268,7 +269,7 @@ class JsonIndex(GribIndexFromFile):
 SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
 
 
-class SqlIndex(GribIndexFromFile):
+class SqlIndex(GribDBIndex):
 
     DBCLASS = SqlDatabase
     CHUNKING = 50000
@@ -297,12 +298,12 @@ register_serialisation(
 )
 
 
-class GribFileIndex(GribIndexFromFile):
+class GribFileIndex(GribInFiles):
     VERSION = 1
 
     def __init__(self, path):
         assert isinstance(path, str), path
-        super().__init__(db=None)
+
         self.path = path
         self.offsets = None
         self.lengths = None
