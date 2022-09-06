@@ -16,6 +16,27 @@ from climetlab.sources import Source
 LOG = logging.getLogger(__name__)
 
 
+class Sorter:
+    def __init__(self, index, *args, **kwargs):
+        self.order = {}
+        self.index = index
+        for a in args:
+            self.order[a] = "ascending"
+        self.order.update(kwargs)
+
+        for k, v in self.order.items():
+            assert v == "ascending", (k, v)
+
+        self._cache = [None] * len(index)
+
+    def __call__(self, i):
+        if self._cache[i] is None:
+            element = self.index[i]
+            self._cache[i] = tuple(element.metadata(k) for k in self.order.keys())
+
+        return self._cache[i]
+
+
 class Index(Source):
     @abstractmethod
     def __getitem__(self, n):
@@ -28,6 +49,15 @@ class Index(Source):
     @abstractmethod
     def sel(self, kwargs):
         self._not_implemented()
+
+    @abstractmethod
+    def _order_indices(self, sorter):
+        result = list(range(len(self)))
+
+        return sorted(result, key=sorter)
+
+    def order_by(self, *args, **kwargs):
+        return MaskIndex(self, self._order_indices(Sorter(self, *args, **kwargs)))
 
 
 class MaskIndex(Index):
