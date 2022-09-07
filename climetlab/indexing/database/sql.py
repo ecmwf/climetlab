@@ -147,8 +147,6 @@ class SqlDatabase(Database):
         if not order:
             return None, None
         if order is True:
-            if not order:
-                return None
             return [f"i_{k}" for k in order.keys()], None
 
         # TODO: add default ordering
@@ -229,6 +227,9 @@ class SqlDatabase(Database):
 
         request: a dictionary containing the list of values to filter by.
         return_dicts: Return dictionaries of entries instead of (path resolved) Part objects.
+            return_dicts = False: return list of Part(path, offset, length)
+            return_dicts = True: return dicts
+            return_dicts = [key1, key2]: return dicts with key1, key2 columns of the database.
         order: a dictionary to order the entries.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
@@ -237,46 +238,45 @@ class SqlDatabase(Database):
             request = {}
         if order is None:
             order = request
+        if return_dicts is True:
+            return_dicts = self._columns_names_without_i_()
 
-        conditions_str = ""
         conditions = self._conditions(request)
-        if conditions:
-            conditions_str = " WHERE " + " AND ".join(conditions)
-
-        paging_str = ""
-        if limit is not None:
-            paging_str += f" LIMIT {limit}"
-
-        if offset is not None:
-            paging_str += f" OFFSET {offset}"
-
-        order_by_str = ""
         order_by, order_func = self._order_by(order)
-        if order_by:
-            order_by_str = "ORDER BY " + ",".join(order_by)
+
+        if return_dicts is False:
+            _names = ["path", "offset", "length"]
+            parts = []
+            for path, offset, length in self._execute_select(
+                _names, conditions, order_by, limit, offset, order_func
+            ):
+                parts.append(Part(path, offset, length))
+            return Part.resolve(parts, os.path.dirname(self.db_path))
+
+        _names = [f"i_{x}" for x in return_dicts]
+        dicts = []
+        for tupl in self._execute_select(
+            _names, conditions, order_by, limit, offset, order_func
+        ):
+            dic = {k: v for k, v in zip(_names, tupl)}
+            dicts.append(dic)
+        return dicts
+
+    def _execute_select(self, names, conditions, order_by, limit, offset, order_func):
+        names_str = ",".join([x for x in names]) if names else "*"
+        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
+        order_by_str = "ORDER BY " + ",".join(order_by) if order_by else ""
+        limit_str = f" LIMIT {limit}" if limit is not None else ""
+        offset_str = f" OFFSET {offset}" if offset is not None else ""
 
         connection = self.connection
         if order_func is not None:
             connection.create_function("user_order", 2, order_func)
 
-        if return_dicts:
-            _names = self._columns_names_without_i_()
-            _names_str = ",".join([f"i_{x}" for x in _names])
-            statement = f"SELECT {_names_str} FROM entries {conditions_str} {order_by_str} {paging_str};"
-
-            LOG.debug("%s", statement)
-            parts = []
-            for tupl in connection.execute(statement):
-                dic = {k: v for k, v in zip(_names, tupl)}
-                parts.append(dic)
-            return parts
-
-        statement = f"SELECT path,offset,length FROM entries {conditions_str} {order_by_str} {paging_str};"
+        statement = f"SELECT {names_str} FROM entries {conditions_str} {order_by_str} {limit_str} {offset_str};"
         LOG.debug("%s", statement)
-        parts = []
-        for path, offset, length in connection.execute(statement):
-            parts.append(Part(path, offset, length))
-        return Part.resolve(parts, os.path.dirname(self.db_path))
+        for tupl in connection.execute(statement):
+            yield tupl
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()
