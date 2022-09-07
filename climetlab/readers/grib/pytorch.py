@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-
+from typing import Tuple
 import logging
 
 import numpy as np
@@ -15,17 +15,29 @@ LOG = logging.getLogger(__name__)
 
 
 class PytorchMixIn:
+    def get_sample(self, i, **kwargs) -> np.ndarray:
+        """Returns the i-th sample. TODO: remove hardcoded feature count"""
+        grib_fields_per_sample = 4
+        ax = -1 if kwargs.get("channels_last", False) else 0
+        return np.stack(
+            [self[i + offset].to_numpy() for offset in range(grib_fields_per_sample)],
+            axis=ax,
+        )
+
+    def num_samples(self) -> int:
+        """Returns the number of samples in the dataset. TODO: remove hardcoded feature count"""
+        grib_fields_per_sample = 4
+        return len(self) // grib_fields_per_sample
+
     def to_pytorch(self, offset, data_loader_kwargs=None):
         import torch
 
-        # sometimes (!) causes an Exception:
-        # gribapi.errors.UnsupportedEditionError: Edition not supported.
         num_workers = 1
 
         out = self._to_pytorch_wrapper_class()(self, offset)
 
         DATA_LOADER_KWARGS_DEFAULT = dict(
-            batch_size=128,
+            batch_size=4,
             # multi-process data loading
             # use as many workers as you have cores on your machine
             num_workers=num_workers,
@@ -47,28 +59,49 @@ class PytorchMixIn:
     def _to_pytorch_wrapper_class(self):
         import torch
 
-        class WrapperWeatherBenchDataset(torch.utils.data.Dataset):
+        class WrapperWeatherBenchMapDataset(torch.utils.data.Dataset):
             def __init__(self, ds, offset) -> None:
                 super().__init__()
                 self.ds = ds
                 self.stats = ds.statistics()
                 self.offset = offset
 
-            def __len__(self):
+            def __len__(self) -> int:
                 """Returns the length of the dataset. This is important! Pytorch must know this."""
-                return len(self.ds) - self.offset
-                return self.ds.stats["count"] - self.ds.offset
+                return self.ds.num_samples() - self.offset
 
-            def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
+            def __getitem__(self, i) -> Tuple[np.ndarray, ...]:
                 """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
                 # Q: if self is a iterator, would ds[i] read the data from 0 to i, just to provide i?
+                # A: if self is an iterator, then we'd use it with an iterable dataset (see template below).
+                # also climetlab would have to take care of the shuffling.
 
-                x, Y = (
-                    self.ds[i].to_numpy()[None, ...],
-                    self.ds[i + self.offset].to_numpy()[None, ...],
-                )
-                x = x.astype(np.float32)
-                Y = Y.astype(np.float32)
-                return x, Y
+                x = self.ds.get_sample(i, channels_last=False)  # pytorch uses channel-first tensor layouts
+                y = self.ds.get_sample(i + self.offset, channels_last=False)
 
-        return WrapperWeatherBenchDataset
+                return (x, y)
+
+        return WrapperWeatherBenchMapDataset
+
+        # class WrapperWeatherBenchIterableDataset(torch.utils.data.IterableDataset):
+        #     # Use this if ds is an iterator
+        #     def __init__(self, ds, offset) -> None:
+        #         super().__init__()
+        #         self.ds = ds
+        #         self.stats = ds.statistics()
+        #         self.offset = offset
+            
+        #     def __iter__(self) -> Tuple[np.ndarray, ...]:
+        #         raise NotImplementedError
+
+        #     def per_worker_init(self, n_workers: int = 1) -> None:
+        #         raise NotImplementedError
+
+    # this should be outside the IterableDataset class
+    # and should be passed to the DataLoader object as an argument (see above)
+    # def worker_init_func(worker_id: int, dask_temp_dir: str, num_dask_workers: int, num_dask_threads_per_worker: int) -> None:
+        # """Configures each dataset worker process by calling WrapperWeatherBenchIterableDataset.per_worker_init()."""
+        # worker_info = torch.utils.data.get_worker_info()  # information specific to each worker process
+        # ds_obj = worker_info.dataset
+        # ds_obj.per_worker_init(n_workers=worker_info.num_workers, ...)
+
