@@ -18,26 +18,59 @@ LOG = logging.getLogger(__name__)
 
 class Sorter:
     def __init__(self, index, *args, **kwargs):
+        """Parse args and kwargs to build a dictionary in self.order."""
+
         self.order = {}
         self.index = index
-        for a in args:
-            self.order[a] = "ascending"
-        self.order.update(kwargs)
 
-        for k, v in self.order.items():
-            assert v == "ascending", (k, v)
+        for arg in args:
+            self.parse_arg(arg)
 
-        self._cache = [None] * len(index)
+        for k, v in kwargs.items():
+            self.parse_kwarg(k, v)
+
+        self._post_init()
+
+    def _post_init(self):
+        self._cache = [None] * len(self.index)
+
+    def parse_arg(self, arg):
+        if arg is None:
+            return
+        if isinstance(arg, dict):
+            for k, v in arg.items():
+                self.parse_kwarg(k, v)
+            return
+        if isinstance(arg, str):
+            self.order[arg] = "ascending"
+            return
+        raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
+
+    def parse_kwarg(self, k, v):
+        if v == "ascending":
+            self.order[k] = v
+            return
+        raise ValueError(v)
+
+    def __call__(self, i):
+        element = self.index[i]
+        hashable = tuple(element.metadata(k) for k in self.order.keys())
+        return hashable
+
+
+class SorterWithCache(Sorter):
+    def _post_init(self):
+        self._cache = [None] * len(self.index)
 
     def __call__(self, i):
         if self._cache[i] is None:
-            element = self.index[i]
-            self._cache[i] = tuple(element.metadata(k) for k in self.order.keys())
-
+            self._cache[i] = super().__call__(i)
         return self._cache[i]
 
 
 class Index(Source):
+    SORTER_CLASS = SorterWithCache
+
     @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
@@ -57,7 +90,8 @@ class Index(Source):
         return sorted(result, key=sorter)
 
     def order_by(self, *args, **kwargs):
-        return MaskIndex(self, self._order_indices(Sorter(self, *args, **kwargs)))
+        sorter = self.SORTER_CLASS(self, *args, **kwargs)
+        return MaskIndex(self, self._order_indices(sorter))
 
 
 class MaskIndex(Index):
