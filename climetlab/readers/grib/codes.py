@@ -18,6 +18,7 @@ import eccodes
 from climetlab.core import Base
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
+from itertools import islice, tee
 
 LOG = logging.getLogger(__name__)
 
@@ -401,3 +402,7 @@ class GribField(Base):
         clone.set_values(array)
         clone.save(tmp)
         GribField(tmp, 0, self._length).plot_map(backend)
+
+    def iterate_grid_points(self):
+        latlon = self.handle.get("latitudeLongitudeValues")
+        yield from zip(islice(latlon, 0, None, 3), islice(latlon, 1, None, 3))
