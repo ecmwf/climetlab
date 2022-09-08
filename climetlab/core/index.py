@@ -80,7 +80,7 @@ class Index(Source):
         self._not_implemented()
 
     @abstractmethod
-    def sel(self, kwargs):
+    def sel(self, *args, **kwargs):
         self._not_implemented()
 
     @abstractmethod

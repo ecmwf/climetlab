@@ -116,5 +116,5 @@ class Base(metaclass=MetaBase):
 
         extra = ""
         if hasattr(self, "path"):
-            extra = self.path
-        raise NotImplementedError(f"{module}.{name}.{func}({extra})")
+            extra = f" on {self.path}"
+        raise NotImplementedError(f"{module}.{name}.{func}(){extra}")

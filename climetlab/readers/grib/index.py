@@ -276,7 +276,7 @@ class JsonIndex(GribDBIndex):
 
     @cached_method
     def _lookup(self):
-        return self.db.lookup(self.selection, order=self.order)
+        return self.db.lookup(self.selection)
 
     def part(self, n):
         return self._lookup()[n]

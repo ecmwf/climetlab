@@ -13,8 +13,7 @@ import time
 
 import pytest
 
-from climetlab import Dataset, load_source, settings
-from climetlab.core.temporary import temp_directory
+from climetlab import Dataset, load_source
 from climetlab.decorators import normalize
 from climetlab.indexing import PerUrlIndex
 
@@ -86,10 +85,6 @@ def test_indexed_s3(baseurl):
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
-def retrieve_and_check_url(*args, **kwargs):
-    load_source(*args, **kwargs)
-
-
 def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
     print("range_method", range_method)
@@ -131,38 +126,6 @@ def check_grib_value(value, requested):
             return int(value) == int(requested)
         except (TypeError, ValueError):
             return str(value) == str(requested)
-
-
-@pytest.mark.long_test
-@pytest.mark.parametrize("baseurl", CML_BASEURLS)
-def test_global_index(baseurl):
-    with temp_directory() as tmpdir:
-        with settings.temporary():
-            settings.set("cache-directory", tmpdir)
-
-            print(f"{baseurl}/test-data/input/indexed-urls/global_index.index")
-            s = load_source(
-                "indexed-url",
-                f"{baseurl}/test-data/input/indexed-urls/global_index.index",
-                # baseurl=f"{baseurl}/test-data/input/indexed-urls",
-                param="r",
-                time="1000",
-                date="19970101",
-                index_type="json",
-                # db_path='./here.json'
-            )
-            for _ in s:
-                print(_)
-                break
-            s.to_xarray()
-
-            # for path in paths:
-            #     # check that the downloaded gribs match the request
-            #     for grib in load_source("file", path):
-            #         for k, v in request.items():
-            #             if k == "param":
-            #                 k = "shortName"
-            #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
 
 
 @pytest.mark.long_test
@@ -273,10 +236,12 @@ def test_grib_index_eumetnet():
 
 
 if __name__ == "__main__":
+    from climetlab.testing import main
+
+    main(__file__)
     # test_per_url_index(CML_BASEURL_CDS)
-    test_indexed_s3(CML_BASEURL_S3)
+    # test_indexed_s3(CML_BASEURL_S3)
     # timing()
     # from climetlab.testing import main
 
-    # main(__file__)
     # test_grib_index_eumetnet()

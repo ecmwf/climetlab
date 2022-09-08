@@ -39,7 +39,9 @@ class JsonDatabase(Database):
                 print(json.dumps(entry), file=f)
 
     def lookup(self, request, order=None, **kwargs):
-        assert order is None, 'The "order" argument not supported by the json index.'
+        assert (
+            order is None
+        ), f'The "order" argument not supported by the json index. {order.order}'
 
         if request is None:
             return self.entries
