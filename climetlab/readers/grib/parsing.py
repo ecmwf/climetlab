@@ -144,7 +144,11 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
         else:
             assert False, self.relative_paths
 
-        r = reader(self, path)
+        try:
+            r = reader(self, path)
+        except PermissionError as e:
+            LOG.error(f"Could not read {path}: {e}")
+            return
 
         for field in r.index_content():
             field["_path"] = _path
