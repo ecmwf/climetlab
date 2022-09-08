@@ -34,10 +34,10 @@ def _test_directory_source_1(params, levels):
     print(len(ds))
     for i in ds:
         print(i)
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[0]
-    assert ds[2].handle.get("shortName") == params[1]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
     print()
 
 
@@ -55,10 +55,10 @@ def test_directory_source_order_with_request(params, levels):
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[1]
-    assert ds[2].handle.get("shortName") == params[0]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
     print()
 
 
@@ -79,10 +79,10 @@ def test_directory_source_order_with_order_by_method_1(params, levels):
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[1]
-    assert ds[2].handle.get("shortName") == params[0]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
 
     assert ds[0].metadata("level") == levels[0]
     assert ds[1].metadata("level") == levels[0]
@@ -106,10 +106,10 @@ def test_directory_source_order_with_order_by_method_2():
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[1]
-    assert ds[2].handle.get("shortName") == params[0]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
@@ -129,10 +129,10 @@ def test_directory_source_order_with_order_by_keyword(params, levels):
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[1]
-    assert ds[2].handle.get("shortName") == params[0]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
