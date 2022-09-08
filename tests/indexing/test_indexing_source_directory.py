@@ -14,8 +14,25 @@ import os
 import pytest
 
 import climetlab as cml
+from climetlab.core.temporary import temp_directory
+from climetlab.testing import climetlab_file
 
-TEST_DIR = os.path.join(os.path.dirname(__file__), "test_indexing_order.py.grib")
+
+@pytest.fixture
+def dir_with_grib_files():
+    tmp = temp_directory()
+    testdir = tmp.path
+    _build_dir_with_grib_files(testdir)
+    yield tmp.path
+
+
+def _build_dir_with_grib_files(testdir):
+    import shutil
+
+    os.makedirs(testdir, exist_ok=True)
+    for p in ["docs/examples/test.grib", "docs/examples/test4.grib"]:
+        path = climetlab_file(p)
+        shutil.copy(path, testdir)
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
@@ -43,10 +60,10 @@ def _test_directory_source_1(params, levels):
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def test_directory_source_order_with_request(params, levels):
+def test_directory_source_order_with_request(params, levels, dir_with_grib_files):
     ds = cml.load_source(
         "directory",
-        TEST_DIR,
+        dir_with_grib_files,
         level=levels,
         variable=params,
         date=20070101,
@@ -64,10 +81,12 @@ def test_directory_source_order_with_request(params, levels):
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def test_directory_source_order_with_order_by_method_1(params, levels):
+def test_directory_source_order_with_order_by_method_1(
+    params, levels, dir_with_grib_files
+):
     ds = cml.load_source(
         "directory",
-        TEST_DIR,
+        dir_with_grib_files,
         variable=["t", "z"],
         level=[500, 850],
     ).order_by(
@@ -90,12 +109,12 @@ def test_directory_source_order_with_order_by_method_1(params, levels):
     assert ds[3].metadata("level") == levels[1]
 
 
-def test_directory_source_order_with_order_by_method_2():
+def test_directory_source_order_with_order_by_method_2(dir_with_grib_files):
     params = ["z", "t"]
     levels = [500, 850]
     ds = cml.load_source(
         "directory",
-        TEST_DIR,
+        dir_with_grib_files,
         variable=params,
         level=levels,
     )
@@ -114,10 +133,13 @@ def test_directory_source_order_with_order_by_method_2():
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-def test_directory_source_order_with_order_by_keyword(params, levels):
+def test_directory_source_order_with_order_by_keyword(
+    params, levels, dir_with_grib_files
+):
+
     ds = cml.load_source(
         "directory",
-        TEST_DIR,
+        dir_with_grib_files,
         variable=params,
         level=levels,
         order_by=dict(
@@ -136,10 +158,10 @@ def test_directory_source_order_with_order_by_keyword(params, levels):
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
-def test_directory_source_with_none_1(params):
+def test_directory_source_with_none_1(params, dir_with_grib_files):
     ds = cml.load_source(
         "directory",
-        TEST_DIR,
+        dir_with_grib_files,
         level=None,
         variable=params,
         date=20070101,
@@ -148,19 +170,23 @@ def test_directory_source_with_none_1(params):
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].handle.get("shortName") == params[0]
-    assert ds[1].handle.get("shortName") == params[1]
-    assert ds[2].handle.get("shortName") == params[0]
-    assert ds[3].handle.get("shortName") == params[1]
+    assert ds[0].metadata("short_name") == params[0]
+    assert ds[1].metadata("short_name") == params[1]
+    assert ds[2].metadata("short_name") == params[0]
+    assert ds[3].metadata("short_name") == params[1]
 
 
 if __name__ == "__main__":
     from climetlab.testing import main
 
     main(__file__)
+
+    # testdir = 'test_indexing_tmpdir'
+    # _build_dir_with_grib_files(testdir)
+
     # test_directory_source_with_none_2(
     # test_directory_source_with_none_1(
-    # test_directory_source_order_with_order_by_method_2()
+    # /test_directory_source_order_with_order_by_method_2(testdir)
     # test_directory_source_order_with_order_by_method_1(
     #    ["z", "t"],
     #    [500, 850],

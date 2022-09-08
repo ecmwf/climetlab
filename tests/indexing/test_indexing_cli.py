@@ -51,7 +51,7 @@ def fill_cache_with_cds():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-def test_script_export_cache_cds():
+def test_cli_export_cache_cds():
     export_dir = "tmpdir.test_script_export_cache_cds"
     shutil.rmtree(export_dir, ignore_errors=True)
     os.makedirs(export_dir)
@@ -74,7 +74,7 @@ def test_script_export_cache_cds():
     shutil.rmtree(export_dir)
 
 
-def test_script_index_directory():
+def test_cli_index_directory():
     directory = "tmpdir.test_script_index_directory"
     shutil.rmtree(directory, ignore_errors=True)
     os.makedirs(directory)
@@ -82,26 +82,32 @@ def test_script_index_directory():
         with settings.temporary():
             settings.set("cache-directory", cache_dir)
 
+            # create a GRIB file in the directory to index
             s1 = cml.load_source("dummy-source", kind="grib", date=20150418)
             assert len(s1) > 0
             os.makedirs(os.path.join(directory, "a"))
             s1.save(os.path.join(directory, "a", "x.grib"))
 
+            # create a second GRIB file in the directory to index
             s2 = cml.load_source("dummy-source", kind="grib", date=20111202)
             assert len(s2) > 0
             s2.save(os.path.join(directory, "b.grib"))
 
+            # make sure the files are there
             files = glob.glob(os.path.join(directory, "*"))
             assert len(files) == 2, files
 
+            # Run the cli command to test: index_directory
             app = CliMetLabApp()
             app.onecmd(f"index_directory {directory}")
 
+            # use the newly created directory
             s = cml.load_source("directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
             db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
             assert s.index.db.db_path == db_path
 
+            # assert the data is correct
             assert s.to_numpy().mean() == 277.31256510416665
 
             # to make sure the file descriptors are closed.

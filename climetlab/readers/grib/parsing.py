@@ -110,7 +110,8 @@ class DirectoryParserIterator:
             return self._tasks
 
         LOG.debug(f"Parsing files in {self.directory}")
-        assert os.path.isdir(self.directory), self.directory
+        assert os.path.exists(self.directory), f"{self.directory} does not exist"
+        assert os.path.isdir(self.directory), f"{self.directory} is not a directory"
 
         tasks = []
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
