@@ -50,7 +50,7 @@ class IndexedSource(Source):
         if kwargs:
             self.index = self.index.sel(kwargs)
 
-        if order_by is not None:
+        if order_by:
             self.index = self.index.order_by(order_by)
 
         super().__init__()

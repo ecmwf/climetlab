@@ -181,12 +181,10 @@ if __name__ == "__main__":
 
     main(__file__)
 
-    # testdir = 'test_indexing_tmpdir'
+    # testdir = "test_indexing_tmpdir"
     # _build_dir_with_grib_files(testdir)
 
-    # test_directory_source_with_none_2(
-    # test_directory_source_with_none_1(
-    # /test_directory_source_order_with_order_by_method_2(testdir)
+    # test_directory_source_order_with_order_by_method_2(testdir)
     # test_directory_source_order_with_order_by_method_1(
     #    ["z", "t"],
     #    [500, 850],

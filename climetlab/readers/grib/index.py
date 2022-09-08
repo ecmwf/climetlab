@@ -18,7 +18,7 @@ import requests
 from multiurl import robust
 
 from climetlab.core.caching import auxiliary_cache_file, cache_file
-from climetlab.core.index import Index, MultiIndex, SorterWithCache
+from climetlab.core.index import Index, MultiIndex, Order
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
@@ -32,31 +32,16 @@ from climetlab.vocabularies.grib import grib_naming
 LOG = logging.getLogger(__name__)
 
 
-class GribSorter(SorterWithCache):
-    def __init__(self, index, *args, **kwargs):
+class GribOrder(Order):
+    def __init__(self, *args, **kwargs):
         kwargs = grib_naming(kwargs)
         if len(args) == 1 and isinstance(args[0], dict):
             args = [grib_naming(args[0])]
 
-        super().__init__(index, *args, **kwargs)
-
-
-class GribSorterForSql(GribSorter):
-    def parse_kwarg(self, k, v):
-        if (
-            (v == "ascending")
-            or (v == "descending")
-            or (v is None)
-            or isinstance(v, (list, tuple))
-        ):
-            self.order[k] = v
-            return
-        raise ValueError(v)
+        super().__init__(*args, **kwargs)
 
 
 class GribIndex(FieldSet, Index):
-    SORTER_CLASS = GribSorter
-
     def __init__(self, selection=None, order=None):
         self._availability = None
         self.selection = selection
@@ -203,7 +188,7 @@ class GribDBIndex(GribInFiles):
         return cls(cls.DBCLASS(db_path), **kwargs)
 
     def order_by(self, *args, **kwargs):
-        order = self.SORTER_CLASS(self, *args, **kwargs)
+        order = GribOrder(*args, **kwargs)
         return self.__class__(
             selection=self.selection,
             order=order,
@@ -291,7 +276,6 @@ SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
 class SqlIndex(GribDBIndex):
 
     DBCLASS = SqlDatabase
-    SORTER_CLASS = GribSorterForSql
     CHUNKING = 50000
 
     def part(self, n):

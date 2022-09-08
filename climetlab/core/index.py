@@ -16,23 +16,19 @@ from climetlab.sources import Source
 LOG = logging.getLogger(__name__)
 
 
-class Sorter:
-    def __init__(self, index, *args, **kwargs):
-        """Parse args and kwargs to build a dictionary in self.order."""
-
+class Order:
+    def __init__(self, *args, **kwargs):
+        """Parse args and kwargs to build a dictionary in self.order"""
         self.order = {}
-        self.index = index
+
+        if len(args) == 1 and isinstance(args[0], dict) and not kwargs:
+            kwargs = args[0]
 
         for arg in args:
             self.parse_arg(arg)
 
         for k, v in kwargs.items():
             self.parse_kwarg(k, v)
-
-        self._post_init()
-
-    def _post_init(self):
-        self._cache = [None] * len(self.index)
 
     def parse_arg(self, arg):
         if arg is None:
@@ -47,30 +43,18 @@ class Sorter:
         raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
 
     def parse_kwarg(self, k, v):
-        if v == "ascending":
+        if (
+            (v == "ascending")
+            or (v == "descending")
+            or (v is None)
+            or isinstance(v, (list, tuple))
+        ):
             self.order[k] = v
             return
         raise ValueError(v)
 
-    def __call__(self, i):
-        element = self.index[i]
-        hashable = tuple(element.metadata(k) for k in self.order.keys())
-        return hashable
-
-
-class SorterWithCache(Sorter):
-    def _post_init(self):
-        self._cache = [None] * len(self.index)
-
-    def __call__(self, i):
-        if self._cache[i] is None:
-            self._cache[i] = super().__call__(i)
-        return self._cache[i]
-
 
 class Index(Source):
-    SORTER_CLASS = SorterWithCache
-
     @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
@@ -83,15 +67,29 @@ class Index(Source):
     def sel(self, *args, **kwargs):
         self._not_implemented()
 
-    @abstractmethod
-    def _order_indices(self, sorter):
-        result = list(range(len(self)))
-
-        return sorted(result, key=sorter)
-
     def order_by(self, *args, **kwargs):
-        sorter = self.SORTER_CLASS(self, *args, **kwargs)
-        return MaskIndex(self, self._order_indices(sorter))
+        class Sorter:
+            def __init__(self, index, order):
+                """Uses the order to sort the index"""
+
+                self.index = index
+                self.order = order
+                self._cache = [None] * len(self.index)
+
+            def __call__(self, i):
+                if self._cache[i] is None:
+                    element = self.index[i]
+                    self._cache[i] = tuple(
+                        element.metadata(k) for k in self.order.keys()
+                    )
+                return self._cache[i]
+
+        order = Order(*args, **kwargs)
+        sorter = Sorter(self, order)
+
+        result = list(range(len(self)))
+        indices = sorted(result, key=sorter)
+        return MaskIndex(self, indices)
 
 
 class MaskIndex(Index):
