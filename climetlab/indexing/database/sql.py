@@ -13,6 +13,7 @@ import os
 import sqlite3
 
 import climetlab as cml
+from climetlab.core.index import Sorter
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -143,24 +144,38 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k}='{b}'")
         return conditions
 
-    def _order_by(self, order):
-        if not order:
+    def _order_by(self, sorter):
+        """Uses a Sorter object to help building an SQL query.
+
+        Input: a Sorter object
+        Return: (dict, func)
+        The dict should be merged to create an "ORDER BY" SQL string
+        The function can be use to feed the SQL connection.create_function()
+        """
+
+        if not sorter:
             return None, None
-        if order is True:
-            return [f"i_{k}" for k in order.keys()], None
+        assert isinstance(sorter, Sorter), sorter
+        # if not isinstance(order, Sorter):
+        #    order = Sorter(order)
+        # if order is True:
+        #    return [f"i_{k}" for k in order.keys()], None
 
         # TODO: add default ordering
+        # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
+        # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
+
         dict_of_dicts = dict()
         order_lst = []
 
         # Use mars keys order by default
         # But make sure the order provided by the user
         # in the order override this default order.
-        keys = [_ for _ in order.keys()]
+        keys = [_ for _ in sorter.order.keys()]
         keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
 
         for key in keys:
-            lst = order.get(key, "ascending")  # Default is ascending order
+            lst = sorter.order.get(key, "ascending")  # Default is ascending order
 
             if lst is None:
                 order_lst.append(f"i_{key}")
@@ -173,8 +188,6 @@ class SqlDatabase(Database):
             if lst == "descending":
                 order_lst.append(f"i_{key} DESC")
                 continue
-
-            # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
 
             if not isinstance(lst, (list, tuple)):
                 lst = [lst]

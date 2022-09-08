@@ -9,11 +9,24 @@
 
 import json
 
+from climetlab.decorators import alias_argument
 from climetlab.utils import download_and_cache
 
 URL = "https://apps.ecmwf.int/codes/grib/json/"
 
 PARAMS = {}
+
+
+@alias_argument("levelist", ["level"])
+@alias_argument("param", ["variable", "parameter"])
+@alias_argument("number", ["realization", "realisation"])
+@alias_argument("class", "klass")
+def _grib_naming(**kwargs):
+    return kwargs
+
+
+def grib_naming(kwargs):
+    return _grib_naming(**kwargs)
 
 
 def _param_id_dict():

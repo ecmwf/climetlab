@@ -68,13 +68,13 @@ def test_directory_source_order_with_order_by_method_1(params, levels):
     ds = cml.load_source(
         "directory",
         TEST_DIR,
-        variable=params,
-        level=levels,
+        variable=["t", "z"],
+        level=[500, 850],
     ).order_by(
-        level=levels,
+        level=[str(x) for x in levels],
         variable=params,
-        date=20070101,
-        time="1200",
+        date=None,
+        time=None,
     )
     for i in ds:
         print(i)
@@ -83,6 +83,11 @@ def test_directory_source_order_with_order_by_method_1(params, levels):
     assert ds[1].handle.get("shortName") == params[1]
     assert ds[2].handle.get("shortName") == params[0]
     assert ds[3].handle.get("shortName") == params[1]
+
+    assert ds[0].metadata("level") == levels[0]
+    assert ds[1].metadata("level") == levels[0]
+    assert ds[2].metadata("level") == levels[1]
+    assert ds[3].metadata("level") == levels[1]
 
 
 def test_directory_source_order_with_order_by_method_2():
@@ -93,7 +98,8 @@ def test_directory_source_order_with_order_by_method_2():
         TEST_DIR,
         variable=params,
         level=levels,
-    ).order_by(
+    )
+    ds = ds.order_by(
         level="ascending",
         variable="descending",
     )

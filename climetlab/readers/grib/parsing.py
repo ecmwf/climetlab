@@ -116,6 +116,8 @@ class DirectoryParserIterator:
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
+                if path in self.ignore:
+                    continue
                 tasks.append(path)
 
         if tasks:
@@ -142,7 +144,11 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
         else:
             assert False, self.relative_paths
 
-        r = reader(self, path)
+        try:
+            r = reader(self, path)
+        except PermissionError as e:
+            LOG.error(f"Could not read {path}: {e}")
+            return
 
         for field in r.index_content():
             field["_path"] = _path
