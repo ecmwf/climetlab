@@ -287,7 +287,6 @@ class SqlDatabase(Database):
             connection.create_function("user_order", 2, order_func)
 
         statement = f"SELECT {names_str} FROM entries {conditions_str} {order_by_str} {limit_str} {offset_str};"
-        print(statement)
         LOG.debug("%s", statement)
         for tupl in connection.execute(statement):
             yield tupl
