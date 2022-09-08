@@ -31,8 +31,10 @@ CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 
 
 def check(ds, i, ref):
-    mean = ds[i].to_numpy().mean()
-    assert abs(mean - ref) < 1e-6, (mean, ref)
+    field = ds[i]
+    n = field.to_numpy()
+    mean = n.mean()
+    assert abs(mean - ref) < 1e-6, (mean, ref, field)
 
 
 @pytest.mark.long_test

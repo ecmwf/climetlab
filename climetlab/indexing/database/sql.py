@@ -249,8 +249,6 @@ class SqlDatabase(Database):
         """
         if request is None:
             request = {}
-        if order is None:
-            order = request
         if return_dicts is True:
             return_dicts = self._columns_names_without_i_()
 
