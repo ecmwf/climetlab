@@ -116,6 +116,8 @@ class DirectoryParserIterator:
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
+                if path in self.ignore:
+                    continue
                 tasks.append(path)
 
         if tasks:
