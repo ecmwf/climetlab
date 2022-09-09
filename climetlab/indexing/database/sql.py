@@ -13,7 +13,7 @@ import os
 import sqlite3
 
 import climetlab as cml
-from climetlab.core.index import Sorter
+from climetlab.core.index import Order
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -144,22 +144,18 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k}='{b}'")
         return conditions
 
-    def _order_by(self, sorter):
-        """Uses a Sorter object to help building an SQL query.
+    def _order_by(self, order):
+        """Uses a Order object to help building an SQL query.
 
-        Input: a Sorter object
+        Input: a Order object
         Return: (dict, func)
         The dict should be merged to create an "ORDER BY" SQL string
         The function can be use to feed the SQL connection.create_function()
         """
 
-        if not sorter:
+        if not order:
             return None, None
-        assert isinstance(sorter, Sorter), sorter
-        # if not isinstance(order, Sorter):
-        #    order = Sorter(order)
-        # if order is True:
-        #    return [f"i_{k}" for k in order.keys()], None
+        assert isinstance(order, Order), order
 
         # TODO: add default ordering
         # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
@@ -171,11 +167,11 @@ class SqlDatabase(Database):
         # Use mars keys order by default
         # But make sure the order provided by the user
         # in the order override this default order.
-        keys = [_ for _ in sorter.order.keys()]
+        keys = [_ for _ in order.order.keys()]
         keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
 
         for key in keys:
-            lst = sorter.order.get(key, "ascending")  # Default is ascending order
+            lst = order.order.get(key, "ascending")  # Default is ascending order
 
             if lst is None:
                 order_lst.append(f"i_{key}")
@@ -249,8 +245,6 @@ class SqlDatabase(Database):
         """
         if request is None:
             request = {}
-        if order is None:
-            order = request
         if return_dicts is True:
             return_dicts = self._columns_names_without_i_()
 

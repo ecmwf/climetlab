@@ -9,7 +9,6 @@
 
 
 import logging
-from abc import abstractmethod
 
 from climetlab.core.settings import SETTINGS
 from climetlab.sources import Source
@@ -28,10 +27,21 @@ class IndexedSource(Source):
         if order_by is None and kwargs:
             order_by = {}
             for k, v in kwargs.items():
-                if v is None or isinstance(v, (list, tuple)):
+                if v is None:
+                    order_by[k] = v
+                elif isinstance(v, (list, tuple)):
                     order_by[k] = v
                 else:
-                    order_by[k] = [v]
+                    # There is only one element for this key in the request.
+                    # No need to sort along this dimension
+                    pass
+                    # TODO: remove this comment:
+                    # We could still keep this key to ensure consistency: when coming from a request,
+                    # the values of order_by would be either None or a list with the following.
+                    #   either:
+                    #      order_by[k] = [v]
+                    #   or:
+                    #      order_by[k] = None
 
         self.filter = filter
         self.merger = merger
@@ -40,7 +50,7 @@ class IndexedSource(Source):
         if kwargs:
             self.index = self.index.sel(kwargs)
 
-        if order_by is not None:
+        if order_by:
             self.index = self.index.order_by(order_by)
 
         super().__init__()
