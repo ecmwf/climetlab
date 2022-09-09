@@ -10,15 +10,16 @@
 #
 
 import pytest
+from test_indexing_source_indexed_urls import (
+    CML_BASEURL_CDS,
+    CML_BASEURL_GET,
+    CML_BASEURL_S3,
+    CML_BASEURLS,
+)
 
 import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
-
-CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
-CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
-CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"
-CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 
 
 @pytest.mark.long_test
@@ -32,29 +33,22 @@ def test_global_index(baseurl):
             s = cml.load_source(
                 "indexed-url",
                 f"{baseurl}/test-data/input/indexed-urls/global_index.index",
-                # baseurl=f"{baseurl}/test-data/input/indexed-urls",
+                baseurl=f"{baseurl}/test-data/input/indexed-urls",
                 param="r",
                 time="1000",
                 date="19970101",
                 index_type="json",
-                # db_path='./here.json'
             )
-            for _ in s:
-                print(_)
-                break
-            s.to_xarray()
+            assert len(s) == 4
+            assert s[0].metadata("short_name") == "r"
+            assert s[0].metadata("time") == "1000"
+            assert s[0].metadata("date") == "19970101"
 
-            # for path in paths:
-            #     # check that the downloaded gribs match the request
-            #     for grib in cml.load_source("file", path):
-            #         for k, v in request.items():
-            #             if k == "param":
-            #                 k = "shortName"
-            #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
+            s.to_xarray()
 
 
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    main(__file__)
-    # test_global_index(CML_BASEURL_S3)
+    # main(__file__)
+    test_global_index(CML_BASEURL_S3)

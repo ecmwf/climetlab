@@ -22,159 +22,113 @@ CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"
 CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
 
-# Index files have been created with :
-#  export BASEURL=https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/input/indexed-urls
-#  climetlab index_gribs $BASEURL/large_grib_1.grb > large_grib_1.grb.index
-#  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
-#  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
 
-
-def check(ds, i, ref):
-    field = ds[i]
+def check(source, i, ref):
+    field = source[i]
     n = field.to_numpy()
     mean = n.mean()
     assert abs(mean - ref) < 1e-6, (mean, ref, field)
 
 
+REQUEST_1 = {
+    "domain": "g",
+    "levtype": "pl",
+    "levelist": "850",
+    "date": "19970228",
+    "time": "2300",
+    "step": "0",
+    "param": "r",
+    "class": "ea",
+    "type": "an",
+    "stream": "oper",
+    "expver": "0001",
+    #
+    "n": ["1", "2"],
+}
+
+
 @pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
-def test_indexed_s3(baseurl):
+def test_indexed_urls_deprecated(baseurl):
     PER_URL_INDEX = PerUrlIndex(
         baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb"
     )
-
-    class Mydataset(Dataset):
-        @normalize(
-            "param",
-            ["q", "r", "t", "u", "v", "z"],
-            # aliases="eumetnet_aliases.yaml",
-            # multiple=True,
-        )
-        def __init__(self, option="abc", **request):
-            self.source = load_source(
-                "indexed-urls",
-                PER_URL_INDEX,
-                request,
-            )
-
-            self.source = load_source(
-                "indexed-urls",
-                baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
-                request,
-            )
-
-    a = Mydataset(
-        **{
-            "domain": "g",
-            "levtype": "pl",
-            "levelist": "850",
-            "date": "19970228",
-            "time": "2300",
-            "step": "0",
-            "param": "r",
-            "class": "ea",
-            "type": "an",
-            "stream": "oper",
-            "expver": "0001",
-            #
-            "n": ["1", "2"],
-        }
-    )
-    check(a, 0, 49.86508481081071)
-    ds = a.to_xarray()
+    source = load_source("indexed-urls", PER_URL_INDEX, REQUEST_1)
+    check(source, 0, 49.86508481081071)
+    ds = source.to_xarray()
     assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
-def retrieve_and_check(index, request, range_method=None, **kwargs):
-    print("--------")
-    print("range_method", range_method)
-    print("REQUEST", request)
-    #    for url, p in parts:
-    #        total = len(index.get_backend(url).entries)
-    #        print(f"PARTS: {len(p)}/{total} parts in {url}")
-
-    now = time.time()
-    s = load_source(  # noqa F841
+@pytest.mark.long_test
+@pytest.mark.parametrize("baseurl", CML_BASEURLS)
+def test_indexed_urls(baseurl):
+    source = load_source(
         "indexed-urls",
-        index,
-        request,
-        range_method=range_method,
-        **kwargs,
+        baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb",
+        REQUEST_1,
     )
-    elapsed = time.time() - now
-    # print("ELAPSED", elapsed)
-    # try:
-    #     paths = [s.path]
-    # except AttributeError:
-    #     paths = [p.path for p in s.sources]
-
-    # for path in paths:
-    #     # check that the downloaded gribs match the request
-    #     for grib in load_source("file", path):
-    #         for k, v in request.items():
-    #             if k == "param":
-    #                 k = "shortName"
-    #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
-    return elapsed
-
-
-def check_grib_value(value, requested):
-    if isinstance(requested, (list, tuple)):
-        return any([check_grib_value(value, _v) for _v in requested])
-    else:
-        try:
-            return int(value) == int(requested)
-        except (TypeError, ValueError):
-            return str(value) == str(requested)
+    check(source, 0, 49.86508481081071)
+    ds = source.to_xarray()
+    assert abs(ds["r"].mean() - 49.86508560180664) < 1e-6
 
 
 @pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index(baseurl):
-    index = PerUrlIndex(
-        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
-    )
     request = dict(param="r", time="1000", date="19970101")
-    retrieve_and_check(index, request)
+    load_source(
+        "indexed-urls",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
+        request,
+    )
 
 
 @pytest.mark.long_test
 # @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index_2():
     baseurl = CML_BASEURL_S3
-    index = PerUrlIndex(
-        f"{baseurl}/test-data/big.grib",
-    )
     request = dict(param="cin", date="20211125", step="6", number=["1", "3"])
-    retrieve_and_check(index, request)
+    load_source("indexed-urls", f"{baseurl}/test-data/big.grib", request)
+
+
+def retrieve(pattern, request, range_method=None, **kwargs):
+    print("--------")
+    print("range_method", range_method)
+    print("Request=", request)
+
+    now = time.time()
+    load_source(  # noqa F841
+        "indexed-urls",
+        pattern,
+        request,
+        range_method=range_method,
+        **kwargs,
+    )
+    elapsed = time.time() - now
+    return elapsed
 
 
 def dev():
     baseurl = CML_BASEURL_S3
-
-    index = PerUrlIndex(
-        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
-    )
+    pattern = f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb"
 
     request = dict(param="r")
-    retrieve_and_check(index, request)
+    retrieve(pattern, request)
 
     request = dict(param="r", time="1000")
-    retrieve_and_check(index, request)
+    retrieve(pattern, request)
 
     request = dict(date="19970101")
-    retrieve_and_check(index, request)
+    retrieve(pattern, request)
 
     request = dict(param="r", time="1000", date="19970101")
-    retrieve_and_check(index, request)
+    retrieve(pattern, request)
 
 
 def timing():
     baseurl = CML_BASEURL_S3
     baseurl = CML_BASEURL_CDS
-    index = PerUrlIndex(
-        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
-    )
+    pattern = f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb"
 
     sizes = ["sharp(1,1)", "auto", "cluster"]
     sizes = []
@@ -191,7 +145,7 @@ def timing():
         times = []
         for n in sizes:
             try:
-                elapsed = retrieve_and_check(index, request, range_method=n, force=True)
+                elapsed = retrieve(pattern, request, range_method=n, force=True)
             except Exception as e:
                 print(e)
                 times.append(-1)
@@ -225,7 +179,7 @@ def test_grib_index_eumetnet():
         "year": "2017",
     }
     PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
-    ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
+    ds = load_source("indexed-urls", PATTERN, request)
     assert len(ds) == 7, len(ds)
     check(ds, 0, -0.16334878510300832)
     check(ds, 1, -0.06413754859021915)
