@@ -13,8 +13,7 @@ import time
 
 import pytest
 
-from climetlab import Dataset, load_source
-from climetlab.decorators import normalize
+from climetlab import load_source
 from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"

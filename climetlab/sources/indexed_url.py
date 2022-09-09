@@ -8,14 +8,16 @@
 #
 
 
-from climetlab.readers.grib.index import JsonIndex
+from climetlab.readers.grib.index import JsonIndex, SqlIndex
 from climetlab.sources.indexed import IndexedSource
 
 
 class IndexedUrl(IndexedSource):
-    def __init__(self, url, **kwargs):
+    def __init__(self, url, _index_type="sql", **kwargs):
 
-        super().__init__(JsonIndex.from_url(url), **kwargs)
+        index_class = dict(json=JsonIndex, sql=SqlIndex)[_index_type]
+        index = index_class.from_url(url)
+        super().__init__(index, **kwargs)
 
 
 source = IndexedUrl

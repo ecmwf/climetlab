@@ -113,12 +113,15 @@ class GribDBIndex(GribInFiles):
 
     @classmethod
     def from_url(cls, url, patch_entry=None, **kwargs):
+        """Create a database from a given url"""
+
+        # If this is a file, open it without download
         if os.path.exists(url):
             return cls.from_file(path=url, **kwargs)
-
         if url.startswith("file://") and os.path.exists(url[7:]):
             return cls.from_file(path=url[7:], **kwargs)
 
+        # Request to download the data
         r = robust(requests.get)(url, stream=True)
         r.raise_for_status()
         try:
@@ -126,14 +129,16 @@ class GribDBIndex(GribInFiles):
         except Exception:
             size = None
 
-        def absolute_url(entry):
-            entry["_path"] = urljoin(url, entry.pop("_path"))
-
         if patch_entry is None:
+
+            def absolute_url(entry):  # closure on "url"
+                entry["_path"] = urljoin(url, entry.pop("_path"))
+                return entry
+
             patch_entry = absolute_url
 
-        def progress(lines):
-            pbar = progress_bar(iterable=lines, desc="Downloading index", total=size)
+        def progress(iterable):
+            pbar = progress_bar(iterable=iterable, desc="Downloading index", total=size)
             for line in pbar:
                 yield line
                 pbar.update(len(line) + 1)
@@ -141,7 +146,7 @@ class GribDBIndex(GribInFiles):
         def parse_lines(lines):
             for line in lines:
                 entry = json.loads(line)
-                patch_entry(entry)
+                entry = patch_entry(entry)
                 yield entry
 
         iterator = r.iter_lines()
