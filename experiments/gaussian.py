@@ -8,8 +8,7 @@
 #
 
 import climetlab as cml
-
 from climetlab.grids import unstructed_to_structed
 
-ds = cml.load_source('mars', param="2t", date=-1, levtype="sfc")
+ds = cml.load_source("mars", param="2t", date=20220907, levtype="sfc")
 unstructed_to_structed(ds[0])

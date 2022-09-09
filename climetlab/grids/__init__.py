@@ -54,7 +54,7 @@ class KDNode:
         d = np.linalg.norm(point - self.value)
         if d < o.max:
             o.max = d
-            o.best = self
+            o.best = self.payload
 
         d = np.fabs(x - y)
 
@@ -68,14 +68,38 @@ class KDNode:
                     self.left._find_nn(point, o, depth + 1)
 
 
+class KDChunk:
+    __slots__ = 'values'
+    def __init__(self,values):
+        self.values = values
+    def visit(self, visitor, depth):
+        visitor(self, depth)
+
+
+    def _find_nn(self, point, o, depth):
+
+        d = min((np.linalg.norm(point - v[:-1]), v[-1]) for v in self.values)
+
+
+
+        if d[0] < o.max:
+            o.max = d[0]
+            o.best = d[1]
+
+
 class KDTree:
-    def __init__(self, dimensions, values):
+    def __init__(self, dimensions, values, chunk_size=-1):
         self.dimensions = dimensions
+        self.chunk_size = chunk_size
         self.root = self.build(values)
+
 
     def build(self, values, depth=0):
         if len(values) == 0:
             return None
+
+        if len(values) <= self.chunk_size:
+            return KDChunk(values)
 
         k = self.dimensions
         axis = depth % k
@@ -144,9 +168,9 @@ def ecef(lat, lon, i):
     )
 
 
-def unstructed_to_structed(grib):
+def unstructed_to_structed(grib,chunk_size=-1):
 
-    now = time.time()
+    start = now = time.time()
     print("----")
     xyz = np.array(
         [ecef(lat, lon, i) for i, (lat, lon) in enumerate(grib.iterate_grid_points())]
@@ -154,15 +178,16 @@ def unstructed_to_structed(grib):
     print("----", time.time() - now)
 
     now = time.time()
-    tree = KDTree(3, xyz)
+    tree = KDTree(3, xyz, chunk_size)
     print(xyz)
     print("----", time.time() - now)
     print(tree.size(), tree.depth())
     now = time.time()
     z = []
-    for lat in range(90, -91, -1):
-        for lon in range(0, 361):
-            xyz = ecef(lat, lon, 0)
-            z.append(tree.find_nn(xyz[:-1])[0].payload)
+    for lat in range(900, -901, -1):
+        for lon in range(0, 3601):
+            xyz = ecef(lat/10, lon/10, 0)
+            z.append(tree.find_nn(xyz[:-1])[0])
     print("----", time.time() - now)
     print(np.array(z))
+    return time.time() - start
