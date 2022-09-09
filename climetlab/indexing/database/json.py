@@ -48,8 +48,7 @@ class JsonDatabase(Database):
 
         parts = []
         query = {
-            k: set(v if isinstance(v, (list, tuple)) else [v])
-            for k, v in request.items()
+            k: v if isinstance(v, (list, tuple)) else [v] for k, v in request.items()
         }
 
         for e in self.entries:
