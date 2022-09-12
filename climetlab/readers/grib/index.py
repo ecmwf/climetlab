@@ -55,9 +55,6 @@ class MultiGribIndex(FieldSet, MultiIndex):
 
 
 class GribInFiles(GribIndex):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __getitem__(self, n):
         part = self.part(n)
         return GribField(part.path, part.offset, part.length)
@@ -248,7 +245,7 @@ class GribIndexFromDicts(GribIndex):
         self.list_of_dicts = list_of_dicts
 
     def __getitem__(self, n):
-        class Wrapped(dict):
+        class VirtualGribField(dict):
             def metadata(self, n):
                 return self[n]
 
@@ -256,7 +253,7 @@ class GribIndexFromDicts(GribIndex):
             def values(self, n):
                 return self["values"]
 
-        return Wrapped(self.list_of_dicts[n])
+        return VirtualGribField(self.list_of_dicts[n])
 
     def __len__(self):
         return len(self.list_of_dicts)
