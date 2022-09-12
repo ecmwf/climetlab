@@ -25,6 +25,7 @@ from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.utils import progress_bar
+from climetlab.utils.kwargs import merge_for_selection
 from climetlab.utils.parts import Part
 from climetlab.utils.serialise import register_serialisation
 from climetlab.vocabularies.grib import grib_naming
@@ -44,41 +45,18 @@ class GribOrder(Order):
 class GribIndex(FieldSet, Index):
     ORDER_CLASS = GribOrder
 
-    def __init__(self):
+    def __init__(self, order=None, selection=None):
+
         self._availability = None
-        self.order = None
-        self.selection = None
 
-    def clone(self):
-        return self.__class__()
+        if not isinstance(order, self.ORDER_CLASS):
+            order = self.ORDER_CLASS(order)
+        self.order = order
 
-    def sel(self, *args, **kwargs):
-        if not kwargs:
-            if not args or (len(args) == 1 and not args[0]):
-                return self
-
-        sel = {}
-
-        if self.selection:
-            # TODO: actually make intersection
-            sel.update(self.selection)
-        for a in args:
-            sel.update(a)
-        sel.update(kwargs)
-
-        new = self.clone()
-        new.selection = sel
-        new.order = self.order
-        return new
-
-    def order_by(self, *args, **kwargs):
-        if not kwargs:
-            if not args or (len(args) == 1 and not args[0]):
-                return self
-        new = self.clone()
-        new.selection = self.selection
-        new.order = self.ORDER_CLASS(*args, **kwargs)
-        return new
+        if selection is None:
+            selection = {}
+        assert isinstance(selection, dict)
+        self.selection = selection
 
 
 class MultiGribIndex(FieldSet, MultiIndex):
@@ -117,8 +95,29 @@ class GribDBIndex(GribInFiles):
 
         super().__init__(**kwargs)
 
-    def clone(self):
-        return self.__class__(db=self.db)
+    def sel(self, *args, **kwargs):
+        if not kwargs:  # no kwargs
+            if not args or (len(args) == 1 and not args[0]):  # and no args
+                return self
+
+        selection = merge_for_selection(self.selection, args, kwargs)
+        return self.__class__(
+            db=self.db,
+            selection=selection,
+            order=self.order,
+        )
+
+    def order_by(self, *args, **kwargs):
+
+        order = self.ORDER_CLASS(*args, **kwargs)
+        if order.is_empty:
+            return self
+
+        return self.__class__(
+            db=self.db,
+            selection=self.selection,
+            order=order,
+        )
 
     @classmethod
     def from_iterator(
@@ -269,6 +268,7 @@ class GribIndexFromDicts(GribIndex):
 
         return VirtualGribField(self.list_of_dicts[n])
 
+
     def __len__(self):
         return len(self.list_of_dicts)
 
@@ -317,14 +317,14 @@ class SqlIndex(GribDBIndex):
 register_serialisation(
     SqlIndex,
     lambda x: x.db.db_path,
-    lambda x: SqlIndex(db=SqlDatabase(x)),
+    lambda x: SqlIndex(db=SqlDatabase(x)),  # TODO: add selection and order here?
 )
 
 
 class GribFileIndex(GribInFiles):
     VERSION = 1
 
-    def __init__(self, path):
+    def __init__(self, path, **kwargs):
         assert isinstance(path, str), path
 
         self.path = path
@@ -340,7 +340,7 @@ class GribFileIndex(GribInFiles):
         if not self._load_cache():
             self._build_index()
 
-        super().__init__()
+        super().__init__(**kwargs)
 
     def _build_index(self):
 

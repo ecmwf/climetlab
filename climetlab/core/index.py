@@ -30,6 +30,12 @@ class Order:
         for k, v in kwargs.items():
             self.parse_kwarg(k, v)
 
+    @property
+    def is_empty(self):
+        if not self.order:
+            return True
+        return False
+
     def parse_arg(self, arg):
         if arg is None:
             return
@@ -71,6 +77,12 @@ class Index(Source):
         self._not_implemented()
 
     def order_by(self, *args, **kwargs):
+        """Default order_by method.
+        It expects that calling self[i] returns an element with a .metadata(key) method,
+        then sort the tuple.
+        Returns a new index object.
+        """
+
         class Sorter:
             def __init__(self, index, order):
                 """Uses the order to sort the index"""
@@ -88,6 +100,12 @@ class Index(Source):
                 return self._cache[i]
 
         order = self.ORDER_CLASS(*args, **kwargs)
+        if order.is_empty():
+            return self
+
+        for k, v in order:
+            assert v in ["ascending", None], f"Unsupported order: {v}."
+
         sorter = Sorter(self, order)
 
         result = list(range(len(self)))

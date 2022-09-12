@@ -24,9 +24,12 @@ class IndexedSource(Source):
     def __init__(self, index, order_by=None, filter=None, merger=None, **kwargs):
         LOG.debug(f"New IndexedSource order={order_by} kwargs={kwargs}")
         kwargs = self.normalize_naming(kwargs)
-        if order_by is None and kwargs:
+
+        def _build_order_by_from_selection(selection):
+            if not selection:
+                return None
             order_by = {}
-            for k, v in kwargs.items():
+            for k, v in selection.items():
                 if v is None:
                     order_by[k] = v
                 elif isinstance(v, (list, tuple)):
@@ -42,6 +45,10 @@ class IndexedSource(Source):
                     #      order_by[k] = [v]
                     #   or:
                     #      order_by[k] = None
+            return order_by
+
+        if order_by is None:
+            order_by = _build_order_by_from_selection(kwargs)
 
         self.filter = filter
         self.merger = merger
@@ -64,9 +71,11 @@ class IndexedSource(Source):
 
     def sel(self, **kwargs):
         kwargs = self.normalize_naming(kwargs)
-        return self.__class__(self, _index=self.index.sel(**kwargs))
+        index=self.index.sel(**kwargs)
+        return self.__class__(self, _index=index)
 
     def order_by(self, *args, **kwargs):
+        kwargs = self.normalize_naming(kwargs)
         index = self.index.order_by(*args, **kwargs)
         return self.__class__(self, _index=index)
 

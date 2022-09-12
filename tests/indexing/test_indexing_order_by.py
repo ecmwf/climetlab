@@ -16,8 +16,8 @@ import time
 import pytest
 
 import climetlab as cml
-from climetlab import Dataset, load_source
 from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.readers.grib.index import GribIndexFromDicts
 from climetlab.decorators import normalize
 from climetlab.indexing import PerUrlIndex
 from climetlab.testing import climetlab_file
@@ -61,6 +61,45 @@ def _build_unique_grib_file(path):
             with open(file, mode="rb") as f:
                 shutil.copyfileobj(f, target)
 
+def list_of_dicts():
+    return [
+        {
+            "gridType": "regular_ll",
+            "Nx": 2,
+            "Ny": 3,
+            "distinctLatitudes": [-10.0, 0.0, 10.0],
+            "distinctLongitudes": [0.0, 10.0],
+            "paramId": 167,
+            "shortName": "2t",
+            "time": "1000",
+            "level":"500",
+            "values": [[1, 2], [3, 4], [5, 6]],
+        },
+        {
+            "gridType": "regular_ll",
+            "Nx": 2,
+            "Ny": 3,
+            "distinctLatitudes": [-10.0, 0.0, 10.0],
+            "distinctLongitudes": [0.0, 10.0],
+            "paramId": 167,
+            "shortName": "2t",
+            "time": "1200",
+            "level":"500",
+            "values": [[2, 2], [4, 4], [6, 6]],
+        },
+        {
+            "gridType": "regular_ll",
+            "Nx": 2,
+            "Ny": 3,
+            "distinctLatitudes": [-10.0, 0.0, 10.0],
+            "distinctLongitudes": [0.0, 10.0],
+            "paramId": 168,
+            "shortName": "2d",
+            "level":"850",
+            "values": [[18, 2], [3, 4], [5, 6]],
+        }
+    ]
+
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
@@ -75,9 +114,10 @@ def test_indexing_order_by_with_request(params, levels, source_name):
 
     if source_name == "directory":
         tmp = dir_with_grib_files()
+        ds = cml.load_source(source_name, tmp.path, **request)
     elif source_name == "file":
         tmp = unique_grib_file()
-    ds = cml.load_source(source_name, tmp.path, **request)
+        ds = cml.load_source(source_name, tmp.path, **request)
 
     for i in ds:
         print(i)
@@ -143,6 +183,7 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
     "source_name",
     [
         "directory",
+        "list-of-dicts",
         # "file",
     ],
 )
@@ -158,19 +199,25 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 
     if source_name == "directory":
         tmp = dir_with_grib_files()
+        total, n = 6,4
+        ds = cml.load_source(source_name, tmp.path)
     elif source_name == "file":
         tmp = unique_grib_file()
+        total, n = 6,4
+        ds = cml.load_source(source_name, tmp.path)
+    elif source_name == "list-of-dicts":
+        tmp = list_of_dicts()
+        total, n = 3,2
+        ds = GribIndexFromDicts(tmp)
 
-    ds = cml.load_source(source_name, tmp.path)
-    assert len(ds) == 6, len(ds)
+    assert len(ds) == total, len(ds)
 
-    ds = cml.load_source(source_name, tmp.path)
     ds = ds.sel(**request)
-    assert len(ds) == 4, len(ds)
+    assert len(ds) == n, len(ds)
     ds = ds.order_by(order_by)
     for i in ds:
         print(i)
-    assert len(ds) == 4
+    assert len(ds) == n
 
     assert ds[0].metadata("short_name") == params[0]
     assert ds[1].metadata("short_name") == params[1]

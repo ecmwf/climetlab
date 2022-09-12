@@ -25,6 +25,35 @@ def deep_update(old, new):
     return old
 
 
+def merge_for_selection(selected, args, kwargs):
+
+    selection = {k: v for k, v in selected.items()}
+
+    def merge(new):
+        if not new:
+            return
+        # TODO: taking care of 'ALL'
+        for k, v in new.items():
+            if not k in selection:
+                selection[k] = v
+                continue
+            old_v = selection[k]
+            if not isinstance(v, (list, tuple)):
+                v = [v]
+            if not isinstance(old_v, (list, tuple)):
+                old_v = [old_v]
+            v = [x for x in old_v if x in v]  # actual merge
+            selection[k] = v
+
+    merge(kwargs)
+
+    for a in args:
+        assert isinstance(a, dict), f"Expected a dict, got ({a})"
+        merge(a)
+
+    return selection
+
+
 class Kwargs(dict):
     def __init__(
         self,
