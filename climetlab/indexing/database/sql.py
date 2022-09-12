@@ -212,14 +212,13 @@ class SqlDatabase(Database):
         if request is None:
             request = {}
 
-        conditions_str = ""
         conditions = self._conditions(request)
-        if conditions:
-            conditions_str = " WHERE " + " AND ".join(conditions)
+        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
 
         statement = f"SELECT COUNT(*) FROM entries {conditions_str};"
 
         LOG.debug(statement)
+        print(statement)
         for result in self.connection.execute(statement):
             return result[0]
         assert False
@@ -281,6 +280,7 @@ class SqlDatabase(Database):
             connection.create_function("user_order", 2, order_func)
 
         statement = f"SELECT {names_str} FROM entries {conditions_str} {order_by_str} {limit_str} {offset_str};"
+        print(statement)
         LOG.debug("%s", statement)
         for tupl in connection.execute(statement):
             yield tupl

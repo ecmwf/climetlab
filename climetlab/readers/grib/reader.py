@@ -22,6 +22,9 @@ class GRIBReader(GribFileIndex, Reader):
         Reader.__init__(self, source, path)
         GribFileIndex.__init__(self, path)
 
+    def clone(self):
+        return self.__class__(self.source, self.path)
+
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)
 

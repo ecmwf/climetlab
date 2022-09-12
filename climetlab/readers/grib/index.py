@@ -43,10 +43,42 @@ class GribOrder(Order):
 
 class GribIndex(FieldSet, Index):
     ORDER_CLASS = GribOrder
-    def __init__(self, selection=None, order=None):
+
+    def __init__(self):
         self._availability = None
-        self.selection = selection
-        self.order = order
+        self.order = None
+        self.selection = None
+
+    def clone(self):
+        return self.__class__()
+
+    def sel(self, *args, **kwargs):
+        if not kwargs:
+            if not args or (len(args) == 1 and not args[0]):
+                return self
+
+        sel = {}
+
+        if self.selection:
+            # TODO: actually make intersection
+            sel.update(self.selection)
+        for a in args:
+            sel.update(a)
+        sel.update(kwargs)
+
+        new = self.clone()
+        new.selection = sel
+        new.order = self.order
+        return new
+
+    def order_by(self, *args, **kwargs):
+        if not kwargs:
+            if not args or (len(args) == 1 and not args[0]):
+                return self
+        new = self.clone()
+        new.selection = self.selection
+        new.order = self.ORDER_CLASS(*args, **kwargs)
+        return new
 
 
 class MultiGribIndex(FieldSet, MultiIndex):
@@ -85,11 +117,16 @@ class GribDBIndex(GribInFiles):
 
         super().__init__(**kwargs)
 
+    def clone(self):
+        return self.__class__(db=self.db)
+
     @classmethod
     def from_iterator(
         cls,
         iterator,
         cache_metadata,
+        selection=None,
+        order_by=None,
         **kwargs,
     ):
         def load(target, *args):
@@ -107,7 +144,10 @@ class GribDBIndex(GribInFiles):
 
         db = cls.DBCLASS(db_name)
 
-        return cls(db=db, **kwargs)
+        new = cls(db=db, **kwargs)
+        new = new.sel(selection)
+        new = new.order_by(order_by)
+        return new
 
     @classmethod
     def from_url(cls, url, patch_entry=None, **kwargs):
@@ -189,32 +229,6 @@ class GribDBIndex(GribInFiles):
     def from_existing_db(cls, db_path, **kwargs):
         assert os.path.exists(db_path)
         return cls(cls.DBCLASS(db_path), **kwargs)
-
-    def order_by(self, *args, **kwargs):
-        order = self.ORDER_CLASS(*args, **kwargs)
-        return self.__class__(
-            selection=self.selection,
-            order=order,
-            db=self.db,
-        )
-
-    def sel(self, *args, **kwargs):
-        sel = {}
-
-        if self.selection:
-            # TODO: actually make intersection
-            sel.update(self.selection)
-
-        for a in args:
-            sel.update(a)
-
-        sel.update(kwargs)
-
-        return self.__class__(
-            selection=sel,
-            order=self.order,
-            db=self.db,
-        )
 
     @property
     def availability(self):
@@ -325,7 +339,7 @@ class GribFileIndex(GribInFiles):
 
         if not self._load_cache():
             self._build_index()
-        
+
         super().__init__()
 
     def _build_index(self):
@@ -373,7 +387,17 @@ class GribFileIndex(GribInFiles):
         return False
 
     def part(self, n):
+        if self.selection:
+            raise NotImplementedError(
+                f"Selection not implemented for {self} ({self.selection}"
+            )
+        if self.order:
+            raise NotImplementedError(f"Order not implemented for {self} ({self.order}")
         return Part(self.path, self.offsets[n], self.lengths[n])
 
     def number_of_parts(self):
+        if self.selection:
+            raise NotImplementedError(
+                f"Selection not implemented for {self} ({self.selection}"
+            )
         return len(self.offsets)

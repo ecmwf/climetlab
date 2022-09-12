@@ -48,6 +48,7 @@ class IndexedUrls(IndexedSource):
         def add_path(url):
             def wrapped(entry):
                 entry["_path"] = url
+                return entry
 
             return wrapped
 
