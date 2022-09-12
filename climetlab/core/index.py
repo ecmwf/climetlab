@@ -55,6 +55,9 @@ class Order:
 
 
 class Index(Source):
+
+    ORDER_CLASS = Order
+
     @abstractmethod
     def __getitem__(self, n):
         self._not_implemented()
@@ -84,7 +87,7 @@ class Index(Source):
                     )
                 return self._cache[i]
 
-        order = Order(*args, **kwargs)
+        order = self.ORDER_CLASS(*args, **kwargs)
         sorter = Sorter(self, order)
 
         result = list(range(len(self)))

@@ -42,6 +42,7 @@ class GribOrder(Order):
 
 
 class GribIndex(FieldSet, Index):
+    ORDER_CLASS = GribOrder
     def __init__(self, selection=None, order=None):
         self._availability = None
         self.selection = selection
@@ -193,7 +194,7 @@ class GribDBIndex(GribInFiles):
         return cls(cls.DBCLASS(db_path), **kwargs)
 
     def order_by(self, *args, **kwargs):
-        order = GribOrder(*args, **kwargs)
+        order = self.ORDER_CLASS(*args, **kwargs)
         return self.__class__(
             selection=self.selection,
             order=order,
@@ -327,6 +328,8 @@ class GribFileIndex(GribInFiles):
 
         if not self._load_cache():
             self._build_index()
+        
+        super().__init__()
 
     def _build_index(self):
 
