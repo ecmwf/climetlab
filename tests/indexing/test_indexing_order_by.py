@@ -17,9 +17,9 @@ import pytest
 
 import climetlab as cml
 from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.readers.grib.index import GribIndexFromDicts
 from climetlab.decorators import normalize
 from climetlab.indexing import PerUrlIndex
+from climetlab.readers.grib.index import GribIndexFromDicts
 from climetlab.testing import climetlab_file
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
@@ -61,6 +61,7 @@ def _build_unique_grib_file(path):
             with open(file, mode="rb") as f:
                 shutil.copyfileobj(f, target)
 
+
 def list_of_dicts():
     return [
         {
@@ -72,7 +73,7 @@ def list_of_dicts():
             "paramId": 167,
             "shortName": "2t",
             "time": "1000",
-            "level":"500",
+            "level": "500",
             "values": [[1, 2], [3, 4], [5, 6]],
         },
         {
@@ -84,7 +85,7 @@ def list_of_dicts():
             "paramId": 167,
             "shortName": "2t",
             "time": "1200",
-            "level":"500",
+            "level": "500",
             "values": [[2, 2], [4, 4], [6, 6]],
         },
         {
@@ -95,9 +96,9 @@ def list_of_dicts():
             "distinctLongitudes": [0.0, 10.0],
             "paramId": 168,
             "shortName": "2d",
-            "level":"850",
+            "level": "850",
             "values": [[18, 2], [3, 4], [5, 6]],
-        }
+        },
     ]
 
 
@@ -184,7 +185,7 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
     [
         "directory",
         "list-of-dicts",
-        # "file",
+        "file",
     ],
 )
 def test_indexing_order_by_with_method(params, levels, source_name):
@@ -199,15 +200,15 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 
     if source_name == "directory":
         tmp = dir_with_grib_files()
-        total, n = 6,4
+        total, n = 6, 4
         ds = cml.load_source(source_name, tmp.path)
     elif source_name == "file":
         tmp = unique_grib_file()
-        total, n = 6,4
+        total, n = 6, 4
         ds = cml.load_source(source_name, tmp.path)
     elif source_name == "list-of-dicts":
         tmp = list_of_dicts()
-        total, n = 3,2
+        total, n = 3, 2
         ds = GribIndexFromDicts(tmp)
 
     assert len(ds) == total, len(ds)

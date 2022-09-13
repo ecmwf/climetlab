@@ -15,6 +15,22 @@ from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
+# TODO: this should/could be done with decorators
+class Selection:
+    def __init__(self, *args, **kwargs):
+        """Parse args and kwargs to build a dictionary in self.selection"""
+
+        if len(args) == 1 and isinstance(args[0], dict) and not kwargs:
+            kwargs = args[0]
+
+        self.selection = kwargs
+
+    @property
+    def is_empty(self):
+        if not self.selection:
+            return True
+        return False
+
 
 class Order:
     def __init__(self, *args, **kwargs):
@@ -29,6 +45,9 @@ class Order:
 
         for k, v in kwargs.items():
             self.parse_kwarg(k, v)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.order})"
 
     @property
     def is_empty(self):
@@ -63,6 +82,7 @@ class Order:
 class Index(Source):
 
     ORDER_CLASS = Order
+    SELECTION_CLASS = Selection
 
     @abstractmethod
     def __getitem__(self, n):
@@ -74,7 +94,45 @@ class Index(Source):
 
     @abstractmethod
     def sel(self, *args, **kwargs):
-        self._not_implemented()
+        """Filter elements on their metadata(), according to kwargs.
+        Returns a new index object.
+        """
+        selection = self.SELECTION_CLASS(*args, **kwargs)
+
+        from climetlab.vocabularies.grib import grib_naming
+
+        selection.selection = grib_naming(selection.selection)
+
+        def match(element, selection):
+            for k, v in selection.items():
+                key = {
+                    "param": "short_name",
+                }.get(k, k)
+                if v is None:
+                    continue
+                value = element.metadata(key)
+                # value = grib_naming({key:value})[key]
+                if isinstance(v, (list, tuple)):
+                    if value in v:
+                        continue
+                    if str(value) in v:
+                        continue
+                    print(f"{element}: {k}/{key}={value} not in {v}")
+                    return False
+                if value == v:
+                    continue
+                if str(value) == v:
+                    continue
+                print(f"{element}: {k}/{key}={value} != {v}")
+                return False
+            return True
+
+        indices = []
+        for i, element in enumerate(self):
+            if match(element, selection.selection):
+                indices.append(i)
+
+        return MaskIndex(self, indices)
 
     def order_by(self, *args, **kwargs):
         """Default order_by method.
@@ -83,30 +141,33 @@ class Index(Source):
         Returns a new index object.
         """
 
-        class Sorter:
-            def __init__(self, index, order):
-                """Uses the order to sort the index"""
-
-                self.index = index
-                self.order = order
-                self._cache = [None] * len(self.index)
-
-            def __call__(self, i):
-                if self._cache[i] is None:
-                    element = self.index[i]
-                    self._cache[i] = tuple(
-                        element.metadata(k) for k in self.order.keys()
-                    )
-                return self._cache[i]
-
         order = self.ORDER_CLASS(*args, **kwargs)
-        if order.is_empty():
+        if order.is_empty:
             return self
 
-        for k, v in order:
-            assert v in ["ascending", None], f"Unsupported order: {v}."
+        for k, v in order.order.items():
+            assert isinstance(v, (list, tuple)) or v in [
+                "ascending",
+                None,
+            ], f"Unsupported order: {v}."
 
-        sorter = Sorter(self, order)
+        class Sorter:
+            def __init__(_self, index, order):
+                """Uses the order to sort the index"""
+
+                _self.index = index
+                _self.order = order
+                _self._cache = [None] * len(_self.index)
+
+            def __call__(_self, i):
+                if _self._cache[i] is None:
+                    element = _self.index[i]
+                    _self._cache[i] = tuple(
+                        element.metadata(k) for k in _self.order.keys()
+                    )
+                return _self._cache[i]
+
+        sorter = Sorter(self, order.order)
 
         result = list(range(len(self)))
         indices = sorted(result, key=sorter)

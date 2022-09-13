@@ -71,7 +71,7 @@ class IndexedSource(Source):
 
     def sel(self, **kwargs):
         kwargs = self.normalize_naming(kwargs)
-        index=self.index.sel(**kwargs)
+        index = self.index.sel(**kwargs)
         return self.__class__(self, _index=index)
 
     def order_by(self, *args, **kwargs):

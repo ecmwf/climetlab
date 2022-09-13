@@ -387,16 +387,16 @@ class GribFileIndex(GribInFiles):
         return False
 
     def part(self, n):
-        if self.selection:
+        if self.selection and not self.selection.is_empty:
             raise NotImplementedError(
                 f"Selection not implemented for {self} ({self.selection}"
             )
-        if self.order:
+        if self.order and not self.order.is_empty:
             raise NotImplementedError(f"Order not implemented for {self} ({self.order}")
         return Part(self.path, self.offsets[n], self.lengths[n])
 
     def number_of_parts(self):
-        if self.selection:
+        if self.selection and not self.selection.is_empty:
             raise NotImplementedError(
                 f"Selection not implemented for {self} ({self.selection}"
             )
