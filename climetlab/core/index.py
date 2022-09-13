@@ -106,7 +106,7 @@ class Index(Source):
         def match(element, selection):
             for k, v in selection.items():
                 key = {
-                    "param": "short_name",
+                    "param": "shortName",
                 }.get(k, k)
                 if v is None:
                     continue
