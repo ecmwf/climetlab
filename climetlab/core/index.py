@@ -9,6 +9,7 @@
 
 
 import logging
+import warnings
 from abc import abstractmethod
 
 from climetlab.sources import Source
@@ -160,7 +161,10 @@ class Order(OrderOrSelection):
                 # TODO: clean this
                 value = element.metadata("short_name")
             else:
-                value = element.metadata(k)
+                try:
+                    value = element.metadata(k)
+                except KeyError:
+                    warnings.warn(f"Cannot find all metadata keys.")
 
             if key_types[k] == "ascending":
                 ranks.append(value)
