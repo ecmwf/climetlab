@@ -268,7 +268,6 @@ class GribIndexFromDicts(GribIndex):
 
         return VirtualGribField(self.list_of_dicts[n])
 
-
     def __len__(self):
         return len(self.list_of_dicts)
 

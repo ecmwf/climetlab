@@ -63,42 +63,25 @@ def _build_unique_grib_file(path):
 
 
 def list_of_dicts():
+    prototype = {
+        "gridType": "regular_ll",
+        "Nx": 2,
+        "Ny": 3,
+        "distinctLatitudes": [-10.0, 0.0, 10.0],
+        "distinctLongitudes": [0.0, 10.0],
+        "paramId": 167,
+        "time": "1000",
+        "values": [[1, 2], [3, 4], [5, 6]],
+        "date": "20070101",
+        "time": "1200",
+    }
     return [
-        {
-            "gridType": "regular_ll",
-            "Nx": 2,
-            "Ny": 3,
-            "distinctLatitudes": [-10.0, 0.0, 10.0],
-            "distinctLongitudes": [0.0, 10.0],
-            "paramId": 167,
-            "shortName": "2t",
-            "time": "1000",
-            "level": "500",
-            "values": [[1, 2], [3, 4], [5, 6]],
-        },
-        {
-            "gridType": "regular_ll",
-            "Nx": 2,
-            "Ny": 3,
-            "distinctLatitudes": [-10.0, 0.0, 10.0],
-            "distinctLongitudes": [0.0, 10.0],
-            "paramId": 167,
-            "shortName": "2t",
-            "time": "1200",
-            "level": "500",
-            "values": [[2, 2], [4, 4], [6, 6]],
-        },
-        {
-            "gridType": "regular_ll",
-            "Nx": 2,
-            "Ny": 3,
-            "distinctLatitudes": [-10.0, 0.0, 10.0],
-            "distinctLongitudes": [0.0, 10.0],
-            "paramId": 168,
-            "shortName": "2d",
-            "level": "850",
-            "values": [[18, 2], [3, 4], [5, 6]],
-        },
+        {"short_name": "t", "levelist": 500, "level": 500, **prototype},
+        {"short_name": "t", "levelist": 850, "level": 850, **prototype},
+        {"short_name": "z", "levelist": 500, "level": 500, **prototype},
+        {"short_name": "z", "levelist": 850, "level": 850, **prototype},
+        {"short_name": "d", "levelist": 850, "level": 850, **prototype},
+        {"short_name": "d", "levelist": 600, "level": 600, **prototype},
     ]
 
 
@@ -208,17 +191,20 @@ def test_indexing_order_by_with_method(params, levels, source_name):
         ds = cml.load_source(source_name, tmp.path)
     elif source_name == "list-of-dicts":
         tmp = list_of_dicts()
-        total, n = 3, 2
+        total, n = 6, 4
         ds = GribIndexFromDicts(tmp)
 
     assert len(ds) == total, len(ds)
 
     ds = ds.sel(**request)
-    assert len(ds) == n, len(ds)
-    ds = ds.order_by(order_by)
     for i in ds:
         print(i)
+    assert len(ds) == n, len(ds)
+    ds = ds.order_by(order_by)
     assert len(ds) == n
+    print("-----")
+    for i in ds:
+        print(i)
 
     assert ds[0].metadata("short_name") == params[0]
     assert ds[1].metadata("short_name") == params[1]
@@ -306,7 +292,7 @@ REQUEST_1 = {
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    test_indexing_order_by_with_method(["t", "z"], [500, 850], "file")
+    test_indexing_order_by_with_method(["t", "z"], [500, 850], "list-of-dicts")
     # test_indexing_order_ascending_descending(["t", "z"], [500, 850], 'file')
 
 #    main(__file__)

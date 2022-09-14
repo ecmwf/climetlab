@@ -15,68 +15,162 @@ from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
-# TODO: this should/could be done with decorators
-class Selection:
-    def __init__(self, *args, **kwargs):
-        """Parse args and kwargs to build a dictionary in self.selection"""
 
-        if len(args) == 1 and isinstance(args[0], dict) and not kwargs:
-            kwargs = args[0]
-
-        self.selection = kwargs
-
-    @property
-    def is_empty(self):
-        if not self.selection:
-            return True
-        return False
-
-
-class Order:
+class OrderOrSelection:
     def __init__(self, *args, **kwargs):
         """Parse args and kwargs to build a dictionary in self.order"""
-        self.order = {}
+        self.dic = {}
 
         if len(args) == 1 and isinstance(args[0], dict) and not kwargs:
             kwargs = args[0]
 
         for arg in args:
-            self.parse_arg(arg)
+            if not self.parse_arg(arg):
+                raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
 
         for k, v in kwargs.items():
             self.parse_kwarg(k, v)
 
-    def __str__(self):
-        return f"{self.__class__.__name__}({self.order})"
+        from climetlab.vocabularies.grib import grib_naming
 
-    @property
-    def is_empty(self):
-        if not self.order:
-            return True
-        return False
+        self.dic = grib_naming(self.dic)
 
     def parse_arg(self, arg):
+        # Returns True of argument has been parsed.
         if arg is None:
-            return
+            return True
         if isinstance(arg, dict):
             for k, v in arg.items():
                 self.parse_kwarg(k, v)
-            return
-        if isinstance(arg, str):
-            self.order[arg] = "ascending"
-            return
-        raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
+            return True
+        return False
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.dic})"
+
+    @property
+    def is_empty(self):
+        if not self.dic:
+            return True
+        return False
+
+
+# TODO: this should/could be done with decorators
+class Selection(OrderOrSelection):
+    @property
+    def selection(self):
+        return self.dic
 
     def parse_kwarg(self, k, v):
+        if v is not None and not isinstance(v, (list, tuple)):
+            v = [v]
+        if isinstance(v, (list, tuple)):
+            v = [str(_) for _ in v]
+        self.dic[k] = v
+        return
+
+    def match_element(self, element):
+        for k, v in self.dic.items():
+            key = {
+                "param": "short_name",
+            }.get(k, k)
+            if v is None:
+                continue
+            value = element.metadata(key)
+            # value = grib_naming({key:value})[key]
+            if isinstance(v, (list, tuple)):
+                if value in v:
+                    continue
+                if str(value) in v:
+                    continue
+                return False
+            if value == v:
+                continue
+            if str(value) == v:
+                continue
+            return False
+        return True
+
+
+class Order(OrderOrSelection):
+    def __init__(self, *args, **kwargs):
+        self._rankers = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def order(self):
+        return self.dic
+
+    def parse_arg(self, arg):
+        if super().parse_arg(arg):
+            return True
+        if isinstance(arg, str):
+            self.dic[arg] = "ascending"
+            return True
+        return False
+
+    def parse_kwarg(self, k, v):
+        if isinstance(v, (list, tuple)):
+            v = [str(_) for _ in v]  # processing only strings from now.
         if (
             (v == "ascending")
             or (v == "descending")
             or (v is None)
             or isinstance(v, (list, tuple))
         ):
-            self.order[k] = v
+            self.dic[k] = v
             return
-        raise ValueError(v)
+        raise ValueError(f"Invalid argument of type({type(v)}): {k}={v}")
+
+    def build_rankers(self):
+        if self._rankers is not None:
+            return self._rankers
+
+        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+
+        keys = [_ for _ in self.dic.keys()]
+        keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
+
+        key_types = {}
+        dict_of_dicts = dict()
+
+        for key in keys:
+            lst = self.dic.get(key, None)
+
+            if isinstance(lst, (tuple, list)):
+                dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
+                key_types[key] = None
+                continue
+
+            if lst == "ascending" or lst is None:
+                dict_of_dicts[key] = lambda value: value
+                key_types[key] = "ascending"
+                continue
+
+            raise ValueError(f"Invalid argument {lst}")
+
+        self._rankers = keys, key_types, dict_of_dicts
+        return self._rankers
+
+    def rank(self, element):
+        keys, key_types, dict_of_dicts = self.build_rankers()
+        ranks = []
+        for k in keys:
+            if k == "param":
+                # TODO: clean this
+                value = element.metadata("short_name")
+            else:
+                value = element.metadata(k)
+
+            if key_types[k] == "ascending":
+                ranks.append(value)
+                continue
+
+            assert key_types[k] is None, (k, key_types[k], element)
+            value = str(value)
+            ranks.append(dict_of_dicts[k][value])
+
+        return tuple(ranks)
 
 
 class Index(Source):
@@ -99,37 +193,9 @@ class Index(Source):
         """
         selection = self.SELECTION_CLASS(*args, **kwargs)
 
-        from climetlab.vocabularies.grib import grib_naming
-
-        selection.selection = grib_naming(selection.selection)
-
-        def match(element, selection):
-            for k, v in selection.items():
-                key = {
-                    "param": "shortName",
-                }.get(k, k)
-                if v is None:
-                    continue
-                value = element.metadata(key)
-                # value = grib_naming({key:value})[key]
-                if isinstance(v, (list, tuple)):
-                    if value in v:
-                        continue
-                    if str(value) in v:
-                        continue
-                    print(f"{element}: {k}/{key}={value} not in {v}")
-                    return False
-                if value == v:
-                    continue
-                if str(value) == v:
-                    continue
-                print(f"{element}: {k}/{key}={value} != {v}")
-                return False
-            return True
-
         indices = []
         for i, element in enumerate(self):
-            if match(element, selection.selection):
+            if selection.match_element(element):
                 indices.append(i)
 
         return MaskIndex(self, indices)
@@ -146,10 +212,10 @@ class Index(Source):
             return self
 
         for k, v in order.order.items():
-            assert isinstance(v, (list, tuple)) or v in [
+            assert isinstance(v, (tuple, list)) or v in [
                 "ascending",
                 None,
-            ], f"Unsupported order: {v}."
+            ], f"Unsupported order: {v}, Supported values: 'ascending'."
 
         class Sorter:
             def __init__(_self, index, order):
@@ -162,12 +228,10 @@ class Index(Source):
             def __call__(_self, i):
                 if _self._cache[i] is None:
                     element = _self.index[i]
-                    _self._cache[i] = tuple(
-                        element.metadata(k) for k in _self.order.keys()
-                    )
+                    _self._cache[i] = _self.order.rank(element)
                 return _self._cache[i]
 
-        sorter = Sorter(self, order.order)
+        sorter = Sorter(self, order)
 
         result = list(range(len(self)))
         indices = sorted(result, key=sorter)
