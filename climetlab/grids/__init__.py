@@ -7,8 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
+import random
+import time
+
 import numpy as np
-import time, random
 
 
 class Helper:
@@ -69,18 +71,17 @@ class KDNode:
 
 
 class KDChunk:
-    __slots__ = 'values'
-    def __init__(self,values):
+    __slots__ = "values"
+
+    def __init__(self, values):
         self.values = values
+
     def visit(self, visitor, depth):
         visitor(self, depth)
-
 
     def _find_nn(self, point, o, depth):
 
         d = min((np.linalg.norm(point - v[:-1]), v[-1]) for v in self.values)
-
-
 
         if d[0] < o.max:
             o.max = d[0]
@@ -92,7 +93,6 @@ class KDTree:
         self.dimensions = dimensions
         self.chunk_size = chunk_size
         self.root = self.build(values)
-
 
     def build(self, values, depth=0):
         if len(values) == 0:
@@ -168,7 +168,7 @@ def ecef(lat, lon, i):
     )
 
 
-def unstructed_to_structed(grib,chunk_size=-1):
+def unstructed_to_structed(grib, chunk_size=-1):
 
     start = now = time.time()
     print("----")
@@ -186,7 +186,7 @@ def unstructed_to_structed(grib,chunk_size=-1):
     z = []
     for lat in range(900, -901, -1):
         for lon in range(0, 3601):
-            xyz = ecef(lat/10, lon/10, 0)
+            xyz = ecef(lat / 10, lon / 10, 0)
             z.append(tree.find_nn(xyz[:-1])[0])
     print("----", time.time() - now)
     print(np.array(z))

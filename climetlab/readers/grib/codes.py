@@ -12,13 +12,13 @@ import logging
 import os
 import threading
 import time
+from itertools import islice, tee
 
 import eccodes
 
 from climetlab.core import Base
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
-from itertools import islice, tee
 
 LOG = logging.getLogger(__name__)
 
