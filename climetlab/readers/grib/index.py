@@ -10,10 +10,10 @@
 import json
 import logging
 import os
+import warnings
 from abc import abstractmethod
 from collections import namedtuple
 from urllib.parse import urljoin
-import warnings
 
 import requests
 from multiurl import robust
@@ -248,34 +248,6 @@ class GribDBIndex(GribInFiles):
         return self.availability
 
 
-class GribIndexFromDicts(GribIndex):
-    """For testing purposes."""
-
-    def __init__(self, list_of_dicts):
-        self.list_of_dicts = list_of_dicts
-
-    def __getitem__(self, n):
-        class VirtualGribField(dict):
-            def metadata(_self, n):
-                try:
-                    if n == "level":
-                        n = "levelist"
-                    if n == "shortName":
-                        n = "param"
-                    if n == "paramId":
-                        n = "_param_id"
-                    return _self[n]
-                except KeyError:
-                    warnings.warn(f"Cannot find all metadata keys.")
-
-            @property
-            def values(self, n):
-                return self["values"]
-
-        return VirtualGribField(self.list_of_dicts[n])
-
-    def __len__(self):
-        return len(self.list_of_dicts)
 
 
 class JsonIndex(GribDBIndex):
