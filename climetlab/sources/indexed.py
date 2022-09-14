@@ -23,7 +23,6 @@ class IndexedSource(Source):
 
     def __init__(self, index, order_by=None, filter=None, merger=None, **kwargs):
         LOG.debug(f"New IndexedSource order={order_by} kwargs={kwargs}")
-        kwargs = self.normalize_naming(kwargs)
 
         def _build_order_by_from_selection(selection):
             if not selection:
@@ -62,20 +61,15 @@ class IndexedSource(Source):
 
         super().__init__()
 
-    def normalize_naming(self, kwargs):
-        return grib_naming(kwargs)
-
     @property
     def availability(self):
         return self.index.availability
 
-    def sel(self, **kwargs):
-        kwargs = self.normalize_naming(kwargs)
-        index = self.index.sel(**kwargs)
+    def sel(self, *args, **kwargs):
+        index = self.index.sel(*args, **kwargs)
         return self.__class__(self, _index=index)
 
     def order_by(self, *args, **kwargs):
-        kwargs = self.normalize_naming(kwargs)
         index = self.index.order_by(*args, **kwargs)
         return self.__class__(self, _index=index)
 

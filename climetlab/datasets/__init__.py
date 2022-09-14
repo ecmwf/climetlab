@@ -102,8 +102,11 @@ class Dataset(Base):
     def __getitem__(self, n):
         return self.source[n]
 
-    def sel(self, **kwargs):
-        return self.source.sel(**kwargs)
+    def sel(self, *args, **kwargs):
+        return self.source.sel(*args, **kwargs)
+
+    def order_by(self, *args, **kwargs):
+        return self.source.order_by(*args, **kwargs)
 
     def to_numpy(self, **kwargs):
         import numpy as np

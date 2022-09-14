@@ -69,19 +69,19 @@ def list_of_dicts():
         "Ny": 3,
         "distinctLatitudes": [-10.0, 0.0, 10.0],
         "distinctLongitudes": [0.0, 10.0],
-        "paramId": 167,
+        "_param_id": 167,
         "time": "1000",
         "values": [[1, 2], [3, 4], [5, 6]],
         "date": "20070101",
         "time": "1200",
     }
     return [
-        {"short_name": "t", "levelist": 500, "level": 500, **prototype},
-        {"short_name": "t", "levelist": 850, "level": 850, **prototype},
-        {"short_name": "z", "levelist": 500, "level": 500, **prototype},
-        {"short_name": "z", "levelist": 850, "level": 850, **prototype},
-        {"short_name": "d", "levelist": 850, "level": 850, **prototype},
-        {"short_name": "d", "levelist": 600, "level": 600, **prototype},
+        {"param": "t", "levelist": 500, **prototype},
+        {"param": "t", "levelist": 850, **prototype},
+        {"param": "z", "levelist": 500, **prototype},
+        {"param": "z", "levelist": 850, **prototype},
+        {"param": "d", "levelist": 850, **prototype},
+        {"param": "d", "levelist": 600, **prototype},
     ]
 
 
@@ -106,10 +106,10 @@ def test_indexing_order_by_with_request(params, levels, source_name):
     for i in ds:
         print(i)
     assert len(ds) == 4
-    assert ds[0].metadata("short_name") == params[0]
-    assert ds[1].metadata("short_name") == params[1]
-    assert ds[2].metadata("short_name") == params[0]
-    assert ds[3].metadata("short_name") == params[1]
+    assert ds[0].metadata("param") == params[0]
+    assert ds[1].metadata("param") == params[1]
+    assert ds[2].metadata("param") == params[0]
+    assert ds[3].metadata("param") == params[1]
 
     assert ds[0].metadata("level") == levels[0]
     assert ds[1].metadata("level") == levels[0]
@@ -149,10 +149,10 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
         print(i)
     assert len(ds) == 4
 
-    assert ds[0].metadata("short_name") == params[0]
-    assert ds[1].metadata("short_name") == params[1]
-    assert ds[2].metadata("short_name") == params[0]
-    assert ds[3].metadata("short_name") == params[1]
+    assert ds[0].metadata("param") == params[0]
+    assert ds[1].metadata("param") == params[1]
+    assert ds[2].metadata("param") == params[0]
+    assert ds[3].metadata("param") == params[1]
 
     assert ds[0].metadata("level") == levels[0]
     assert ds[1].metadata("level") == levels[0]
@@ -206,16 +206,15 @@ def test_indexing_order_by_with_method(params, levels, source_name):
     for i in ds:
         print(i)
 
-    assert ds[0].metadata("short_name") == params[0]
-    assert ds[1].metadata("short_name") == params[1]
-    assert ds[2].metadata("short_name") == params[0]
-    assert ds[3].metadata("short_name") == params[1]
+    assert ds[0].metadata("param") == params[0]
+    assert ds[1].metadata("param") == params[1]
+    assert ds[2].metadata("param") == params[0]
+    assert ds[3].metadata("param") == params[1]
 
     assert ds[0].metadata("level") == levels[0]
     assert ds[1].metadata("level") == levels[0]
     assert ds[2].metadata("level") == levels[1]
     assert ds[3].metadata("level") == levels[1]
-    print()
 
 
 @pytest.mark.parametrize("params", (["t", "z"],))
@@ -227,7 +226,7 @@ def test_indexing_order_by_with_method(params, levels, source_name):
         # "file",
     ],
 )
-def test_indexing_order_ascending_descending(params, levels, source_name):
+def _test_indexing_order_ascending_descending(params, levels, source_name):
     request = dict(
         variable=params,
         level=levels,
@@ -250,10 +249,10 @@ def test_indexing_order_ascending_descending(params, levels, source_name):
         print(i)
     assert len(ds) == 4
 
-    assert ds[0].metadata("short_name") == params[0]
-    assert ds[1].metadata("short_name") == params[1]
-    assert ds[2].metadata("short_name") == params[0]
-    assert ds[3].metadata("short_name") == params[1]
+    assert ds[0].metadata("param") == params[0]
+    assert ds[1].metadata("param") == params[1]
+    assert ds[2].metadata("param") == params[0]
+    assert ds[3].metadata("param") == params[1]
 
     assert ds[0].metadata("level") == levels[1]
     assert ds[1].metadata("level") == levels[1]
@@ -292,7 +291,9 @@ REQUEST_1 = {
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    test_indexing_order_by_with_method(["t", "z"], [500, 850], "list-of-dicts")
+    test_indexing_order_by_with_method(["z", "t"], [500, 850], "list-of-dicts")
+    test_indexing_order_by_with_method(["z", "t"], [500, 850], "file")
+    test_indexing_order_by_with_method(["z", "t"], [500, 850], "directory")
     # test_indexing_order_ascending_descending(["t", "z"], [500, 850], 'file')
 
 #    main(__file__)

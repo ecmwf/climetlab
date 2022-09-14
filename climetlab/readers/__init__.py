@@ -58,9 +58,6 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
         # Used by multi-source
         return False
 
-    def sel(self, *args, **kwargs):
-        raise NotImplementedError()
-
     def cache_file(self, *args, **kwargs):
         return self.source.cache_file(*args, **kwargs)
 

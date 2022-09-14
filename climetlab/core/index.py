@@ -72,12 +72,9 @@ class Selection(OrderOrSelection):
 
     def match_element(self, element):
         for k, v in self.dic.items():
-            key = {
-                "param": "short_name",
-            }.get(k, k)
             if v is None:
                 continue
-            value = element.metadata(key)
+            value = element.metadata(k)
             # value = grib_naming({key:value})[key]
             if isinstance(v, (list, tuple)):
                 if value in v:
@@ -140,7 +137,7 @@ class Order(OrderOrSelection):
 
             if isinstance(lst, (tuple, list)):
                 dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-                key_types[key] = None
+                key_types[key] = "explicit"
                 continue
 
             if lst == "ascending" or lst is None:
@@ -157,22 +154,18 @@ class Order(OrderOrSelection):
         keys, key_types, dict_of_dicts = self.build_rankers()
         ranks = []
         for k in keys:
-            if k == "param":
-                # TODO: clean this
-                value = element.metadata("short_name")
-            else:
-                try:
-                    value = element.metadata(k)
-                except KeyError:
-                    warnings.warn(f"Cannot find all metadata keys.")
+            value = element.metadata(k)
 
             if key_types[k] == "ascending":
                 ranks.append(value)
                 continue
 
-            assert key_types[k] is None, (k, key_types[k], element)
-            value = str(value)
-            ranks.append(dict_of_dicts[k][value])
+            if key_types[k] == "explicit":
+                value = str(value)
+                ranks.append(dict_of_dicts[k][value])
+                continue
+
+            assert False, (k, key_types[k], element)
 
         return tuple(ranks)
 

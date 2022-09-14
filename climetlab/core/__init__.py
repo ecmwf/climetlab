@@ -106,6 +106,14 @@ class Base(metaclass=MetaBase):
     def scaled(self, args, kwargs):
         self._not_implemented()
 
+    @abstractmethod
+    def sel(self, *args, **kwargs):
+        self._not_implemented()
+
+    @abstractmethod
+    def order_by(self, *args, **kwargs):
+        self._not_implemented()
+
     #
     def _not_implemented(self):
         import inspect

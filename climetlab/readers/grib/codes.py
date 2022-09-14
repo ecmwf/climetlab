@@ -348,6 +348,10 @@ class GribField(Base):
         return self.handle.get(name)
 
     def metadata(self, name):
+        if name == "param":
+            name = "shortName"
+        if name == "_param_id":
+            name = "paramId"
         return self[name]
 
     def __getitem__(self, name):

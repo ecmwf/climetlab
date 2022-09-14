@@ -13,6 +13,7 @@ import os
 from abc import abstractmethod
 from collections import namedtuple
 from urllib.parse import urljoin
+import warnings
 
 import requests
 from multiurl import robust
@@ -45,18 +46,10 @@ class GribOrder(Order):
 class GribIndex(FieldSet, Index):
     ORDER_CLASS = GribOrder
 
-    def __init__(self, order=None, selection=None):
+    def __init__(self, **kwargs):
 
         self._availability = None
-
-        if not isinstance(order, self.ORDER_CLASS):
-            order = self.ORDER_CLASS(order)
-        self.order = order
-
-        if selection is None:
-            selection = {}
-        assert isinstance(selection, dict)
-        self.selection = selection
+        super().__init__(**kwargs)
 
 
 class MultiGribIndex(FieldSet, MultiIndex):
@@ -88,6 +81,8 @@ class GribDBIndex(GribInFiles):
         """
 
         self.db = db
+        self.selection = {}
+        self.order = {}
 
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
@@ -95,7 +90,7 @@ class GribDBIndex(GribInFiles):
 
         super().__init__(**kwargs)
 
-    def sel(self, *args, **kwargs):
+    def no_sel(self, *args, **kwargs):
         if not kwargs:  # no kwargs
             if not args or (len(args) == 1 and not args[0]):  # and no args
                 return self
@@ -107,7 +102,7 @@ class GribDBIndex(GribInFiles):
             order=self.order,
         )
 
-    def order_by(self, *args, **kwargs):
+    def no_order_by(self, *args, **kwargs):
 
         order = self.ORDER_CLASS(*args, **kwargs)
         if order.is_empty:
@@ -254,13 +249,24 @@ class GribDBIndex(GribInFiles):
 
 
 class GribIndexFromDicts(GribIndex):
+    """For testing purposes."""
+
     def __init__(self, list_of_dicts):
         self.list_of_dicts = list_of_dicts
 
     def __getitem__(self, n):
         class VirtualGribField(dict):
-            def metadata(self, n):
-                return self[n]
+            def metadata(_self, n):
+                try:
+                    if n == "level":
+                        n = "levelist"
+                    if n == "shortName":
+                        n = "param"
+                    if n == "paramId":
+                        n = "_param_id"
+                    return _self[n]
+                except KeyError:
+                    warnings.warn(f"Cannot find all metadata keys.")
 
             @property
             def values(self, n):
@@ -293,6 +299,11 @@ class SqlIndex(GribDBIndex):
 
     DBCLASS = SqlDatabase
     CHUNKING = 50000
+
+    def no_sel(self, *args, **kwargs):
+        selection = self.SELECTION_CLASS(*args, **kwargs)
+        db = db.new_view(selection=selection)
+        return self.__class__(db=db)
 
     def part(self, n):
         if self._cache is None or not (
@@ -386,17 +397,7 @@ class GribFileIndex(GribInFiles):
         return False
 
     def part(self, n):
-        if self.selection and not self.selection.is_empty:
-            raise NotImplementedError(
-                f"Selection not implemented for {self} ({self.selection}"
-            )
-        if self.order and not self.order.is_empty:
-            raise NotImplementedError(f"Order not implemented for {self} ({self.order}")
         return Part(self.path, self.offsets[n], self.lengths[n])
 
     def number_of_parts(self):
-        if self.selection and not self.selection.is_empty:
-            raise NotImplementedError(
-                f"Selection not implemented for {self} ({self.selection}"
-            )
         return len(self.offsets)
