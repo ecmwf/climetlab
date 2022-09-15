@@ -279,7 +279,7 @@ class MultiIndex(Index):
             s.graph(depth + 3)
 
 
-class ForewardingIndex(Index):
+class ForwardingIndex(Index):
     def __init__(self, index):
         self.index = index
 
@@ -297,7 +297,7 @@ class ScaledField:
         return (self.field.to_numpy() - self.offset) * self.scaling
 
 
-class ScaledIndex(ForewardingIndex):
+class ScaledIndex(ForwardingIndex):
     def __init__(self, index, offset, scaling):
         super().__init__(index)
         self.offset = offset

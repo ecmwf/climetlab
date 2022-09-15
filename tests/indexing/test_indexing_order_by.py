@@ -87,8 +87,9 @@ def list_of_dicts():
 
 
 class GribIndexFromDicts(GribIndex):
-    def __init__(self, list_of_dicts):
+    def __init__(self, list_of_dicts, *args, **kwargs):
         self.list_of_dicts = list_of_dicts
+        super().__init__(*args, **kwargs)
 
     def __getitem__(self, n):
         class VirtualGribField(dict):

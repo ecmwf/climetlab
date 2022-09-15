@@ -46,10 +46,10 @@ class GribOrder(Order):
 class GribIndex(FieldSet, Index):
     ORDER_CLASS = GribOrder
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         self._availability = None
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class MultiGribIndex(FieldSet, MultiIndex):
@@ -81,38 +81,12 @@ class GribDBIndex(GribInFiles):
         """
 
         self.db = db
-        self.selection = {}
-        self.order = {}
 
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
 
         super().__init__(**kwargs)
-
-    def no_sel(self, *args, **kwargs):
-        if not kwargs:  # no kwargs
-            if not args or (len(args) == 1 and not args[0]):  # and no args
-                return self
-
-        selection = merge_for_selection(self.selection, args, kwargs)
-        return self.__class__(
-            db=self.db,
-            selection=selection,
-            order=self.order,
-        )
-
-    def no_order_by(self, *args, **kwargs):
-
-        order = self.ORDER_CLASS(*args, **kwargs)
-        if order.is_empty:
-            return self
-
-        return self.__class__(
-            db=self.db,
-            selection=self.selection,
-            order=order,
-        )
 
     @classmethod
     def from_iterator(
