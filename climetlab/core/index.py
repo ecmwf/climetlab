@@ -63,7 +63,6 @@ class OrderOrSelection:
         return m.hexdigest()
 
 
-# TODO: this should/could be done with decorators
 class Selection(OrderOrSelection):
     @property
     def selection(self):
@@ -117,15 +116,17 @@ class Order(OrderOrSelection):
     def parse_kwarg(self, k, v):
         if isinstance(v, (list, tuple)):
             v = [str(_) for _ in v]  # processing only strings from now.
-        if (
-            (v == "ascending")
-            or (v == "descending")
-            or (v is None)
-            or isinstance(v, (list, tuple))
-        ):
+        if (v == "ascending") or (v == "descending") or isinstance(v, (list, tuple)):
             self.dic[k] = v
             return
-        raise ValueError(f"Invalid argument of type({type(v)}): {k}={v}")
+
+        if v is None:
+            self.dic[k] = "ascending"
+            return
+
+        self.dic[k] = "ascending"
+        return
+        # raise ValueError(f"Invalid argument for {k}: {v} ({type(v)})")
 
     def build_rankers(self):
         if self._rankers is not None:
@@ -181,6 +182,20 @@ class Index(Source):
 
     ORDER_CLASS = Order
     SELECTION_CLASS = Selection
+
+    def __init__(self, *args, **kwargs):
+        self._mutations_queue = []
+
+        order_by = kwargs.pop("order_by", {})
+
+        self._mutations_queue.append(lambda x: x.sel(*args, **kwargs))
+        self._mutations_queue.append(lambda x: x.order_by(*args, **kwargs))
+        self._mutations_queue.append(lambda x: x.order_by(**order_by))
+
+    def mutate(self):
+        for m in self._mutations_queue:
+            self = m(self)
+        return self
 
     @abstractmethod
     def __getitem__(self, n):
@@ -253,6 +268,9 @@ class MaskIndex(Index):
 
     def __len__(self):
         return len(self.indices)
+
+    def __getattr__(self, name):
+        return getattr(self.index, name)
 
 
 class MultiIndex(Index):
