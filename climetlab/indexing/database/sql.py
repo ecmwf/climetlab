@@ -8,6 +8,8 @@
 #
 
 
+import hashlib
+import json
 import logging
 import os
 import sqlite3
@@ -70,13 +72,13 @@ class SqlDatabase(Database):
     def __init__(
         self,
         db_path,
-        create_index=True,
+        view_name="entries",
     ):
 
+        self.view_name = view_name
         self.db_path = db_path
-        self.create_index = create_index
 
-        LOG.debug("DB %s", self.db_path)
+        LOG.debug("DB %s %s", self.db_path, self.view_name)
 
     @property
     def connection(self):
@@ -118,14 +120,11 @@ class SqlDatabase(Database):
             assert count >= 1
             LOG.info("Added %d entries", count)
 
-            if self.create_index:
-                # connection.execute(f"CREATE INDEX path_index ON entries (path);")
-                pbar = tqdm(i_columns + ["path"], desc="Building indexes")
-                for n in pbar:
-                    pbar.set_description(f"Building index for {n}")
-                    conn.execute(
-                        f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
-                    )
+            # connection.execute(f"CREATE INDEX path_index ON entries (path);")
+            pbar = tqdm(i_columns + ["path"], desc="Building indexes")
+            for n in pbar:
+                pbar.set_description(f"Building index for {n}")
+                conn.execute(f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});")
 
             return count
 
@@ -208,77 +207,96 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
-    def count(self, request):
-        if request is None:
-            request = {}
+    def count(self):
 
-        conditions = self._conditions(request)
-        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-        statement = f"SELECT COUNT(*) FROM entries {conditions_str};"
+        statement = f"SELECT COUNT(*) FROM {self.view_name};"
 
         LOG.debug(statement)
         for result in self.connection.execute(statement):
             return result[0]
         assert False
 
+    def sel(self, selection):
+        """
+        request: a Selection object containing the list of values to filter by.
+        TODO: order: an Order object to order the entries.
+        """
+        if selection.is_empty:
+            return self
+
+        def h(selection):
+            m = hashlib.sha256()
+            m.update(json.dumps(selection.dic, sort_keys=True).encode("utf-8"))
+            return m.hexdigest()
+
+        view_name = self.view_name + "_" + h(selection)
+
+        print(f"Created view {view_name}.")
+
+        conditions = self._conditions(selection.dic)
+        # order_by, order_func = self._order_by(order.dic)
+
+        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
+        order_by_str = ""  # "ORDER BY " + ",".join(order_by) if order_by else ""
+
+        connection = self.connection
+        # if order_func is not None:
+        #    connection.create_function("user_order", 2, order_func)
+
+        statement = f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {conditions_str} {order_by_str};"
+        LOG.debug("%s", statement)
+        print(statement)
+        for i in connection.execute(statement):
+            LOG.error(str(i))
+
+        db = self.__class__(self.db_path, view_name=view_name)
+
+        return db
+
     def lookup(
         self,
-        request,
+        # request,
         return_dicts=False,
-        order=None,
+        # order=None,
         limit=None,
         offset=None,
     ):
         """Look into the database and provide entries.
 
-        request: a dictionary containing the list of values to filter by.
         return_dicts: Return dictionaries of entries instead of (path resolved) Part objects.
             return_dicts = False: return list of Part(path, offset, length)
             return_dicts = True: return dicts
             return_dicts = [key1, key2]: return dicts with key1, key2 columns of the database.
-        order: a dictionary to order the entries.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """
-        if request is None:
-            request = {}
         if return_dicts is True:
             return_dicts = self._columns_names_without_i_()
-
-        conditions = self._conditions(request)
-        order_by, order_func = self._order_by(order)
 
         if return_dicts is False:
             _names = ["path", "offset", "length"]
             parts = []
-            for path, offset, length in self._execute_select(
-                _names, conditions, order_by, limit, offset, order_func
-            ):
+            for path, offset, length in self._execute_select(_names, limit, offset):
                 parts.append(Part(path, offset, length))
             return Part.resolve(parts, os.path.dirname(self.db_path))
 
         _names = [f"i_{x}" for x in return_dicts]
         dicts = []
-        for tupl in self._execute_select(
-            _names, conditions, order_by, limit, offset, order_func
-        ):
+        for tupl in self._execute_select(_names, limit, offset):
             dic = {k: v for k, v in zip(_names, tupl)}
             dicts.append(dic)
         return dicts
 
-    def _execute_select(self, names, conditions, order_by, limit, offset, order_func):
+    def _execute_select(self, names, limit, offset):
         names_str = ",".join([x for x in names]) if names else "*"
-        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
-        order_by_str = "ORDER BY " + ",".join(order_by) if order_by else ""
         limit_str = f" LIMIT {limit}" if limit is not None else ""
         offset_str = f" OFFSET {offset}" if offset is not None else ""
 
         connection = self.connection
-        if order_func is not None:
-            connection.create_function("user_order", 2, order_func)
 
-        statement = f"SELECT {names_str} FROM entries {conditions_str} {order_by_str} {limit_str} {offset_str};"
+        statement = (
+            f"SELECT {names_str} FROM {self.view_name} {limit_str} {offset_str};"
+        )
         LOG.debug("%s", statement)
         for tupl in connection.execute(statement):
             yield tupl

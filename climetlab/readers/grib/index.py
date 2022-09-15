@@ -248,10 +248,11 @@ class GribDBIndex(GribInFiles):
         return self.availability
 
 
-
-
 class JsonIndex(GribDBIndex):
     DBCLASS = JsonDatabase
+
+    def __init__(self):
+        assert False
 
     @cached_method
     def _lookup(self):
@@ -272,9 +273,9 @@ class SqlIndex(GribDBIndex):
     DBCLASS = SqlDatabase
     CHUNKING = 50000
 
-    def no_sel(self, *args, **kwargs):
+    def sel(self, *args, **kwargs):
         selection = self.SELECTION_CLASS(*args, **kwargs)
-        db = db.new_view(selection=selection)
+        db = self.db.sel(selection=selection)
         return self.__class__(db=db)
 
     def part(self, n):
@@ -283,8 +284,8 @@ class SqlIndex(GribDBIndex):
         ):
             first = n // self.CHUNKING
             result = self.db.lookup(
-                self.selection,
-                order=self.order,
+                # self.selection,
+                # order=self.order,
                 limit=self.CHUNKING,
                 offset=first,
             )
@@ -293,7 +294,7 @@ class SqlIndex(GribDBIndex):
 
     @cached_method
     def number_of_parts(self):
-        return self.db.count(self.selection)
+        return self.db.count()
 
 
 register_serialisation(
