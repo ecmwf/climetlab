@@ -34,11 +34,7 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
     print("--------")
     print("range_method", range_method)
     print("REQUEST", request)
-    #    for url, p in parts:
-    #        total = len(index.get_backend(url).entries)
-    #        print(f"PARTS: {len(p)}/{total} parts in {url}")
 
-    now = time.time()
     s = load_source(  # noqa F841
         "indexed-urls",
         index,
@@ -46,21 +42,13 @@ def retrieve_and_check(index, request, range_method=None, **kwargs):
         range_method=range_method,
         **kwargs,
     )
-    elapsed = time.time() - now
-    # print("ELAPSED", elapsed)
-    # try:
-    #     paths = [s.path]
-    # except AttributeError:
-    #     paths = [p.path for p in s.sources]
 
-    # for path in paths:
-    #     # check that the downloaded gribs match the request
-    #     for grib in load_source("file", path):
-    #         for k, v in request.items():
-    #             if k == "param":
-    #                 k = "shortName"
-    #             assert check_grib_value(grib._get(k), v), (grib._get(k), v)
-    return elapsed
+    # check that the downloaded gribs match the request
+    for grib in s:
+        for k, v in request.items():
+            if k == "param":
+                k = "shortName"
+            assert check_grib_value(grib._get(k), v), (grib._get(k), v)
 
 
 def check_grib_value(value, requested):

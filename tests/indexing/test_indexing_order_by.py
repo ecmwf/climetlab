@@ -115,16 +115,52 @@ class GribIndexFromDicts(GribIndex):
         return len(self.list_of_dicts)
 
 
+def get_fixtures_directory(request):
+    tmp = dir_with_grib_files()
+    total, n = 6, 4
+    ds = cml.load_source("directory", tmp.path, **request)
+    return ds, tmp, total, n
+
+
+def get_fixtures_file(request):
+    tmp = unique_grib_file()
+    total, n = 6, 4
+    ds = cml.load_source("file", tmp.path, **request)
+    return ds, tmp, total, n
+
+
+def get_fixtures_list_of_dicts(request):
+    tmp = list_of_dicts()
+    total, n = 6, 4
+    ds = GribIndexFromDicts(tmp, **request)
+    ds = ds.mutate()
+    return ds, tmp, total, n
+
+
+def get_fixtures(source_name, *args, **kwargs):
+    return {
+        "directory": get_fixtures_directory,
+        "file": get_fixtures_file,
+        "list-of-dicts": get_fixtures_list_of_dicts,
+    }[source_name](*args, **kwargs)
+
+
+def check_sel_and_order(ds, params, levels):
+    assert ds[0].metadata("param") == params[0]
+    assert ds[1].metadata("param") == params[1]
+    assert ds[2].metadata("param") == params[0]
+    assert ds[3].metadata("param") == params[1]
+
+    assert ds[0].metadata("level") == levels[0]
+    assert ds[1].metadata("level") == levels[0]
+    assert ds[2].metadata("level") == levels[1]
+    assert ds[3].metadata("level") == levels[1]
+
+
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize(
-    "source_name",
-    [
-        "directory",
-        # "file",
-        "list-of-dicts",
-    ],
-)
+# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
 def test_indexing_order_by_with_request(params, levels, source_name):
     request = dict(
         level=levels,
@@ -147,169 +183,72 @@ def test_indexing_order_by_with_request(params, levels, source_name):
     for i in ds:
         print(i)
     assert len(ds) == 4, len(ds)
-    assert ds[0].metadata("param") == params[0]
-    assert ds[1].metadata("param") == params[1]
-    assert ds[2].metadata("param") == params[0]
-    assert ds[3].metadata("param") == params[1]
 
-    assert ds[0].metadata("level") == levels[0]
-    assert ds[1].metadata("level") == levels[0]
-    assert ds[2].metadata("level") == levels[1]
-    assert ds[3].metadata("level") == levels[1]
-    print()
+    check_sel_and_order(ds, params, levels)
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize(
-    "source_name",
-    [
-        "directory",
-        #   "file",
-        #   "list-of-dicts",
-    ],
-)
+# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_by_with_keyword(params, levels, source_name):
-    request = dict(
-        variable=params,
-        level=levels,
-        date=20070101,
-        time="1200",
-    )
-    order_by = dict(
-        level=levels,
-        variable=params,
-    )
+    request = dict(variable=params, level=levels, date=20070101, time="1200")
+    request["order_by"] = dict(level=levels, variable=params)
 
-    if source_name == "directory":
-        tmp = dir_with_grib_files()
-        ds = cml.load_source(source_name, tmp.path, order_by=order_by, **request)
-    elif source_name == "file":
-        tmp = unique_grib_file()
-        ds = cml.load_source(source_name, tmp.path, order_by=order_by, **request)
-    if source_name == "list-of-dicts":
-        tmp = list_of_dicts()
-        ds = GribIndexFromDicts(tmp, order_by=order_by, **request)
+    ds, _, total, n = get_fixtures(source_name, request)
 
-    assert len(ds) == 4, len(ds)
-    for i in ds:
-        print(i)
-    assert len(ds) == 4
+    assert len(ds) == n, len(ds)
 
-    assert ds[0].metadata("param") == params[0]
-    assert ds[1].metadata("param") == params[1]
-    assert ds[2].metadata("param") == params[0]
-    assert ds[3].metadata("param") == params[1]
-
-    assert ds[0].metadata("level") == levels[0]
-    assert ds[1].metadata("level") == levels[0]
-    assert ds[2].metadata("level") == levels[1]
-    assert ds[3].metadata("level") == levels[1]
-    print()
+    check_sel_and_order(ds, params, levels)
 
 
 @pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize(
-    "source_name",
-    [
-        "directory",
-        "list-of-dicts",
-        "file",
-    ],
-)
+@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 def test_indexing_order_by_with_method(params, levels, source_name):
-    request = dict(
-        variable=params,
-        level=levels,
-        date=20070101,
-        time="1200",
-    )
-
+    request = dict(variable=params, level=levels, date=20070101, time="1200")
     order_by = dict(level=levels, variable=params)
 
-    if source_name == "directory":
-        tmp = dir_with_grib_files()
-        total, n = 6, 4
-        ds = cml.load_source(source_name, tmp.path)
-    elif source_name == "file":
-        tmp = unique_grib_file()
-        total, n = 6, 4
-        ds = cml.load_source(source_name, tmp.path)
-    elif source_name == "list-of-dicts":
-        tmp = list_of_dicts()
-        total, n = 6, 4
-        ds = GribIndexFromDicts(tmp)
+    ds, _, total, n = get_fixtures(source_name, {})
 
     assert len(ds) == total, len(ds)
 
     ds = ds.sel(**request)
-    for i in ds:
-        print(i)
     assert len(ds) == n, len(ds)
+
     ds = ds.order_by(order_by)
     assert len(ds) == n
-    print("-----")
-    for i in ds:
-        print(i)
 
-    assert ds[0].metadata("param") == params[0]
-    assert ds[1].metadata("param") == params[1]
-    assert ds[2].metadata("param") == params[0]
-    assert ds[3].metadata("param") == params[1]
-
-    assert ds[0].metadata("level") == levels[0]
-    assert ds[1].metadata("level") == levels[0]
-    assert ds[2].metadata("level") == levels[1]
-    assert ds[3].metadata("level") == levels[1]
+    check_sel_and_order(ds, params, levels)
 
 
-@pytest.mark.parametrize("params", (["t", "z"],))
-@pytest.mark.parametrize("levels", ([500, 850],))
+@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
 @pytest.mark.parametrize(
-    "source_name",
-    [
-        "directory",
-        # "file",
-        # "list-of-dicts",
-    ],
+    "levels", ([500, 850], [850, 500], ["500", "850"], ["850", "500"])
 )
+# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_ascending_descending(params, levels, source_name):
-    request = dict(
-        variable=params,
-        level=levels,
-        date=20070101,
-        time="1200",
-    )
-
+    request = dict(variable=params, level=levels, date=20070101, time="1200")
     order_by = dict(level="descending", variable="ascending")
 
-    if source_name == "directory":
-        tmp = dir_with_grib_files()
-        ds = cml.load_source(source_name, tmp.path)
-    if source_name == "file":
-        tmp = unique_grib_file()
-        ds = cml.load_source(source_name, tmp.path)
-    elif source_name == "list-of-dicts":
-        tmp = list_of_dicts()
-        ds = GribIndexFromDicts(tmp)
+    ds, _, total, n = get_fixtures(source_name, {})
 
     ds = ds.sel(**request)
     assert len(ds) == 4, len(ds)
+
     ds = ds.order_by(order_by)
-    for i in ds:
-        print(i)
     assert len(ds) == 4
 
-    assert ds[0].metadata("param") == params[0]
-    assert ds[1].metadata("param") == params[1]
-    assert ds[2].metadata("param") == params[0]
-    assert ds[3].metadata("param") == params[1]
+    assert ds[0].metadata("param") == min(params)
+    assert ds[1].metadata("param") == max(params)
+    assert ds[2].metadata("param") == min(params)
+    assert ds[3].metadata("param") == max(params)
 
-    assert ds[0].metadata("level") == levels[1]
-    assert ds[1].metadata("level") == levels[1]
-    assert ds[2].metadata("level") == levels[0]
-    assert ds[3].metadata("level") == levels[0]
+    assert int(ds[0].metadata("level")) == max([int(x) for x in levels])
+    assert int(ds[1].metadata("level")) == max([int(x) for x in levels])
+    assert int(ds[2].metadata("level")) == min([int(x) for x in levels])
+    assert int(ds[3].metadata("level")) == min([int(x) for x in levels])
     print()
 
 
@@ -343,8 +282,8 @@ REQUEST_1 = {
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    test_indexing_order_by_with_method(["z", "t"], [500, 850], "list-of-dicts")
-    test_indexing_order_by_with_method(["z", "t"], [500, 850], "file")
+    # test_indexing_order_by_with_request(["z", "t"], [500, 850], "list-of-dicts")
+    # test_indexing_order_by_with_method(["z", "t"], [500, 850], "file")
     test_indexing_order_by_with_method(["z", "t"], [500, 850], "directory")
     # test_indexing_order_ascending_descending(["t", "z"], [500, 850], 'file')
 

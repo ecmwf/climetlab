@@ -227,8 +227,10 @@ class Index(Source):
 
     def order_by(self, *args, **kwargs):
         """Default order_by method.
-        It expects that calling self[i] returns an element with a .metadata(key) method,
-        then sort the tuple.
+        It expects that calling self[i] returns an element that and Order object can rank
+        (i.e. order.rank(element) -> tuple).
+        then it sorts the elements according to the tuples.
+
         Returns a new index object.
         """
 
@@ -262,11 +264,12 @@ class Index(Source):
         indices = sorted(result, key=sorter)
         return MaskIndex(self, indices)
 
-def MaskIndex(index, indices):
-    from climetlab.readers.grib.fieldset import FieldSet
-    from climetlab.readers import Reader
 
-    class _MaskIndex(FieldSet, Reader,Index):
+def MaskIndex(index, indices):
+    from climetlab.readers import Reader
+    from climetlab.readers.grib.fieldset import FieldSet
+
+    class _MaskIndex(FieldSet, Reader, Index):
         def __init__(self, index, indices):
             self.index = index
             self.indices = indices

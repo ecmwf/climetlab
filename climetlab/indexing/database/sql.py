@@ -237,9 +237,7 @@ class SqlDatabase(Database):
         if order_func_name is not None:
             print(f'create_function: {order_func_name}"')
             connection.create_function(order_func_name, 2, order_func)
-        statement = (
-            f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
-        )
+        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
 
         LOG.debug("%s", statement)
         print(statement)
