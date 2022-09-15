@@ -255,14 +255,14 @@ class JsonIndex(GribDBIndex):
         assert False
 
     @cached_method
-    def _lookup(self):
-        return self.db.lookup(self.selection)
+    def _lookup_parts(self):
+        return self.db.lookup_parts()
 
     def part(self, n):
-        return self._lookup()[n]
+        return self._lookup_parts()[n]
 
     def number_of_parts(self):
-        return len(self._lookup())
+        return len(self._lookup_parts())
 
 
 SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
@@ -275,7 +275,16 @@ class SqlIndex(GribDBIndex):
 
     def sel(self, *args, **kwargs):
         selection = self.SELECTION_CLASS(*args, **kwargs)
+        if selection.is_empty:
+            return self
         db = self.db.sel(selection=selection)
+        return self.__class__(db=db)
+
+    def order_by(self, *args, **kwargs):
+        order = self.ORDER_CLASS(*args, **kwargs)
+        if order.is_empty:
+            return self
+        db = self.db.order_by(order=order)
         return self.__class__(db=db)
 
     def part(self, n):
@@ -283,12 +292,7 @@ class SqlIndex(GribDBIndex):
             self._cache.first <= n < self._cache.first + self._cache.length
         ):
             first = n // self.CHUNKING
-            result = self.db.lookup(
-                # self.selection,
-                # order=self.order,
-                limit=self.CHUNKING,
-                offset=first,
-            )
+            result = self.db.lookup_parts(limit=self.CHUNKING, offset=first)
             self._cache = SqlIndexCache(first, len(result), result)
         return self._cache.result[n % self.CHUNKING]
 

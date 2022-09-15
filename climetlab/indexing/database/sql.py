@@ -15,7 +15,7 @@ import os
 import sqlite3
 
 import climetlab as cml
-from climetlab.core.index import Order
+from climetlab.core.index import Order, Selection
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -69,20 +69,20 @@ class SqlDatabase(Database):
     VERSION = 3
     EXTENSION = ".db"
 
-    def __init__(
-        self,
-        db_path,
-        view_name="entries",
-    ):
+    def __init__(self, db_path, view_name="entries", _connection=None):
 
         self.view_name = view_name
         self.db_path = db_path
+        self._connection = _connection
 
         LOG.debug("DB %s %s", self.db_path, self.view_name)
 
     @property
     def connection(self):
-        return sqlite3.connect(self.db_path)
+        if self._connection is None:
+            print(f"Connecting to DB ({self.db_path})")
+            self._connection = sqlite3.connect(self.db_path)
+        return self._connection
 
     def load(self, iterator):
         with self.connection as conn:
@@ -128,9 +128,9 @@ class SqlDatabase(Database):
 
             return count
 
-    def _conditions(self, request):
+    def _conditions(self, selection):
         conditions = []
-        for k, b in request.items():
+        for k, b in selection.dic.items():
             if b is None or b == cml.ALL:
                 continue
             elif isinstance(b, (list, tuple)):
@@ -143,11 +143,11 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k}='{b}'")
         return conditions
 
-    def _order_by(self, order):
+    def _order_by(self, order, view_name):
         """Uses a Order object to help building an SQL query.
 
         Input: a Order object
-        Return: (dict, func)
+        Return: (dict, func_name, func)
         The dict should be merged to create an "ORDER BY" SQL string
         The function can be use to feed the SQL connection.create_function()
         """
@@ -169,6 +169,7 @@ class SqlDatabase(Database):
         keys = [_ for _ in order.order.keys()]
         keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
 
+        order_func_name = None
         for key in keys:
             lst = order.order.get(key, "ascending")  # Default is ascending order
 
@@ -190,12 +191,13 @@ class SqlDatabase(Database):
             lst = [str(_) for _ in lst]  # processing only strings from now.
 
             dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-            order_lst.append(f'user_order("{key}",i_{key})')
+            order_func_name = f"userorder_{view_name}"
+            order_lst.append(f'{order_func_name}("{key}",i_{key})')
 
         def order_func(key, value):
             return dict_of_dicts[key][value]
 
-        return order_lst, order_func
+        return order_lst, order_func_name, order_func
 
     def _columns_names_without_i_(self):
         cursor = self.connection.execute("PRAGMA table_info(entries)")
@@ -207,80 +209,73 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
-    def count(self):
-
-        statement = f"SELECT COUNT(*) FROM {self.view_name};"
-
-        LOG.debug(statement)
-        for result in self.connection.execute(statement):
-            return result[0]
-        assert False
-
-    def sel(self, selection):
-        """
-        request: a Selection object containing the list of values to filter by.
-        TODO: order: an Order object to order the entries.
-        """
-        if selection.is_empty:
-            return self
-
-        def h(selection):
-            m = hashlib.sha256()
-            m.update(json.dumps(selection.dic, sort_keys=True).encode("utf-8"))
-            return m.hexdigest()
-
-        view_name = self.view_name + "_" + h(selection)
-
-        print(f"Created view {view_name}.")
-
-        conditions = self._conditions(selection.dic)
-        # order_by, order_func = self._order_by(order.dic)
-
-        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
-        order_by_str = ""  # "ORDER BY " + ",".join(order_by) if order_by else ""
-
+    def sel(self, selection: Selection):
+        view_name = self.view_name + "_" + selection.h()
+        print(f"Creating sel view {view_name}.")
         connection = self.connection
-        # if order_func is not None:
-        #    connection.create_function("user_order", 2, order_func)
 
-        statement = f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {conditions_str} {order_by_str};"
+        conditions = self._conditions(selection)
+        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
+        statement = f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {conditions_str};"
+
         LOG.debug("%s", statement)
         print(statement)
         for i in connection.execute(statement):
             LOG.error(str(i))
 
-        db = self.__class__(self.db_path, view_name=view_name)
+        return self.__class__(
+            self.db_path, view_name=view_name, _connection=self._connection
+        )
 
-        return db
+    def order_by(self, order: Order):
+        view_name = self.view_name + "_" + order.h()
+        print(f"Creating order view {view_name}.")
+        connection = self.connection
 
-    def lookup(
-        self,
-        # request,
-        return_dicts=False,
-        # order=None,
-        limit=None,
-        offset=None,
-    ):
-        """Look into the database and provide entries.
+        order_by, order_func_name, order_func = self._order_by(order, view_name)
+        order_by_str = "ORDER BY " + ",".join(order_by) if order_by else ""
+        if order_func_name is not None:
+            print(f'create_function: {order_func_name}"')
+            connection.create_function(order_func_name, 2, order_func)
+        statement = (
+            f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
+        )
 
-        return_dicts: Return dictionaries of entries instead of (path resolved) Part objects.
-            return_dicts = False: return list of Part(path, offset, length)
-            return_dicts = True: return dicts
-            return_dicts = [key1, key2]: return dicts with key1, key2 columns of the database.
+        LOG.debug("%s", statement)
+        print(statement)
+        for i in connection.execute(statement):
+            LOG.error(str(i))
+
+        return self.__class__(
+            self.db_path, view_name=view_name, _connection=self._connection
+        )
+
+    def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
+        """
+        Look into the database and provide entries as Parts.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """
-        if return_dicts is True:
-            return_dicts = self._columns_names_without_i_()
 
-        if return_dicts is False:
-            _names = ["path", "offset", "length"]
-            parts = []
-            for path, offset, length in self._execute_select(_names, limit, offset):
-                parts.append(Part(path, offset, length))
-            return Part.resolve(parts, os.path.dirname(self.db_path))
+        _names = ["path", "offset", "length"]
+        parts = []
+        for path, offset, length in self._execute_select(_names, limit, offset):
+            parts.append(Part(path, offset, length))
+        if resolve_paths:
+            parts = Part.resolve(parts, os.path.dirname(self.db_path))
+        return parts
 
-        _names = [f"i_{x}" for x in return_dicts]
+    def lookup_dicts(self, keys=None, limit=None, offset=None):
+        """
+        From a list of keys, return dicts with these columns of the database.
+        limit: Returns only "limit" entries (used for paging).
+        offset: Skip the first "offset" entries (used for paging).
+        """
+        if keys is None:
+            keys = self._columns_names_without_i_()
+        assert isinstance(keys, (list, tuple)), keys
+
+        _names = [f"i_{x}" for x in keys]
         dicts = []
         for tupl in self._execute_select(_names, limit, offset):
             dic = {k: v for k, v in zip(_names, tupl)}
@@ -292,14 +287,19 @@ class SqlDatabase(Database):
         limit_str = f" LIMIT {limit}" if limit is not None else ""
         offset_str = f" OFFSET {offset}" if offset is not None else ""
 
-        connection = self.connection
-
         statement = (
             f"SELECT {names_str} FROM {self.view_name} {limit_str} {offset_str};"
         )
         LOG.debug("%s", statement)
-        for tupl in connection.execute(statement):
+
+        for tupl in self.connection.execute(statement):
             yield tupl
+
+    def count(self):
+        statement = f"SELECT COUNT(*) FROM {self.view_name};"
+        for result in self.connection.execute(statement):
+            return result[0]
+        assert False
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()

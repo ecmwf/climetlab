@@ -8,6 +8,8 @@
 #
 
 
+import hashlib
+import json
 import logging
 import warnings
 from abc import abstractmethod
@@ -54,6 +56,11 @@ class OrderOrSelection:
         if not self.dic:
             return True
         return False
+
+    def h(self):
+        m = hashlib.sha256()
+        m.update(json.dumps(self.dic, sort_keys=True).encode("utf-8"))
+        return m.hexdigest()
 
 
 # TODO: this should/could be done with decorators

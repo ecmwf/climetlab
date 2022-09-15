@@ -38,25 +38,8 @@ class JsonDatabase(Database):
             for entry in self.entries:
                 print(json.dumps(entry), file=f)
 
-    def lookup(self, request, order=None, **kwargs):
-        assert (
-            order is None
-        ), f'The "order" argument not supported by the json index. {order.order}'
-
-        if request is None:
-            return self.entries
-
+    def lookup_parts(self, order=None, **kwargs):
         parts = []
-        query = {
-            k: v if isinstance(v, (list, tuple)) else [v] for k, v in request.items()
-        }
-
         for e in self.entries:
-            match = True
-            for k, v in query.items():
-                if e.get(k) not in v:
-                    match = False
-                    break
-            if match:
-                parts.append(Part(e["_path"], e["_offset"], e["_length"]))
+            parts.append(Part(e["_path"], e["_offset"], e["_length"]))
         return Part.resolve(parts, os.path.dirname(self.db_path))

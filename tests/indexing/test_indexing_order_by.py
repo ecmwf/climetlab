@@ -23,7 +23,6 @@ from climetlab.indexing import PerUrlIndex
 from climetlab.readers.grib.index import GribIndex
 from climetlab.testing import climetlab_file
 
-
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"

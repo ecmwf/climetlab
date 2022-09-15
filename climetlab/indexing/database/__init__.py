@@ -13,11 +13,20 @@ LOG = logging.getLogger(__name__)
 
 
 class Database:
-    def lookup(self, request, order=None):
+    def lookup_parts(self):
+        raise NotImplementedError("")
+
+    def lookup_dicts(self):
         raise NotImplementedError("")
 
     def count(self, request):
         raise NotImplementedError("")
 
     def load(self, iterator):
+        raise NotImplementedError("")
+
+    def sel(self, selection):
+        raise NotImplementedError("")
+
+    def order_by(self, order):
         raise NotImplementedError("")
