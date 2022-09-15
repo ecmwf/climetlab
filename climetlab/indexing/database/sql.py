@@ -216,7 +216,7 @@ class SqlDatabase(Database):
 
         conditions = self._conditions(selection)
         conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
-        statement = f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {conditions_str};"
+        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {conditions_str};"
 
         LOG.debug("%s", statement)
         print(statement)
@@ -238,7 +238,7 @@ class SqlDatabase(Database):
             print(f'create_function: {order_func_name}"')
             connection.create_function(order_func_name, 2, order_func)
         statement = (
-            f"CREATE VIEW {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
+            f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
         )
 
         LOG.debug("%s", statement)

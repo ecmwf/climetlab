@@ -182,9 +182,11 @@ class Index(Source):
 
     ORDER_CLASS = Order
     SELECTION_CLASS = Selection
+    _mutations_queue = None
 
     def __init__(self, *args, **kwargs):
-        self._mutations_queue = []
+        if self._mutations_queue is None:
+            self._mutations_queue = []
 
         order_by = kwargs.pop("order_by", {})
 
@@ -193,6 +195,8 @@ class Index(Source):
         self._mutations_queue.append(lambda x: x.order_by(**order_by))
 
     def mutate(self):
+        if self._mutations_queue is None:
+            return self
         for m in self._mutations_queue:
             self = m(self)
         return self
@@ -211,6 +215,8 @@ class Index(Source):
         Returns a new index object.
         """
         selection = self.SELECTION_CLASS(*args, **kwargs)
+        if selection.is_empty:
+            return self
 
         indices = []
         for i, element in enumerate(self):
@@ -256,21 +262,24 @@ class Index(Source):
         indices = sorted(result, key=sorter)
         return MaskIndex(self, indices)
 
+def MaskIndex(index, indices):
+    from climetlab.readers.grib.fieldset import FieldSet
+    from climetlab.readers import Reader
 
-class MaskIndex(Index):
-    def __init__(self, index, indices):
-        self.index = index
-        self.indices = indices
+    class _MaskIndex(FieldSet, Reader,Index):
+        def __init__(self, index, indices):
+            self.index = index
+            self.indices = indices
 
-    def __getitem__(self, n):
-        n = self.indices[n]
-        return self.index[n]
+        def __getitem__(self, n):
+            n = self.indices[n]
+            return self.index[n]
 
-    def __len__(self):
-        return len(self.indices)
+        def __len__(self):
+            return len(self.indices)
 
-    def __getattr__(self, name):
-        return getattr(self.index, name)
+    return _MaskIndex(index, indices)
+
 
 
 class MultiIndex(Index):

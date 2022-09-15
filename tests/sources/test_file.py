@@ -27,6 +27,8 @@ LOG = logging.getLogger(__name__)
 def test_file_source_grib():
 
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
+    from climetlab.readers.grib.reader import GRIBReader
+    assert isinstance(s._reader, GRIBReader), s
     assert len(s) == 2
 
 
