@@ -184,6 +184,10 @@ class Index(Source):
     SELECTION_CLASS = Selection
     _mutations_queue = None
 
+    @property
+    def MASK_CLASS(self):
+        return MaskIndex
+
     def __init__(self, *args, **kwargs):
         if self._mutations_queue is None:
             self._mutations_queue = []
@@ -223,7 +227,7 @@ class Index(Source):
             if selection.match_element(element):
                 indices.append(i)
 
-        return MaskIndex(self, indices)
+        return self.MASK_CLASS(self, indices)
 
     def order_by(self, *args, **kwargs):
         """Default order_by method.
@@ -262,27 +266,20 @@ class Index(Source):
 
         result = list(range(len(self)))
         indices = sorted(result, key=sorter)
-        return MaskIndex(self, indices)
+        return self.MASK_CLASS(self, indices)
 
 
-def MaskIndex(index, indices):
-    from climetlab.readers import Reader
-    from climetlab.readers.grib.fieldset import FieldSet
+class MaskIndex(Index):
+    def __init__(self, index, indices):
+        self.index = index
+        self.indices = indices
 
-    class _MaskIndex(FieldSet, Reader, Index):
-        def __init__(self, index, indices):
-            self.index = index
-            self.indices = indices
+    def __getitem__(self, n):
+        n = self.indices[n]
+        return self.index[n]
 
-        def __getitem__(self, n):
-            n = self.indices[n]
-            return self.index[n]
-
-        def __len__(self):
-            return len(self.indices)
-
-    return _MaskIndex(index, indices)
-
+    def __len__(self):
+        return len(self.indices)
 
 
 class MultiIndex(Index):

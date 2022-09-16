@@ -80,7 +80,7 @@ class SqlDatabase(Database):
     @property
     def connection(self):
         if self._connection is None:
-            print(f"Connecting to DB ({self.db_path})")
+            LOG.debug(f"Connecting to DB ({self.db_path})")
             self._connection = sqlite3.connect(self.db_path)
         return self._connection
 
@@ -211,7 +211,6 @@ class SqlDatabase(Database):
 
     def sel(self, selection: Selection):
         view_name = self.view_name + "_" + selection.h()
-        print(f"Creating sel view {view_name}.")
         connection = self.connection
 
         conditions = self._conditions(selection)
@@ -219,7 +218,6 @@ class SqlDatabase(Database):
         statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {conditions_str};"
 
         LOG.debug("%s", statement)
-        print(statement)
         for i in connection.execute(statement):
             LOG.error(str(i))
 
@@ -229,18 +227,15 @@ class SqlDatabase(Database):
 
     def order_by(self, order: Order):
         view_name = self.view_name + "_" + order.h()
-        print(f"Creating order view {view_name}.")
         connection = self.connection
 
         order_by, order_func_name, order_func = self._order_by(order, view_name)
         order_by_str = "ORDER BY " + ",".join(order_by) if order_by else ""
         if order_func_name is not None:
-            print(f'create_function: {order_func_name}"')
             connection.create_function(order_func_name, 2, order_func)
         statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
 
         LOG.debug("%s", statement)
-        print(statement)
         for i in connection.execute(statement):
             LOG.error(str(i))
 

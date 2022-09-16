@@ -19,7 +19,7 @@ import requests
 from multiurl import robust
 
 from climetlab.core.caching import auxiliary_cache_file, cache_file
-from climetlab.core.index import Index, MultiIndex, Order
+from climetlab.core.index import Index, MultiIndex, Order, MaskIndex
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
@@ -43,8 +43,16 @@ class GribOrder(Order):
         super().__init__(*args, **kwargs)
 
 
+class MaskGribIndex(FieldSet, MaskIndex):
+    def __init__(self, *args, **kwargs):
+        MaskIndex.__init__(self, *args, **kwargs)
+
 class GribIndex(FieldSet, Index):
     ORDER_CLASS = GribOrder
+
+    @property
+    def MASK_CLASS(self):
+        return MaskGribIndex
 
     def __init__(self, *args, **kwargs):
 
@@ -245,7 +253,7 @@ SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
 class SqlIndex(GribDBIndex):
 
     DBCLASS = SqlDatabase
-    CHUNKING = 50000
+    CHUNKING = 50_000
 
     def sel(self, *args, **kwargs):
         selection = self.SELECTION_CLASS(*args, **kwargs)
