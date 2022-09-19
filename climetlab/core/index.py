@@ -57,8 +57,10 @@ class OrderOrSelection:
             return True
         return False
 
-    def h(self):
+    def h(self, *args, **kwargs):
         m = hashlib.sha256()
+        m.update(json.dumps(args, sort_keys=True).encode("utf-8"))
+        m.update(json.dumps(kwargs, sort_keys=True).encode("utf-8"))
         m.update(json.dumps(self.dic, sort_keys=True).encode("utf-8"))
         return m.hexdigest()
 
@@ -188,22 +190,17 @@ class Index(Source):
     def MASK_CLASS(self):
         return MaskIndex
 
-    def __init__(self, *args, **kwargs):
-        if self._mutations_queue is None:
-            self._mutations_queue = []
-
-        order_by = kwargs.pop("order_by", {})
-
-        self._mutations_queue.append(lambda x: x.sel(*args, **kwargs))
-        self._mutations_queue.append(lambda x: x.order_by(*args, **kwargs))
-        self._mutations_queue.append(lambda x: x.order_by(**order_by))
+    def __init__(self, *args, order_by=None, **kwargs):
+        self._init_args = args
+        self._init_kwargs = kwargs
+        self._init_order_by = order_by
 
     def mutate(self):
-        if self._mutations_queue is None:
-            return self
-        for m in self._mutations_queue:
-            self = m(self)
-        return self
+        obj = self
+        obj = obj.sel(*self._init_args, **self._init_kwargs)
+        obj = obj.order_by(*self._init_args, **self._init_kwargs)
+        obj = obj.order_by(self._init_order_by)
+        return obj
 
     @abstractmethod
     def __getitem__(self, n):

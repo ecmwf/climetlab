@@ -44,6 +44,11 @@ class GribOrder(Order):
 
 
 class MaskGribIndex(FieldSet, MaskIndex):
+    ORDER_CLASS = GribOrder
+
+    @property
+    def MASK_CLASS(self):
+        return MaskGribIndex
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
@@ -61,6 +66,11 @@ class GribIndex(FieldSet, Index):
 
 
 class MultiGribIndex(FieldSet, MultiIndex):
+    ORDER_CLASS = GribOrder
+
+    @property
+    def MASK_CLASS(self):
+        return MaskGribIndex
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
@@ -232,9 +242,6 @@ class GribDBIndex(GribInFiles):
 
 class JsonIndex(GribDBIndex):
     DBCLASS = JsonDatabase
-
-    def __init__(self):
-        assert False
 
     @cached_method
     def _lookup_parts(self):

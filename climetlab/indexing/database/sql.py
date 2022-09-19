@@ -143,62 +143,6 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k}='{b}'")
         return conditions
 
-    def _order_by(self, order, view_name):
-        """Uses a Order object to help building an SQL query.
-
-        Input: a Order object
-        Return: (dict, func_name, func)
-        The dict should be merged to create an "ORDER BY" SQL string
-        The function can be use to feed the SQL connection.create_function()
-        """
-
-        if not order:
-            return None, None
-        assert isinstance(order, Order), order
-
-        # TODO: add default ordering
-        # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
-        # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
-
-        dict_of_dicts = dict()
-        order_lst = []
-
-        # Use mars keys order by default
-        # But make sure the order provided by the user
-        # in the order override this default order.
-        keys = [_ for _ in order.order.keys()]
-        keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
-
-        order_func_name = None
-        for key in keys:
-            lst = order.order.get(key, "ascending")  # Default is ascending order
-
-            if lst is None:
-                order_lst.append(f"i_{key}")
-                continue
-
-            if lst == "ascending":
-                order_lst.append(f"i_{key} ASC")
-                continue
-
-            if lst == "descending":
-                order_lst.append(f"i_{key} DESC")
-                continue
-
-            if not isinstance(lst, (list, tuple)):
-                lst = [lst]
-
-            lst = [str(_) for _ in lst]  # processing only strings from now.
-
-            dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-            order_func_name = f"userorder_{view_name}"
-            order_lst.append(f'{order_func_name}("{key}",i_{key})')
-
-        def order_func(key, value):
-            return dict_of_dicts[key][value]
-
-        return order_lst, order_func_name, order_func
-
     def _columns_names_without_i_(self):
         cursor = self.connection.execute("PRAGMA table_info(entries)")
         out = []
@@ -210,7 +154,7 @@ class SqlDatabase(Database):
         return out
 
     def sel(self, selection: Selection):
-        view_name = self.view_name + "_" + selection.h()
+        view_name = "entries_view_" + selection.h(parent_view_name=self.view_name)
         connection = self.connection
 
         conditions = self._conditions(selection)
@@ -226,16 +170,78 @@ class SqlDatabase(Database):
         )
 
     def order_by(self, order: Order):
-        view_name = self.view_name + "_" + order.h()
+        view_name = "entries_view_" + order.h(parent_view_name=self.view_name)
         connection = self.connection
 
-        order_by, order_func_name, order_func = self._order_by(order, view_name)
-        order_by_str = "ORDER BY " + ",".join(order_by) if order_by else ""
-        if order_func_name is not None:
-            connection.create_function(order_func_name, 2, order_func)
-        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {order_by_str};"
+        class SqlSorter:
+            def __init__(self, order, view_name):
+                self.order = order
+                self.view_name = view_name
+
+                self.dict_of_dicts = dict()
+                self.order_lst = []
+
+                # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
+                # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
+                keys = [_ for _ in self.order.order.keys()]
+                keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
+
+                for key in keys:
+                    # Default is ascending order
+                    lst = self.order.order.get(key, "ascending")
+                    self._add_key(key, lst)
+
+            @property
+            def _func_name(self):
+                return f"userorder_{self.view_name}"
+
+            def _add_key(self, key, lst):
+                if lst is None:
+                    self.order_lst.append(f"i_{key}")
+                    return
+
+                if lst == "ascending":
+                    self.order_lst.append(f"i_{key} ASC")
+                    return
+
+                if lst == "descending":
+                    self.order_lst.append(f"i_{key} DESC")
+                    return
+
+                if not isinstance(lst, (list, tuple)):
+                    lst = [lst]
+
+                lst = [str(_) for _ in lst]  # processing only strings from now.
+
+                self.dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
+                self.order_lst.append(f'{self._func_name}("{key}",i_{key})')
+
+            @property
+            def order_statement(self):
+                if not self.order_lst:
+                    assert not self.dict_of_dicts, self.dict_of_dicts
+                    return ""
+                return "ORDER BY " + ",".join(sorter.order_lst)
+
+            def create_sql_function_if_needed(self, connection):
+                if not self.dict_of_dicts:
+                    return
+
+                dict_of_dicts = self.dict_of_dicts  # avoid creating closure on self.
+
+                def order_func(k, v):
+                    return dict_of_dicts[k][v]
+
+                connection.create_function(self._func_name, 2, order_func)
+
+        # Use mars keys order by default
+        # But make sure the order provided by the user
+        # in the order override this default order.
+        sorter = SqlSorter(order, view_name)
+        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {sorter.order_statement};"
 
         LOG.debug("%s", statement)
+        sorter.create_sql_function_if_needed(connection)
         for i in connection.execute(statement):
             LOG.error(str(i))
 
@@ -292,7 +298,7 @@ class SqlDatabase(Database):
         statement = f"SELECT COUNT(*) FROM {self.view_name};"
         for result in self.connection.execute(statement):
             return result[0]
-        assert False
+        assert False, statement  # Fail if result is empty.
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()

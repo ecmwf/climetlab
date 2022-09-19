@@ -18,6 +18,7 @@ class IndexedUrl(IndexedSource):
         index_class = dict(json=JsonIndex, sql=SqlIndex)[_index_type]
         index = index_class.from_url(url)
         super().__init__(index, **kwargs)
+        # assert isinstance(self.index, index_class), self.index
 
 
 source = IndexedUrl
