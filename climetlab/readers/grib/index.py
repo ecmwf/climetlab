@@ -13,18 +13,26 @@ import os
 import warnings
 from abc import abstractmethod
 from collections import namedtuple
+from typing import List
 from urllib.parse import urljoin
 
 import requests
 from multiurl import robust
 
 from climetlab.core.caching import auxiliary_cache_file, cache_file
-from climetlab.core.index import Index, MultiIndex, Order, MaskIndex, Selection
+from climetlab.core.index import (
+    Index,
+    MaskIndex,
+    MultiIndex,
+    Order,
+    OrderOrSelection,
+    Selection,
+)
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
-from climetlab.readers.grib.fieldset import FieldSet
+from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.parts import Part
 from climetlab.utils.serialise import register_serialisation
@@ -32,24 +40,28 @@ from climetlab.utils.serialise import register_serialisation
 LOG = logging.getLogger(__name__)
 
 
-class GribIndex(FieldSet, Index):
+class FieldSet(FieldSetMixin, Index):
     def __init__(self, *args, **kwargs):
 
         self._availability = None
-        super().__init__(*args, **kwargs)
+        Index.__init__(self, *args, **kwargs)
+
+    @classmethod
+    def new_mask_index(self, *args, **kwargs):
+        return MaskFieldSet(*args, **kwargs)
 
 
-class MaskGribIndex(FieldSet, MaskIndex):
+class MaskFieldSet(FieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
 
-class MultiGribIndex(FieldSet, MultiIndex):
+class MultiFieldSet(FieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
 
-class GribInFiles(GribIndex):
+class FieldSetInFiles(FieldSet):
     def __getitem__(self, n):
         part = self.part(n)
         return GribField(part.path, part.offset, part.length)
@@ -66,7 +78,7 @@ class GribInFiles(GribIndex):
         self._not_implemented()
 
 
-class GribDBIndex(GribInFiles):
+class DBFieldSetInFiles(FieldSetInFiles):
     def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -214,7 +226,7 @@ class GribDBIndex(GribInFiles):
         return self.availability
 
 
-class JsonIndex(GribDBIndex):
+class JsonFieldSetInFiles(DBFieldSetInFiles):
     DBCLASS = JsonDatabase
 
     @cached_method
@@ -228,27 +240,44 @@ class JsonIndex(GribDBIndex):
         return len(self._lookup_parts())
 
 
-SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
+SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
 
-class SqlIndex(GribDBIndex):
+class SqlFieldSetInFiles(DBFieldSetInFiles):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 50_000
 
-    def sel(self, *args, **kwargs):
-        selection = Selection(*args, **kwargs)
-        if selection.is_empty:
+    def __init__(self, *args, _filters=None, **kwargs):
+        """
+        _filters are used to keep the state of the db
+        It is a list of **already applied** filters, not a list of filter to apply.
+        Use the method apply_filters for this.
+        """
+
+        # _filter
+        self._filters = _filters or []
+        super().__init__(*args, **kwargs)
+
+    def apply_filters(self, filters: List[OrderOrSelection]):
+        obj = self
+        for f in filters:
+            obj = obj.filter(f)
+        return obj
+
+    def filter(self, filter):
+        if filter.is_empty:
             return self
-        db = self.db.sel(selection=selection)
-        return self.__class__(db=db)
+
+        db = self.db.filter(filter)
+        _filters = self._filters + [filter]
+        return self.__class__(db=db, _filters=_filters)
+
+    def sel(self, *args, **kwargs):
+        return self.filter(Selection(*args, **kwargs))
 
     def order_by(self, *args, **kwargs):
-        order = Order(*args, **kwargs)
-        if order.is_empty:
-            return self
-        db = self.db.order_by(order=order)
-        return self.__class__(db=db)
+        return self.filter(Order(*args, **kwargs))
 
     def part(self, n):
         if self._cache is None or not (
@@ -256,7 +285,7 @@ class SqlIndex(GribDBIndex):
         ):
             first = n // self.DB_CACHE_SIZE
             result = self.db.lookup_parts(limit=self.DB_CACHE_SIZE, offset=first)
-            self._cache = SqlIndexCache(first, len(result), result)
+            self._cache = SqlResultCache(first, len(result), result)
         return self._cache.result[n % self.DB_CACHE_SIZE]
 
     @cached_method
@@ -265,13 +294,15 @@ class SqlIndex(GribDBIndex):
 
 
 register_serialisation(
-    SqlIndex,
-    lambda x: x.db.db_path,
-    lambda x: SqlIndex(db=SqlDatabase(x)),  # TODO: add selection and order here?
+    SqlFieldSetInFiles,
+    lambda x: [x.db.db_path, x._filters],
+    lambda x: SqlFieldSetInFiles(db=SqlDatabase(x[0])).apply_filters(
+        filters=x[1]
+    ),  # TODO: add selection and order here?
 )
 
 
-class GribFileIndex(GribInFiles):
+class FieldSetInOneFile(FieldSetInFiles):
     VERSION = 1
 
     def __init__(self, path, **kwargs):
@@ -280,7 +311,7 @@ class GribFileIndex(GribInFiles):
         self.path = path
         self.offsets = None
         self.lengths = None
-        self.cache = auxiliary_cache_file(
+        self.mappings_cache_file = auxiliary_cache_file(
             "grib-index",
             path,
             content="null",
@@ -288,11 +319,11 @@ class GribFileIndex(GribInFiles):
         )
 
         if not self._load_cache():
-            self._build_index()
+            self._build_offsets_lengths_mapping()
 
         super().__init__(**kwargs)
 
-    def _build_index(self):
+    def _build_offsets_lengths_mapping(self):
 
         offsets = []
         lengths = []
@@ -308,7 +339,7 @@ class GribFileIndex(GribInFiles):
 
     def _save_cache(self):
         try:
-            with open(self.cache, "w") as f:
+            with open(self.mappings_cache_file, "w") as f:
                 json.dump(
                     dict(
                         version=self.VERSION,
@@ -318,11 +349,11 @@ class GribFileIndex(GribInFiles):
                     f,
                 )
         except Exception:
-            LOG.exception("Write to cache failed %s", self.cache)
+            LOG.exception("Write to cache failed %s", self.mappings_cache_file)
 
     def _load_cache(self):
         try:
-            with open(self.cache) as f:
+            with open(self.mappings_cache_file) as f:
                 c = json.load(f)
                 if not isinstance(c, dict):
                     return False
@@ -332,7 +363,7 @@ class GribFileIndex(GribInFiles):
                 self.lengths = c["lengths"]
                 return True
         except Exception:
-            LOG.exception("Load from cache failed %s", self.cache)
+            LOG.exception("Load from cache failed %s", self.mappings_cache_file)
 
         return False
 

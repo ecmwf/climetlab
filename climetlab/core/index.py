@@ -14,8 +14,8 @@ import logging
 import warnings
 from abc import abstractmethod
 
-from climetlab.sources import Source
 from climetlab.decorators import alias_argument
+from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class OrderOrSelection:
         for arg in args:
             if isinstance(arg, dict):
                 arg = self.normalize_naming(**arg)
-            res_ok = self.parse_arg(arg):
+            res_ok = self.parse_arg(arg)
             if res_ok is False:
                 raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
 
@@ -112,6 +112,22 @@ class Order(OrderOrSelection):
     def order(self):
         return self.dic
 
+    def items(self):
+        if self.is_empty:
+            return
+
+        for k, v in self.dic.items():
+            yield k, v
+
+        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+
+        for k in [_ for _ in GRIB_INDEX_KEYS if _ not in self.dic]:
+            yield k, self[k]
+
+    def __getitem__(self, key):
+        # Default is ascending order
+        return self.dic.get(key, "ascending")
+
     def parse_arg(self, arg):
         if super().parse_arg(arg):
             return True
@@ -186,7 +202,6 @@ class Order(OrderOrSelection):
 
 
 class Index(Source):
-
     @classmethod
     def new_mask_index(self, *args, **kwargs):
         return MaskIndex(*args, **kwargs)

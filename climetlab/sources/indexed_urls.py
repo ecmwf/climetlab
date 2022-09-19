@@ -10,7 +10,7 @@
 import warnings
 
 from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import MultiGribIndex, SqlIndex
+from climetlab.readers.grib.index import MultiFieldSet, SqlFieldSetInFiles
 from climetlab.sources.indexed import IndexedSource
 from climetlab.utils.patterns import Pattern
 
@@ -56,8 +56,8 @@ class IndexedUrls(IndexedSource):
             # TODO: implement
             return url + index_extension
 
-        index = MultiGribIndex(
-            SqlIndex.from_url(
+        index = MultiFieldSet(
+            SqlFieldSetInFiles.from_url(
                 index_url(url),
                 selection=request,
                 patch_entry=add_path(url),

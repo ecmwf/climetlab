@@ -8,14 +8,12 @@
 #
 
 
-import hashlib
-import json
 import logging
 import os
 import sqlite3
 
 import climetlab as cml
-from climetlab.core.index import Order, Selection
+from climetlab.core.index import Order, OrderOrSelection, Selection
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -65,17 +63,78 @@ GRIB_INDEX_KEYS = [
 ]
 
 
+class SqlSorter:
+    @property
+    def _func_name(self):
+        return f"userorder_{self.view}"
+
+    def __init__(self, order, view):
+        self.order = order
+        self.view = view
+
+        self.dict_of_dicts = dict()
+        self.order_lst = []
+
+        # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
+        # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
+        # Use mars keys order by default
+        # But make sure the order provided by the user
+        # in the order override this default order.
+
+        if order is None or order.is_empty:
+            return
+
+        for key, lst in self.order.items():
+            self._add_key(key, lst)
+
+    def _add_key(self, key, lst):
+        if lst is None:
+            self.order_lst.append(f"i_{key}")
+            return
+        if lst == "ascending":
+            self.order_lst.append(f"i_{key} ASC")
+            return
+        if lst == "descending":
+            self.order_lst.append(f"i_{key} DESC")
+            return
+        if not isinstance(lst, (list, tuple)):
+            lst = [lst]
+
+        lst = [str(_) for _ in lst]  # processing only strings from now.
+
+        self.dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
+        self.order_lst.append(f'{self._func_name}("{key}",i_{key})')
+
+    @property
+    def order_statement(self):
+        if not self.order_lst:
+            assert not self.dict_of_dicts, self.dict_of_dicts
+            return ""
+        return "ORDER BY " + ",".join(self.order_lst)
+
+    def create_sql_function_if_needed(self, connection):
+        if not self.dict_of_dicts:
+            return
+
+        dict_of_dicts = self.dict_of_dicts  # avoid creating closure on self.
+
+        def order_func(k, v):
+            return dict_of_dicts[k][v]
+
+        connection.create_function(self._func_name, 2, order_func)
+
+
 class SqlDatabase(Database):
     VERSION = 3
     EXTENSION = ".db"
 
-    def __init__(self, db_path, view_name="entries", _connection=None):
+    def __init__(self, db_path, view="entries", _connection=None):
 
-        self.view_name = view_name
+        self.view = view
         self.db_path = db_path
         self._connection = _connection
 
-        LOG.debug("DB %s %s", self.db_path, self.view_name)
+        LOG.debug("DB %s %s", self.db_path, self.view)
 
     @property
     def connection(self):
@@ -129,6 +188,8 @@ class SqlDatabase(Database):
             return count
 
     def _conditions(self, selection):
+        if selection is None or selection.is_empty:
+            return ""
         conditions = []
         for k, b in selection.dic.items():
             if b is None or b == cml.ALL:
@@ -141,7 +202,10 @@ class SqlDatabase(Database):
                 conditions.append(f"i_{k} IN ({w})")
             else:
                 conditions.append(f"i_{k}='{b}'")
-        return conditions
+
+        if not conditions:
+            return ""
+        return " WHERE " + " AND ".join(conditions)
 
     def _columns_names_without_i_(self):
         cursor = self.connection.execute("PRAGMA table_info(entries)")
@@ -153,100 +217,34 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
-    def sel(self, selection: Selection):
-        view_name = "entries_view_" + selection.h(parent_view_name=self.view_name)
+    def filter(self, filter: OrderOrSelection):
+        view = self.view
+        view += "_" + filter.h(parent_view=self.view)
+
+        if isinstance(filter, Selection):
+            order = None
+            selection = filter
+        elif isinstance(filter, Order):
+            selection = None
+            order = filter
+        else:
+            assert False, (type(filter), filter)
+
         connection = self.connection
 
-        conditions = self._conditions(selection)
-        conditions_str = " WHERE " + " AND ".join(conditions) if conditions else ""
-        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {conditions_str};"
+        conditions_statement = self._conditions(selection)
+        sorter = SqlSorter(order, view)
+        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view} AS SELECT * FROM {self.view} {conditions_statement} {sorter.order_statement};"
 
-        LOG.debug("%s", statement)
-        for i in connection.execute(statement):
-            LOG.error(str(i))
-
-        return self.__class__(
-            self.db_path, view_name=view_name, _connection=self._connection
-        )
-
-    def order_by(self, order: Order):
-        view_name = "entries_view_" + order.h(parent_view_name=self.view_name)
-        connection = self.connection
-
-        class SqlSorter:
-            def __init__(self, order, view_name):
-                self.order = order
-                self.view_name = view_name
-
-                self.dict_of_dicts = dict()
-                self.order_lst = []
-
-                # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
-                # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
-                keys = [_ for _ in self.order.order.keys()]
-                keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
-
-                for key in keys:
-                    # Default is ascending order
-                    lst = self.order.order.get(key, "ascending")
-                    self._add_key(key, lst)
-
-            @property
-            def _func_name(self):
-                return f"userorder_{self.view_name}"
-
-            def _add_key(self, key, lst):
-                if lst is None:
-                    self.order_lst.append(f"i_{key}")
-                    return
-
-                if lst == "ascending":
-                    self.order_lst.append(f"i_{key} ASC")
-                    return
-
-                if lst == "descending":
-                    self.order_lst.append(f"i_{key} DESC")
-                    return
-
-                if not isinstance(lst, (list, tuple)):
-                    lst = [lst]
-
-                lst = [str(_) for _ in lst]  # processing only strings from now.
-
-                self.dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-                self.order_lst.append(f'{self._func_name}("{key}",i_{key})')
-
-            @property
-            def order_statement(self):
-                if not self.order_lst:
-                    assert not self.dict_of_dicts, self.dict_of_dicts
-                    return ""
-                return "ORDER BY " + ",".join(sorter.order_lst)
-
-            def create_sql_function_if_needed(self, connection):
-                if not self.dict_of_dicts:
-                    return
-
-                dict_of_dicts = self.dict_of_dicts  # avoid creating closure on self.
-
-                def order_func(k, v):
-                    return dict_of_dicts[k][v]
-
-                connection.create_function(self._func_name, 2, order_func)
-
-        # Use mars keys order by default
-        # But make sure the order provided by the user
-        # in the order override this default order.
-        sorter = SqlSorter(order, view_name)
-        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view_name} AS SELECT * FROM {self.view_name} {sorter.order_statement};"
-
-        LOG.debug("%s", statement)
         sorter.create_sql_function_if_needed(connection)
+        LOG.debug("%s", statement)
         for i in connection.execute(statement):
             LOG.error(str(i))
 
         return self.__class__(
-            self.db_path, view_name=view_name, _connection=self._connection
+            self.db_path,
+            view=view,
+            _connection=self._connection,
         )
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
@@ -286,16 +284,14 @@ class SqlDatabase(Database):
         limit_str = f" LIMIT {limit}" if limit is not None else ""
         offset_str = f" OFFSET {offset}" if offset is not None else ""
 
-        statement = (
-            f"SELECT {names_str} FROM {self.view_name} {limit_str} {offset_str};"
-        )
+        statement = f"SELECT {names_str} FROM {self.view} {limit_str} {offset_str};"
         LOG.debug("%s", statement)
 
         for tupl in self.connection.execute(statement):
             yield tupl
 
     def count(self):
-        statement = f"SELECT COUNT(*) FROM {self.view_name};"
+        statement = f"SELECT COUNT(*) FROM {self.view};"
         for result in self.connection.execute(statement):
             return result[0]
         assert False, statement  # Fail if result is empty.

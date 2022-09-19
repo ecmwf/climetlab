@@ -39,9 +39,15 @@ def test_global_index(index_type, baseurl):
                 _index_type=index_type,
             )
 
-            from climetlab.readers.grib.index import JsonIndex, SqlIndex
-            index_class = dict(json=JsonIndex, sql=SqlIndex)[index_type]
-            #assert isinstance(s.index, index_class), s.index
+            from climetlab.readers.grib.index import (
+                JsonFieldSetInFiles,
+                SqlFieldSetInFiles,
+            )
+
+            index_class = dict(json=JsonFieldSetInFiles, sql=SqlFieldSetInFiles)[
+                index_type
+            ]
+            # assert isinstance(s.index, index_class), s.index
 
             assert len(s) == 3, len(s)
             assert s[0].metadata("short_name") == "r"

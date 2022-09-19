@@ -15,13 +15,13 @@ import time
 import pyfdb
 import yaml
 
-from climetlab.readers.grib.index import GribInFiles
+from climetlab.readers.grib.index import FieldSetInFiles
 from climetlab.utils.parts import Part
 
 LOG = logging.getLogger(__name__)
 
 
-class FDB(GribInFiles):
+class FDB(FieldSetInFiles):
     def __init__(self, root=None, schema=None, request={}):
         super().__init__(db=None)
 

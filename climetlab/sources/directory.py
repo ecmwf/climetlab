@@ -9,7 +9,7 @@
 import logging
 import os
 
-from climetlab.readers.grib.index import SqlIndex
+from climetlab.readers.grib.index import SqlFieldSetInFiles
 from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources.indexed import IndexedSource
 
@@ -40,12 +40,15 @@ class DirectorySource(IndexedSource):
         _index=None,
         **kwargs,
     ):
-        """index_file is the input index location. db_path is the actual used index.
-        index_file = None,  db_path = None :  parse file to create the index.
-        index_file = xxx ,  db_path = None :  create db_path in the cache from index_file if not exist
-        index_file = xxx ,  db_path = yyy  :  create db_path in "db_path" from index_file if not exist
+        """
+        index_file: optional
+            The input index location. Must be a JSON file.
+            If None, parse the actual files in the directory pointed by "path".
+        db_path: optional
+            The actual used database file. Must be a SQL CliMetLab index file.
+            If None, create one in the default location.
 
-        if _index is not None, ignore all other arguments.
+        If _index is not None, ignore all other arguments (for internal usage)
         """
 
         if _index is not None:  # for .sel()
@@ -67,7 +70,7 @@ class DirectorySource(IndexedSource):
         # Try to use db_path if it exists:
         if os.path.exists(db_path):
             LOG.info(f"Using index file {db_path}")
-            index = SqlIndex.from_existing_db(db_path=db_path)
+            index = SqlFieldSetInFiles.from_existing_db(db_path=db_path)
             super().__init__(index, **kwargs)
             return
 
@@ -82,14 +85,14 @@ class DirectorySource(IndexedSource):
         if os.path.exists(index_file):
             LOG.info(f"Using index file {index_file}")
             print(f"Using index file {index_file} (will happen only once).")
-            index = SqlIndex.from_file(path=index_file)
+            index = SqlFieldSetInFiles.from_file(path=index_file)
             super().__init__(index, **kwargs)
             return
 
         # Create the db_path file in cache (or used the cached one)
         LOG.info(f"Did not find index files in {db_path} or {index_file}")
         ignore = [self.DEFAULT_DB_FILE, self.DEFAULT_JSON_FILE, db_path, index_file]
-        index = SqlIndex.from_iterator(
+        index = SqlFieldSetInFiles.from_iterator(
             GribIndexingDirectoryParserIterator(
                 path, ignore=ignore, relative_paths=False
             ),
