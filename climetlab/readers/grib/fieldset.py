@@ -25,6 +25,11 @@ LOG = logging.getLogger(__name__)
 class FieldSet(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
     _statistics = None
 
+    @classmethod
+    def new_mask_index(self, *args, **kwargs):
+        from .index import MaskGribIndex
+        return MaskGribIndex(*args, **kwargs)
+
     @property
     def first(self):
         return self[0]

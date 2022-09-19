@@ -12,7 +12,6 @@ import logging
 
 from climetlab.core.settings import SETTINGS
 from climetlab.sources import Source
-from climetlab.vocabularies.grib import grib_naming
 
 LOG = logging.getLogger(__name__)
 

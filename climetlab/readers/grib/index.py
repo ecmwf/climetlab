@@ -19,58 +19,32 @@ import requests
 from multiurl import robust
 
 from climetlab.core.caching import auxiliary_cache_file, cache_file
-from climetlab.core.index import Index, MultiIndex, Order, MaskIndex
+from climetlab.core.index import Index, MultiIndex, Order, MaskIndex, Selection
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSet
 from climetlab.utils import progress_bar
-from climetlab.utils.kwargs import merge_for_selection
 from climetlab.utils.parts import Part
 from climetlab.utils.serialise import register_serialisation
-from climetlab.vocabularies.grib import grib_naming
 
 LOG = logging.getLogger(__name__)
 
 
-class GribOrder(Order):
-    def __init__(self, *args, **kwargs):
-        kwargs = grib_naming(kwargs)
-        if len(args) == 1 and isinstance(args[0], dict):
-            args = [grib_naming(args[0])]
-
-        super().__init__(*args, **kwargs)
-
-
-class MaskGribIndex(FieldSet, MaskIndex):
-    ORDER_CLASS = GribOrder
-
-    @property
-    def MASK_CLASS(self):
-        return MaskGribIndex
-    def __init__(self, *args, **kwargs):
-        MaskIndex.__init__(self, *args, **kwargs)
-
 class GribIndex(FieldSet, Index):
-    ORDER_CLASS = GribOrder
-
-    @property
-    def MASK_CLASS(self):
-        return MaskGribIndex
-
     def __init__(self, *args, **kwargs):
 
         self._availability = None
         super().__init__(*args, **kwargs)
 
 
-class MultiGribIndex(FieldSet, MultiIndex):
-    ORDER_CLASS = GribOrder
+class MaskGribIndex(FieldSet, MaskIndex):
+    def __init__(self, *args, **kwargs):
+        MaskIndex.__init__(self, *args, **kwargs)
 
-    @property
-    def MASK_CLASS(self):
-        return MaskGribIndex
+
+class MultiGribIndex(FieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
@@ -260,17 +234,17 @@ SqlIndexCache = namedtuple("SqlIndexCache", ["first", "length", "result"])
 class SqlIndex(GribDBIndex):
 
     DBCLASS = SqlDatabase
-    CHUNKING = 50_000
+    DB_CACHE_SIZE = 50_000
 
     def sel(self, *args, **kwargs):
-        selection = self.SELECTION_CLASS(*args, **kwargs)
+        selection = Selection(*args, **kwargs)
         if selection.is_empty:
             return self
         db = self.db.sel(selection=selection)
         return self.__class__(db=db)
 
     def order_by(self, *args, **kwargs):
-        order = self.ORDER_CLASS(*args, **kwargs)
+        order = Order(*args, **kwargs)
         if order.is_empty:
             return self
         db = self.db.order_by(order=order)
@@ -280,10 +254,10 @@ class SqlIndex(GribDBIndex):
         if self._cache is None or not (
             self._cache.first <= n < self._cache.first + self._cache.length
         ):
-            first = n // self.CHUNKING
-            result = self.db.lookup_parts(limit=self.CHUNKING, offset=first)
+            first = n // self.DB_CACHE_SIZE
+            result = self.db.lookup_parts(limit=self.DB_CACHE_SIZE, offset=first)
             self._cache = SqlIndexCache(first, len(result), result)
-        return self._cache.result[n % self.CHUNKING]
+        return self._cache.result[n % self.DB_CACHE_SIZE]
 
     @cached_method
     def number_of_parts(self):

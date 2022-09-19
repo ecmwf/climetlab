@@ -15,6 +15,7 @@ import warnings
 from abc import abstractmethod
 
 from climetlab.sources import Source
+from climetlab.decorators import alias_argument
 
 LOG = logging.getLogger(__name__)
 
@@ -24,19 +25,23 @@ class OrderOrSelection:
         """Parse args and kwargs to build a dictionary in self.order"""
         self.dic = {}
 
-        if len(args) == 1 and isinstance(args[0], dict) and not kwargs:
-            kwargs = args[0]
-
         for arg in args:
-            if not self.parse_arg(arg):
+            if isinstance(arg, dict):
+                arg = self.normalize_naming(**arg)
+            res_ok = self.parse_arg(arg):
+            if res_ok is False:
                 raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
 
+        kwargs = self.normalize_naming(**kwargs)
         for k, v in kwargs.items():
             self.parse_kwarg(k, v)
 
-        from climetlab.vocabularies.grib import grib_naming
-
-        self.dic = grib_naming(self.dic)
+    @alias_argument("levelist", ["level"])
+    @alias_argument("param", ["variable", "parameter"])
+    @alias_argument("number", ["realization", "realisation"])
+    @alias_argument("class", "klass")
+    def normalize_naming(self, **kwargs):
+        return kwargs
 
     def parse_arg(self, arg):
         # Returns True of argument has been parsed.
@@ -182,13 +187,9 @@ class Order(OrderOrSelection):
 
 class Index(Source):
 
-    ORDER_CLASS = Order
-    SELECTION_CLASS = Selection
-    _mutations_queue = None
-
-    @property
-    def MASK_CLASS(self):
-        return MaskIndex
+    @classmethod
+    def new_mask_index(self, *args, **kwargs):
+        return MaskIndex(*args, **kwargs)
 
     def __init__(self, *args, order_by=None, **kwargs):
         self._init_args = args
@@ -215,7 +216,7 @@ class Index(Source):
         """Filter elements on their metadata(), according to kwargs.
         Returns a new index object.
         """
-        selection = self.SELECTION_CLASS(*args, **kwargs)
+        selection = Selection(*args, **kwargs)
         if selection.is_empty:
             return self
 
@@ -224,7 +225,7 @@ class Index(Source):
             if selection.match_element(element):
                 indices.append(i)
 
-        return self.MASK_CLASS(self, indices)
+        return self.new_mask_index(self, indices)
 
     def order_by(self, *args, **kwargs):
         """Default order_by method.
@@ -235,7 +236,7 @@ class Index(Source):
         Returns a new index object.
         """
 
-        order = self.ORDER_CLASS(*args, **kwargs)
+        order = Order(*args, **kwargs)
         if order.is_empty:
             return self
 
@@ -263,7 +264,7 @@ class Index(Source):
 
         result = list(range(len(self)))
         indices = sorted(result, key=sorter)
-        return self.MASK_CLASS(self, indices)
+        return self.new_mask_index(self, indices)
 
 
 class MaskIndex(Index):
