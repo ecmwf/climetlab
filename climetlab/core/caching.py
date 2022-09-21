@@ -29,6 +29,7 @@ import shutil
 import sqlite3
 import threading
 import time
+import pandas as pd
 
 from filelock import FileLock
 
@@ -90,6 +91,10 @@ def disk_usage(path):
 def default_serialiser(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
+    if isinstance(o, (pd.Timestamp)):
+        return o.isoformat()
+    if isinstance(o, (pd.DatetimeIndex)):
+        return [_.isoformat() for _ in o]
     return json.JSONEncoder.default(o)
 
 
