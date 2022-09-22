@@ -23,7 +23,7 @@ def to_tfdataset(
 
     import tensorflow as tf
 
-    if not callable(features):
+    if features is not None and not callable(features):
         if total_size is None:
             LOG.debug("No total_size specified, infering from features.")
             total_size = len(features)
@@ -33,7 +33,7 @@ def to_tfdataset(
         def features(i):
             return _features[i].to_numpy()
 
-    if not callable(targets):
+    if targets is not None and not callable(targets):
         _targets = targets
 
         def targets(i):
