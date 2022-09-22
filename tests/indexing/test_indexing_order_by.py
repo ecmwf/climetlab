@@ -11,6 +11,7 @@
 
 import os
 import shutil
+import sys
 import time
 import warnings
 
@@ -24,13 +25,12 @@ from climetlab.readers.grib.index import FieldSet
 from climetlab.testing import climetlab_file
 from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
 
-import sys
-import os
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import get_fixtures, check_sel_and_order
+from indexing_fixtures import check_sel_and_order, get_fixtures
 
-@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+
+@pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 # @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
@@ -38,7 +38,7 @@ def test_indexing_order_by_with_request(params, levels, source_name):
     request = dict(
         level=levels,
         variable=params,
-        date=20070101,
+        date=20220921,
         time="1200",
     )
 
@@ -51,44 +51,12 @@ def test_indexing_order_by_with_request(params, levels, source_name):
     check_sel_and_order(ds, params, levels)
 
 
-@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
-@pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize(
-    "source_name",
-    [
-        "directory",
-        # "list-of-dicts",
-        # "file",
-    ],
-)
-def test_indexing_pickle(params, levels, source_name):
-    request = dict(
-        level=levels,
-        variable=params,
-        date=20070101,
-        time="1200",
-    )
-
-    ds, __tmp, total, n = get_fixtures(source_name, {})
-    assert len(ds) == total, len(ds)
-
-    ds = ds.sel(**request)
-    ds = ds.order_by(level=levels, variable=params)
-
-    assert len(ds) == n, (len(ds), ds, SERIALISATION)
-    state = serialise_state(ds.index)
-    ds.index = deserialise_state(state)
-    assert len(ds) == n, (len(ds), ds, SERIALISATION)
-
-    check_sel_and_order(ds, params, levels)
-
-
-@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+@pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
 # @pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_by_with_keyword(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20070101, time="1200")
+    request = dict(variable=params, level=levels, date=20220921, time="1200")
     request["order_by"] = dict(level=levels, variable=params)
 
     ds, _, total, n = get_fixtures(source_name, request)
@@ -98,11 +66,11 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
     check_sel_and_order(ds, params, levels)
 
 
-@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+@pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 def test_indexing_order_by_with_method(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20070101, time="1200")
+    request = dict(variable=params, level=levels, date=20220921, time="1200")
     order_by = dict(level=levels, variable=params)
 
     ds, _, total, n = get_fixtures(source_name, {})
@@ -118,14 +86,14 @@ def test_indexing_order_by_with_method(params, levels, source_name):
     check_sel_and_order(ds, params, levels)
 
 
-@pytest.mark.parametrize("params", (["t", "z"], ["z", "t"]))
+@pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize(
     "levels", ([500, 850], [850, 500], ["500", "850"], ["850", "500"])
 )
 # @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 @pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_ascending_descending(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20070101, time="1200")
+    request = dict(variable=params, level=levels, date=20220921, time="1200")
     order_by = dict(level="descending", variable="ascending")
 
     ds, _, total, n = get_fixtures(source_name, {})

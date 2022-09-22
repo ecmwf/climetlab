@@ -60,48 +60,5 @@ class IndexedSource(Source):
 
         super().__init__()
 
-    @property
-    def availability(self):
-        return self.index.availability
-
-    def sel(self, *args, **kwargs):
-        index = self.index.sel(*args, **kwargs)
-        return self.__class__(self, _index=index)
-
-    def order_by(self, *args, **kwargs):
-        index = self.index.order_by(*args, **kwargs)
-        return self.__class__(self, _index=index)
-
-    def __getitem__(self, n):
-        return self.index[n]
-
-    def __len__(self):
-        return len(self.index)
-
-    def __repr__(self):
-        cache_dir = SETTINGS.get("cache-directory")
-
-        def to_str(attr):
-            if not hasattr(self, attr):
-                return None
-            out = getattr(self, attr)
-            if isinstance(out, str):
-                out = out.replace(cache_dir, "CACHE:")
-            return out
-
-        args = [f"{x}={to_str(x)}" for x in ("path", "abspath")]
-        args = [x for x in args if x is not None]
-        args = ",".join(args)
-        return f"{self.__class__.__name__}({args})"
-
-    def to_tfdataset(self, *args, **kwargs):
-        return self.index.to_tfdataset(*args, **kwargs)
-
-    def to_pytorch(self, *args, **kwargs):
-        return self.index.to_pytorch(*args, **kwargs)
-
-    def to_numpy(self, *args, **kwargs):
-        return self.index.to_numpy(*args, **kwargs)
-
-    def to_xarray(self, *args, **kwargs):
-        return self.index.to_xarray(*args, **kwargs)
+    def mutate(self):
+        return self.index

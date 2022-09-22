@@ -10,8 +10,8 @@
 #
 
 import os
-import sys
 import shutil
+import sys
 import time
 import warnings
 
@@ -39,6 +39,7 @@ TEST_GRIB_FILES = [
     ]
 ]
 
+
 def dir_with_grib_files():
     tmp = temp_directory()
     _build_dir_with_grib_files(tmp.path)
@@ -47,8 +48,9 @@ def dir_with_grib_files():
 
 def _build_dir_with_grib_files(testdir):
     os.makedirs(testdir, exist_ok=True)
-    for path in TEST_GRIB_FILES:
-        shutil.copy(path, testdir)
+    for p in ["t", "u", "v"]:
+        ds = cml.load_source("mars", param=p, date=20220921, grid="1/1")
+        ds.save(os.path.join(testdir, p + ".grib"))
 
 
 def unique_grib_file():
@@ -58,10 +60,8 @@ def unique_grib_file():
 
 
 def _build_unique_grib_file(path):
-    with open(path, mode="wb") as target:
-        for file in TEST_GRIB_FILES:
-            with open(file, mode="rb") as f:
-                shutil.copyfileobj(f, target)
+    ds = cml.load_source("mars", param=["t", "u", "v"], date=20220921, grid="1/1")
+    ds.save(path)
 
 
 def list_of_dicts():
@@ -74,14 +74,14 @@ def list_of_dicts():
         "_param_id": 167,
         "time": "1000",
         "values": [[1, 2], [3, 4], [5, 6]],
-        "date": "20070101",
+        "date": "20220921",
         "time": "1200",
     }
     return [
         {"param": "t", "levelist": 500, **prototype},
         {"param": "t", "levelist": 850, **prototype},
-        {"param": "z", "levelist": 500, **prototype},
-        {"param": "z", "levelist": 850, **prototype},
+        {"param": "u", "levelist": 500, **prototype},
+        {"param": "u", "levelist": 850, **prototype},
         {"param": "d", "levelist": 850, **prototype},
         {"param": "d", "levelist": 600, **prototype},
     ]
@@ -118,14 +118,14 @@ class GribIndexFromDicts(FieldSet):
 
 def get_fixtures_directory(request):
     tmp = dir_with_grib_files()
-    total, n = 6, 4
+    total, n = 18, 4
     ds = cml.load_source("directory", tmp.path, **request)
     return ds, tmp, total, n
 
 
 def get_fixtures_file(request):
     tmp = unique_grib_file()
-    total, n = 6, 4
+    total, n = 18, 4
     ds = cml.load_source("file", tmp.path, **request)
     return ds, tmp, total, n
 

@@ -25,7 +25,7 @@ def _test_directory_source_availability():
         TEST_DIR,
         level=levels,
         variable=params,
-        date=20070101,
+        date=20220921,
         time="1200",
     )
 

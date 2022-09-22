@@ -32,8 +32,15 @@ from indexing_fixtures import check_sel_and_order, get_fixtures
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize("source_name", ["directory", "file"])
-def test_indexing_save(params, levels, source_name):
+@pytest.mark.parametrize(
+    "source_name",
+    [
+        "directory",
+        # "list-of-dicts",
+        # "file",
+    ],
+)
+def test_indexing_pickle(params, levels, source_name):
     request = dict(
         level=levels,
         variable=params,
@@ -41,19 +48,18 @@ def test_indexing_save(params, levels, source_name):
         time="1200",
     )
 
-    ds, _, total, n = get_fixtures(source_name, {})
+    ds, __tmp, total, n = get_fixtures(source_name, {})
+    assert len(ds) == total, len(ds)
+
     ds = ds.sel(**request)
     ds = ds.order_by(level=levels, variable=params)
 
-    assert len(ds) == n, len(ds)
+    assert len(ds) == n, (len(ds), ds, SERIALISATION)
+    state = serialise_state(ds)
+    ds = deserialise_state(state)
+    assert len(ds) == n, (len(ds), ds, SERIALISATION)
+
     check_sel_and_order(ds, params, levels)
-
-    with temp_file() as filename:
-        ds.save(filename)
-        ds = cml.load_source("file", filename)
-        assert len(ds) == n
-
-        check_sel_and_order(ds, params, levels)
 
 
 if __name__ == "__main__":

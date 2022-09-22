@@ -105,7 +105,7 @@ def test_cli_index_directory():
             s = cml.load_source("directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
             db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
-            assert s.index.db.db_path == db_path
+            assert s.db.db_path == db_path
 
             # assert the data is correct
             assert s.to_numpy().mean() == 277.31256510416665

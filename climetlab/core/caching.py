@@ -29,8 +29,8 @@ import shutil
 import sqlite3
 import threading
 import time
-import pandas as pd
 
+import pandas as pd
 from filelock import FileLock
 
 from climetlab.core.settings import SETTINGS
