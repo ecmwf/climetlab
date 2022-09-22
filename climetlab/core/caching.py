@@ -373,7 +373,8 @@ class Cache(threading.Thread):
                 shutil.rmtree(path)
             else:
                 os.unlink(path)
-        except Exception:
+        except Exception as e:
+            print(e)
             LOG.exception("Deleting %s", path)
 
     def _entry_to_dict(self, entry):

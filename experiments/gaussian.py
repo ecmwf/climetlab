@@ -7,8 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
+import time
+
 import climetlab as cml
-from climetlab.grids import unstructed_to_structed
+from climetlab.grids import lookup, unstructed_to_structed
 
 ds = cml.load_source("mars", param="2t", date=20220907, levtype="sfc")
-unstructed_to_structed(ds[0])
+tree = unstructed_to_structed(ds[0], 15)
+
+now = time.time()
+print(lookup(tree, 51.0, -1.0))
+print("----", time.time() - now)

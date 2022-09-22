@@ -176,9 +176,17 @@ def unstructed_to_structed(grib, chunk_size=-1):
         [ecef(lat, lon, i) for i, (lat, lon) in enumerate(grib.iterate_grid_points())]
     )
     print("----", time.time() - now)
+    print(len(xyz))
 
     now = time.time()
     tree = KDTree(3, xyz, chunk_size)
+    print("----", time.time() - now)
+    return tree
+
+
+def lookup(tree, lat, lon):
+    xyz = ecef(lat / 10, lon / 10, 0)
+    return tree.find_nn(xyz[:-1])[0]
     print(xyz)
     print("----", time.time() - now)
     print(tree.size(), tree.depth())
