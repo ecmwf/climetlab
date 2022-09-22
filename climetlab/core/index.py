@@ -212,11 +212,11 @@ class Index(Source):
         self._init_order_by = order_by
 
     def mutate(self):
-        obj = self
-        obj = obj.sel(*self._init_args, **self._init_kwargs)
-        obj = obj.order_by(*self._init_args, **self._init_kwargs)
-        obj = obj.order_by(self._init_order_by)
-        return obj
+        prev = self
+        prev = prev.sel(*self._init_args, **self._init_kwargs)
+        prev = prev.order_by(*self._init_args, **self._init_kwargs)
+        prev = prev.order_by(self._init_order_by)
+        return prev
 
     @abstractmethod
     def __getitem__(self, n):
@@ -296,11 +296,15 @@ class MaskIndex(Index):
 
 
 class MultiIndex(Index):
-    def __init__(self, indexes):
+    def __init__(self, indexes, *args, **kwargs):
         self.indexes = list(indexes)
+        super().__init__(*args, **kwargs)
         # self.indexes = list(i for i in indexes if len(i))
 
     def sel(self, *args, **kwargs):
+        selection = Selection(*args, **kwargs)
+        if selection.is_empty:
+            return self
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
     def __getitem__(self, n):
