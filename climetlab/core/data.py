@@ -158,15 +158,6 @@ def get_data_entry(kind, name, default=None, merge=False):
         # LOWEST PRIORITY
     }
 
-    if default is not None:
-        default_entry = Entry(
-            name="default",
-            kind="default",
-            root=None,
-            path=None,
-            data=default,
-            owner="default",
-        )
 
     # TODO: default is not used. Remove it?
     # TODO: merge is not used.Remove it?
@@ -205,7 +196,16 @@ def get_data_entry(kind, name, default=None, merge=False):
                 return True
         return False
 
-    choices["default"] = default_entry
+    if default is not None:
+        choices["default"] = Entry(
+            name="default",
+            kind="default",
+            root=None,
+            path=None,
+            data=default,
+            owner="default",
+        )
+
     choices = {k: v for k, v in choices.items() if is_active(k, v)}
     selected = [
         v

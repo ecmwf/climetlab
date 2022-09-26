@@ -5,7 +5,7 @@ import sys
 import xarray as xr
 
 import climetlab as cml
-from climetlab.utils.dask import start
+from climetlab.distributed.dask import start_dask
 
 
 def build_sandbox(test_dir):
@@ -110,15 +110,15 @@ def main():
     if len(sys.argv) > 1:
         task = sys.argv[1]
     testdir = "sandbox"
-    build_sandbox(testdir)
-    # deploy = cml.utils.dask.start(kind='ssh')
-    start(predefined="slurm")
-    # start(predefined='ssh', ['localhost)
+    start_dask("slurm")
+    # start('ssh', ['localhost)
 
     if task == "nc":
+        build_sandbox(testdir)
         do_netcdf(testdir)
         return
     if task == "grib-openmf":
+        build_sandbox(testdir)
         do_grib_mfdataset(testdir)
         return
     if task == "virtual":
