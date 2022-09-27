@@ -19,6 +19,7 @@ import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
+from climetlab.core.temporary import temp_directory, temp_file
 
 
 @pytest.mark.long_test
@@ -55,14 +56,16 @@ def test_global_index(source_name, baseurl):
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
 def test_cli_index_url(baseurl):
     app = CliMetLabApp()
-    app.onecmd(f"index_url {baseurl}/large_grib_1.grb")
+    app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
 
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
 def test_cli_index_url(baseurl):
     app = CliMetLabApp()
-    app.onecmd(f"index_urls --baseurl {baseurl} large_grib_1.grb large_grib_2.grb")
+    tmp = temp_file()
+    app.onecmd(f"index_urls -o {tmp.path} --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb")
+    
 
 
 if __name__ == "__main__":
