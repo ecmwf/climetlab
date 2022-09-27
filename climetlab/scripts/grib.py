@@ -58,12 +58,22 @@ class GribCmd:
                 e["_path"] = u
                 print(json.dumps(e))
 
-    @parse_args(url=(None, dict(metavar="URL", type=str, help="url to index")))
+    @parse_args(
+        url=(None, dict(metavar="URL", type=str, help="url to index")),
+        # output=dict(type=str, help="Output filename"),
+    )
     def do_index_url(self, args):
         """Create json index files for remote Grib url."""
+        file = {}
+        # if args.output:
+        #     if os.path.exists(args.output):
+        #         LOG.error(f"File {args.output} already exists.")
+        #         return
+        #     file['file'] = open(args.output, 'w')
+
         for e in _index_url(args.url):
-            del e["_path"]
-            print(json.dumps(e))
+            assert "_path" not in e
+            print(json.dumps(e), **file)
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),

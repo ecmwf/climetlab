@@ -9,6 +9,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import json
 import pytest
 from test_indexed_urls import CML_BASEURL_CDS  # noqa: F401
 from test_indexed_urls import CML_BASEURL_GET  # noqa: F401
@@ -16,10 +17,7 @@ from test_indexed_urls import CML_BASEURL_S3  # noqa: F401
 from test_indexed_urls import CML_BASEURLS
 
 import climetlab as cml
-from climetlab import settings
-from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
-from climetlab.core.temporary import temp_directory, temp_file
 
 
 @pytest.mark.long_test
@@ -49,27 +47,51 @@ def test_global_index(source_name, baseurl):
     assert abs(mean - 70.34426879882812) < 0.0000001, mean
 
 
-#  climetlab index_urls $BASEURL/large_grib_1.grb > large_grib_1.grb.index
-#  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
-#  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
-def test_cli_index_url(baseurl):
+def test_cli_index_url(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
+    out, err = capsys.readouterr()
+
+    lines = out.split("\n")
+    assert len(lines) == 4465, len(lines)
+
+    line2 = json.loads(lines[2])
+    for k, v in {
+        "domain": "g",
+        "levtype": "pl",
+        "levelist": "500",
+        "date": "19970101",
+        "time": "0200",
+        "step": "0",
+        "param": "z",
+        "class": "ea",
+        "type": "an",
+        "stream": "oper",
+        "expver": "0001",
+        "_offset": 46716,
+        "_length": 23358,
+        "_param_id": "129",
+    }.items():
+        assert line2[k] == v, (lines[2][k], v)
 
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
-def test_cli_index_url(baseurl):
+def test_cli_index_urls(baseurl, capsys):
     app = CliMetLabApp()
-    tmp = temp_file()
-    app.onecmd(f"index_urls -o {tmp.path} --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb")
-    
+    app.onecmd(
+        f"index_urls --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb"
+    )
+    out, err = capsys.readouterr()
+
+    lines = out.split("\n")
+    assert len(lines) == 8497
 
 
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    # main(__file__)
-    test_global_index("indexed-url-with-json-index", CML_BASEURL_S3)
+    main(__file__)
+    # test_global_index("indexed-url-with-json-index", CML_BASEURL_S3)
