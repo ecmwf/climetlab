@@ -50,6 +50,22 @@ class FieldSet(FieldSetMixin, Index):
     def new_mask_index(self, *args, **kwargs):
         return MaskFieldSet(*args, **kwargs)
 
+    @property
+    def availability(self):
+        if self._availability is not None:
+            return self._availability.tree()
+
+        def f():
+            for i in self:
+                i = {k: v for k, v in i.items() if not k.startswith("_")}
+                yield i
+
+        from climetlab.utils.availability import Availability
+
+        LOG.debug("Building availability")
+        self._availability = Availability(f())
+        return self.availability
+
 
 class MaskFieldSet(FieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
@@ -62,6 +78,10 @@ class MultiFieldSet(FieldSet, MultiIndex):
 
 
 class FieldSetInFiles(FieldSet):
+    # Remote Fieldsets (with urls) are also here,
+    # as the actual fieldset is accessed on a file in cache.
+    # This class changes the interface (_getitem__ and __len__)
+    # into the interface (part and number_of_parts).
     def __getitem__(self, n):
         part = self.part(n)
         return GribField(part.path, part.offset, part.length)
@@ -78,7 +98,7 @@ class FieldSetInFiles(FieldSet):
         self._not_implemented()
 
 
-class DBFieldSetInFiles(FieldSetInFiles):
+class FieldsetInFilesWithDBIndex(FieldSetInFiles):
     def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -226,7 +246,7 @@ class DBFieldSetInFiles(FieldSetInFiles):
         return self.availability
 
 
-class JsonFieldSetInFiles(DBFieldSetInFiles):
+class FieldsetInFilesWithJsonIndex(FieldsetInFilesWithDBIndex):
     DBCLASS = JsonDatabase
 
     @cached_method
@@ -243,7 +263,7 @@ class JsonFieldSetInFiles(DBFieldSetInFiles):
 SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
 
-class SqlFieldSetInFiles(DBFieldSetInFiles):
+class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 50_000
@@ -294,11 +314,11 @@ class SqlFieldSetInFiles(DBFieldSetInFiles):
 
 
 register_serialisation(
-    SqlFieldSetInFiles,
+    FieldsetInFilesWithSqlIndex,
     lambda x: [x.db.db_path, x._filters],
-    lambda x: SqlFieldSetInFiles(db=SqlDatabase(x[0])).apply_filters(
+    lambda x: FieldsetInFilesWithSqlIndex(db=SqlDatabase(x[0])).apply_filters(
         filters=x[1]
-    ),  # TODO: add selection and order here?
+    ),
 )
 
 

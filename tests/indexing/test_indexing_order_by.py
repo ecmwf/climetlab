@@ -10,20 +10,9 @@
 #
 
 import os
-import shutil
 import sys
-import time
-import warnings
 
 import pytest
-
-import climetlab as cml
-from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.decorators import normalize
-from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import FieldSet
-from climetlab.testing import climetlab_file
-from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
@@ -38,7 +27,6 @@ def test_indexing_order_by_with_request(params, levels, source_name):
     request = dict(
         level=levels,
         variable=params,
-        date=20220921,
         time="1200",
     )
 

@@ -8,19 +8,14 @@
 #
 
 
-from climetlab.readers.grib.index import JsonFieldSetInFiles, SqlFieldSetInFiles
+from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
 from climetlab.sources.indexed import IndexedSource
 
 
 class IndexedUrl(IndexedSource):
-    def __init__(self, url, _index_type="sql", **kwargs):
-
-        index_class = dict(json=JsonFieldSetInFiles, sql=SqlFieldSetInFiles)[
-            _index_type
-        ]
-        index = index_class.from_url(url)
+    def __init__(self, url, **kwargs):
+        index = FieldsetInFilesWithSqlIndex.from_url(url)
         super().__init__(index, **kwargs)
-        # assert isinstance(self.index, index_class), self.index
 
 
 source = IndexedUrl

@@ -61,14 +61,14 @@ def _index_grib_file(path):
     pbar.close()
 
 
-def _index_url(path_name, url):
+def _index_url(url):
     import climetlab as cml
 
     path = cml.load_source("url", url).path
     # TODO: should use download_and_cache
     # path = download_and_cache(url)
     for entry in _index_grib_file(path):
-        entry["_path"] = path_name
+        del entry["_path"]
         yield entry
 
 

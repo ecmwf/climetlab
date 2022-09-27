@@ -38,6 +38,8 @@ class JsonDatabase(Database):
             for entry in self.entries:
                 print(json.dumps(entry), file=f)
 
+        return len(self.entries)
+
     def lookup_parts(self, order=None, **kwargs):
         parts = []
         for e in self.entries:

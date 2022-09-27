@@ -158,7 +158,6 @@ def get_data_entry(kind, name, default=None, merge=False):
         # LOWEST PRIORITY
     }
 
-
     # TODO: default is not used. Remove it?
     # TODO: merge is not used.Remove it?
 

@@ -20,5 +20,8 @@ class StdoutDatabase(Database):
         pass
 
     def load(self, iterator):
+        count = 0
         for entry in iterator:
+            count += 1
             print(json.dumps(entry))
+        return count

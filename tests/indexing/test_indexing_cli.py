@@ -99,7 +99,7 @@ def test_cli_index_directory():
 
             # Run the cli command to test: index_directory
             app = CliMetLabApp()
-            app.onecmd(f"index_directory {directory}")
+            app.onecmd(f"index_directory {directory} --format sql")
 
             # use the newly created directory
             s = cml.load_source("directory", directory)

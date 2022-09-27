@@ -26,41 +26,44 @@ LOG = logging.getLogger(__name__)
 
 class GribCmd:
     @parse_args(
-        paths_or_urls=(
+        urls=(
             None,
-            dict(
-                metavar="PATH_OR_URL",
-                type=str,
-                nargs="+",
-                help="list of files or directories or urls to index",
-            ),
+            dict(metavar="URLS", type=str, nargs="+", help="List of urls to index."),
         ),
-        # json=dict(action="store_true", help="produce a JSON output"),
         baseurl=dict(
             metavar="BASEURL",
             type=str,
-            help="Base url to use as a prefix to happen on each PATHS_OR_URLS to build urls.",
+            help="Base url to use as a prefix to happen on each URLS to build actual urls.",
         ),
     )
-    def do_index_gribs(self, args):
-        """Create index files for grib files.
-        If the option --baseurl is provided, create an index for multiple gribs.
-        See https://climetlab.readthedocs.io/contributing/grib.html for details.
-        """
-        for path_or_url in args.paths_or_urls:
-            if args.baseurl:
-                entries = _index_url(
-                    url=f"{args.baseurl}/{path_or_url}", path_name=path_or_url
-                )
-            elif os.path.exists(path_or_url):
-                entries = _index_path(path_or_url)
-            elif path_or_url.startswith("https://"):
-                entries = _index_url(url=path_or_url, path_name=False)
-            else:
-                raise ValueError(f'Cannot find "{path_or_url}" to index it.')
+    def do_index_urls(self, args):
+        """Create json index files for remote Grib urls.
+        If the option --baseurl is provided, the given url are relative to the BASEURL.
+        This allows creating an index for multiple gribs."""
 
-            for e in entries:
+        def resolve_url(url):
+            return url
+
+        if args.baseurl:
+
+            def resolve_url(u):
+                if u.startswith(args.baseurl):
+                    # already absolute url
+                    return u
+                return f"{args.baseurl}/{u}"
+
+        for u in args.urls:
+            url = resolve_url(u)
+            for e in _index_url(url):
+                e["_path"] = u
                 print(json.dumps(e))
+
+    @parse_args(url=(None, dict(metavar="URL", type=str, help="url to index")))
+    def do_index_url(self, args):
+        """Create json index files for remote Grib url."""
+        for e in _index_url(args.url):
+            del e["_path"]
+            print(json.dumps(e))
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
