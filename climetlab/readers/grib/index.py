@@ -41,9 +41,9 @@ LOG = logging.getLogger(__name__)
 
 
 class FieldSet(FieldSetMixin, Index):
+    _availability = None
     def __init__(self, *args, **kwargs):
 
-        self._availability = None
         Index.__init__(self, *args, **kwargs)
 
     @classmethod
@@ -52,18 +52,20 @@ class FieldSet(FieldSetMixin, Index):
 
     @property
     def availability(self):
+        raise NotImplementedError()
         if self._availability is not None:
             return self._availability.tree()
+        LOG.debug("Building availability")
 
-        def f():
+        def dicts():
             for i in self:
-                i = {k: v for k, v in i.items() if not k.startswith("_")}
+                dic = i.to_dict() # GribField.to_dict() is not implemented
+                i = {k: v for k, v in dic.items() if not k.startswith("_")}
                 yield i
 
         from climetlab.utils.availability import Availability
 
-        LOG.debug("Building availability")
-        self._availability = Availability(f())
+        self._availability = Availability(dicts())
         return self.availability
 
 
@@ -227,22 +229,22 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         if self._availability is not None:
             return self._availability.tree()
 
-        print(
-            (
-                "FIXME: TODO: bug here: should not call dump_dicts"
-                " (dumping all dicts) but should call lookup(self.selection..) "
-            )
-        )
+        LOG.debug("Building availability")
 
-        def f():
-            for i in self.db.dump_dicts():
-                i = {k: v for k, v in i.items() if not k.startswith("_")}
-                yield i
+        def dicts():
+            for i in self.db.lookup_dicts():
+                dic = {}
+                for k, v in i.items():
+                    if k.startswith("_"):
+                        continue
+                    if k.startswith("i_"):
+                        k = k[2:]
+                    dic[k] = v
+                yield dic
 
         from climetlab.utils.availability import Availability
 
-        LOG.debug("Building availability")
-        self._availability = Availability(f())
+        self._availability = Availability(dicts())
         return self.availability
 
 

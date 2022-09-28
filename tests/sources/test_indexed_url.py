@@ -65,7 +65,7 @@ def check_line_2(line2):
         "_length": 23358,
         "_param_id": "129",
     }.items():
-        assert line2[k] == v, (lines[2][k], v)
+        assert line2[k] == v, (line2[k], v)
 
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)

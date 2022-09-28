@@ -14,6 +14,20 @@ from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex, MultiField
 from climetlab.sources.indexed import IndexedSource
 from climetlab.utils.patterns import Pattern
 
+def get_index_url(url, substitute_extension, index_extension):
+    if substitute_extension:
+        url = '.'.join('.'.split(url)[:-1])
+
+    if callable(index_extension):
+        return index_extension(url)
+    return url + index_extension
+
+def add_path(url):
+    def wrapped(entry):
+        entry["_path"] = url
+        return entry
+
+    return wrapped
 
 class IndexedUrls(IndexedSource):
     def __init__(
@@ -22,18 +36,15 @@ class IndexedUrls(IndexedSource):
         request,
         substitute_extension=False,
         index_extension=".index",
-        range_method=None,
         **kwargs,
     ):
         if isinstance(pattern, PerUrlIndex):
             warnings.warn(
                 "Passing a PerUrlIndex object is obsolete, please update your code."
             )
-            # substitute_extension = pattern.substitute_extension
-            index_extension = pattern.index_extension
             pattern = pattern.pattern
+            print("PATTERN", pattern)
 
-        print("PATTERN", pattern)
         pattern = Pattern(pattern, ignore_missing_keys=True)
         urls = pattern.substitute(**request)
         if not isinstance(urls, list):
@@ -45,20 +56,10 @@ class IndexedUrls(IndexedSource):
             # This is to avoid keeping them on the request
             request.pop(used)
 
-        def add_path(url):
-            def wrapped(entry):
-                entry["_path"] = url
-                return entry
-
-            return wrapped
-
-        def index_url(url):
-            # TODO: implement
-            return url + index_extension
 
         index = MultiFieldSet(
             FieldsetInFilesWithSqlIndex.from_url(
-                index_url(url),
+                get_index_url(url, substitute_extension, index_extension),
                 selection=request,
                 patch_entry=add_path(url),
             )

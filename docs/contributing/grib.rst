@@ -17,7 +17,7 @@ use a precomputed index, avoiding the need to parse the GRIB file to know its
 content. Using this index allows partial read of local files, and
 merging of mutliple GRIB sources.
 
-This can be performed using ``cml.load_source("directory", "my/directory")``.
+This can be performed using ``cml.load_source("directory", "my/dir")``.
 To allow fast access to the data in the directory, CliMetLab relies on an index.
 If the index has not been created already, CliMetLab will create one
 (see GRIB indexing below).
@@ -25,18 +25,93 @@ If the index has not been created already, CliMetLab will create one
 Writing GRIB files
 ------------------
 
-CliMetLab has no support for writing grib files.
+Use the `.save(filename)` method on a source relying on GRIB files.
+
+CliMetLab has no support for writing custom grib files, with modified values or custom attributes.
 
 
-How to build a index for a directory containing GRIB files ?
-------------------------------------------------------------
+Building indexes
+----------------
 
 CliMetLab can create GRIB index files through its command line interface.
 
 
+How to build a index for a directory containing GRIB files ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code-block:: bash
 
-    climetlab index_directory DIRECTORY --help
+    climetlab index_directory my/dir
+
+This will create a CliMetLab index file in `my/local/dir`,
+allowing other to access the data with ``cml.load_source("directory", "my/dir")``.
+
+
+How to build a index for **one** given URL containing a GRIB file ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb" > large_grib_1.index
+
+Then upload the file `large_grib_1.index` and make sure it is available at:
+"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
+
+This allows accessing the data with 
+
+.. code-block:: python
+
+    cml.load_source("indexed-url",
+                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb"
+    ) 
+
+
+How to build indexes for a set of URLs containing GRIB files ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Or, if you do the same for another URL "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.grb".
+
+.. code-block:: bash
+
+    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb" > large_grib_1.index
+    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.grb" > large_grib_2.index
+
+Then upload the files `large_grib_1.index` and `large_grib_2.index` and make sure they are available on the server at:
+"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
+"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.index"
+
+This allows accessing the data with 
+
+.. code-block:: python
+
+    cml.load_source("indexed-urls",
+                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_{n}.grb",
+                    {"n": [1, 2]},
+    )
+
+
+How to build a index for a set of URLs containing GRIB files ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo::
+    Not implemented yet.
+
+.. code-block:: bash
+
+    climetlab index_urls --base-url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls" large_grib_1.grb large_grib_2.grb > global_index.index
+
+Then upload the file `global_index.index` and make sure it is available at:
+"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/global_index.index"
+
+This allows others to access the data with :
+
+.. code-block:: bash
+    cml.load_source("indexed-urls",
+                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/global_index.index",
+                    {"n": [1, 2]},
+    )
+
+
 
 
 How to export files from the CliMetLab cache to another directory ?

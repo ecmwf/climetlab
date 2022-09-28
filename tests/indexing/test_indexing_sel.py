@@ -157,7 +157,7 @@ def test_grib_index_eumetnet():
         "month": "12",
         "year": "2017",
     }
-    PATTERN = "{url}data/fcs/efi/" "EU_forecast_efi_params_{year}-{month}_0.grb"
+    PATTERN = "{url}data/fcs/efi/EU_forecast_efi_params_{year}-{month}_0.grb"
     ds = load_source("indexed-urls", PerUrlIndex(PATTERN), request)
     assert len(ds) == 7, len(ds)
     check(ds, 0, -0.16334878510300832)
@@ -172,9 +172,9 @@ if __name__ == "__main__":
     from climetlab.testing import main
 
     # main(__file__)
-    test_per_url_index(CML_BASEURL_S3)
+    # test_per_url_index(CML_BASEURL_S3)
     # test_indexed_s3(CML_BASEURL_S3)
     # timing()
     # from climetlab.testing import main
 
-    # test_grib_index_eumetnet()
+    test_grib_index_eumetnet()

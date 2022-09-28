@@ -142,11 +142,22 @@ def get_fixtures_indexed_url(request):
     baseurl = CML_BASEURL_CDS
     ds = cml.load_source(
         "indexed-url",
-        f"{baseurl}/test-data/input/indexed-urls/global_index.index",
-        # baseurl=f"{baseurl}/test-data/input/indexed-urls",
+        f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb",
         **request,
     )
-    return ds, None, 8496, 4
+    return ds, None, 4464, 2
+
+def get_fixtures_indexed_urls(request):
+    baseurl = CML_BASEURL_CDS
+    request = dict(**request)
+    request['n'] = [1,2]
+    request['baseurl'] = baseurl
+    ds = cml.load_source(
+        "indexed-urls",
+        "{baseurl}/test-data/input/indexed-urls/large_grib_{n}.grb",
+        request,
+    )
+    return ds, None, 8496, 2
 
     # mean = float(s.to_xarray()["r"].mean())
     # assert abs(mean - 70.34426879882812) < 0.0000001, mean
@@ -158,6 +169,7 @@ def get_fixtures(source_name, *args, **kwargs):
         "file": get_fixtures_file,
         "list-of-dicts": get_fixtures_list_of_dicts,
         "indexed-url": get_fixtures_indexed_url,
+        "indexed-urls": get_fixtures_indexed_urls,
     }[source_name](*args, **kwargs)
 
 
