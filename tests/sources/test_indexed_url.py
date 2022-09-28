@@ -10,6 +10,7 @@
 #
 
 import json
+
 import pytest
 from test_indexed_urls import CML_BASEURL_CDS  # noqa: F401
 from test_indexed_urls import CML_BASEURL_GET  # noqa: F401
@@ -47,17 +48,7 @@ def test_global_index(source_name, baseurl):
     assert abs(mean - 70.34426879882812) < 0.0000001, mean
 
 
-@pytest.mark.parametrize("baseurl", CML_BASEURLS)
-# @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
-def test_cli_index_url(baseurl, capsys):
-    app = CliMetLabApp()
-    app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
-    out, err = capsys.readouterr()
-
-    lines = out.split("\n")
-    assert len(lines) == 4465, len(lines)
-
-    line2 = json.loads(lines[2])
+def check_line_2(line2):
     for k, v in {
         "domain": "g",
         "levtype": "pl",
@@ -79,15 +70,48 @@ def test_cli_index_url(baseurl, capsys):
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
+def test_cli_index_url(baseurl, capsys):
+    app = CliMetLabApp()
+    app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
+    out, err = capsys.readouterr()
+    lines = out.split("\n")
+
+    assert len(lines) == 4465, len(lines)
+    line2 = json.loads(lines[2])
+    check_line_2(line2)
+    assert "_path" not in line2
+
+
+# @pytest.mark.parametrize("baseurl", CML_BASEURLS)
+@pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
 def test_cli_index_urls(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(
         f"index_urls --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb"
     )
     out, err = capsys.readouterr()
-
     lines = out.split("\n")
+
     assert len(lines) == 8497
+    line2 = json.loads(lines[2])
+    check_line_2(line2)
+    assert line2["_path"] == "large_grib_1.grb"
+
+
+# @pytest.mark.parametrize("baseurl", CML_BASEURLS)
+@pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
+def test_cli_index_urls_full_url(baseurl, capsys):
+    app = CliMetLabApp()
+    app.onecmd(
+        f"index_urls {baseurl}/test-data/input/indexed-urls/large_grib_1.grb {baseurl}/test-data/input/indexed-urls/large_grib_2.grb"
+    )
+    out, err = capsys.readouterr()
+    lines = out.split("\n")
+
+    assert len(lines) == 8497
+    line2 = json.loads(lines[2])
+    check_line_2(line2)
+    assert line2["_path"] == f"{baseurl}/test-data/input/indexed-urls/large_grib_1.grb"
 
 
 if __name__ == "__main__":
