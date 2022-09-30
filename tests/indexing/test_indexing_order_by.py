@@ -44,7 +44,7 @@ def test_indexing_order_by_with_request(params, levels, source_name):
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
 # @pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_by_with_keyword(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20220921, time="1200")
+    request = dict(variable=params, level=levels, date=20220929, time="1200")
     request["order_by"] = dict(level=levels, variable=params)
 
     ds, _, total, n = get_fixtures(source_name, request)
@@ -58,7 +58,7 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 def test_indexing_order_by_with_method(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20220921, time="1200")
+    request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = dict(level=levels, variable=params)
 
     ds, _, total, n = get_fixtures(source_name, {})
@@ -81,7 +81,7 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 # @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 @pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_ascending_descending(params, levels, source_name):
-    request = dict(variable=params, level=levels, date=20220921, time="1200")
+    request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = dict(level="descending", variable="ascending")
 
     ds, _, total, n = get_fixtures(source_name, {})

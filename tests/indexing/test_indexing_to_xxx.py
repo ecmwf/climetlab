@@ -42,7 +42,7 @@ from indexing_fixtures import check_sel_and_order, get_fixtures
     ],
 )
 def test_indexing_to_xarray(params, levels, source_name):
-    request = dict(level=levels, variable=params, date=20220921, time="1200")
+    request = dict(level=levels, variable=params, date=20220929, time="1200")
 
     ds, __tmp, total, n = get_fixtures(source_name, {})
 
@@ -64,7 +64,7 @@ def test_indexing_to_xarray(params, levels, source_name):
     ],
 )
 def test_indexing_to_numpy(params, levels, source_name):
-    request = dict(level=levels, variable=params, date=20220921, time="1200")
+    request = dict(level=levels, variable=params, date=20220929, time="1200")
 
     ds, __tmp, total, n = get_fixtures(source_name, {})
     ds = ds.sel(**request)

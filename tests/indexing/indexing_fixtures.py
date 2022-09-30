@@ -49,7 +49,7 @@ def dir_with_grib_files():
 def _build_dir_with_grib_files(testdir):
     os.makedirs(testdir, exist_ok=True)
     for p in ["t", "u", "v"]:
-        ds = cml.load_source("mars", param=p, date=20220921, grid="1/1")
+        ds = cml.load_source("mars", param=p, date=20220929, grid="1/1")
         ds.save(os.path.join(testdir, p + ".grib"))
 
 
@@ -60,7 +60,7 @@ def unique_grib_file():
 
 
 def _build_unique_grib_file(path):
-    ds = cml.load_source("mars", param=["t", "u", "v"], date=20220921, grid="1/1")
+    ds = cml.load_source("mars", param=["t", "u", "v"], date=20220929, grid="1/1")
     ds.save(path)
 
 
@@ -74,7 +74,7 @@ def list_of_dicts():
         "_param_id": 167,
         "time": "1000",
         "values": [[1, 2], [3, 4], [5, 6]],
-        "date": "20220921",
+        "date": "20220929",
         "time": "1200",
     }
     return [

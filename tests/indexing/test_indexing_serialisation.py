@@ -44,7 +44,7 @@ def test_indexing_pickle(params, levels, source_name):
     request = dict(
         level=levels,
         variable=params,
-        date=20220921,
+        date=20220929,
         time="1200",
     )
 
