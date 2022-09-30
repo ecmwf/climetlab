@@ -10,8 +10,7 @@
 
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
 from climetlab.sources.indexed import IndexedSource
-
-from climetlab.sources.indexed_urls import get_index_url, add_path
+from climetlab.sources.indexed_urls import add_path, get_index_url
 
 
 class IndexedUrl(IndexedSource):
@@ -23,8 +22,8 @@ class IndexedUrl(IndexedSource):
         **kwargs,
     ):
         index = FieldsetInFilesWithSqlIndex.from_url(
-                get_index_url(url, substitute_extension, index_extension),
-                patch_entry=add_path(url),
+            get_index_url(url, substitute_extension, index_extension),
+            patch_entry=add_path(url),
         )
         super().__init__(index, **kwargs)
 

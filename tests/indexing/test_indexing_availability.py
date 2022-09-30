@@ -12,7 +12,6 @@
 import os
 
 import climetlab as cml
-from climetlab.utils.availability import Availability
 
 TEST_DIR = os.path.join(os.path.dirname(__file__), "test_indexing_tmpdir")
 
@@ -41,10 +40,10 @@ def _test_directory_source_availability():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
     # test_directory_source_with_none_2(
     # test_directory_source_with_none_1(
-    test_directory_source_availability()
+    # test_directory_source_availability()
     # test_directory_source_order_with_order_by_method_1(
     #    ["z", "t"],
     #    [500, 850],

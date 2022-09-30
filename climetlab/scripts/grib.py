@@ -14,7 +14,6 @@ import os
 
 from climetlab.readers.grib.parsing import (
     GribIndexingDirectoryParserIterator,
-    _index_path,
     _index_url,
 )
 from climetlab.utils.humanize import plural, seconds
@@ -41,9 +40,6 @@ class GribCmd:
         If the option --baseurl is provided, the given url are relative to the BASEURL.
         This allows creating an index for multiple gribs."""
 
-        def resolve_url(url):
-            return url
-
         if args.baseurl:
 
             def resolve_url(u):
@@ -51,6 +47,11 @@ class GribCmd:
                     # already absolute url
                     return u
                 return f"{args.baseurl}/{u}"
+
+        else:
+
+            def resolve_url(url):
+                return url
 
         for u in args.urls:
             url = resolve_url(u)

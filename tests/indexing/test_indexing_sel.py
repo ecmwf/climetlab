@@ -9,12 +9,10 @@
 # nor does it submit to any jurisdiction.
 #
 
-import time
 
 import pytest
 
-from climetlab import Dataset, load_source
-from climetlab.decorators import normalize
+from climetlab import load_source
 from climetlab.indexing import PerUrlIndex
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
@@ -171,10 +169,10 @@ def test_grib_index_eumetnet():
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    # main(__file__)
+    main(__file__)
     # test_per_url_index(CML_BASEURL_S3)
     # test_indexed_s3(CML_BASEURL_S3)
     # timing()
     # from climetlab.testing import main
 
-    test_grib_index_eumetnet()
+    # test_grib_index_eumetnet()

@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import random
 import time
 
 import numpy as np
@@ -170,7 +169,7 @@ def ecef(lat, lon, i):
 
 def unstructed_to_structed(grib, chunk_size=-1):
 
-    start = now = time.time()
+    now = time.time()
     print("----")
     xyz = np.array(
         [ecef(lat, lon, i) for i, (lat, lon) in enumerate(grib.iterate_grid_points())]
@@ -187,15 +186,15 @@ def unstructed_to_structed(grib, chunk_size=-1):
 def lookup(tree, lat, lon):
     xyz = ecef(lat / 10, lon / 10, 0)
     return tree.find_nn(xyz[:-1])[0]
-    print(xyz)
-    print("----", time.time() - now)
-    print(tree.size(), tree.depth())
-    now = time.time()
-    z = []
-    for lat in range(900, -901, -1):
-        for lon in range(0, 3601):
-            xyz = ecef(lat / 10, lon / 10, 0)
-            z.append(tree.find_nn(xyz[:-1])[0])
-    print("----", time.time() - now)
-    print(np.array(z))
-    return time.time() - start
+    # print(xyz)
+    # print("----", time.time() - now)
+    # print(tree.size(), tree.depth())
+    # now = time.time()
+    # z = []
+    # for lat in range(900, -901, -1):
+    #     for lon in range(0, 3601):
+    #         xyz = ecef(lat / 10, lon / 10, 0)
+    #         z.append(tree.find_nn(xyz[:-1])[0])
+    # print("----", time.time() - now)
+    # print(np.array(z))
+    # return time.time() - start

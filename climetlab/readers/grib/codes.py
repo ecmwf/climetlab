@@ -12,7 +12,7 @@ import logging
 import os
 import threading
 import time
-from itertools import islice, tee
+from itertools import islice
 
 import eccodes
 

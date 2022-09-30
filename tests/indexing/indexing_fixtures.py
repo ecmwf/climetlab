@@ -10,20 +10,12 @@
 #
 
 import os
-import shutil
-import sys
-import time
 import warnings
-
-import pytest
 
 import climetlab as cml
 from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.decorators import normalize
-from climetlab.indexing import PerUrlIndex
 from climetlab.readers.grib.index import FieldSet
 from climetlab.testing import climetlab_file
-from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
 
 CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
@@ -72,7 +64,6 @@ def list_of_dicts():
         "distinctLatitudes": [-10.0, 0.0, 10.0],
         "distinctLongitudes": [0.0, 10.0],
         "_param_id": 167,
-        "time": "1000",
         "values": [[1, 2], [3, 4], [5, 6]],
         "date": "20220929",
         "time": "1200",
@@ -104,7 +95,7 @@ class GribIndexFromDicts(FieldSet):
                         n = "_param_id"
                     return _self[n]
                 except KeyError:
-                    warnings.warn(f"Cannot find all metadata keys.")
+                    warnings.warn("Cannot find all metadata keys.")
 
             @property
             def values(self, n):
@@ -147,11 +138,12 @@ def get_fixtures_indexed_url(request):
     )
     return ds, None, 4464, 2
 
+
 def get_fixtures_indexed_urls(request):
     baseurl = CML_BASEURL_CDS
     request = dict(**request)
-    request['n'] = [1,2]
-    request['baseurl'] = baseurl
+    request["n"] = [1, 2]
+    request["baseurl"] = baseurl
     ds = cml.load_source(
         "indexed-urls",
         "{baseurl}/test-data/input/indexed-urls/large_grib_{n}.grb",

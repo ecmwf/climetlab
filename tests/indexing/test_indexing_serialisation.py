@@ -10,24 +10,15 @@
 #
 
 import os
-import shutil
 import sys
-import time
-import warnings
 
 import pytest
 
-import climetlab as cml
-from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.decorators import normalize
-from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import FieldSet
-from climetlab.testing import climetlab_file
 from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures
+from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))

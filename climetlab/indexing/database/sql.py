@@ -234,7 +234,10 @@ class SqlDatabase(Database):
 
         conditions_statement = self._conditions(selection)
         sorter = SqlSorter(order, view)
-        statement = f"CREATE TEMP VIEW IF NOT EXISTS {view} AS SELECT * FROM {self.view} {conditions_statement} {sorter.order_statement};"
+        statement = (
+            f"CREATE TEMP VIEW IF NOT EXISTS {view} AS SELECT * "
+            + f"FROM {self.view} {conditions_statement} {sorter.order_statement};"
+        )
 
         sorter.create_sql_function_if_needed(connection)
         LOG.debug("%s", statement)

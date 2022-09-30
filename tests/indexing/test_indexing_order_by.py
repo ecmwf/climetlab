@@ -16,7 +16,7 @@ import pytest
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures
+from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     # test_indexing_order_by_with_request(["z", "t"], [500, 850], "list-of-dicts")
     # test_indexing_order_by_with_method(["z", "t"], [500, 850], "file")
-    test_indexing_order_by_with_method(["z", "t"], [500, 850], "directory")
+    # test_indexing_order_by_with_method(["z", "t"], [500, 850], "directory")
     # test_indexing_order_ascending_descending(["t", "z"], [500, 850], 'file')
 
-#    main(__file__)
+    main(__file__)

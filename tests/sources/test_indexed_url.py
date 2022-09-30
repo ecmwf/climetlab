@@ -103,7 +103,11 @@ def test_cli_index_urls(baseurl, capsys):
 def test_cli_index_urls_full_url(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(
-        f"index_urls {baseurl}/test-data/input/indexed-urls/large_grib_1.grb {baseurl}/test-data/input/indexed-urls/large_grib_2.grb"
+        (
+            f"index_urls {baseurl}/test-data/input/indexed-urls/large_grib_1.grb"
+            " "
+            f"{baseurl}/test-data/input/indexed-urls/large_grib_2.grb"
+        )
     )
     out, err = capsys.readouterr()
     lines = out.split("\n")

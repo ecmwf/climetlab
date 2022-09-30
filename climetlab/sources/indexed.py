@@ -10,7 +10,6 @@
 
 import logging
 
-from climetlab.core.settings import SETTINGS
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)

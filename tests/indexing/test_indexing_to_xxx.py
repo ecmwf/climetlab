@@ -10,25 +10,14 @@
 #
 
 import os
-import shutil
 import sys
-import time
-import warnings
 
 import numpy as np
 import pytest
 
-import climetlab as cml
-from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.decorators import normalize
-from climetlab.indexing import PerUrlIndex
-from climetlab.readers.grib.index import FieldSet
-from climetlab.testing import climetlab_file
-from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
-
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures
+from indexing_fixtures import get_fixtures  # noqa: E402
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
@@ -76,10 +65,10 @@ def test_indexing_to_numpy(params, levels, source_name):
     print(ds[2].to_numpy().mean())
     print(ds[3].to_numpy().mean())
 
-    assert np.abs(ds[0].to_numpy().mean() - -0.18180025684972567) < 10e-6
-    assert np.abs(ds[1].to_numpy().mean() - 282.44437147389897) < 10e-6
-    assert np.abs(ds[2].to_numpy().mean() - 1.3946546522951917) < 10e-6
-    assert np.abs(ds[3].to_numpy().mean() - 275.37567964838354) < 10e-6
+    assert np.abs(ds[0].to_numpy().mean() - 0.5083630135046184) < 10e-6
+    assert np.abs(ds[1].to_numpy().mean() - 281.73044231454605) < 10e-6
+    assert np.abs(ds[2].to_numpy().mean() - 1.9032698938640222) < 10e-6
+    assert np.abs(ds[3].to_numpy().mean() - 274.671260493251) < 10e-6
 
 
 if __name__ == "__main__":

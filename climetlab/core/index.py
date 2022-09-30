@@ -11,7 +11,6 @@
 import hashlib
 import json
 import logging
-import warnings
 from abc import abstractmethod
 
 from climetlab.decorators import alias_argument

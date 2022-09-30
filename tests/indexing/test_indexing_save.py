@@ -19,7 +19,7 @@ from climetlab.core.temporary import temp_file
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures
+from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
@@ -68,6 +68,6 @@ def test_indexing_save(params, levels, source_name):
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    test_indexing_save(["t", "u"], [500, 850], "indexed-url")
+    # test_indexing_save(["t", "u"], [500, 850], "indexed-url")
 
-    # main(__file__)
+    main(__file__)

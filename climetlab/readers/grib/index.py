@@ -10,7 +10,6 @@
 import json
 import logging
 import os
-import warnings
 from abc import abstractmethod
 from collections import namedtuple
 from typing import List
@@ -42,6 +41,7 @@ LOG = logging.getLogger(__name__)
 
 class FieldSet(FieldSetMixin, Index):
     _availability = None
+
     def __init__(self, *args, **kwargs):
 
         Index.__init__(self, *args, **kwargs)
@@ -59,7 +59,7 @@ class FieldSet(FieldSetMixin, Index):
 
         def dicts():
             for i in self:
-                dic = i.to_dict() # GribField.to_dict() is not implemented
+                dic = i.to_dict()  # GribField.to_dict() is not implemented
                 i = {k: v for k, v in dic.items() if not k.startswith("_")}
                 yield i
 
