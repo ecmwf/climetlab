@@ -62,7 +62,7 @@ def test_cds_netcdf():
     assert len(s) == 2
 
 
-@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.skip(reason="CDS access currently restricted")  # TODO: remove this line
 def test_cds_csv_zip():
     s = load_source(
         "cds",
