@@ -56,17 +56,6 @@ def test_tfdataset_grib_2():
     MISSING("tensorflow"),
     reason="Tensorflow not installed",
 )
-def test_tfdataset_grib_3():
-    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
-    dataset = s.to_tfdataset(label="paramId")
-    for data, paramId in dataset:
-        LOG.debug("Shape %s, param %s", data.shape, paramId)
-
-
-@pytest.mark.skipif(
-    MISSING("tensorflow"),
-    reason="Tensorflow not installed",
-)
 def test_tfdataset_grib_4():
     s = cml.load_source(
         "multi",
