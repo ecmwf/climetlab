@@ -64,6 +64,7 @@ jobs:
   checks:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [quality, test_build_doc]
+    runs-on: ${{ matrix.runs_on }}
     strategy:
       fail-fast: true
       matrix:
