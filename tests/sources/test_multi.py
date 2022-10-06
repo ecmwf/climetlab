@@ -12,6 +12,7 @@
 
 import logging
 import os
+import sys
 
 import pytest
 
@@ -87,6 +88,7 @@ def test_multi_graph_2():
         assert len(ds) == 4
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink dir on Windows")
 def test_multi_directory_1():
     with temp_directory() as directory:
         for date in (20000101, 20000102):

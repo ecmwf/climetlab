@@ -13,6 +13,7 @@ import filecmp
 import glob
 import os
 import shutil
+import sys
 
 import pytest
 
@@ -74,6 +75,7 @@ def test_cli_export_cache_cds():
     shutil.rmtree(export_dir)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink dir on Windows")
 def test_cli_index_directory():
     directory = "tmpdir.test_script_index_directory"
     shutil.rmtree(directory, ignore_errors=True)
