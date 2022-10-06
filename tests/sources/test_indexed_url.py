@@ -21,6 +21,7 @@ import climetlab as cml
 from climetlab.scripts.main import CliMetLabApp
 
 
+@pytest.mark.skip(reason="Global index not supported.")
 @pytest.mark.long_test
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 @pytest.mark.parametrize("source_name", ["indexed-url", "indexed-url-with-json-index"])
