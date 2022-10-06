@@ -34,6 +34,15 @@ numpy = "numpy"
 pandas = "pandas"
 dask = "dask"
 
+
+if sys.version_info < (3, 8):
+    if not os.environ.get("CLIMETLAB_RUN_UNSUPPORTED_PYTHON_VERSION"):
+        raise Exception(
+            "Python version "
+            + str(sys.version_info)
+            + " is not supported. Python 3.8 is required."
+        )
+
 install_requires = []
 if sys.version_info < (3, 7):
     install_requires += [
