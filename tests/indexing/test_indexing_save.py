@@ -22,6 +22,7 @@ sys.path.insert(0, here)
 from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink tmp file on Windows")
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize(
