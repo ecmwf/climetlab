@@ -3,11 +3,13 @@
 Normalize decorator
 ===================
 
-This section discusses the purpose of the `@normalize` decorator,
-shows how to use it and provides reference documentation.
+This section discusses :ref:`the purpose <purpose_normalize>` of the `@normalize` decorator,
+shows :ref:`how to use it <howto-normalizer>` and provides the :ref:`reference documentation <reference_normalize>`.
 
-Purpose
--------
+.. _purpose_normalize:
+
+Purpose (discussion)
+--------------------
 
 When sharing code, a large amount of code is usually
 dedicated to processing the arguments of the functions
@@ -51,7 +53,7 @@ Compare the following codes snippets:
             if not option in VALID_OPTIONS:
                 raise ValueError(f"option={option} invalid")
             (...)
-            (more check and transformations)
+            (more checks and transformations)
             (...)
             do_stuff(date, option)
 
@@ -92,6 +94,10 @@ How to use
    Add the keyword argument ``multiple=True``.
    Not available for ``bounding-box``.
 
+- How to ensure that the value in the function is a list of int?
+
+    .. literalinclude:: normalize-example-int.py
+
 - How to ensure that the value in the function is not a list?
 
     Add the keyword argument ``multiple=False``.
@@ -111,6 +117,8 @@ How to use
 
     .. literalinclude:: normalize-example-alias-2.py
 
+
+.. _reference_normalize:
 
 Reference
 ---------
