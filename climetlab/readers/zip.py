@@ -28,6 +28,8 @@ class InfoWrapper:
         # See https://stackoverflow.com/questions/35782941/archiving-symlinks-with-python-zipfile
         if member.create_system == 3:  # Unix
             unix_mode = member.external_attr >> 16
+            if unix_mode & 0o100000 == 0:
+                unix_mode = unix_mode | 0o100000  # TODO: check for security issue?
             self.file_or_directory = stat.S_ISDIR(unix_mode) or stat.S_ISREG(unix_mode)
 
     @property
