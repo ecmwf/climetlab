@@ -177,7 +177,7 @@ class KwargsAliasTransformer(Action):
             new_k = self.reversed_aliases.get(k, k)
             assert (
                 new_k not in new_kwargs
-            ), "Error: Multiple values were given for aliased arguments: with '{k}' and '{new_k}'."
+            ), f"Error: Multiple values were given for aliased arguments: with '{k}' and '{new_k}'."
             new_kwargs[new_k] = v
         return new_kwargs
 
@@ -188,7 +188,7 @@ class KwargsAliasTransformer(Action):
             for alias in aliases:
                 assert alias not in reversed, (
                     "Error: Multiple target value for alias "
-                    " argument '{alias}': '{target}' and '{reversed[alias]}'"
+                    f" argument '{alias}': '{target}' and '{reversed[alias]}'"
                 )
                 reversed[alias] = target
         return reversed
