@@ -56,7 +56,7 @@ class OrderOrSelection:
         return f"{self.__class__.__name__}({self.dic})"
 
     @property
-    def is_empty(self):
+    def is_empty(self): # TODO: use __bool__ instead
         if not self.dic:
             return True
         return False
