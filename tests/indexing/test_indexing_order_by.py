@@ -53,12 +53,13 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
 
     check_sel_and_order(ds, params, levels)
 
+
 @pytest.mark.parametrize("params", (["t", "u"],))
 @pytest.mark.parametrize("levels", ([500, 850],))
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
 def test_indexing_order_by_with_method_with_list(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
-    order_by = ['level', 'variable']
+    order_by = ["level", "variable"]
 
     ds, _, total, n = get_fixtures(source_name, {})
 
@@ -72,6 +73,7 @@ def test_indexing_order_by_with_method_with_list(params, levels, source_name):
 
     check_sel_and_order(ds, params, levels)
 
+
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
@@ -83,7 +85,8 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 
     print(ds)
     print()
-    for i in ds: print(i)
+    for i in ds:
+        print(i)
     assert len(ds) == total, len(ds)
 
     ds = ds.sel(**request)
