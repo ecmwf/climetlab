@@ -1,6 +1,15 @@
+a = 0
+print("loading cml")
 import climetlab as cml
+
+print("cml loaded")
+
 import numpy as np
+
+print("loading tf")
 import tensorflow as tf
+
+print("loading tf")
 
 # land_mask = cml.load_source( "mars", param="lsm", levtype="sfc", expver = "1", date = "2020-01-01", stream = "oper", grid = GRID, type = "an", time = "00:00:00" ,)
 
@@ -26,8 +35,8 @@ land_mask = cml.load_source(
     grid=GRID,
 )
 
+# Build the request using: https://apps.ecmwf.int/mars-catalogue/
 forecast = cml.load_source(
-    # Build the request using: https://apps.ecmwf.int/mars-catalogue/
     "mars",
     **{"class": "od"},
     stream="oper",
@@ -67,6 +76,8 @@ era5 = cml.load_source(
 #    # levelist="850",
 #    grid=GRID,
 # )
+forecast = forecast.order_by("date", "time", "param")
+era5 = era5.order_by("date", "time", "param")
 
 print("---------------------")
 print("Constants:")
@@ -76,23 +87,14 @@ print()
 # print("Number of TIMES:", TIMES)
 print(f"forecast: {len(forecast)}")
 print(f"era5: {len(era5)}")
-
-
-print("")
-forecast = forecast.order_by(date=None, time=None, param=None)
-era5 = era5.order_by(date=None, time=None, param=None)
-
-
-for i in forecast:
-    print(i)
-print(forecast.sel(param="z").statistics())
-# print(forecast.sel(param="so").statistics())
 print("")
 
-for i in era5:
-    print(i)
-print(era5.statistics())
+for i, (x, y) in enumerate(zip(forecast, era5)):
+    print(f"--- Sample {i} -----")
+    print(x)
+    print(y)
 print("")
+
 
 for i in range(0, len(era5)):
     print(f"--- Sample {i} -----")
@@ -101,94 +103,29 @@ for i in range(0, len(era5)):
     print(era5[i])
 shape = era5[1].to_numpy().shape
 
-
-# tfds_era5 = era5.to_tfdataset()
-# tfds = forecast.to_tfdataset(targets=tfds_era5)
-
-# tfds = forecast.to_tfdataset(targets=era5)
 print("-----------")
 
 forecast.statistics()
 
-
-from climetlab.readers.grib.tensorflow import (
-    to_tf_func,
-    default_merger,
-    cml_tfzip,
-    global_to_tfdataset,
-)
-
-total_size = len(forecast)
-prefetch = 10
-
-indices = tf.data.Dataset.range(total_size)
-indices = indices.shuffle(100)  # shuffle can happen early
-
 datasets = [forecast, era5, land_mask]
 
-
 print(datasets)
-mode = 6
-if mode == 1:  # works ok
-    datasets = [ds._to_numpy_func() for ds in datasets]
-    features = [datasets[0], datasets[0]]  # need to add custom merge and broadcasting
-    targets = [datasets[1], datasets[1]]
-    features_func, n_features = merge_funcs(*features)
-    targets_func, n_targets = merge_funcs(*targets)
-    features_tfds = indices.map(to_tf_func(features_func))
-    targets_tfds = indices.map(to_tf_func(targets_func))
-
-elif mode == 2:  # works ok
-    datasets = [ds._to_tfdataset(indices) for ds in datasets]
-    features = [datasets[0], datasets[2]]
-    targets = [datasets[1]]
-    features_tfds, n_features = merge_cached_numpy_funcs(
-        *features, indices=indices, merger=default_merger
-    )
-    targets_tfds, n_targets = merge_cached_numpy_funcs(*targets, indices=indices)
-
-elif mode == 3:
-    features_tfds = datasets[0].to_tfdataset_(datasets[2])
-    targets_tfds = datasets[1].to_tfdataset_(datasets[1], align_with=features_tfds)
-    n_features = features_tfds._climetlab_n
-    n_targets = targets_tfds._climetlab_n
-
-    shape_in = features_tfds._climetlab_tf_shape
-    shape_out = targets_tfds._climetlab_tf_shape
-    tfds = cml_tfzip(features_tfds, targets_tfds)
-
-elif mode == 5:
-    tfds = global_to_tfdataset(
-        [datasets[0], datasets[2]],
-        [datasets[1]],
-    )
-    shape_in = (2, 19, 36)  # tfds._climetlab_tf_shape
-    shape_out = (1, 19, 36)  # tfds._climetlab_tf_shape
-elif mode == 6:
-    tfds = datasets[0].to_tfdataset(
-        datasets[2],
-        targets=[datasets[1]],
-        options=[dict(), dict(constant=True)],
-        targets_options=[],
-    )
-    shape_in = (2, 19, 36)  # tfds._climetlab_tf_shape
-    shape_out = (1, 19, 36)  # tfds._climetlab_tf_shape
-
-# elif mode==0: # not implemented
-#     datasets = [ds._to_tf_func() for ds in datasets]
-#     features = [datasets[0], datasets[0]] # need to add custom merge and broadcasting
-#     targets = [datasets[1],datasets[1]]
-#     features_tf_func, n_features = merge_tf_funcs(*features)
-#     targets_tf_func, n_targets = merge_tf_funcs(*targets)
-#     features_tfds = indices.map(features_tf_func)
-#     targets_tfds = indices.map(targets_tf_func)
-#
-# elif mode==-1: # not implemented
-#     datasets = [ds._to_tfdataset(indices) for ds in datasets]
-#     features = [datasets[0], datasets[0]] # need to add custom merge and broadcasting
-#     targets = [datasets[1],datasets[1]]
-#     features_tfds, n_features = merge_tfdatasets(*features)
-#     targets_tfds, n_targets = merge_tfdatasets(*targets)
+tfds = datasets[0].to_tfdataset(
+    datasets[0], datasets[2],
+    targets=[datasets[1]],
+    options=[
+        dict(normalize="mean-std"),
+        dict(normalize="mean-std"),
+        dict(normalize="mean-std", constant=True),
+    ],
+    targets_options=[
+        dict(normalize="min-max"),
+    ],
+)
+shape_in = tfds._climetlab_tf_shape_in
+shape_out = tfds._climetlab_tf_shape_out
+assert shape_in == (3, 19, 36)
+assert shape_out == (1, 19, 36)
 
 
 def build_model(shape_in, shape_out):
@@ -222,5 +159,13 @@ def build_model(shape_in, shape_out):
 
 
 model = build_model(shape_in, shape_out)
-# features_tfds = features_tfds.prefetch(prefetch)
 model.fit(tfds)
+
+print("===========")
+for i, j in tfds:
+    import climetlab.prompt
+    pred = model.predict(i)
+    out = j + pred
+    print(out.shape)
+
+import climetlab.prompt

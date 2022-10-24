@@ -56,7 +56,7 @@ class OrderOrSelection:
         return f"{self.__class__.__name__}({self.dic})"
 
     @property
-    def is_empty(self): # TODO: use __bool__ instead
+    def is_empty(self):  # TODO: use __bool__ instead
         if not self.dic:
             return True
         return False
@@ -105,6 +105,8 @@ class Selection(OrderOrSelection):
 class Order(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self._rankers = None
+        if args and all([isinstance(a, str) for a in args]):
+            args = [args]
         super().__init__(*args, **kwargs)
 
     @property
@@ -133,6 +135,20 @@ class Order(OrderOrSelection):
         if isinstance(arg, str):
             self.dic[arg] = "ascending"
             return True
+        if isinstance(arg, (list, tuple)):
+            dic = {}
+            for k in arg:
+                assert isinstance(k, str), k
+                assert len(k) > 0, k
+                if k[0] == "-":
+                    dic[k[1:]] = "descending"
+                    continue
+                if k[0] == "+":
+                    dic[k[1:]] = "ascending"
+                    continue
+                dic[k] = "ascending"
+            dic = self.normalize_naming(**dic)
+            return self.parse_arg(dic)
         return False
 
     def parse_kwarg(self, k, v):

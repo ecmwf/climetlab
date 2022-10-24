@@ -53,6 +53,24 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
 
     check_sel_and_order(ds, params, levels)
 
+@pytest.mark.parametrize("params", (["t", "u"],))
+@pytest.mark.parametrize("levels", ([500, 850],))
+@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+def test_indexing_order_by_with_method_with_list(params, levels, source_name):
+    request = dict(variable=params, level=levels, date=20220929, time="1200")
+    order_by = ['level', 'variable']
+
+    ds, _, total, n = get_fixtures(source_name, {})
+
+    assert len(ds) == total, len(ds)
+
+    ds = ds.sel(**request)
+    assert len(ds) == n, len(ds)
+
+    ds = ds.order_by(order_by)
+    assert len(ds) == n
+
+    check_sel_and_order(ds, params, levels)
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
@@ -63,6 +81,9 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 
     ds, _, total, n = get_fixtures(source_name, {})
 
+    print(ds)
+    print()
+    for i in ds: print(i)
     assert len(ds) == total, len(ds)
 
     ds = ds.sel(**request)
@@ -134,9 +155,11 @@ REQUEST_1 = {
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    # test_indexing_order_by_with_request(["z", "t"], [500, 850], "list-of-dicts")
-    # test_indexing_order_by_with_method(["z", "t"], [500, 850], "file")
-    # test_indexing_order_by_with_method(["z", "t"], [500, 850], "directory")
-    # test_indexing_order_ascending_descending(["t", "z"], [500, 850], 'file')
+    # test_indexing_order_by_with_request(["u", "t"], [500, 850], "list-of-dicts")
+    # test_indexing_order_by_with_method(["u", "t"], [500, 850], "file")
+    # test_indexing_order_by_with_method(["u", "t"], [500, 850], "directory")
+    # test_indexing_order_ascending_descending(["t", "u"], [500, 850], 'file')
+    # test_indexing_order_by_with_method_with_list(["t", "u"], [850, 500], 'directory')
+    # test_indexing_order_by_with_method(["t", "u"], [500, 850], 'directory')
 
     main(__file__)
