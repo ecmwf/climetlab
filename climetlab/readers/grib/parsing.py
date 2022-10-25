@@ -146,11 +146,19 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
             assert False, self.relative_paths
 
         try:
-            r = reader(self, path)
+            # We could use reader(self, path) but this will create a json
+            # grib-index auxiliary file in the cache.
+            # Indexing 1M grib files lead to 1M in cache.
+            #
+            # We would need either to refactor the grib reader.
+            from climetlab.readers.grib.parsing import _index_grib_file
+
+            for field in _index_grib_file(path):
+                field["_path"] = _path
+                yield field
         except PermissionError as e:
             LOG.error(f"Could not read {path}: {e}")
             return
-
-        for field in r.index_content():
-            field["_path"] = _path
-            yield field
+        except Exception as e:
+            LOG.error(f"Ignoring {path}, {e}")
+            return
