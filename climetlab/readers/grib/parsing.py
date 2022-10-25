@@ -100,7 +100,7 @@ class DirectoryParserIterator:
         self._tasks = None
 
     def __iter__(self):
-        for path in self.tasks:
+        for path in tqdm(self.tasks, dynamic_ncols=True):
             for entry in self.process_one_task(path):
                 yield entry
 
@@ -127,7 +127,7 @@ class DirectoryParserIterator:
         else:
             LOG.error(f"Could not find any files to index in {self.directory}")
 
-        self._tasks = tqdm(tasks)
+        self._tasks = tasks
 
         return self.tasks
 
