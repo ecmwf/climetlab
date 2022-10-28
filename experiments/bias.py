@@ -110,8 +110,9 @@ forecast.statistics()
 datasets = [forecast, era5, land_mask]
 
 print(datasets)
-tfds = datasets[0].to_tfdataset(
-    datasets[0], datasets[2],
+tfds = datasets[0].to_tfdataset2(
+    datasets[0],
+    datasets[2],
     targets=[datasets[1]],
     options=[
         dict(normalize="mean-std"),
@@ -130,13 +131,8 @@ assert shape_out == (1, 19, 36)
 
 def build_model(shape_in, shape_out):
 
+    from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
     from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import (
-        Dense,
-        Flatten,
-        Input,
-        Reshape,
-    )
 
     model = Sequential(name="ML_model")
     model.add(Input(shape=(shape_in[-3], shape_in[-2], shape_in[-1])))
@@ -162,10 +158,4 @@ model = build_model(shape_in, shape_out)
 model.fit(tfds)
 
 print("===========")
-for i, j in tfds:
-    import climetlab.prompt
-    pred = model.predict(i)
-    out = j + pred
-    print(out.shape)
-
-import climetlab.prompt
+# TODO: predict
