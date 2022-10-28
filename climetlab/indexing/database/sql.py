@@ -11,6 +11,7 @@
 import logging
 import os
 import sqlite3
+from threading import local
 
 import climetlab as cml
 from climetlab.core.index import Order, OrderOrSelection, Selection
@@ -124,24 +125,79 @@ class SqlSorter:
         connection.create_function(self._func_name, 2, order_func)
 
 
+class Connection(local):
+    # Inheriting from threading.local allows one connection for each thread
+    # __init__ is "called each time the local object is used in a separate thread".
+    # https://github.com/python/cpython/blob/0346eddbe933b5f1f56151bdebf5bd49392bc275/Lib/_threading_local.py#L65
+    def __init__(self, db_path):
+        self._conn = sqlite3.connect(db_path)
+
+
 class SqlDatabase(Database):
     VERSION = 3
     EXTENSION = ".db"
 
-    def __init__(self, db_path, view="entries", _connection=None):
+    def __init__(
+        self,
+        db_path,
+        filters=None,
+    ):
 
-        self.view = view
         self.db_path = db_path
-        self._connection = _connection
+        self._filters = filters or []
+        self._view = None
+        self._connection = None
 
-        LOG.debug("DB %s %s", self.db_path, self.view)
+    @property
+    def view(self):
+        if self._view is None:
+            self._view = "entries"
+            for f in self._filters:
+                self._apply_filter(f)
+            LOG.debug("DB %s %s", self.db_path, self.view)
+        return self._view
 
     @property
     def connection(self):
         if self._connection is None:
-            LOG.debug(f"Connecting to DB ({self.db_path})")
-            self._connection = sqlite3.connect(self.db_path)
-        return self._connection
+            self._connection = Connection(self.db_path)
+        return self._connection._conn
+
+
+    def _apply_filter(self, filter: OrderOrSelection):
+        # This method updates self.view with the additional filter
+
+        old_view = self._view
+        new_view = old_view + "_" + filter.h(parent_view=old_view)
+
+        if isinstance(filter, Selection):
+            order = None
+            selection = filter
+        elif isinstance(filter, Order):
+            selection = None
+            order = filter
+        else:
+            assert False, (type(filter), filter)
+
+        conditions_statement = self._conditions(selection)
+        sorter = SqlSorter(order, new_view)
+        statement = (
+            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
+            + f"FROM {old_view} {conditions_statement} {sorter.order_statement};"
+        )
+
+        sorter.create_sql_function_if_needed(self.connection)
+        LOG.debug("%s", statement)
+        for i in self.connection.execute(statement):
+            LOG.error(str(i))  # Output of .execute should be empty
+
+        self._view = new_view
+
+    def filter(self, filter: OrderOrSelection):
+        return self.__class__(
+            self.db_path,
+            filters=self._filters + [filter],
+        )
 
     def load(self, iterator):
         with self.connection as conn:
@@ -217,39 +273,6 @@ class SqlDatabase(Database):
                 out.append(name)
         return out
 
-    def filter(self, filter: OrderOrSelection):
-        view = self.view
-        view += "_" + filter.h(parent_view=self.view)
-
-        if isinstance(filter, Selection):
-            order = None
-            selection = filter
-        elif isinstance(filter, Order):
-            selection = None
-            order = filter
-        else:
-            assert False, (type(filter), filter)
-
-        connection = self.connection
-
-        conditions_statement = self._conditions(selection)
-        sorter = SqlSorter(order, view)
-        statement = (
-            f"CREATE TEMP VIEW IF NOT EXISTS {view} AS SELECT * "
-            + f"FROM {self.view} {conditions_statement} {sorter.order_statement};"
-        )
-
-        sorter.create_sql_function_if_needed(connection)
-        LOG.debug("%s", statement)
-        for i in connection.execute(statement):
-            LOG.error(str(i))
-
-        return self.__class__(
-            self.db_path,
-            view=view,
-            _connection=self._connection,
-        )
-
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
         """
         Look into the database and provide entries as Parts.
@@ -301,8 +324,9 @@ class SqlDatabase(Database):
 
     def _dump_dicts(self):
         names = self._columns_names_without_i_()
-        names_str = ",".join([f"i_{x}" for x in names])
-        statement = f"SELECT path,offset,length,{names_str} FROM entries ;"
+        i_names = [f"i_{x}" for x in names]
+        s = ",".join(["path", "offset", "length"] + i_names)
+        statement = f"SELECT {s} FROM entries ;"
         for tupl in self.connection.execute(statement):
             yield {k: v for k, v in zip(["_path", "_offset", "_length"] + names, tupl)}
 

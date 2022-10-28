@@ -270,15 +270,13 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 50_000
 
-    def __init__(self, *args, _filters=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         _filters are used to keep the state of the db
         It is a list of **already applied** filters, not a list of filter to apply.
         Use the method apply_filters for this.
         """
 
-        # _filter
-        self._filters = _filters or []
         super().__init__(*args, **kwargs)
 
     def apply_filters(self, filters: List[OrderOrSelection]):
@@ -292,8 +290,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             return self
 
         db = self.db.filter(filter)
-        _filters = self._filters + [filter]
-        return self.__class__(db=db, _filters=_filters)
+        return self.__class__(db=db)
 
     def sel(self, *args, **kwargs):
         return self.filter(Selection(*args, **kwargs))
@@ -317,7 +314,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
 register_serialisation(
     FieldsetInFilesWithSqlIndex,
-    lambda x: [x.db.db_path, x._filters],
+    lambda x: [x.db.db_path, x.db._filters],
     lambda x: FieldsetInFilesWithSqlIndex(db=SqlDatabase(x[0])).apply_filters(
         filters=x[1]
     ),

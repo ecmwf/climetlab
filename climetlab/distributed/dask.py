@@ -9,6 +9,7 @@
 
 import logging
 import os
+import re
 
 import yaml
 
@@ -104,6 +105,11 @@ class DaskDeploy:
 
     def __str__(self):
         return f"Cluster={self.cluster}, Client={self.client}"
+
+    def _repr_html_(self):
+        dashboard = self.cluster.dashboard_link
+        dashboard = re.sub('http://[0-9\.]*:', 'https://localhost:48167/proxy/', dashboard)
+        return f"Cluster={self.cluster}, Client={self.client}, Dashboard:<a href='{dashboard}'>{dashboard}</a>"
 
     @property
     def dashboard_link(self):
