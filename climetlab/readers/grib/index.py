@@ -298,6 +298,9 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     def order_by(self, *args, **kwargs):
         return self.filter(Order(*args, **kwargs))
 
+    def _find_coord_values(self, key):
+        return self.db._find_coord_values(key)
+
     def part(self, n):
         if self._cache is None or not (
             self._cache.first <= n < self._cache.first + self._cache.length

@@ -327,6 +327,32 @@ class SqlDatabase(Database):
         for tupl in self.connection.execute(statement):
             yield tupl
 
+    def _find_coord_values(self, key):
+        def get_order():
+            orders = [f for f in self._filters if isinstance(f, Order)]
+            if not orders:
+                return None
+
+            order = Order()
+            for other in reversed(orders):
+                order.update(other)
+            return order
+
+        order = get_order()
+
+        order_statement = ""
+        if order:
+            sorter = SqlSorter(order, self.view)
+            order_statement = sorter.order_statement
+            sorter.create_sql_function_if_needed(self.connection)
+
+        statement = f"SELECT DISTINCT i_{key} FROM {self.view} {order_statement};"
+        lst = []
+        for result in self.connection.execute(statement):
+            value = result[0]
+            lst.append(value)
+        return lst
+
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"
         for result in self.connection.execute(statement):

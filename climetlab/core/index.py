@@ -113,6 +113,10 @@ class Order(OrderOrSelection):
     def order(self):
         return self.dic
 
+    def update(self, other):
+        assert isinstance(other, Order), other
+        self.dic.update(other.dic)
+
     def items(self):
         if self.is_empty:
             return
@@ -196,7 +200,7 @@ class Order(OrderOrSelection):
         self._rankers = keys, key_types, dict_of_dicts
         return self._rankers
 
-    def get_tuple_ranking(self, element):
+    def get_element_ranking(self, element):
         keys, key_types, dict_of_dicts = self.build_rankers()
         ranks = []
         for k in keys:
@@ -225,6 +229,7 @@ class Index(Source):
         self._init_args = args
         self._init_kwargs = kwargs
         self._init_order_by = order_by
+        self._coords = {}
 
     def mutate(self):
         source = self
@@ -260,7 +265,7 @@ class Index(Source):
     def order_by(self, *args, **kwargs):
         """Default order_by method.
         It expects that calling self[i] returns an element that and Order object can rank
-        (i.e. order.get_tuple_ranking(element) -> tuple).
+        (i.e. order.get_element_ranking(element) -> tuple).
         then it sorts the elements according to the tuples.
 
         Returns a new index object.
@@ -287,8 +292,7 @@ class Index(Source):
             def __call__(_self, i):
                 if _self._cache[i] is None:
                     element = _self.index[i]
-                    assert isinstance(element, tuple), element
-                    _self._cache[i] = _self.order.get_tuple_ranking(element)
+                    _self._cache[i] = _self.order.get_element_ranking(element)
                 return _self._cache[i]
 
         sorter = Sorter(self, order)

@@ -9,6 +9,7 @@
 
 import json
 import logging
+import warnings
 
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.core.index import ScaledIndex
@@ -24,6 +25,40 @@ LOG = logging.getLogger(__name__)
 
 class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
     _statistics = None
+
+    def _find_coord_values(self, key):
+        values = []
+        for i in self:
+            v = i.metadata(key)
+            if not v in values:
+                values.append(v)
+        return tuple(values)
+
+    def coord(self, key):
+        if key in self._coords:
+            return self._coords[key]
+
+        self._coords[key] = self._find_coord_values(key)
+        return self.coord(key)
+
+    def _all_coords(self, squeeze):
+        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+
+        out = {}
+        for key in GRIB_INDEX_KEYS:
+            values = self.coord(key)
+            if squeeze and len(values) == 1:
+                continue
+            if len(values) == 0:
+                # This should never happen
+                warnings.warn(f".coords warning: GRIB key not found {key}")
+                continue
+            out[key] = values
+        return out
+
+    @property
+    def coords(self):
+        return self._all_coords(squeeze=True)
 
     @property
     def first(self):

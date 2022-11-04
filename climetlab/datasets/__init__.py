@@ -108,6 +108,10 @@ class Dataset(Base):
     def order_by(self, *args, **kwargs):
         return self.source.order_by(*args, **kwargs)
 
+    @property
+    def coords(self):
+        return self.source.coords
+
     def to_numpy(self, **kwargs):
         import numpy as np
 
