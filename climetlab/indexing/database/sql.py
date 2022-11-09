@@ -62,6 +62,7 @@ GRIB_INDEX_KEYS = [
     "direction",  # for 2-d wave-spectra products
     "channel",  # for ea, ef
 ]
+STATISTICS_KEYS = ["mean", "std", "min", "max"]
 
 
 class SqlSorter:
@@ -142,6 +143,7 @@ class SqlDatabase(Database):
         db_path,
         filters=None,
     ):
+        self._cache_column_names = {}
 
         self.db_path = db_path
         self._filters = filters or []
@@ -162,7 +164,6 @@ class SqlDatabase(Database):
         if self._connection is None:
             self._connection = Connection(self.db_path)
         return self._connection._conn
-
 
     def _apply_filter(self, filter: OrderOrSelection):
         # This method updates self.view with the additional filter
@@ -204,38 +205,42 @@ class SqlDatabase(Database):
 
             # The i_ is to avoid clashes with SQL keywords
             i_columns = [f"i_{n}" for n in GRIB_INDEX_KEYS]
-            columns_defs = ",".join([f"{c} TEXT" for c in i_columns])
+            s_columns = [f"s_{n}" for n in STATISTICS_KEYS]
+            columns = i_columns + s_columns
+
+            i_columns_defs = ",".join([f"{c} TEXT" for c in i_columns])
+            s_columns_defs = ",".join([f"{c} FLOAT" for c in s_columns])
             create_statement = f"""CREATE TABLE IF NOT EXISTS entries (
                 path    TEXT,
                 offset  INTEGER,
                 length  INTEGER,
-                {columns_defs}
+                {i_columns_defs},
+                {s_columns_defs}
                 );"""
             LOG.debug("%s", create_statement)
             conn.execute(create_statement)
 
-            columns = ",".join(i_columns)
-            values = ",".join(["?"] * (3 + len(i_columns)))
+            names = ",".join(columns)
+            values = ",".join(["?"] * (3 + len(columns)))
             insert_statement = f"""
-            INSERT INTO entries (path, offset, length, {columns})
-            VALUES({values});
-            """
+                INSERT INTO entries (path, offset, length, {names})
+                VALUES({values});
+                """
             LOG.debug("%s", insert_statement)
 
+            # insert each entry
             count = 0
-
             for entry in iterator:
                 assert isinstance(entry, dict), (type(entry), entry)
                 values = [entry["_path"], entry["_offset"], entry["_length"]] + [
-                    entry.get(n) for n in GRIB_INDEX_KEYS
+                    entry.get(n) for n in GRIB_INDEX_KEYS + STATISTICS_KEYS
                 ]
                 conn.execute(insert_statement, tuple(values))
                 count += 1
 
-            assert count >= 1
+            assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
 
-            # connection.execute(f"CREATE INDEX path_index ON entries (path);")
             pbar = tqdm(i_columns + ["path"], desc="Building indexes")
             for n in pbar:
                 pbar.set_description(f"Building index for {n}")
@@ -263,14 +268,20 @@ class SqlDatabase(Database):
             return ""
         return " WHERE " + " AND ".join(conditions)
 
-    def _columns_names_without_i_(self):
+    def _columns_names_without_prefix(self, prefix):
+        if prefix in self._cache_column_names:
+            return self._cache_column_names[prefix]
+
+        assert len(prefix) == 1, prefix
         cursor = self.connection.execute("PRAGMA table_info(entries)")
         out = []
         for x in cursor.fetchall():
             name = x[1]
-            if name.startswith("i_"):
-                name = name[2:]  # remove "i_"
+            if name.startswith(prefix):
+                name = name[2:]  # remove prefix
                 out.append(name)
+
+        self._cache_column_names[prefix] = out
         return out
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
@@ -295,7 +306,7 @@ class SqlDatabase(Database):
         offset: Skip the first "offset" entries (used for paging).
         """
         if keys is None:
-            keys = self._columns_names_without_i_()
+            keys = self._columns_names_without_prefix("i")
         assert isinstance(keys, (list, tuple)), keys
 
         _names = [f"i_{x}" for x in keys]
@@ -323,12 +334,21 @@ class SqlDatabase(Database):
         assert False, statement  # Fail if result is empty.
 
     def _dump_dicts(self):
-        names = self._columns_names_without_i_()
-        i_names = [f"i_{x}" for x in names]
-        s = ",".join(["path", "offset", "length"] + i_names)
+        names, x_names = [], []
+
+        names += ["_path", "_offset", "_length"]
+        x_names += ["path", "offset", "length"]
+
+        names += self._columns_names_without_prefix("i")
+        x_names += [f"i_{x}" for x in self._columns_names_without_prefix("i")]
+
+        names += self._columns_names_without_prefix("s")
+        x_names += [f"s_{x}" for x in self._columns_names_without_prefix("s")]
+
+        s = ",".join(x_names)
         statement = f"SELECT {s} FROM entries ;"
         for tupl in self.connection.execute(statement):
-            yield {k: v for k, v in zip(["_path", "_offset", "_length"] + names, tupl)}
+            yield {k: v for k, v in zip(names, tupl)}
 
     def dump_dicts(self, remove_none=True):
         for dic in self._dump_dicts():

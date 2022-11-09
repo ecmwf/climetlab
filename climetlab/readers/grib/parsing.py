@@ -9,7 +9,6 @@
 import logging
 import os
 
-from climetlab.readers import reader
 from climetlab.utils import progress_bar, tqdm
 
 LOG = logging.getLogger(__name__)
@@ -38,6 +37,13 @@ def _index_grib_file(path):
 
         field["_param_id"] = eccodes.codes_get_string(h, "paramId")
         field["param"] = eccodes.codes_get_string(h, "shortName")
+
+        values = eccodes.codes_get_values(h)
+
+        field["mean"] = values.mean()
+        field["std"] = values.std()
+        field["min"] = values.min()
+        field["max"] = values.max()
 
         return field
 
