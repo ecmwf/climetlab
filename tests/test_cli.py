@@ -95,8 +95,7 @@ def test_cli_setting_2(capsys, settings_dict):
         key = m.groups()[0]
         key = key.strip()
         value = m.groups()[1]
-        # TODO: replace the following line by stripping colorcodes or add an option --no-color
-        value = value.strip()[5:-4]
+        value = value.strip()
         assert key in settings_dict
         assert value == str(settings_dict[key])
 
