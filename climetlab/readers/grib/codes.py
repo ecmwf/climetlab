@@ -112,6 +112,12 @@ class CodesHandle:
                 return eccodes.codes_get_values(self.handle)
             size = eccodes.codes_get_size(self.handle, name)
             # LOG.debug(f"{name}:{size}")
+
+            # Special case because eccodes is returning size > 1 for 'md5GridSection'
+            # (size = 16 : it is the number of bytes of the value)
+            if name == "md5GridSection":
+                return eccodes.codes_get_string(self.handle, "md5GridSection")
+
             if size and size > 1:
                 return eccodes.codes_get_array(self.handle, name)
             return eccodes.codes_get(self.handle, name)

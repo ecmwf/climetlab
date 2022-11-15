@@ -98,9 +98,9 @@ def test_indexing_order_by_with_method(params, levels, source_name):
     check_sel_and_order(ds, params, levels)
 
     keys = list(ds.coords.keys())
-    assert keys == ['levelist', 'param'], keys
-    coords_params = list(ds.coords['param'])
-    coords_levels = list(ds.coords['levelist'])
+    assert keys == ["levelist", "param"], keys
+    coords_params = list(ds.coords["param"])
+    coords_levels = list(ds.coords["levelist"])
     coords_levels = [int(x) for x in coords_levels]
     assert coords_params == params, (coords_params, params)
     assert coords_levels == levels, (coords_levels, levels)

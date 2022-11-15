@@ -34,6 +34,7 @@ class GRIBReader(FieldSetInOneFile, Reader):
         return MultiFieldSet(readers)
 
     def index_content(self):
+        assert False, "not used"
         from climetlab.readers.grib.parsing import _index_grib_file
 
         yield from _index_grib_file(self.path)

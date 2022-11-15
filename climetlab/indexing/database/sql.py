@@ -63,6 +63,7 @@ GRIB_INDEX_KEYS = [
     "channel",  # for ea, ef
 ]
 STATISTICS_KEYS = ["mean", "std", "min", "max"]
+CFGRIB_KEYS = ["md5_grid_section"]
 
 
 class SqlSorter:
@@ -206,16 +207,19 @@ class SqlDatabase(Database):
             # The i_ is to avoid clashes with SQL keywords
             i_columns = [f"i_{n}" for n in GRIB_INDEX_KEYS]
             s_columns = [f"s_{n}" for n in STATISTICS_KEYS]
-            columns = i_columns + s_columns
+            c_columns = [f"c_{n}" for n in CFGRIB_KEYS]
+            columns = i_columns + s_columns + c_columns
 
             i_columns_defs = ",".join([f"{c} TEXT" for c in i_columns])
             s_columns_defs = ",".join([f"{c} FLOAT" for c in s_columns])
+            c_columns_defs = ",".join([f"{c} TEXT" for c in c_columns])
             create_statement = f"""CREATE TABLE IF NOT EXISTS entries (
                 path    TEXT,
                 offset  INTEGER,
                 length  INTEGER,
                 {i_columns_defs},
-                {s_columns_defs}
+                {s_columns_defs},
+                {c_columns_defs}
                 );"""
             LOG.debug("%s", create_statement)
             conn.execute(create_statement)
@@ -233,7 +237,7 @@ class SqlDatabase(Database):
             for entry in iterator:
                 assert isinstance(entry, dict), (type(entry), entry)
                 values = [entry["_path"], entry["_offset"], entry["_length"]] + [
-                    entry.get(n) for n in GRIB_INDEX_KEYS + STATISTICS_KEYS
+                    entry.get(n) for n in GRIB_INDEX_KEYS + STATISTICS_KEYS + CFGRIB_KEYS
                 ]
                 conn.execute(insert_statement, tuple(values))
                 count += 1
@@ -268,20 +272,22 @@ class SqlDatabase(Database):
             return ""
         return " WHERE " + " AND ".join(conditions)
 
-    def _columns_names_without_prefix(self, prefix):
+    def _columns_names(self, prefix, remove_prefix):
         if prefix in self._cache_column_names:
-            return self._cache_column_names[prefix]
+            return self._cache_column_names[(prefix, remove_prefix)]
 
         assert len(prefix) == 1, prefix
         cursor = self.connection.execute("PRAGMA table_info(entries)")
         out = []
         for x in cursor.fetchall():
             name = x[1]
-            if name.startswith(prefix):
-                name = name[2:]  # remove prefix
-                out.append(name)
+            if not name.startswith(prefix):
+                continue
+            if remove_prefix:
+                name = name[2:]
+            out.append(name)
 
-        self._cache_column_names[prefix] = out
+        self._cache_column_names[(prefix, remove_prefix)] = out
         return out
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
@@ -305,14 +311,23 @@ class SqlDatabase(Database):
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """
-        if keys is None:
-            keys = self._columns_names_without_prefix("i")
-        assert isinstance(keys, (list, tuple)), keys
+        if not isinstance(keys, (list, tuple)):
+            keys = [keys]
 
-        _names = [f"i_{x}" for x in keys]
+        _names = []
+        for k in keys:
+            assert k in ['i', 's', 'c'], k
+            _names += self._columns_names(k, remove_prefix = False) 
+
+        def remove_prefix(k):
+            for prefix in ['i', 's', 'c']:
+                if k.startswith(prefix + '_'):
+                    return k[2:]
+            return k
+
         dicts = []
         for tupl in self._execute_select(_names, limit, offset):
-            dic = {k: v for k, v in zip(_names, tupl)}
+            dic = {remove_prefix(k):v for k, v in zip(_names, tupl)}
             dicts.append(dic)
         return dicts
 
@@ -360,16 +375,15 @@ class SqlDatabase(Database):
         assert False, statement  # Fail if result is empty.
 
     def _dump_dicts(self):
+        # TODO: duplicated code here and in lookup_dict
         names, x_names = [], []
 
         names += ["_path", "_offset", "_length"]
         x_names += ["path", "offset", "length"]
 
-        names += self._columns_names_without_prefix("i")
-        x_names += [f"i_{x}" for x in self._columns_names_without_prefix("i")]
-
-        names += self._columns_names_without_prefix("s")
-        x_names += [f"s_{x}" for x in self._columns_names_without_prefix("s")]
+        for prefix in ['i', 's', 'c']:
+            names += self._columns_names(prefix, remove_prefix=True)
+            x_names += self._columns_names(prefix, remove_prefix=False)
 
         s = ",".join(x_names)
         statement = f"SELECT {s} FROM entries ;"

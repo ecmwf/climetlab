@@ -6,8 +6,11 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+from collections import defaultdict
+import json
 import logging
 import os
+import warnings
 
 import climetlab as cml
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
@@ -17,6 +20,49 @@ from climetlab.sources.indexed import IndexedSource
 from climetlab.sources.directory import DirectorySource
 
 LOG = logging.getLogger(__name__)
+
+USE_REFERENCE = [
+    "distinctLatitudes",
+    "distinctLongitudes",
+    "gridType",
+    "NV",
+    "Nx",
+    "Ny",
+    "paramId",
+    "name",
+    "shortName",
+    "units",
+    "dataType",
+]
+REMOVE = [
+    "stepUnits",
+    "endStep",
+    "numberOfDirections",
+    "numberOfFrequencies",
+    "directionNumber",
+    "frequencyNumber",
+    "gridDefinitionDescription",
+    "centre",
+    "centreDescription",
+    "edition",
+    "subCentre",
+    "stepType",
+    "totalNumber",
+    "cfName",
+    "cfVarName",
+    "missingValue",
+    "typeOfLevel",
+    "jScansPositively",
+    "latitudeOfFirstGridPointInDegrees",
+    "latitudeOfLastGridPointInDegrees",
+    "longitudeOfFirstGridPointInDegrees",
+    "longitudeOfLastGridPointInDegrees",
+    "numberOfPoints",
+    "iDirectionIncrementInDegrees",
+    "jDirectionIncrementInDegrees",
+    "iScansNegatively",
+    "jPointsAreConsecutive",
+]
 
 
 class NoLock:
@@ -43,38 +89,87 @@ class CacheDict(dict):
 
 
 class VirtualField:
-    def __init__(self, getitem, i, owner, reference):
+    # DEBUG = True
+    DEBUG = False
+    _real_item = None
 
-        self._real_item = None
-
-        def get_real_item():
-            item = getitem(i)
-            print(f"requesting actual field {i:02d}: {item}")
-            return item
-
-        self._real_item_func = get_real_item
-
-        self.reference = reference
+    def __init__(self, i, owner, reference):
+        self.i = i
         self.owner = owner
+        self.item_metadata = owner.get_metadata(i)
+        self.reference, self.ref_metadata = reference
 
     @property
     def real_item(self):
-        if self._real_item is None:
-            self._real_item = self._real_item_func()
-        return self._real_item
+        return self.owner.get_real_item(self.i)
 
-    def metadata(self, n):
-        value = self.real_item[n]
-        ref = self.reference[n]
+    def _from_real_item(self, key):
+        assert self.DEBUG == True
+        return self.real_item[key]
 
-        if str(value) != str(ref):
-            print(n, "differs", value, ref)
-        # if n == "dataDate":
-        #    return self.date
+    def _check_with_real_item(self, key, value, desc):
+        real = self._from_real_item(key)
+        if type(real) != type(value) or str(real) != str(value):
+            warnings.warn(
+                f"{key}: From {desc}: providing {value} (type {type(value)}) instead of {real} (type {type(real)})"
+            )
+            print(
+                f"{key}: From {desc}: providing {value} (type {type(value)}) instead of {real} (type {type(real)})"
+            )
+            exit(-1)
+        return True
 
-        # if n == "dataTime":
-        #    return self.time
-        return self.real_item[n]
+    def metadata(self, key):
+        from cfgrib.dataset import INDEX_KEYS
+
+        if key in REMOVE:
+            return None
+
+        def ref(k):
+            value = self.reference[k]
+            if self.DEBUG:
+                self._check_with_real_item(k, value, "reference")
+            return value
+
+        def from_reference_with_warning(k):
+            value = ref(k)
+            warnings.warn(f"Reading from reference (not expected): {k}={value}")
+            return value
+
+        find_metadata = defaultdict(lambda: from_reference_with_warning)
+
+        def check(k):
+            r = self.ref_metadata[k]
+            i = self.item_metadata[k]
+            if r != i:
+                raise Exception(f"Error for key={k}: ref={r}, item={i}")
+
+        check("md5_grid_section")
+        for k in USE_REFERENCE:
+            find_metadata[k] = ref
+
+        check("param")
+        find_metadata["param"] = lambda x: self.item_metadata["param"]
+        find_metadata["shortName"] = lambda x: self.item_metadata["param"]
+        find_metadata["number"] = lambda x: int(self.item_metadata["number"])
+        find_metadata["level:float"] = lambda x: float(self.item_metadata["levelist"])
+        find_metadata["level"] = lambda x: int(self.item_metadata["levelist"])
+        find_metadata["dataDate"] = lambda x: int(self.item_metadata["date"])
+        find_metadata["dataTime"] = lambda x: int(self.item_metadata["time"])
+
+        func = find_metadata[key]
+        try:
+            value = func(key)
+        except Exception as e:
+            warnings.warn(f"Exception reading {key}:{str(e)}")
+            if self.DEBUG:
+                print(f"Exception reading {key}: {str(e)}")
+                exit(-1)
+
+        if self.DEBUG:
+            self._check_with_real_item(key, value, "final-check")
+
+        return value
 
     @property
     def values(self):
@@ -98,38 +193,27 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
 
     def xarray_open_dataset_kwargs(self):
         return dict(
-            cache=False,  # Set to false to prevent loading the whole dataset
-            #        chunks={
-            #            "time": 24 * 31,
-            #            # "step": 1,
-            #            # "number": 1,
-            #            # "surface": 1,
-            #            "latitude": 721,
-            #            "longitude": 1440,
-            #        },
+            cache=False,  # Set to False to prevent loading the whole dataset
+            # chunks={ },
             lock=NoLock(),
         )
+
+    def get_real_item(self, n):
+        return super().__getitem__(n)
 
     def __getitem__(self, n):
         if n >= len(self):
             raise IndexError
 
-        print(f"requesting item {n:02d}")
-        item = VirtualField(
-            super().__getitem__,
-            n,
-            owner=self,
-            reference=self.reference,
-        )
-        print(f"                     -> {item}")
+        item = VirtualField(n, owner=self, reference=self.reference)
         return item
 
     @property
     def reference(self):
         if self._reference is None:
-            reference = super().__getitem__(0)
-            self._reference = CacheDict(reference)
-            print(f"got reference = {reference}")
+            reference = self.get_real_item(0)
+            metadata = self.get_metadata(0)
+            self._reference = (CacheDict(reference), metadata)
         return self._reference
 
 

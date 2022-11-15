@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import json
 import logging
 import os
 
@@ -14,7 +15,11 @@ from climetlab.utils import progress_bar, tqdm
 LOG = logging.getLogger(__name__)
 
 
-def _index_grib_file(path):
+def _index_grib_file(
+    path,
+    with_statistics=False,
+    with_cfgrib=False,
+):
     import eccodes
 
     def parse_field(h):
@@ -27,6 +32,7 @@ def _index_grib_file(path):
             while eccodes.codes_keys_iterator_next(i):
                 name = eccodes.codes_keys_iterator_get_name(i)
                 value = eccodes.codes_get_string(h, name)
+                print('parsing__: ', name, value)
                 field[name] = value
 
         finally:
@@ -38,12 +44,18 @@ def _index_grib_file(path):
         field["_param_id"] = eccodes.codes_get_string(h, "paramId")
         field["param"] = eccodes.codes_get_string(h, "shortName")
 
+        field["number"] = eccodes.codes_get_string(h, "number")
+
         values = eccodes.codes_get_values(h)
 
-        field["mean"] = values.mean()
-        field["std"] = values.std()
-        field["min"] = values.min()
-        field["max"] = values.max()
+        if with_statistics:
+            field["mean"] = values.mean()
+            field["std"] = values.std()
+            field["min"] = values.min()
+            field["max"] = values.max()
+
+        if with_cfgrib:
+            field["md5_grid_section"] = eccodes.codes_get(h, "md5GridSection")
 
         return field
 
@@ -157,9 +169,10 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
             # Indexing 1M grib files lead to 1M in cache.
             #
             # We would need either to refactor the grib reader.
+
             from climetlab.readers.grib.parsing import _index_grib_file
 
-            for field in _index_grib_file(path):
+            for field in _index_grib_file(path, with_statistics = True, with_cfgrib=True):
                 field["_path"] = _path
                 yield field
         except PermissionError as e:

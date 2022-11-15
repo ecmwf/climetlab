@@ -111,6 +111,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         # self._cache is a tuple : (first, length, result). It holds one chunk of the db.
         # The third element (result) is a list of size length.
         self._cache = None
+        self._dict_cache = None
 
         super().__init__(**kwargs)
 
@@ -232,11 +233,9 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         LOG.debug("Building availability")
 
         def dicts():
-            for i in self.db.lookup_dicts():
+            for i in self.db.lookup_dicts(keys='i'):
                 dic = {}
                 for k, v in i.items():
-                    if k.startswith("_"):
-                        continue
                     if k.startswith("i_"):
                         k = k[2:]
                     dic[k] = v
@@ -269,6 +268,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 50_000
+    DB_DICT_CACHE_SIZE = 5_000
 
     def __init__(self, *args, **kwargs):
         """
@@ -309,6 +309,17 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             result = self.db.lookup_parts(limit=self.DB_CACHE_SIZE, offset=first)
             self._cache = SqlResultCache(first, len(result), result)
         return self._cache.result[n % self.DB_CACHE_SIZE]
+
+    def get_metadata(self, n):
+        if self._dict_cache is None or not (
+            self._dict_cache.first <= n < self._dict_cache.first + self._dict_cache.length
+        ):
+            first = n // self.DB_DICT_CACHE_SIZE
+            result = self.db.lookup_dicts(limit=self.DB_DICT_CACHE_SIZE, offset=first, keys=['i', 'c'])
+            print('dbresult',result)
+
+            self._dict_cache = SqlResultCache(first, len(result), result)
+        return self._dict_cache.result[n % self.DB_DICT_CACHE_SIZE]
 
     @cached_method
     def number_of_parts(self):

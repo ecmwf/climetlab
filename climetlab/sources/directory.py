@@ -31,6 +31,7 @@ def make_absolute(filename, root_dir, default):
 class DirectorySource(IndexedSource):
     DEFAULT_JSON_FILE = "climetlab.index"
     DEFAULT_DB_FILE = "climetlab.db"
+    INDEX_CLASS = FieldsetInFilesWithSqlIndex
 
     def __init__(
         self,
@@ -70,7 +71,7 @@ class DirectorySource(IndexedSource):
         # Try to use db_path if it exists:
         if os.path.exists(db_path):
             LOG.info(f"Using index file {db_path}")
-            index = FieldsetInFilesWithSqlIndex.from_existing_db(db_path=db_path)
+            index = self.INDEX_CLASS.from_existing_db(db_path=db_path)
             super().__init__(index, **kwargs)
             return
 
@@ -85,14 +86,14 @@ class DirectorySource(IndexedSource):
         if os.path.exists(index_file):
             LOG.info(f"Using index file {index_file}")
             print(f"Using index file {index_file} (will happen only once).")
-            index = FieldsetInFilesWithSqlIndex.from_file(path=index_file)
+            index = self.INDEX_CLASS.from_file(path=index_file)
             super().__init__(index, **kwargs)
             return
 
         # Create the db_path file in cache (or used the cached one)
         LOG.info(f"Did not find index files in {db_path} or {index_file}")
         ignore = [self.DEFAULT_DB_FILE, self.DEFAULT_JSON_FILE, db_path, index_file]
-        index = FieldsetInFilesWithSqlIndex.from_iterator(
+        index = self.INDEX_CLASS.from_iterator(
             GribIndexingDirectoryParserIterator(
                 path, ignore=ignore, relative_paths=False
             ),
