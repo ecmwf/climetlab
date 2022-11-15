@@ -237,7 +237,8 @@ class SqlDatabase(Database):
             for entry in iterator:
                 assert isinstance(entry, dict), (type(entry), entry)
                 values = [entry["_path"], entry["_offset"], entry["_length"]] + [
-                    entry.get(n) for n in GRIB_INDEX_KEYS + STATISTICS_KEYS + CFGRIB_KEYS
+                    entry.get(n)
+                    for n in GRIB_INDEX_KEYS + STATISTICS_KEYS + CFGRIB_KEYS
                 ]
                 conn.execute(insert_statement, tuple(values))
                 count += 1
@@ -316,18 +317,18 @@ class SqlDatabase(Database):
 
         _names = []
         for k in keys:
-            assert k in ['i', 's', 'c'], k
-            _names += self._columns_names(k, remove_prefix = False) 
+            assert k in ["i", "s", "c"], k
+            _names += self._columns_names(k, remove_prefix=False)
 
         def remove_prefix(k):
-            for prefix in ['i', 's', 'c']:
-                if k.startswith(prefix + '_'):
+            for prefix in ["i", "s", "c"]:
+                if k.startswith(prefix + "_"):
                     return k[2:]
             return k
 
         dicts = []
         for tupl in self._execute_select(_names, limit, offset):
-            dic = {remove_prefix(k):v for k, v in zip(_names, tupl)}
+            dic = {remove_prefix(k): v for k, v in zip(_names, tupl)}
             dicts.append(dic)
         return dicts
 
@@ -381,7 +382,7 @@ class SqlDatabase(Database):
         names += ["_path", "_offset", "_length"]
         x_names += ["path", "offset", "length"]
 
-        for prefix in ['i', 's', 'c']:
+        for prefix in ["i", "s", "c"]:
             names += self._columns_names(prefix, remove_prefix=True)
             x_names += self._columns_names(prefix, remove_prefix=False)
 

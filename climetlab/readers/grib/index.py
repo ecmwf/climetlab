@@ -233,7 +233,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         LOG.debug("Building availability")
 
         def dicts():
-            for i in self.db.lookup_dicts(keys='i'):
+            for i in self.db.lookup_dicts(keys="i"):
                 dic = {}
                 for k, v in i.items():
                     if k.startswith("i_"):
@@ -312,11 +312,14 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     def get_metadata(self, n):
         if self._dict_cache is None or not (
-            self._dict_cache.first <= n < self._dict_cache.first + self._dict_cache.length
+            self._dict_cache.first
+            <= n
+            < self._dict_cache.first + self._dict_cache.length
         ):
             first = n // self.DB_DICT_CACHE_SIZE
-            result = self.db.lookup_dicts(limit=self.DB_DICT_CACHE_SIZE, offset=first, keys=['i', 'c'])
-            print('dbresult',result)
+            result = self.db.lookup_dicts(
+                limit=self.DB_DICT_CACHE_SIZE, offset=first, keys=["i", "c"]
+            )
 
             self._dict_cache = SqlResultCache(first, len(result), result)
         return self._dict_cache.result[n % self.DB_DICT_CACHE_SIZE]

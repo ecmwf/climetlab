@@ -18,7 +18,6 @@ LOG = logging.getLogger(__name__)
 def _index_grib_file(
     path,
     with_statistics=False,
-    with_cfgrib=False,
 ):
     import eccodes
 
@@ -37,24 +36,27 @@ def _index_grib_file(
         finally:
             eccodes.codes_keys_iterator_delete(i)
 
+        try:
+            # eccodes.codes_get_string(h, "number") returns "0"
+            # when "number" is not in the iterator
+            field["number"] = eccodes.codes_get_string(h, "number")
+        except:
+            pass
+
         field["_offset"] = eccodes.codes_get_long(h, "offset")
         field["_length"] = eccodes.codes_get_long(h, "totalLength")
 
         field["_param_id"] = eccodes.codes_get_string(h, "paramId")
         field["param"] = eccodes.codes_get_string(h, "shortName")
 
-        field["number"] = eccodes.codes_get_string(h, "number")
-
-        values = eccodes.codes_get_values(h)
-
         if with_statistics:
+            values = eccodes.codes_get_values(h)
             field["mean"] = values.mean()
             field["std"] = values.std()
             field["min"] = values.min()
             field["max"] = values.max()
 
-        if with_cfgrib:
-            field["md5_grid_section"] = eccodes.codes_get(h, "md5GridSection")
+        field["md5_grid_section"] = eccodes.codes_get(h, "md5GridSection")
 
         return field
 
@@ -171,7 +173,7 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
 
             from climetlab.readers.grib.parsing import _index_grib_file
 
-            for field in _index_grib_file(path, with_statistics = True, with_cfgrib=True):
+            for field in _index_grib_file(path, with_statistics=True):
                 field["_path"] = _path
                 yield field
         except PermissionError as e:
