@@ -32,7 +32,6 @@ def _index_grib_file(
             while eccodes.codes_keys_iterator_next(i):
                 name = eccodes.codes_keys_iterator_get_name(i)
                 value = eccodes.codes_get_string(h, name)
-                print('parsing__: ', name, value)
                 field[name] = value
 
         finally:
