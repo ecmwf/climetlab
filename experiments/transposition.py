@@ -1,23 +1,23 @@
 import json
-import sys
-import numpy as np
-import tqdm
-import climetlab as cml
 import math
 import queue
+import sys
 import threading
 
-from climetlab.utils import humanize
+import numpy as np
+import tqdm
+from mydatasets.ecpoint_test import EcpointTest # noqa
+from mydatasets.s2s_test import S2sTest # noqa
 
-from mydatasets.ecpoint_test import EcpointTest
-from mydatasets.s2s_test import S2sTest
+import climetlab as cml
+from climetlab.utils import humanize
 
 
 def worker_on_file(queue, filename):
     def target():
         # n = 10
         # count, file_handle = n, open(filename, "r+b")# , buffering=0)
-        file_handle = open(filename, "r+b" )#, buffering=0)
+        file_handle = open(filename, "r+b")  # , buffering=0)
         while True:
             task = queue.get()
             if task is None:
@@ -181,7 +181,7 @@ class Block:
 
             seek = i * self.runner.shape_i + self.j_slice.start
             bit_seek = seek * self.runner.itemsize
-            #assert bit_seek % 4096 == 0, (bit_seek, seek, i)
+            # assert bit_seek % 4096 == 0, (bit_seek, seek, i)
             file_handle.seek(bit_seek)
 
             a = arr[i_relative, :]
@@ -423,16 +423,16 @@ class TimeseriesReader(Timeseries):
 #         if self._array:
 #             return self._array
 #         import h5py
-# 
+#
 #         f = h5py.File(self.filename, "w")  # , driver='core')
 #         self._array = f.create_dataset("data", self.shape, dtype=self.dtype)
 #         return self.array
-# 
-# 
+#
+#
 # class HdfTimeseriesWriter(HdfTimeseries, TimeseriesWriter):
 #     pass
-# 
-# 
+#
+#
 # class HdfTimeseriesReader(HdfTimeseries, TimeseriesReader):
 #     pass
 
@@ -535,14 +535,14 @@ if __name__ == "__main__":
     # test5_write("medium")
     # test5_read("medium")
 
-    #print("- TEST 5 - large")
-    #test5_write("large")
+    # print("- TEST 5 - large")
+    # test5_write("large")
     # 5 min without writing.
     # ETA~1h30 with Timeseries
     # ETA~1h with Timeseries2
     # note: with early astype(): ETA~55 min with Timeseries2
     # ETA with Refactored with queues: ETA~30min. Real: 1h30 (threads_write=8,nthreads_read=2,n_gridpoints=512,n_fields=1024)
-    #test5_read("large")
+    # test5_read("large")
 
     # print("- TEST 5 - per year")
     # for i in range(2000, 2019):
@@ -553,21 +553,20 @@ if __name__ == "__main__":
     #    t.run()
 
     print("- TEST 5 - step")
-    steps = cml.load_dataset("ecpoint-test","full").coords['step']
-    step=steps[int(sys.argv[1])]
+    steps = cml.load_dataset("ecpoint-test", "full").coords["step"]
+    step = steps[int(sys.argv[1])]
     print(f"Running step {step} ({sys.argv[1]}/{len(steps)})")
-    data = cml.load_dataset("ecpoint-test",f"step_{step}")
+    data = cml.load_dataset("ecpoint-test", f"step_{step}")
     print(len(data), "fields")
     t = WritterClass(data)
     t.run()
 
-
-    #print("- TEST ECPOINT -")
-    #ecpoint_full_write()
+    # print("- TEST ECPOINT -")
+    # ecpoint_full_write()
     # ETA with TimeSeries: 9k min (450k / 512 * 10min)
     # ETA with TimeSeries2: 12k min (540k/8k * 240min)
     # ETA with Refactored with queues: 24h
-    #ecpoint_full_read()
+    # ecpoint_full_read()
 
 # test2()
 # test3()
