@@ -6,8 +6,8 @@ import threading
 
 import numpy as np
 import tqdm
-from mydatasets.ecpoint_test import EcpointTest # noqa
-from mydatasets.s2s_test import S2sTest # noqa
+from mydatasets.ecpoint_test import EcpointTest  # noqa
+from mydatasets.s2s_test import S2sTest  # noqa
 
 import climetlab as cml
 from climetlab.utils import humanize
