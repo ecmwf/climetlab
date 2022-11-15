@@ -6,18 +6,18 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from collections import defaultdict
 import json
 import logging
 import os
 import warnings
+from collections import defaultdict
 
 import climetlab as cml
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
 from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources import Source
-from climetlab.sources.indexed import IndexedSource
 from climetlab.sources.directory import DirectorySource
+from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
 
