@@ -11,6 +11,7 @@
 import logging
 import os
 import sqlite3
+from collections import namedtuple
 from threading import local
 
 import climetlab as cml
@@ -23,45 +24,51 @@ from . import Database
 LOG = logging.getLogger(__name__)
 
 
-GRIB_INDEX_KEYS = [
-    "class",
-    "stream",
-    "levtype",
-    "type",
-    "expver",
-    "date",
-    "hdate",
-    "andate",
-    "time",
-    "antime",
-    "reference",
-    "step",
-    "anoffset",
-    "verify",
-    "fcmonth",
-    "fcperiod",
-    "leadtime",
-    "opttime",
-    "origin",
-    "domain",
-    "method",
-    "diagnostic",
-    "iteration",
-    "number",
-    "quantile",
-    "levelist",
-    # "latitude",  # in the MARS vocabulary but not used.
-    # "longitude",  # in the MARS vocabulary but not used.
-    "range",
-    "param",
-    "ident",
-    "obstype",
-    "instrument",
-    "reportype",
-    "frequency",  # for 2-d wave-spectra products
-    "direction",  # for 2-d wave-spectra products
-    "channel",  # for ea, ef
-]
+GribKey = namedtuple("GribKey", ["name", "type", "type_in_db", "default_order"])
+
+GRIB_INDEX_KEYS_DICT = {}
+GRIB_INDEX_KEYS = []
+for k in [
+    GribKey("class", str, str, None),
+    GribKey("stream", str, str, None),
+    GribKey("levtype", str, str, None),
+    GribKey("type", str, str, None),
+    GribKey("expver", str, str, None),
+    GribKey("date", str, str, None),
+    GribKey("hdate", str, str, None),
+    GribKey("andate", str, str, None),
+    GribKey("time", str, str, None),
+    GribKey("antime", str, str, None),
+    GribKey("reference", str, str, None),
+    GribKey("step", str, str, None),
+    GribKey("anoffset", str, str, None),
+    GribKey("verify", str, str, None),
+    GribKey("fcmonth", str, str, None),
+    GribKey("fcperiod", str, str, None),
+    GribKey("leadtime", str, str, None),
+    GribKey("opttime", str, str, None),
+    GribKey("origin", str, str, None),
+    GribKey("domain", str, str, None),
+    GribKey("method", str, str, None),
+    GribKey("diagnostic", str, str, None),
+    GribKey("iteration", str, str, None),
+    GribKey("number", str, str, None),
+    GribKey("quantile", str, str, None),
+    GribKey("levelist", str, str, None),
+    # "latitude"  # in the MARS vocabulary but not used.
+    # "longitude"  # in the MARS vocabulary but not used.
+    GribKey("range", str, str, None),
+    GribKey("param", str, str, None),
+    GribKey("ident", str, str, None),
+    GribKey("obstype", str, str, None),
+    GribKey("instrument", str, str, None),
+    GribKey("reportype", str, str, None),
+    GribKey("frequency", str, str, None),  # for 2-d wave-spectra products
+    GribKey("direction", str, str, None),  # for 2-d wave-spectra products
+    GribKey("channel", str, str, None),  # for ea and ef
+]:
+    GRIB_INDEX_KEYS_DICT[k.name] = k
+    GRIB_INDEX_KEYS.append(k.name)
 STATISTICS_KEYS = ["mean", "std", "min", "max"]
 CFGRIB_KEYS = ["md5_grid_section"]
 
@@ -342,6 +349,13 @@ class SqlDatabase(Database):
 
         for tupl in self.connection.execute(statement):
             yield tupl
+
+    def _find_coords_keys(self):
+        keys = GRIB_INDEX_KEYS  # default keys ordering
+        for f in self._filters:
+            new = list(f.keys())
+            keys = new + [k for k in keys if k not in new]
+        return keys
 
     def _find_coord_values(self, key):
         def get_order():

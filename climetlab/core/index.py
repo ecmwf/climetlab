@@ -68,6 +68,9 @@ class OrderOrSelection:
         m.update(json.dumps(self.dic, sort_keys=True).encode("utf-8"))
         return m.hexdigest()
 
+    def keys(self):
+        return self.dic.keys()
+
 
 class Selection(OrderOrSelection):
     @property
@@ -121,12 +124,14 @@ class Order(OrderOrSelection):
         if self.is_empty:
             return
 
+        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+
         for k, v in self.dic.items():
             yield k, v
 
-        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
-
-        for k in [_ for _ in GRIB_INDEX_KEYS if _ not in self.dic]:
+        for k in GRIB_INDEX_KEYS:
+            if k in self.dic:
+                continue  # already yielded above
             yield k, self[k]
 
     def __getitem__(self, key):

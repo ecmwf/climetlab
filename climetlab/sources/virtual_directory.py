@@ -6,18 +6,12 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import json
 import logging
-import os
 import warnings
 from collections import defaultdict
 
-import climetlab as cml
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
-from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
-from climetlab.sources import Source
 from climetlab.sources.directory import DirectorySource
-from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
 
@@ -104,7 +98,7 @@ class VirtualField:
         return self.owner.get_real_item(self.i)
 
     def _from_real_item(self, key):
-        assert self.DEBUG == True
+        assert self.DEBUG is True
         return self.real_item[key]
 
     def _check_with_real_item(self, key, value, desc):
@@ -120,8 +114,6 @@ class VirtualField:
         return True
 
     def metadata(self, key):
-        from cfgrib.dataset import INDEX_KEYS
-
         if key in REMOVE:
             return None
 

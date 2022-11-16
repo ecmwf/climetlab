@@ -6,7 +6,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import json
 import logging
 import os
 
@@ -40,7 +39,7 @@ def _index_grib_file(
             # eccodes.codes_get_string(h, "number") returns "0"
             # when "number" is not in the iterator
             field["number"] = eccodes.codes_get_string(h, "number")
-        except:
+        except:  # noqa
             pass
 
         field["_offset"] = eccodes.codes_get_long(h, "offset")

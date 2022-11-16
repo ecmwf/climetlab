@@ -30,7 +30,7 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
         values = []
         for i in self:
             v = i.metadata(key)
-            if not v in values:
+            if v not in values:
                 values.append(v)
         return tuple(values)
 
@@ -41,11 +41,14 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
         self._coords[key] = self._find_coord_values(key)
         return self.coord(key)
 
-    def _all_coords(self, squeeze):
+    def _find_coords_keys(self):
         from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
 
+        return GRIB_INDEX_KEYS
+
+    def _find_all_coords_dict(self, squeeze):
         out = {}
-        for key in GRIB_INDEX_KEYS:
+        for key in self._find_coords_keys():
             values = self.coord(key)
             if squeeze and len(values) == 1:
                 continue
@@ -58,7 +61,7 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
 
     @property
     def coords(self):
-        return self._all_coords(squeeze=True)
+        return self._find_all_coords_dict(squeeze=True)
 
     @property
     def first(self):
