@@ -12,6 +12,7 @@ from collections import defaultdict
 
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
 from climetlab.sources.directory import DirectorySource
+from climetlab.utils import progress_bar
 
 LOG = logging.getLogger(__name__)
 
@@ -57,6 +58,21 @@ REMOVE = [
     "iScansNegatively",
     "jPointsAreConsecutive",
 ]
+METADATA_FUNCS = defaultdict(lambda x, item: item.owner.from_reference(x, item))
+
+for k in REMOVE:
+    METADATA_FUNCS[k] = lambda x, item: None
+
+for k in USE_REFERENCE:
+    METADATA_FUNCS[k] = lambda x, item: item.owner.from_reference(x, item)
+
+METADATA_FUNCS["param"] = lambda x, item: item.item_metadata["param"]
+METADATA_FUNCS["shortName"] = lambda x, item: item.item_metadata["param"]
+METADATA_FUNCS["number"] = lambda x, item: int(item.item_metadata["number"])
+METADATA_FUNCS["level:float"] = lambda x, item: float(item.item_metadata["levelist"])
+METADATA_FUNCS["level"] = lambda x, item: int(item.item_metadata["levelist"])
+METADATA_FUNCS["dataDate"] = lambda x, item: int(item.item_metadata["date"])
+METADATA_FUNCS["dataTime"] = lambda x, item: int(item.item_metadata["time"])
 
 
 class NoLock:
@@ -82,86 +98,30 @@ class CacheDict(dict):
         return f"{self.field} (cached)"
 
 
-class VirtualField:
-    # DEBUG = True
-    DEBUG = False
+class VirtualField:  # Should inherit from GribField
+
     _real_item = None
 
-    def __init__(self, i, owner, reference):
+    def __init__(self, i, owner):
         self.i = i
         self.owner = owner
         self.item_metadata = owner.get_metadata(i)
-        self.reference, self.ref_metadata = reference
+
+    @property
+    def DEBUG(self):
+        return self.owner.DEBUG
 
     @property
     def real_item(self):
-        return self.owner.get_real_item(self.i)
+        if self._real_item is None:
+            self._real_item = self.owner.get_real_item(self.i)
+        return self._real_item
 
-    def _from_real_item(self, key):
-        assert self.DEBUG is True
-        return self.real_item[key]
-
-    def _check_with_real_item(self, key, value, desc):
-        real = self._from_real_item(key)
-        if type(real) != type(value) or str(real) != str(value):
-            warnings.warn(
-                f"{key}: From {desc}: providing {value} (type {type(value)}) instead of {real} (type {type(real)})"
-            )
-            print(
-                f"{key}: From {desc}: providing {value} (type {type(value)}) instead of {real} (type {type(real)})"
-            )
-            exit(-1)
-        return True
+    def write(self, f):
+        return self.real_item.write(f)
 
     def metadata(self, key):
-        if key in REMOVE:
-            return None
-
-        def ref(k):
-            value = self.reference[k]
-            if self.DEBUG:
-                self._check_with_real_item(k, value, "reference")
-            return value
-
-        def from_reference_with_warning(k):
-            value = ref(k)
-            warnings.warn(f"Reading from reference (not expected): {k}={value}")
-            return value
-
-        find_metadata = defaultdict(lambda: from_reference_with_warning)
-
-        def check(k):
-            r = self.ref_metadata[k]
-            i = self.item_metadata[k]
-            if r != i:
-                raise Exception(f"Error for key={k}: ref={r}, item={i}")
-
-        check("md5_grid_section")
-        for k in USE_REFERENCE:
-            find_metadata[k] = ref
-
-        check("param")
-        find_metadata["param"] = lambda x: self.item_metadata["param"]
-        find_metadata["shortName"] = lambda x: self.item_metadata["param"]
-        find_metadata["number"] = lambda x: int(self.item_metadata["number"])
-        find_metadata["level:float"] = lambda x: float(self.item_metadata["levelist"])
-        find_metadata["level"] = lambda x: int(self.item_metadata["levelist"])
-        find_metadata["dataDate"] = lambda x: int(self.item_metadata["date"])
-        find_metadata["dataTime"] = lambda x: int(self.item_metadata["time"])
-
-        func = find_metadata[key]
-        try:
-            value = func(key)
-        except Exception as e:
-            warnings.warn(f"Exception reading {key}:{str(e)}")
-            if self.DEBUG:
-                print(f"Exception reading {key}: {str(e)}")
-                exit(-1)
-
-        if self.DEBUG:
-            self._check_with_real_item(key, value, "final-check")
-
-        return value
+        return self.owner._get_metadata_for_item(key, self)
 
     @property
     def values(self):
@@ -172,15 +132,19 @@ class VirtualField:
 
     @property
     def shape(self):
-        return self.reference.shape
+        return self.owner.reference[0].shape
 
     def __str__(self):
         return "Virt" + str(self.real_item)
 
 
 class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
+    # DEBUG = True
+    DEBUG = False
+
     def __init__(self, *args, **kwargs):
         self._reference = None
+        self.pbar = None
         super().__init__(*args, **kwargs)
 
     def xarray_open_dataset_kwargs(self):
@@ -190,15 +154,49 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
             lock=NoLock(),
         )
 
-    def get_real_item(self, n):
-        return super().__getitem__(n)
-
     def __getitem__(self, n):
         if n >= len(self):
             raise IndexError
+        if self.pbar:
+            self.pbar.update(1)
 
-        item = VirtualField(n, owner=self, reference=self.reference)
+        item = VirtualField(n, owner=self)
+
+        self.check_same_metadata_as_reference("md5_grid_section", item)
+        self.check_same_metadata_as_reference("param", item)
+
         return item
+
+    def get_real_item(self, n):
+        return super().__getitem__(n)
+
+    def _get_metadata_for_item(self, key, item):
+
+        func = METADATA_FUNCS[key]
+
+        try:
+            value = func(key, item)
+        except Exception as e:
+            warnings.warn(f"Exception reading {key}:{str(e)}")
+            if item.DEBUG:
+                exit(-1)
+
+        if key not in METADATA_FUNCS:
+            warnings.warn(f"Reading from reference (not expected): {k}={func(k)}")
+
+        if item.DEBUG:
+            if key not in REMOVE:
+                self._check_with_real_item(key, item, value)
+            else:
+                assert value == None, (key, value)
+
+        return value
+
+    def to_xarray(self, *args, **kwargs):
+        self.pbar = progress_bar(desc="to xarray()", total=len(self))
+        ds = super().to_xarray(*args, **kwargs)
+        self.pbar = None
+        return ds
 
     @property
     def reference(self):
@@ -207,6 +205,27 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
             metadata = self.get_metadata(0)
             self._reference = (CacheDict(reference), metadata)
         return self._reference
+
+    def from_reference(self, key, item):
+        value = self.reference[0][key]
+        return value
+
+    def _check_with_real_item(self, key, item, value):
+        assert self.DEBUG is True
+        real = item.real_item[key]
+        if type(real) != type(value) or str(real) != str(value):
+            msg = f"key={key}: providing {value} (type {type(value)}) instead of {real} (type {type(real)})"
+            warnings.warn(msg)
+            exit(-1)
+        return True
+
+    def check_same_metadata_as_reference(self, key, item):
+        r = self.reference[1][key]
+        i = item.item_metadata[key]
+        if r != i:
+            raise Exception(
+                f"Error for field={item.i}, key={key}: reference={r}, item={i}"
+            )
 
 
 class VirtualDirectorySource(DirectorySource):
