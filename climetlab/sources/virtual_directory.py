@@ -177,9 +177,8 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
         try:
             value = func(key, item)
         except Exception as e:
-            warnings.warn(f"Exception reading {key}:{str(e)}")
-            if item.DEBUG:
-                exit(-1)
+            LOG.exception(f"Exception reading {key}:{str(e)}")
+            return None
 
         if key not in METADATA_FUNCS:
             warnings.warn(f"Reading from reference (not expected): {k}={func(k)}")

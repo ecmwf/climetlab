@@ -8,6 +8,7 @@
 #
 import logging
 import os
+from climetlab.readers.grib.codes import CodesHandle
 
 from climetlab.utils import progress_bar, tqdm
 
@@ -20,42 +21,27 @@ def _index_grib_file(
 ):
     import eccodes
 
+    # TODO: deduplicate this code
+
     def parse_field(h):
-        field = dict()
+        field = h.as_mars()
 
         field["_path"] = path
+        field["_offset"] = h.get_long("offset")
+        field["_length"] = h.get_long("totalLength")
+        field["_param_id"] = h.get_string("paramId")
+        field["md5_grid_section"] = h.get("md5GridSection")
 
-        i = eccodes.codes_keys_iterator_new(h, "mars")
-        try:
-            while eccodes.codes_keys_iterator_next(i):
-                name = eccodes.codes_keys_iterator_get_name(i)
-                value = eccodes.codes_get_string(h, name)
-                field[name] = value
-
-        finally:
-            eccodes.codes_keys_iterator_delete(i)
-
-        try:
-            # eccodes.codes_get_string(h, "number") returns "0"
-            # when "number" is not in the iterator
-            field["number"] = eccodes.codes_get_string(h, "number")
-        except:  # noqa
-            pass
-
-        field["_offset"] = eccodes.codes_get_long(h, "offset")
-        field["_length"] = eccodes.codes_get_long(h, "totalLength")
-
-        field["_param_id"] = eccodes.codes_get_string(h, "paramId")
-        field["param"] = eccodes.codes_get_string(h, "shortName")
+        # eccodes.codes_get_string(h, "number") returns "0"
+        # when "number" is not in the iterator
+        # remove? field["number"] = h.get("number")
 
         if with_statistics:
-            values = eccodes.codes_get_values(h)
+            values = h.get("values")
             field["mean"] = values.mean()
             field["std"] = values.std()
             field["min"] = values.min()
             field["max"] = values.max()
-
-        field["md5_grid_section"] = eccodes.codes_get(h, "md5GridSection")
 
         return field
 
@@ -67,15 +53,13 @@ def _index_grib_file(
         h = eccodes.codes_grib_new_from_file(f)
 
         while h:
-            try:
-                yield parse_field(h)
-            finally:
-                eccodes.codes_release(h)
+            yield parse_field(CodesHandle(h, path, offset=old_position))
 
             position = f.tell()
             pbar.update(position - old_position)
             old_position = position
             h = eccodes.codes_grib_new_from_file(f)
+
     pbar.close()
 
 
@@ -179,5 +163,6 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
             LOG.error(f"Could not read {path}: {e}")
             return
         except Exception as e:
-            LOG.error(f"Ignoring {path}, {e}")
+            print(f"(grib-parsing) Ignoring {path}, {e}")
+            LOG.exception(f"(grib-parsing) Ignoring {path}, {e}")
             return

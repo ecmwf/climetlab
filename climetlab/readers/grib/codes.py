@@ -113,10 +113,33 @@ class CodesHandle:
             size = eccodes.codes_get_size(self.handle, name)
             # LOG.debug(f"{name}:{size}")
 
-            # Special case because eccodes is returning size > 1 for 'md5GridSection'
-            # (size = 16 : it is the number of bytes of the value)
             if name == "md5GridSection":
-                return eccodes.codes_get_string(self.handle, "md5GridSection")
+
+                # Special case because:
+                #
+                # 1) eccodes is returning size > 1 for 'md5GridSection'
+                # (size = 16 : it is the number of bytes of the value)
+                # This will be fixed in eccodes.
+                #
+                # 2) sometimes (see below), the value for "shapeOfTheEarth" is inconsistent.
+                # This impacts the (computed on-the-fly) value of "md5GridSection".
+                # ----------------
+                # Example of data with inconsistent values:
+                # S2S data, origin='ecmf', param='tp', step='24', number='0', date=['20201203','20200702']
+                # the 'md5GridSection' are different
+                # This is because one has "shapeOfTheEarth" set to 0, the other to 6.
+                # This is only impacting the metadata.
+                # Since this has no impact on the data itself,
+                # this is unlikely to be fixed. Therefore this hacky patch.
+                #
+                # Obviously, the patch causes an inconsistency between the value of md5GridSection 
+                # read by this code, and the value read by another code without this patch.
+
+                save = eccodes.codes_get_long(self.handle, "shapeOfTheEarth")
+                eccodes.codes_set_long(self.handle, "shapeOfTheEarth", 255)
+                result = eccodes.codes_get_string(self.handle, "md5GridSection")
+                eccodes.codes_set_long(self.handle, "shapeOfTheEarth", save)
+                return result
 
             if size and size > 1:
                 return eccodes.codes_get_array(self.handle, name)
