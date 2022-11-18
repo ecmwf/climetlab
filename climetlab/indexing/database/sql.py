@@ -70,7 +70,128 @@ for k in [
     GRIB_INDEX_KEYS_DICT[k.name] = k
     GRIB_INDEX_KEYS.append(k.name)
 STATISTICS_KEYS = ["mean", "std", "min", "max"]
-CFGRIB_KEYS = ["md5_grid_section"]
+
+CFGRIB_KEYS_DICT = {}
+CFGRIB_KEYS = []
+for k in [GribKey("md5_grid_section", str, str, None)]:
+    CFGRIB_KEYS_DICT[k.name] = k
+    CFGRIB_KEYS.append(k.name)
+
+
+def _list_all_tables(connection):
+    statement = "SELECT name FROM sqlite_master WHERE type='table';"
+    cursor = connection.execute(statement)
+    return [r[0] for r in cursor]
+
+
+class CoordTable:
+    def __init__(self, key, connection, create_if_not_exists=False):
+        self.connection = connection
+        self.key = key
+        self.table_name = "coords_" + self.key
+        if create_if_not_exists:
+            self.create_table_if_not_exist()
+        self.dic = self.read_table()
+
+    def create_table_if_not_exist(self):
+        create_statement = f"""CREATE TABLE IF NOT EXISTS {self.table_name} (
+            key   INTEGER PRIMARY KEY,
+            value TEXT
+            );"""
+        LOG.debug("%s", create_statement)
+        self.connection.execute(create_statement)
+        assert self._table_exists()
+
+    def _table_exists(self):
+        return self.table_name in _list_all_tables(self.connection)
+
+    def read_table(self):
+        if not self._table_exists():
+            raise CoordTableDoesNotExist()
+
+        statement = f"SELECT key,value FROM {self.table_name}; "
+        LOG.debug("%s", statement)
+        return {k: v for k, v in self.connection.execute(statement)}
+
+    def append(self, value):
+        value = str(value)
+
+        if value in self.dic.values():
+            return  # already in the table
+
+        self.create_table_if_not_exist()
+
+        statement = f"INSERT INTO {self.table_name} (value) VALUES(?); "
+        LOG.debug("%s", statement)
+        self.connection.execute(statement, [value])
+
+        statement = f"SELECT key FROM {self.table_name} WHERE value='{value}'; "
+        LOG.debug("%s", statement)
+        keys = []
+        for key in self.connection.execute(statement):
+            keys.append(key)
+        assert len(keys) == 1
+        self.dic[key[0]] = value
+
+    def is_empty(self):
+        return len(self.dic) > 0
+
+    def __len__(self):
+        return len(self.dic)
+
+    def items(self):
+        return self.dic.items()
+
+    def keys(self):
+        return self.dic.keys()
+
+    def __str__(self):
+        typ = ""
+        if self.dic:
+            first = self.dic[list(self.dic.keys())[0]]
+            if not isinstance(first, str):
+                typ = f" ({type(first)})"
+        return f"{self.key}{typ}={'/'.join([str(v) for v in self.dic.values()])}"
+
+
+class CoordTableDoesNotExist(Exception):
+    pass
+
+
+class CoordTables:
+    def __init__(self, connection):
+        self.connection = connection
+        self.dic = {}
+
+        for table in _list_all_tables(self.connection):
+            if not table.startswith("coords_"):
+                continue
+            key = table[len("coords_") :]
+            self.dic[key] = CoordTable(key, self.connection)
+
+    def __getitem__(self, key):
+        if key not in self.dic:
+            self.dic[key] = CoordTable(key, self.connection, create_if_not_exists=True)
+        return self.dic[key]
+
+    def update_with_entry(self, entry):
+        for n in GRIB_INDEX_KEYS + ["md5_grid_section"] + ["_path"]:
+            v = entry.get(n)
+            if v is None:
+                continue
+            self[n].append(v)
+
+    def __str__(self):
+        return "Coords:" + "\n".join([str(v) for k, v in self.dic.items()])
+
+    def __len__(self):
+        return len(self.dic)
+
+    def items(self):
+        return self.dic.items()
+
+    def keys(self):
+        return self.dic.keys()
 
 
 class SqlSorter:
@@ -211,6 +332,8 @@ class SqlDatabase(Database):
     def load(self, iterator):
         with self.connection as conn:
 
+            coords_tables = CoordTables(conn)
+
             # The i_ is to avoid clashes with SQL keywords
             i_columns = [f"i_{n}" for n in GRIB_INDEX_KEYS]
             s_columns = [f"s_{n}" for n in STATISTICS_KEYS]
@@ -243,12 +366,14 @@ class SqlDatabase(Database):
             count = 0
             for entry in iterator:
                 assert isinstance(entry, dict), (type(entry), entry)
+                coords_tables.update_with_entry(entry)
                 values = [entry["_path"], entry["_offset"], entry["_length"]] + [
                     entry.get(n)
                     for n in GRIB_INDEX_KEYS + STATISTICS_KEYS + CFGRIB_KEYS
                 ]
                 conn.execute(insert_statement, tuple(values))
                 count += 1
+
 
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
