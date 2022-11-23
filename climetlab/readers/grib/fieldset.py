@@ -53,9 +53,7 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
             if squeeze and len(values) == 1:
                 continue
             if len(values) == 0:
-                # This should never happen
-                warnings.warn(f".coords warning: GRIB key not found {key}")
-                continue
+                raise Exception(f".coords ERROR: GRIB key not found {key}")
             out[key] = values
         return out
 

@@ -132,7 +132,7 @@ class CodesHandle:
                 # Since this has no impact on the data itself,
                 # this is unlikely to be fixed. Therefore this hacky patch.
                 #
-                # Obviously, the patch causes an inconsistency between the value of md5GridSection 
+                # Obviously, the patch causes an inconsistency between the value of md5GridSection
                 # read by this code, and the value read by another code without this patch.
 
                 save = eccodes.codes_get_long(self.handle, "shapeOfTheEarth")

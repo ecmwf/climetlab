@@ -374,7 +374,6 @@ class SqlDatabase(Database):
                 conn.execute(insert_statement, tuple(values))
                 count += 1
 
-
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
 
@@ -476,37 +475,30 @@ class SqlDatabase(Database):
             yield tupl
 
     def _find_coords_keys(self):
-        keys = GRIB_INDEX_KEYS  # default keys ordering
+        prefix = "coords_"
+        keys = []
+        for k in _list_all_tables(self.connection):
+            if not k.startswith(prefix):
+                continue
+            k = k[len(prefix) :]
+            if k not in GRIB_INDEX_KEYS:
+                continue
+            keys.append(k)
+
         for f in self._filters:
-            new = list(f.keys())
-            keys = new + [k for k in keys if k not in new]
+            firsts = list(f.keys())
+            keys = firsts + [k for k in keys if k not in firsts]
         return keys
 
     def _find_coord_values(self, key):
-        def get_order():
-            orders = [f for f in self._filters if isinstance(f, Order)]
-            if not orders:
-                return None
+        coords_tables = CoordTables(self.connection)
+        coord = coords_tables[key]
+        values = list(coord.dic.values())
 
-            order = Order()
-            for other in reversed(orders):
-                order.update(other)
-            return order
+        for f in self._filters:
+            values = f.filter_values(key, values)
 
-        order = get_order()
-
-        order_statement = ""
-        if order:
-            sorter = SqlSorter(order, self.view)
-            order_statement = sorter.order_statement
-            sorter.create_sql_function_if_needed(self.connection)
-
-        statement = f"SELECT DISTINCT i_{key} FROM {self.view} {order_statement};"
-        lst = []
-        for result in self.connection.execute(statement):
-            value = result[0]
-            lst.append(value)
-        return lst
+        return values
 
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"

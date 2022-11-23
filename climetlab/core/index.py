@@ -104,6 +104,12 @@ class Selection(OrderOrSelection):
             return False
         return True
 
+    def filter_values(self, key, values):
+        if key not in self.dic:
+            return values
+        vals = self.dic[key]
+        return [v for v in vals if v in values]
+
 
 class Order(OrderOrSelection):
     def __init__(self, *args, **kwargs):
@@ -223,6 +229,23 @@ class Order(OrderOrSelection):
             assert False, (k, key_types[k], element)
 
         return tuple(ranks)
+
+    def filter_values(self, key, values):
+        # TODO: merge this method with get_element_ranking, refactor with "Sorter" class
+
+        keys, key_types, dict_of_dicts = self.build_rankers()
+        if not key in dict_of_dicts:
+            return values
+        vals = dict_of_dicts[key]
+        if isinstance(vals, dict):
+            sorter = lambda x: vals[x]
+        elif callable(vals):
+            sorter = vals
+        else:
+            assert False, vals
+        return sorted(values, key=sorter)
+
+        assert False, (key, key_types[key], values)
 
 
 class Index(Source):

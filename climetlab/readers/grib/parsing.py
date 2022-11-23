@@ -8,8 +8,8 @@
 #
 import logging
 import os
-from climetlab.readers.grib.codes import CodesHandle
 
+from climetlab.readers.grib.codes import CodesHandle
 from climetlab.utils import progress_bar, tqdm
 
 LOG = logging.getLogger(__name__)

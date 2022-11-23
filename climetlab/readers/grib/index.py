@@ -268,7 +268,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 50_000
-    DB_DICT_CACHE_SIZE = 5_000
+    DB_DICT_CACHE_SIZE = 50_000
 
     def __init__(self, *args, **kwargs):
         """
