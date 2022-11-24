@@ -264,7 +264,7 @@ class Connection(local):
 
 
 class SqlDatabase(Database):
-    VERSION = 3
+    VERSION = 4
     EXTENSION = ".db"
 
     def __init__(
@@ -329,8 +329,35 @@ class SqlDatabase(Database):
             filters=self._filters + [filter],
         )
 
+    @property
+    def _version(self):
+        cursor = self.connection.execute(f"PRAGMA user_version;")
+        for res in cursor:
+            version = res[0]
+            return version if version else None
+        assert False
+
+    def _set_version(self):
+        if self._version is None:
+            self.connection.execute(f"PRAGMA user_version = {self.VERSION};")
+            return
+        self._check_version()
+
+    def _check_version(self):
+        version = self._version
+        if version is None or version == self.VERSION:
+            return
+        raise Exception(
+                (
+                    "Version mismatch: current version for database index"
+                    " is {self.VERSION} and the database already has version"
+                    f" {version}"
+                )
+            )
+
     def load(self, iterator):
         with self.connection as conn:
+            self._set_version()
 
             coords_tables = CoordTables(conn)
 
