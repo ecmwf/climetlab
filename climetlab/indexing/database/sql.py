@@ -11,7 +11,7 @@
 import logging
 import os
 import sqlite3
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from threading import local
 
 import climetlab as cml
@@ -463,7 +463,7 @@ class SqlDatabase(Database):
             dicts.append(dic)
         return dicts
 
-    def _execute_select(self, names, limit, offset):
+    def _execute_select(self, names, limit=None, offset=None):
         names_str = ",".join([x for x in names]) if names else "*"
         limit_str = f" LIMIT {limit}" if limit is not None else ""
         offset_str = f" OFFSET {offset}" if offset is not None else ""
@@ -474,31 +474,51 @@ class SqlDatabase(Database):
         for tupl in self.connection.execute(statement):
             yield tupl
 
-    def _find_coords_keys(self):
-        prefix = "coords_"
-        keys = []
-        for k in _list_all_tables(self.connection):
-            if not k.startswith(prefix):
-                continue
-            k = k[len(prefix) :]
-            if k not in GRIB_INDEX_KEYS:
-                continue
-            keys.append(k)
+    def _find_all_coords_dict(self, squeeze=True):
+        _ = self._find_all_coords_dict_from_coords_tables()
+        if _ is not None:
+            return _
+
+        values = defaultdict(set)
+        i_names = self._columns_names("i", remove_prefix=False)
+        names = self._columns_names("i", remove_prefix=True)
+        for tupl in self._execute_select(i_names):
+            for k, v in zip(names, tupl):
+                values[k].add(v)
+
+        if squeeze:
+            values = {k: v for k, v in values.items() if len(v) > 1}
+
+        return {k: list(v) for k, v in values.items()}
+
+    def _find_coord_values(self, key):
+        return self._find_all_coords_dict(squeeze=False)[key]
+
+    def _find_all_coords_dict_from_coords_tables(self):
+        for f in self._filters:
+            if not isinstance(f, Order):
+                # if there is a Selection filter, it may remove some keys
+                # by selecting values on some other keys.
+                # In such case, we cannot rely on the coords tables created
+                # for the whole dataset.
+                # For instance doing .sel(param='2t') will remove some keys
+                # for step that had been inserted by param='tp'.
+                return None
+
+        coords_tables = CoordTables(self.connection)
+        keys = list(coords_tables.keys())
+        keys = [k for k in keys if k in GRIB_INDEX_KEYS]
 
         for f in self._filters:
             firsts = list(f.keys())
             keys = firsts + [k for k in keys if k not in firsts]
-        return keys
 
-    def _find_coord_values(self, key):
-        coords_tables = CoordTables(self.connection)
-        coord = coords_tables[key]
-        values = list(coord.dic.values())
+        coords = {k: coords_tables[k].dic.values() for k in keys}
 
         for f in self._filters:
-            values = f.filter_values(key, values)
+            coords = {k: f.filter_values(k, v) for k, v in coords.items()}
 
-        return values
+        return coords
 
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"
