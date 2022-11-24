@@ -9,7 +9,6 @@
 import logging
 import os
 
-from climetlab.readers.grib.codes import CodesHandle
 from climetlab.utils import progress_bar, tqdm
 
 LOG = logging.getLogger(__name__)
@@ -20,8 +19,7 @@ def _index_grib_file(
     with_statistics=False,
 ):
     import eccodes
-
-    # TODO: deduplicate this code
+    from climetlab.readers.grib.codes import CodesHandle
 
     def parse_field(h):
         field = h.as_mars()
