@@ -475,9 +475,12 @@ class SqlDatabase(Database):
             yield tupl
 
     def _find_all_coords_dict(self, squeeze=True):
+
+        # start-of: This is just an optimisation for speed.
         _ = self._find_all_coords_dict_from_coords_tables()
         if _ is not None:
             return _
+        # end-of: This is just an optimisation for speed.
 
         values = defaultdict(set)
         i_names = self._columns_names("i", remove_prefix=False)
