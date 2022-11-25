@@ -525,14 +525,16 @@ class SqlDatabase(Database):
             return self._find_all_coords_dict_from_coords_tables()
         # end-of: This is just an optimisation for speed.
 
-        values = defaultdict(set)
+        values = defaultdict(list)
         i_names = self._columns_names("i", remove_prefix=False)
         names = self._columns_names("i", remove_prefix=True)
         for tupl in self._execute_select(i_names):
             for k, v in zip(names, tupl):
-                values[k].add(v)
+                if v in values[k]:
+                    continue
+                values[k].append(v)
 
-        return {k: list(v) for k, v in values.items()}
+        return values
 
     def _find_all_coords_dict_from_coords_tables(self):
 
