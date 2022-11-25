@@ -9,6 +9,7 @@
 
 
 import logging
+import math
 import os
 import sqlite3
 from collections import defaultdict, namedtuple
@@ -348,12 +349,22 @@ class SqlDatabase(Database):
         if version is None or version == self.VERSION:
             return
         raise Exception(
-                (
-                    "Version mismatch: current version for database index"
-                    " is {self.VERSION} and the database already has version"
-                    f" {version}"
-                )
+            (
+                "Version mismatch: current version for database index"
+                " is {self.VERSION} and the database already has version"
+                f" {version}"
             )
+        )
+
+    def is_full_hypercube(self):
+        self.availability  # build self._availability
+        non_empty_coords = {
+            k: v
+            for k, v in self._availability._tree.unique_values().items()
+            if len(v) > 1
+        }
+        expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
+        return len(self) == expected_size
 
     def load(self, iterator):
         with self.connection as conn:
@@ -501,12 +512,17 @@ class SqlDatabase(Database):
         for tupl in self.connection.execute(statement):
             yield tupl
 
-    def _find_all_coords_dict(self, squeeze=True):
+    def _find_all_coords_dict(self):
 
         # start-of: This is just an optimisation for speed.
-        _ = self._find_all_coords_dict_from_coords_tables()
-        if _ is not None:
-            return _
+        if all([isinstance(f, Order) for f in self._filters]):
+            # if there is a Selection filter, it may remove some keys
+            # by selecting values on some other keys.
+            # In such case, we cannot rely on the coords tables created
+            # for the whole dataset.
+            # For instance doing .sel(param='2t') will remove some keys
+            # for step that had been inserted by param='tp'.
+            return self._find_all_coords_dict_from_coords_tables()
         # end-of: This is just an optimisation for speed.
 
         values = defaultdict(set)
@@ -516,24 +532,9 @@ class SqlDatabase(Database):
             for k, v in zip(names, tupl):
                 values[k].add(v)
 
-        if squeeze:
-            values = {k: v for k, v in values.items() if len(v) > 1}
-
         return {k: list(v) for k, v in values.items()}
 
-    def _find_coord_values(self, key):
-        return self._find_all_coords_dict(squeeze=False)[key]
-
     def _find_all_coords_dict_from_coords_tables(self):
-        for f in self._filters:
-            if not isinstance(f, Order):
-                # if there is a Selection filter, it may remove some keys
-                # by selecting values on some other keys.
-                # In such case, we cannot rely on the coords tables created
-                # for the whole dataset.
-                # For instance doing .sel(param='2t') will remove some keys
-                # for step that had been inserted by param='tp'.
-                return None
 
         coords_tables = CoordTables(self.connection)
         keys = list(coords_tables.keys())

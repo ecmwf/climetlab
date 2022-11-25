@@ -285,14 +285,8 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             obj = obj.filter(f)
         return obj
 
-    def _find_all_coords_dict(self, squeeze):
-        return self.db._find_all_coords_dict(squeeze)
-
-    #def _find_coords_keys(self):
-    #    return self.db._find_coords_keys()
-
-    def _find_coord_values(self, key):
-        return self.db._find_coord_values(key)
+    def _find_all_coords_dict(self):
+        return self.db._find_all_coords_dict()
 
     def filter(self, filter):
         if filter.is_empty:

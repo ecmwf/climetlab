@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+from collections import defaultdict
 import json
 import logging
 import warnings
@@ -26,40 +27,29 @@ LOG = logging.getLogger(__name__)
 class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
     _statistics = None
 
-    def _find_coord_values(self, key):
-        values = []
-        for i in self:
-            v = i.metadata(key)
-            if v not in values:
-                values.append(v)
-        return tuple(values)
-
-    def coord(self, key):
-        if key in self._coords:
-            return self._coords[key]
-
-        self._coords[key] = self._find_coord_values(key)
-        return self.coord(key)
-
-    def _find_coords_keys(self):
+    def _find_all_coords_dict(self):
         from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
 
-        return GRIB_INDEX_KEYS
+        coords = defaultdict(set)
+        for f in self:
+            for k in GRIB_INDEX_KEYS:
+                v = f.metadata(k)
+                if v is None:
+                    continue
+                coords[k].add(v)
 
-    def _find_all_coords_dict(self, squeeze):
-        out = {}
-        for key in self._find_coords_keys():
-            values = self.coord(key)
-            if squeeze and len(values) == 1:
-                continue
-            if len(values) == 0:
-                raise Exception(f".coords ERROR: GRIB key not found {key}")
-            out[key] = values
-        return out
+        return {k: list(v) for k, v in coords.items()}
+
+    @property
+    def all_coords(self):
+        if not self._coords:
+            self._coords = self._find_all_coords_dict()
+        return self._coords
 
     @property
     def coords(self):
-        return self._find_all_coords_dict(squeeze=True)
+        # squeeze coords with only 1 value.
+        return {k: v for k, v in self.all_coords.items() if len(v) > 1}
 
     @property
     def first(self):

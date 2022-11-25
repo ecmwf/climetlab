@@ -112,6 +112,10 @@ class Dataset(Base):
     def coords(self):
         return self.source.coords
 
+    @property
+    def all_coords(self):
+        return self.source.all_coords
+
     def to_numpy(self, **kwargs):
         import numpy as np
 
