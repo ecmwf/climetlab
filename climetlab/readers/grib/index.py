@@ -267,8 +267,8 @@ SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
-    DB_CACHE_SIZE = 50_000
-    DB_DICT_CACHE_SIZE = 50_000
+    DB_CACHE_SIZE = 100_000
+    DB_DICT_CACHE_SIZE = 100_000
 
     def __init__(self, *args, **kwargs):
         """

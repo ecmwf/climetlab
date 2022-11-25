@@ -66,9 +66,14 @@ for k in REMOVE:
 for k in USE_REFERENCE:
     METADATA_FUNCS[k] = lambda x, item: item.owner.from_reference(x, item)
 
+def cast_or_none(typ, x):
+    if x is None:
+        return None
+    return typ(x)
+
 METADATA_FUNCS["param"] = lambda x, item: item.item_metadata["param"]
 METADATA_FUNCS["shortName"] = lambda x, item: item.item_metadata["param"]
-METADATA_FUNCS["number"] = lambda x, item: int(item.item_metadata["number"])
+METADATA_FUNCS["number"] = lambda x, item: cast_or_none(int,item.item_metadata["number"])
 METADATA_FUNCS["level:float"] = lambda x, item: float(item.item_metadata["levelist"])
 METADATA_FUNCS["level"] = lambda x, item: int(item.item_metadata["levelist"])
 METADATA_FUNCS["dataDate"] = lambda x, item: int(item.item_metadata["date"])
