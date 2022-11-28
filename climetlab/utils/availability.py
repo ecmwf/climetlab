@@ -84,18 +84,18 @@ class Availability:
 
         requests = []
         stack = []
-        last = 0
+        last = -1
         for line in input:
             line = line.rstrip()
             cnt = 0
             while len(line) > 0 and line[0] == " ":
                 line = line[1:]
                 cnt += 1
-            if cnt <= last and stack:
+            if cnt <= last:
                 requests.append(as_dict(",".join(stack)))
-            while len(stack) <= cnt:
-                stack.append(None)
-            stack[cnt] = line
+            while len(stack) > cnt:
+                stack.pop()
+            stack.append(line)
             last = cnt
 
         if stack:
