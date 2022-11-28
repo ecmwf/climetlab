@@ -268,7 +268,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 100_000
-    DB_DICT_CACHE_SIZE = 100_000
+    DB_DICT_CACHE_SIZE = 50_000
 
     def __init__(self, *args, **kwargs):
         """
@@ -301,12 +301,11 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     def order_by(self, *args, **kwargs):
         return self.filter(Order(*args, **kwargs))
 
-
     def part(self, n):
         if self._cache is None or not (
             self._cache.first <= n < self._cache.first + self._cache.length
         ):
-            first = n // self.DB_CACHE_SIZE
+            first = (n // self.DB_CACHE_SIZE) * self.DB_CACHE_SIZE
             result = self.db.lookup_parts(limit=self.DB_CACHE_SIZE, offset=first)
             self._cache = SqlResultCache(first, len(result), result)
         return self._cache.result[n % self.DB_CACHE_SIZE]
@@ -317,7 +316,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             <= n
             < self._dict_cache.first + self._dict_cache.length
         ):
-            first = n // self.DB_DICT_CACHE_SIZE
+            first = (n // self.DB_DICT_CACHE_SIZE) * self.DB_DICT_CACHE_SIZE
             result = self.db.lookup_dicts(
                 limit=self.DB_DICT_CACHE_SIZE, offset=first, keys=["i", "c"]
             )
