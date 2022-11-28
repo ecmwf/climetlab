@@ -402,6 +402,55 @@ class Tree:
     def factorise(self):
         return _factorise(list(self._flatten_tree()), intervals=self._intervals)
 
+    def as_mars(self, verb='retrieve', extra=None):
+        result = []
+        for r in self.flatten():
+            req = [verb]
+            if extra is not None:
+                req.append(extra)
+            for k,v in r.items():
+                req.append(f"{k}={'/'.join(v)}")
+            result.append(','.join(req))
+        return "\n".join(result)
+
+    def as_mars_list(self):
+
+        text = []
+        indent = {}
+        order = {}
+
+        def V(request, depth):
+            if not request:
+                return
+
+            if depth not in indent:
+                indent[depth] = len(indent)
+
+            text.append(" " * indent[depth])
+
+            for k in sorted(request.keys()):
+                if k not in order:
+                    order[k] = len(order)
+
+            sep = ""
+            for k, v in sorted(request.items(), key=lambda x: order[x[0]]):
+                text.append(sep)
+                text.append(k)
+                text.append("=")
+
+                if isinstance(v[0], Interval):
+                    v = [str(x) for x in v]
+
+                if len(v) == 1:
+                    text.append(v[0])
+                else:
+                    text.append("/".join(sorted(str(x) for x in v)))
+                sep = ","
+            text.append("\n")
+
+        self.visit(V)
+
+        return "".join(str(x) for x in text)
     def tree(self):
 
         text = []

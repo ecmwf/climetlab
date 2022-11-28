@@ -52,16 +52,17 @@ class FieldSet(FieldSetMixin, Index):
 
     @property
     def availability(self):
-        raise NotImplementedError()
         if self._availability is not None:
-            return self._availability.tree()
+            return self._availability
         LOG.debug("Building availability")
 
         def dicts():
-            for i in self:
-                dic = i.to_dict()  # GribField.to_dict() is not implemented
-                i = {k: v for k, v in dic.items() if not k.startswith("_")}
-                yield i
+            for i in progress_bar(
+                iterable=range(len(self)), desc="building availability"
+            ):
+                dic = self.get_metadata(i)
+                dic = {k: v for k, v in dic.items() if v is not None}
+                yield dic
 
         from climetlab.utils.availability import Availability
 
@@ -224,27 +225,6 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
     def from_existing_db(cls, db_path, **kwargs):
         assert os.path.exists(db_path)
         return cls(cls.DBCLASS(db_path), **kwargs)
-
-    @property
-    def availability(self):
-        if self._availability is not None:
-            return self._availability.tree()
-
-        LOG.debug("Building availability")
-
-        def dicts():
-            for i in self.db.lookup_dicts(keys="i"):
-                dic = {}
-                for k, v in i.items():
-                    if k.startswith("i_"):
-                        k = k[2:]
-                    dic[k] = v
-                yield dic
-
-        from climetlab.utils.availability import Availability
-
-        self._availability = Availability(dicts())
-        return self.availability
 
 
 class FieldsetInFilesWithJsonIndex(FieldsetInFilesWithDBIndex):
