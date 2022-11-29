@@ -234,11 +234,11 @@ class Order(OrderOrSelection):
         # TODO: merge this method with get_element_ranking, refactor with "Sorter" class
 
         keys, key_types, dict_of_dicts = self.build_rankers()
-        if not key in dict_of_dicts:
+        if key not in dict_of_dicts:
             return values
         vals = dict_of_dicts[key]
         if isinstance(vals, dict):
-            sorter = lambda x: vals[x]
+            sorter = lambda x: vals[x]  # noqa
         elif callable(vals):
             sorter = vals
         else:

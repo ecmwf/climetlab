@@ -7,10 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from collections import defaultdict
 import json
 import logging
-import warnings
+from collections import defaultdict
 
 from climetlab.core.caching import auxiliary_cache_file
 from climetlab.core.index import ScaledIndex

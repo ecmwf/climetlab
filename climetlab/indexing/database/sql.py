@@ -332,7 +332,7 @@ class SqlDatabase(Database):
 
     @property
     def _version(self):
-        cursor = self.connection.execute(f"PRAGMA user_version;")
+        cursor = self.connection.execute("PRAGMA user_version;")
         for res in cursor:
             version = res[0]
             return version if version else None

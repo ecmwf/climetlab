@@ -19,6 +19,7 @@ def _index_grib_file(
     with_statistics=False,
 ):
     import eccodes
+
     from climetlab.readers.grib.codes import CodesHandle
 
     def parse_field(h):

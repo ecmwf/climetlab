@@ -67,13 +67,14 @@ for k in USE_REFERENCE:
     METADATA_FUNCS[k] = lambda x, item: item.owner.from_reference(x, item)
 
 
-def cast_or_none(typ,key):
+def cast_or_none(typ, key):
     def f(x, item):
         value = item.item_metadata[key]
         if value is None:
             return None
         value = typ(value)
         return value
+
     return f
 
 
@@ -198,7 +199,7 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
             if key not in REMOVE:
                 self._check_with_real_item(key, item, value)
             else:
-                assert value == None, (key, value)
+                assert value is None, (key, value)
 
         return value
 

@@ -402,15 +402,15 @@ class Tree:
     def factorise(self):
         return _factorise(list(self._flatten_tree()), intervals=self._intervals)
 
-    def as_mars(self, verb='retrieve', extra=None):
+    def as_mars(self, verb="retrieve", extra=None):
         result = []
         for r in self.flatten():
             req = [verb]
             if extra is not None:
                 req.append(extra)
-            for k,v in r.items():
+            for k, v in r.items():
                 req.append(f"{k}={'/'.join(v)}")
-            result.append(','.join(req))
+            result.append(",".join(req))
         return "\n".join(result)
 
     def as_mars_list(self):
@@ -451,6 +451,7 @@ class Tree:
         self.visit(V)
 
         return "".join(str(x) for x in text)
+
     def tree(self):
 
         text = []
