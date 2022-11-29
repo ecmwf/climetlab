@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -47,10 +46,10 @@ class BenchmarkIO:
         self.SIZE = SIZE
 
     def chunksize_str_hook(self):
-        return ''
+        return ""
 
     def go(self):
-        msg = f"{bytes(self.SIZE)} by chunks of {bytes(self.chunksize)} with seeks of {bytes(self.seek)} (i.e. {self.seek/self.chunksize} passes)"
+        msg = f"{bytes(self.SIZE)} by chunks of {bytes(self.chunksize)} with seeks of {bytes(self.seek)} (i.e. {self.seek/self.chunksize} passes)"  # noqa
 
         with open(self.filename, self.MODE) as f:
             for i, offset in enumerate(
@@ -80,19 +79,22 @@ class BenchmarkIO:
     def write_log(self):
         logdir = self.LOGDIR
         os.makedirs(logdir, exist_ok=True)
-        with open(f"{logdir}/{self.prefix}io.{self.seek}.{self.chunksize}.csv", "a") as f:
+        with open(
+            f"{logdir}/{self.prefix}io.{self.seek}.{self.chunksize}.csv", "a"
+        ) as f:
             print(f"{self.seek}, {self.chunksize}, {self.tic.total}", file=f)
 
 
 class BenchmarkWrite(BenchmarkIO):
     MODE = "wb"
     prefix = ""
-    VERB = 'Wrote'
+    VERB = "Wrote"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         import numpy as np
+
         self.data = np.random.randn(self.chunksize // 4).astype(np.float32).tobytes()
 
     def process(self, f):
@@ -103,25 +105,28 @@ class BenchmarkWrite(BenchmarkIO):
 class BenchmarkRead(BenchmarkIO):
     prefix = "read"
     MODE = "rb"
-    VERB = 'Read'
+    VERB = "Read"
 
     def process(self, f):
         f.read(self.chunksize)
 
+
 class BenchmarkReadanddrop(BenchmarkIO):
     prefix = "readanddrop"
     MODE = "rb"
-    VERB = 'Readanddrop'
+    VERB = "Readanddrop"
 
     def process(self, f):
-        data = f.read(self.seek)
+        data = f.read(self.seek)  # noqa
         # Read the whole see and drop what is useless
         # data = data[self.offset:(self.offset+self.chunksize)]
 
+
 class BenchmarkReadnTimes(BenchmarkIO):
     MODE = "rb"
-    VERB = 'Readntimes'
-    def __init__(self,*args, times, **kwargs):
+    VERB = "Readntimes"
+
+    def __init__(self, *args, times, **kwargs):
         self.times = times
         super().__init__(*args, **kwargs)
 
@@ -130,12 +135,13 @@ class BenchmarkReadnTimes(BenchmarkIO):
         return f"read{self.times}times"
 
     def chunksize_str_hook(self):
-        return  '*' + str(self.times)
+        return "*" + str(self.times)
 
     def process(self, f):
-        data = f.read(self.chunksize * self.times)
+        data = f.read(self.chunksize * self.times)  # noqa
         # Read "self.times" more than what is usefull drop what is useless
         # data = data[:self.chunksize]
+
 
 cls = BenchmarkWrite
 options = {}
@@ -148,7 +154,7 @@ if len(sys.argv) > 3:
         write=BenchmarkWrite,
     )[task]
 if len(sys.argv) > 4:
-    options['times'] = int(sys.argv[4])
+    options["times"] = int(sys.argv[4])
 
 seek = unbytes(sys.argv[2])
 chunksize = unbytes(sys.argv[3])
@@ -159,4 +165,3 @@ filename = "binfile"
 SIZE = 100 * 1024 * 1024 * 1024
 bk = cls(filename, seek, chunksize, SIZE, **options)
 bk.go()
-
