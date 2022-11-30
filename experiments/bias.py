@@ -1,3 +1,4 @@
+# flake8: noqa
 a = 0
 print("loading cml")
 import climetlab as cml

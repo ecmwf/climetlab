@@ -1,3 +1,4 @@
+# flake8: noqa
 #
 # ret,param=t,grid=1/1,date=-2,target=data.grib,
 # stream=enfo,number=1/to/50,type=pf

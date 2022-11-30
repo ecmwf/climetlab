@@ -1,3 +1,4 @@
+# flake8: noqa
 from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
 from tensorflow.keras.models import Sequential
 
