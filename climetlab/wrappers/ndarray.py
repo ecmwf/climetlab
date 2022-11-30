@@ -37,7 +37,10 @@ class NumpyArrayWrapper(Wrapper):
         )
 
     def to_datetime_list(self):
-        return [datetime.datetime.fromtimestamp(x * 1e-9) for x in self.data.tolist()]
+        return [
+            datetime.datetime.fromtimestamp(x * 1e-9, tz=datetime.timezone.utc)
+            for x in self.data.tolist()
+        ]
 
 
 def wrapper(data, *args, **kwargs):
