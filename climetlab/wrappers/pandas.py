@@ -18,6 +18,15 @@ LATLON = (
 )
 
 
+class PandasSeriesWrapper(Wrapper):
+    def __init__(self, series, **kwargs):
+
+        self.series = series
+
+    def to_datetime_list(self):
+        return sorted(set(self.series.values))
+
+
 class PandasFrameWrapper(Wrapper):
     def __init__(self, frame, **kwargs):
 
@@ -98,5 +107,8 @@ def wrapper(data, *args, **kwargs):
 
     if isinstance(data, pd.DataFrame):
         return PandasFrameWrapper(data, *args, **kwargs)
+
+    if isinstance(data, pd.Series):
+        return PandasSeriesWrapper(data, *args, **kwargs)
 
     return None
