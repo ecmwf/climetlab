@@ -181,7 +181,7 @@ class GribCmd:
         from climetlab.indexing.database.sql import SqlDatabase
 
         db = SqlDatabase(db_path=args.filename)
-        for d in db.dump_dicts():
+        for d in db.lookup_dicts():
             print(json.dumps(d))
 
 

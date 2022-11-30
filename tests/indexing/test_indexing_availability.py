@@ -28,10 +28,7 @@ def _test_directory_source_availability():
         time="1200",
     )
 
-    def f():
-        for i in ds.index.db.dump_dicts():
-            i = {k: v for k, v in i.items() if not k.startswith("_")}
-            yield i
+    # for i in ds.index.db.dump_dicts():
 
     print(len(ds))
     print(ds.availability)

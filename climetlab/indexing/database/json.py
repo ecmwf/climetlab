@@ -45,3 +45,6 @@ class JsonDatabase(Database):
         for e in self.entries:
             parts.append(Part(e["_path"], e["_offset"], e["_length"]))
         return Part.resolve(parts, os.path.dirname(self.db_path))
+
+    def lookup_dicts(self):
+        return self.entries

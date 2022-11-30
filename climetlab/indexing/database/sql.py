@@ -475,31 +475,44 @@ class SqlDatabase(Database):
             parts = Part.resolve(parts, os.path.dirname(self.db_path))
         return parts
 
-    def lookup_dicts(self, keys=None, limit=None, offset=None):
+    def lookup_dicts(
+        self,
+        keys=None,
+        limit=None,
+        offset=None,
+        remove_none=True,
+        with_parts=None,
+    ):
         """
         From a list of keys, return dicts with these columns of the database.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """
+        if keys is None:
+            keys = ["i", "s", "c"]
+            if with_parts is None:
+                with_parts = True
+
         if not isinstance(keys, (list, tuple)):
             keys = [keys]
 
         _names = []
+        x_names = []
+
+        if with_parts:
+            _names += ["path", "offset", "length"]
+            x_names += ["_path", "_offset", "_length"]
+
         for k in keys:
             assert k in ["i", "s", "c"], k
             _names += self._columns_names(k, remove_prefix=False)
+            x_names += self._columns_names(k, remove_prefix=True)
 
-        def remove_prefix(k):
-            for prefix in ["i", "s", "c"]:
-                if k.startswith(prefix + "_"):
-                    return k[2:]
-            return k
-
-        dicts = []
         for tupl in self._execute_select(_names, limit, offset):
-            dic = {remove_prefix(k): v for k, v in zip(_names, tupl)}
-            dicts.append(dic)
-        return dicts
+            dic = {k: v for k, v in zip(x_names, tupl)}
+            if remove_none:
+                dic = {k: v for k, v in dic.items() if v is not None}
+            yield dic
 
     def _execute_select(self, names, limit=None, offset=None):
         names_str = ",".join([x for x in names]) if names else "*"
@@ -559,28 +572,8 @@ class SqlDatabase(Database):
             return result[0]
         assert False, statement  # Fail if result is empty.
 
-    def _dump_dicts(self):
-        # TODO: duplicated code here and in lookup_dict
-        names, x_names = [], []
-
-        names += ["_path", "_offset", "_length"]
-        x_names += ["path", "offset", "length"]
-
-        for prefix in ["i", "s", "c"]:
-            names += self._columns_names(prefix, remove_prefix=True)
-            x_names += self._columns_names(prefix, remove_prefix=False)
-
-        s = ",".join(x_names)
-        statement = f"SELECT {s} FROM entries ;"
-        for tupl in self.connection.execute(statement):
-            yield {k: v for k, v in zip(names, tupl)}
-
-    def dump_dicts(self, remove_none=True):
-        for dic in self._dump_dicts():
-            if remove_none:
-                dic = {k: v for k, v in dic.items() if v is not None}
-            yield dic
-
     def duplicate_db(self, filename, **kwargs):
-        new = SqlDatabase(db_path=filename)
-        new.load(self.dump_dicts(**kwargs))
+        new_db = SqlDatabase(db_path=filename)
+        iterator = self.lookup_dicts()
+        new_db.load(iterator)
+        return new_db

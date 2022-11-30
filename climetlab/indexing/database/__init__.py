@@ -16,7 +16,7 @@ class Database:
     def lookup_parts(self):
         raise NotImplementedError("")
 
-    def lookup_dicts(self):
+    def lookup_dicts(self, *args, **kwargs):
         raise NotImplementedError("")
 
     def count(self, request):

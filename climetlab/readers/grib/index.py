@@ -298,8 +298,12 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         ):
             first = (n // self.DB_DICT_CACHE_SIZE) * self.DB_DICT_CACHE_SIZE
             result = self.db.lookup_dicts(
-                limit=self.DB_DICT_CACHE_SIZE, offset=first, keys=["i", "c"]
+                limit=self.DB_DICT_CACHE_SIZE,
+                offset=first,
+                keys=["i", "c"]
+                # remove_none=False ?
             )
+            result = list(result)
 
             self._dict_cache = SqlResultCache(first, len(result), result)
         return self._dict_cache.result[n % self.DB_DICT_CACHE_SIZE]
