@@ -116,6 +116,42 @@ def test_pandas_dates():
     ]
 
 
+def test_pandas_dates_2():
+    import pandas as pd
+
+    d = pd.Series(
+        [
+            pd.Timestamp(datetime.datetime(2020, 1, 2, 0, 0)),
+            pd.Timestamp(datetime.datetime(2020, 1, 9, 0, 0)),
+        ]
+    )
+
+    assert to_datetime_list(d) == [
+        datetime.datetime(2020, 1, 2),
+        datetime.datetime(2020, 1, 9),
+    ]
+
+
+def test_zarr_dates():
+    S3_URL = (
+        "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
+    )
+    source = load_source(
+        "zarr-s3",
+        [
+            f"{S3_URL}/zarr/mini-rt-20200109.zarr",
+            f"{S3_URL}/zarr/mini-rt-20200102.zarr",
+        ],
+    )
+
+    print(to_datetime_list(source.to_xarray().forecast_time))
+
+    assert to_datetime_list(source.to_xarray().forecast_time) == [
+        datetime.datetime(2020, 1, 2, tzinfo=datetime.timezone.utc),
+        datetime.datetime(2020, 1, 9, tzinfo=datetime.timezone.utc),
+    ]
+
+
 if __name__ == "__main__":
     from climetlab.testing import main
 
