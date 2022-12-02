@@ -39,7 +39,11 @@ class StandaloneMarsClient:
                 f.write(req_str + "\n")
             LOG.debug(f"Sending Mars request: '{req_str}'")
 
-            subprocess.run([self.EXE, filename], check=True)
+            subprocess.run(
+                [self.EXE, filename],
+                env=dict(os.environ, MARS_AUTO_SPLIT_BY_DATES="1"),
+                check=True,
+            )
 
 
 class MARSRetriever(ECMWFApi):
