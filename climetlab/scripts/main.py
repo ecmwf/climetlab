@@ -18,12 +18,12 @@ from importlib import import_module
 import entrypoints
 from termcolor import colored
 
+from .availability import AvailabilityCmd
 from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
-from .availability import AvailabilityCmd
 from .settings import SettingsCmd
 
 LOG = logging.getLogger(__name__)

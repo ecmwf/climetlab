@@ -13,6 +13,7 @@ import io
 import itertools
 import json
 import os
+import pickle
 
 import yaml
 
@@ -47,29 +48,44 @@ def load_yaml(avail):
         return yaml.load(f, Loader=yaml.SafeLoader)
 
 
-CONFIG_LOADERS = {
-    ".json": load_json,
-    ".yaml": load_yaml,
-}
-
-
 class Availability:
     def __init__(self, avail, intervals=None, parser=None):
+        CONFIG_LOADERS = {
+            "json": load_json,
+            "yaml": load_yaml,
+            # "marslist": Availability.from_mars_list,
+            "pickle": Availability.from_pickle,
+        }
         if not isinstance(avail, Tree):
             if isinstance(avail, str):
                 config_loader = load_json
                 if len(avail) > 5:
-                    config_loader = CONFIG_LOADERS.get(avail[-5:], load_str)
+                    ext = avail[-10:].split(".")[-1]
+                    config_loader = CONFIG_LOADERS.get(ext, load_str)
                     avail = config_loader(avail)
 
             if parser is not None:
                 avail = [parser(item) for item in avail]
 
-            avail = factorise(avail, intervals=intervals)
+            if isinstance(avail, Availability):
+                avail = avail._tree
+
+            if not isinstance(avail, Tree):
+                avail = factorise(avail, intervals=intervals)
         self._tree = avail
 
     def as_mars_list(self):
         return self._tree.as_mars_list()
+
+    def to_pickle(self, filename):
+        with open(filename, "wb") as f:
+            pickle.dump(self._tree, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        with open(filename, "rb") as f:
+            tree = pickle.load(f)
+            return cls(tree)
 
     @classmethod
     def from_mars_list(cls, tree, intervals=None):

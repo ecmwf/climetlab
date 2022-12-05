@@ -7,12 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
-import json
 import logging
 import os
 
-from climetlab.utils.humanize import plural, seconds
 import climetlab as cml
 
 from .tools import parse_args
@@ -44,26 +41,20 @@ class AvailabilityCmd:
 
         if os.path.isdir(path):
             source = availability_of_directory(path)
-            output = source.availability_path
         else:
             source = availability_of_file(path)
-            output = os.path.join(path, ".availability.jsonl")
 
-        self.write(source.availability, output)
+        self.write(source.availability, source.availability_path)
 
     def write(self, avail, output):
-        def output_path(path):
-            if not os.path.exists(output):
-                return output
+        if os.path.exists(output):
             i = 1
             while os.path.exists(f"{output}.{i}"):
                 i += 1
-            print(f"File already exists, writing to {output}.{i}")
-            return f"{output}.{i}"
+            output = f"{output}.{i}"
+            print(f"File already exists, writing to {output}")
 
-        output = output_path(output)
-        with open(output, "w") as f:
-            f.write(avail.as_mars_list())
+        avail.to_pickle(output)
 
 
 def availability_of_directory(dirpath):

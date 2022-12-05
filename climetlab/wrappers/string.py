@@ -56,7 +56,9 @@ class StrWrapper(Wrapper):
             y = first_day.year
             m = first_day.month
             n_days = calendar.monthrange(y, m)[1]
-            return mars_like_date_list(parse_date(f"{y}-{m:02}-01"),parse_date(f"{y}-{m:02}-{n_days}"),1)
+            return mars_like_date_list(
+                parse_date(f"{y}-{m:02}-01"), parse_date(f"{y}-{m:02}-{n_days}"), 1
+            )
 
         # MARS style lists
         bits = self.data.split("/")

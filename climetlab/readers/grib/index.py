@@ -33,6 +33,7 @@ from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
+from climetlab.utils.availability import Availability
 from climetlab.utils.parts import Part
 from climetlab.utils.serialise import register_serialisation
 
@@ -43,12 +44,18 @@ class FieldSet(FieldSetMixin, Index):
     _availability = None
 
     def __init__(self, *args, **kwargs):
+        if os.path.exists(self.availability_path):
+            self._availability = Availability(self.availability_path)
 
         Index.__init__(self, *args, **kwargs)
 
     @classmethod
     def new_mask_index(self, *args, **kwargs):
         return MaskFieldSet(*args, **kwargs)
+
+    @property
+    def availability_path(self):
+        return None
 
     @property
     def availability(self):
@@ -102,8 +109,6 @@ class FieldSetInFiles(FieldSet):
 
 
 class FieldsetInFilesWithDBIndex(FieldSetInFiles):
-    DEFAULT_AVAILABILITY_FILE = "availability.jsonl"
-
     def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -121,7 +126,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
     @property
     def availability_path(self):
         dirpath = os.path.dirname(self.db.db_path)
-        return os.path.join(dirpath, self.DEFAULT_AVAILABILITY_FILE)
+        return os.path.join(dirpath, "availability.pickle")
 
     @classmethod
     def from_iterator(
@@ -331,6 +336,10 @@ register_serialisation(
 
 class FieldSetInOneFile(FieldSetInFiles):
     VERSION = 1
+
+    @property
+    def availability_path(self):
+        return os.path.join(self.path, ".availability.pickle")
 
     def __init__(self, path, **kwargs):
         assert isinstance(path, str), path
