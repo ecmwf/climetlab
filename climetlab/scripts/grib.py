@@ -178,9 +178,14 @@ class GribCmd:
         filename=(None, dict(help="Database filename.")),
     )
     def do_dump_index(self, args):
+        db_path = args.filename
+
+        if os.path.isdir(db_path):
+            db_path = os.path.join(db_path, "climetlab.db")
+
         from climetlab.indexing.database.sql import SqlDatabase
 
-        db = SqlDatabase(db_path=args.filename)
+        db = SqlDatabase(db_path=db_path)
         for d in db.lookup_dicts():
             print(json.dumps(d))
 

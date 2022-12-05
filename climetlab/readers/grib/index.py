@@ -102,6 +102,8 @@ class FieldSetInFiles(FieldSet):
 
 
 class FieldsetInFilesWithDBIndex(FieldSetInFiles):
+    DEFAULT_AVAILABILITY_FILE = "availability.jsonl"
+
     def __init__(self, db, **kwargs):
         """Should not be instanciated directly.
         The public API are the constructors "_from*()" class methods.
@@ -115,6 +117,11 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         self._dict_cache = None
 
         super().__init__(**kwargs)
+
+    @property
+    def availability_path(self):
+        dirpath = os.path.dirname(self.db.db_path)
+        return os.path.join(dirpath, self.DEFAULT_AVAILABILITY_FILE)
 
     @classmethod
     def from_iterator(
