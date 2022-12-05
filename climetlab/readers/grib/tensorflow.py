@@ -87,7 +87,6 @@ def default_merger(*funcs):
         i = int(i)
         arrays = [m(i) for m in funcs]
         array = np.stack(arrays)
-        print([_.shape for _ in arrays], array.shape)
         return array
 
     return map_fn
@@ -158,7 +157,8 @@ def normalize_a_b(option, dataset):
 
 
 def to_tfdataset2(
-    features,
+    *args,
+    features=None,
     targets=None,
     total_size=None,
     num_parallel_calls=10,
@@ -170,6 +170,7 @@ def to_tfdataset2(
     targets_options=[],
     **kwargs,
 ):
+    assert not args, args
     import tensorflow as tf
 
     if targets is None:
@@ -181,6 +182,8 @@ def to_tfdataset2(
 
     assert total_size is not None
 
+    assert isinstance(features, (list, tuple)), features
+    assert len(features) == len(options), (len(features), len(options))
     funcs = [
         as_numpy_func(_, opt) for _, opt in zip_longest(features, options, fillvalue={})
     ]
@@ -255,8 +258,10 @@ class TensorflowMixIn:
             targets = labels
         return to_tfdataset(features=self, targets=targets, **kwargs)
 
-    def to_tfdataset2(self, *others, **kwargs):
-        return to_tfdataset2([self, *others], **kwargs)
+    def to_tfdataset2(self, *args, **kwargs):
+        if "features" not in kwargs:
+            kwargs["features"] = [self]
+        return to_tfdataset2(*args, **kwargs)
 
     def to_tfdataset_(
         self, *others, align_with=None, total_size=None, merger=default_merger
@@ -268,7 +273,6 @@ class TensorflowMixIn:
         else:
             if total_size is None:
                 total_size = len(self)
-            print(f"setting up indices for {self}")
             indices = tf.data.Dataset.range(total_size)
 
         # shuffle can happen early

@@ -6,11 +6,9 @@ import climetlab as cml
 print("cml loaded")
 
 import numpy as np
+from mydatasets.bias_test import BiasTest
 
-print("loading tf")
-import tensorflow as tf
-
-print("loading tf")
+from climetlab.utils.dates import to_datetime_list
 
 # land_mask = cml.load_source( "mars", param="lsm", levtype="sfc", expver = "1", date = "2020-01-01", stream = "oper", grid = GRID, type = "an", time = "00:00:00" ,)
 
@@ -19,66 +17,9 @@ print("loading tf")
 # topo = cml.load_source( "mars", param="topo", levtype="sfc", expver = "1", date = "2019-05-01", stream = "oper", grid = "2/2", type = "an", time = "00:00:00")
 
 
-GRID = "10/10"
-DATES = "2022-09-02/to/2022-09-04"
-TIMES = ["00:00:00", "12:00:00"]
-# TIMES= dict(time=[0,12]) # should work
-
-land_mask = cml.load_source(
-    "mars",
-    param="lsm",
-    levtype="sfc",
-    expver="1",
-    stream="oper",
-    type="an",
-    time="00:00:00",
-    date="2022-09-30",
-    grid=GRID,
-)
-
-# Build the request using: https://apps.ecmwf.int/mars-catalogue/
-forecast = cml.load_source(
-    "mars",
-    **{"class": "od"},
-    stream="oper",
-    date=DATES,
-    expver="1",
-    levtype="sfc",
-    param=["z"],
-    # param=["t", "z"],  # z geopotential=129, t temperature = "130.128"
-    step=24,
-    time=TIMES,
-    type="fc",
-    grid=GRID,
-)
-
-
-era5 = cml.load_source(
-    # Build request using: https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form
-    "cds",
-    "reanalysis-era5-single-levels",
-    product_type="reanalysis",
-    time=TIMES,
-    param="2t",
-    grid=GRID,
-    date=DATES,
-    format="grib",
-)
-# era5 = cml.load_source(
-#    "mars",
-#    **{"class": "ea"},
-#    date=DATES,
-#    expver="1",
-#    levtype="sfc",
-#    param="2t",
-#    stream="oper",
-#    time=TIMES,
-#    type="an",
-#    # levelist="850",
-#    grid=GRID,
-# )
-forecast = forecast.order_by("date", "time", "param")
-era5 = era5.order_by("date", "time", "param")
+forecast = cml.load_dataset("bias-test", "forecast", param="2t")
+era5 = cml.load_dataset("bias-test", "era5", param="2t")
+land_mask = cml.load_dataset("bias-test", "constant")
 
 print("---------------------")
 print("Constants:")
@@ -90,18 +31,16 @@ print(f"forecast: {len(forecast)}")
 print(f"era5: {len(era5)}")
 print("")
 
-for i, (x, y) in enumerate(zip(forecast, era5)):
+print(era5.availability)
+
+# for i in range(0, len(forecast)):
+for i in [0, 1, 2, len(forecast) - 2, len(forecast) - 1]:
     print(f"--- Sample {i} -----")
-    print(x)
-    print(y)
+    print("fcast=", forecast[i])
+    print("era5 =", era5[i])
 print("")
 
-
-for i in range(0, len(era5)):
-    print(f"--- Sample {i} -----")
-    print(forecast[i])
-    #    print(forecast[i * 2])
-    print(era5[i])
+assert len(era5) == len(forecast)
 shape = era5[1].to_numpy().shape
 
 print("-----------")
@@ -110,13 +49,16 @@ forecast.statistics()
 
 datasets = [forecast, era5, land_mask]
 
+print("loading tf")
+import tensorflow as tf
+
+print("loaded tf")
+
 print(datasets)
 tfds = datasets[0].to_tfdataset2(
-    datasets[0],
-    datasets[2],
+    features=[datasets[0], datasets[2]],  # default to [self] is missing
     targets=[datasets[1]],
     options=[
-        dict(normalize="mean-std"),
         dict(normalize="mean-std"),
         dict(normalize="mean-std", constant=True),
     ],
@@ -126,8 +68,8 @@ tfds = datasets[0].to_tfdataset2(
 )
 shape_in = tfds._climetlab_tf_shape_in
 shape_out = tfds._climetlab_tf_shape_out
-assert shape_in == (3, 19, 36)
-assert shape_out == (1, 19, 36)
+assert shape_in == (2, 91, 180), shape_in
+assert shape_out == (1, 91, 180), shape_out
 
 
 def build_model(shape_in, shape_out):
