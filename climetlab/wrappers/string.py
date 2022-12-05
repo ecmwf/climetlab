@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import calendar
 import datetime
 import re
 
@@ -14,6 +15,7 @@ from dateutil.parser import isoparse, parse
 from climetlab.wrappers import Wrapper
 
 VALID_DATE = re.compile(r"\d\d\d\d-?\d\d-?\d\d([T\s]\d\d:\d\d(:\d\d)?)?Z?")
+MONTH_DATE = re.compile(r"^\d\d\d\d-\d\d?$")
 
 
 def parse_date(dt):
@@ -48,6 +50,13 @@ class StrWrapper(Wrapper):
 
     def to_datetime_list(self):
         from climetlab.utils.dates import mars_like_date_list
+
+        if MONTH_DATE.match(self.data):
+            first_day = parse(self.data)
+            y = first_day.year
+            m = first_day.month
+            n_days = calendar.monthrange(y, m)[1]
+            return mars_like_date_list(parse_date(f"{y}-{m:02}-01"),parse_date(f"{y}-{m:02}-{n_days}"),1)
 
         # MARS style lists
         bits = self.data.split("/")
