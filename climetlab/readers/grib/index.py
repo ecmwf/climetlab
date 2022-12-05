@@ -65,7 +65,7 @@ class FieldSet(FieldSetMixin, Index):
 
         def dicts():
             for i in progress_bar(
-                iterable=range(len(self)), desc="building availability"
+                iterable=range(len(self)), desc="Building availability"
             ):
                 dic = self.get_metadata(i)
                 dic = {k: v for k, v in dic.items() if v is not None}
@@ -260,7 +260,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 100_000
-    DB_DICT_CACHE_SIZE = 50_000
+    DB_DICT_CACHE_SIZE = 100_000
 
     def __init__(self, *args, **kwargs):
         """
