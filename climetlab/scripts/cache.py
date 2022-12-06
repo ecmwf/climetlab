@@ -434,6 +434,7 @@ class CacheCmd:
                 if permissions_files:
                     os.chmod(dest, permissions_files)
 
+        count = 0
         for entry in cache:
             if not filter(entry):
                 continue
@@ -452,7 +453,7 @@ class CacheCmd:
             LOG.info("All entries copied. Now setting permissions.")
             new_dirs.update_permission_dirs(permissions_dirs)
 
-        print(colored(f"Copied {len(cache)} cache entries to {directory}.", "green"))
+        print(colored(f"Copied {count} cache entries to {directory}.", "green"))
 
         for f in finalize:
             f()
