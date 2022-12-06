@@ -46,7 +46,7 @@ class StandaloneMarsClient:
             )
 
 
-class MARSRetriever(ECMWFApi):
+class MarsRetriever(ECMWFApi):
     def service(self):
         if SETTINGS.get("use-standalone-mars-client-when-available"):
             if os.path.exists(StandaloneMarsClient.EXE):
@@ -65,4 +65,4 @@ class MARSRetriever(ECMWFApi):
             raise
 
 
-source = MARSRetriever
+source = MarsRetriever
