@@ -16,7 +16,7 @@ import shutil
 from termcolor import colored
 
 from climetlab.core.settings import SETTINGS
-from climetlab.utils import humanize
+from climetlab.utils import humanize, tqdm
 from climetlab.utils.dates import to_datetime
 
 from .tools import parse_args, print_table
@@ -424,7 +424,6 @@ class CacheCmd:
         def copy(path, dest):
             path_display = path.replace(cache_dir, "CACHE:")
             LOG.debug(f"Copying {path_display} to {dest}")
-            print(f"Copying {path} to {dest}")
 
             if os.path.isdir(path):
                 shutil.copytree(path, dest)
@@ -434,11 +433,11 @@ class CacheCmd:
                 if permissions_files:
                     os.chmod(dest, permissions_files)
 
-        count = 0
-        for entry in cache:
-            if not filter(entry):
-                continue
+        cache = [entry for entry in cache if filter(entry)]
 
+        count = 0
+        errors = 0
+        for entry in tqdm(iterable=cache):
             path = entry["path"]
 
             assert os.path.dirname(path) == cache_dir, path
@@ -447,13 +446,20 @@ class CacheCmd:
 
             new_dirs.append(os.path.dirname(dest))
 
-            copy(path, dest)
+            try:
+                copy(path, dest)
+                count += 1
+            except FileNotFoundError as e:
+                LOG.exception(e)
+                errors += 1
 
         if permissions_dirs:
             LOG.info("All entries copied. Now setting permissions.")
             new_dirs.update_permission_dirs(permissions_dirs)
 
         print(colored(f"Copied {count} cache entries to {directory}.", "green"))
+        if errors:
+            print(colored(f"Ignored {errors} errors).", "red"))
 
         for f in finalize:
             f()
