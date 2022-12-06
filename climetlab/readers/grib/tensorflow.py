@@ -166,8 +166,8 @@ def to_tfdataset2(
     merger=default_merger,
     targets_merger=default_merger,
     shuffle_buffer_size=100,
-    options=[],
-    targets_options=[],
+    options=None,
+    targets_options=None,
     **kwargs,
 ):
     assert not args, args
@@ -175,6 +175,12 @@ def to_tfdataset2(
 
     if targets is None:
         targets = []
+
+    if options is None:
+        options = [{} for i in features]
+
+    if targets_options is None:
+        targets_options = [{} for i in targets]
 
     if total_size is None:
         LOG.debug("No total_size specified, infering from features.")
@@ -224,10 +230,12 @@ def to_tfdataset2(
     tfds._climetlab_tf_shape_in = func(
         0
     ).shape  # TODO: use metadata from grib directly, without loading the numpy array
-    tfds._climetlab_tf_shape_out = func_targets(0).shape
+    if targets:
+        tfds._climetlab_tf_shape_out = func_targets(0).shape
 
     tfds._climetlab_tf_input = tfdataset
-    tfds._climetlab_tf_targets = tfdataset_targets
+    if targets:
+        tfds._climetlab_tf_targets = tfdataset_targets
     # ds = ds.prefetch(prefetch)
 
     return tfds
