@@ -356,15 +356,6 @@ class SqlDatabase(Database):
             )
         )
 
-    def is_full_hypercube(self):
-        self.availability  # build self._availability
-        non_empty_coords = {
-            k: v
-            for k, v in self._availability._tree.unique_values().items()
-            if len(v) > 1
-        }
-        expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
-        return len(self) == expected_size
 
     def load(self, iterator):
         with self.connection as conn:

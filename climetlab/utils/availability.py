@@ -125,6 +125,9 @@ class Availability:
     def _repr_html_(self):
         return "<hr><pre>{}</pre><hr>".format(self.tree())
 
+    def __str__(self):
+        return self.tree()
+
     def select(self, *args, **kwargs):
         return Availability(self._tree.select(*args, **kwargs))
 

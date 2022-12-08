@@ -9,6 +9,7 @@
 
 import json
 import logging
+import math
 import os
 from abc import abstractmethod
 from collections import namedtuple
@@ -75,6 +76,15 @@ class FieldSet(FieldSetMixin, Index):
 
         self._availability = Availability(dicts())
         return self.availability
+
+    def is_full_hypercube(self):
+        non_empty_coords = {
+            k: v
+            for k, v in self.availability._tree.unique_values().items()
+            if len(v) > 1
+        }
+        expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
+        return len(self) == expected_size
 
 
 class MaskFieldSet(FieldSet, MaskIndex):

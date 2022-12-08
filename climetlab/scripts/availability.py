@@ -23,11 +23,10 @@ class AvailabilityCmd:
             None,
             dict(
                 type=str,
-                help="""
-            File or directory for describing a dataset or source of data with GRIB data.
-            """,
+                help="File or directory for describing a dataset or source of data with GRIB data.",
             ),
-        )
+        ),
+        stdout=dict(action="store_true", help="Output to stdout (no file)."),
     )
     def do_availability(self, args):
         """Create json availability file."""
@@ -43,6 +42,10 @@ class AvailabilityCmd:
             source = availability_of_directory(path)
         else:
             source = availability_of_file(path)
+
+        if args.stdout:
+            print(source.availability.tree())
+            return
 
         self.write(source.availability, source.availability_path)
 
@@ -60,7 +63,7 @@ class AvailabilityCmd:
 def availability_of_directory(dirpath):
     db_path = os.path.join(dirpath, "climetlab.db")
     if not os.path.exists(db_path):
-        print("ERROR: this directory is not indexed yet, cannot find {db_path}.")
+        print(f"ERROR: this directory is not indexed yet, cannot find {db_path}.")
 
     source = cml.load_source("directory", dirpath)
     return source
