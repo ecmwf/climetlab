@@ -12,9 +12,10 @@
 import datetime
 
 import numpy as np
+import pytest
 
 from climetlab import load_source
-from climetlab.testing import climetlab_file
+from climetlab.testing import MISSING, climetlab_file
 from climetlab.utils.dates import to_datetime, to_datetime_list
 
 
@@ -132,6 +133,7 @@ def test_pandas_dates_2():
     ]
 
 
+@pytest.mark.skipif(MISSING("zarr"), reason="zarr not installed")
 def test_zarr_dates():
     S3_URL = (
         "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
