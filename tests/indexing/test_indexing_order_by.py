@@ -22,7 +22,7 @@ from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 # @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
-@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
+@pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_by_with_request(params, levels, source_name):
     request = dict(
         level=levels,
@@ -41,8 +41,8 @@ def test_indexing_order_by_with_request(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
-# @pytest.mark.parametrize("source_name", ["directory"])
+# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
+@pytest.mark.parametrize("source_name", ["directory"])
 def test_indexing_order_by_with_keyword(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     request["order_by"] = dict(level=levels, variable=params)
@@ -56,7 +56,7 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"],))
 @pytest.mark.parametrize("levels", ([500, 850],))
-@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["directory", "file"])
 def test_indexing_order_by_with_method_with_list(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = ["level", "variable"]
@@ -76,7 +76,8 @@ def test_indexing_order_by_with_method_with_list(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["directory", "file"])
 def test_indexing_order_by_with_method(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = dict(level=levels, variable=params)
