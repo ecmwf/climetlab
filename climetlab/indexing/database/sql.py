@@ -9,7 +9,6 @@
 
 
 import logging
-import math
 import os
 import sqlite3
 from collections import defaultdict, namedtuple
@@ -355,7 +354,6 @@ class SqlDatabase(Database):
                 f" {version}"
             )
         )
-
 
     def load(self, iterator):
         with self.connection as conn:
