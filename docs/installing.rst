@@ -33,16 +33,14 @@ No conda package has been created yet.
 Troubleshooting
 ---------------
 
-Python 3.7 or above is required
+Python 3.8 or above is required
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  CliMetLab requires Python 3.7 or above. Depending on your installation,
-  you may need to substitute ``pip`` to ``pip3`` in the examples below.
-
-  .. todo::
-
-    Python 3.10 is not supported yet,
-    as some dependencies are not available for python 3.10.
+  CliMetLab requires Python 3.8 or above (mainly due the dependency `numpy`).
+  Depending on your installation, you may need to substitute ``pip`` to ``pip3``
+  in the examples below.
+  See the `build logs <https://github.com/ecmwf/climetlab/actions/workflows/test-and-release.yml>`_
+  to know on which version of Python CliMetLab is automatically tested.
 
 
 No matching distribution found for ...
@@ -62,6 +60,20 @@ you will need to make sure that you are using the latest version of ``pip`` (>=2
 
   % pip install --upgrade pip
   % pip install climetlab
+
+WARNING: Retrying (Retry(total=4, connect=None, ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are installing CliMetLab (or any other package) wihout internet access. You can get
+a similar error. This happens for instance on Kaggle when you are not logged it or when your
+account has not been verified.
+
+.. code-block:: html
+
+  WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) 
+  after connection broken by 'NewConnectionError(': Failed to establish a new connection:
+  [Errno -3] Temporary failure in name resolution')':....
+
 
 Module enum has no attribute 'IntFlag'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

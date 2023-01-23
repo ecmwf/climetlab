@@ -52,6 +52,7 @@ Documentation
 * :doc:`guide/plotting`
 * :doc:`guide/caching`
 * :doc:`guide/settings`
+* :doc:`guide/dask`
 * :doc:`guide/pluginlist`
 * :doc:`guide/cmdline`
 
@@ -68,6 +69,7 @@ Documentation
    guide/plotting
    guide/caching
    guide/settings
+   guide/dask
    guide/pluginlist
    guide/cmdline
 

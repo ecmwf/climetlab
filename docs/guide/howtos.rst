@@ -38,93 +38,11 @@ How to share my cache directory with another user ?
 ---------------------------------------------------
    It is not recommended to share your cache with others.
    What you are looking for may be a mirror.
-   This feature is not implemented yet.
+   And this feature is not implemented yet.
 
-Climetlab dask tools
---------------------
+   A more robust approach is to put the data to a shared location,
+   and define :doc:`a CliMetLab dataset </guide/datasets>` plugin to use it.
 
-Start an local cluster and client
-*********************************
-
-from climetlab.utils.dask import start
-start('local')
-# or $ climetlab dask start local
-# or $ climetlab dask local --start
-
-Start an ssh cluster and client
-*******************************
-
-from climetlab.utils.dask import start
-start('ssh')
-
-
-Start a SLURM dask cluster and client
-*************************************
-
-from climetlab.utils.dask import start
-start('slurm')
-
-
-Start a slurm dask cluster on HPC
-*********************************
-
-.. note::
-This is assumes that your HPC admin set up the hpc-name-config-1.yaml file on the appropriate location.
-
-from climetlab.utils.dask import start
-start('hpc-name-config-1')
-
-
-
-Access the dask dashboard
-*************************
-
-.. todo::
-   todo
-
-Access the dask logs
-********************
-
-.. todo::
-   todo
-
-Stop the dask cluster 
-*********************
-
-The dask cluster and client will usually stop automatically when the python process ends.
-Nevertheless, it is possible to stop dask if it has been started from climetlab.
-
-from climetlab.utils.dask import stop
-stop()
-
-Advanced dask usages
---------------------
-
-Note: In this section a "dask deployement" refers to a client and a cluster. It does not refers to a Cloud deployement using Kubernetes, etc.
-
-Create a custom dask deployement specifications
-***********************************************
-
-Create the yaml file $HOME/.climetlab/dask/hpc-name-config-1.yaml. Then use it with:
-from climetlab.utils.dask import start
-start('hpc-name-config-1')
-
-.. note::
-
-   For HPC system admin:
-   Adding yaml files in /opt/climetlab/dask/*.yaml will give global access to all users. 
-
-
-Reuse the dask client
-*********************
-
-from climetlab.utils.dask import start
-client = start('local').client
-
-
-Scale the dask cluster
-**********************
-
-from climetlab.utils.dask import start
-deploy = start('slurm')
-deploy.scale(..)
+How to use dask ?
+-----------------
+   See :doc:`/guide/dask`.
