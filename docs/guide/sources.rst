@@ -3,30 +3,45 @@
 Data sources
 ============
 
+
+.. note::
+
+    A Data **Source** is an object created using ``cml.load_source(name, *args, **kwargs)``
+    with the appropriate name and arguments, which provides data and additional functionalities.
+
+        .. code-block:: python
+
+            >>> import climetlab as cml
+            >>> source = cml.load_source(name, "argument1", "argument2", ...)
+
+        - The **name** is a string that uniquely identifies the source type.
+
+        - The **arguments** are used to specify the data location to access the data.
+          They can include additional parameters to access the data.
+
+        - The **additional functionalities** include caching, plotting and interaction
+          with other data.
+
+        The data source object provides methods to access and use its data, such as
+        ``to_xarray()`` or ``to_pandas()`` or other. Depending on the data, some of
+        these methods are or are not available.
+
+            .. code-block:: python
+
+                >>> source.to_xarray() # for gridded data
+                >>> source.to_pandas() # for non-gridded data
+                >>> source.to_numpy() # Experimental
+                >>> source.to_tfrecord() # Experimental
+
+
 .. todo::
 
-    List the built-in ones.
     Explain fields.to_xarray() and obs.to_pandas().
     Explain data[0]
+    Add here more details about the .to_... methods.
 
-A Data Source is an object created using ``cml.load_source(name, *args, **kwargs)``
-with the appropriate name and arguments, which provides data and additional functionalities.
 
-    .. code-block:: python
-
-        >>> import climetlab as cml
-        >>> source = cml.load_source(name, "argument1", "argument2", ...)
-
-    - The **name** is a string that uniquely identifies the source type.
-
-    - The **arguments** are used to specify the data location to access the data.
-      They can include additional parameters to access the data.
-
-    - The **additional functionalities** include caching, plotting and interaction
-      with other data.
-
-    
-CliMetLab has built-in sources and some additional sources can be made available as plugins.
+CliMetLab has built-in sources and some additional sources can be made available :ref:`as plugins <source_plugins>`.
 
 Built-in data sources:
 
@@ -40,20 +55,6 @@ Built-in data sources:
     - :ref:`data-sources-indexed-urls` source (experimental): Load data from GRIB urls with partial download.
 
 
-The data source object provides methods to access and use its data, such as
-``to_xarray()`` or ``to_pandas()`` or other. Depending on the data, some of
-these methods are or are not available.
-
-    .. code-block:: python
-
-        >>> source.to_xarray() # for gridded data
-        >>> source.to_pandas() # for non-gridded data
-        >>> source.to_numpy() # Experimental
-        >>> source.to_tfrecord() # Experimental
-
-.. todo::
-
-    add here more details about these methods.
 
 ----------------------------------
 

@@ -12,6 +12,8 @@ List of CliMetLab plugins
   If you would like a plugin to be added in this list, please submit a pull request to CliMetLab
   or `open an issue on github <https://github.com/ecmwf/climetlab/issues>`_.
 
+.. _dataset_plugins:
+
 Dataset plugins
 ---------------
 
@@ -90,6 +92,9 @@ Drafts Dataset Plugins
 - `climetlab-meteonet`:
   Meteonet dataset developed by Météo-France.
 
+
+
+.. _source_plugins:
 
 Source plugins
 --------------

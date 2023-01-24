@@ -28,15 +28,16 @@ CliMetLab cache configuration is managed through the CliMetLab :doc:`settings`.
     through using mirrors.
     `Feedback and feature requests are welcome. <https://github.com/ecmwf/climetlab/issues>`_
     
+.. _cache_location:
 
 Cache location
 --------------
 
   The cache location is defined by the ``cache‑directory`` setting. Its default
-  value depends on your system. 
-  (`/tmp/climetlab-$USER` for linux, 
-  `C:\\Users\\$USER\\AppData\\Local\\Temp\\climetlab-$USER` for Windows,
-  `/tmp/.../climetlab-$USER` for MacOS)
+  value depends on your system: 
+    - ``/tmp/climetlab-$USER`` for Linux,
+    - ``C:\\Users\\$USER\\AppData\\Local\\Temp\\climetlab-$USER`` for Windows
+    - ``/tmp/.../climetlab-$USER`` for MacOS
 
   
   The cache location can be read and modified either with shell command or within python.

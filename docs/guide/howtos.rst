@@ -23,6 +23,19 @@ How to access data?
      :py:func:`cml.load_source`. Data sources should be used when there is no dataset
      plugin for the data you are interested in.
 
+How do I access data from this BUFR/GRIB/... file?
+--------------------------------------------------
+
+Use the :ref:`data-sources-file` source.
+
+How do I access data from this file on this unsupported format?
+---------------------------------------------------------------
+Write your own python code to open the file.
+
+.. todo::
+
+   Add plugins and doc for readers.
+
 How to help others to use my data ?
 -----------------------------------
    Creating a CliMetLab plugin can be a solution to share some code along
