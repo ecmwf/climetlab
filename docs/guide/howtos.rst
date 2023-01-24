@@ -30,8 +30,8 @@ How to help others to use my data ?
    See the :ref:`plugin documentation <contributing-overview>`.
 
 
-How to set up my cache directory ?
-----------------------------------
+How to set up my CliMetLab cache directory ?
+--------------------------------------------
    See :doc:`/guide/caching`.
 
 How to share my cache directory with another user ?
@@ -43,6 +43,6 @@ How to share my cache directory with another user ?
    A more robust approach is to put the data to a shared location,
    and define :doc:`a CliMetLab dataset </guide/datasets>` plugin to use it.
 
-How to use dask ?
------------------
+Can CliMetLab help using dask ?
+-------------------------------
    See :doc:`/guide/dask`.
