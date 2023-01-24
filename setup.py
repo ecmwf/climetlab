@@ -68,7 +68,7 @@ install_requires += [
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
     "multiurl>=0.1.0",
-    "ecmwf-opendata",
+    "ecmwf-opendata>=0.1.2",
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
