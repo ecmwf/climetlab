@@ -3,6 +3,35 @@
 Data Manipulation
 =================
 
+.. todo::
+
+    This section is a draft.
+
+.. _base-class-methods:
+
+Methods provided by CliMetLab data objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Methods provided by CliMetLab data objects (such as a Dataset, a data Source or a Reader):
+Depending on the data, some of these methods are or are not available.
+
+A CliMetLab data object provides methods to access and use its data.
+
+.. code-block:: python
+
+    >>> source.to_xarray() # for gridded data
+    >>> source.to_pandas() # for non-gridded data
+    >>> source.to_numpy() # When the data is a n-dimensional array.
+    >>> source.to_tfrecord() # Experimental
+
+.. todo::
+
+    Explain fields.to_xarray() and obs.to_pandas().
+
+    Explain data[0]
+
+    Add here more details about the .to_... methods.
+
 .. _custom-merge:
 
 Merging Data sources

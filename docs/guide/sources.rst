@@ -4,41 +4,35 @@ Data sources
 ============
 
 
-.. note::
+What is a data Source?
+----------------------
 
-    A Data **Source** is an object created using ``cml.load_source(name, *args, **kwargs)``
-    with the appropriate name and arguments, which provides data and additional functionalities.
+A data **Source** is an object created using ``cml.load_source(name, *args, **kwargs)``
+with the appropriate name and arguments, which provides additional functionalities.
 
-        .. code-block:: python
+- The source **name** is a string that uniquely identifies the source type.
 
-            >>> import climetlab as cml
-            >>> source = cml.load_source(name, "argument1", "argument2", ...)
+- The **arguments** (args and kwargs) are used to specify the data location to access the data.
+  They can include additional parameters to access the data.
 
-        - The **name** is a string that uniquely identifies the source type.
+- The **additional functionalities** include python code related to caching, plotting and interacting
+  with other data.
 
-        - The **arguments** are used to specify the data location to access the data.
-          They can include additional parameters to access the data.
+.. code-block:: python
 
-        - The **additional functionalities** include caching, plotting and interaction
-          with other data.
+    >>> import climetlab as cml
+    >>> source = cml.load_source(name, *args, **kwargs)
 
-        The data source object provides methods to access and use its data, such as
-        ``to_xarray()`` or ``to_pandas()`` or other. Depending on the data, some of
-        these methods are or are not available.
+The Source object provides methods to access and use its data such as
+``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other 
+:ref:`methods that can be used to access data <base-class-methods>`).
 
-            .. code-block:: python
+.. code-block:: python
 
-                >>> source.to_xarray() # for gridded data
-                >>> source.to_pandas() # for non-gridded data
-                >>> source.to_numpy() # Experimental
-                >>> source.to_tfrecord() # Experimental
-
-
-.. todo::
-
-    Explain fields.to_xarray() and obs.to_pandas().
-    Explain data[0]
-    Add here more details about the .to_... methods.
+    >>> source.to_xarray() # for gridded data
+    >>> source.to_pandas() # for non-gridded data
+    >>> source.to_numpy() # When the data is a n-dimensional array.
+    >>> source.to_tfrecord() # Experimental
 
 
 CliMetLab has built-in sources and some additional sources can be made available :ref:`as plugins <source_plugins>`.
@@ -268,22 +262,24 @@ For more information, see the CDS `knowledge base`_.
 .. _cdsapi: https://pypi.org/project/cdsapi/
 .. _knowledge base: https://confluence.ecmwf.int/display/CKB/Copernicus+Knowledge+Base
 
+
 .. _data-sources-mars:
 
 mars
 ----
 
-Meteorological Archival and Retrieval System (MARS)
+This source allows handling data from the Meteorological Archival and Retrieval System (MARS).
 
-.. _public datasets: https://apps.ecmwf.int/datasets/
+To figure out which data you need, or discover relevant data available on MARS, see the
+publicly accessible `MARS catalog <https://apps.ecmwf.int/archive-catalogue/>`_
+(or this `access restricted catalog <https://apps.ecmwf.int/mars-catalogue/>`_).
+Notice that various `datasets of interests <https://apps.ecmwf.int/datasets/>`_
+are also publicly available.
+For a more extensive documentation about MARS, please refer to the
+`MARS documentation <https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation>`_ (or its
+`access from the internet <https://confluence.ecmwf.int/display/UDOC/Web-MARS>`_ through its 
+`web API <https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api>`_).
 
-.. _catalogue: https://www.ecmwf.int/en/forecasts/datasets/archive-datasets
-
-.. _WebMARS: https://confluence.ecmwf.int/display/UDOC/Web-MARS
-.. _documentation: https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
-
-
-.. _webapi: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
 
 .. code-block:: python
 
@@ -312,6 +308,12 @@ to perform the same operation with *CliMetLab*, use the following code:
 
 
 Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
+
+Examples
+~~~~~~~~
+
+todo
+
 
 .. _data-sources-multi:
 
