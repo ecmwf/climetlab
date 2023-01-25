@@ -8,7 +8,9 @@ What is a data Source?
 ----------------------
 
 A data **Source** is an object created using ``cml.load_source(name, *args, **kwargs)``
-with the appropriate name and arguments, which provides additional functionalities.
+with the appropriate name and arguments, which provides access to the data.
+
+A Source also provides metadata and additional functionalities:
 
 - The source **name** is a string that uniquely identifies the source type.
 
@@ -25,7 +27,7 @@ with the appropriate name and arguments, which provides additional functionaliti
 
 The Source object provides methods to access and use its data such as
 ``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other 
-:ref:`methods that can be used to access data <base-class-methods>`).
+:ref:`methods that can be used to access data <base-class-methods>` from a data Source).
 
 .. code-block:: python
 
@@ -34,8 +36,16 @@ The Source object provides methods to access and use its data such as
     >>> source.to_numpy() # When the data is a n-dimensional array.
     >>> source.to_tfrecord() # Experimental
 
+.. note::
 
-CliMetLab has built-in sources and some additional sources can be made available :ref:`as plugins <source_plugins>`.
+    :ref:`Source <data-sources>` objects differ from data :ref:`Dataset <datasets>` objects, 
+    as Datasets refer to a given set of data (such as "the 2m temperature on Europe in 2015",
+    while Sources are more generic such as "url").
+
+Which data Sources are available?
+---------------------------------
+
+CliMetLab has built-in sources and additional sources can be made available :ref:`as plugins <source_plugins>`.
 
 Built-in data sources:
 
@@ -50,9 +60,6 @@ Built-in data sources:
 
 
 
-----------------------------------
-
-
 .. _data-sources-file:
 
 file
@@ -64,8 +71,8 @@ The simplest data source is the *file* source that accesses a local file.
 
         >>> import climetlab as cml
         >>> data = cml.load_source("file", "path/to/file")
-        >>> data.to_xarray() # for gridded data
-        >>> data.to_pandas() # for non-gridded data
+        >>> data.to_xarray() # for gridded data fields
+        >>> data.to_pandas() # for non-gridded data 
 
 *CliMetLab* will inspect the content of the file to check for any of the
 supported data formats listed below:
@@ -78,6 +85,10 @@ supported data formats listed below:
     - CSV (comma-separated values)
     - BUFR (https://en.wikipedia.org/wiki/BUFR)
     - ODB (a bespoke binary format for observations)
+
+.. todo::
+
+    Support for additionnal formats could be implemented as plugins.
 
 Examples
 ~~~~~~~~
@@ -143,7 +154,7 @@ url
 
 The *url* data source will download the data from the address
 specified and store it in the :ref:`cache <caching>`. The supported
-data formats are the same as for the *file* data source above.
+data formats are the same as for the :ref:`file <data-sources-file>` data source above.
 
 .. code-block:: python
 
@@ -275,6 +286,7 @@ publicly accessible `MARS catalog <https://apps.ecmwf.int/archive-catalogue/>`_
 (or this `access restricted catalog <https://apps.ecmwf.int/mars-catalogue/>`_).
 Notice that various `datasets of interests <https://apps.ecmwf.int/datasets/>`_
 are also publicly available.
+To access data from the MARS, you will need to register and retrieve an access token.
 For a more extensive documentation about MARS, please refer to the
 `MARS documentation <https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation>`_ (or its
 `access from the internet <https://confluence.ecmwf.int/display/UDOC/Web-MARS>`_ through its 
@@ -287,10 +299,11 @@ For a more extensive documentation about MARS, please refer to the
 
     server = ECMWFDataServer()
 
-    client.retrieve({
-        "parameter1": "value1",
-        "parameter2": "value2",
-    ...})
+    client.retrieve(
+        { "parameter1": "value1",
+          "parameter2": "value2",
+          ...
+        })
 
 
 to perform the same operation with *CliMetLab*, use the following code:
@@ -301,10 +314,10 @@ to perform the same operation with *CliMetLab*, use the following code:
     import climetlab as cml
 
     data = cml.load_source("mars",
-                           {"parameter1": "value1",
-                            "parameter2": "value2",
-                            ...})
-
+        { "parameter1": "value1",
+          "parameter2": "value2",
+          ...
+        })
 
 
 Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
@@ -312,13 +325,57 @@ Data downloaded from MARS is stored in the the :ref:`cache <caching>`.
 Examples
 ~~~~~~~~
 
-todo
+See the :ref:`Examples` notebooks for a working example.
+
+
+.. _data-sources-zenodo:
+
+zenodo
+------
+`Zenodo <https://zenodo.org>`_ is a general-purpose open repository developed and operated by CERN.
+It allows researchers to deposit research papers, datasets, etc.
+For each submission, a persistent digital object identifier (DOI) is minted,
+which makes the stored items easily citeable.
+
+This source provides access data from `zenodo.org <https://zenodo.org>`_,
+including downloading, caching, etc.
+
+.. code:: python
+
+    >>> ds = load_source( "zenodo", record_id=...)
+
+Example
+~~~~~~~
+
+.. code:: python
+
+    >>> import climetlab as cml
+    >>> def only_csv(path):
+            return path.endswith(".csv")
+    >>> source = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
+    >>> source.to_pandas() 
+
+.. note::
+
+    Support for zenodo access is experimental.
+
+
+.. _data-sources-indexed-urls:
+
+indexed_urls
+------------
+
+    .. code:: python
+
+        >>> ds = load_source( "indexed-urls", index, request)
+
+Experimental. See :ref:`grib_support`.
 
 
 .. _data-sources-multi:
 
-multi
------
+multi (advanced usage)
+----------------------
 
     .. code:: python
 
@@ -328,20 +385,3 @@ multi
 
     add documentation on multi-source.
 
-.. _data-sources-zenodo:
-
-zenodo
-------
-
-Experimental. Access data in zenodo.
-
-.. _data-sources-indexed-urls:
-
-indexed_urls
-------------
-
-    .. code:: python
-
-        >>> ds = load_source( "indexed-urls", index, request), source2, ...)
-
-Experimental. See :ref:`grib_support`.

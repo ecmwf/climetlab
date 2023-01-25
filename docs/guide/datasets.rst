@@ -4,8 +4,9 @@ Datasets
 ========
 
 A **Dataset** is an object created using ``cml.load_dataset(name, arg1, arg2=..., ...)``
-with the appropriate **name** and **arguments**, which provides access to the **data**.
-It also provides **metatada** and **additional functionalities**:
+with the appropriate **name** and **arguments**, which provides access to a clearly well-defined
+**dataset**: these data have been defined and curated by somebody providing code along with the data.
+It also provides **metadata** and **additional functionalities**.
 
 - The **name** is a string that uniquely identifies the dataset.
 
@@ -29,6 +30,12 @@ It also provides **metatada** and **additional functionalities**:
   plugin.
   The Dataset object is an instance of a Python class in which
   the plugin maintainers/users can share additional code.
+
+.. note::
+
+    :ref:`Dataset <datasets>` objects differ from data :ref:`Source <data-sources>` objects, 
+    as Datasets refer to a given set of data (such as "the 2m temperature on Europe in 2015",
+    while Sources are more generic such as "url").
 
 
 CliMetLab has build-in datasets (as examples) and most of the datasets are
@@ -60,13 +67,16 @@ It is used to find the relevant plugin and class to use.
 Other arguments are defined by the plugin maintainer and are
 documented in the plugin documentation (see :doc:`/guide/pluginlist`).
 
-The dataset object provides methods to access and use its data, such as
-``to_xarray()`` or ``to_pandas()`` or other (see below).
+The Dataset object provides methods to access and use its data such as
+``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other 
+:ref:`methods that can be used to access data <base-class-methods>` from a Dataset).
 
-    .. code-block:: python
+.. code-block:: python
 
-        >>> ds.to_xarray() # for gridded data
-        >>> ds.to_pandas() # for non-gridded data
+    >>> ds.to_xarray() # for gridded data
+    >>> ds.to_pandas() # for non-gridded data
+    >>> ds.to_numpy() # When the data is a n-dimensional array.
+    >>> ds.to_tfrecord() # Experimental
 
 .. note::
 

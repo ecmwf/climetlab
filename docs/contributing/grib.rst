@@ -10,12 +10,12 @@ Reading GRIB files
 ------------------
 
 - CliMetLab can read *gridded* GRIB files (or urls) and provide data as ``xarray.Dataset``
-objects. This can be performed using ``cml.load_source("file", "myfile.grib")``.
+  objects. This can be performed using ``cml.load_source("file", "myfile.grib")``.
 
 - In addition to reading GRIB from local or remote sources, CliMetLab can also
-use a precomputed index, avoiding the need to parse the GRIB file to know its
-content. Using this index allows partial read of local files, and
-merging of mutliple GRIB sources.
+  use a precomputed index, avoiding the need to parse the GRIB file to know its
+  content. Using this index allows partial read of local files, and
+  merging of mutliple GRIB sources.
 
 This can be performed using ``cml.load_source("directory", "my/dir")``.
 To allow fast access to the data in the directory, CliMetLab relies on an index.
@@ -25,9 +25,10 @@ If the index has not been created already, CliMetLab will create one
 Writing GRIB files
 ------------------
 
-Use the `.save(filename)` method on a source relying on GRIB files.
+To write data into a GRIB file, use the ``source.save(filename)`` method. This method is implemented only
+on a sources relying on GRIB.
 
-CliMetLab has no support for writing custom grib files, with modified values or custom attributes.
+CliMetLab has no support for writing custom GRIB files, with modified values or custom attributes.
 
 
 Building indexes
