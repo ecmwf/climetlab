@@ -71,7 +71,12 @@ class MultiSource(Source):
         return self.sources[i][n]
 
     def sel(self, *args, **kwargs):
-        raise NotImplementedError
+        new_sources = [s.sel(*args, **kwargs) for s in self.sources]
+        return self.__class__(new_sources, filter=self.filter, merger=self.merger)
+
+    def order_by(self, *args, **kwargs):
+        new_sources = [s.order_by(*args, **kwargs) for s in self.sources]
+        return self.__class__(new_sources, filter=self.filter, merger=self.merger)
 
     def __len__(self):
         return sum(self._length(i) for i, _ in enumerate(self.sources))

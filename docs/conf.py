@@ -59,7 +59,7 @@ release = climetlab.__version__
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx_panels",
+    "sphinx_panels", # note: this is deprecated and will be replaced by "sphinx_design"
     # "sphinx.ext.intersphinx",
     # "sphinx.ext.extlinks",
     # "sphinx.ext.mathjax",

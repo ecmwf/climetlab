@@ -1,6 +1,8 @@
 # Documentation
 
-Currently, the documentation is hosted at https://climetlab.readthedocs.io/ and is updated each time the `master` branch is updated.
+Currently, the documentation is hosted at https://climetlab.readthedocs.io/ and is updated each time the `main` branch is updated.
+
+This may be useful to develop the documentation further: ``sphinx-autobuild docs docs/_build/html``
 
 ## Example notebooks
 
