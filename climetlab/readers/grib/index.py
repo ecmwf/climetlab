@@ -45,7 +45,9 @@ class FieldSet(FieldSetMixin, Index):
     _availability = None
 
     def __init__(self, *args, **kwargs):
-        if os.path.exists(self.availability_path):
+        if self.availability_path is not None and os.path.exists(
+            self.availability_path
+        ):
             self._availability = Availability(self.availability_path)
 
         Index.__init__(self, *args, **kwargs)

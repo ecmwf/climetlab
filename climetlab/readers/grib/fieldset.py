@@ -59,10 +59,10 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
 
         return mv_read(self.path)
 
-    def to_numpy(self):
+    def to_numpy(self, **kwargs):
         import numpy as np
 
-        return np.array([f.to_numpy() for f in self])
+        return np.array([f.to_numpy(**kwargs) for f in self])
 
     def plot_map(self, backend):
         return self.first.plot_map(backend)

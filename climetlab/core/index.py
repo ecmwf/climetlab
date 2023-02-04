@@ -391,8 +391,8 @@ class ScaledField:
         self.offset = offset
         self.scaling = scaling
 
-    def to_numpy(self):
-        return (self.field.to_numpy() - self.offset) * self.scaling
+    def to_numpy(self, **kwargs):
+        return (self.field.to_numpy(**kwargs) - self.offset) * self.scaling
 
 
 class ScaledIndex(ForwardingIndex):

@@ -304,8 +304,10 @@ class GribField(Base):
         backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
-    def to_numpy(self):
-        return self.values.reshape(self.shape)
+    def to_numpy(self, reshape=True):
+        if reshape:
+            return self.values.reshape(self.shape)
+        return self.values
 
     def __repr__(self):
         return "GribField(%s,%s,%s,%s,%s,%s)" % (
@@ -329,7 +331,23 @@ class GribField(Base):
 
     def field_metadata(self):
         m = self._grid_definition()
-        for n in ("shortName", "units", "paramId"):
+        
+        for n in (
+            "shortName",
+            "units",
+            "paramId",
+            "level",
+            "typeOfLevel",
+            "marsClass",
+            "marsStream",
+            "marsType",
+            "number",
+            "stepRange",
+            "param",
+            "long_name",
+            "standard_name",
+            "levelist",
+        ):
             p = self.handle.get(n)
             if p is not None:
                 m[n] = str(p)
