@@ -34,8 +34,13 @@ in ``cml.load_dataset``.
 
 - `climetlab-demo-dataset <https://github.com/ecmwf/climetlab-demo-dataset>`_:
   Demo plugin to illustrate to dataset plugin mechanism.
+  |climetlab-demo-build-status|
 
   Dataset provided: ``demo-dataset``
+
+.. |climetlab-demo-build-status| image:: https://github.com/ecmwf/climetlab-demo-dataset/actions/workflows/python-publish.yml/badge.svg
+    :alt: build status
+    :target: https://github.com/ecmwf/climetlab-demo-dataset/actions/workflows/python-publish.yml
 
 
 - `climetlab-tropical-cyclone-dataset <https://github.com/ecmwf-lab/climetlab-tropical-cyclone-dataset>`_:
@@ -92,6 +97,8 @@ Drafts Dataset Plugins
 - `climetlab-meteonet`:
   Meteonet dataset developed by Météo-France.
 
+
+---
 
 
 .. _source_plugins:
