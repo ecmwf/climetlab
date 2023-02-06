@@ -108,6 +108,9 @@ class Dataset(Base):
     def order_by(self, *args, **kwargs):
         return self.source.order_by(*args, **kwargs)
 
+    def statistics(self, *args, **kwargs):
+        return self.source.statistics(*args, **kwargs)
+
     @property
     def coords(self):
         return self.source.coords
