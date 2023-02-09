@@ -22,7 +22,6 @@ def _normalize(lon, minimum):
 
 class BoundingBox:
     def __init__(self, *, north, west, south, east):
-
         # Convert to float as these values may come from Numpy
         self.north = min(float(north), 90.0)
         self.south = max(float(south), -90.0)
@@ -74,7 +73,6 @@ class BoundingBox:
 
     @classmethod
     def multi_merge(cls, bboxes):
-
         north = max(z.north for z in bboxes)
         south = min(z.south for z in bboxes)
 
@@ -93,7 +91,6 @@ class BoundingBox:
         boundaries = list()
         stacked_intervals = set()  # To keep track of overlapping intervals
         for i, b in enumerate(bboxes):
-
             if b.east - b.west == 360:
                 return full
 
@@ -117,7 +114,6 @@ class BoundingBox:
         # It's complement will be the result
 
         for cursor, entering, interval in boundaries:
-
             if entering:
                 if not stacked_intervals:
                     distance = cursor - start
@@ -149,7 +145,6 @@ class BoundingBox:
         return self.multi_merge([self, other])
 
     def add_margins(self, margins):
-
         if isinstance(margins, str) and margins[-1] == "%":
             margins = int(margins[:-1]) / 100.0
             margins = max(
@@ -181,7 +176,6 @@ class BoundingBox:
 
 
 def to_bounding_box(obj):
-
     if isinstance(obj, BoundingBox):
         return obj
 

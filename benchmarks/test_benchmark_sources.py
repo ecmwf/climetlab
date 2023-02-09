@@ -57,7 +57,6 @@ def test_large_multi_2_climetlab(benchmark):
     MISSING("pytest_benchmark"), reason="pytest-benchmark not installed"
 )
 def test_large_multi_2_xarray(benchmark):
-
     with temp_directory():
         paths = large_multi_2_climetlab()
         benchmark(large_multi_2_xarray, paths)

@@ -51,7 +51,6 @@ STATUS = {
 
 # https://en.wikipedia.org/wiki/Saffir–Simpson_scale
 def category(knots):
-
     if knots < 83:
         return 1
 
@@ -74,11 +73,9 @@ URLS = {
 
 
 class HurricaneDatabase(Dataset):
-
     home_page = "https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html"
 
     def __init__(self, *, bassin="atlantic", url=None):
-
         if url is None:
             url = URLS[bassin.lower()]
 
@@ -87,7 +84,6 @@ class HurricaneDatabase(Dataset):
         with open(path) as f:
             lines = f
             for line in lines:
-
                 if line[0] in (" ", "<", "\n"):
                     continue
 

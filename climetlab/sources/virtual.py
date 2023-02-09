@@ -122,7 +122,6 @@ class Virtual(FieldSet):
         )
 
     def full_month(self, date):
-
         yyyymm = date // 100
 
         with self.lock:
@@ -132,7 +131,6 @@ class Virtual(FieldSet):
                 self.locks[yyyymm] = threading.Lock()
 
         with self.locks[yyyymm]:
-
             # Some other threads may have created that in the meantime
 
             if yyyymm in self.fields:

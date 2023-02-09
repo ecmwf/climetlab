@@ -120,7 +120,6 @@ class DaskDeploy:
 
 
 def start_dask(name_or_yaml_filename, **kwargs):
-
     if len(CURRENT_DEPLOYS) > 0:
         LOG.warn(
             f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running)."

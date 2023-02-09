@@ -27,8 +27,9 @@ def make_absolute(filename, root_dir, default):
     LOG.debug(f"Transforming {filename} into absolute path {absolute}")
     return absolute
 
+
 class GenericDirectorySource(IndexedSource):
-    """ Abstract class, INDEX_CLASS must be implemented """
+    """Abstract class, INDEX_CLASS must be implemented"""
 
     INDEX_CLASS = None
 
@@ -102,6 +103,7 @@ class GenericDirectorySource(IndexedSource):
             cache_metadata={"directory": self.path},
         )
         super().__init__(index, **kwargs)
+
 
 class DirectorySource(GenericDirectorySource):
     INDEX_CLASS = FieldsetInFilesWithSqlIndex

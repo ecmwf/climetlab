@@ -515,7 +515,6 @@ class SqlDatabase(Database):
             yield tupl
 
     def _find_all_coords_dict(self):
-
         # start-of: This is just an optimisation for speed.
         if all([isinstance(f, Order) for f in self._filters]):
             # if there is a Selection filter, it may remove some keys
@@ -539,7 +538,6 @@ class SqlDatabase(Database):
         return values
 
     def _find_all_coords_dict_from_coords_tables(self):
-
         coords_tables = CoordTables(self.connection)
         keys = list(coords_tables.keys())
         keys = [k for k in keys if k in GRIB_INDEX_KEYS]

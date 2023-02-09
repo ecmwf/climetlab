@@ -31,7 +31,6 @@ class WeatherBench(Dataset):
 """
 
     def __init__(self, parameter="geopotential_500", resolution=5.625):
-
         # self.check_parameter(
         #     "parameter",
         #     parameter,

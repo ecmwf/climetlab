@@ -23,7 +23,6 @@ def print_rst_underline(txt, padding="-", indent=0):
 
 
 def execute(*args):
-
     cmd_list = [(cmd, getattr(CliMetLabApp, cmd)) for cmd in dir(CliMetLabApp)]
     cmd_list = [(cmd, func) for (cmd, func) in cmd_list if cmd.startswith("do_")]
     cmd_list = [(cmd, func) for (cmd, func) in cmd_list if hasattr(func, "_argparser")]
@@ -59,7 +58,6 @@ def execute(*args):
         )
 
         for n in func._argparser.format_help().split("\n"):
-
             if n.startswith("usage: "):
                 n = "climetlab " + n[7:]
                 print("Usage")

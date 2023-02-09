@@ -190,7 +190,6 @@ def dataset_from_yaml(path, *args, **kwargs):
 
 
 class DatasetLoader:
-
     kind = "dataset"
 
     def settings(self, name):
@@ -227,7 +226,6 @@ class DatasetLoader:
 
 class DatasetMaker:
     def lookup(self, name):
-
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 

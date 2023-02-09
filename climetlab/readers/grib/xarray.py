@@ -60,7 +60,6 @@ class XarrayMixIn:
         )
 
     def to_xarray(self, **kwargs):
-
         import xarray as xr
 
         xarray_open_dataset_kwargs = {}

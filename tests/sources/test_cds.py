@@ -17,7 +17,6 @@ from climetlab.testing import NO_CDS
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_cds_grib_1():
-
     s = load_source(
         "cds",
         "reanalysis-era5-single-levels",
@@ -32,7 +31,6 @@ def test_cds_grib_1():
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_cds_grib_2():
-
     s = load_source(
         "cds",
         "reanalysis-era5-single-levels",
@@ -48,7 +46,6 @@ def test_cds_grib_2():
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_cds_netcdf():
-
     s = load_source(
         "cds",
         "reanalysis-era5-single-levels",

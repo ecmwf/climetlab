@@ -68,7 +68,6 @@ def mars_like_date_list(start, end, by):
 
 
 def to_datetime_list(datetimes):  # noqa C901
-
     if isinstance(datetimes, (datetime.datetime, np.datetime64)):
         return to_datetime_list([datetimes])
 

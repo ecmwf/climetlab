@@ -54,7 +54,6 @@ class ZIPReader(ArchiveReader):
             members = zip.infolist()
 
             if len(members) == 1:
-
                 _, ext = os.path.splitext(members[0].filename)
                 if ext in (".csv",):
                     self._mutate = CSVReader(source, path, compression="zip")
@@ -69,7 +68,6 @@ class ZIPReader(ArchiveReader):
         return super().check(InfoWrapper(member))
 
     def mutate(self):
-
         if self._mutate:
             return self._mutate
 
@@ -87,7 +85,6 @@ EXTENSIONS_TO_SKIP = (".npz",)  # Numpy arrays
 
 
 def reader(source, path, magic=None, deeper_check=False):
-
     if magic is None:  # Bypass check and force
         return ZIPReader(source, path)
 

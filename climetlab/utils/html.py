@@ -22,7 +22,6 @@ def css(name):
 
 
 def table(obj):
-
     style = css("table")
 
     table = """

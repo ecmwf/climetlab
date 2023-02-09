@@ -114,7 +114,6 @@ class Interval(object):
 
     def __repr__(self):
         if isinstance(self.start, datetime.date):
-
             if self.start == self.end:
                 return self.start.strftime("%Y-%m-%d")
 
@@ -150,7 +149,6 @@ class Interval(object):
 
 
 def _cleanup(x):
-
     if isinstance(x, (list, tuple)):
         return [_cleanup(a) for a in x]
 
@@ -294,11 +292,9 @@ class Tree:
         return request
 
     def count(self, _kwargs=None, **kwargs):
-
         return self._count(self._kwargs_to_request(_kwargs, **kwargs))
 
     def _count(self, request):
-
         if not self._values and not self._children:
             return 0
 
@@ -365,7 +361,6 @@ class Tree:
     def _match(self, request):
         matches = {}
         for name, values in [(n, v) for (n, v) in request.items() if n in self._values]:
-
             if name in self._intervals:
                 common = Interval.intersection(values, self._values[name])
             else:
@@ -414,7 +409,6 @@ class Tree:
         return "\n".join(result)
 
     def as_mars_list(self):
-
         text = []
         indent = {}
         order = {}
@@ -453,7 +447,6 @@ class Tree:
         return "".join(str(x) for x in text)
 
     def tree(self):
-
         text = []
         indent = {}
         order = {}
@@ -537,7 +530,6 @@ class Column(object):
 
 class Table(object):
     def __init__(self, other=None, a=None, b=None):
-
         self.tree = Tree()
 
         if other is not None:
@@ -699,7 +691,6 @@ def _scan(r, cols, name, rest):
 
 
 def _as_requests(r):
-
     s = {}
     for k, v in r.items():
         if not isinstance(v, (tuple, list)):
@@ -717,7 +708,6 @@ def factorise(req, *, intervals=None):
 
 
 def _factorise(req, intervals=None):
-
     if intervals is None:
         intervals = []
 

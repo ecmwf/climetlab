@@ -17,7 +17,6 @@ from climetlab.testing import NO_EOD
 
 @pytest.mark.skipif(NO_EOD, reason="No access to Open data")
 def test_open_data():
-
     s = load_source(
         "ecmwf-open-data",
         step=240,

@@ -65,7 +65,6 @@ class ECMWFApi(FileSource):
             self.path = [self._retrieve(r) for r in requests]
         else:
             with SoftThreadPool(nthreads=nthreads) as pool:
-
                 futures = [pool.submit(self._retrieve, r) for r in requests]
 
                 iterator = (f.result() for f in futures)
@@ -98,7 +97,6 @@ class ECMWFApi(FileSource):
         return result
 
     def to_pandas(self, **kwargs):
-
         pandas_read_csv_kwargs = dict(
             sep="\t",
             comment="#",

@@ -43,7 +43,6 @@ def to_snake_case(k):
 
 
 def tidy(x):
-
     if isinstance(x, (list, tuple)):
         return [tidy(y) for y in x]
 
@@ -87,7 +86,6 @@ def cleanup(p):
 
 
 class String:
-
     values = None
     python_type = "str"
     yaml_type = "String"
@@ -100,7 +98,6 @@ class String:
 
 
 class Bool:
-
     values = None
     python_type = "bool"
     yaml_type = "Bool"
@@ -113,7 +110,6 @@ class Bool:
 
 
 class Int:
-
     values = None
     python_type = "int"
     yaml_type = "Int"
@@ -128,7 +124,6 @@ class Int:
 
 
 class Float:
-
     values = None
     python_type = "float"
     yaml_type = "Float"
@@ -152,7 +147,6 @@ class Longitude(Float):
 
 
 class IntList:
-
     values = None
     python_type = "List[int]"
     yaml_type = "IntList"
@@ -166,7 +160,6 @@ class IntList:
 
 
 class FloatList:
-
     values = None
     python_type = "List[float]"
     yaml_type = "FloatList"
@@ -180,7 +173,6 @@ class FloatList:
 
 
 class StringList:
-
     values = None
     python_type = "List[str]"
     yaml_type = "StringList"
@@ -194,7 +186,6 @@ class StringList:
 
 
 class ColourList:
-
     values = None
     python_type = "List[str]"
     yaml_type = "ColourList"
@@ -211,7 +202,6 @@ class ColourList:
 
 
 class Colour:
-
     values = None
     python_type = "str"
     yaml_type = "Colour"
@@ -224,7 +214,6 @@ class Colour:
 
 
 class Enum:
-
     python_type = "str"
     yaml_type = "string"
 
@@ -332,7 +321,6 @@ class Param:
 
     @property
     def python_values(self):
-
         values = self.type.values
         if values is not None:
             return ", ".join([repr(x).replace("'", '"') for x in values])
@@ -358,7 +346,6 @@ class Param:
 
 class Klass:
     def __init__(self, defs):
-
         self._defs = defs
         self._inherits = None
         self._parameters = None
@@ -484,9 +471,7 @@ def produce_rst():
         seen = set()
 
         for k in sorted(klasses):
-
             for p in k.parameters:
-
                 if p.name in seen:
                     continue
 
@@ -502,7 +487,6 @@ def produce_rst():
 
 
 def produce_python():
-
     print(
         "\n".join(
             [
@@ -541,7 +525,6 @@ def produce_python():
         for k in sorted(klasses):
             print("    # [%s]" % (k.name,), k.documentation)
             for p in k.parameters:
-
                 c = "#" if p.name in seen else ""
 
                 print(
@@ -558,11 +541,9 @@ def produce_python():
 
 
 def produce_yaml():
-
     m = {}
 
     for action, klasses in sorted(ACTIONS.items()):
-
         m[action] = []
 
         for k in sorted(klasses):
@@ -579,7 +560,6 @@ def produce_yaml():
 
 
 def produce_schemas(directory):
-
     path = os.path.join(directory, "definitions.json")
     with open(path) as f:
         definitions = json.load(f)["definitions"]
@@ -595,7 +575,6 @@ def produce_schemas(directory):
     os.rename(path + ".tmp", path)
 
     for action, klasses in sorted(ACTIONS.items()):
-
         properties = {}
 
         for k in sorted(klasses):

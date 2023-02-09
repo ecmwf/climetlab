@@ -23,7 +23,6 @@ def f(d):
 
 
 def test_normalize_dates_from_source():
-
     dates_3 = normalize("d", "date")(f)
     dates_list_3 = normalize("d", "date", multiple=True)(f)
 

@@ -13,7 +13,6 @@ from .file import FileSource
 
 
 class EODRetriever(FileSource):
-
     sphinxdoc = """
     EODRetriever
     """

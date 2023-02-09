@@ -84,7 +84,6 @@ for t in range(args.threads):
 
 
 def download(url, target):
-
     logging.info("Downloading %s", url)
     write_lock = Lock()
     download = target  # + ".download"

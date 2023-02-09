@@ -19,7 +19,6 @@ MONTH_DATE = re.compile(r"^\d\d\d\d-\d\d?$")
 
 
 def parse_date(dt):
-
     if not VALID_DATE.match(dt):
         raise ValueError(f"Invalid datetime '{dt}'")
 

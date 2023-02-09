@@ -16,7 +16,6 @@ LOG = logging.getLogger(__name__)
 
 
 class IndexedSource(Source):
-
     _reader_ = None
 
     def __init__(self, index, order_by=None, filter=None, merger=None, **kwargs):

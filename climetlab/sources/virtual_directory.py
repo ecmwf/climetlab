@@ -187,7 +187,7 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
         try:
             value = func(key, item)
         except Exception:
-        # except Exception as e:
+            # except Exception as e:
             # LOG.exception(f"DEBUG MESSAGE: Exception reading {key}:{str(e)}")
             return None
 

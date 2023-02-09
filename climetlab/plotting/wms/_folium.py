@@ -70,7 +70,6 @@ class NoScrollZoom(MacroElement):
 
 
 def make_map(path, bbox, **kwargs):
-
     center = (0, 0)
     zoom = 1
     # fmt = "image/svg+xml"
@@ -139,7 +138,6 @@ def make_map(path, bbox, **kwargs):
     html = m._repr_html_()
 
     if guess_which_ipython()[0] == "deepnote":
-
         # For deepnote
         html = html.replace("width: 100%;height: 100%", "width: 100%").replace(
             "height: 100.0%;", "height: 609px;"

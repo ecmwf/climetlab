@@ -19,7 +19,6 @@ class normalize_args:
         )
         self.decorators = []
         for name, values in dic.items():
-
             if isinstance(values, list):
                 self.decorators.append(normalize(name, values, multiple=True))
                 continue

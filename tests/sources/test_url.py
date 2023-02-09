@@ -106,7 +106,6 @@ def test_url_source_3():
 
 @pytest.mark.long_test
 def test_extension():
-
     s = load_source(
         "url",
         f"{TEST_DATA_URL}/fixtures/tfrecord/EWCTest0.0.tfrecord",
@@ -120,7 +119,6 @@ def test_extension():
 
 
 def test_part_url():
-
     ds = load_source(
         "url",
         "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",

@@ -49,7 +49,6 @@ def _dummy(**kwargs):
 
 
 def consume_args(func1, func2, *args, **kwargs):
-
     # print("=====>", args, kwargs)
 
     if func1 is None:

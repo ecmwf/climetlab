@@ -30,7 +30,6 @@ class PerUrlIndex:
         self,
         pattern,
     ) -> None:
-
         # warnings.warn( "PerUrlIndex is obsolete.")
 
         self.pattern = pattern

@@ -214,7 +214,11 @@ def _index_directory(
     from climetlab.indexing.database.sql import SqlDatabase
     from climetlab.indexing.database.stdout import StdoutDatabase
 
-    db = dict(json=JsonDatabase, sql=SqlDatabase, stdout=StdoutDatabase,)[
+    db = dict(
+        json=JsonDatabase,
+        sql=SqlDatabase,
+        stdout=StdoutDatabase,
+    )[
         db_format
     ](db_path)
     iterator = GribIndexingDirectoryParserIterator(

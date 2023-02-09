@@ -48,7 +48,6 @@ def locked(func):
 
 
 class Decorator:
-
     is_availability = False
 
     def __call__(self, func):

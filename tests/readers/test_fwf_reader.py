@@ -16,7 +16,6 @@ import climetlab as cml
 
 @pytest.mark.external_download
 def test_fwf():
-
     url = "https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/monthly.ao.index.b50.current.ascii"
 
     s = cml.load_source(

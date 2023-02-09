@@ -21,7 +21,6 @@ class MeteonetWeatherModels(Meteonet):
     def __init__(
         self, model="arome", variable="2m", domain="NW", date="20180501", time="0000"
     ):
-
         url = "{url}/weather_models/{model}_{variable}_{domain}_{date}{time}00.grib".format(
             url=self.URL,
             variable=variable,

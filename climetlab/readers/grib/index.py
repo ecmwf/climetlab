@@ -269,7 +269,6 @@ SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
 
 class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
-
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 100_000
     DB_DICT_CACHE_SIZE = 100_000
@@ -372,7 +371,6 @@ class FieldSetInOneFile(FieldSetInFiles):
         super().__init__(**kwargs)
 
     def _build_offsets_lengths_mapping(self):
-
         offsets = []
         lengths = []
 

@@ -12,7 +12,6 @@ from climetlab.utils.kwargs import merge_dicts
 
 
 def test_merge_dicts():
-
     assert merge_dicts({"a": 1, "b": 2}, {"a": 1, "b": 6}) == {"a": 1, "b": 6}
     assert merge_dicts({"a": 1}, {"a": 1, "b": 6}) == {"a": 1, "b": 6}
     assert merge_dicts({"a": 1, "b": 2}, {"a": 3}) == {"a": 3, "b": 2}

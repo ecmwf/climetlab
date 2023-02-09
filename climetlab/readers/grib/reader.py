@@ -27,7 +27,6 @@ class GRIBReader(FieldSetInOneFile, Reader):
 
     @classmethod
     def merge(cls, readers):
-
         assert all(isinstance(s, GRIBReader) for s in readers), readers
         assert len(readers) > 1
 

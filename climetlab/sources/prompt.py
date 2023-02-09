@@ -59,7 +59,6 @@ class Prompt:
         self.owner = owner
 
     def ask_user(self):
-
         self.print_message()
 
         result = {}
@@ -141,7 +140,6 @@ class APIKeyPrompt:
         return self.validate(prompt.ask_user())
 
     def ask_user_and_save(self):
-
         input = self.ask_user()
 
         rcfile = os.path.expanduser(self.rcfile)

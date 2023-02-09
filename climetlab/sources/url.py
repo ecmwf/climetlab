@@ -36,7 +36,6 @@ def download_and_cache(
     fake_headers=None,  # When HEAD is not allowed but you know the size
     **kwargs,
 ):
-
     # TODO: re-enable this feature
     extension = None
 
@@ -119,7 +118,6 @@ class Url(FileSource):
         update_if_out_of_date=False,
         fake_headers=None,  # When HEAD is not allowed but you know the size
     ):
-
         super().__init__(filter=filter, merger=merger)
 
         # TODO: re-enable this feature

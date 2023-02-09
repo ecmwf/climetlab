@@ -20,7 +20,6 @@ LATLON = (
 
 class PandasSeriesWrapper(Wrapper):
     def __init__(self, series, **kwargs):
-
         self.series = series
 
     def to_datetime_list(self):
@@ -29,7 +28,6 @@ class PandasSeriesWrapper(Wrapper):
 
 class PandasFrameWrapper(Wrapper):
     def __init__(self, frame, **kwargs):
-
         self.frame = frame
 
         self.lat = "cannot-find-latitude-column"
@@ -50,7 +48,6 @@ class PandasFrameWrapper(Wrapper):
         backend.plot_graph_pandas(self.frame, self.time, column)
 
     def plot_map(self, backend):
-
         column = backend.option("column", self.lat)
 
         north, west, south, east = self.bounding_box()
@@ -65,7 +62,6 @@ class PandasFrameWrapper(Wrapper):
         backend.plot_pandas(self.frame, self.lat, self.lon, column)
 
     def bounding_box(self):
-
         north = self.frame[self.lat].max()
         south = self.frame[self.lat].min()
 

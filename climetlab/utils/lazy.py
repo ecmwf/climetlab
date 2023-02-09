@@ -27,7 +27,6 @@ class LazySource:
 
     @property
     def source(self):
-
         if self._source is None:
             try:
                 self._source = load_source(

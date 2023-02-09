@@ -133,7 +133,6 @@ def as_numpy_func(ds, opt):
 
 
 def normalize_a_b(option, dataset):
-
     if isinstance(option, (tuple, list)) and all(
         [isinstance(x, Number) for x in option]
     ):
@@ -267,7 +266,6 @@ class TensorflowMixIn:
         return to_tfdataset(features=self, targets=targets, **kwargs)
 
     def to_tfdataset(self, *args, **kwargs):
-
         if "features" not in kwargs:
             kwargs["features"] = [self]
 

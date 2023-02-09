@@ -65,7 +65,6 @@ TENSORFLOW = ("05-high-lows.ipynb",)
 
 
 def notebooks_list():
-
     notebooks = []
     for path in os.listdir(EXAMPLES):
         if re.match(r"^\d\d-.*\.ipynb$", path):

@@ -41,7 +41,6 @@ class KDNode:
         return (o.best, o.max)
 
     def _find_nn(self, point, o, depth):
-
         x = point[self.axis]
         y = self.value[self.axis]
 
@@ -79,7 +78,6 @@ class KDChunk:
         visitor(self, depth)
 
     def _find_nn(self, point, o, depth):
-
         d = min((np.linalg.norm(point - v[:-1]), v[-1]) for v in self.values)
 
         if d[0] < o.max:
@@ -168,7 +166,6 @@ def ecef(lat, lon, i):
 
 
 def unstructed_to_structed(grib, chunk_size=-1):
-
     now = time.time()
     print("----")
     xyz = np.array(

@@ -47,7 +47,6 @@ def probe_csv(
     minimum_columns=2,
     minimum_rows=2,
 ):
-
     OPENS = {
         None: open,
         "zip": ZipProbe,
@@ -120,7 +119,6 @@ def probe_csv(
 
 
 def is_csv(path, probe_size=4096, compression=None):
-
     _, extension = os.path.splitext(path)
 
     if extension in (".xml",):

@@ -28,7 +28,6 @@ class MeteonetRadar(Meteonet):
     """
 
     def __init__(self, domain="NW", variable="rainfall", year=2016, month=8, part=3):
-
         url = "{url}/radar/radar_coords_{domain}.npz".format(
             url=self.URL, domain=domain
         )

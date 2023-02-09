@@ -69,7 +69,6 @@ class StringList:
 
 
 def convert(action, args):
-
     magics_keys = magics_keys_parameters(action)
 
     converted = {}

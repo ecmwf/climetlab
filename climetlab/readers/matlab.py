@@ -27,6 +27,5 @@ class MatlabReader(Reader):
 
 
 def reader(source, path, magic=None, deeper_check=False):
-
     if magic[:7] == b"MATLAB ":
         return MatlabReader(source, path)

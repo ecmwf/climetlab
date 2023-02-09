@@ -10,7 +10,6 @@
 
 class Backend:
     def __init__(self, options):
-
         self._options = options
 
         from matplotlib.pyplot import figure

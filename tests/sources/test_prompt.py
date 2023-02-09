@@ -20,7 +20,6 @@ from climetlab.testing import MISSING
 
 
 def test_mars_api_key():
-
     answers = [
         "https://api.ecmwf.int/v1",
         "b295aad8af30332fad2fa8c963ab7900",
@@ -42,7 +41,6 @@ def test_mars_api_key():
 
 
 def test_cds_api_key():
-
     answers = [
         "https://cds.climate.copernicus.eu/api/v2",
         "123:abcdef01-0000-1111-2222-0123456789ab",
@@ -66,7 +64,6 @@ def test_cds_api_key():
     reason="climetlab-eumetsat not installed",
 )
 def test_eumetsat_api_key():
-
     from climetlab_eumetsat.eumetsat import EumetsatAPIKeyPrompt
 
     answers = [

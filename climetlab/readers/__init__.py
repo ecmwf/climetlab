@@ -23,12 +23,10 @@ class ReaderMeta(type(Base), type(os.PathLike)):
 
 
 class Reader(Base, os.PathLike, metaclass=ReaderMeta):
-
     appendable = False  # Set to True if the data can be appened to and existing file
     binary = True
 
     def __init__(self, source, path):
-
         LOG.debug("Reader for %s is %s", path, self.__class__.__name__)
 
         self._source = weakref.ref(source)
@@ -94,12 +92,10 @@ def _readers():
     if not _READERS:
         here = os.path.dirname(__file__)
         for path in sorted(os.listdir(here)):
-
             if path[0] in ("_", "."):
                 continue
 
             if path.endswith(".py") or os.path.isdir(os.path.join(here, path)):
-
                 name, _ = os.path.splitext(path)
 
                 try:
@@ -117,7 +113,6 @@ def _readers():
 
 
 def reader(source, path):
-
     assert isinstance(path, str), source
 
     if hasattr(source, "reader"):
