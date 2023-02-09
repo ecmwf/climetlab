@@ -11,7 +11,7 @@ import warnings
 from collections import defaultdict
 
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
-from climetlab.sources.directory import DirectorySource
+from climetlab.sources.directory import GenericDirectorySource
 from climetlab.utils import progress_bar
 
 LOG = logging.getLogger(__name__)
@@ -241,7 +241,7 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
             )
 
 
-class VirtualDirectorySource(DirectorySource):
+class VirtualDirectorySource(GenericDirectorySource):
     INDEX_CLASS = VirtualFieldsetInFilesWithSqlIndex
 
 
