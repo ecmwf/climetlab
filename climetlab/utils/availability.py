@@ -74,6 +74,12 @@ class Availability:
                 avail = factorise(avail, intervals=intervals)
         self._tree = avail
 
+    def __str__(self):
+        return str(self.tree())
+
+    def __repr__(self):
+        return str(self.tree())
+
     def as_mars_list(self):
         return self._tree.as_mars_list()
 
