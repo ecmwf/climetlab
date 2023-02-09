@@ -103,7 +103,7 @@ def as_numpy_func(ds, opt):
     if "offset" in opt and opt["offset"]:
         offset = opt["offset"]
 
-        def take_i(i):
+        def take_i(i):  # noqa: F811
             return ds[i + offset].to_numpy(**options)
 
     func = take_i
@@ -255,15 +255,15 @@ class NumpyFuncWrapper:
 
 
 class TensorflowMixIn:
-    def to_tfdataset_old(
-        self,
-        labels=None,
-        targets=None,
-        **kwargs,
-    ):
-        if targets is None:  # rename "labels" into "targets" ?
-            targets = labels
-        return to_tfdataset(features=self, targets=targets, **kwargs)
+    # def to_tfdataset(
+    #     self,
+    #     labels=None,
+    #     targets=None,
+    #     **kwargs,
+    # ):
+    #     if targets is None:  # rename "labels" into "targets" ?
+    #         targets = labels
+    #     return to_tfdataset(features=self, targets=targets, **kwargs)
 
     def to_tfdataset(self, *args, **kwargs):
         if "features" not in kwargs:
