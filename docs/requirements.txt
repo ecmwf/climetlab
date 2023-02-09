@@ -1,6 +1,7 @@
 # These are the requirements for readthedoc
 eccodes
 ecmwflibs
+entrypoints
 filelock
 ipykernel
 magics
