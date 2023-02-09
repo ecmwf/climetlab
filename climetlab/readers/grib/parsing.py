@@ -14,16 +14,31 @@ from climetlab.utils import progress_bar, tqdm
 LOG = logging.getLogger(__name__)
 
 
+def post_process_valid_date(field, h):
+    field.pop("step", None)
+    field["date"] = h.get("validityDate")
+    field["time"] = h.get("validityTime")
+    return field
+
+
 def _index_grib_file(
     path,
     with_statistics=False,
+    with_valid_date=False,
 ):
     import eccodes
 
     from climetlab.readers.grib.codes import CodesHandle
 
+    post_process_mars = None
+    if with_valid_date:
+        post_process_mars = post_process_valid_date
+
     def parse_field(h):
         field = h.as_mars()
+
+        if post_process_mars:
+            field = post_process_mars(field, h)
 
         field["_path"] = path
         field["_offset"] = h.get_long("offset")
@@ -88,7 +103,14 @@ class DirectoryParserIterator:
     """
 
     def __init__(
-        self, directory, relative_paths, ignore=None, followlinks=True, verbose=False
+        self,
+        directory,
+        relative_paths,
+        ignore=None,
+        followlinks=True,
+        verbose=False,
+        with_statistics=True,
+        with_valid_date=False,
     ):
         if ignore is None:
             ignore = []
@@ -97,6 +119,8 @@ class DirectoryParserIterator:
         self.relative_paths = relative_paths
         self.followlinks = followlinks
         self.verbose = verbose
+        self.with_statistics = with_statistics
+        self.with_valid_date = with_valid_date
 
         self._tasks = None
 
@@ -155,7 +179,11 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
 
             from climetlab.readers.grib.parsing import _index_grib_file
 
-            for field in _index_grib_file(path, with_statistics=True):
+            for field in _index_grib_file(
+                path,
+                with_statistics=self.with_statistics,
+                with_valid_date=self.with_valid_date,
+            ):
                 field["_path"] = _path
                 yield field
         except PermissionError as e:

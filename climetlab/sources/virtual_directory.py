@@ -235,8 +235,8 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
             raise Exception(
                 (
                     f"Error for field={item.i} and {key=}:"
-                    " the reference field metadata is {r=}"
-                    " but the metatada for the item is {i=}"
+                    f" the reference field metadata is {r=}"
+                    f" but the metatada for the item is {i=}"
                 )
             )
 
