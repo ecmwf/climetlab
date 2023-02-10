@@ -11,12 +11,17 @@
 
 
 import pytest
+import sys
 
 from climetlab.core.temporary import temp_file
 from climetlab.indexing.database.json import JsonDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="file:// not working on Windows yet",
+)
 @pytest.mark.parametrize("cls", (SqlDatabase, JsonDatabase))
 def test_load(cls):
     lst = [
