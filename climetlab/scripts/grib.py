@@ -95,13 +95,6 @@ class GribCmd:
                 "(when the argument --output is used, default for --relative-path is False)"
             ),
         ),
-        use_valid_date=dict(
-            action="store_true",
-            help=(
-                "Use valid dates and valid times when indexing. Default is not to use valid date and times,"
-                "changing the GRIB attributes (This is consistent with ERA5 in the CDS)"
-            ),
-        ),
         output=(
             "--output",
             dict(
@@ -116,7 +109,6 @@ class GribCmd:
         force = args.force
         force_relative_paths_on = args.relative_paths
         db_format = args.format
-        with_valid_date = args.use_valid_date
 
         followlinks = True
         if args.no_follow_links:
@@ -181,7 +173,6 @@ class GribCmd:
             ignore=ignore,
             db_format=db_format,
             with_statistics=True,
-            with_valid_date=with_valid_date,
         )
 
     @parse_args(
@@ -208,7 +199,6 @@ def _index_directory(
     ignore,
     db_format,
     with_statistics,
-    with_valid_date,
 ):
     from climetlab.indexing.database.json import JsonDatabase
     from climetlab.indexing.database.sql import SqlDatabase
@@ -227,7 +217,6 @@ def _index_directory(
         relative_paths=relative_paths,
         followlinks=followlinks,
         with_statistics=with_statistics,
-        with_valid_date=with_valid_date,
     )
     start = datetime.datetime.now()
     count = db.load(iterator)

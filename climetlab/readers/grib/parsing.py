@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import datetime
 import logging
 import os
 
@@ -15,30 +16,56 @@ LOG = logging.getLogger(__name__)
 
 
 def post_process_valid_date(field, h):
-    field.pop("step", None)
-    field["date"] = h.get("validityDate")
-    field["time"] = h.get("validityTime")
+    date = h.get("validityDate")
+    time = h.get("validityTime")
+    field["valid"] = datetime.datetime(
+        date // 10000,
+        date % 10000 // 100,
+        date % 100,
+        time // 100,
+        time % 100,
+    )
+    # ).isoformat()
+    return field
+
+
+def post_process_parameter_level(field, h):
+    param = field.get("param", None)
+    if param is None:
+        field["param_level"] = None
+        return field
+
+    level = field.get("level", None)
+    if level is None:
+        field["param_level"] = param
+        return field
+
+    field["param_level"] = f"{param}_{level}"
     return field
 
 
 def _index_grib_file(
     path,
     with_statistics=False,
-    with_valid_date=False,
+    with_valid_date=True,
+    with_parameter_level=True,
 ):
     import eccodes
 
     from climetlab.readers.grib.codes import CodesHandle
 
-    post_process_mars = None
+    post_process_mars = []
     if with_valid_date:
-        post_process_mars = post_process_valid_date
+        post_process_mars.append(post_process_valid_date)
+    if with_parameter_level:
+        post_process_mars.append(post_process_parameter_level)
 
     def parse_field(h):
         field = h.as_mars()
 
         if post_process_mars:
-            field = post_process_mars(field, h)
+            for f in post_process_mars:
+                field = f(field, h)
 
         field["_path"] = path
         field["_offset"] = h.get_long("offset")
@@ -110,7 +137,6 @@ class DirectoryParserIterator:
         followlinks=True,
         verbose=False,
         with_statistics=True,
-        with_valid_date=False,
     ):
         if ignore is None:
             ignore = []
@@ -120,7 +146,6 @@ class DirectoryParserIterator:
         self.followlinks = followlinks
         self.verbose = verbose
         self.with_statistics = with_statistics
-        self.with_valid_date = with_valid_date
 
         self._tasks = None
 
@@ -182,7 +207,6 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
             for field in _index_grib_file(
                 path,
                 with_statistics=self.with_statistics,
-                with_valid_date=self.with_valid_date,
             ):
                 field["_path"] = _path
                 yield field

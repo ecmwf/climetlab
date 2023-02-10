@@ -10,8 +10,9 @@
 #
 
 
-import pytest
 import sys
+
+import pytest
 
 from climetlab.core.temporary import temp_file
 from climetlab.indexing.database.json import JsonDatabase

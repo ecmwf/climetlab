@@ -235,8 +235,8 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
         if r != i:
             raise Exception(
                 (
-                    f"Error for field={item.i} and {key=}:"
-                    f" the reference field metadata is {r=}"
+                    "The virtual-directory source does not support using multiple parameter in the same source yet."
+                    f"Error for field={item.i} and {key=}: the reference field metadata is {r=}"
                     f" but the metatada for the item is {i=}"
                 )
             )

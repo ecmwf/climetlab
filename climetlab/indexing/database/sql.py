@@ -66,6 +66,10 @@ for k in [
     GribKey("frequency", str, str, None),  # for 2-d wave-spectra products
     GribKey("direction", str, str, None),  # for 2-d wave-spectra products
     GribKey("channel", str, str, None),  # for ea and ef
+    #
+    #
+    GribKey("param_level", str, str, None),
+    GribKey("valid", str, str, None),
 ]:
     GRIB_INDEX_KEYS_DICT[k.name] = k
     GRIB_INDEX_KEYS.append(k.name)
