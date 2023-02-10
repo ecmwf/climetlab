@@ -13,7 +13,7 @@ import json
 import logging
 from abc import abstractmethod
 
-from climetlab.decorators import alias_argument
+from climetlab.decorators import alias_argument, normalize
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
@@ -25,15 +25,11 @@ class OrderOrSelection:
         self.dic = {}
 
         for arg in args:
-            if isinstance(arg, dict):
-                arg = self.normalize_naming(**arg)
             res_ok = self.parse_arg(arg)
             if res_ok is False:
                 raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
 
-        kwargs = self.normalize_naming(**kwargs)
-        for k, v in kwargs.items():
-            self.parse_kwarg(k, v)
+        self.parse_kwargs(kwargs)
 
     @alias_argument("levelist", ["level"])
     @alias_argument("param", ["variable", "parameter"])
@@ -42,13 +38,24 @@ class OrderOrSelection:
     def normalize_naming(self, **kwargs):
         return kwargs
 
+    def parse_kwargs(self, kwargs):
+        """Parse a dictionary of keywords arguments"""
+        kwargs = self.normalize_naming(**kwargs)
+        for k, v in kwargs.items():
+            self.parse_kwarg(k, v)
+
+    def parse_kwarg(self, k, v):
+        """Parse one keywords argument"""
+        raise NotImplementedError
+
     def parse_arg(self, arg):
-        # Returns True of argument has been parsed.
+        """Parse one argument
+        Returns True of argument is a dict and has been parsed.
+        """
         if arg is None:
             return True
         if isinstance(arg, dict):
-            for k, v in arg.items():
-                self.parse_kwarg(k, v)
+            self.parse_kwargs(arg)
             return True
         return False
 
@@ -71,22 +78,17 @@ class OrderOrSelection:
     def keys(self):
         return self.dic.keys()
 
-    def value_to_list(self, k, v):
-        from pandas.core.indexes.datetimes import DatetimeIndex
-
-        if isinstance(v, DatetimeIndex):
-            v = v.to_list()
-        return v
-
 
 class Selection(OrderOrSelection):
     @property
     def selection(self):
         return self.dic
 
-    def parse_kwarg(self, k, v):
-        v = self.value_to_list(k, v)
+    normalize_naming = normalize("valid", "date-list")(
+        OrderOrSelection.normalize_naming
+    )
 
+    def parse_kwarg(self, k, v):
         if v is not None and not isinstance(v, (list, tuple)):
             v = [v]
 
@@ -177,8 +179,6 @@ class Order(OrderOrSelection):
         return False
 
     def parse_kwarg(self, k, v):
-        v = self.value_to_list(k, v)
-
         if isinstance(v, (list, tuple)):
             v = [str(_) for _ in v]  # processing only strings from now.
         if (v == "ascending") or (v == "descending") or isinstance(v, (list, tuple)):
