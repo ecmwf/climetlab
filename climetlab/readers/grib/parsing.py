@@ -25,7 +25,9 @@ def post_process_valid_date(field, h):
         time // 100,
         time % 100,
     )
-    # ).isoformat()
+    # Note that we do not create a script here:
+    # There is no ".isoformat()". Because the sql database
+    # takes care of this conversion back and forth.
     return field
 
 

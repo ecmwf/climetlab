@@ -71,6 +71,13 @@ class OrderOrSelection:
     def keys(self):
         return self.dic.keys()
 
+    def value_to_list(self, k, v):
+        from pandas.core.indexes.datetimes import DatetimeIndex
+
+        if isinstance(v, DatetimeIndex):
+            v = v.to_list()
+        return v
+
 
 class Selection(OrderOrSelection):
     @property
@@ -78,8 +85,11 @@ class Selection(OrderOrSelection):
         return self.dic
 
     def parse_kwarg(self, k, v):
+        v = self.value_to_list(k, v)
+
         if v is not None and not isinstance(v, (list, tuple)):
             v = [v]
+
         if isinstance(v, (list, tuple)):
             v = [str(_) for _ in v]
         self.dic[k] = v
@@ -167,6 +177,8 @@ class Order(OrderOrSelection):
         return False
 
     def parse_kwarg(self, k, v):
+        v = self.value_to_list(k, v)
+
         if isinstance(v, (list, tuple)):
             v = [str(_) for _ in v]  # processing only strings from now.
         if (v == "ascending") or (v == "descending") or isinstance(v, (list, tuple)):

@@ -420,16 +420,19 @@ class SqlDatabase(Database):
             return ""
         conditions = []
         for k, b in selection.dic.items():
+
             if b is None or b == cml.ALL:
                 continue
-            elif isinstance(b, (list, tuple)):
+
+            if isinstance(b, (list, tuple)):
                 if len(b) == 1:
                     conditions.append(f"i_{k}='{b[0]}'")
                     continue
                 w = ",".join([f"'{x}'" for x in b])
                 conditions.append(f"i_{k} IN ({w})")
-            else:
-                conditions.append(f"i_{k}='{b}'")
+                continue
+
+            conditions.append(f"i_{k}='{b}'")
 
         if not conditions:
             return ""
