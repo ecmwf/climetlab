@@ -420,7 +420,6 @@ class SqlDatabase(Database):
             return ""
         conditions = []
         for k, b in selection.dic.items():
-
             if b is None or b == cml.ALL:
                 continue
 
