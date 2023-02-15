@@ -72,7 +72,7 @@ def test_cli_export_cache_cds():
             target = f"{export_dir}/{os.path.basename(original)}"
             assert filecmp.cmp(original, target), (original, target)
 
-    shutil.rmtree(export_dir)
+    shutil.rmtree(export_dir, ignore_errors=True)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink dir on Windows")
@@ -117,7 +117,7 @@ def test_cli_index_directory():
             s1 = None  # noqa: F841
             s2 = None  # noqa: F841
 
-    shutil.rmtree(directory)
+    shutil.rmtree(directory, ignore_errors=True)
 
 
 if __name__ == "__main__":

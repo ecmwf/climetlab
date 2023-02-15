@@ -27,11 +27,11 @@ class FieldSetMixin(PandasMixIn, XarrayMixIn, PytorchMixIn, TensorflowMixIn):
     _statistics = None
 
     def _find_all_coords_dict(self):
-        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+        from climetlab.indexing.database import GRIB_KEYS_NAMES
 
         coords = defaultdict(set)
         for f in self:
-            for k in GRIB_INDEX_KEYS:
+            for k in GRIB_KEYS_NAMES:
                 v = f.metadata(k)
                 if v is None:
                     continue

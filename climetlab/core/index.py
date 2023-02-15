@@ -142,12 +142,12 @@ class Order(OrderOrSelection):
         if self.is_empty:
             return
 
-        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+        from climetlab.indexing.database import GRIB_KEYS_NAMES
 
         for k, v in self.dic.items():
             yield k, v
 
-        for k in GRIB_INDEX_KEYS:
+        for k in GRIB_KEYS_NAMES:
             if k in self.dic:
                 continue  # already yielded above
             yield k, self[k]
@@ -197,10 +197,10 @@ class Order(OrderOrSelection):
         if self._rankers is not None:
             return self._rankers
 
-        from climetlab.indexing.database.sql import GRIB_INDEX_KEYS
+        from climetlab.indexing.database import GRIB_KEYS_NAMES
 
         keys = [_ for _ in self.dic.keys()]
-        keys += [_ for _ in GRIB_INDEX_KEYS if _ not in keys]
+        keys += [_ for _ in GRIB_KEYS_NAMES if _ not in keys]
 
         key_types = {}
         dict_of_dicts = dict()

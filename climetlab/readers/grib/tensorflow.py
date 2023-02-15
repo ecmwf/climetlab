@@ -83,6 +83,9 @@ LOG = logging.getLogger(__name__)
 
 
 def default_merger(*funcs):
+    if not funcs:
+        return None
+
     def map_fn(i):
         i = int(i)
         arrays = [m(i) for m in funcs]

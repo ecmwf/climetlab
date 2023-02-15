@@ -29,7 +29,7 @@ from climetlab.core.index import (
     Selection,
 )
 from climetlab.decorators import cached_method
-from climetlab.indexing.database.json import JsonDatabase
+from climetlab.indexing.database.json import JsonFileDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSetMixin
@@ -71,6 +71,7 @@ class FieldSet(FieldSetMixin, Index):
                 iterable=range(len(self)), desc="Building availability"
             ):
                 dic = self.get_metadata(i)
+                dic.pop("_param_id", None)
                 dic = {k: v for k, v in dic.items() if v is not None}
                 yield dic
 
@@ -252,7 +253,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
 
 
 class FieldsetInFilesWithJsonIndex(FieldsetInFilesWithDBIndex):
-    DBCLASS = JsonDatabase
+    DBCLASS = JsonFileDatabase
 
     @cached_method
     def _lookup_parts(self):
@@ -323,7 +324,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             result = self.db.lookup_dicts(
                 limit=self.DB_DICT_CACHE_SIZE,
                 offset=first,
-                keys=["i", "c"]
+                with_parts=False,
                 # remove_none=False ?
             )
             result = list(result)
