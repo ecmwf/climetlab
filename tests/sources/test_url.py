@@ -44,6 +44,7 @@ def test_url_ftp_source_anonymous():
     )
 
 
+@pytest.mark.skipif(True, reason="ftp password.")
 @pytest.mark.ftp
 def test_url_ftp_source_with_user_pass():
     import ftplib
