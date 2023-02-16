@@ -44,7 +44,6 @@ def test_url_ftp_source_anonymous():
     )
 
 
-@pytest.mark.skipif(True, reason="ftp password.")
 @pytest.mark.ftp
 def test_url_ftp_source_with_user_pass():
     import ftplib
@@ -54,7 +53,7 @@ def test_url_ftp_source_with_user_pass():
         load_source(
             "url-pattern",
             (
-                "ftp://wmo:essential@dissemination.ecmwf.int/{date:date(%Y%m%d)}000000/"
+                "ftp://wmo:essential@diss.ecmwf.int/{date:date(%Y%m%d)}000000/"
                 "A_HPXA89ECMF{date:date(%d)}0000_C_ECMF_{date:date(%Y%m%d)}"
                 "000000_an_msl_global_0p5deg_grib2.bin"
             ),
