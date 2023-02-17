@@ -438,13 +438,33 @@ class Tree:
                 if len(v) == 1:
                     text.append(v[0])
                 else:
-                    text.append("/".join(sorted(str(x) for x in v)))
+                    start, end = self._to_date_interval(k, v)
+                    if start is not None:
+                        text.append(f"{start}/to/{end}")
+                    else:
+                        text.append("/".join(sorted(str(x) for x in v)))
                 sep = ","
             text.append("\n")
 
         self.visit(V)
 
         return "".join(str(x) for x in text)
+
+    def _to_date_interval(self, k, v):
+        if k != "date":
+            return None, None
+        if len(k) < 3:
+            return None, None
+        start = datetime.datetime.strptime(str(v[0]), "%Y%m%d")
+        step = datetime.datetime.strptime(str(v[1]), "%Y%m%d") - start
+        for i in range(2, len(v)):
+            current = datetime.datetime.strptime(str(v[i]), "%Y%m%d")
+            previous = datetime.datetime.strptime(str(v[i - 1]), "%Y%m%d")
+            if current - previous != step:
+                print(int(v[i]))
+                print(f"expecting {previous + step} after {previous}, found {current}")
+                return None, None
+        return str(v[0]), str(v[-1])
 
     def tree(self):
         text = []
@@ -476,9 +496,13 @@ class Tree:
                 if len(v) == 1:
                     text.append(v[0])
                 else:
-                    text.append("[")
-                    text.append(", ".join(sorted(str(x) for x in v)))
-                    text.append("]")
+                    start, end = self._to_date_interval(k, v)
+                    if start is not None:
+                        text.append(f"{start}/to/{end}")
+                    else:
+                        text.append("[")
+                        text.append(", ".join(sorted(str(x) for x in v)))
+                        text.append("]")
                 sep = ", "
             text.append("\n")
 

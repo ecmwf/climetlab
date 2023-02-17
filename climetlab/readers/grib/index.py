@@ -60,24 +60,30 @@ class FieldSet(FieldSetMixin, Index):
     def availability_path(self):
         return None
 
+    def custom_availability(self, ignore_keys=None):
+        def dicts():
+            for i in progress_bar(
+                iterable=range(len(self)), desc="Building availability"
+            ):
+                dic = self.get_metadata(i)
+                for i in ignore_keys:
+                    dic.pop(i, None)
+                dic = {k: v for k, v in dic.items() if v is not None}
+                yield dic
+
+        from climetlab.utils.availability import Availability
+
+        return Availability(dicts())
+
     @property
     def availability(self):
         if self._availability is not None:
             return self._availability
         LOG.debug("Building availability")
 
-        def dicts():
-            for i in progress_bar(
-                iterable=range(len(self)), desc="Building availability"
-            ):
-                dic = self.get_metadata(i)
-                dic.pop("_param_id", None)
-                dic = {k: v for k, v in dic.items() if v is not None}
-                yield dic
-
-        from climetlab.utils.availability import Availability
-
-        self._availability = Availability(dicts())
+        self._availability = self.custom_availability(
+            ignore_keys=["_param_id", "mean", "std", "min", "max", "valid"]
+        )
         return self.availability
 
     def is_full_hypercube(self):
