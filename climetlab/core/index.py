@@ -341,11 +341,20 @@ class Index(Source):
         indices = sorted(result, key=sorter)
         return self.new_mask_index(self, indices)
 
+    def from_slice(self, s):
+        indices = range(len(self))[s]
+        return MaskIndex(self, indices)
+
+    def to_numpy(self, *args, **kwargs):
+        import numpy as np
+
+        return np.array([f.to_numpy(*args, **kwargs) for f in self])
+
 
 class MaskIndex(Index):
     def __init__(self, index, indices):
         self.index = index
-        self.indices = indices
+        self.indices = list(indices)
         super().__init__(
             *self.index._init_args,
             order_by=self.index._init_order_by,
@@ -353,11 +362,18 @@ class MaskIndex(Index):
         )
 
     def __getitem__(self, n):
+
+        if isinstance(n, slice):
+            return self.from_slice(n)
+
         n = self.indices[n]
         return self.index[n]
 
     def __len__(self):
         return len(self.indices)
+
+    def __repr__(self):
+        return "MaskIndex(%r,%s)" % (self.index, self.indices)
 
 
 class MultiIndex(Index):
@@ -374,6 +390,10 @@ class MultiIndex(Index):
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
     def __getitem__(self, n):
+
+        if isinstance(n, slice):
+            return self.from_slice(n)
+
         k = 0
         while n >= len(self.indexes[k]):
             n -= len(self.indexes[k])
@@ -387,6 +407,9 @@ class MultiIndex(Index):
         print(" " * depth, self.__class__.__name__)
         for s in self.indexes:
             s.graph(depth + 3)
+
+    def __repr__(self):
+        return "MultiFieldSet(%s)" % ",".join(repr(i) for i in self.indexes)
 
 
 class ForwardingIndex(Index):
@@ -414,4 +437,6 @@ class ScaledIndex(ForwardingIndex):
         self.scaling = scaling
 
     def __getitem__(self, n):
+        if isinstance(n, slice):
+            return self.from_slice(n)
         return ScaledField(self.index[n], self.offset, self.scaling)
