@@ -331,7 +331,7 @@ class GribField(Base):
 
     def field_metadata(self):
         m = self._grid_definition()
-        
+
         for n in (
             "shortName",
             "units",

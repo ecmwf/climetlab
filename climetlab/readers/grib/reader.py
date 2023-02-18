@@ -38,3 +38,7 @@ class GRIBReader(FieldSetInOneFile, Reader):
         from climetlab.readers.grib.parsing import _index_grib_file
 
         yield from _index_grib_file(self.path)
+
+    def mutate_source(self):
+        # A GRIBReader is a source itself
+        return self
