@@ -22,7 +22,6 @@ from climetlab.core.temporary import temp_directory
 
 
 def check_user_defined_objects(collection, setting, obj, tree, get_list, get_entry):
-
     # Clear cache
     clear_cache()
 
@@ -31,7 +30,6 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
     assert len(paths) > 0
 
     for i, path in enumerate(paths):
-
         name = "pytest-%s-%s" % (tree[1], i)
 
         if os.path.exists(path) and os.path.isdir(path):
@@ -110,7 +108,6 @@ def test_user_layers():
 
 
 def test_settings():
-
     with settings.temporary():
         settings.reset()
 
@@ -144,14 +141,12 @@ def test_settings():
 
 
 def test_temporary():
-
     settings.reset()
 
     settings.set("styles-directories", "/c", "/d")
     settings.set("plotting-options", {"width": 400})
 
     with settings.temporary("plotting-options", {"width": 100}):
-
         assert settings.get("styles-directories") == ["/c", "/d"]
         assert settings.get("plotting-options") == {"width": 100}, settings.get(
             "plotting-options"
@@ -170,7 +165,6 @@ def test_temporary():
 
 def test_numbers():
     with temp_directory() as tmpdir:
-
         with settings.temporary("cache-directory", tmpdir):
             settings.set("url-download-timeout", 30)
             assert settings.get("url-download-timeout") == 30

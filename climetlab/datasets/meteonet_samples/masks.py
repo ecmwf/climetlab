@@ -22,7 +22,6 @@ class MeteonetMasks(Meteonet):
         self,
         domain="NW",
     ):
-
         url = "{url}/masks/{domain}_masks.grib".format(
             url=self.URL,
             domain=domain,

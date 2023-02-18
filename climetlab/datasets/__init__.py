@@ -108,6 +108,9 @@ class Dataset(Base):
     def order_by(self, *args, **kwargs):
         return self.source.order_by(*args, **kwargs)
 
+    def statistics(self, *args, **kwargs):
+        return self.source.statistics(*args, **kwargs)
+
     @property
     def coords(self):
         return self.source.coords
@@ -187,7 +190,6 @@ def dataset_from_yaml(path, *args, **kwargs):
 
 
 class DatasetLoader:
-
     kind = "dataset"
 
     def settings(self, name):
@@ -224,7 +226,6 @@ class DatasetLoader:
 
 class DatasetMaker:
     def lookup(self, name):
-
         loader = DatasetLoader()
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 

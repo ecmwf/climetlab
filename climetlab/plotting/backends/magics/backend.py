@@ -58,7 +58,6 @@ class Backend:
     """TODO: Docscting"""
 
     def __init__(self, options):
-
         self._options = options
 
         self._projection = None
@@ -100,7 +99,6 @@ class Backend:
         return self._tmp[-1].path
 
     def bounding_box(self, north: float, west: float, south: float, east: float):
-
         bbox = BoundingBox(north=north, west=west, south=south, east=east)
         if self._bounding_box is None:
             self._bounding_box = bbox
@@ -111,7 +109,6 @@ class Backend:
         self._layers.append(Layer(data))
 
     def plot_grib(self, path: str, offset: int):
-
         self._push_layer(
             mgrib(
                 grib_input_file_name=path,
@@ -121,7 +118,6 @@ class Backend:
         )
 
     def plot_netcdf(self, path: str, variable: str, dimensions: dict = None):
-
         if dimensions is None:
             dimensions = {}
 
@@ -339,7 +335,6 @@ class Backend:
         return display(self.render())
 
     def save(self, path):
-
         self.finalise()
 
         title = self._options("title", None)
@@ -471,7 +466,6 @@ class Backend:
         return [x for x in m if x is not None]
 
     def wms_layers(self):
-
         self.finalise()
 
         m = [self._background]

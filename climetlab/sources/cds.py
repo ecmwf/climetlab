@@ -65,7 +65,6 @@ EXTENSIONS = {
 
 
 class CdsRetriever(FileSource):
-
     sphinxdoc = """
     CdsRetriever
     """
@@ -90,7 +89,6 @@ class CdsRetriever(FileSource):
             self.path = [self._retrieve(dataset, r) for r in requests]
         else:
             with SoftThreadPool(nthreads=nthreads) as pool:
-
                 futures = [pool.submit(self._retrieve, dataset, r) for r in requests]
 
                 iterator = (f.result() for f in futures)

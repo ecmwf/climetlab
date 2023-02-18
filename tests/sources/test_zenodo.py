@@ -25,7 +25,6 @@ def only_csv(path):
 
 @pytest.mark.external_download
 def test_zenodo_1():
-
     ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
 
     pd = ds.to_pandas()

@@ -114,7 +114,6 @@ class Interval(object):
 
     def __repr__(self):
         if isinstance(self.start, datetime.date):
-
             if self.start == self.end:
                 return self.start.strftime("%Y-%m-%d")
 
@@ -150,7 +149,6 @@ class Interval(object):
 
 
 def _cleanup(x):
-
     if isinstance(x, (list, tuple)):
         return [_cleanup(a) for a in x]
 
@@ -294,11 +292,9 @@ class Tree:
         return request
 
     def count(self, _kwargs=None, **kwargs):
-
         return self._count(self._kwargs_to_request(_kwargs, **kwargs))
 
     def _count(self, request):
-
         if not self._values and not self._children:
             return 0
 
@@ -365,7 +361,6 @@ class Tree:
     def _match(self, request):
         matches = {}
         for name, values in [(n, v) for (n, v) in request.items() if n in self._values]:
-
             if name in self._intervals:
                 common = Interval.intersection(values, self._values[name])
             else:
@@ -414,7 +409,6 @@ class Tree:
         return "\n".join(result)
 
     def as_mars_list(self):
-
         text = []
         indent = {}
         order = {}
@@ -444,7 +438,11 @@ class Tree:
                 if len(v) == 1:
                     text.append(v[0])
                 else:
-                    text.append("/".join(sorted(str(x) for x in v)))
+                    start, end = self._to_date_interval(k, v)
+                    if start is not None:
+                        text.append(f"{start}/to/{end}")
+                    else:
+                        text.append("/".join(sorted(str(x) for x in v)))
                 sep = ","
             text.append("\n")
 
@@ -452,8 +450,23 @@ class Tree:
 
         return "".join(str(x) for x in text)
 
-    def tree(self):
+    def _to_date_interval(self, k, v):
+        if k != "date":
+            return None, None
+        if len(k) < 3:
+            return None, None
+        start = datetime.datetime.strptime(str(v[0]), "%Y%m%d")
+        step = datetime.datetime.strptime(str(v[1]), "%Y%m%d") - start
+        for i in range(2, len(v)):
+            current = datetime.datetime.strptime(str(v[i]), "%Y%m%d")
+            previous = datetime.datetime.strptime(str(v[i - 1]), "%Y%m%d")
+            if current - previous != step:
+                print(int(v[i]))
+                print(f"expecting {previous + step} after {previous}, found {current}")
+                return None, None
+        return str(v[0]), str(v[-1])
 
+    def tree(self):
         text = []
         indent = {}
         order = {}
@@ -483,9 +496,13 @@ class Tree:
                 if len(v) == 1:
                     text.append(v[0])
                 else:
-                    text.append("[")
-                    text.append(", ".join(sorted(str(x) for x in v)))
-                    text.append("]")
+                    start, end = self._to_date_interval(k, v)
+                    if start is not None:
+                        text.append(f"{start}/to/{end}")
+                    else:
+                        text.append("[")
+                        text.append(", ".join(sorted(str(x) for x in v)))
+                        text.append("]")
                 sep = ", "
             text.append("\n")
 
@@ -537,7 +554,6 @@ class Column(object):
 
 class Table(object):
     def __init__(self, other=None, a=None, b=None):
-
         self.tree = Tree()
 
         if other is not None:
@@ -699,7 +715,6 @@ def _scan(r, cols, name, rest):
 
 
 def _as_requests(r):
-
     s = {}
     for k, v in r.items():
         if not isinstance(v, (tuple, list)):
@@ -717,7 +732,6 @@ def factorise(req, *, intervals=None):
 
 
 def _factorise(req, intervals=None):
-
     if intervals is None:
         intervals = []
 

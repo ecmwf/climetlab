@@ -19,70 +19,73 @@ from climetlab.core import Base
 LOG = logging.getLogger(__name__)
 
 
-def to_tfdataset(
-    features,
-    targets=None,
-    total_size=None,
-    num_parallel_calls=10,
-    prefetch=1024,
-    **kwargs,
-):
-
-    import tensorflow as tf
-
-    if features is not None and not callable(features):
-        if total_size is None:
-            LOG.debug("No total_size specified, infering from features.")
-            total_size = len(features)
-
-        _features = features
-
-        def features(i):
-            return _features[i].to_numpy()
-
-    if targets is not None and not callable(targets):
-        _targets = targets
-
-        def targets(i):
-            return _targets[i].to_numpy()
-
-    assert total_size is not None
-
-    def map_fn(i):
-        i = int(i)
-        return features(i)
-
-    @tf.function
-    def tf_map_fn(i):
-        return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
-
-    def map_label_fn(i):
-        i = int(i)
-        return targets(i)
-
-    @tf.function
-    def tf_map_label_fn(i):
-        return tf.py_function(func=map_label_fn, inp=[i], Tout=tf.float32)
-
-    def dataset(mapping):
-        return (
-            tf.data.Dataset.range(total_size)
-            .map(mapping, num_parallel_calls=num_parallel_calls)
-            .prefetch(prefetch)
-        )
-
-    if targets is None:
-        return dataset(tf_map_fn)
-
-    return tf.data.Dataset.zip(
-        (
-            dataset(tf_map_fn),
-            dataset(tf_map_label_fn),
-        )
-    )
+# def to_tfdataset(
+#     features,
+#     targets=None,
+#     total_size=None,
+#     num_parallel_calls=10,
+#     prefetch=1024,
+#     **kwargs,
+# ):
+#
+#     import tensorflow as tf
+#
+#     if features is not None and not callable(features):
+#         if total_size is None:
+#             LOG.debug("No total_size specified, infering from features.")
+#             total_size = len(features)
+#
+#         _features = features
+#
+#         def features(i):
+#             return _features[i].to_numpy()
+#
+#     if targets is not None and not callable(targets):
+#         _targets = targets
+#
+#         def targets(i):
+#             return _targets[i].to_numpy()
+#
+#     assert total_size is not None
+#
+#     def map_fn(i):
+#         i = int(i)
+#         return features(i)
+#
+#     @tf.function
+#     def tf_map_fn(i):
+#         return tf.py_function(func=map_fn, inp=[i], Tout=tf.float32)
+#
+#     def map_label_fn(i):
+#         i = int(i)
+#         return targets(i)
+#
+#     @tf.function
+#     def tf_map_label_fn(i):
+#         return tf.py_function(func=map_label_fn, inp=[i], Tout=tf.float32)
+#
+#     def dataset(mapping):
+#         return (
+#             tf.data.Dataset.range(total_size)
+#             .map(mapping, num_parallel_calls=num_parallel_calls)
+#             .prefetch(prefetch)
+#         )
+#
+#     if targets is None:
+#         return dataset(tf_map_fn)
+#
+#     return tf.data.Dataset.zip(
+#         (
+#             dataset(tf_map_fn),
+#             dataset(tf_map_label_fn),
+#         )
+#     )
 
 
 def default_merger(*funcs):
+    if not funcs:
+        return None
+
     def map_fn(i):
         i = int(i)
         arrays = [m(i) for m in funcs]
@@ -99,6 +102,12 @@ def as_numpy_func(ds, opt):
 
     def take_i(i):
         return ds[i].to_numpy(**options)
+
+    if "offset" in opt and opt["offset"]:
+        offset = opt["offset"]
+
+        def take_i(i):  # noqa: F811
+            return ds[i + offset].to_numpy(**options)
 
     func = take_i
 
@@ -127,7 +136,6 @@ def as_numpy_func(ds, opt):
 
 
 def normalize_a_b(option, dataset):
-
     if isinstance(option, (tuple, list)) and all(
         [isinstance(x, Number) for x in option]
     ):
@@ -158,9 +166,9 @@ def normalize_a_b(option, dataset):
 
 def to_tfdataset2(
     *args,
+    total_size,
     features=None,
     targets=None,
-    total_size=None,
     num_parallel_calls=10,
     prefetch=1024,
     merger=default_merger,
@@ -181,12 +189,6 @@ def to_tfdataset2(
 
     if targets_options is None:
         targets_options = [{} for i in targets]
-
-    if total_size is None:
-        LOG.debug("No total_size specified, infering from features.")
-        total_size = len(features)
-
-    assert total_size is not None
 
     assert isinstance(features, (list, tuple)), features
     assert len(features) == len(options), (len(features), len(options))
@@ -223,19 +225,19 @@ def to_tfdataset2(
         tfds._climetlab_shape = func(0).shape
         return tfds
 
-    tfdataset = dataset(func)
-    tfdataset_targets = dataset(func_targets)
-    tfds = tf.data.Dataset.zip((tfdataset, tfdataset_targets))
+    tf_features = dataset(func)
+    tf_targets = dataset(func_targets)
+    tfds = tf.data.Dataset.zip((tf_features, tf_targets))
 
-    tfds._climetlab_tf_shape_in = func(
-        0
-    ).shape  # TODO: use metadata from grib directly, without loading the numpy array
+    # TODO: use metadata from grib directly, without loading the numpy array
+    tfds._climetlab_tf_shape_in = func(0).shape
+
     if targets:
         tfds._climetlab_tf_shape_out = func_targets(0).shape
 
-    tfds._climetlab_tf_input = tfdataset
+    tfds._climetlab_tf_input = tf_features
     if targets:
-        tfds._climetlab_tf_targets = tfdataset_targets
+        tfds._climetlab_tf_targets = tf_targets
     # ds = ds.prefetch(prefetch)
 
     return tfds
@@ -256,19 +258,23 @@ class NumpyFuncWrapper:
 
 
 class TensorflowMixIn:
-    def to_tfdataset(
-        self,
-        labels=None,
-        targets=None,
-        **kwargs,
-    ):
-        if targets is None:  # rename "labels" into "targets" ?
-            targets = labels
-        return to_tfdataset(features=self, targets=targets, **kwargs)
+    # def to_tfdataset(
+    #     self,
+    #     labels=None,
+    #     targets=None,
+    #     **kwargs,
+    # ):
+    #     if targets is None:  # rename "labels" into "targets" ?
+    #         targets = labels
+    #     return to_tfdataset(features=self, targets=targets, **kwargs)
 
-    def to_tfdataset2(self, *args, **kwargs):
+    def to_tfdataset(self, *args, **kwargs):
         if "features" not in kwargs:
             kwargs["features"] = [self]
+
+        if "total_size" not in kwargs:
+            kwargs["total_size"] = len(self)
+
         return to_tfdataset2(*args, **kwargs)
 
     def to_tfdataset_(

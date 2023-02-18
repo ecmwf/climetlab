@@ -15,7 +15,6 @@ LOG = logging.getLogger(__name__)
 
 
 class TfRecordReader(Reader):
-
     _tfrecord = None
     _len = None
 

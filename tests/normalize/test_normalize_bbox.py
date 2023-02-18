@@ -40,7 +40,6 @@ def bbox_defaults(area=None):
 
 
 def test_bbox():
-
     area = [30.0, 2.0, 3.0, 4.0]
     bbox = BoundingBox(north=30, west=2, south=3, east=4)
 
@@ -67,7 +66,6 @@ def test_bbox():
 
 
 if __name__ == "__main__":
-
     from climetlab.testing import main
 
     main(__file__)

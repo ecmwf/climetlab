@@ -1,6 +1,5 @@
 class Backend:
     def __init__(self, options):
-
         self._options = options
 
     def plot_graph_pandas(self, frame, time: str, variable: str):

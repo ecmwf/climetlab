@@ -10,14 +10,20 @@
 #
 
 
+import sys
+
 import pytest
 
 from climetlab.core.temporary import temp_file
-from climetlab.indexing.database.json import JsonDatabase
+from climetlab.indexing.database.json import JsonFileDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 
 
-@pytest.mark.parametrize("cls", (SqlDatabase, JsonDatabase))
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="file:// not working on Windows yet",
+)
+@pytest.mark.parametrize("cls", (SqlDatabase, JsonFileDatabase))
 def test_load(cls):
     lst = [
         {
@@ -25,9 +31,9 @@ def test_load(cls):
             "param": "z",
             "domain": "g",
             "levtype": "pl",
-            "levelist": "500",
-            "date": "19970101",
-            "time": "0000",
+            "levelist": 500,
+            "date": 19970101,
+            "time": 0,
             "step": "0",
             "class": "ea",
             "type": "an",
@@ -41,9 +47,9 @@ def test_load(cls):
             "param": "z",
             "domain": "g",
             "levtype": "pl",
-            "levelist": "500",
-            "date": "19970101",
-            "time": "0100",
+            "levelist": 500,
+            "date": 19970101,
+            "time": 100,
             "step": "0",
             "class": "ea",
             "type": "an",
@@ -57,9 +63,9 @@ def test_load(cls):
             "param": "z",
             "domain": "g",
             "levtype": "pl",
-            "levelist": "500",
-            "date": "19970101",
-            "time": "0200",
+            "levelist": 500,
+            "date": 19970101,
+            "time": 200,
             "step": "0",
             "class": "ea",
             "type": "an",
@@ -73,9 +79,9 @@ def test_load(cls):
             "param": "z",
             "domain": "g",
             "levtype": "pl",
-            "levelist": "500",
-            "date": "19970101",
-            "time": "0300",
+            "levelist": 500,
+            "date": 19970101,
+            "time": 300,
             "step": "0",
             "class": "ea",
             "type": "an",
@@ -89,9 +95,9 @@ def test_load(cls):
             "param": "r",
             "domain": "g",
             "levtype": "pl",
-            "levelist": "850",
-            "date": "19970228",
-            "time": "2300",
+            "levelist": 850,
+            "date": 19970228,
+            "time": 2300,
             "step": "0",
             "class": "ea",
             "type": "an",

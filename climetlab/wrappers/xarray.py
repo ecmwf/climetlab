@@ -16,7 +16,6 @@ from climetlab.wrappers import Wrapper
 
 
 def find_lat_lon(data, variable=None):
-
     latitude = None
     longitude = None
 
@@ -61,7 +60,6 @@ def find_lat_lon(data, variable=None):
 
 class XArrayDatasetWrapper(Wrapper):
     def __init__(self, data):
-
         self.data = data
         dims = 0
         for name, var in data.data_vars.items():

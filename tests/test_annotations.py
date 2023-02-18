@@ -56,7 +56,6 @@ def test_pandas_annotations():
 
 
 def test_xarray_annotations():
-
     # Examples from xarray documentation
 
     # Data array

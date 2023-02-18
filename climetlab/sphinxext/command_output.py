@@ -19,17 +19,14 @@ from docutils.parsers.rst import Directive
 
 
 class CommandOutput(Directive):
-
     has_content = True
 
     def run(self):
-
         self.assert_has_content()
 
         here = os.getcwd()
 
         try:
-
             # Get current file
             current_rst_file = self.state_machine.input_lines.source(
                 self.lineno - self.state_machine.input_offset - 1

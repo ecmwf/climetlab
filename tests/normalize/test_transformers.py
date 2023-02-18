@@ -80,7 +80,6 @@ def test_types():
 
 
 def test_formats():
-
     assert (
         FormatTransformer(None, type=EnumType(enum), format="%4s").transform("a")
         == "   a"

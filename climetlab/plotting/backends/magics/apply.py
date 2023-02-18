@@ -19,14 +19,12 @@ LOG = logging.getLogger(__name__)
 
 
 def _find_action(value, action):
-
     magics_keys = magics_keys_to_actions()
 
     # Guess the best action from the keys
     scores = defaultdict(int)
     special = 0
     for param in value.keys():
-
         if not param[0].isalpha():
             special += 1
             param = param[1:]
@@ -56,7 +54,6 @@ def _find_action(value, action):
 
 
 def _apply_dict(*, value, collection, action, default, target, options):  # noqa C901
-
     if "update" in value:
         newvalue = {}
         for k, v in value.get("set", {}).items():
@@ -139,7 +136,6 @@ def _apply_true(*, value, collection, action, default, target, options):
 
 
 def _apply_string(*, value, collection, action, default, target, options):
-
     # TODO: Consider `value` being a URL (yaml or json)
 
     data = get_data_entry(collection, value).data
@@ -161,7 +157,6 @@ def _apply_string(*, value, collection, action, default, target, options):
 
 
 def apply(*, value, collection=None, action=None, default=None, target, options):
-
     if value in (None, False):
         return None
 

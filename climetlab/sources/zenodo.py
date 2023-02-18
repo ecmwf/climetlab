@@ -30,7 +30,6 @@ class Zenodo(Url):
         *args,
         **kwargs,
     ):
-
         record = get_json(URLPATTERN.format(record_id=record_id))
         LOG.debug("ZENODO record %s", json.dumps(record, indent=4, sort_keys=True))
 

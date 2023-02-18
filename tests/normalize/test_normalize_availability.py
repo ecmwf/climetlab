@@ -247,7 +247,6 @@ def test_normalize_duplicates_availability():
 
 
 def test_normalize_duplicates_normalize_1():
-
     func7 = func_param
     func7 = normalize("param", ["b"])(func7)
     func7 = normalize("param", ["a", "b"])(func7)

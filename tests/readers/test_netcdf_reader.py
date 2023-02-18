@@ -123,7 +123,6 @@ def test_multi():
 
 
 def test_datetime():
-
     s = load_source("file", climetlab_file("docs/examples/test.nc"))
 
     assert s.to_datetime() == datetime.datetime(2020, 5, 13, 12), s.to_datetime()

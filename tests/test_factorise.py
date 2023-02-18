@@ -73,7 +73,6 @@ def test_factorise_2():
 
 
 def test_factorise_3():
-
     c = factorise(
         [
             {"date": ["1990-01-01/1990-01-02"]},
@@ -113,7 +112,6 @@ def test_factorise_3():
 
 
 def test_factorise_4():
-
     c = factorise(
         [
             {"date": ["1990-01-01/1990-01-02"], "param": ["Z", "T"]},

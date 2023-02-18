@@ -43,7 +43,6 @@ class MirrorConnection:
 
 
 class BaseMirror:
-
     _prefetch = False
 
     def __enter__(self):

@@ -41,7 +41,6 @@ def _guess(data, path):
         return "datasets"
 
     if "magics" in data:
-
         if "msymb" in data["magics"]:
             return "styles"
 

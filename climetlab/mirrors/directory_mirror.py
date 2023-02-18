@@ -21,7 +21,6 @@ LOG = logging.getLogger(__name__)
 
 
 def strict_init(cls):
-
     sig = inspect.signature(cls.__init__)
 
     def check_type(name, value):

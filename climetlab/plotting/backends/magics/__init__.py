@@ -24,7 +24,6 @@ def init():
     global _inited, MAGICS_KEYS, MAGICS_DEF, MAGICS_PARAMS
 
     if not _inited:
-
         MAGICS_KEYS = defaultdict(set)
         MAGICS_PARAMS = defaultdict(dict)
         with open(os.path.join(os.path.dirname(__file__), "magics.yaml")) as f:

@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import datetime
 import logging
 import os
 
@@ -14,16 +15,59 @@ from climetlab.utils import progress_bar, tqdm
 LOG = logging.getLogger(__name__)
 
 
+def post_process_valid_date(field, h):
+    date = h.get("validityDate")
+    time = h.get("validityTime")
+    field["valid"] = datetime.datetime(
+        date // 10000,
+        date % 10000 // 100,
+        date % 100,
+        time // 100,
+        time % 100,
+    )
+    # Note that we do not create a script here:
+    # There is no ".isoformat()". Because the sql database
+    # takes care of this conversion back and forth.
+    return field
+
+
+def post_process_parameter_level(field, h):
+    param = field.get("param", None)
+    if param is None:
+        field["param_level"] = None
+        return field
+
+    level = field.get("level", None)
+    if level is None:
+        field["param_level"] = param
+        return field
+
+    field["param_level"] = f"{param}_{level}"
+    return field
+
+
 def _index_grib_file(
     path,
     with_statistics=False,
+    with_valid_date=True,
+    with_parameter_level=True,
 ):
     import eccodes
 
     from climetlab.readers.grib.codes import CodesHandle
 
+    post_process_mars = []
+    if with_valid_date:
+        post_process_mars.append(post_process_valid_date)
+    if with_parameter_level:
+        post_process_mars.append(post_process_parameter_level)
+
     def parse_field(h):
         field = h.as_mars()
+
+        if post_process_mars:
+            for f in post_process_mars:
+                field = f(field, h)
 
         field["_path"] = path
         field["_offset"] = h.get_long("offset")
@@ -88,7 +132,13 @@ class DirectoryParserIterator:
     """
 
     def __init__(
-        self, directory, relative_paths, ignore=None, followlinks=True, verbose=False
+        self,
+        directory,
+        relative_paths,
+        ignore=None,
+        followlinks=True,
+        verbose=False,
+        with_statistics=True,
     ):
         if ignore is None:
             ignore = []
@@ -97,6 +147,7 @@ class DirectoryParserIterator:
         self.relative_paths = relative_paths
         self.followlinks = followlinks
         self.verbose = verbose
+        self.with_statistics = with_statistics
 
         self._tasks = None
 
@@ -155,7 +206,10 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
 
             from climetlab.readers.grib.parsing import _index_grib_file
 
-            for field in _index_grib_file(path, with_statistics=True):
+            for field in _index_grib_file(
+                path,
+                with_statistics=self.with_statistics,
+            ):
                 field["_path"] = _path
                 yield field
         except PermissionError as e:

@@ -31,7 +31,6 @@ LOG = logging.getLogger(__name__)
 
 
 def test_cache_1():
-
     purge_cache(matcher=lambda e: ["owner"] == "test_cache")
 
     def touch(target, args):
@@ -64,7 +63,6 @@ def test_cache_1():
 
 
 def test_cache_2():
-
     with temp_directory() as tmpdir:
         with settings.temporary():
             settings.set("cache-directory", tmpdir)

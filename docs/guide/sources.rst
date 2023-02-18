@@ -65,7 +65,7 @@ Built-in data sources:
 file
 ----
 
-The simplest data source is the *file* source that accesses a local file.
+The simplest data source is the ``"file"`` source that accesses a local file.
 
     .. code:: python
 
@@ -86,12 +86,22 @@ supported data formats listed below:
     - BUFR (https://en.wikipedia.org/wiki/BUFR)
     - ODB (a bespoke binary format for observations)
 
+- Archive formats:
+    When given an archive format such as ``.zip``, ``.tar``, ``.tar.gz``, etc,
+    *CliMetLab* will attempt to open it and (recursively) extract any usable file.
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> data = cml.load_source("url",
+                               "https://www.example.com/data.tgz",
+                               unpack=False)
 .. todo::
 
     Support for additionnal formats could be implemented as plugins.
 
-Examples
-~~~~~~~~
+GRIB file example
+~~~~~~~~~~~~~~~~~
 
     .. doctest::
 
@@ -120,6 +130,9 @@ Examples
             institution:             European Centre for Medium-Range Weather Forecasts
             history:                 2022-02-08T10:50 GRIB to CDM+CF via cfgrib-0.9.1...
 
+NetCDF file example
+~~~~~~~~~~~~~~~~~~~
+
     .. doctest::
 
         >>> import climetlab as cml
@@ -147,21 +160,34 @@ Examples
             institution:             European Centre for Medium-Range Weather Forecasts
             history:                 2022-02-08T10:50 GRIB to CDM+CF via cfgrib-0.9.1...
 
+
+Other format file example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+If the format is supported, see the :ref:`Examples` notebooks for a working example.
+
+If the format is not supported, additional code can be included in CliMetLab to support it.
+
+.. todo::
+
+    Support for additionnal formats could be implemented as plugins.
+
+
+
 .. _data-sources-url:
 
 url
 ---
 
-The *url* data source will download the data from the address
-specified and store it in the :ref:`cache <caching>`. The supported
-data formats are the same as for the :ref:`file <data-sources-file>` data source above.
+The ``"url"`` data source is very similar to the ``"file"`` source. 
+
+This sources downloads the data from the specified address and stores it in the :ref:`cache <caching>`, 
+then it operates similarly to the :ref:`"file" source <data-sources-file>` above.
+The supported data formats are the same as for the :ref:`"file" source <data-sources-file>`.
 
 .. code-block:: python
 
     >>> import climetlab as cml
     >>> data = cml.load_source("url", "https://www.example.com/data.csv")
-
-
 
 When given an archive format such as ``.zip``, ``.tar``, ``.tar.gz``, etc,
 *CliMetLab* will attempt to open it and extract any usable file. If you
@@ -180,7 +206,7 @@ want to keep the downloaded file as is, pass ``unpack=False`` to the method.
 url-pattern
 -----------
 
-The *url-pattern* data source will build urls from the pattern specified,
+The ``"url-pattern"`` data source will build urls from the pattern specified,
 using the other arguments to fill the pattern. Each argument can be a list
 to iterate and create the cartesian product of all lists.
 Then each url is downloaded and stored it in the :ref:`cache <caching>`. The
@@ -228,7 +254,7 @@ from `xarray`. This can be changed by providing a custom merger to the
 cds
 ---
 
-This data source access the `Copernicus Climate Data Store`_ (CDS),
+The ``"cds"`` data source accesses the `Copernicus Climate Data Store`_ (CDS),
 using the cdsapi_ package.  A typical *cdsapi* request has the
 following format:
 
@@ -279,7 +305,7 @@ For more information, see the CDS `knowledge base`_.
 mars
 ----
 
-This source allows handling data from the Meteorological Archival and Retrieval System (MARS).
+The ``"mars"`` source allows handling data from the Meteorological Archival and Retrieval System (MARS).
 
 To figure out which data you need, or discover relevant data available on MARS, see the
 publicly accessible `MARS catalog <https://apps.ecmwf.int/archive-catalogue/>`_
@@ -337,12 +363,12 @@ It allows researchers to deposit research papers, datasets, etc.
 For each submission, a persistent digital object identifier (DOI) is minted,
 which makes the stored items easily citeable.
 
-This source provides access data from `zenodo.org <https://zenodo.org>`_,
+The ``"zenodo"`` source provides access data from `zenodo.org <https://zenodo.org>`_,
 including downloading, caching, etc.
 
 .. code:: python
 
-    >>> ds = load_source( "zenodo", record_id=...)
+    >>> ds = load_source("zenodo", record_id=...)
 
 Example
 ~~~~~~~
@@ -384,4 +410,3 @@ multi (advanced usage)
 .. todo::
 
     add documentation on multi-source.
-

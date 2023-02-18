@@ -21,6 +21,29 @@ LOG = logging.getLogger(__name__)
 
 class JsonDatabase(Database):
     VERSION = 1
+
+    def __init__(self, *arg):
+        pass
+
+    # @normalize('value', 'date', format='datetime.datetime')
+    def normalize_datetime(self, value):
+        return value.isoformat()
+
+    def _to_json(self, entry):
+        return json.dumps(entry)
+
+
+class JsonStdoutDatabase(JsonDatabase):
+    def load(self, iterator):
+        count = 0
+        for entry in iterator:
+            entry = self.normalize(entry)
+            print(self._to_json(entry))
+            count += 1
+        return count
+
+
+class JsonFileDatabase(JsonDatabase):
     EXTENSION = ".json"
 
     def __init__(self, db_path):
@@ -32,11 +55,13 @@ class JsonDatabase(Database):
                     self.entries.append(json.loads(entry))
 
     def load(self, iterator):
-        self.entries = list(iterator)
+        self.entries = []
 
         with open(self.db_path, "w") as f:
-            for entry in self.entries:
-                print(json.dumps(entry), file=f)
+            for entry in iterator:
+                entry = self.normalize(entry)
+                self.entries.append(entry)
+                print(self._to_json(entry), file=f)
 
         return len(self.entries)
 

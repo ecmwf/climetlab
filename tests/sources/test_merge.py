@@ -46,7 +46,6 @@ class Merger_obj:
 
 @pytest.mark.parametrize("custom_merger", (merger_func, Merger_obj()))
 def test_nc_merge_custom(custom_merger):
-
     s1 = load_source(
         "dummy-source",
         kind="netcdf",
@@ -76,7 +75,6 @@ def test_nc_merge_custom(custom_merger):
 
 
 def test_nc_merge_var():
-
     s1 = load_source(
         "dummy-source",
         kind="netcdf",

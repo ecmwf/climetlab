@@ -5,7 +5,6 @@ from ._folium import make_map
 
 
 def interactive_map(obj, **kwargs):
-
     h = 100 * 3
 
     tmp = temp_file(".svg")

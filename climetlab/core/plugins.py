@@ -119,7 +119,6 @@ def find_plugin(directories: Union[str, List[str]], name: str, loader, refreshed
                         return loader.load_yaml(full)
 
                 if ext == ".py" and base[0] != "_":
-
                     full = os.path.join(path, base)
 
                     if sys.platform == "win32":

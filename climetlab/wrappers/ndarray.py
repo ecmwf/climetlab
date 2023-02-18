@@ -16,7 +16,6 @@ class NumpyArrayWrapper(Wrapper):
         self.data = data
 
     def plot_map(self, backend):
-
         wrapper = get_wrapper(backend.option("metadata"))
 
         if hasattr(wrapper, "plot_numpy"):

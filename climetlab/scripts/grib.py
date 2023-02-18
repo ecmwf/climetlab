@@ -12,6 +12,7 @@ import json
 import logging
 import os
 
+from climetlab.indexing.database.json import JsonStdoutDatabase
 from climetlab.readers.grib.parsing import (
     GribIndexingDirectoryParserIterator,
     _index_url,
@@ -53,11 +54,12 @@ class GribCmd:
             def resolve_url(url):
                 return url
 
+        stdout = JsonStdoutDatabase()
         for u in args.urls:
             url = resolve_url(u)
             for e in _index_url(url):
                 e["_path"] = u
-                print(json.dumps(e))
+                stdout.load([e])
 
     @parse_args(
         url=(None, dict(metavar="URL", type=str, help="url to index")),
@@ -65,16 +67,10 @@ class GribCmd:
     )
     def do_index_url(self, args):
         """Create json index files for remote Grib url."""
-        file = {}
-        # if args.output:
-        #     if os.path.exists(args.output):
-        #         LOG.error(f"File {args.output} already exists.")
-        #         return
-        #     file['file'] = open(args.output, 'w')
-
+        stdout = JsonStdoutDatabase()
         for e in _index_url(args.url):
             assert "_path" not in e
-            print(json.dumps(e), **file)
+            stdout.load([e])
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
@@ -172,6 +168,7 @@ class GribCmd:
             followlinks=followlinks,
             ignore=ignore,
             db_format=db_format,
+            with_statistics=True,
         )
 
     @parse_args(
@@ -197,12 +194,16 @@ def _index_directory(
     followlinks,
     ignore,
     db_format,
+    with_statistics,
 ):
-    from climetlab.indexing.database.json import JsonDatabase
+    from climetlab.indexing.database.json import JsonFileDatabase, JsonStdoutDatabase
     from climetlab.indexing.database.sql import SqlDatabase
-    from climetlab.indexing.database.stdout import StdoutDatabase
 
-    db = dict(json=JsonDatabase, sql=SqlDatabase, stdout=StdoutDatabase,)[
+    db = dict(
+        json=JsonFileDatabase,
+        sql=SqlDatabase,
+        stdout=JsonStdoutDatabase,
+    )[
         db_format
     ](db_path)
     iterator = GribIndexingDirectoryParserIterator(
@@ -210,6 +211,7 @@ def _index_directory(
         ignore=ignore,
         relative_paths=relative_paths,
         followlinks=followlinks,
+        with_statistics=with_statistics,
     )
     start = datetime.datetime.now()
     count = db.load(iterator)

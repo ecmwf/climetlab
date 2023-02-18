@@ -27,7 +27,6 @@ EXAMPLES = climetlab_file("docs")
 
 
 def example_list():
-
     # return []
 
     examples = []
@@ -44,7 +43,6 @@ def example_list():
 @pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
 @pytest.mark.parametrize("path", example_list())
 def test_example(path):
-
     full = os.path.join(EXAMPLES, path)
     with open(full) as f:
         exec(f.read(), dict(__file__=full), {})

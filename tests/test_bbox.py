@@ -50,7 +50,6 @@ def test_almost_globe():
 
 
 def test_bbox():
-
     for i in range(-365, 365):
         bbox = BoundingBox(north=90, west=i, south=30, east=10 + i)
         assert bbox.width == 10, bbox
@@ -178,7 +177,6 @@ def xxxtest_overlaps():
 
 
 def test_overlapping_bbox_2():
-
     b1 = BoundingBox(north=90, west=-200, south=-90, east=-130)
     b2 = BoundingBox(north=90, west=-180, south=-90, east=-90)
     b0 = b1.merge(b2)
@@ -227,9 +225,7 @@ def test_overlapping_bbox_2():
 
 
 def test_overlapping_bbox_3():
-
     for i in range(361):
-
         b1 = BoundingBox(north=90, west=-45 - i, south=-90, east=45 - i)
         b2 = BoundingBox(north=90, west=-45 + i, south=-90, east=45 + i)
         b0 = b1.merge(b2)

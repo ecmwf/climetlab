@@ -86,7 +86,6 @@ def plot_style(name, path):
 
 
 def output(title, collection, plotter):
-
     print()
     print(title[0].upper() + title[1:])
     print("-" * len(title))
@@ -120,7 +119,6 @@ def output(title, collection, plotter):
 
 
 def execute():
-
     output("layers", climetlab.plotting.layers(), plot_layer)
     output("styles", climetlab.plotting.styles(), plot_style)
     output("projections", climetlab.plotting.projections(), plot_projection)

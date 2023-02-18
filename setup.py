@@ -81,7 +81,7 @@ install_requires += [
     "markdown",
     "termcolor",
     "entrypoints",
-    "branca==0.3.1",  # See https://github.com/python-visualization/branca/issues/81"
+    "branca",
 ]
 
 extras_require = {

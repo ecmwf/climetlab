@@ -42,7 +42,6 @@ LOG = logging.getLogger(__name__)
 
 
 class Action:
-
     default_style: object = None
 
     def __init__(self, **kwargs):

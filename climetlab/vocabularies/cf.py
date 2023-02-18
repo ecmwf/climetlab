@@ -23,6 +23,5 @@ def cf_standard_names(version=78):
 
 
 if __name__ == "__main__":
-
     for n in cf_standard_names():
         print(n)

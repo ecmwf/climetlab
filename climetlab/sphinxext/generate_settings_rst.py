@@ -19,7 +19,6 @@ USER = getpass.getuser()
 
 
 def tidy(x):
-
     if isinstance(x, (list, tuple)):
         return [tidy(y) for y in x]
 
@@ -41,7 +40,6 @@ def tidy(x):
 
 
 def execute(*args):
-
     print()
     print(".. list-table::")
     print("   :header-rows: 1")

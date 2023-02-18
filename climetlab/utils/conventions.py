@@ -15,7 +15,6 @@ LOG = logging.getLogger(__name__)
 
 
 def normalise_string(key, convention="cf"):
-
     vocabulary = VOCABULARIES[convention]
 
     new = vocabulary.normalise(key)

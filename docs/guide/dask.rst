@@ -12,7 +12,7 @@ functions may be useful to ease the interaction with dask.
 .. todo::
 
    This whole part about dask is EXPERIMENTAL, it will change in the future, may be removed or
-   (very likely) pushed to another package.
+   (very likely) moved to another package.
 
 
 Start an local cluster and client

@@ -28,10 +28,13 @@ def make_absolute(filename, root_dir, default):
     return absolute
 
 
-class DirectorySource(IndexedSource):
+class GenericDirectorySource(IndexedSource):
+    """Abstract class, INDEX_CLASS must be implemented"""
+
+    INDEX_CLASS = None
+
     DEFAULT_JSON_FILE = "climetlab.index"
     DEFAULT_DB_FILE = "climetlab.db"
-    INDEX_CLASS = FieldsetInFilesWithSqlIndex
 
     def __init__(
         self,
@@ -100,6 +103,10 @@ class DirectorySource(IndexedSource):
             cache_metadata={"directory": self.path},
         )
         super().__init__(index, **kwargs)
+
+
+class DirectorySource(GenericDirectorySource):
+    INDEX_CLASS = FieldsetInFilesWithSqlIndex
 
 
 source = DirectorySource

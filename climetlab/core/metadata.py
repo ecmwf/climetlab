@@ -41,7 +41,6 @@ class Annotation:
 
 
 def _annotate_pandas(pd, owner, **kargs):
-
     n = None
     for i, a in enumerate(pd._metadata):
         if isinstance(a, str) and a.startswith("climetlab-"):

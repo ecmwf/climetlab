@@ -19,16 +19,13 @@ from docutils.parsers.rst import Directive
 
 
 class ModuleOutput(Directive):
-
     has_content = True
 
     def run(self):
-
         self.assert_has_content()
 
         save = sys.stdout
         try:
-
             # Get current file
             current_rst_file = self.state_machine.input_lines.source(
                 self.lineno - self.state_machine.input_offset - 1

@@ -49,7 +49,6 @@ CACHE = None
 
 class DiskUsage:
     def __init__(self, path):
-
         path = os.path.realpath(path)
         self.path = path
 
@@ -239,7 +238,6 @@ class Cache(threading.Thread):
             return latest
 
     def _purge_cache(self, matcher=None):
-
         if matcher is None:
             self._housekeeping(clean=True)
             # _update_cache(clean=True)
@@ -365,7 +363,6 @@ class Cache(threading.Thread):
         self._update_cache(clean=clean)
 
     def _delete_file(self, path):
-
         self._ensure_in_cache(path)
 
         try:
@@ -451,7 +448,6 @@ class Cache(threading.Thread):
         total = 0
 
         with self.connection as db:
-
             latest = datetime.datetime.now() if purge else self._latest_date()
 
             for stmt in (
@@ -490,7 +486,6 @@ class Cache(threading.Thread):
         self._ensure_in_cache(path)
 
         with self.connection as db:
-
             now = datetime.datetime.now()
 
             args = json.dumps(args, default=default_serialiser)
@@ -507,7 +502,6 @@ class Cache(threading.Thread):
             changes = db.execute("SELECT changes()").fetchone()[0]
 
             if not changes:
-
                 db.execute(
                     """
                     INSERT INTO cache(
@@ -537,7 +531,6 @@ class Cache(threading.Thread):
         self._delete_entry(path)
 
     def _check_cache_size(self):
-
         # Check absolute limit
         size = self._cache_size()
         maximum = SETTINGS.get("maximum-cache-size")
@@ -684,14 +677,12 @@ def cache_file(
             decache_file(path)
 
     if not os.path.exists(path):
-
         lock = path + ".lock"
 
         with FileLock(lock):
             if not os.path.exists(
                 path
             ):  # Check again, another thread/process may have created the file
-
                 owner_data = create(path + ".tmp", args)
 
                 os.rename(path + ".tmp", path)

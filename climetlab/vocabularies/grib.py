@@ -39,7 +39,6 @@ def param_id_to_short_name(param_id):
 
 
 if __name__ == "__main__":
-
     import sys
 
     for i in sys.argv[1:]:

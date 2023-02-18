@@ -55,7 +55,6 @@ def merge(
     reader_class=None,
     **kwargs,
 ):
-
     assert sources
 
     options = infer_open_mfdataset_kwargs(

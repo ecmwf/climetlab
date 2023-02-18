@@ -33,7 +33,6 @@ class MetaBase(type):
 
 
 class Base(metaclass=MetaBase):
-
     # Convertors
     def to_numpy(self, **kwargs):
         self._not_implemented()

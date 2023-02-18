@@ -65,7 +65,6 @@ def generate_unknown(target, **kwargs):
 
 
 def generate_zeros(target, size=1024 * 1024, chunk_size=1024 * 1024, **kwargs):
-
     chunk_size = min(chunk_size, size)
     zeros = bytes(chunk_size)
 

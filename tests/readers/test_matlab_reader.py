@@ -12,10 +12,13 @@
 import os
 
 import numpy as np
+import pytest
 
 import climetlab as cml
+from climetlab.testing import MISSING
 
 
+@pytest.mark.skipif(MISSING("scipy"), reason="scipy not installed")
 def test_matlab_1():
     here = os.path.dirname(__file__)
     testfile = os.path.join(here, "little_endian.mat")

@@ -86,7 +86,6 @@ class SoftThreadPool:
             self._error = error
 
     def submit(self, func, *args, **kwargs):  # submit
-
         with self._lock:
             if not self._active:
                 self.start()

@@ -86,7 +86,6 @@ class Plot:
         self.backend = DRIVERS[backend](Options(options))
 
     def plot_graph(self, data=None, **kwargs):
-
         if not isinstance(data, (list, tuple)):
             data = [data]
 
@@ -101,7 +100,6 @@ class Plot:
         return self
 
     def plot_map(self, data=None, **kwargs):
-
         if not isinstance(data, (list, tuple)):
             data = [data]
 

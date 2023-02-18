@@ -142,7 +142,6 @@ class Matcher:
         return True
 
     def _match(self, entry):
-
         if isinstance(entry, (list, tuple)):
             return any(self._match(x) for x in entry)
 
@@ -219,7 +218,6 @@ class CacheCmd:
             return
 
         if args.all:
-
             for entry in cache:
                 print(colored(entry.pop("path"), "blue"))
                 for k in (
@@ -238,7 +236,6 @@ class CacheCmd:
             return
 
         def generate_table():
-
             youngest_created = None
             oldest_created = None
             youngest_accessed = None

@@ -61,7 +61,6 @@ def _plural(count):
 
 
 def seconds(seconds):
-
     if isinstance(seconds, datetime.timedelta):
         seconds = seconds.total_seconds()
 
@@ -267,14 +266,12 @@ def string_distance(s, t):
 
 
 def did_you_mean(word, vocabulary):
-
     distance, best = min((string_distance(word, w), w) for w in vocabulary)
     # if distance < min(len(word), len(best)):
     return best
 
 
 def dict_to_human(query):
-
     lst = [f"{k}={v}" for k, v in sorted(query.items())]
 
     return list_to_human(lst)

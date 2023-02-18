@@ -194,6 +194,8 @@ class FloatSingleOrListType(_FloatType, SingleOrListMixin):
 
 class _DateType(Type):
     def _format(self, value, format):
+        if format == "datetime.datetime":
+            return value
         return value.strftime(format)
 
     def include_args(self, decorator, args):
@@ -368,7 +370,6 @@ def _infer_type(**kwargs):
             return EnumType(values)
 
     if values is None and isinstance(type, str):
-
         if multiple is None:
             try:
                 if type in SINGLE_OR_LIST_TYPES:

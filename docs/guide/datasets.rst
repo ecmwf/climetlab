@@ -80,7 +80,7 @@ The Dataset object provides methods to access and use its data such as
 
 .. note::
 
-    The name of a CliMetLab plugin usually starts with "climetlab-".
+    The name of the python package for a CliMetLab plugin usually starts with "climetlab-".
 
 .. note::
 
@@ -93,8 +93,8 @@ The Dataset object provides methods to access and use its data such as
     .. code-block:: ipython
 
         >>> !pip install climetlab-s2s-ai-challenge
-        >>> climetlab.load_dataset("s2s-ai-challenge-training-input")
-        >>> climetlab.load_dataset("s2s-ai-challenge-training-output")
+        >>> climetlab.load_dataset("s2s-ai-challenge-training-input", ...)
+        >>> climetlab.load_dataset("s2s-ai-challenge-training-output", ...)
 
 Xarray for gridded data
 -----------------------
@@ -166,19 +166,26 @@ Best practices
     If the package is not installed, CliMetLab fails with a NameError
     exception.
 
-        .. code-block:: python
 
-            >>> # if the package climetlab-demo-dataset is not installed
-            >>> import climetlab as cml
-            >>> ds = cml.load_dataset("demo-dataset")
-            NameError: Cannot find dataset 'demo-dataset' (values are: ...),
+    .. code-block:: python
 
+        >>> # if the package climetlab-demo-dataset is not installed
+        >>> import climetlab as cml
+        >>> ds = cml.load_dataset("demo-dataset")
+        NameError: Cannot find dataset 'demo-dataset' (values are: ...),
 
-.. note::
-
-    There is no need to import the plugin package to enable
-    loading the dataset:
 
     .. code-block:: ipython
 
-        >> import climetlab_demo_dataset  # Not needed
+        >>> !pip install climetlab_demo_dataset --quiet
+        >>> import climetlab as cml
+        >>> ds = cml.load_dataset("demo-dataset")
+        >>>
+
+
+
+There is no need to import the plugin package to enable loading the dataset:
+
+.. code-block:: python
+
+    >>> import climetlab_demo_dataset  # Not needed

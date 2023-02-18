@@ -29,7 +29,7 @@ from climetlab.core.index import (
     Selection,
 )
 from climetlab.decorators import cached_method
-from climetlab.indexing.database.json import JsonDatabase
+from climetlab.indexing.database.json import JsonFileDatabase
 from climetlab.indexing.database.sql import SqlDatabase
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSetMixin
@@ -60,23 +60,30 @@ class FieldSet(FieldSetMixin, Index):
     def availability_path(self):
         return None
 
+    def custom_availability(self, ignore_keys=None):
+        def dicts():
+            for i in progress_bar(
+                iterable=range(len(self)), desc="Building availability"
+            ):
+                dic = self.get_metadata(i)
+                for i in ignore_keys:
+                    dic.pop(i, None)
+                dic = {k: v for k, v in dic.items() if v is not None}
+                yield dic
+
+        from climetlab.utils.availability import Availability
+
+        return Availability(dicts())
+
     @property
     def availability(self):
         if self._availability is not None:
             return self._availability
         LOG.debug("Building availability")
 
-        def dicts():
-            for i in progress_bar(
-                iterable=range(len(self)), desc="Building availability"
-            ):
-                dic = self.get_metadata(i)
-                dic = {k: v for k, v in dic.items() if v is not None}
-                yield dic
-
-        from climetlab.utils.availability import Availability
-
-        self._availability = Availability(dicts())
+        self._availability = self.custom_availability(
+            ignore_keys=["_param_id", "mean", "std", "min", "max", "valid"]
+        )
         return self.availability
 
     def is_full_hypercube(self):
@@ -252,7 +259,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
 
 
 class FieldsetInFilesWithJsonIndex(FieldsetInFilesWithDBIndex):
-    DBCLASS = JsonDatabase
+    DBCLASS = JsonFileDatabase
 
     @cached_method
     def _lookup_parts(self):
@@ -269,7 +276,6 @@ SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
 
 class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
-
     DBCLASS = SqlDatabase
     DB_CACHE_SIZE = 100_000
     DB_DICT_CACHE_SIZE = 100_000
@@ -324,7 +330,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             result = self.db.lookup_dicts(
                 limit=self.DB_DICT_CACHE_SIZE,
                 offset=first,
-                keys=["i", "c"]
+                with_parts=False,
                 # remove_none=False ?
             )
             result = list(result)
@@ -372,7 +378,6 @@ class FieldSetInOneFile(FieldSetInFiles):
         super().__init__(**kwargs)
 
     def _build_offsets_lengths_mapping(self):
-
         offsets = []
         lengths = []
 

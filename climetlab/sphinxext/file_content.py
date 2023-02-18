@@ -16,7 +16,6 @@ LANGUAGES = {".py": "python", ".yaml": "yaml"}
 
 
 def execute(path):
-
     _, ext = os.path.splitext(path)
 
     print()

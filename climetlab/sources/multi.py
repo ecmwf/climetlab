@@ -23,7 +23,6 @@ LOG = logging.getLogger(__name__)
 
 class MultiSource(Source):
     def __init__(self, *sources, filter=None, merger=None):
-
         if len(sources) == 1 and isinstance(sources[0], list):
             sources = sources[0]
 
@@ -60,7 +59,6 @@ class MultiSource(Source):
         return itertools.chain(*self.sources)
 
     def __getitem__(self, n):
-
         if n < 0:
             n = len(self) + n
 
@@ -133,7 +131,6 @@ class MultiSource(Source):
             return s(*args, **kwargs)
 
         with SoftThreadPool(nthreads=nthreads) as pool:
-
             futures = [pool.submit(_call, s, observer=pool) for s in sources]
 
             iterator = (f.result() for f in futures)

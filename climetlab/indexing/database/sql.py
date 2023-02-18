@@ -11,7 +11,7 @@
 import logging
 import os
 import sqlite3
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from threading import local
 
 import climetlab as cml
@@ -19,63 +19,17 @@ from climetlab.core.index import Order, OrderOrSelection, Selection
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
-from . import Database
+from . import (
+    ALL_KEYS,
+    ALL_KEYS_DICT,
+    CFGRIB_KEYS,
+    FILEPARTS_KEYS,
+    GRIB_KEYS,
+    STATISTICS_KEYS,
+    Database,
+)
 
 LOG = logging.getLogger(__name__)
-
-
-GribKey = namedtuple("GribKey", ["name", "type", "type_in_db", "default_order"])
-
-GRIB_INDEX_KEYS_DICT = {}
-GRIB_INDEX_KEYS = []
-for k in [
-    GribKey("class", str, str, None),
-    GribKey("stream", str, str, None),
-    GribKey("levtype", str, str, None),
-    GribKey("type", str, str, None),
-    GribKey("expver", str, str, None),
-    GribKey("date", str, str, None),
-    GribKey("hdate", str, str, None),
-    GribKey("andate", str, str, None),
-    GribKey("time", str, str, None),
-    GribKey("antime", str, str, None),
-    GribKey("reference", str, str, None),
-    GribKey("step", str, str, None),
-    GribKey("anoffset", str, str, None),
-    GribKey("verify", str, str, None),
-    GribKey("fcmonth", str, str, None),
-    GribKey("fcperiod", str, str, None),
-    GribKey("leadtime", str, str, None),
-    GribKey("opttime", str, str, None),
-    GribKey("origin", str, str, None),
-    GribKey("domain", str, str, None),
-    GribKey("method", str, str, None),
-    GribKey("diagnostic", str, str, None),
-    GribKey("iteration", str, str, None),
-    GribKey("number", str, str, None),
-    GribKey("quantile", str, str, None),
-    GribKey("levelist", str, str, None),
-    # "latitude"  # in the MARS vocabulary but not used.
-    # "longitude"  # in the MARS vocabulary but not used.
-    GribKey("range", str, str, None),
-    GribKey("param", str, str, None),
-    GribKey("ident", str, str, None),
-    GribKey("obstype", str, str, None),
-    GribKey("instrument", str, str, None),
-    GribKey("reportype", str, str, None),
-    GribKey("frequency", str, str, None),  # for 2-d wave-spectra products
-    GribKey("direction", str, str, None),  # for 2-d wave-spectra products
-    GribKey("channel", str, str, None),  # for ea and ef
-]:
-    GRIB_INDEX_KEYS_DICT[k.name] = k
-    GRIB_INDEX_KEYS.append(k.name)
-STATISTICS_KEYS = ["mean", "std", "min", "max"]
-
-CFGRIB_KEYS_DICT = {}
-CFGRIB_KEYS = []
-for k in [GribKey("md5_grid_section", str, str, None)]:
-    CFGRIB_KEYS_DICT[k.name] = k
-    CFGRIB_KEYS.append(k.name)
 
 
 def _list_all_tables(connection):
@@ -175,7 +129,7 @@ class CoordTables:
         return self.dic[key]
 
     def update_with_entry(self, entry):
-        for n in GRIB_INDEX_KEYS + ["md5_grid_section"] + ["_path"]:
+        for n in [k.name for k in GRIB_KEYS] + ["md5_grid_section"] + ["_path"]:
             v = entry.get(n)
             if v is None:
                 continue
@@ -199,9 +153,10 @@ class SqlSorter:
     def _func_name(self):
         return f"userorder_{self.view}"
 
-    def __init__(self, order, view):
+    def __init__(self, order, view, db):
         self.order = order
         self.view = view
+        self.db = db
 
         self.dict_of_dicts = dict()
         self.order_lst = []
@@ -219,22 +174,24 @@ class SqlSorter:
             self._add_key(key, lst)
 
     def _add_key(self, key, lst):
+        dbkey = ALL_KEYS_DICT[key]
+
         if lst is None:
-            self.order_lst.append(f"i_{key}")
+            self.order_lst.append(dbkey.name_in_db)
             return
         if lst == "ascending":
-            self.order_lst.append(f"i_{key} ASC")
+            self.order_lst.append(f"{dbkey.name_in_db} ASC")
             return
         if lst == "descending":
-            self.order_lst.append(f"i_{key} DESC")
+            self.order_lst.append(f"{dbkey.name_in_db} DESC")
             return
         if not isinstance(lst, (list, tuple)):
             lst = [lst]
 
-        lst = [str(_) for _ in lst]  # processing only strings from now.
+        lst = [dbkey.normalize(value, db=self.db) for value in lst]
 
         self.dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-        self.order_lst.append(f'{self._func_name}("{key}",i_{key})')
+        self.order_lst.append(f'{self._func_name}("{key}",{dbkey.name_in_db})')
 
     @property
     def order_statement(self):
@@ -264,7 +221,7 @@ class Connection(local):
 
 
 class SqlDatabase(Database):
-    VERSION = 4
+    VERSION = 5
     EXTENSION = ".db"
 
     def __init__(
@@ -310,7 +267,7 @@ class SqlDatabase(Database):
             assert False, (type(filter), filter)
 
         conditions_statement = self._conditions(selection)
-        sorter = SqlSorter(order, new_view)
+        sorter = SqlSorter(order, new_view, db=self)
         statement = (
             f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
             + f"FROM {old_view} {conditions_statement} {sorter.order_statement};"
@@ -361,53 +318,49 @@ class SqlDatabase(Database):
 
             coords_tables = CoordTables(conn)
 
-            # The i_ is to avoid clashes with SQL keywords
-            i_columns = [f"i_{n}" for n in GRIB_INDEX_KEYS]
-            s_columns = [f"s_{n}" for n in STATISTICS_KEYS]
-            c_columns = [f"c_{n}" for n in CFGRIB_KEYS]
-            columns = i_columns + s_columns + c_columns
-
-            i_columns_defs = ",".join([f"{c} TEXT" for c in i_columns])
-            s_columns_defs = ",".join([f"{c} FLOAT" for c in s_columns])
-            c_columns_defs = ",".join([f"{c} TEXT" for c in c_columns])
-            create_statement = f"""CREATE TABLE IF NOT EXISTS entries (
-                path    TEXT,
-                offset  INTEGER,
-                length  INTEGER,
-                {i_columns_defs},
-                {s_columns_defs},
-                {c_columns_defs}
-                );"""
+            columns_defs = ",".join([f"{k.name_in_db} {k.sql_type}" for k in ALL_KEYS])
+            create_statement = (
+                f"""CREATE TABLE IF NOT EXISTS entries ({columns_defs});"""
+            )
             LOG.debug("%s", create_statement)
             conn.execute(create_statement)
 
-            names = ",".join(columns)
-            values = ",".join(["?"] * (3 + len(columns)))
-            insert_statement = f"""
-                INSERT INTO entries (path, offset, length, {names})
-                VALUES({values});
-                """
+            names = ",".join([k.name_in_db for k in ALL_KEYS])
+            values = ",".join(["?" for k in ALL_KEYS])
+            insert_statement = f"INSERT INTO entries ({names}) VALUES({values});"
             LOG.debug("%s", insert_statement)
 
             # insert each entry
             count = 0
             for entry in iterator:
+                entry = self.normalize(entry)
                 assert isinstance(entry, dict), (type(entry), entry)
                 coords_tables.update_with_entry(entry)
-                values = [entry["_path"], entry["_offset"], entry["_length"]] + [
-                    entry.get(n)
-                    for n in GRIB_INDEX_KEYS + STATISTICS_KEYS + CFGRIB_KEYS
-                ]
+
+                for k in FILEPARTS_KEYS:
+                    assert k.name in entry, (k, entry)
+                values = [entry.get(k.name) for k in ALL_KEYS]
+
                 conn.execute(insert_statement, tuple(values))
                 count += 1
 
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
 
-            pbar = tqdm(i_columns + ["path"], desc="Building indexes")
-            for n in pbar:
-                pbar.set_description(f"Building index for {n}")
-                conn.execute(f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});")
+            def build_sql_indexes():
+                # The i_ is to avoid clashes with SQL keywords
+                path_key = FILEPARTS_KEYS[0]
+                assert path_key.name == "_path", path_key
+                indexed_columns = [f"{k.name_in_db}" for k in GRIB_KEYS + [path_key]]
+
+                pbar = tqdm(indexed_columns, desc="Building indexes")
+                for n in pbar:
+                    pbar.set_description(f"Building index for {n}")
+                    conn.execute(
+                        f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
+                    )
+
+            build_sql_indexes()
 
             return count
 
@@ -418,36 +371,41 @@ class SqlDatabase(Database):
         for k, b in selection.dic.items():
             if b is None or b == cml.ALL:
                 continue
-            elif isinstance(b, (list, tuple)):
-                if len(b) == 1:
-                    conditions.append(f"i_{k}='{b[0]}'")
-                    continue
-                w = ",".join([f"'{x}'" for x in b])
-                conditions.append(f"i_{k} IN ({w})")
-            else:
-                conditions.append(f"i_{k}='{b}'")
+
+            dbkey = ALL_KEYS_DICT[k]
+
+            if isinstance(b, (list, tuple)):
+                # if len(b) == 1:
+                #    conditions.append(f"{dbkey.name_in_db}='{b[0]}'")
+                #    continue
+                w = ",".join([dbkey.to_sql_value(x) for x in b])
+                conditions.append(f"{dbkey.name_in_db} IN ({w})")
+                continue
+
+            conditions.append(f"{dbkey.name_in_db}='{b}'")
 
         if not conditions:
             return ""
         return " WHERE " + " AND ".join(conditions)
 
-    def _columns_names(self, prefix, remove_prefix):
-        if prefix in self._cache_column_names:
-            return self._cache_column_names[(prefix, remove_prefix)]
+    # def _columns_names(self, prefix, remove_prefix):
+    #     print('dead code. to remove')
+    #     if prefix in self._cache_column_names:
+    #         return self._cache_column_names[(prefix, remove_prefix)]
 
-        assert len(prefix) == 1, prefix
-        cursor = self.connection.execute("PRAGMA table_info(entries)")
-        out = []
-        for x in cursor.fetchall():
-            name = x[1]
-            if not name.startswith(prefix):
-                continue
-            if remove_prefix:
-                name = name[2:]
-            out.append(name)
+    #     assert len(prefix) == 1, prefix
+    #     cursor = self.connection.execute("PRAGMA table_info(entries)")
+    #     out = []
+    #     for x in cursor.fetchall():
+    #         name = x[1]
+    #         if not name.startswith(prefix):
+    #             continue
+    #         if remove_prefix:
+    #             name = name[2:]
+    #         out.append(name)
 
-        self._cache_column_names[(prefix, remove_prefix)] = out
-        return out
+    #     self._cache_column_names[(prefix, remove_prefix)] = out
+    #     return out
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
         """
@@ -477,28 +435,25 @@ class SqlDatabase(Database):
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """
+
         if keys is None:
-            keys = ["i", "s", "c"]
+            keys = [k.name for k in GRIB_KEYS + STATISTICS_KEYS + CFGRIB_KEYS]
             if with_parts is None:
                 with_parts = True
 
         if not isinstance(keys, (list, tuple)):
             keys = [keys]
 
-        _names = []
-        x_names = []
-
         if with_parts:
-            _names += ["path", "offset", "length"]
-            x_names += ["_path", "_offset", "_length"]
+            keys = [k.name for k in FILEPARTS_KEYS] + keys
 
-        for k in keys:
-            assert k in ["i", "s", "c"], k
-            _names += self._columns_names(k, remove_prefix=False)
-            x_names += self._columns_names(k, remove_prefix=True)
+        dbkeys = [ALL_KEYS_DICT[name] for name in keys]
 
-        for tupl in self._execute_select(_names, limit, offset):
-            dic = {k: v for k, v in zip(x_names, tupl)}
+        names_in_db = [k.name_in_db for k in dbkeys]
+        names = [k.name for k in dbkeys]
+        for tupl in self._execute_select(names_in_db, limit, offset):
+            dic = {k: v for k, v in zip(names, tupl)}
+
             if remove_none:
                 dic = {k: v for k, v in dic.items() if v is not None}
             yield dic
@@ -515,7 +470,7 @@ class SqlDatabase(Database):
             yield tupl
 
     def _find_all_coords_dict(self):
-
+        raise NotImplementedError("wip")
         # start-of: This is just an optimisation for speed.
         if all([isinstance(f, Order) for f in self._filters]):
             # if there is a Selection filter, it may remove some keys
@@ -539,21 +494,21 @@ class SqlDatabase(Database):
         return values
 
     def _find_all_coords_dict_from_coords_tables(self):
+        raise NotImplementedError("wip")
+        # coords_tables = CoordTables(self.connection)
+        # keys = list(coords_tables.keys())
+        # keys = [k for k in keys if k in GRIB_KEYS_NAMES]
 
-        coords_tables = CoordTables(self.connection)
-        keys = list(coords_tables.keys())
-        keys = [k for k in keys if k in GRIB_INDEX_KEYS]
+        # for f in self._filters:
+        #     firsts = list(f.keys())
+        #     keys = firsts + [k for k in keys if k not in firsts]
 
-        for f in self._filters:
-            firsts = list(f.keys())
-            keys = firsts + [k for k in keys if k not in firsts]
+        # coords = {k: coords_tables[k].dic.values() for k in keys}
 
-        coords = {k: coords_tables[k].dic.values() for k in keys}
+        # for f in self._filters:
+        #     coords = {k: f.filter_values(k, v) for k, v in coords.items()}
 
-        for f in self._filters:
-            coords = {k: f.filter_values(k, v) for k, v in coords.items()}
-
-        return coords
+        # return coords
 
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"
@@ -566,3 +521,6 @@ class SqlDatabase(Database):
         iterator = self.lookup_dicts()
         new_db.load(iterator)
         return new_db
+
+    def normalize_datetime(self, value):
+        return value

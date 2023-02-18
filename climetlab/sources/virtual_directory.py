@@ -11,7 +11,7 @@ import warnings
 from collections import defaultdict
 
 from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
-from climetlab.sources.directory import DirectorySource
+from climetlab.sources.directory import GenericDirectorySource
 from climetlab.utils import progress_bar
 
 LOG = logging.getLogger(__name__)
@@ -111,7 +111,6 @@ class CacheDict(dict):
 
 
 class VirtualField:  # Should inherit from GribField
-
     _real_item = None
 
     def __init__(self, i, owner):
@@ -183,13 +182,13 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
         return super().__getitem__(n)
 
     def _get_metadata_for_item(self, key, item):
-
         func = METADATA_FUNCS[key]
 
         try:
             value = func(key, item)
-        except Exception as e:
-            LOG.exception(f"Exception reading {key}:{str(e)}")
+        except Exception:
+            # except Exception as e:
+            # LOG.exception(f"DEBUG MESSAGE: Exception reading {key}:{str(e)}")
             return None
 
         if key not in METADATA_FUNCS:
@@ -236,14 +235,14 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
         if r != i:
             raise Exception(
                 (
-                    f"Error for field={item.i} and {key=}:"
-                    " the reference field metadata is {r=}"
-                    " but the metatada for the item is {i=}"
+                    "The virtual-directory source does not support using multiple parameter in the same source yet."
+                    f"Error for field={item.i} and {key=}: the reference field metadata is {r=}"
+                    f" but the metatada for the item is {i=}"
                 )
             )
 
 
-class VirtualDirectorySource(DirectorySource):
+class VirtualDirectorySource(GenericDirectorySource):
     INDEX_CLASS = VirtualFieldsetInFilesWithSqlIndex
 
 

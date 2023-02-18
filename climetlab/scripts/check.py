@@ -31,11 +31,9 @@ def version(module):
         pass
 
     try:
-
         module = import_module(module)
 
         if not hasattr(module, "__file__") or module.__file__ is None:
-
             if not hasattr(module, "__path__"):
                 return "builtin"
 
@@ -206,7 +204,6 @@ class CheckCmd:
         all=dict(action="store_true"),
     )
     def do_versions(self, args):
-
         """List the versions of important Python packages."""
         import entrypoints
 
@@ -261,7 +258,6 @@ class CheckCmd:
         json=dict(action="store_true", help="produce a JSON output"),
     )
     def do_libraries(self, args):
-
         result = {}
         try:
             import Magics

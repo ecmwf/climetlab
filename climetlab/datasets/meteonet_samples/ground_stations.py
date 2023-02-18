@@ -20,7 +20,6 @@ class MeteonetGroundStations(Meteonet):
     """
 
     def __init__(self, domain="NW", date="20160101"):
-
         url = "{url}/ground_stations/{domain}_{date}.csv".format(
             url=self.URL, domain=domain, date=date
         )
@@ -34,7 +33,6 @@ class MeteonetGroundStations(Meteonet):
         return self._pandas
 
     def plot_map(self, backend):
-
         north, east = self._pandas[["lat", "lon"]].max()
         south, west = self._pandas[["lat", "lon"]].min()
 

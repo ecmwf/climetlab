@@ -29,7 +29,6 @@ def missing_is_none(x):
 
 # This does not belong here, should be in the C library
 def get_messages_positions(path):
-
     fd = os.open(path, os.O_RDONLY)
     try:
 
@@ -114,7 +113,6 @@ class CodesHandle:
             # LOG.debug(f"{name}:{size}")
 
             if name == "md5GridSection":
-
                 # Special case because:
                 #
                 # 1) eccodes is returning size > 1 for 'md5GridSection'
@@ -430,7 +428,6 @@ class GribField(Base):
         f.write(self.handle.read_bytes(self._offset, self._length))
 
     def plot_numpy(self, backend, array):
-
         if self.handle.get("gridType") == "regular_ll":
             metadata = self.field_metadata()
 

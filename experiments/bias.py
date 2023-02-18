@@ -73,7 +73,6 @@ assert shape_out == (1, 91, 180), shape_out
 
 
 def build_model(shape_in, shape_out):
-
     from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
     from tensorflow.keras.models import Sequential
 

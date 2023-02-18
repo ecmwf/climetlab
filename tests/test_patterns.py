@@ -13,7 +13,6 @@ from climetlab.utils.patterns import Pattern
 
 
 def test_patterns():
-
     p = Pattern("{date:date(%Y%m%d)}-{param}-{level:int}-{level:int(%03d)}")
 
     assert p.names == ["date", "level", "param"], p.names
@@ -36,7 +35,6 @@ def test_patterns():
 
 
 def test_patterns_missing_key():
-
     p = Pattern("{date}-{param}")
     with pytest.raises(ValueError, match=".*level.*"):
         p.substitute(dict(date="20000101", param="2t", level=12))

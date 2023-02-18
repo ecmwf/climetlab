@@ -18,7 +18,6 @@ FORWARDS = ("to_xarray", "to_pandas", "to_tfdataset")
 
 
 def _nearest_common_class(objects):
-
     # mro() is "method resolution order"
     mros = [type(o).mro() for o in objects]
 
@@ -48,7 +47,6 @@ def merge_by_class(sources):
 
 class Merger:
     def __init__(self, sources):
-
         assert sources
 
         self.sources = list(_flatten(sources))
@@ -181,7 +179,6 @@ def add_default_values_and_kwargs(args):
 
 
 def make_merger(merger, sources):
-
     for fwd in FORWARDS:
         if hasattr(merger, fwd) and callable(getattr(merger, fwd)):
             LOG.debug("Merger %s has method in %s()", merger, fwd)

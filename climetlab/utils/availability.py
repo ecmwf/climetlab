@@ -128,6 +128,9 @@ class Availability:
     def __str__(self):
         return self.tree()
 
+    def __repr__(self):
+        return str(self.tree())
+
     def select(self, *args, **kwargs):
         return Availability(self._tree.select(*args, **kwargs))
 

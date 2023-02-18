@@ -30,7 +30,6 @@ DATA_DATALOADING = {
 
 
 def benchmark_dataloading(*args):
-
     now = datetime.datetime.now
 
     class Exp:

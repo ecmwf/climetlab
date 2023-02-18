@@ -90,7 +90,6 @@ TYPES = {"": Any, "int": Int, "float": Float, "date": Datetime, "enum": Enum}
 
 
 class Constant:
-
     name = None
 
     def __init__(self, value):
@@ -160,7 +159,6 @@ class Pattern:
         return "".join(str(x) for x in result)
 
     def _substitute_many(self, params):
-
         for k, v in list(params.items()):
             if not isinstance(v, list):
                 params[k] = [v]

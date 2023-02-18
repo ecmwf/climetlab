@@ -56,7 +56,7 @@ def check_line_2(line2):
         "levelist": 500,
         "date": 19970101,
         "time": 200,
-        "step": 0,
+        "step": "0",
         "param": "z",
         "class": "ea",
         "type": "an",
@@ -76,6 +76,8 @@ def test_cli_index_url(baseurl, capsys):
     app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
     out, err = capsys.readouterr()
     lines = out.split("\n")
+    if "error" in err.lower():
+        assert False, err
 
     assert len(lines) == 4465, len(lines)
     line2 = json.loads(lines[2])
@@ -92,8 +94,10 @@ def test_cli_index_urls(baseurl, capsys):
     )
     out, err = capsys.readouterr()
     lines = out.split("\n")
+    if "error" in err.lower():
+        assert False, err
 
-    assert len(lines) == 8497
+    assert len(lines) == 8497, lines[0:10]
     line2 = json.loads(lines[2])
     check_line_2(line2)
     assert line2["_path"] == "large_grib_1.grb"
@@ -112,6 +116,8 @@ def test_cli_index_urls_full_url(baseurl, capsys):
     )
     out, err = capsys.readouterr()
     lines = out.split("\n")
+    if "error" in err.lower():
+        assert False, err
 
     assert len(lines) == 8497
     line2 = json.loads(lines[2])
@@ -124,3 +130,4 @@ if __name__ == "__main__":
 
     main(__file__)
     # test_global_index("indexed-url-with-json-index", CML_BASEURL_S3)
+    test_cli_index_url
