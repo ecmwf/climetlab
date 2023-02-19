@@ -112,6 +112,8 @@ class FieldSetInFiles(FieldSet):
     # This class changes the interface (_getitem__ and __len__)
     # into the interface (part and number_of_parts).
     def __getitem__(self, n):
+        if isinstance(n, slice):
+            return self.from_slice(n)
         part = self.part(n)
         return GribField(part.path, part.offset, part.length)
 
