@@ -44,6 +44,19 @@ def test_cds_grib_2():
     assert len(s) == 2
 
 
+def test_cds_grib_3():
+    s = load_source(
+        "cds",
+        "reanalysis-era5-single-levels",
+        variable=["2t", "msl"],
+        product_type="reanalysis",
+        area=[50, -50, 20, 50],
+        date="2012-12-12/to/2012-12-15",
+        time="12:00",
+    )
+    assert len(s) == 8
+
+
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_cds_netcdf():
     s = load_source(
