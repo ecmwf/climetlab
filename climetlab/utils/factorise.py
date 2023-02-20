@@ -457,6 +457,8 @@ class Tree:
             return None, None
         start = datetime.datetime.strptime(str(v[0]), "%Y%m%d")
         step = datetime.datetime.strptime(str(v[1]), "%Y%m%d") - start
+        if step != datetime.timedelta(days=1):
+            return None, None
         for i in range(2, len(v)):
             current = datetime.datetime.strptime(str(v[i]), "%Y%m%d")
             previous = datetime.datetime.strptime(str(v[i - 1]), "%Y%m%d")
