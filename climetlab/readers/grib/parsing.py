@@ -37,7 +37,7 @@ def post_process_parameter_level(field, h):
         field["param_level"] = None
         return field
 
-    level = field.get("level", None)
+    level = field.get("levelist", None)
     if level is None:
         field["param_level"] = param
         return field
