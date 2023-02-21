@@ -11,12 +11,12 @@ import logging
 import os
 import pathlib
 from contextlib import contextmanager
-from importlib import import_module
 from unittest.mock import patch
 
 from climetlab import load_source
 from climetlab.readers.text import TextReader
 from climetlab.sources.empty import EmptySource
+from climetlab.utils import module_installed
 
 LOG = logging.getLogger(__name__)
 
@@ -55,12 +55,7 @@ def data_file_url(*args):
 
 
 def modules_installed(*modules):
-    for module in modules:
-        try:
-            import_module(module)
-        except ImportError:
-            return False
-    return True
+    return all(module_installed(m) for m in modules)
 
 
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
