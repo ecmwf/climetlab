@@ -7,24 +7,25 @@
 # nor does it submit to any jurisdiction.
 #
 
+from itertools import zip_longest
 import logging
 
 import numpy as np
 
 LOG = logging.getLogger(__name__)
 
+from .tensorflow import default_merger, as_numpy_func
+
 
 class PytorchMixIn:
-    def to_pytorch(self, offset, data_loader_kwargs=None):
+    def to_pytorch_dataloader(self, *args, dataloader_kwargs=None, **kwargs):
         import torch
 
-        # sometimes (!) causes an Exception:
-        # gribapi.errors.UnsupportedEditionError: Edition not supported.
         num_workers = 1
 
-        out = self._to_pytorch_wrapper_class()(self, offset)
+        dataset = self.to_pytorch(self, *args, **kwargs)
 
-        DATA_LOADER_KWARGS_DEFAULT = dict(
+        default_kwargs = dict(
             batch_size=128,
             # multi-process data loading
             # use as many workers as you have cores on your machine
@@ -38,11 +39,11 @@ class PytorchMixIn:
             # if None then Pytorch uses the default collate_fn (see below)
             collate_fn=None,
         )
-        data_loader_kwargs_ = {k: v for k, v in DATA_LOADER_KWARGS_DEFAULT.items()}
-        if data_loader_kwargs:
-            data_loader_kwargs_.update(data_loader_kwargs)
+        merged_kwargs = {k: v for k, v in default_kwargs.items()}
+        if dataloader_kwargs:
+            merged_kwargs.update(dataloader_kwargs)
 
-        return torch.utils.data.DataLoader(out, **data_loader_kwargs_)
+        return torch.utils.data.DataLoader(dataset, **merged_kwargs)
 
     def _to_pytorch_wrapper_class(self):
         import torch
@@ -72,3 +73,72 @@ class PytorchMixIn:
                 return x, Y
 
         return WrapperWeatherBenchDataset
+
+    def to_pytorch(self, *args, **kwargs):
+        if "features" not in kwargs:
+            kwargs["features"] = [self]
+
+        if "total_size" not in kwargs:
+            kwargs["total_size"] = len(self)
+
+        return to_pytorch2(*args, **kwargs)
+
+
+def to_pytorch2(
+    *args,
+    total_size,
+    features=None,
+    targets=None,
+    num_parallel_calls=10,
+    prefetch=1024,
+    merger=default_merger,
+    targets_merger=default_merger,
+    shuffle_buffer_size=100,
+    options=None,
+    targets_options=None,
+    **kwargs,
+):
+    import torch
+
+    assert not args, args
+    import tensorflow as tf
+
+    if targets is None:
+        targets = []
+
+    if options is None:
+        options = [{} for i in features]
+
+    if targets_options is None:
+        targets_options = [{} for i in targets]
+
+    assert isinstance(features, (list, tuple)), features
+    assert len(features) == len(options), (len(features), len(options))
+    funcs = [
+        as_numpy_func(_, opt) for _, opt in zip_longest(features, options, fillvalue={})
+    ]
+    funcs_targets = [
+        as_numpy_func(_, opt)
+        for _, opt in zip_longest(targets, targets_options, fillvalue={})
+    ]
+
+    func = merger(*funcs)
+    func_targets = targets_merger(*funcs_targets)
+
+    class ClimetlabTorchDataset(torch.utils.data.Dataset):
+        def __len__(self):
+            """Returns the length of the dataset. Pytorch must know this."""
+            return total_size
+
+        def __getitem__(self, i):  # -> Tuple[np.ndarray, ...]:
+            """Returns the i-th sample (x, y). Pytorch will take care of the shuffling after each epoch."""
+            x = func(i)
+            Y = func_targets(Y)
+            x = x.astype(np.float32)  # not needed ?
+            Y = Y.astype(np.float32)  # not needed ?
+            return x, Y
+
+        # def __iter__(self):
+        #    raise NotImplementedError('TODO')
+
+    return ClimetlabTorchDataset()
