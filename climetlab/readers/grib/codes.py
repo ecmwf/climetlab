@@ -302,10 +302,13 @@ class GribField(Base):
         backend.plot_grib(self.path, self.handle.get("offset"))
 
     @call_counter
-    def to_numpy(self, reshape=True):
+    def to_numpy(self, reshape=True, dtype=None):
+        values = self.values
         if reshape:
-            return self.values.reshape(self.shape)
-        return self.values
+            values = values.reshape(self.shape)
+        if dtype is not None:
+            values = values.astype(dtype)
+        return values
 
     def __repr__(self):
         return "GribField(%s,%s,%s,%s,%s,%s)" % (

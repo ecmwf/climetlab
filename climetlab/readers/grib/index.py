@@ -82,7 +82,15 @@ class FieldSet(FieldSetMixin, Index):
         LOG.debug("Building availability")
 
         self._availability = self.custom_availability(
-            ignore_keys=["_param_id", "mean", "std", "min", "max", "valid", "param_level"]
+            ignore_keys=[
+                "_param_id",
+                "mean",
+                "std",
+                "min",
+                "max",
+                "valid",
+                "param_level",
+            ]
         )
         return self.availability
 

@@ -9,6 +9,7 @@
 import inspect
 import json
 import re
+from importlib import import_module
 
 import requests
 import yaml
@@ -167,3 +168,17 @@ def progress_bar(*, total=None, iterable=None, initial=0, desc=None):
         desc=desc,
         # dynamic_ncols=True, # make this the default?
     )
+
+
+MODULE_INSTALLED = {}
+
+
+def module_installed(name):
+    if name not in MODULE_INSTALLED:
+        try:
+            import_module(name)
+            MODULE_INSTALLED[name] = True
+        except ImportError:
+            MODULE_INSTALLED[name] = False
+
+    return MODULE_INSTALLED[name]
