@@ -163,6 +163,7 @@ def normalize_a_b(option, dataset):
 
     raise ValueError(option)
 
+
 def to_funcs(features, targets, options, targets_options, merger, targets_merger):
 
     if targets is None:
@@ -189,6 +190,7 @@ def to_funcs(features, targets, options, targets_options, merger, targets_merger
 
     return func, func_targets
 
+
 def to_tfdataset2(
     total_size=None,
     features=None,
@@ -208,7 +210,9 @@ def to_tfdataset2(
 
     import tensorflow as tf
 
-    func, func_targets = to_funcs(features, targets, options, targets_options, merger, targets_merger)
+    func, func_targets = to_funcs(
+        features, targets, options, targets_options, merger, targets_merger
+    )
 
     indices = tf.data.Dataset.range(total_size)
     if shuffle_buffer_size:

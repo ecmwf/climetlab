@@ -1,7 +1,9 @@
-import tqdm
-import climetlab as cml
-import pandas as pd
+ximport tqdm
 import sys
+
+import pandas as pd
+
+import climetlab as cml
 
 DIR = "/lus/h2resw01/fws4/lb/project/ai-ml/graph-cast/pl-no-param-level"
 
@@ -17,7 +19,7 @@ if len(sys.argv) > 1 :
         for pl in [1, 10, 100, 1000, 125, 150, 175, 2, 20]
         + [200, 225, 250, 3, 30, 300, 350, 400, 450, 5, 50, 500, 550]
         + [600, 650, 7, 70, 700, 750, 775, 800, 825, 850, 875, 900, 925, 950, 975]
-    ] 
+    ]
     # FEATURE += ['10u', '10v', '2t', 'msl', 'tp'] # not indexed in the same directory for now.
   if sys.argv[1] == "medium":
     #DATE = pd.date_range(start="1980-01-01", end= "2020-12-31", freq ='1d')
@@ -76,6 +78,7 @@ dataset = features[0].to_pytorch(**kwargs)
 ## torch dataloader
 #dataloader = features[0].to_pytorch_dataloader(**kwargs)
 from climetlab.readers.grib.pytorch import to_pytorch_dataloader
+
 dataloader = to_pytorch_dataloader(dataset, batch_size=2, num_workers=8)
 print("created pytorch dataloader", dataloader)
 for x, y in tqdm.tqdm(dataloader, smoothing=1):

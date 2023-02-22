@@ -8,7 +8,7 @@
 #
 
 from climetlab.core.data import data_entries, get_data_entry
-from climetlab.core.ipython import display
+from climetlab.core.ipython import Image, display
 from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
 
@@ -79,11 +79,15 @@ class Plot:
         backend = SETTINGS.get(f"{self.kind}-plotting-backend", None)
         backend = kwargs.pop("backend", backend)
 
+        self.animate = kwargs.pop("animate", False)
+        self.fps = kwargs.pop("fps", 5)
+
         options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
         self.backend = DRIVERS[backend](Options(options))
+        self.frames = []
 
     def plot_graph(self, data=None, **kwargs):
         if not isinstance(data, (list, tuple)):
@@ -111,6 +115,12 @@ class Plot:
         self.backend.apply_options(options)
         options.check_unused()
 
+        if self.animate:
+            frame = self.backend.temporary_file(".png")
+            self.frames.append(frame)
+            self.backend.save(frame)
+            return None
+
         return self
 
     def wms_layers(self):
@@ -120,13 +130,35 @@ class Plot:
         return self.backend.render()
 
     def show(self):
-        self.backend.show(display=display)
+        if self.animate:
+            return self.make_animation(display=display)
+        else:
+            self.backend.show(display=display)
 
     def macro(self) -> list:
         return self.backend.macro()
 
     def save(self, path):
+        if self.animate:
+            return self.make_animation(path=path)
         return self.backend.save(path)
+
+    def make_animation(self, display=None, path=None):
+
+        import imageio
+        from numpngw import write_apng
+
+        if path is None:
+            path = self.backend.temporary_file(".png")
+
+        frames = [imageio.imread(f) for f in self.frames]
+
+        write_apng(path, frames, delay=int(1000.0 / self.fps + 0.5))
+
+        if display is not None:
+            return display(Image(path))
+
+        return path
 
 
 class MapPlot(Plot):
@@ -143,6 +175,7 @@ def new_plot(**kwargs) -> Plot:
     :return: [description]
     :rtype: Plot
     """
+
     return MapPlot(kwargs)
 
 

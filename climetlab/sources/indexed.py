@@ -10,8 +10,8 @@
 
 import logging
 
-from climetlab.sources import Source
 from climetlab.decorators import normalize
+from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ LOG = logging.getLogger(__name__)
 class IndexedSource(Source):
     _reader_ = None
 
-    @normalize('date', 'date-list',format ='%Y%m%d')
+    @normalize("date", "date-list", format="%Y%m%d")
     def __init__(self, index, order_by=None, filter=None, merger=None, **kwargs):
         LOG.debug(f"New IndexedSource order={order_by} kwargs={kwargs}")
 

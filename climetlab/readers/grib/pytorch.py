@@ -7,14 +7,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from itertools import zip_longest
 import logging
 
 import numpy as np
 
-LOG = logging.getLogger(__name__)
-
 from .tensorflow import default_merger, to_funcs
+
+LOG = logging.getLogger(__name__)
 
 
 def to_pytorch_dataloader(dataset, **kwargs):
@@ -57,11 +56,13 @@ def to_pytorch(
 ):
     if total_size is None:
         total_size = len(features[0])
-        print('totalsize' , total_size)
+        print("totalsize", total_size)
 
     import torch
 
-    func, func_targets = to_funcs(features, targets, options, targets_options, merger, targets_merger)
+    func, func_targets = to_funcs(
+        features, targets, options, targets_options, merger, targets_merger
+    )
 
     class ClimetlabTorchDataset(torch.utils.data.Dataset):
         def __len__(self):
