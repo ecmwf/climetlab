@@ -19,6 +19,7 @@ from .plotting import interactive_map, new_plot, new_table
 from .plotting import options as plotting_options
 from .plotting import plot_graph, plot_map
 from .readers import Reader
+from .readers.grib.output import new_grib_output
 from .sources import Source
 from .sources import get_source as source  # so the user can do: cml.source(...)
 from .sources import load_source, load_source_lazily
@@ -45,6 +46,7 @@ __all__ = [
     "source",
     "Source",
     "start_dask",
+    "new_grib_output",
     "__version__",
 ]
 
