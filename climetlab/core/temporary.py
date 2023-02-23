@@ -35,7 +35,7 @@ class TmpFile:
         self.cleanup()
 
     def cleanup(self):
-        if self.path is not None:
+        if self.path is not None and os is not None:
             os.unlink(self.path)
         self.path = None
 

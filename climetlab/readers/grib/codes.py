@@ -191,6 +191,17 @@ class CodesHandle:
         assert self.path is None, "Only cloned handles can have values changed"
         eccodes.codes_set_long(self.handle, name, value)
 
+    def set_double(self, name, value):
+        assert self.path is None, "Only cloned handles can have values changed"
+        eccodes.codes_set_double(self.handle, name, value)
+
+    def set_string(self, name, value):
+        assert self.path is None, "Only cloned handles can have values changed"
+        eccodes.codes_set_string(self.handle, name, value)
+
+    def set(self, name, value):
+        assert self.path is None, "Only cloned handles can have values changed"
+        eccodes.codes_set(self.handle, name, value)
 
     def write(self, f):
         eccodes.codes_write(self.handle, f)

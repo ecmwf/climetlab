@@ -17,11 +17,11 @@ class GribOutput:
         if template is None:
             template = self.template
 
-        x = template.handle.clone()
-        x.set_values(values)
+        handle = template.handle.clone()
+        handle.set_values(values)
         for k, v in metadata.items():
-            x.set_long(k, v)
-        x.write(self.f)
+            handle.set(k, v)
+        handle.write(self.f)
 
     def close(self):
         self.f.close()
