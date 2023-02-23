@@ -29,9 +29,9 @@ To write data into a GRIB file, use the ``source.save(filename)`` method. This m
 on a sources relying on GRIB.
 
 CliMetLab also supports writing custom GRIB files, with modified values or custom attributes 
-through the function `cml.new_grib_output()`. See usage example in this _`notebook <examples/51-saving-to-grib.ipynb>`_ 
+through the function ```cml.new_grib_output()``. See usage example in the example notebook ( 
+:ref:`examples`).
 
-.. _nb-write-grib: examples/51-saving-to-grib.ipynb 
 
 Building indexes
 ----------------
