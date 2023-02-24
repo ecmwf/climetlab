@@ -25,10 +25,14 @@ If the index has not been created already, CliMetLab will create one
 Writing GRIB files
 ------------------
 
-To write data into a GRIB file, use the ``source.save(filename)`` method. This method is implemented only
-on a sources relying on GRIB.
+There are two ways to write GRIB files:
 
-CliMetLab has no support for writing custom GRIB files, with modified values or custom attributes.
+- To save data from MARS, CDS or other, when GRIB is already the native format of the data,
+use the ``source.save(filename)`` method. This method is implemented only on a sources relying on GRIB.
+
+- CliMetLab also supports writing custom GRIB files, with **modified values or custom attributes** 
+through the function ```cml.new_grib_output()``. See usage example in the example notebook 
+(:ref:`examples`).
 
 
 Building indexes

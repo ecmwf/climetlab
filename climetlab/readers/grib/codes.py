@@ -185,7 +185,8 @@ class CodesHandle:
     def set_values(self, values):
         assert self.path is None, "Only cloned handles can have values changed"
         eccodes.codes_set_values(self.handle, values.flatten())
-        # eccodes.codes_set_long(self.handle, "generatingProcessIdentifier", 254)
+        # This is writing on the GRIB that something has been modified (255=unknown)
+        eccodes.codes_set_long(self.handle, "generatingProcessIdentifier", 255)
 
     def set_long(self, name, value):
         assert self.path is None, "Only cloned handles can have values changed"
