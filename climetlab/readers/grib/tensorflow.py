@@ -95,23 +95,31 @@ def default_merger(*funcs):
     return map_fn
 
 
-def as_numpy_func(ds, opt):
+def as_numpy_func(ds, options=None):
     if ds is None or callable(ds):
         return ds
-    options = opt.get("to_numpy_kwargs", {})
+
+    def _options(new):
+        o = {k:v for k,v in ds.get_options().items()}
+        if new:
+            o.update(new)
+        return o
+    options = _options(options)
+    
+    to_numpy_kwargs = options.get("to_numpy_kwargs", {})
 
     def take_i(i):
-        return ds[i].to_numpy(**options)
+        return ds[i].to_numpy(**to_numpy_kwargs)
 
-    if "offset" in opt and opt["offset"]:
-        offset = opt["offset"]
+    if "offset" in options and options["offset"]:
+        offset = options["offset"]
 
         def take_i(i):  # noqa: F811
-            return ds[i + offset].to_numpy(**options)
+            return ds[i + offset].to_numpy(**to_numpy_kwargs)
 
     func = take_i
 
-    if "constant" in opt and opt["constant"]:
+    if "constant" in options and options["constant"]:
 
         def first(func):
             def wrap(i):
@@ -121,8 +129,8 @@ def as_numpy_func(ds, opt):
 
         func = first(func)
 
-    if "normalize" in opt:
-        a, b = normalize_a_b(opt["normalize"], ds)
+    if "normalize" in options:
+        a, b = normalize_a_b(options["normalize"], ds)
 
         def normalize(func):
             def wrap(i):
