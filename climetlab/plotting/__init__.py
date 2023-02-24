@@ -103,9 +103,12 @@ class Plot:
 
         return self
 
-    def plot_map(self, data=None, **kwargs):
+    def plot_map(self, data=None, metadata=None, **kwargs):
         if not isinstance(data, (list, tuple)):
             data = [data]
+
+        if metadata:
+            self.backend._options.push('metadata',metadata)
 
         for d in data:
             d = get_wrapper(d)
