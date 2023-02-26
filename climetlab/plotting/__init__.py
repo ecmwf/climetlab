@@ -11,6 +11,7 @@ from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import Image, display
 from climetlab.core.settings import SETTINGS
 from climetlab.wrappers import get_wrapper
+from climetlab.core.temporary import temp_file
 
 from .options import Options
 
@@ -79,9 +80,6 @@ class Plot:
         backend = SETTINGS.get(f"{self.kind}-plotting-backend", None)
         backend = kwargs.pop("backend", backend)
 
-        self.animate = kwargs.pop("animate", False)
-        self.fps = kwargs.pop("fps", 5)
-
         options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
@@ -108,7 +106,7 @@ class Plot:
             data = [data]
 
         if metadata:
-            self.backend._options.push('metadata',metadata)
+            self.backend._options.push("metadata", metadata)
 
         for d in data:
             d = get_wrapper(d)
@@ -117,12 +115,6 @@ class Plot:
         options = Options(kwargs)
         self.backend.apply_options(options)
         options.check_unused()
-
-        if self.animate:
-            frame = self.backend.temporary_file(".png")
-            self.frames.append(frame)
-            self.backend.save(frame)
-            return None
 
         return self
 
@@ -133,33 +125,44 @@ class Plot:
         return self.backend.render()
 
     def show(self):
-        if self.animate:
-            return self.make_animation(display=display)
-        else:
-            self.backend.show(display=display)
+        self.backend.show(display=display)
 
     def macro(self) -> list:
         return self.backend.macro()
 
     def save(self, path):
-        if self.animate:
-            return self.make_animation(path=path)
         return self.backend.save(path)
 
-    def make_animation(self, display=None, path=None):
 
+class AnimationPlot:
+    def __init__(self, fps=5, **kwargs):
+        self.fps = fps
+        self.kwargs = kwargs
+        self.files = []
+
+    def plot_map(self, data, **kwargs):
+        self.files.append(temp_file(".png"))
+
+        options = {}
+        options.update(self.kwargs)
+        options.update(kwargs)
+
+        p = new_plot(**options)
+        p.plot_map(data)
+        p.save(self.files[-1].path)
+
+    def show(self):
+        tmp = temp_file(".png")
+        self.save(tmp.path)
+        return display(Image(tmp.path))
+
+    def save(self, path):
         import imageio
         from numpngw import write_apng
 
-        if path is None:
-            path = self.backend.temporary_file(".png")
-
-        frames = [imageio.imread(f) for f in self.frames]
+        frames = [imageio.imread(f.path) for f in self.files]
 
         write_apng(path, frames, delay=int(1000.0 / self.fps + 0.5))
-
-        if display is not None:
-            return display(Image(path))
 
         return path
 
@@ -178,6 +181,9 @@ def new_plot(**kwargs) -> Plot:
     :return: [description]
     :rtype: Plot
     """
+
+    if kwargs.pop("animate", False):
+        return AnimationPlot(**kwargs)
 
     return MapPlot(kwargs)
 

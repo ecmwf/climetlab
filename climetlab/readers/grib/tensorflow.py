@@ -100,12 +100,13 @@ def as_numpy_func(ds, options=None):
         return ds
 
     def _options(new):
-        o = {k:v for k,v in ds.get_options().items()}
+        o = {k: v for k, v in ds.get_options().items()}
         if new:
             o.update(new)
         return o
+
     options = _options(options)
-    
+
     to_numpy_kwargs = options.get("to_numpy_kwargs", {})
 
     def take_i(i):
@@ -173,7 +174,6 @@ def normalize_a_b(option, dataset):
 
 
 def to_funcs(features, targets, options, targets_options, merger, targets_merger):
-
     if targets is None:
         targets = []
 

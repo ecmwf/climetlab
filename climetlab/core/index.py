@@ -362,7 +362,6 @@ class MaskIndex(Index):
         )
 
     def __getitem__(self, n):
-
         if isinstance(n, slice):
             return self.from_slice(n)
 
@@ -390,7 +389,6 @@ class MultiIndex(Index):
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
     def __getitem__(self, n):
-
         if isinstance(n, slice):
             return self.from_slice(n)
 

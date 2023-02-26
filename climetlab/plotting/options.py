@@ -43,6 +43,3 @@ class Options:
 
     def __repr__(self) -> str:
         return f"Options({str(self._options)})"
-
-    def push(self, k, v):
-        self._options[k] = v

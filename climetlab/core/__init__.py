@@ -117,15 +117,15 @@ class Base(metaclass=MetaBase):
         self._not_implemented()
 
     def set_options(self, *args, **kwargs):
-        if not hasattr(self, '_options'):
+        if not hasattr(self, "_options"):
             self._options = {}
         for dic in args:
             self.set_options(**dic)
         if kwargs:
             self._options.update(**kwargs)
-            
+
     def get_options(self):
-        if not hasattr(self, '_options'):
+        if not hasattr(self, "_options"):
             self._options = {}
         return self._options
 
