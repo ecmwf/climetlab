@@ -41,9 +41,9 @@ def build_data_specs(*args, output, **kwargs):
 
 
 class DataIO:
-    def __init__(self, *args, _owner=None, **kwargs):
+    def __init__(self, *args, owner=None, **kwargs):
         assert not args, "only keywords args are supported"
-        self.owner = _owner
+        self.owner = owner
 
         self.args = args
         self.kwargs = kwargs
@@ -66,8 +66,8 @@ class DataIO:
 
 
 class XDataIO(DataIO):
-    def __init__(self, *args, _owner=None, **kwargs):
-        super().__init__(*args, _owner=_owner, **kwargs)
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, owner=owner, **kwargs)
 
         self._features = {}
 
@@ -76,7 +76,7 @@ class XDataIO(DataIO):
 
         for name in kwargs["features"]:
             options = self.feature_options.get(name, {})
-            self._features[name] = Element(name, options).mutate()
+            self._features[name] = Element(name, owner, options).mutate()
 
         self.func = self.merge_elements(self._features, self.features_merger)
 
@@ -85,8 +85,8 @@ class XDataIO(DataIO):
 
 
 class XYDataIO(DataIO):
-    def __init__(self, *args, _owner=None, **kwargs):
-        super().__init__(*args, _owner=_owner, **kwargs)
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, owner=owner, **kwargs)
 
         self._features = {}
         self._targets = {}
@@ -98,11 +98,11 @@ class XYDataIO(DataIO):
 
         for name in kwargs["features"]:
             options = self.feature_options.get(name, {})
-            self._features[name] = Element(name, _owner, options).mutate()
+            self._features[name] = Element(name, owner, options).mutate()
 
         for name in kwargs["targets"]:
             options = self.feature_options.get(name, {})
-            self._targets[name] = Element(name, _owner, options).mutate()
+            self._targets[name] = Element(name, owner, options).mutate()
 
         self.func = self.merge_elements(self._features, self.features_merger)
         self.target_func = self.merge_elements(self._targets, self.targets_merger)
@@ -112,13 +112,14 @@ class XYDataIO(DataIO):
 
 
 class Element:
-    def __init__(self, dataset_or_source, string, options):
+    def __init__(self, string, dataset_or_source, options):
         self.owner = dataset_or_source
         self._source = None
         self._init_string = string
         self.options = options
-        assert self.name is not None
+
         self.name = string
+        assert self.name is not None
 
     @property
     def source(self):
