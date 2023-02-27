@@ -33,11 +33,17 @@ class TorchDataset(torch.utils.data.Dataset):
 
 
 def build_data_specs(*args, output, **kwargs):
-    if output == "x,y":
-        return XYDataIO(*args, **kwargs)
-    if output == "x":
-        return XDataIO(*args, **kwargs)
-    raise NotImplementedError(output)
+    return {
+        "x,y": XYDataIO,
+        "x": XDataIO,
+        # TODO: einops style:
+        #  "(bs, lat * lon, param * lev)":
+        #  "(bs, lat * lon, param_lev)":
+        #  "bs, (lat lon), (param lev)":
+        #  "bs, (param lev), (lat lon)":
+        # plev vs lev ?
+        # param_plev ?
+    }(*args, **kwargs)
 
 
 class DataIO:
