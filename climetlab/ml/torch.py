@@ -15,16 +15,10 @@ LOG = logging.getLogger(__name__)
 
 
 def _find_device():
-    if torch.cuda.is_available():
-        LOG.debug("Found Cuda device")
-        return "cuda"
-
-    import platform
-
-    if platform.system() == "Darwin" and platform.processor() == "arm":  # macos M1
-        LOG.debug("Found M1 device on Macos")
+    if torch.backends.mps.is_available() and torch.backends.mps.is_built():
         return "mps"
-
+    if torch.cuda.is_available() and torch.backends.cuda.is_built():
+        return "cuda"
     LOG.debug("Found no GPU, using CPU")
     return "cpu"
 
