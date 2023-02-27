@@ -1,7 +1,7 @@
 .. _sources:
 
-How to create a souce plugin
-============================
+How to create a source plugin
+=============================
 
 A :doc:`Data source </contributing/sources>` is a Python class that accesses data
 from a given location. CliMetLab has build-in sources (the most common being
