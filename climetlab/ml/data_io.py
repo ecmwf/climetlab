@@ -20,7 +20,7 @@ from climetlab.readers.grib.tensorflow import as_numpy_func, default_merger
 
 
 class TorchDataset(torch.utils.data.Dataset):
-    def __init__(self, owner, ioml):
+    def __init__(self, owner, ioml: DataIO):
         self.owner = owner
         self.ioml = ioml
 
@@ -33,9 +33,9 @@ class TorchDataset(torch.utils.data.Dataset):
 
 
 def build_data_specs(*args, output, **kwargs):
-    if output == "x,y":  # TODO: do OOP
+    if output == "x,y":
         return XYDataIO(*args, **kwargs)
-    if output == "x":  # TODO: do OOP
+    if output == "x":
         return XDataIO(*args, **kwargs)
     raise NotImplementedError(output)
 
@@ -49,17 +49,8 @@ class DataIO:
         self.kwargs = kwargs
 
     def merge_elements(self, elements, merger):
-        assert isinstance(elements, dict), elements
-        funcs = []
-        for name, elt in elements.items():
-            assert isinstance(elt, Element), elt
-            opt = elt.options
-            assert isinstance(opt, dict), opt
-            source = self.owner.build_source_for_element(elt)
-            func = as_numpy_func(source, opt)  # refactor HERE TODO
-            funcs.append(func)
-        func = merger(*funcs)
-        return func
+        funcs = [elt.func for name, elt in elements.items()]
+        return merger(*funcs)
 
     def get_torch_item(self, key):
         raise NotImplementedError()
@@ -124,7 +115,7 @@ class Element:
     @property
     def source(self):
         if self._source is None:
-            self._source = self.owner.build_source_from_element(self)
+            self._source = self.owner.build_source_for_element(self)
         return self._source
 
     def get_item(self, i):
@@ -132,3 +123,7 @@ class Element:
 
     def mutate(self):
         return self
+
+    @property
+    def func(self):
+        return as_numpy_func(self.source, self.options)  # refactor HERE TODO
