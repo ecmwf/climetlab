@@ -82,6 +82,8 @@ install_requires += [
     "termcolor",
     "entrypoints",
     "branca",
+    "imageio",
+    "numpngw",
 ]
 
 extras_require = {
