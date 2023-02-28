@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from climetlab.utils.humanize import number, seconds
 
 PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))
+START = time.time()
 
 
 @contextmanager
@@ -90,6 +91,7 @@ def print_counters():
     if PROFILING:
         for n in COUNTERS:
             print(n)
+    print(f"ELAPSED [{seconds(time.time() - START)}]")
 
 
 atexit.register(print_counters)

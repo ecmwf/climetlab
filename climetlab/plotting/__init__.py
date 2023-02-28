@@ -134,6 +134,17 @@ class Plot:
         return self.backend.save(path)
 
 
+def files_to_movie(files, path, fps):
+    import imageio
+    from numpngw import write_apng
+
+    frames = [imageio.imread(f) for f in files]
+
+    write_apng(path, frames, delay=int(1000.0 / fps + 0.5))
+
+    return path
+
+
 class AnimationPlot:
     def __init__(self, fps=5, **kwargs):
         self.fps = fps
@@ -143,12 +154,17 @@ class AnimationPlot:
     def plot_map(self, data, **kwargs):
         self.files.append(temp_file(".png"))
 
+        forward_kwargs = {}
+        for forward in ("row", "column"):
+            if forward in kwargs:
+                forward_kwargs[forward] = kwargs.pop(forward)
+
         options = {}
         options.update(self.kwargs)
         options.update(kwargs)
 
         p = new_plot(**options)
-        p.plot_map(data)
+        p.plot_map(data, **forward_kwargs)
         p.save(self.files[-1].path)
 
     def show(self):
@@ -157,12 +173,92 @@ class AnimationPlot:
         return display(Image(tmp.path))
 
     def save(self, path):
+        return files_to_movie([f.path for f in self.files], path, self.fps)
+
+
+class LayoutPlot:
+    def __init__(self, rows, columns, animate=False, fps=5, **kwargs):
+        self.rows = rows
+        self.columns = columns
+        self.padding = kwargs.pop("padding", 0)
+        self.kwargs = kwargs
+        self.files = {}
+        self.where = {}
+        self.animate = animate
+        self.fps = fps
+
+    def plot_map(self, data, row, column, frame=None, **kwargs):
+        tmp = temp_file(".png")
+        self.files[(row, column, frame)] = tmp
+
+        options = {}
+        options.update(self.kwargs)
+        options.update(kwargs)
+
+        p = new_plot(**options)
+        p.plot_map(data)
+        p.save(tmp.path)
+
+    def show(self):
+        tmp = temp_file(".png")
+        self.save(tmp.path)
+        return display(Image(tmp.path))
+
+    def save(self, path):
         import imageio
+        import numpy as np
         from numpngw import write_apng
 
-        frames = [imageio.imread(f.path) for f in self.files]
+        frames = {k: imageio.imread(v.path) for k, v in self.files.items()}
 
-        write_apng(path, frames, delay=int(1000.0 / self.fps + 0.5))
+        if self.animate:
+            files = []
+            for frame in sorted(set(k[2] for k in frames.keys())):
+                files.append(temp_file(".png"))
+                self.render(frames, frame, files[-1].path)
+
+            files_to_movie([f.path for f in files], path, self.fps)
+
+        else:
+            self.render(frames, None, path)
+
+        return path
+
+    def render(self, frames, frame, path):
+        import imageio
+        import numpy as np
+        from numpngw import write_apng
+
+        WHITE = {1: 255}
+
+        first = frames[list(frames.keys())[0]]
+        heigth, width, depth = first.shape
+
+        image = (
+            np.ones(
+                (
+                    heigth * self.rows + self.padding * (self.rows - 1),
+                    width * self.columns + self.padding * (self.columns - 1),
+                    depth,
+                ),
+                dtype=first.dtype,
+            )
+            * WHITE[first.dtype.itemsize]
+        )
+
+        for row in range(self.rows):
+            for col in range(self.columns):
+                cell = (row, col, frame)
+                if cell in frames:
+                    row_padding = self.padding * row
+                    col_padding = self.padding * col
+                    image[
+                        heigth * row + row_padding : heigth * (row + 1) + row_padding,
+                        width * col + col_padding : width * (col + 1) + col_padding,
+                        :,
+                    ] = frames[cell]
+
+        imageio.imwrite(path, image)
 
         return path
 
@@ -181,6 +277,9 @@ def new_plot(**kwargs) -> Plot:
     :return: [description]
     :rtype: Plot
     """
+
+    if "rows" in kwargs and "columns" in kwargs:
+        return LayoutPlot(**kwargs)
 
     if kwargs.pop("animate", False):
         return AnimationPlot(**kwargs)

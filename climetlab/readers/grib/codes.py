@@ -280,6 +280,7 @@ class GribField(Base):
         self._offset = offset
         self._length = length
         self._handle = None
+        self._values = None
 
     # def __enter__(self):
     #     return self
@@ -296,7 +297,9 @@ class GribField(Base):
 
     @property
     def values(self):
-        return self.handle.get("values")
+        if self._values is None:
+            self._values = self.handle.get("values")
+        return self._values
 
     @property
     def offset(self):
