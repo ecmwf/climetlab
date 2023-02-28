@@ -10,8 +10,8 @@
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import Image, display
 from climetlab.core.settings import SETTINGS
-from climetlab.wrappers import get_wrapper
 from climetlab.core.temporary import temp_file
+from climetlab.wrappers import get_wrapper
 
 from .options import Options
 

@@ -12,32 +12,10 @@ import logging
 import numpy as np
 
 from .tensorflow import default_merger, to_funcs
+from climetlab.ml.torch import to_pytorch_dataloader
 
 LOG = logging.getLogger(__name__)
 
-
-def to_pytorch_dataloader(dataset, **kwargs):
-    import torch
-
-    default_kwargs = dict(
-        batch_size=128,
-        # multi-process data loading
-        # use as many workers as you have cores on your machine
-        num_workers=1,
-        # default: no shuffle, so need to explicitly set it here
-        shuffle=True,
-        # uses pinned memory to speed up CPU-to-GPU data transfers
-        # see https://pytorch.org/docs/stable/notes/cuda.html#cuda-memory-pinning
-        pin_memory=True,
-        # function used to collate samples into batches
-        # if None then Pytorch uses the default collate_fn (see below)
-        collate_fn=None,
-    )
-    merged_kwargs = {k: v for k, v in default_kwargs.items()}
-    if kwargs:
-        merged_kwargs.update(kwargs)
-
-    return torch.utils.data.DataLoader(dataset, **merged_kwargs)
 
 
 def to_pytorch(
