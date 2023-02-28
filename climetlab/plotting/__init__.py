@@ -186,13 +186,14 @@ class LayoutPlot:
         self.animate = animate
         self.fps = fps
 
-    def plot_map(self, data, row, column, frame=None, **kwargs):
+    def plot_map(self, data, row, column, step=None, **kwargs):
         tmp = temp_file(".png")
 
         assert row >= 0 and row < self.rows, (row, self.rows)
-        assert column >= 0 and column < self.columns, (column , self.columns)
+        assert column >= 0 and column < self.columns, (column, self.columns)
 
-        self.files[frame][(row, column)] = tmp
+        print(step, (row, column))
+        self.files[step][(row, column)] = tmp
 
         options = {}
         options.update(self.kwargs)
@@ -214,9 +215,9 @@ class LayoutPlot:
 
         if self.animate:
             files = []
-            for frame in sorted(self.files.keys()):
+            for step in sorted(self.files.keys()):
                 files.append(temp_file(".png"))
-                self.render(frame, files[-1].path)
+                self.render(step, files[-1].path)
 
             files_to_movie([f.path for f in files], path, self.fps)
 
@@ -225,14 +226,14 @@ class LayoutPlot:
 
         return path
 
-    def render(self, frame, path):
+    def render(self, step, path):
         import imageio
         import numpy as np
         from numpngw import write_apng
 
         WHITE = {1: 255}
 
-        cells = {k: imageio.imread(v.path) for k, v in self.files[frame].items()}
+        cells = {k: imageio.imread(v.path) for k, v in self.files[step].items()}
         first = cells[list(cells.keys())[0]]
         heigth, width, depth = first.shape
 
