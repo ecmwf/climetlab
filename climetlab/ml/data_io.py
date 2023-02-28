@@ -16,7 +16,8 @@ import tqdm
 import climetlab as cml
 from climetlab import Dataset
 from climetlab.decorators import normalize
-from climetlab.readers.grib.tensorflow import as_numpy_func, default_merger
+
+from .utils import as_numpy_func, default_merger
 
 
 class TorchDataset(torch.utils.data.Dataset):
@@ -110,7 +111,7 @@ class XYDataIO(DataIO):
 
 class Element:
     def __init__(self, string, dataset_or_source, options):
-        self.owner = dataset_or_source
+        self.dataset_or_source = dataset_or_source
         self._source = None
         self._init_string = string
         self.options = options
@@ -121,7 +122,7 @@ class Element:
     @property
     def source(self):
         if self._source is None:
-            self._source = self.owner.build_source_for_element(self)
+            self._source = self.dataset_or_source.build_source_for_element(self)
         return self._source
 
     def get_item(self, i):

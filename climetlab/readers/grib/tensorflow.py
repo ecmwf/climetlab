@@ -83,6 +83,7 @@ LOG = logging.getLogger(__name__)
 
 
 def default_merger(*funcs):
+    # old: moved to climetlab.ml
     if not funcs:
         return None
 
@@ -96,6 +97,7 @@ def default_merger(*funcs):
 
 
 def as_numpy_func(ds, options=None):
+    # old: moved to climetlab.ml
     if ds is None or callable(ds):
         return ds
 
