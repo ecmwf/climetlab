@@ -12,7 +12,7 @@ from climetlab.core.ipython import Image, display
 from climetlab.core.settings import SETTINGS
 from climetlab.core.temporary import temp_file
 from climetlab.wrappers import get_wrapper
-
+from collections import defaultdict
 from .options import Options
 
 OPTIONS = {}
@@ -182,14 +182,17 @@ class LayoutPlot:
         self.columns = columns
         self.padding = kwargs.pop("padding", 0)
         self.kwargs = kwargs
-        self.files = {}
-        self.where = {}
+        self.files = defaultdict(dict)
         self.animate = animate
         self.fps = fps
 
     def plot_map(self, data, row, column, frame=None, **kwargs):
         tmp = temp_file(".png")
-        self.files[(row, column, frame)] = tmp
+
+        assert row >= 0 and row < self.rows, (row, self.rows)
+        assert column >= 0 and column < self.columns, (column , self.columns)
+
+        self.files[frame][(row, column)] = tmp
 
         options = {}
         options.update(self.kwargs)
@@ -209,29 +212,28 @@ class LayoutPlot:
         import numpy as np
         from numpngw import write_apng
 
-        frames = {k: imageio.imread(v.path) for k, v in self.files.items()}
-
         if self.animate:
             files = []
-            for frame in sorted(set(k[2] for k in frames.keys())):
+            for frame in sorted(self.files.keys()):
                 files.append(temp_file(".png"))
-                self.render(frames, frame, files[-1].path)
+                self.render(frame, files[-1].path)
 
             files_to_movie([f.path for f in files], path, self.fps)
 
         else:
-            self.render(frames, None, path)
+            self.render(None, path)
 
         return path
 
-    def render(self, frames, frame, path):
+    def render(self, frame, path):
         import imageio
         import numpy as np
         from numpngw import write_apng
 
         WHITE = {1: 255}
 
-        first = frames[list(frames.keys())[0]]
+        cells = {k: imageio.imread(v.path) for k, v in self.files[frame].items()}
+        first = cells[list(cells.keys())[0]]
         heigth, width, depth = first.shape
 
         image = (
@@ -248,15 +250,15 @@ class LayoutPlot:
 
         for row in range(self.rows):
             for col in range(self.columns):
-                cell = (row, col, frame)
-                if cell in frames:
+                cell = (row, col)
+                if cell in cells:
                     row_padding = self.padding * row
                     col_padding = self.padding * col
                     image[
                         heigth * row + row_padding : heigth * (row + 1) + row_padding,
                         width * col + col_padding : width * (col + 1) + col_padding,
                         :,
-                    ] = frames[cell]
+                    ] = cells[cell]
 
         imageio.imwrite(path, image)
 
