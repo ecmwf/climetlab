@@ -7,15 +7,7 @@
 # nor does it submit to any jurisdiction.
 from __future__ import annotations
 
-from itertools import zip_longest
-
-import pandas as pd
 import torch
-import tqdm
-
-import climetlab as cml
-from climetlab import Dataset
-from climetlab.decorators import normalize
 
 from .utils import as_numpy_func, default_merger
 

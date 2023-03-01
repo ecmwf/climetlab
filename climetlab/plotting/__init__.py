@@ -187,10 +187,6 @@ class LayoutPlot:
         return display(Image(tmp.path))
 
     def save(self, path):
-        import imageio
-        import numpy as np
-        from numpngw import write_apng
-
         if self.animate:
             files = []
             for step in sorted(self.files.keys()):
@@ -207,7 +203,8 @@ class LayoutPlot:
     def render(self, step, path):
         import imageio
         import numpy as np
-        from numpngw import write_apng
+
+        # from numpngw import write_apng
 
         WHITE = {1: 255}
 
