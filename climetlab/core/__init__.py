@@ -67,10 +67,6 @@ class Base(metaclass=MetaBase):
         self._not_implemented()
 
     @abstractmethod
-    def plot_graph(self, backend):
-        self._not_implemented()
-
-    @abstractmethod
     def field_metadata(self):
         self._not_implemented()
 

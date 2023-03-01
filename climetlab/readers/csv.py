@@ -194,9 +194,6 @@ class CSVReader(Reader):
             **options,
         )
 
-    def plot_graph(self, backend):
-        get_wrapper(self.to_pandas()).plot_graph(backend)
-
     def plot_map(self, backend):
         get_wrapper(self.to_pandas()).plot_map(backend)
 
