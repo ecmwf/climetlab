@@ -192,7 +192,6 @@ class LayoutPlot:
         assert row >= 0 and row < self.rows, (row, self.rows)
         assert column >= 0 and column < self.columns, (column, self.columns)
 
-        print(step, (row, column))
         self.files[step][(row, column)] = tmp
 
         options = {}
