@@ -91,7 +91,7 @@ def print_counters():
     if PROFILING:
         for n in COUNTERS:
             print(n)
-    print(f"ELAPSED [{seconds(time.time() - START)}]")
+        print(f"ELAPSED [{seconds(time.time() - START)}]")
 
 
 atexit.register(print_counters)

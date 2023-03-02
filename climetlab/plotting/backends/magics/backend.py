@@ -109,6 +109,8 @@ class Backend:
         self._layers.append(Layer(data))
 
     def plot_grib(self, path: str, offset: int):
+        assert offset < 2**31, "grib_field_position must be less than 2**31"
+
         self._push_layer(
             mgrib(
                 grib_input_file_name=path,
