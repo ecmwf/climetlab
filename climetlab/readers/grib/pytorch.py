@@ -11,11 +11,11 @@ import logging
 
 import numpy as np
 
-from .tensorflow import default_merger, to_funcs
 from climetlab.ml.torch import to_pytorch_dataloader
 
-LOG = logging.getLogger(__name__)
+from .tensorflow import default_merger, to_funcs
 
+LOG = logging.getLogger(__name__)
 
 
 def to_pytorch(

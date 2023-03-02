@@ -42,11 +42,6 @@ class PandasFrameWrapper(Wrapper):
                 self.lat, self.lon = lat, lon
                 break
 
-    def plot_graph(self, backend):
-        column = backend.option("column", self.time)
-
-        backend.plot_graph_pandas(self.frame, self.time, column)
-
     def plot_map(self, backend):
         column = backend.option("column", self.lat)
 

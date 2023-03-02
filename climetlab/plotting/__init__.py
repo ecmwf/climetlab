@@ -7,13 +7,18 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
+from collections import defaultdict
+
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import Image, display
 from climetlab.core.settings import SETTINGS
 from climetlab.core.temporary import temp_file
 from climetlab.wrappers import get_wrapper
-from collections import defaultdict
+
 from .options import Options
+
+LOG = logging.getLogger(__name__)
 
 OPTIONS = {}
 
@@ -22,26 +27,6 @@ def magics(*args, **kwargs):
     from .backends.magics.backend import Backend as MagicsBackend
 
     return MagicsBackend(*args, **kwargs)
-
-
-def bokeh(*args, **kwargs):
-    from .backends.bokeh.backend import Backend as BokehBackend
-
-    return BokehBackend(*args, **kwargs)
-
-
-def matplotlib(*args, **kwargs):
-    from .backends.matplotlib.backend import Backend as MatplotlibBackend
-
-    return MatplotlibBackend(*args, **kwargs)
-
-
-DRIVERS = {
-    None: magics,
-    "magics": magics,
-    "matplotlib": matplotlib,
-    "bokeh": bokeh,
-}
 
 
 def options(**kwargs):
@@ -76,30 +61,20 @@ def styles():
 class Plot:
     """[summary]"""
 
+    default_backend = magics
+
     def __init__(self, kwargs):
-        backend = SETTINGS.get(f"{self.kind}-plotting-backend", None)
-        backend = kwargs.pop("backend", backend)
+        if "backend" in kwargs:
+            backend = kwargs.pop("backend")
+            LOG.warning(f"Ignoring argument backend='{backend}'")
+        backend = self.default_backend
 
         options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
-        self.backend = DRIVERS[backend](Options(options))
+        self.backend = backend(Options(options))
         self.frames = []
-
-    def plot_graph(self, data=None, **kwargs):
-        if not isinstance(data, (list, tuple)):
-            data = [data]
-
-        for d in data:
-            d = get_wrapper(d)
-            d.plot_graph(self.backend)
-
-        options = Options(kwargs)
-        self.backend.apply_options(options)
-        options.check_unused()
-
-        return self
 
     def plot_map(self, data=None, metadata=None, **kwargs):
         if not isinstance(data, (list, tuple)):
@@ -143,6 +118,10 @@ def files_to_movie(files, path, fps):
     write_apng(path, frames, delay=int(1000.0 / fps + 0.5))
 
     return path
+
+
+class MapPlot(Plot):
+    pass
 
 
 class AnimationPlot:
@@ -208,10 +187,6 @@ class LayoutPlot:
         return display(Image(tmp.path))
 
     def save(self, path):
-        import imageio
-        import numpy as np
-        from numpngw import write_apng
-
         if self.animate:
             files = []
             for step in sorted(self.files.keys()):
@@ -228,7 +203,8 @@ class LayoutPlot:
     def render(self, step, path):
         import imageio
         import numpy as np
-        from numpngw import write_apng
+
+        # from numpngw import write_apng
 
         WHITE = {1: 255}
 
@@ -265,14 +241,6 @@ class LayoutPlot:
         return path
 
 
-class MapPlot(Plot):
-    kind = "map"
-
-
-class GraphPlot(Plot):
-    kind = "graph"
-
-
 def new_plot(**kwargs) -> Plot:
     """[summary]
 
@@ -287,27 +255,6 @@ def new_plot(**kwargs) -> Plot:
         return AnimationPlot(**kwargs)
 
     return MapPlot(kwargs)
-
-
-def new_graph(**kwargs) -> Plot:
-    """[summary]
-
-    :return: [description]
-    :rtype: Plot
-    """
-    return GraphPlot(kwargs)
-
-
-def plot_graph(data=None, **kwargs):
-    """Plot other-than-map data
-
-    Args:
-        data ([any]): [description]
-    """
-
-    p = new_graph(**kwargs)
-    p.plot_graph(data)
-    p.show()
 
 
 def plot_map(data=None, **kwargs):

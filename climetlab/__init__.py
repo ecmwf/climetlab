@@ -17,7 +17,7 @@ from .datasets import load_dataset
 from .distributed.dask import start_dask
 from .plotting import interactive_map, new_plot, new_table
 from .plotting import options as plotting_options
-from .plotting import plot_graph, plot_map
+from .plotting import plot_map
 from .readers import Reader
 from .readers.grib.output import new_grib_output
 from .sources import Source
@@ -38,7 +38,6 @@ __all__ = [
     "load_source_lazily",
     "new_plot",
     "new_table",
-    "plot_graph",
     "plot_map",
     "plotting_options",
     "Reader",

@@ -58,13 +58,13 @@ class NormaliseFilter(YAFilter):
 
 class NormaliseMeanStdFilter(YAFilter):
     def __init__(self, source):
-        a, b = compute_mean_std_from_source(source)
+        a, b = compute_mean_std_from_source(source)  # noqa: TODO
         super().__init__(source, a, b)
 
 
 class NormaliseMinMaxFilter(YAFilter):
     def __init__(self, source):
-        a, b = compute_min_max_from_source(source)
+        a, b = compute_min_max_from_source(source)  # noqa: TODO
         super().__init__(source, a, b)
 
 
