@@ -36,7 +36,7 @@ def build_data_specs(*args, output, **kwargs):
         #  "bs, (param lev), (lat lon)":
         # plev vs lev ?
         # param_plev ?
-    }(*args, **kwargs)
+    }[output](*args, **kwargs)
 
 
 class DataIO:
@@ -61,7 +61,7 @@ class XDataIO(DataIO):
 
         self._features = {}
 
-        self.feature_options = kwargs["features_options"]
+        self.feature_options = kwargs.get("features_options", {})
         self.features_merger = kwargs.get("features_merger", default_merger)
 
         for name in kwargs["features"]:
@@ -81,8 +81,8 @@ class XYDataIO(DataIO):
         self._features = {}
         self._targets = {}
 
-        self.feature_options = kwargs["features_options"]
-        self.target_options = kwargs["targets_options"]
+        self.feature_options = kwargs.get("features_options", {})
+        self.target_options = kwargs.get("target_options", {})
         self.features_merger = kwargs.get("features_merger", default_merger)
         self.targets_merger = kwargs.get("targets_merger", default_merger)
 
