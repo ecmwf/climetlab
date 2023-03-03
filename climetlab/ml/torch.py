@@ -9,12 +9,13 @@
 
 import logging
 
-import torch
 
 LOG = logging.getLogger(__name__)
 
 
 def _find_device():
+    import torch
+
     if torch.backends.mps.is_available() and torch.backends.mps.is_built():
         return "mps"
     if torch.cuda.is_available() and torch.backends.cuda.is_built():
