@@ -13,7 +13,11 @@ LOG = logging.getLogger(__name__)
 
 
 def _find_device():
-    import torch
+    try:
+        import torch
+    except ImportError:
+        LOG.debug("Torch not found")
+        return None
 
     if torch.backends.mps.is_available() and torch.backends.mps.is_built():
         return "mps"
