@@ -87,8 +87,8 @@ class Vocabulary:
             ),
         )
         if correction is not None:
-            LOG.warning(
-                "Cannot find '%s' in %s vocabulary, did you mean '%s'?",
+            LOG.debug(
+                "This warning can be safely ignored: Cannot find '%s' in %s vocabulary, did you mean '%s'?",
                 word,
                 self.name,
                 correction,
