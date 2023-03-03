@@ -61,20 +61,17 @@ def styles():
 class Plot:
     """[summary]"""
 
-    default_backend = magics
-
     def __init__(self, kwargs):
         if "backend" in kwargs:
             backend = kwargs.pop("backend")
             LOG.warning(f"Ignoring argument backend='{backend}'")
-        backend = self.default_backend
+        backend = magics
 
         options = {}
         options.update(SETTINGS.get("plotting-options", {}))
         options.update(OPTIONS)
         options.update(kwargs)
         self.backend = backend(Options(options))
-        self.frames = []
 
     def plot_map(self, data=None, metadata=None, **kwargs):
         if not isinstance(data, (list, tuple)):
