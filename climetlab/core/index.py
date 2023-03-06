@@ -8,6 +8,7 @@
 #
 
 
+import functools
 import hashlib
 import json
 import logging
@@ -63,10 +64,8 @@ class OrderOrSelection:
         return f"{self.__class__.__name__}({self.dic})"
 
     @property
-    def is_empty(self):  # TODO: use __bool__ instead
-        if not self.dic:
-            return True
-        return False
+    def is_empty(self):
+        return not self.dic
 
     def h(self, *args, **kwargs):
         m = hashlib.sha256()
@@ -79,185 +78,121 @@ class OrderOrSelection:
         return self.dic.keys()
 
 
-class Selection(OrderOrSelection):
-    @property
-    def selection(self):
-        return self.dic
+class Selection:
+    def __init__(self, *args, **kwargs):
+        self.kwargs = {}
+        for a in args:
+            if isinstance(a, dict):
+                self.kwargs.update(a)
+                continue
+            assert False, a
 
-    normalize_naming = normalize("valid", "date-list")(
-        OrderOrSelection.normalize_naming
-    )
+        self.kwargs.update(kwargs)
 
-    def parse_kwarg(self, k, v):
-        if v is not None and not isinstance(v, (list, tuple)):
-            v = [v]
+        print("--", self.kwargs)
 
-        if isinstance(v, (list, tuple)):
-            v = [str(_) for _ in v]
-        self.dic[k] = v
-        return
+        class InList:
+            def __init__(self, lst):
+                self.lst = lst
+
+            def __call__(self, x):
+                return x in self.lst
+
+        self.actions = {}
+        for k, v in self.kwargs.items():
+            if v is None:
+                self.actions[k] = lambda x: True
+                return
+
+            if not isinstance(v, (list, tuple, set)):
+                v = [v]
+
+            v = set(v)
+
+            self.actions[k] = InList(v)
 
     def match_element(self, element):
-        for k, v in self.dic.items():
-            if v is None:
-                continue
-            value = element.metadata(k)
-            # value = grib_naming({key:value})[key]
-            if isinstance(v, (list, tuple)):
-                if value in v:
-                    continue
-                if str(value) in v:
-                    continue
-                return False
-            if value == v:
-                continue
-            if str(value) == v:
-                continue
-            return False
-        return True
-
-    def filter_values(self, key, values):
-        if key not in self.dic:
-            return values
-        vals = self.dic[key]
-        return [v for v in vals if v in values]
-
-
-class Order(OrderOrSelection):
-    def __init__(self, *args, **kwargs):
-        self._rankers = None
-        if args and all([isinstance(a, str) for a in args]):
-            args = [args]
-        super().__init__(*args, **kwargs)
+        return all(v(element.metadata(k)) for k, v in self.actions.items())
 
     @property
-    def order(self):
-        return self.dic
+    def is_empty(self):
+        return not self.kwargs
 
-    def update(self, other):
-        assert isinstance(other, Order), other
-        self.dic.update(other.dic)
 
-    def items(self):
-        if self.is_empty:
-            return
+class Order:
+    def __init__(self, *args, **kwargs):
+        self.kwargs = {}
+        for a in args:
+            if isinstance(a, dict):
+                self.kwargs.update(a)
+                continue
+            if isinstance(a, str):
+                self.kwargs[a] = "ascending"
+                continue
+            assert False, a
 
-        from climetlab.indexing.database import GRIB_KEYS_NAMES
+        self.kwargs.update(kwargs)
 
-        for k, v in self.dic.items():
-            yield k, v
+        self.actions = self.build_actions(self.kwargs)
 
-        for k in GRIB_KEYS_NAMES:
-            if k in self.dic:
-                continue  # already yielded above
-            yield k, self[k]
+    def compare_elements(self, a, b):
+        for k, v in self.actions.items():
+            n = v(a.metadata(k), b.metadata(k))
+            if n != 0:
+                return n
+        return 0
 
-    def __getitem__(self, key):
-        # Default is ascending order
-        return self.dic.get(key, "ascending")
+    @property
+    def is_empty(self):
+        return not self.kwargs
 
-    def parse_arg(self, arg):
-        if super().parse_arg(arg):
-            return True
-        if isinstance(arg, str):
-            self.dic[arg] = "ascending"
-            return True
-        if isinstance(arg, (list, tuple)):
-            dic = {}
-            for k in arg:
-                assert isinstance(k, str), k
-                assert len(k) > 0, k
-                if k[0] == "-":
-                    dic[k[1:]] = "descending"
-                    continue
-                if k[0] == "+":
-                    dic[k[1:]] = "ascending"
-                    continue
-                dic[k] = "ascending"
-            dic = self.normalize_naming(**dic)
-            return self.parse_arg(dic)
-        return False
 
-    def parse_kwarg(self, k, v):
-        if isinstance(v, (list, tuple)):
-            v = [str(_) for _ in v]  # processing only strings from now.
-        if (v == "ascending") or (v == "descending") or isinstance(v, (list, tuple)):
-            self.dic[k] = v
-            return
+class SimpleOrder(Order):
+    def build_actions(self, kwargs):
+        actions = {}
 
-        if v is None:
-            self.dic[k] = "ascending"
-            return
+        def ascending(a, b):
+            if a == b:
+                return 0
+            if a > b:
+                return 1
+            if a < b:
+                return -1
+            raise ValueError(f"{a},{b}")
 
-        self.dic[k] = "ascending"
-        return
-        # raise ValueError(f"Invalid argument for {k}: {v} ({type(v)})")
+        def descending(a, b):
+            if a == b:
+                return 0
+            if a > b:
+                return -1
+            if a < b:
+                return 1
+            raise ValueError(f"{a},{b}")
 
-    def build_rankers(self):
-        if self._rankers is not None:
-            return self._rankers
+        class Compare:
+            def __init__(self, order):
+                self.order = order
 
-        from climetlab.indexing.database import GRIB_KEYS_NAMES
+            def __call__(self, a, b):
+                return ascending(self.order[a], self.order[b])
 
-        keys = [_ for _ in self.dic.keys()]
-        keys += [_ for _ in GRIB_KEYS_NAMES if _ not in keys]
-
-        key_types = {}
-        dict_of_dicts = dict()
-
-        for key in keys:
-            lst = self.dic.get(key, None)
-
-            if isinstance(lst, (tuple, list)):
-                dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-                key_types[key] = "explicit"
+        for k, v in kwargs.items():
+            if v == "ascending" or v is None:
+                actions[k] = ascending
                 continue
 
-            if lst == "ascending" or lst is None:
-                dict_of_dicts[key] = lambda value: value
-                key_types[key] = "ascending"
+            if v == "descending":
+                actions[k] = descending
                 continue
 
-            raise ValueError(f"Invalid argument {lst}")
+            assert isinstance(
+                v, (list, tuple)
+            ), f"Invalid argument for {k}: {v} ({type(v)})"
 
-        self._rankers = keys, key_types, dict_of_dicts
-        return self._rankers
+            order = {key: i for i, key in enumerate(v)}
+            actions[k] = Compare(order)
 
-    def get_element_ranking(self, element):
-        keys, key_types, dict_of_dicts = self.build_rankers()
-        ranks = []
-        for k in keys:
-            value = element.metadata(k)
-
-            if key_types[k] == "ascending":
-                ranks.append(value)
-                continue
-
-            if key_types[k] == "explicit":
-                value = str(value)
-                ranks.append(dict_of_dicts[k][value])
-                continue
-
-            assert False, (k, key_types[k], element)
-
-        return tuple(ranks)
-
-    def filter_values(self, key, values):
-        # TODO: merge this method with get_element_ranking, refactor with "Sorter" class
-
-        keys, key_types, dict_of_dicts = self.build_rankers()
-        if key not in dict_of_dicts:
-            return values
-        vals = dict_of_dicts[key]
-        if isinstance(vals, dict):
-            sorter = lambda x: vals[x]  # noqa
-        elif callable(vals):
-            sorter = vals
-        else:
-            assert False, vals
-        return sorted(values, key=sorter)
-
-        assert False, (key, key_types[key], values)
+        return actions
 
 
 class Index(Source):
@@ -275,7 +210,8 @@ class Index(Source):
         source = self
         source = source.sel(*self._init_args, **self._init_kwargs)
         source = source.order_by(*self._init_args, **self._init_kwargs)
-        source = source.order_by(self._init_order_by)
+        if self._init_order_by is not None:
+            source = source.order_by(self._init_order_by)
         return source
 
     @abstractmethod
@@ -295,10 +231,9 @@ class Index(Source):
         if selection.is_empty:
             return self
 
-        indices = []
-        for i, element in enumerate(self):
-            if selection.match_element(element):
-                indices.append(i)
+        indices = (
+            i for i, element in enumerate(self) if selection.match_element(element)
+        )
 
         return self.new_mask_index(self, indices)
 
@@ -311,44 +246,30 @@ class Index(Source):
         Returns a new index object.
         """
 
-        order = Order(*args, **kwargs)
+        order = SimpleOrder(*args, **kwargs)
         if order.is_empty:
             return self
 
-        for k, v in order.order.items():
-            assert isinstance(v, (tuple, list)) or v in [
-                "ascending",
-                None,
-            ], f"Unsupported order: {v}, Supported values: 'ascending'."
+        def cmp(i, j):
+            return order.compare_elements(self[i], self[j])
 
-        class Sorter:
-            def __init__(_self, index, order):
-                """Uses the order to sort the index"""
-
-                _self.index = index
-                _self.order = order
-                _self._cache = [None] * len(_self.index)
-
-            def __call__(_self, i):
-                if _self._cache[i] is None:
-                    element = _self.index[i]
-                    _self._cache[i] = _self.order.get_element_ranking(element)
-                return _self._cache[i]
-
-        sorter = Sorter(self, order)
-
-        result = list(range(len(self)))
-        indices = sorted(result, key=sorter)
+        indices = list(range(len(self)))
+        indices = sorted(indices, key=functools.cmp_to_key(cmp))
         return self.new_mask_index(self, indices)
 
     def from_slice(self, s):
         indices = range(len(self))[s]
-        return MaskIndex(self, indices)
+        return self.new_mask_index(self, indices)
 
     def to_numpy(self, *args, **kwargs):
         import numpy as np
 
         return np.array([f.to_numpy(*args, **kwargs) for f in self])
+
+    def to_pytorch_tensor(self, *args, **kwargs):
+        import torch
+
+        return torch.Tensor(self.to_numpy(*args, **kwargs))
 
 
 class MaskIndex(Index):
