@@ -89,8 +89,6 @@ class Selection:
 
         self.kwargs.update(kwargs)
 
-        print("--", self.kwargs)
-
         class InList:
             def __init__(self, lst):
                 self.lst = lst
@@ -102,7 +100,11 @@ class Selection:
         for k, v in self.kwargs.items():
             if v is None:
                 self.actions[k] = lambda x: True
-                return
+                continue
+
+            if callable(v):
+                self.actions[k] = v
+                continue
 
             if not isinstance(v, (list, tuple, set)):
                 v = [v]
@@ -185,6 +187,10 @@ class SimpleOrder(Order):
                 actions[k] = descending
                 continue
 
+            if callable(v):
+                actions[k] = v
+                continue
+
             assert isinstance(
                 v, (list, tuple)
             ), f"Invalid argument for {k}: {v} ({type(v)})"
@@ -213,10 +219,6 @@ class Index(Source):
         if self._init_order_by is not None:
             source = source.order_by(self._init_order_by)
         return source
-
-    @abstractmethod
-    def __getitem__(self, n):
-        self._not_implemented()
 
     @abstractmethod
     def __len__(self):
@@ -257,9 +259,25 @@ class Index(Source):
         indices = sorted(indices, key=functools.cmp_to_key(cmp))
         return self.new_mask_index(self, indices)
 
+    def __getitem__(self, n):
+        if isinstance(n, slice):
+            return self.from_slice(n)
+        if isinstance(n, (list, tuple)):
+            return self.from_list(n)
+        if isinstance(n, dict):
+            return self.from_dict(n)
+        return self._getitem(n)
+
     def from_slice(self, s):
         indices = range(len(self))[s]
         return self.new_mask_index(self, indices)
+
+    def from_list(self, lst):
+        indices = [i for i, x in enumerate(lst) if x]
+        return self.new_mask_index(self, indices)
+
+    def from_dict(self, dic):
+        return self.sel(dic)
 
     def to_numpy(self, *args, **kwargs):
         import numpy as np
@@ -282,10 +300,7 @@ class MaskIndex(Index):
             **self.index._init_kwargs,
         )
 
-    def __getitem__(self, n):
-        if isinstance(n, slice):
-            return self.from_slice(n)
-
+    def _getitem(self, n):
         n = self.indices[n]
         return self.index[n]
 
@@ -309,10 +324,7 @@ class MultiIndex(Index):
             return self
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 
-    def __getitem__(self, n):
-        if isinstance(n, slice):
-            return self.from_slice(n)
-
+    def _getitem(self, n):
         k = 0
         while n >= len(self.indexes[k]):
             n -= len(self.indexes[k])
@@ -337,25 +349,3 @@ class ForwardingIndex(Index):
 
     def __len__(self):
         return len(self.index)
-
-
-class ScaledField:
-    def __init__(self, field, offset, scaling):
-        self.field = field
-        self.offset = offset
-        self.scaling = scaling
-
-    def to_numpy(self, **kwargs):
-        return (self.field.to_numpy(**kwargs) - self.offset) * self.scaling
-
-
-class ScaledIndex(ForwardingIndex):
-    def __init__(self, index, offset, scaling):
-        super().__init__(index)
-        self.offset = offset
-        self.scaling = scaling
-
-    def __getitem__(self, n):
-        if isinstance(n, slice):
-            return self.from_slice(n)
-        return ScaledField(self.index[n], self.offset, self.scaling)
