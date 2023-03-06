@@ -12,7 +12,6 @@ import logging
 from collections import defaultdict
 
 from climetlab.core.caching import auxiliary_cache_file
-from climetlab.core.index import ScaledIndex
 from climetlab.utils.bbox import BoundingBox
 
 from .pandas import PandasMixIn

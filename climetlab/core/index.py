@@ -27,6 +27,7 @@ LOG = logging.getLogger(__name__)
 def normalize_naming(self, **kwargs):
     return kwargs
 
+
 class OrderOrSelection:
     def __str__(self):
         return f"{self.__class__.__name__}({self.dic})"
@@ -86,7 +87,7 @@ class Selection(OrderOrSelection):
         return all(v(element.metadata(k)) for k, v in self.actions.items())
 
 
-class Order:
+class Order(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self.kwargs = {}
         for a in args:
@@ -168,6 +169,8 @@ class Index(Source):
         return MaskIndex(*args, **kwargs)
 
     def __init__(self, *args, order_by=None, **kwargs):
+        if order_by is None:
+            order_by = {}
         self._init_args = args
         self._init_kwargs = kwargs
         self._init_order_by = order_by

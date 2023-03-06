@@ -13,15 +13,15 @@ from .utils import as_numpy_func, default_merger
 
 
 class TorchDataset(torch.utils.data.Dataset):
-    def __init__(self, owner, ioml: DataIO):
+    def __init__(self, owner, elements: DataIO):
         self.owner = owner
-        self.ioml = ioml
+        self.elements = elements
 
     def __len__(self):
         return len(self.owner)
 
     def __getitem__(self, i):
-        return self.ioml.get_torch_item(i)
+        return self.elements.get_torch_item(i)
         # return self.owner.get_torch_item(i)
 
 
