@@ -47,6 +47,8 @@ class Selection(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self.kwargs = {}
         for a in args:
+            if a is None:
+                continue
             if isinstance(a, dict):
                 self.kwargs.update(a)
                 continue
@@ -87,10 +89,12 @@ class Selection(OrderOrSelection):
         return all(v(element.metadata(k)) for k, v in self.actions.items())
 
 
-class Order(OrderOrSelection):
+class OrderBase(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self.kwargs = {}
         for a in args:
+            if a is None:
+                continue
             if isinstance(a, dict):
                 self.kwargs.update(a)
                 continue
@@ -111,7 +115,7 @@ class Order(OrderOrSelection):
         return 0
 
 
-class SimpleOrder(Order):
+class Order(OrderBase):
     def build_actions(self, kwargs):
         actions = {}
 
@@ -212,7 +216,7 @@ class Index(Source):
         Returns a new index object.
         """
 
-        order = SimpleOrder(*args, **kwargs)
+        order = Order(*args, **kwargs)
         if order.is_empty:
             return self
 
