@@ -34,14 +34,19 @@ A CliMetLab data object provides methods to access and use its data.
 
 .. _sel:
 
-Selection with `.sel()`
-~~~~~~~~~~~~~~~~~~~~~~~
+Selection with ``.sel()``
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When a CliMetLab data `source` or dataset provides a list of fields, the method ``.sel()`` allows
-filtering this list to select a subset of the list of fields.
+When a CliMetLab data `source` or dataset provides a list of fields, it can be iterated over to access each
+field (in a given order see :ref:`below <order_by>`).
 
-For instance, the following example shows how to select various subsets of fields for the parameter ``z`` 
-from a list of fields:
+The method ``.sel()`` allows filtering this list to **select a subset** of the list of fields.
+
+For instance, the following examples shows how to select various subsets of fields from a list of fields.
+After selection the required list of fields, the selected data from this subset is available with the
+methods ``.to_numpy()``, ``.to_pytorch()``, ``.to_xarray()``, etc...
+
+Let us get a source of fields from the Climate Data Store (CDS):
 
 .. code-block:: python
 
@@ -73,6 +78,25 @@ from a list of fields:
     GribField(2t,None,20121213,1800,0,0)
     GribField(msl,None,20121213,1800,0,0)
 
+
+This list of fields can be filtered to extract on the fields corresponding to the 2m-temperature parameter with ``.sel(param="2t")``:
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> ds = cml.load_source(
+             "cds",
+             "reanalysis-era5-single-levels",
+             param=["2t", "msl"],
+             product_type="reanalysis",
+             grid='5/5',
+             date=["2012-12-12", "2012-12-13"],
+             time=[600, 1200, 1800],
+        )
+
+    >>> len(ds)
+    10
+
     >>> subset = ds.sel(param="2t")
     >>> len(subset)
     6
@@ -84,6 +108,24 @@ from a list of fields:
     GribField(2t,None,20121213,1200,0,0)
     GribField(2t,None,20121213,1800,0,0)
 
+
+This list of fields can be filtered to extract on the fields corresponding to 12h time with ``.sel(time=1200)``:
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> ds = cml.load_source(
+             "cds",
+             "reanalysis-era5-single-levels",
+             param=["2t", "msl"],
+             product_type="reanalysis",
+             grid='5/5',
+             date=["2012-12-12", "2012-12-13"],
+             time=[600, 1200, 1800],
+        )
+
+    >>> len(ds)
+    10
     >>> subset = ds.sel(time=1200)
     >>> len(subset)
     4
@@ -93,6 +135,24 @@ from a list of fields:
     GribField(2t,None,20121213,1200,0,0)
     GribField(msl,None,20121213,1200,0,0)
 
+
+Or both filters can be applied simultaneously with ``.sel(param="2t", time=1200)``.
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> ds = cml.load_source(
+             "cds",
+             "reanalysis-era5-single-levels",
+             param=["2t", "msl"],
+             product_type="reanalysis",
+             grid='5/5',
+             date=["2012-12-12", "2012-12-13"],
+             time=[600, 1200, 1800],
+        )
+
+    >>> len(ds)
+    10
     >>> subset = ds.sel(param="2t", time=1200)
     >>> len(subset)
     2
@@ -100,6 +160,24 @@ from a list of fields:
     GribField(2t,None,20121212,1200,0,0)
     GribField(2t,None,20121213,1200,0,0)
 
+
+Filtering on multiple values is also possible by providing a list of values ``.sel(param="2t", time=[600, 1200])``.
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> ds = cml.load_source(
+             "cds",
+             "reanalysis-era5-single-levels",
+             param=["2t", "msl"],
+             product_type="reanalysis",
+             grid='5/5',
+             date=["2012-12-12", "2012-12-13"],
+             time=[600, 1200, 1800],
+        )
+
+    >>> len(ds)
+    10
     >>> subset = ds.sel(param="2t", time=[600, 1200])
     >>> len(subset)
     4
@@ -112,8 +190,8 @@ from a list of fields:
 
 .. _order_by:
 
-Ordering with `.order_by()`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ordering with ``.order_by()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
