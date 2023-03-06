@@ -32,21 +32,15 @@ A CliMetLab data object provides methods to access and use its data.
 
     Add here more details about the .to_... methods.
 
-.. _sel:
+.. _iter:
 
-Selection with ``.sel()``
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Iterating
+~~~~~~~~~
 
-When a CliMetLab data `source` or dataset provides a list of fields, it can be iterated over to access each
+When a CliMetLab data `source` or dataset provides a list of fields, it can be iterated  over to access each
 field (in a given order see :ref:`below <order_by>`).
 
-The method ``.sel()`` allows filtering this list to **select a subset** of the list of fields.
-
-For instance, the following examples shows how to select various subsets of fields from a list of fields.
-After selection the required list of fields, the selected data from this subset is available with the
-methods ``.to_numpy()``, ``.to_pytorch()``, ``.to_xarray()``, etc...
-
-Let us get a source of fields from the Climate Data Store (CDS):
+Let us get a source of fields from the Climate Data Store (CDS) and iterate through the list, each element is a field.
 
 .. code-block:: python
 
@@ -77,6 +71,62 @@ Let us get a source of fields from the Climate Data Store (CDS):
     GribField(msl,None,20121213,1200,0,0)
     GribField(2t,None,20121213,1800,0,0)
     GribField(msl,None,20121213,1800,0,0)
+
+
+.. _slice:
+
+Selection with ``[...]``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a CliMetLab data `source` or dataset provides a list of fields, it can be :ref:`iterated <iter>` over to access each
+field (in a given order see :ref:`below <order_by>`).
+
+A subset of the list can be created using the standard python list interface relying on brackets and slices.
+
+.. code-block:: python
+
+    >>> import climetlab as cml
+    >>> ds = cml.load_source(
+             "cds",
+             "reanalysis-era5-single-levels",
+             param=["2t", "msl"],
+             product_type="reanalysis",
+             grid='5/5',
+             date=["2012-12-12", "2012-12-13"],
+             time=[600, 1200, 1800],
+        )
+
+    >>> len(ds)
+    10
+
+    >>> print(f[0])
+    GribField(2t,None,20121212,600,0,0)
+
+    >>> for f in ds[0:3]: print(f)
+    GribField(2t,None,20121212,600,0,0)
+    GribField(msl,None,20121212,600,0,0)
+    GribField(2t,None,20121212,1200,0,0)
+
+    >>> for f in ds[0:5:2]: print(f)
+    GribField(2t,None,20121212,600,0,0)
+    GribField(2t,None,20121212,1200,0,0)
+    GribField(2t,None,20121212,1800,0,0)
+
+
+.. _sel:
+
+Selection with ``.sel()``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a CliMetLab data `source` or dataset provides a list of fields, it can be :ref:`iterated <iter>` over to access each
+field (in a given order see :ref:`below <order_by>`).
+
+The method ``.sel()`` allows filtering this list to **select a subset** of the list of fields.
+
+For instance, the following examples shows how to select various subsets of fields from a list of fields.
+After selection the required list of fields, the selected data from this subset is available with the
+methods ``.to_numpy()``, ``.to_pytorch()``, ``.to_xarray()``, etc...
+
 
 
 This list of fields can be filtered to extract on the fields corresponding to the 2m-temperature parameter with ``.sel(param="2t")``:
