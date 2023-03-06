@@ -20,65 +20,29 @@ from climetlab.sources import Source
 LOG = logging.getLogger(__name__)
 
 
+@alias_argument("levelist", ["level"])
+@alias_argument("param", ["variable", "parameter"])
+@alias_argument("number", ["realization", "realisation"])
+@alias_argument("class", "klass")
+def normalize_naming(self, **kwargs):
+    return kwargs
+
 class OrderOrSelection:
-    def __init__(self, *args, **kwargs):
-        """Parse args and kwargs to build a dictionary in self.order"""
-        self.dic = {}
-
-        for arg in args:
-            res_ok = self.parse_arg(arg)
-            if res_ok is False:
-                raise ValueError(f"Invalid argument of type({type(arg)}): {arg}")
-
-        self.parse_kwargs(kwargs)
-
-    @alias_argument("levelist", ["level"])
-    @alias_argument("param", ["variable", "parameter"])
-    @alias_argument("number", ["realization", "realisation"])
-    @alias_argument("class", "klass")
-    def normalize_naming(self, **kwargs):
-        return kwargs
-
-    def parse_kwargs(self, kwargs):
-        """Parse a dictionary of keywords arguments"""
-        kwargs = self.normalize_naming(**kwargs)
-        for k, v in kwargs.items():
-            self.parse_kwarg(k, v)
-
-    def parse_kwarg(self, k, v):
-        """Parse one keywords argument"""
-        raise NotImplementedError
-
-    def parse_arg(self, arg):
-        """Parse one argument
-        Returns True of argument is a dict and has been parsed.
-        """
-        if arg is None:
-            return True
-        if isinstance(arg, dict):
-            self.parse_kwargs(arg)
-            return True
-        return False
-
     def __str__(self):
         return f"{self.__class__.__name__}({self.dic})"
 
     @property
     def is_empty(self):
-        return not self.dic
+        return not self.kwargs
 
-    def h(self, *args, **kwargs):
+    def h(self):
         m = hashlib.sha256()
-        m.update(json.dumps(args, sort_keys=True).encode("utf-8"))
-        m.update(json.dumps(kwargs, sort_keys=True).encode("utf-8"))
-        m.update(json.dumps(self.dic, sort_keys=True).encode("utf-8"))
+        m.update(str(self.__class__.__name__)).encode("utf-8")
+        m.update(json.dumps(self.kwargs, sort_keys=True).encode("utf-8"))
         return m.hexdigest()
 
-    def keys(self):
-        return self.dic.keys()
 
-
-class Selection:
+class Selection(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self.kwargs = {}
         for a in args:
@@ -89,6 +53,9 @@ class Selection:
 
         self.kwargs.update(kwargs)
 
+        self.actions = self.build_actions(self.kwargs)
+
+    def build_actions(self, kwargs):
         class InList:
             def __init__(self, lst):
                 self.lst = lst
@@ -96,14 +63,14 @@ class Selection:
             def __call__(self, x):
                 return x in self.lst
 
-        self.actions = {}
+        actions = {}
         for k, v in self.kwargs.items():
             if v is None:
-                self.actions[k] = lambda x: True
+                actions[k] = lambda x: True
                 continue
 
             if callable(v):
-                self.actions[k] = v
+                actions[k] = v
                 continue
 
             if not isinstance(v, (list, tuple, set)):
@@ -111,14 +78,12 @@ class Selection:
 
             v = set(v)
 
-            self.actions[k] = InList(v)
+            actions[k] = InList(v)
+
+        return actions
 
     def match_element(self, element):
         return all(v(element.metadata(k)) for k, v in self.actions.items())
-
-    @property
-    def is_empty(self):
-        return not self.kwargs
 
 
 class Order:
@@ -143,10 +108,6 @@ class Order:
             if n != 0:
                 return n
         return 0
-
-    @property
-    def is_empty(self):
-        return not self.kwargs
 
 
 class SimpleOrder(Order):
