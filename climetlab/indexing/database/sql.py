@@ -8,11 +8,14 @@
 #
 
 
+import datetime
 import logging
 import os
 import sqlite3
 from collections import defaultdict
 from threading import local
+
+import numpy as np
 
 import climetlab as cml
 from climetlab.core.index import Order, OrderOrSelection, Selection
@@ -23,13 +26,107 @@ from . import (
     ALL_KEYS,
     ALL_KEYS_DICT,
     CFGRIB_KEYS,
+    FILEPARTS_KEY_NAMES,
     FILEPARTS_KEYS,
     GRIB_KEYS,
+    STATISTICS_KEY_NAMES,
     STATISTICS_KEYS,
     Database,
+    DatetimeDBKey,
+    DBKey,
+    FloatDBKey,
+    IntDBKey,
+    StrDBKey,
 )
 
 LOG = logging.getLogger(__name__)
+
+
+class EntriesTable:
+    def __init__(self, owner):
+        self.owner = owner
+        self.keys = {}
+
+    @property
+    def connection(self):
+        return self.owner.connection
+
+    def name_to_dbname(self, n):
+        def add_mars(x):
+            return "mars_" + x
+
+        def remove_first_underscore(x):
+            assert x[0] == "_", x
+            return x[1:]
+
+        if n in FILEPARTS_KEY_NAMES:
+            return remove_first_underscore(n)
+        if n in STATISTICS_KEY_NAMES:
+            return n
+        return add_mars(n)
+
+    def ensure_table(self, entry):
+        if self.keys:
+            assert self.insert_statement
+            # self.keys is not empty. Table already created.
+            return
+
+        CLASSES = {
+            str: StrDBKey,
+            float: FloatDBKey,
+            np.float64: FloatDBKey,
+            np.float32: FloatDBKey,
+            int: IntDBKey,
+            datetime.datetime: DatetimeDBKey,
+        }
+        for k, v in entry.items():
+            typ = type(v)
+            if typ not in CLASSES:
+                raise ValueError(f"Unknown type '{typ}' for key '{k}'.")
+            klass = CLASSES[typ]
+            dbkey = klass(k)
+            self.keys[k] = dbkey
+
+        self.key_names = [k for k, v in self.keys.items()]
+        self.column_names = [self.name_to_dbname(k) for k, v in self.keys.items()]
+
+        columns_defs = ",".join(
+            [
+                f"{self.name_to_dbname(v.name)} {v.sql_type}"
+                for k, v in self.keys.items()
+            ]
+        )
+        create_statement = f"CREATE TABLE IF NOT EXISTS entries ({columns_defs});"
+        LOG.debug("%s", create_statement)
+        self.connection.execute(create_statement)
+
+        names = ",".join(self.column_names)
+        values = ",".join(["?"] * len(self.column_names))
+        print("BUILD")
+        self.insert_statement = f"INSERT INTO entries ({names}) VALUES({values});"
+        LOG.debug("%s", self.insert_statement)
+
+    def insert(self, entry):
+        self.ensure_table(entry)
+        values = [entry.get(k) for k in self.key_names]
+        LOG.debug("inserting entry")
+        LOG.debug(entry)
+        self.connection.execute(self.insert_statement, tuple(values))
+
+    def build_sql_indexes(self):
+        indexed_columns = [
+            v
+            for k, v in self.keys.items()
+            if self.name_to_dbname(k).startswith("mars_")
+        ]
+        indexed_columns += self.keys["_path"]
+
+        pbar = tqdm(indexed_columns, desc="Building indexes")
+        for n in pbar:
+            pbar.set_description(f"Building index for {n}")
+            self.connection.execute(
+                f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
+            )
 
 
 def _list_all_tables(connection):
@@ -316,51 +413,17 @@ class SqlDatabase(Database):
         with self.connection as conn:
             self._set_version()
 
-            coords_tables = CoordTables(conn)
+            # coords_tables = CoordTables(conn)
 
-            columns_defs = ",".join([f"{k.name_in_db} {k.sql_type}" for k in ALL_KEYS])
-            create_statement = (
-                f"""CREATE TABLE IF NOT EXISTS entries ({columns_defs});"""
-            )
-            LOG.debug("%s", create_statement)
-            conn.execute(create_statement)
-
-            names = ",".join([k.name_in_db for k in ALL_KEYS])
-            values = ",".join(["?" for k in ALL_KEYS])
-            insert_statement = f"INSERT INTO entries ({names}) VALUES({values});"
-            LOG.debug("%s", insert_statement)
-
-            # insert each entry
+            entries_table = EntriesTable(self)
             count = 0
             for entry in iterator:
-                entry = self.normalize(entry)
-                assert isinstance(entry, dict), (type(entry), entry)
-                coords_tables.update_with_entry(entry)
-
-                for k in FILEPARTS_KEYS:
-                    assert k.name in entry, (k, entry)
-                values = [entry.get(k.name) for k in ALL_KEYS]
-
-                conn.execute(insert_statement, tuple(values))
+                entries_table.insert(entry)
+                # coords_tables.update_with_entry(entry)
                 count += 1
 
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
-
-            def build_sql_indexes():
-                # The i_ is to avoid clashes with SQL keywords
-                path_key = FILEPARTS_KEYS[0]
-                assert path_key.name == "_path", path_key
-                indexed_columns = [f"{k.name_in_db}" for k in GRIB_KEYS + [path_key]]
-
-                pbar = tqdm(indexed_columns, desc="Building indexes")
-                for n in pbar:
-                    pbar.set_description(f"Building index for {n}")
-                    conn.execute(
-                        f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
-                    )
-
-            build_sql_indexes()
 
             return count
 
@@ -458,8 +521,8 @@ class SqlDatabase(Database):
                 dic = {k: v for k, v in dic.items() if v is not None}
             yield dic
 
-    def _execute_select(self, names, limit=None, offset=None):
-        names_str = ",".join([x for x in names]) if names else "*"
+    def _execute_select(self, column_names, limit=None, offset=None):
+        names_str = ",".join([x for x in column_names]) if column_names else "*"
         limit_str = f" LIMIT {limit}" if limit is not None else ""
         offset_str = f" OFFSET {offset}" if offset is not None else ""
 

@@ -19,6 +19,40 @@ def json_serialiser(o):
         return o.isoformat()
 
 
+FILEPARTS_KEY_NAMES = ["_path", "_offset", "_length"]
+STATISTICS_KEY_NAMES = ["mean", "std", "min", "max"]
+
+
+class DBKey:
+    cast = None
+
+    def __init__(self, name):
+        self.name = name
+
+
+class StrDBKey(DBKey):
+    sql_type = "TEXT"
+    cast = str
+
+
+class FloatDBKey(DBKey):
+    sql_type = "FLOAT"
+    cast = float
+
+
+class IntDBKey(DBKey):
+    sql_type = "INTEGER"
+    cast = int
+
+
+class DatetimeDBKey(DBKey):
+    sql_type = "TEXT"
+
+    def cast(self, x):
+        # return x.isoformat()
+        return str(x)
+
+
 class DbKey:
     sql_type = "TEXT"
     type = str

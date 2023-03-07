@@ -36,9 +36,11 @@ class OrderOrSelection:
     def is_empty(self):
         return not self.kwargs
 
-    def h(self):
+    def h(self, *args, **kwargs):
         m = hashlib.sha256()
-        m.update(str(self.__class__.__name__)).encode("utf-8")
+        m.update(str(args).encode("utf-8"))
+        m.update(str(kwargs).encode("utf-8"))
+        m.update(str(self.__class__.__name__).encode("utf-8"))
         m.update(json.dumps(self.kwargs, sort_keys=True).encode("utf-8"))
         return m.hexdigest()
 
@@ -61,9 +63,14 @@ class Selection(OrderOrSelection):
     def build_actions(self, kwargs):
         class InList:
             def __init__(self, lst):
-                self.lst = lst
+                self.first = True
+                self.lst = lst  # lazy casting: lst will be modified
 
             def __call__(self, x):
+                if self.first and x is not None:
+                    cast = type(x)
+                    self.lst = [cast(y) for y in self.lst]
+                    self.first = False
                 return x in self.lst
 
         actions = {}
@@ -142,7 +149,10 @@ class Order(OrderBase):
                 self.order = order
 
             def __call__(self, a, b):
-                return ascending(self.order[a], self.order[b])
+                return ascending(self.get(a), self.get(b))
+
+            def get(self, x):
+                return self.order[x]
 
         for k, v in kwargs.items():
             if v == "ascending" or v is None:
@@ -161,7 +171,17 @@ class Order(OrderBase):
                 v, (list, tuple)
             ), f"Invalid argument for {k}: {v} ({type(v)})"
 
-            order = {key: i for i, key in enumerate(v)}
+            order = {}
+            for i, key in enumerate(v):
+                order[str(key)] = i
+                try:
+                    order[int(key)] = i
+                except ValueError:
+                    pass
+                try:
+                    order[float(key)] = i
+                except ValueError:
+                    pass
             actions[k] = Compare(order)
 
         return actions
