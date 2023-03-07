@@ -109,6 +109,7 @@ class CliMetLabApp(
         try:
             return super().onecmd(line)
         except ValueError as e:
+            traceback.print_exc()
             print(colored(str(e), "red"))
         except Exception:
             traceback.print_exc()
