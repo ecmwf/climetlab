@@ -45,13 +45,6 @@ class IntDBKey(DBKey):
     cast = int
 
 
-class DatetimeDBKey(DBKey):
-    sql_type = "TEXT"
-
-    def cast(self, x):
-        # return x.isoformat()
-        return str(x)
-
 
 class DbKey:
     sql_type = "TEXT"

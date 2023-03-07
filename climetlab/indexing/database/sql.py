@@ -32,7 +32,6 @@ from . import (
     STATISTICS_KEY_NAMES,
     STATISTICS_KEYS,
     Database,
-    DatetimeDBKey,
     DBKey,
     FloatDBKey,
     IntDBKey,
@@ -43,9 +42,23 @@ LOG = logging.getLogger(__name__)
 
 
 class EntriesTable:
+    table_name = "entries"
+
     def __init__(self, owner):
         self.owner = owner
         self.keys = {}
+        self.build()
+
+    def build(self):
+        cursor = self.owner.connection.execute(f"PRAGMA table_info({self.table_name})")
+        for x in cursor.fetchall():
+            column_name = x[1]
+            typ = x[2]
+            klass = {"TEXT": StrDBKey, "FLOAT": FloatDBKey, "INTEGER": IntDBKey}[typ]
+            name = self.dbname_to_name(column_name)
+            self.keys[name] = klass(name)
+        if not self.keys:
+            LOG.debug(f"Table {self.table_name} does not exist.")
 
     @property
     def connection(self):
@@ -65,7 +78,16 @@ class EntriesTable:
             return n
         return add_mars(n)
 
-    def ensure_table(self, entry):
+    def dbname_to_name(self, n):
+        if n.startswith("mars_"):
+            return n[5:]
+        return n
+
+    def __str__(self):
+        content = ",".join([k for k, v in self.keys.items()])
+        return f"EntriesTable({self.table_name},{content}"
+
+    def create_table_from_entry_if_needed(self, entry):
         if self.keys:
             assert self.insert_statement
             # self.keys is not empty. Table already created.
@@ -77,7 +99,7 @@ class EntriesTable:
             np.float64: FloatDBKey,
             np.float32: FloatDBKey,
             int: IntDBKey,
-            datetime.datetime: DatetimeDBKey,
+            datetime.datetime: StrDBKey,
         }
         for k, v in entry.items():
             typ = type(v)
@@ -86,6 +108,9 @@ class EntriesTable:
             klass = CLASSES[typ]
             dbkey = klass(k)
             self.keys[k] = dbkey
+
+        assert self.keys, f"Cannot build from entry '{entry}'"
+        LOG.debug(f"Created table {self} from entry {entry}.")
 
         self.key_names = [k for k, v in self.keys.items()]
         self.column_names = [self.name_to_dbname(k) for k, v in self.keys.items()]
@@ -96,18 +121,22 @@ class EntriesTable:
                 for k, v in self.keys.items()
             ]
         )
-        create_statement = f"CREATE TABLE IF NOT EXISTS entries ({columns_defs});"
+        create_statement = (
+            f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
+        )
         LOG.debug("%s", create_statement)
         self.connection.execute(create_statement)
 
         names = ",".join(self.column_names)
         values = ",".join(["?"] * len(self.column_names))
         print("BUILD")
-        self.insert_statement = f"INSERT INTO entries ({names}) VALUES({values});"
+        self.insert_statement = (
+            f"INSERT INTO {self.table_name} ({names}) VALUES({values});"
+        )
         LOG.debug("%s", self.insert_statement)
 
     def insert(self, entry):
-        self.ensure_table(entry)
+        self.create_table_from_entry_if_needed(entry)
         values = [entry.get(k) for k in self.key_names]
         LOG.debug("inserting entry")
         LOG.debug(entry)
@@ -125,7 +154,7 @@ class EntriesTable:
         for n in pbar:
             pbar.set_description(f"Building index for {n}")
             self.connection.execute(
-                f"CREATE INDEX IF NOT EXISTS {n}_index ON entries ({n});"
+                f"CREATE INDEX IF NOT EXISTS {n}_index ON {self.table_name} ({n});"
             )
 
 
@@ -332,6 +361,8 @@ class SqlDatabase(Database):
         self._filters = filters or []
         self._view = None
         self._connection = None
+        self._entries_table = None
+        self.entries_table
 
     @property
     def view(self):
@@ -409,23 +440,25 @@ class SqlDatabase(Database):
             )
         )
 
-    def load(self, iterator):
-        with self.connection as conn:
+    @property
+    def entries_table(self):
+        if self._entries_table is None:
             self._set_version()
+            self._entries_table = EntriesTable(self)
+        return self._entries_table
 
-            # coords_tables = CoordTables(conn)
+    def load(self, iterator):
+        # coords_tables = CoordTables(conn)
+        count = 0
+        for entry in iterator:
+            self.entries_table.insert(entry)
+            # coords_tables.update_with_entry(entry)
+            count += 1
 
-            entries_table = EntriesTable(self)
-            count = 0
-            for entry in iterator:
-                entries_table.insert(entry)
-                # coords_tables.update_with_entry(entry)
-                count += 1
+        assert count >= 1, "No entry found."
+        LOG.info("Added %d entries", count)
 
-            assert count >= 1, "No entry found."
-            LOG.info("Added %d entries", count)
-
-            return count
+        return count
 
     def _conditions(self, selection):
         if selection is None or selection.is_empty:
@@ -450,25 +483,6 @@ class SqlDatabase(Database):
         if not conditions:
             return ""
         return " WHERE " + " AND ".join(conditions)
-
-    # def _columns_names(self, prefix, remove_prefix):
-    #     print('dead code. to remove')
-    #     if prefix in self._cache_column_names:
-    #         return self._cache_column_names[(prefix, remove_prefix)]
-
-    #     assert len(prefix) == 1, prefix
-    #     cursor = self.connection.execute("PRAGMA table_info(entries)")
-    #     out = []
-    #     for x in cursor.fetchall():
-    #         name = x[1]
-    #         if not name.startswith(prefix):
-    #             continue
-    #         if remove_prefix:
-    #             name = name[2:]
-    #         out.append(name)
-
-    #     self._cache_column_names[(prefix, remove_prefix)] = out
-    #     return out
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
         """
