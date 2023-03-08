@@ -346,7 +346,6 @@ class SqlOrder(OrderBase):
             def order_func(k, v):
                 return dict_of_dicts[k][v]
 
-            print("** CREATING on", db.connection, func_name)
             db.connection.create_function(func_name, 2, order_func, deterministic=True)
 
         if not order_bys:
@@ -385,7 +384,6 @@ class SqlDatabase(Database):
     def connection(self):
         if self._connection is None:
             self._connection = Connection(self.db_path)
-            print("----CONNECTION TO ", self.db_path, self._connection._conn)
         return self._connection._conn
 
     def _apply_filter(self, filter: OrderOrSelection):
