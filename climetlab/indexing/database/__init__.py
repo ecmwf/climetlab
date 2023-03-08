@@ -21,6 +21,7 @@ def json_serialiser(o):
 
 FILEPARTS_KEY_NAMES = ["_path", "_offset", "_length"]
 STATISTICS_KEY_NAMES = ["mean", "std", "min", "max"]
+MORE_KEY_NAMES = ["_param_id"]
 
 
 class DBKey:

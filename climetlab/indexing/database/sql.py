@@ -18,19 +18,26 @@ from threading import local
 import numpy as np
 
 import climetlab as cml
-from climetlab.core.index import Order, OrderOrSelection, Selection
+from climetlab.core.index import (
+    Order,
+    OrderBase,
+    OrderOrSelection,
+    Selection,
+    SelectionBase,
+)
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
 from . import (
-    ALL_KEYS,
-    ALL_KEYS_DICT,
-    CFGRIB_KEYS,
+    # ALL_KEYS,
+    # ALL_KEYS_DICT,
+    # CFGRIB_KEYS,
     FILEPARTS_KEY_NAMES,
-    FILEPARTS_KEYS,
-    GRIB_KEYS,
+    MORE_KEY_NAMES,
+    # FILEPARTS_KEYS,
+    # GRIB_KEYS,
     STATISTICS_KEY_NAMES,
-    STATISTICS_KEYS,
+    # STATISTICS_KEYS,
     Database,
     DBKey,
     FloatDBKey,
@@ -41,114 +48,121 @@ from . import (
 LOG = logging.getLogger(__name__)
 
 
-class EntriesTable:
+def entryname_to_dbname(n):
+    def add_mars(x):
+        return "mars_" + x
+
+    def remove_first_underscore(x):
+        assert x[0] == "_", x
+        return x[1:]
+
+    if n in FILEPARTS_KEY_NAMES:
+        return remove_first_underscore(n)
+    if n in MORE_KEY_NAMES:
+        return remove_first_underscore(n)
+    if n in STATISTICS_KEY_NAMES:
+        return n
+    return add_mars(n)
+
+
+def dbname_to_entryname(n):
+    if n.startswith("mars_"):
+        return n[5:]
+    if "_" + n in FILEPARTS_KEY_NAMES:
+        return "_" + n
+    if "_" + n in MORE_KEY_NAMES:
+        return "_" + n
+    return n
+
+
+class EntriesLoader:
     table_name = "entries"
 
-    def __init__(self, owner):
-        self.owner = owner
+    def __init__(self, connection):
+        self.connection = connection
         self.keys = {}
+        self._insert_statement = None
         self.build()
-
-    def build(self):
-        cursor = self.owner.connection.execute(f"PRAGMA table_info({self.table_name})")
-        for x in cursor.fetchall():
-            column_name = x[1]
-            typ = x[2]
-            klass = {"TEXT": StrDBKey, "FLOAT": FloatDBKey, "INTEGER": IntDBKey}[typ]
-            name = self.dbname_to_name(column_name)
-            self.keys[name] = klass(name)
-        if not self.keys:
-            LOG.debug(f"Table {self.table_name} does not exist.")
-
-    @property
-    def connection(self):
-        return self.owner.connection
-
-    def name_to_dbname(self, n):
-        def add_mars(x):
-            return "mars_" + x
-
-        def remove_first_underscore(x):
-            assert x[0] == "_", x
-            return x[1:]
-
-        if n in FILEPARTS_KEY_NAMES:
-            return remove_first_underscore(n)
-        if n in STATISTICS_KEY_NAMES:
-            return n
-        return add_mars(n)
-
-    def dbname_to_name(self, n):
-        if n.startswith("mars_"):
-            return n[5:]
-        return n
 
     def __str__(self):
         content = ",".join([k for k, v in self.keys.items()])
         return f"EntriesTable({self.table_name},{content}"
 
+    KEY_TYPES = {
+        "TEXT": StrDBKey,
+        "FLOAT": FloatDBKey,
+        "INTEGER": IntDBKey,
+        str: StrDBKey,
+        float: FloatDBKey,
+        np.float64: FloatDBKey,
+        np.float32: FloatDBKey,
+        int: IntDBKey,
+        datetime.datetime: StrDBKey,
+    }
+
+    def build(self):
+        cursor = self.connection.execute(f"PRAGMA table_info({self.table_name})")
+        for x in cursor.fetchall():
+            name = x[1]
+            typ = x[2]
+            klass = self.KEY_TYPES[typ]
+            self.keys[name] = klass(name)
+        if not self.keys:
+            LOG.debug(f"Table {self.table_name} does not exist.")
+
     def create_table_from_entry_if_needed(self, entry):
         if self.keys:
-            assert self.insert_statement
             # self.keys is not empty. Table already created.
             return
 
-        CLASSES = {
-            str: StrDBKey,
-            float: FloatDBKey,
-            np.float64: FloatDBKey,
-            np.float32: FloatDBKey,
-            int: IntDBKey,
-            datetime.datetime: StrDBKey,
-        }
         for k, v in entry.items():
             typ = type(v)
-            if typ not in CLASSES:
+            if typ not in self.KEY_TYPES:
                 raise ValueError(f"Unknown type '{typ}' for key '{k}'.")
-            klass = CLASSES[typ]
-            dbkey = klass(k)
-            self.keys[k] = dbkey
+            klass = self.KEY_TYPES[typ]
+            name = entryname_to_dbname(k)
+            self.keys[name] = klass(name)
 
         assert self.keys, f"Cannot build from entry '{entry}'"
         LOG.debug(f"Created table {self} from entry {entry}.")
-
-        self.key_names = [k for k, v in self.keys.items()]
-        self.column_names = [self.name_to_dbname(k) for k, v in self.keys.items()]
-
         columns_defs = ",".join(
-            [
-                f"{self.name_to_dbname(v.name)} {v.sql_type}"
-                for k, v in self.keys.items()
-            ]
+            [f"{v.name} {v.sql_type}" for k, v in self.keys.items()]
         )
-        create_statement = (
-            f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
-        )
-        LOG.debug("%s", create_statement)
-        self.connection.execute(create_statement)
+        statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
+        LOG.debug("%s", statement)
+        self.connection.execute(statement)
 
-        names = ",".join(self.column_names)
-        values = ",".join(["?"] * len(self.column_names))
-        print("BUILD")
-        self.insert_statement = (
-            f"INSERT INTO {self.table_name} ({names}) VALUES({values});"
-        )
-        LOG.debug("%s", self.insert_statement)
+    @property
+    def key_names(self):
+        return [dbname_to_entryname(k) for k, v in self.keys.items()]
+
+    @property
+    def column_names(self):
+        return [k for k, v in self.keys.items()]
+
+    @property
+    def insert_statement(self):
+        if not self._insert_statement:
+            names = ",".join(self.column_names)
+            values = ",".join(["?"] * len(self.column_names))
+            self._insert_statement = (
+                f"INSERT INTO {self.table_name} ({names}) VALUES({values});"
+            )
+            LOG.debug("%s", self.insert_statement)
+        return self._insert_statement
 
     def insert(self, entry):
         self.create_table_from_entry_if_needed(entry)
         values = [entry.get(k) for k in self.key_names]
-        LOG.debug("inserting entry")
-        LOG.debug(entry)
+        LOG.debug("Inserting entry")
+        print(self.insert_statement)
+        print(values)
         self.connection.execute(self.insert_statement, tuple(values))
 
     def build_sql_indexes(self):
-        indexed_columns = [
-            v
-            for k, v in self.keys.items()
-            if self.name_to_dbname(k).startswith("mars_")
+        indexed_columns = [v for k, v in self.keys.items() if k.startswith("mars_")] + [
+            "path"
         ]
-        indexed_columns += self.keys["_path"]
 
         pbar = tqdm(indexed_columns, desc="Building indexes")
         for n in pbar:
@@ -274,76 +288,82 @@ class CoordTables:
         return self.dic.keys()
 
 
-class SqlSorter:
-    @property
-    def _func_name(self):
-        return f"userorder_{self.view}"
-
-    def __init__(self, order, view, db):
-        self.order = order
-        self.view = view
-        self.db = db
-
-        self.dict_of_dicts = dict()
-        self.order_lst = []
-
-        # TODO: To improve speed, we could use ASC or DESC when lst is already sorted
-        # TODO: move GRIB_INDEX_KEYS and two comments above to upper class
-        # Use mars keys order by default
-        # But make sure the order provided by the user
-        # in the order override this default order.
-
-        if order is None or order.is_empty:
-            return
-
-        for key, lst in self.order.items():
-            self._add_key(key, lst)
-
-    def _add_key(self, key, lst):
-        dbkey = ALL_KEYS_DICT[key]
-
-        if lst is None:
-            self.order_lst.append(dbkey.name_in_db)
-            return
-        if lst == "ascending":
-            self.order_lst.append(f"{dbkey.name_in_db} ASC")
-            return
-        if lst == "descending":
-            self.order_lst.append(f"{dbkey.name_in_db} DESC")
-            return
-        if not isinstance(lst, (list, tuple)):
-            lst = [lst]
-
-        lst = [dbkey.normalize(value, db=self.db) for value in lst]
-
-        self.dict_of_dicts[key] = dict(zip(lst, range(len(lst))))
-        self.order_lst.append(f'{self._func_name}("{key}",{dbkey.name_in_db})')
-
-    @property
-    def order_statement(self):
-        if not self.order_lst:
-            assert not self.dict_of_dicts, self.dict_of_dicts
-            return ""
-        return "ORDER BY " + ",".join(self.order_lst)
-
-    def create_sql_function_if_needed(self, connection):
-        if not self.dict_of_dicts:
-            return
-
-        dict_of_dicts = self.dict_of_dicts  # avoid creating closure on self.
-
-        def order_func(k, v):
-            return dict_of_dicts[k][v]
-
-        connection.create_function(self._func_name, 2, order_func)
-
-
 class Connection(local):
     # Inheriting from threading.local allows one connection for each thread
     # __init__ is "called each time the local object is used in a separate thread".
     # https://github.com/python/cpython/blob/0346eddbe933b5f1f56151bdebf5bd49392bc275/Lib/_threading_local.py#L65
     def __init__(self, db_path):
         self._conn = sqlite3.connect(db_path)
+
+
+class SqlSelection(SelectionBase):
+    def __init__(self, /, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def filter_statement(self, db, *args, **kwargs):
+        conditions = []
+        for k, v in self.kwargs.items():
+            if v is None or v == cml.ALL:
+                continue
+
+            name = entryname_to_dbname(k)
+            dbkey = db.dbkeys[name]
+
+            if not isinstance(v, (list, tuple)):
+                v = [v]
+
+            v = [dbkey.cast(x) for x in v]
+            v = ["'" + str(x) + "'" for x in v]
+
+            conditions.append(f"{name} IN ({', '.join(v)})")
+
+        if not conditions:
+            return ""
+        return " WHERE " + " AND ".join(conditions)
+
+
+class SqlOrder(OrderBase):
+    def __init__(self, /, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def build_actions(self, kwargs):
+        return
+
+    def filter_statement(self, db, new_view):
+        func_name = "userorder_" + new_view
+
+        order_bys = []
+        dict_of_dicts = {}
+
+        for k, v in self.kwargs.items():
+            name = entryname_to_dbname(k)
+            dbkey = db.dbkeys[name]
+
+            if v == "ascending" or v is None:
+                order_bys.append(name + " ASC")
+                continue
+            if v == "descending" or v is None:
+                order_bys.append(name + " DESC")
+                continue
+            if isinstance(v, (list, tuple)):
+                v = [dbkey.cast(x) for x in v]
+                dict_of_dicts[name] = dict(zip(v, range(len(v))))
+                order_bys.append(func_name + "(" + "'" + name + "'" + ", " + name + ")")
+                continue
+
+            raise ValueError(f"{k},{v}, {type(v)}")
+
+        if dict_of_dicts:
+
+            def order_func(k, v):
+                return dict_of_dicts[k][v]
+
+            print("** CREATING on", db.connection, func_name)
+            db.connection.create_function(func_name, 2, order_func, deterministic=True)
+
+        if not order_bys:
+            return ""
+        return "ORDER BY " + ",".join(order_bys)
 
 
 class SqlDatabase(Database):
@@ -361,8 +381,8 @@ class SqlDatabase(Database):
         self._filters = filters or []
         self._view = None
         self._connection = None
-        self._entries_table = None
-        self.entries_table
+
+        self.dbkeys = EntriesLoader(self.connection).keys
 
     @property
     def view(self):
@@ -377,31 +397,22 @@ class SqlDatabase(Database):
     def connection(self):
         if self._connection is None:
             self._connection = Connection(self.db_path)
+            print("----CONNECTION TO ", self.db_path, self._connection._conn)
         return self._connection._conn
 
     def _apply_filter(self, filter: OrderOrSelection):
         # This method updates self.view with the additional filter
 
         old_view = self._view
-        new_view = old_view + "_" + filter.h(parent_view=old_view)
+        new_view = old_view + "_" + filter.h(parent_view=old_view)[:3]
 
-        if isinstance(filter, Selection):
-            order = None
-            selection = filter
-        elif isinstance(filter, Order):
-            selection = None
-            order = filter
-        else:
-            assert False, (type(filter), filter)
+        filter_statement = filter.filter_statement(self, new_view)
 
-        conditions_statement = self._conditions(selection)
-        sorter = SqlSorter(order, new_view, db=self)
         statement = (
             f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
-            + f"FROM {old_view} {conditions_statement} {sorter.order_statement};"
+            + f"FROM {old_view} {filter_statement};"
         )
 
-        sorter.create_sql_function_if_needed(self.connection)
         LOG.debug("%s", statement)
         for i in self.connection.execute(statement):
             LOG.error(str(i))  # Output of .execute should be empty
@@ -441,34 +452,36 @@ class SqlDatabase(Database):
         )
 
     @property
-    def entries_table(self):
-        if self._entries_table is None:
-            self._set_version()
-            self._entries_table = EntriesTable(self)
-        return self._entries_table
+    def key_names(self):
+        return [dbname_to_entryname(k) for k, v in self.dbkeys.items()]
+
+    @property
+    def column_names(self):
+        return [k for k, v in self.dbkeys.items()]
 
     def load(self, iterator):
-        # coords_tables = CoordTables(conn)
-        count = 0
-        for entry in iterator:
-            self.entries_table.insert(entry)
-            # coords_tables.update_with_entry(entry)
-            count += 1
+        with self.connection as connection:
+            entries_loader = EntriesLoader(connection)
+            count = 0
+            for entry in iterator:
+                entries_loader.insert(entry)
+                count += 1
+            self.dbkeys = entries_loader.keys
 
-        assert count >= 1, "No entry found."
-        LOG.info("Added %d entries", count)
+            assert count >= 1, "No entry found."
+            LOG.info("Added %d entries", count)
 
         return count
 
     def _conditions(self, selection):
-        if selection is None or selection.is_empty:
+        if selection is None:
             return ""
         conditions = []
-        for k, b in selection.dic.items():
+        for k, b in selection.kwargs.items():
             if b is None or b == cml.ALL:
                 continue
 
-            dbkey = ALL_KEYS_DICT[k]
+            dbkey = self.dbkeys[k]
 
             if isinstance(b, (list, tuple)):
                 # if len(b) == 1:
@@ -501,7 +514,7 @@ class SqlDatabase(Database):
 
     def lookup_dicts(
         self,
-        keys=None,
+        # keys=None,
         limit=None,
         offset=None,
         remove_none=True,
@@ -513,22 +526,24 @@ class SqlDatabase(Database):
         offset: Skip the first "offset" entries (used for paging).
         """
 
-        if keys is None:
-            keys = [k.name for k in GRIB_KEYS + STATISTICS_KEYS + CFGRIB_KEYS]
-            if with_parts is None:
-                with_parts = True
+        column_names = self.column_names
+        names = self.key_names
+        # if keys is None:
+        #    keys = [v.name for k,v in self.dbkeys.items()]
+        #    if with_parts is None:
+        #        with_parts = True
 
-        if not isinstance(keys, (list, tuple)):
-            keys = [keys]
+        # if not isinstance(keys, (list, tuple)):
+        #    keys = [keys]
 
-        if with_parts:
-            keys = [k.name for k in FILEPARTS_KEYS] + keys
+        # if with_parts:
+        #    keys = FILEPARTS_KEY_NAMES + keys
 
-        dbkeys = [ALL_KEYS_DICT[name] for name in keys]
+        # dbkeys = [self.dbkeys[name] for name in keys]
 
-        names_in_db = [k.name_in_db for k in dbkeys]
-        names = [k.name for k in dbkeys]
-        for tupl in self._execute_select(names_in_db, limit, offset):
+        # column_names = [k.name_in_db for k in dbkeys]
+        # names = [k.name for k in dbkeys]
+        for tupl in self._execute_select(column_names, limit, offset):
             dic = {k: v for k, v in zip(names, tupl)}
 
             if remove_none:
@@ -543,6 +558,7 @@ class SqlDatabase(Database):
         statement = f"SELECT {names_str} FROM {self.view} {limit_str} {offset_str};"
         LOG.debug("%s", statement)
 
+        print(self.connection)
         for tupl in self.connection.execute(statement):
             yield tupl
 

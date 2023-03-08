@@ -24,13 +24,11 @@ from climetlab.core.index import (
     Index,
     MaskIndex,
     MultiIndex,
-    Order,
     OrderOrSelection,
-    Selection,
 )
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonFileDatabase
-from climetlab.indexing.database.sql import SqlDatabase
+from climetlab.indexing.database.sql import SqlDatabase, SqlOrder, SqlSelection
 from climetlab.readers.grib.codes import GribField, get_messages_positions
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
@@ -314,10 +312,10 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         return self.__class__(db=db)
 
     def sel(self, *args, **kwargs):
-        return self.filter(Selection(*args, **kwargs))
+        return self.filter(SqlSelection(*args, **kwargs))
 
     def order_by(self, *args, **kwargs):
-        return self.filter(Order(*args, **kwargs))
+        return self.filter(SqlOrder(*args, **kwargs))
 
     def part(self, n):
         if self._cache is None or not (

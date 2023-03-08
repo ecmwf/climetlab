@@ -8,6 +8,7 @@
 #
 
 
+import datetime
 import functools
 import hashlib
 import json
@@ -16,6 +17,7 @@ from abc import abstractmethod
 
 from climetlab.decorators import alias_argument, normalize
 from climetlab.sources import Source
+import climetlab as cml
 
 LOG = logging.getLogger(__name__)
 
@@ -45,7 +47,7 @@ class OrderOrSelection:
         return m.hexdigest()
 
 
-class Selection(OrderOrSelection):
+class SelectionBase(OrderOrSelection):
     def __init__(self, *args, **kwargs):
         self.kwargs = {}
         for a in args:
@@ -58,9 +60,27 @@ class Selection(OrderOrSelection):
 
         self.kwargs.update(kwargs)
 
-        self.actions = self.build_actions(self.kwargs)
+        for k, v in kwargs.items():
+            assert (
+                v is None
+                or v == cml.ALL
+                or callable(v)
+                or isinstance(v, (list, tuple, set))
+                or isinstance(v, (str, int, float, datetime.datetime))
+            ), f"Unsupported type: {type(v)} for key {k}"
 
+    @abstractmethod
     def build_actions(self, kwargs):
+        raise NotImplementedError()
+
+    def match_element(self, element):
+        return all(v(element.metadata(k)) for k, v in self.actions.items())
+
+
+class Selection(SelectionBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         class InList:
             def __init__(self, lst):
                 self.first = True
@@ -75,7 +95,7 @@ class Selection(OrderOrSelection):
 
         actions = {}
         for k, v in self.kwargs.items():
-            if v is None:
+            if v is None or v == cml.ALL:
                 actions[k] = lambda x: True
                 continue
 
@@ -91,9 +111,6 @@ class Selection(OrderOrSelection):
             actions[k] = InList(v)
 
         return actions
-
-    def match_element(self, element):
-        return all(v(element.metadata(k)) for k, v in self.actions.items())
 
 
 class OrderBase(OrderOrSelection):
@@ -112,7 +129,19 @@ class OrderBase(OrderOrSelection):
 
         self.kwargs.update(kwargs)
 
+        for k, v in kwargs.items():
+            assert (
+                v is None
+                or callable(v)
+                or isinstance(v, (list, tuple, set))
+                or v in ["ascending", "descending"]
+            ), f"Unsupported order: {v} of type {type(v)} for key {k}"
+
         self.actions = self.build_actions(self.kwargs)
+
+    @abstractmethod
+    def build_actions(self, kwargs):
+        raise NotImplementedError()
 
     def compare_elements(self, a, b):
         for k, v in self.actions.items():
