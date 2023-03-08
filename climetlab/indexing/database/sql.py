@@ -29,17 +29,10 @@ from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
 from . import (
-    # ALL_KEYS,
-    # ALL_KEYS_DICT,
-    # CFGRIB_KEYS,
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
-    # FILEPARTS_KEYS,
-    # GRIB_KEYS,
     STATISTICS_KEY_NAMES,
-    # STATISTICS_KEYS,
     Database,
-    DBKey,
     FloatDBKey,
     IntDBKey,
     StrDBKey,
@@ -78,16 +71,6 @@ def dbname_to_entryname(n):
 class EntriesLoader:
     table_name = "entries"
 
-    def __init__(self, connection):
-        self.connection = connection
-        self.keys = {}
-        self._insert_statement = None
-        self.build()
-
-    def __str__(self):
-        content = ",".join([k for k, v in self.keys.items()])
-        return f"EntriesTable({self.table_name},{content}"
-
     KEY_TYPES = {
         "TEXT": StrDBKey,
         "FLOAT": FloatDBKey,
@@ -100,6 +83,15 @@ class EntriesLoader:
         datetime.datetime: StrDBKey,
     }
 
+    def __init__(self, connection):
+        self.connection = connection
+        self.keys = {}
+        self.build()
+
+    def __str__(self):
+        content = ",".join([k for k, v in self.keys.items()])
+        return f"{self.__class__}({self.table_name},{content}"
+
     def build(self):
         cursor = self.connection.execute(f"PRAGMA table_info({self.table_name})")
         for x in cursor.fetchall():
@@ -107,62 +99,58 @@ class EntriesLoader:
             typ = x[2]
             klass = self.KEY_TYPES[typ]
             self.keys[name] = klass(name)
-        if not self.keys:
-            LOG.debug(f"Table {self.table_name} does not exist.")
+
+        if self.keys:
+            return self.keys
+
+        LOG.debug(f"Table {self.table_name} does not exist.")
+        return None
 
     def create_table_from_entry_if_needed(self, entry):
-        if self.keys:
-            # self.keys is not empty. Table already created.
-            return
-
+        keys = {}
         for k, v in entry.items():
             typ = type(v)
             if typ not in self.KEY_TYPES:
                 raise ValueError(f"Unknown type '{typ}' for key '{k}'.")
             klass = self.KEY_TYPES[typ]
             name = entryname_to_dbname(k)
-            self.keys[name] = klass(name)
+            keys[name] = klass(name)
 
-        assert self.keys, f"Cannot build from entry '{entry}'"
+        assert keys, f"Cannot build from entry '{entry}'"
         LOG.debug(f"Created table {self} from entry {entry}.")
-        columns_defs = ",".join(
-            [f"{v.name} {v.sql_type}" for k, v in self.keys.items()]
-        )
+        columns_defs = ",".join([f"{v.name} {v.sql_type}" for k, v in keys.items()])
         statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
         LOG.debug("%s", statement)
         self.connection.execute(statement)
+        return keys
 
-    @property
-    def key_names(self):
-        return [dbname_to_entryname(k) for k, v in self.keys.items()]
+    def load_iterator(self, iterator):
+        count = 0
+        for entry in iterator:
+            self.keys = self.create_table_from_entry_if_needed(entry)
 
-    @property
-    def column_names(self):
-        return [k for k, v in self.keys.items()]
+            if count == 0:
+                column_names = [k for k, v in self.keys.items()]
+                statement = (
+                    f"INSERT INTO {self.table_name} ("
+                    + ",".join(column_names)
+                    + ") VALUES("
+                    + ",".join(["?"] * len(column_names))
+                    + ");"
+                )
+                LOG.debug("%s", statement)
 
-    @property
-    def insert_statement(self):
-        if not self._insert_statement:
-            names = ",".join(self.column_names)
-            values = ",".join(["?"] * len(self.column_names))
-            self._insert_statement = (
-                f"INSERT INTO {self.table_name} ({names}) VALUES({values});"
-            )
-            LOG.debug("%s", self.insert_statement)
-        return self._insert_statement
+            values = [entry.get(dbname_to_entryname(k)) for k, v in self.keys.items()]
+            self.connection.execute(statement, tuple(values))
+            count += 1
 
-    def insert(self, entry):
-        self.create_table_from_entry_if_needed(entry)
-        values = [entry.get(k) for k in self.key_names]
-        LOG.debug("Inserting entry")
-        print(self.insert_statement)
-        print(values)
-        self.connection.execute(self.insert_statement, tuple(values))
+        self.build_sql_indexes()
+
+        return self.keys, count
 
     def build_sql_indexes(self):
-        indexed_columns = [v for k, v in self.keys.items() if k.startswith("mars_")] + [
-            "path"
-        ]
+        indexed_columns = [k for k, v in self.keys.items() if k.startswith("mars_")]
+        indexed_columns += ["path"]
 
         pbar = tqdm(indexed_columns, desc="Building indexes")
         for n in pbar:
@@ -461,12 +449,8 @@ class SqlDatabase(Database):
 
     def load(self, iterator):
         with self.connection as connection:
-            entries_loader = EntriesLoader(connection)
-            count = 0
-            for entry in iterator:
-                entries_loader.insert(entry)
-                count += 1
-            self.dbkeys = entries_loader.keys
+            loader = EntriesLoader(connection)
+            self.dbkeys, count = loader.load_iterator(iterator)
 
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
