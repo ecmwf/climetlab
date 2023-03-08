@@ -26,13 +26,13 @@ class ADSAPIKeyPrompt(APIKeyPrompt):
     prompts = [
         dict(
             name="url",
-            default="https://ads.TODO.climate.copernicus.eu/api/v2",
+            default="https://ads.climate.copernicus.eu/api/v2",
             title="API url",
             validate=r"http.?://.*",
         ),
         dict(
             name="key",
-            example="TODO.123:abcdef01-0000-1111-2222-0123456789ab",
+            example="123:abcdef01-0000-1111-2222-0123456789ab",
             title="API key",
             hidden=True,
             validate=r"\d+:[\-0-9a-f]+",
@@ -49,13 +49,13 @@ def client():
     prompt = ADSAPIKeyPrompt()
     prompt.check()
 
-    path = os.path.expanduser('~/.adsapirc')
+    path = os.path.expanduser("~/.adsapirc")
 
     if not os.path.exists(path):
         prompt.ask_user_and_save()
 
     with open(path) as f:
-        rc =  yaml.loads(f.read())
+        rc = yaml.loads(f.read())
 
     return cdsapi.Client(**rc)
 
