@@ -20,13 +20,13 @@ from .prompt import APIKeyPrompt
 
 
 class ADSAPIKeyPrompt(APIKeyPrompt):
-    register_or_sign_in_url = "https://cds.climate.copernicus.eu/"
-    retrieve_api_key_url = "https://cds.climate.copernicus.eu/api-how-to"
+    register_or_sign_in_url = "https://ads.atmosphere.copernicus.eu/"
+    retrieve_api_key_url = "https://ads.atmosphere.copernicus.eu/api-how-to"
 
     prompts = [
         dict(
             name="url",
-            default="https://ads.climate.copernicus.eu/api/v2",
+            default="https://ads.atmosphere.copernicus.eu/api/v2",
             title="API url",
             validate=r"http.?://.*",
         ),
