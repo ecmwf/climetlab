@@ -39,9 +39,6 @@ class JsonStdoutDatabase(JsonDatabase):
         return count
 
 
-import json
-
-
 def json_serialiser(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()

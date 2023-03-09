@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
 
 from climetlab.decorators import cached_method
 from climetlab.indexing.database.json import JsonFileDatabase
