@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-
 import datetime
 import logging
 import os
@@ -18,13 +17,7 @@ from threading import local
 import numpy as np
 
 import climetlab as cml
-from climetlab.core.index import (
-    Order,
-    OrderBase,
-    OrderOrSelection,
-    Selection,
-    SelectionBase,
-)
+from climetlab.core.index import OrderBase, OrderOrSelection, SelectionBase
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -162,122 +155,6 @@ class EntriesLoader:
     def __str__(self):
         content = ",".join([k for k, v in self.keys.items()])
         return f"{self.__class__}({self.table_name},{content}"
-
-
-def _list_all_tables(connection):
-    statement = "SELECT name FROM sqlite_master WHERE type='table';"
-    cursor = connection.execute(statement)
-    return [r[0] for r in cursor]
-
-
-class CoordTable:
-    def __init__(self, key, connection, create_if_not_exists=False):
-        self.connection = connection
-        self.key = key
-        self.table_name = "coords_" + self.key
-        if create_if_not_exists:
-            self.create_table_if_not_exist()
-        self.dic = self.read_table()
-
-    def create_table_if_not_exist(self):
-        create_statement = f"""CREATE TABLE IF NOT EXISTS {self.table_name} (
-            key   INTEGER PRIMARY KEY,
-            value TEXT
-            );"""
-        LOG.debug("%s", create_statement)
-        self.connection.execute(create_statement)
-        assert self._table_exists()
-
-    def _table_exists(self):
-        return self.table_name in _list_all_tables(self.connection)
-
-    def read_table(self):
-        if not self._table_exists():
-            raise CoordTableDoesNotExist()
-
-        statement = f"SELECT key,value FROM {self.table_name}; "
-        LOG.debug("%s", statement)
-        return {k: v for k, v in self.connection.execute(statement)}
-
-    def append(self, value):
-        value = str(value)
-
-        if value in self.dic.values():
-            return  # already in the table
-
-        self.create_table_if_not_exist()
-
-        statement = f"INSERT INTO {self.table_name} (value) VALUES(?); "
-        LOG.debug("%s", statement)
-        self.connection.execute(statement, [value])
-
-        statement = f"SELECT key FROM {self.table_name} WHERE value='{value}'; "
-        LOG.debug("%s", statement)
-        keys = []
-        for key in self.connection.execute(statement):
-            keys.append(key)
-        assert len(keys) == 1
-        self.dic[key[0]] = value
-
-    def is_empty(self):
-        return len(self.dic) > 0
-
-    def __len__(self):
-        return len(self.dic)
-
-    def items(self):
-        return self.dic.items()
-
-    def keys(self):
-        return self.dic.keys()
-
-    def __str__(self):
-        typ = ""
-        if self.dic:
-            first = self.dic[list(self.dic.keys())[0]]
-            if not isinstance(first, str):
-                typ = f" ({type(first)})"
-        return f"{self.key}{typ}={'/'.join([str(v) for v in self.dic.values()])}"
-
-
-class CoordTableDoesNotExist(Exception):
-    pass
-
-
-class CoordTables:
-    def __init__(self, connection):
-        self.connection = connection
-        self.dic = {}
-
-        for table in _list_all_tables(self.connection):
-            if not table.startswith("coords_"):
-                continue
-            key = table[len("coords_") :]
-            self.dic[key] = CoordTable(key, self.connection)
-
-    def __getitem__(self, key):
-        if key not in self.dic:
-            self.dic[key] = CoordTable(key, self.connection, create_if_not_exists=True)
-        return self.dic[key]
-
-    def update_with_entry(self, entry):
-        for n in [k.name for k in GRIB_KEYS] + ["md5_grid_section"] + ["_path"]:
-            v = entry.get(n)
-            if v is None:
-                continue
-            self[n].append(v)
-
-    def __str__(self):
-        return "Coords:" + "\n".join([str(v) for k, v in self.dic.items()])
-
-    def __len__(self):
-        return len(self.dic)
-
-    def items(self):
-        return self.dic.items()
-
-    def keys(self):
-        return self.dic.keys()
 
 
 class Connection(local):
@@ -441,14 +318,6 @@ class SqlDatabase(Database):
             )
         )
 
-    @property
-    def key_names(self):
-        return [dbname_to_entryname(k) for k, v in self.dbkeys.items()]
-
-    @property
-    def column_names(self):
-        return [k for k, v in self.dbkeys.items()]
-
     def load(self, iterator):
         with self.connection as connection:
             loader = EntriesLoader(connection)
@@ -459,30 +328,6 @@ class SqlDatabase(Database):
             LOG.info("Added %d entries", count)
 
         return count
-
-    def _conditions(self, selection):
-        if selection is None:
-            return ""
-        conditions = []
-        for k, b in selection.kwargs.items():
-            if b is None or b == cml.ALL:
-                continue
-
-            dbkey = self.dbkeys[k]
-
-            if isinstance(b, (list, tuple)):
-                # if len(b) == 1:
-                #    conditions.append(f"{dbkey.name_in_db}='{b[0]}'")
-                #    continue
-                w = ",".join([dbkey.to_sql_value(x) for x in b])
-                conditions.append(f"{dbkey.name_in_db} IN ({w})")
-                continue
-
-            conditions.append(f"{dbkey.name_in_db}='{b}'")
-
-        if not conditions:
-            return ""
-        return " WHERE " + " AND ".join(conditions)
 
     def lookup_parts(self, limit=None, offset=None, resolve_paths=True):
         """
@@ -501,7 +346,6 @@ class SqlDatabase(Database):
 
     def lookup_dicts(
         self,
-        # keys=None,
         limit=None,
         offset=None,
         remove_none=True,
@@ -513,25 +357,14 @@ class SqlDatabase(Database):
         offset: Skip the first "offset" entries (used for paging).
         """
 
-        column_names = self.column_names
-        names = self.key_names
-        # if keys is None:
-        #    keys = [v.name for k,v in self.dbkeys.items()]
-        #    if with_parts is None:
-        #        with_parts = True
+        column_names = [k for k, v in self.dbkeys.items()]
 
-        # if not isinstance(keys, (list, tuple)):
-        #    keys = [keys]
+        if with_parts is False:
+            column_names = [k for k in column_names if k not in FILEPARTS_KEY_NAMES]
 
-        # if with_parts:
-        #    keys = FILEPARTS_KEY_NAMES + keys
-
-        # dbkeys = [self.dbkeys[name] for name in keys]
-
-        # column_names = [k.name_in_db for k in dbkeys]
-        # names = [k.name for k in dbkeys]
+        entrynames = [dbname_to_entryname(k) for k in column_names]
         for tupl in self._execute_select(column_names, limit, offset):
-            dic = {k: v for k, v in zip(names, tupl)}
+            dic = {k: v for k, v in zip(entrynames, tupl)}
 
             if remove_none:
                 dic = {k: v for k, v in dic.items() if v is not None}
@@ -545,50 +378,8 @@ class SqlDatabase(Database):
         statement = f"SELECT {names_str} FROM {self.view} {limit_str} {offset_str};"
         LOG.debug("%s", statement)
 
-        print(self.connection)
         for tupl in self.connection.execute(statement):
             yield tupl
-
-    def _find_all_coords_dict(self):
-        raise NotImplementedError("wip")
-        # start-of: This is just an optimisation for speed.
-        if all([isinstance(f, Order) for f in self._filters]):
-            # if there is a Selection filter, it may remove some keys
-            # by selecting values on some other keys.
-            # In such case, we cannot rely on the coords tables created
-            # for the whole dataset.
-            # For instance doing .sel(param='2t') will remove some keys
-            # for step that had been inserted by param='tp'.
-            return self._find_all_coords_dict_from_coords_tables()
-        # end-of: This is just an optimisation for speed.
-
-        values = defaultdict(list)
-        i_names = self._columns_names("i", remove_prefix=False)
-        names = self._columns_names("i", remove_prefix=True)
-        for tupl in self._execute_select(i_names):
-            for k, v in zip(names, tupl):
-                if v in values[k]:
-                    continue
-                values[k].append(v)
-
-        return values
-
-    def _find_all_coords_dict_from_coords_tables(self):
-        raise NotImplementedError("wip")
-        # coords_tables = CoordTables(self.connection)
-        # keys = list(coords_tables.keys())
-        # keys = [k for k in keys if k in GRIB_KEYS_NAMES]
-
-        # for f in self._filters:
-        #     firsts = list(f.keys())
-        #     keys = firsts + [k for k in keys if k not in firsts]
-
-        # coords = {k: coords_tables[k].dic.values() for k in keys}
-
-        # for f in self._filters:
-        #     coords = {k: f.filter_values(k, v) for k, v in coords.items()}
-
-        # return coords
 
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"
@@ -601,6 +392,3 @@ class SqlDatabase(Database):
         iterator = self.lookup_dicts()
         new_db.load(iterator)
         return new_db
-
-    def normalize_datetime(self, value):
-        return value
