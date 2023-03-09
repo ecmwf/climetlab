@@ -8,16 +8,17 @@
 #
 
 import datetime
+import hashlib
+import json
 import logging
 import os
 import sqlite3
-from collections import defaultdict
+from abc import abstractmethod
 from threading import local
 
 import numpy as np
 
 import climetlab as cml
-from climetlab.core.index import OrderBase, OrderOrSelection, SelectionBase
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
@@ -165,9 +166,30 @@ class Connection(local):
         self._conn = sqlite3.connect(db_path)
 
 
-class SqlSelection(SelectionBase):
-    def __init__(self, /, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class SqlFilter:
+    def h(self, *args, **kwargs):
+        m = hashlib.sha256()
+        m.update(str(args).encode("utf-8"))
+        m.update(str(kwargs).encode("utf-8"))
+        m.update(str(self.__class__.__name__).encode("utf-8"))
+        m.update(json.dumps(self.kwargs, sort_keys=True).encode("utf-8"))
+        return m.hexdigest()
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.kwargs})"
+
+    @property
+    def is_empty(self):
+        return not self.kwargs
+
+    @abstractmethod
+    def filter_statement(self, db, *args, **kwargs):
+        pass
+
+
+class SqlSelection(SqlFilter):
+    def __init__(self, kwargs: dict):
+        self.kwargs = kwargs
 
     def filter_statement(self, db, *args, **kwargs):
         conditions = []
@@ -191,12 +213,9 @@ class SqlSelection(SelectionBase):
         return " WHERE " + " AND ".join(conditions)
 
 
-class SqlOrder(OrderBase):
-    def __init__(self, /, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def build_actions(self, kwargs):
-        return
+class SqlOrder(SqlFilter):
+    def __init__(self, kwargs):
+        self.kwargs = kwargs
 
     def filter_statement(self, db, new_view):
         func_name = "userorder_" + new_view
@@ -206,6 +225,7 @@ class SqlOrder(OrderBase):
 
         for k, v in self.kwargs.items():
             name = entryname_to_dbname(k)
+            
             dbkey = db.dbkeys[name]
 
             if v == "ascending" or v is None:
@@ -296,11 +316,11 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             self._connection = Connection(self.db_path)
         return self._connection._conn
 
-    def _apply_filter(self, filter: OrderOrSelection):
+    def _apply_filter(self, filter: SqlFilter):
         # This method updates self.view with the additional filter
 
         old_view = self._view
-        new_view = old_view + "_" + filter.h(parent_view=old_view)[:3]
+        new_view = old_view + "_" + filter.h(parent_view=old_view)
 
         filter_statement = filter.filter_statement(self, new_view)
 
@@ -315,7 +335,7 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
 
         self._view = new_view
 
-    def filter(self, filter: OrderOrSelection):
+    def filter(self, filter: SqlFilter):
         return self.__class__(
             self.db_path,
             filters=self._filters + [filter],

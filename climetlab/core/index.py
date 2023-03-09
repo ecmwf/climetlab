@@ -10,14 +10,12 @@
 
 import datetime
 import functools
-import hashlib
-import json
 import logging
 from abc import abstractmethod
 
-from climetlab.decorators import alias_argument, normalize
-from climetlab.sources import Source
 import climetlab as cml
+from climetlab.decorators import alias_argument
+from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
 
@@ -32,51 +30,15 @@ def normalize_naming(self, **kwargs):
 
 class OrderOrSelection:
     def __str__(self):
-        return f"{self.__class__.__name__}({self.dic})"
+        return f"{self.__class__.__name__}({self.kwargs})"
 
     @property
     def is_empty(self):
         return not self.kwargs
 
-    def h(self, *args, **kwargs):
-        m = hashlib.sha256()
-        m.update(str(args).encode("utf-8"))
-        m.update(str(kwargs).encode("utf-8"))
-        m.update(str(self.__class__.__name__).encode("utf-8"))
-        m.update(json.dumps(self.kwargs, sort_keys=True).encode("utf-8"))
-        return m.hexdigest()
 
-
-class SelectionBase(OrderOrSelection):
-    def __init__(self, *args, **kwargs):
-        self.kwargs = {}
-        for a in args:
-            if a is None:
-                continue
-            if isinstance(a, dict):
-                self.kwargs.update(a)
-                continue
-            assert False, a
-
-        self.kwargs.update(kwargs)
-
-        for k, v in kwargs.items():
-            assert (
-                v is None
-                or v == cml.ALL
-                or callable(v)
-                or isinstance(v, (list, tuple, set))
-                or isinstance(v, (str, int, float, datetime.datetime))
-            ), f"Unsupported type: {type(v)} for key {k}"
-
-    def match_element(self, element):
-        return all(v(element.metadata(k)) for k, v in self.actions.items())
-
-
-class Selection(SelectionBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+class Selection(OrderOrSelection):
+    def __init__(self, kwargs):
         class InList:
             def __init__(self, lst):
                 self.first = True
@@ -90,7 +52,7 @@ class Selection(SelectionBase):
                 return x in self.lst
 
         self.actions = {}
-        for k, v in self.kwargs.items():
+        for k, v in kwargs.items():
             if v is None or v == cml.ALL:
                 self.actions[k] = lambda x: True
                 continue
@@ -106,32 +68,13 @@ class Selection(SelectionBase):
 
             self.actions[k] = InList(v)
 
+    def match_element(self, element):
+        return all(v(element.metadata(k)) for k, v in self.actions.items())
+
 
 class OrderBase(OrderOrSelection):
-    def __init__(self, *args, **kwargs):
-        self.kwargs = {}
-        for a in args:
-            if a is None:
-                continue
-            if isinstance(a, dict):
-                self.kwargs.update(a)
-                continue
-            if isinstance(a, str):
-                self.kwargs[a] = "ascending"
-                continue
-            assert False, a
-
-        self.kwargs.update(kwargs)
-
-        for k, v in kwargs.items():
-            assert (
-                v is None
-                or callable(v)
-                or isinstance(v, (list, tuple, set))
-                or v in ["ascending", "descending"]
-            ), f"Unsupported order: {v} of type {type(v)} for key {k}"
-
-        self.actions = self.build_actions(self.kwargs)
+    def __init__(self, kwargs):
+        self.actions = self.build_actions(kwargs)
 
     @abstractmethod
     def build_actions(self, kwargs):
@@ -235,20 +178,69 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    @abstractmethod
+    def normalize_selection(self, *args, **kwargs):
+        _kwargs = {}
+        for a in args:
+            if a is None:
+                continue
+            if isinstance(a, dict):
+                _kwargs.update(a)
+                continue
+            assert False, a
+
+        _kwargs.update(kwargs)
+
+        for k, v in _kwargs.items():
+            assert (
+                v is None
+                or v == cml.ALL
+                or callable(v)
+                or isinstance(v, (list, tuple, set))
+                or isinstance(v, (str, int, float, datetime.datetime))
+            ), f"Unsupported type: {type(v)} for key {k}"
+        return _kwargs
+
     def sel(self, *args, **kwargs):
         """Filter elements on their metadata(), according to kwargs.
         Returns a new index object.
         """
-        selection = Selection(*args, **kwargs)
-        if selection.is_empty:
+
+        kwargs = self.normalize_selection(*args, **kwargs)
+        if not kwargs:
             return self
+
+        selection = Selection(kwargs)
 
         indices = (
             i for i, element in enumerate(self) if selection.match_element(element)
         )
 
         return self.new_mask_index(self, indices)
+
+    def normalize_order_by(self, *args, **kwargs):
+        _kwargs = {}
+        for a in args:
+            if a is None:
+                continue
+            if isinstance(a, dict):
+                _kwargs.update(a)
+                continue
+            if isinstance(a, str):
+                _kwargs[a] = "ascending"
+                continue
+            assert False, a
+
+        _kwargs.update(kwargs)
+
+        for k, v in _kwargs.items():
+            assert (
+                v is None
+                or callable(v)
+                or isinstance(v, (list, tuple, set))
+                or v in ["ascending", "descending"]
+            ), f"Unsupported order: {v} of type {type(v)} for key {k}"
+
+        return _kwargs
 
     def order_by(self, *args, **kwargs):
         """Default order_by method.
@@ -258,10 +250,12 @@ class Index(Source):
 
         Returns a new index object.
         """
+        kwargs = self.normalize_order_by(*args, **kwargs)
 
-        order = Order(*args, **kwargs)
-        if order.is_empty:
+        if not kwargs:
             return self
+
+        order = Order(kwargs)
 
         def cmp(i, j):
             return order.compare_elements(self[i], self[j])
@@ -330,8 +324,7 @@ class MultiIndex(Index):
         # TODO: propagate  index._init_args, index._init_order_by, index._init_kwargs, for each i in indexes?
 
     def sel(self, *args, **kwargs):
-        selection = Selection(*args, **kwargs)
-        if selection.is_empty:
+        if not args and not kwargs:
             return self
         return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
 

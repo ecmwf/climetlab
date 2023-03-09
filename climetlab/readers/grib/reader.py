@@ -10,7 +10,8 @@
 import logging
 
 from climetlab.readers import Reader
-from climetlab.readers.grib.index import FieldSetInOneFile, MultiFieldSet
+from climetlab.readers.grib.index.file import FieldSetInOneFile
+from climetlab.readers.grib.index import MultiFieldSet
 
 LOG = logging.getLogger(__name__)
 

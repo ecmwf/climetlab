@@ -8,7 +8,7 @@
 #
 
 
-from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
+from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
 from climetlab.sources.indexed import IndexedSource
 from climetlab.sources.indexed_urls import add_path, get_index_url
 

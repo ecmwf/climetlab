@@ -9,7 +9,6 @@
 import datetime
 import json
 import logging
-import warnings
 
 LOG = logging.getLogger(__name__)
 

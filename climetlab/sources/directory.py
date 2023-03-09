@@ -9,7 +9,7 @@
 import logging
 import os
 
-from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
+from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
 from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources.indexed import IndexedSource
 

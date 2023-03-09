@@ -10,7 +10,7 @@ import logging
 import warnings
 from collections import defaultdict
 
-from climetlab.readers.grib.index import FieldsetInFilesWithSqlIndex
+from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
 from climetlab.sources.directory import GenericDirectorySource
 from climetlab.utils import progress_bar
 
