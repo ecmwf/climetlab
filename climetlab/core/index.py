@@ -14,7 +14,6 @@ import logging
 from abc import abstractmethod
 
 import climetlab as cml
-from climetlab.decorators import alias_argument
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
