@@ -69,10 +69,6 @@ class SelectionBase(OrderOrSelection):
                 or isinstance(v, (str, int, float, datetime.datetime))
             ), f"Unsupported type: {type(v)} for key {k}"
 
-    @abstractmethod
-    def build_actions(self, kwargs):
-        raise NotImplementedError()
-
     def match_element(self, element):
         return all(v(element.metadata(k)) for k, v in self.actions.items())
 
@@ -93,14 +89,14 @@ class Selection(SelectionBase):
                     self.first = False
                 return x in self.lst
 
-        actions = {}
+        self.actions = {}
         for k, v in self.kwargs.items():
             if v is None or v == cml.ALL:
-                actions[k] = lambda x: True
+                self.actions[k] = lambda x: True
                 continue
 
             if callable(v):
-                actions[k] = v
+                self.actions[k] = v
                 continue
 
             if not isinstance(v, (list, tuple, set)):
@@ -108,9 +104,7 @@ class Selection(SelectionBase):
 
             v = set(v)
 
-            actions[k] = InList(v)
-
-        return actions
+            self.actions[k] = InList(v)
 
 
 class OrderBase(OrderOrSelection):

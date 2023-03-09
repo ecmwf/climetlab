@@ -31,6 +31,7 @@ from climetlab.utils.parts import Part
 from . import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
+    MORE_KEY_NAMES_WITH_UNDERSCORE,
     STATISTICS_KEY_NAMES,
     Database,
     FloatDBKey,
@@ -43,7 +44,7 @@ LOG = logging.getLogger(__name__)
 
 def entryname_to_dbname(n):
     def add_mars(x):
-        return "mars_" + x
+        return "i_" + x
 
     def remove_first_underscore(x):
         assert x[0] == "_", x
@@ -51,68 +52,68 @@ def entryname_to_dbname(n):
 
     if n in FILEPARTS_KEY_NAMES:
         return remove_first_underscore(n)
-    if n in MORE_KEY_NAMES:
+    if n in MORE_KEY_NAMES_WITH_UNDERSCORE:
         return remove_first_underscore(n)
     if n in STATISTICS_KEY_NAMES:
         return n
+    # if n in MORE_KEY_NAMES:
+    #    return n
     return add_mars(n)
 
 
 def dbname_to_entryname(n):
-    if n.startswith("mars_"):
-        return n[5:]
+    if n.startswith("i_"):
+        return n[2:]
     if "_" + n in FILEPARTS_KEY_NAMES:
         return "_" + n
-    if "_" + n in MORE_KEY_NAMES:
+    if "_" + n in MORE_KEY_NAMES_WITH_UNDERSCORE:
         return "_" + n
+    if n in MORE_KEY_NAMES:
+        return n
     return n
 
 
 class EntriesLoader:
     table_name = "entries"
 
-    KEY_TYPES = {
-        "TEXT": StrDBKey,
-        "FLOAT": FloatDBKey,
-        "INTEGER": IntDBKey,
-        str: StrDBKey,
-        float: FloatDBKey,
-        np.float64: FloatDBKey,
-        np.float32: FloatDBKey,
-        int: IntDBKey,
-        datetime.datetime: StrDBKey,
-    }
-
     def __init__(self, connection):
         self.connection = connection
-        self.keys = {}
-        self.build()
+        self.keys = self.read_from_table()
 
-    def __str__(self):
-        content = ",".join([k for k, v in self.keys.items()])
-        return f"{self.__class__}({self.table_name},{content}"
+    @classmethod
+    def guess_key_type(self, x, name=None):
+        try:
+            return {
+                "TEXT": StrDBKey,
+                "FLOAT": FloatDBKey,
+                "INTEGER": IntDBKey,
+                str: StrDBKey,
+                float: FloatDBKey,
+                np.float64: FloatDBKey,
+                np.float32: FloatDBKey,
+                int: IntDBKey,
+                datetime.datetime: StrDBKey,
+            }[x]
+        except KeyError:
+            raise ValueError(f"Unknown type '{x}' for key '{name}'.")
 
-    def build(self):
+    def read_from_table(self):
+        keys = {}
         cursor = self.connection.execute(f"PRAGMA table_info({self.table_name})")
         for x in cursor.fetchall():
-            name = x[1]
-            typ = x[2]
-            klass = self.KEY_TYPES[typ]
-            self.keys[name] = klass(name)
+            name, typ = x[1], x[2]
+            klass = self.guess_key_type(typ, name)
+            keys[name] = klass(name)
 
-        if self.keys:
-            return self.keys
-
-        LOG.debug(f"Table {self.table_name} does not exist.")
-        return None
+        if not keys:
+            LOG.debug(f"Table {self.table_name} does not exist.")
+        return keys
 
     def create_table_from_entry_if_needed(self, entry):
         keys = {}
         for k, v in entry.items():
             typ = type(v)
-            if typ not in self.KEY_TYPES:
-                raise ValueError(f"Unknown type '{typ}' for key '{k}'.")
-            klass = self.KEY_TYPES[typ]
+            klass = self.guess_key_type(typ, name=k)
             name = entryname_to_dbname(k)
             keys[name] = klass(name)
 
@@ -127,9 +128,8 @@ class EntriesLoader:
     def load_iterator(self, iterator):
         count = 0
         for entry in iterator:
-            self.keys = self.create_table_from_entry_if_needed(entry)
-
             if count == 0:
+                self.keys = self.create_table_from_entry_if_needed(entry)
                 column_names = [k for k, v in self.keys.items()]
                 statement = (
                     f"INSERT INTO {self.table_name} ("
@@ -146,10 +146,10 @@ class EntriesLoader:
 
         self.build_sql_indexes()
 
-        return self.keys, count
+        return count
 
     def build_sql_indexes(self):
-        indexed_columns = [k for k, v in self.keys.items() if k.startswith("mars_")]
+        indexed_columns = [k for k, v in self.keys.items() if k.startswith("i_")]
         indexed_columns += ["path"]
 
         pbar = tqdm(indexed_columns, desc="Building indexes")
@@ -158,6 +158,10 @@ class EntriesLoader:
             self.connection.execute(
                 f"CREATE INDEX IF NOT EXISTS {n}_index ON {self.table_name} ({n});"
             )
+
+    def __str__(self):
+        content = ",".join([k for k, v in self.keys.items()])
+        return f"{self.__class__}({self.table_name},{content}"
 
 
 def _list_all_tables(connection):
@@ -448,7 +452,8 @@ class SqlDatabase(Database):
     def load(self, iterator):
         with self.connection as connection:
             loader = EntriesLoader(connection)
-            self.dbkeys, count = loader.load_iterator(iterator)
+            count = loader.load_iterator(iterator)
+            self.dbkeys = loader.keys
 
             assert count >= 1, "No entry found."
             LOG.info("Added %d entries", count)
