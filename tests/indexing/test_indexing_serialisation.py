@@ -44,6 +44,7 @@ def test_indexing_pickle(params, levels, source_name):
 
     ds = ds.sel(**request)
     ds = ds.order_by(level=levels, variable=params)
+    check_sel_and_order(ds, params, levels)
 
     assert len(ds) == n, (len(ds), ds, SERIALISATION)
     state = serialise_state(ds)

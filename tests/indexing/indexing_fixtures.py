@@ -167,7 +167,7 @@ def get_fixtures(source_name, *args, **kwargs):
 
 def check_sel_and_order(ds, params, levels):
     assert ds[0].metadata("param") == params[0]
-    assert ds[1].metadata("param") == params[1]
+    assert ds[1].metadata("param") == params[1], (ds[1].metadata("param"), params[1])
     assert ds[2].metadata("param") == params[0]
     assert ds[3].metadata("param") == params[1]
 

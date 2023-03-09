@@ -8,6 +8,7 @@
 #
 
 
+import datetime
 import json
 import logging
 import os
@@ -25,21 +26,25 @@ class JsonDatabase(Database):
     def __init__(self, *arg):
         pass
 
-    # @normalize('value', 'date', format='datetime.datetime')
-    # def normalize_datetime(self, value):
-    #     return value.isoformat()
-
-    def _to_json(self, entry):
-        return json.dumps(entry)
+    def json_dumps_entry(self, entry):
+        return json.dumps(entry, default=json_serialiser)
 
 
 class JsonStdoutDatabase(JsonDatabase):
     def load(self, iterator):
         count = 0
         for entry in iterator:
-            print(self._to_json(entry))
+            print(self.json_dumps_entry(entry))
             count += 1
         return count
+
+
+import json
+
+
+def json_serialiser(o):
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
 
 
 class JsonFileDatabase(JsonDatabase):
@@ -59,7 +64,7 @@ class JsonFileDatabase(JsonDatabase):
         with open(self.db_path, "w") as f:
             for entry in iterator:
                 self.entries.append(entry)
-                print(self._to_json(entry), file=f)
+                print(self.json_dumps_entry(entry), file=f)
 
         return len(self.entries)
 
@@ -69,5 +74,5 @@ class JsonFileDatabase(JsonDatabase):
             parts.append(Part(e["_path"], e["_offset"], e["_length"]))
         return Part.resolve(parts, os.path.dirname(self.db_path))
 
-    def lookup_dicts(self):
+    def lookup_dicts(self, *args, **kwargs):
         return self.entries

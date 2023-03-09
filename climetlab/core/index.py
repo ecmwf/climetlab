@@ -219,7 +219,13 @@ class Index(Source):
             if isinstance(a, str):
                 _kwargs[a] = "ascending"
                 continue
-            assert False, a
+            if isinstance(a, (list, tuple)):
+                for k in a:
+                    assert isinstance(k, str), (a, k)
+                    _kwargs[k] = "ascending"
+                continue
+
+            assert False, f"Unsupported argument {a} of type {type(a)}"
 
         _kwargs.update(kwargs)
 
