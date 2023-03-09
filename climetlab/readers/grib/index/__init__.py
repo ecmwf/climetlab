@@ -93,7 +93,7 @@ class FieldSet(FieldSetMixin, Index):
 
         return kwargs
 
-    def normalize_order(self, *args, **kwargs):
+    def normalize_order_by(self, *args, **kwargs):
         kwargs = super().normalize_selection(*args, **kwargs)
 
         if "variable" in kwargs:
