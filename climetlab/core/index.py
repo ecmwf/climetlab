@@ -20,14 +20,6 @@ from climetlab.sources import Source
 LOG = logging.getLogger(__name__)
 
 
-@alias_argument("levelist", ["level"])
-@alias_argument("param", ["variable", "parameter"])
-@alias_argument("number", ["realization", "realisation"])
-@alias_argument("class", "klass")
-def normalize_naming(self, **kwargs):
-    return kwargs
-
-
 class OrderOrSelection:
     def __str__(self):
         return f"{self.__class__.__name__}({self.kwargs})"

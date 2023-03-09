@@ -13,12 +13,21 @@ import os
 from abc import abstractmethod
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
+from climetlab.decorators import alias_argument
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
 
 LOG = logging.getLogger(__name__)
+
+
+@alias_argument("levelist", ["level"])
+@alias_argument("param", ["variable", "parameter"])
+@alias_argument("number", ["realization", "realisation"])
+@alias_argument("class", "klass")
+def normalize_grib_kwargs(**kwargs):
+    return kwargs
 
 
 class FieldSet(FieldSetMixin, Index):
@@ -85,22 +94,12 @@ class FieldSet(FieldSetMixin, Index):
 
     def normalize_selection(self, *args, **kwargs):
         kwargs = super().normalize_selection(*args, **kwargs)
-
-        if "variable" in kwargs:
-            kwargs["param"] = kwargs.pop("variable")
-        if "level" in kwargs:
-            kwargs["levelist"] = kwargs.pop("level")
-
+        kwargs = normalize_grib_kwargs(**kwargs)
         return kwargs
 
     def normalize_order_by(self, *args, **kwargs):
-        kwargs = super().normalize_selection(*args, **kwargs)
-
-        if "variable" in kwargs:
-            kwargs["param"] = kwargs.pop("variable")
-        if "level" in kwargs:
-            kwargs["levelist"] = kwargs.pop("level")
-
+        kwargs = super().normalize_order_by(*args, **kwargs)
+        kwargs = normalize_grib_kwargs(**kwargs)
         return kwargs
 
 
