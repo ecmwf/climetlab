@@ -225,7 +225,7 @@ class SqlOrder(SqlFilter):
 
         for k, v in self.kwargs.items():
             name = entryname_to_dbname(k)
-            
+
             dbkey = db.dbkeys[name]
 
             if v == "ascending" or v is None:
