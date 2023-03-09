@@ -234,8 +234,37 @@ class SqlOrder(OrderBase):
         return "ORDER BY " + ",".join(order_bys)
 
 
-class SqlDatabase(Database):
-    VERSION = 5
+class VersionedDatabaseMixin:
+    VERSION = 6
+
+    @property
+    def _version(self):
+        cursor = self.connection.execute("PRAGMA user_version;")
+        for res in cursor:
+            version = res[0]
+            return version if version else None
+        assert False
+
+    def _set_version(self):
+        if self._version is None:
+            self.connection.execute(f"PRAGMA user_version = {self.VERSION};")
+            return
+        self._check_version()
+
+    def _check_version(self):
+        version = self._version
+        if version is None or version == self.VERSION:
+            return
+        raise Exception(
+            (
+                "Version mismatch: current version for database index"
+                " is {self.VERSION} and the database already has version"
+                f" {version}"
+            )
+        )
+
+
+class SqlDatabase(Database, VersionedDatabaseMixin):
     EXTENSION = ".db"
 
     def __init__(
@@ -292,32 +321,6 @@ class SqlDatabase(Database):
             filters=self._filters + [filter],
         )
 
-    @property
-    def _version(self):
-        cursor = self.connection.execute("PRAGMA user_version;")
-        for res in cursor:
-            version = res[0]
-            return version if version else None
-        assert False
-
-    def _set_version(self):
-        if self._version is None:
-            self.connection.execute(f"PRAGMA user_version = {self.VERSION};")
-            return
-        self._check_version()
-
-    def _check_version(self):
-        version = self._version
-        if version is None or version == self.VERSION:
-            return
-        raise Exception(
-            (
-                "Version mismatch: current version for database index"
-                " is {self.VERSION} and the database already has version"
-                f" {version}"
-            )
-        )
-
     def load(self, iterator):
         with self.connection as connection:
             loader = EntriesLoader(connection)
@@ -344,15 +347,9 @@ class SqlDatabase(Database):
             parts = Part.resolve(parts, os.path.dirname(self.db_path))
         return parts
 
-    def lookup_dicts(
-        self,
-        limit=None,
-        offset=None,
-        remove_none=True,
-        with_parts=None,
-    ):
+    def lookup_dicts(self, limit=None, offset=None, remove_none=True, with_parts=None):
         """
-        From a list of keys, return dicts with these columns of the database.
+        Return entries dicts as they where inserted into the database.
         limit: Returns only "limit" entries (used for paging).
         offset: Skip the first "offset" entries (used for paging).
         """

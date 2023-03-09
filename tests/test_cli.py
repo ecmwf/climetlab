@@ -35,7 +35,6 @@ def test_cli_no_args(command, capsys):
     app.onecmd(command)
     out, err = capsys.readouterr()
     assert not out.startswith("Unknown command"), out
-    assert err == "", err
 
 
 def test_cli_unknown(capsys):

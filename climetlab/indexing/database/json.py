@@ -59,7 +59,6 @@ class JsonFileDatabase(JsonDatabase):
 
         with open(self.db_path, "w") as f:
             for entry in iterator:
-                entry = self.normalize(entry)
                 self.entries.append(entry)
                 print(self._to_json(entry), file=f)
 
