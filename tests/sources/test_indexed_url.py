@@ -56,7 +56,7 @@ def check_line_2(line2):
         "levelist": 500,
         "date": 19970101,
         "time": 200,
-        "step": "0",
+        "step": 0,
         "param": "z",
         "class": "ea",
         "type": "an",

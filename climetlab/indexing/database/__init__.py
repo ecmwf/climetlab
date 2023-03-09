@@ -7,15 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 import datetime
-import json
 import logging
 
 LOG = logging.getLogger(__name__)
-
-
-def json_serialiser(o):
-    if isinstance(o, (datetime.date, datetime.datetime)):
-        return o.isoformat()
 
 
 FILEPARTS_KEY_NAMES = ["_path", "_offset", "_length"]
@@ -94,10 +88,6 @@ class Database:
 
     def lookup_dicts(self, *args, **kwargs):
         raise NotImplementedError("")
-
-    def lookup_json_dicts(self, *args, **kwargs):
-        for dic in self.lookup_dicts(*args, **kwargs):
-            yield json.dumps(dic, default=json_serialiser)
 
     def count(self, request):
         raise NotImplementedError("")
