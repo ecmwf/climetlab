@@ -31,7 +31,7 @@ if len(sys.argv) > 1 :
     ]
 
 
-ds = cml.load_source("virtual-directory", DIR, date=DATE)
+ds = cml.load_source("directory", DIR, date=DATE)
 ds = ds.order_by("date", "time")# "param", "level")
 
 # TODO: ds = ds.order_by('date', 'time', 'batch', 'param', 'level')

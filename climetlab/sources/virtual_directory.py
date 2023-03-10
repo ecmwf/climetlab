@@ -244,6 +244,10 @@ class VirtualFieldsetInFilesWithSqlIndex(FieldsetInFilesWithSqlIndex):
 
 class VirtualDirectorySource(GenericDirectorySource):
     INDEX_CLASS = VirtualFieldsetInFilesWithSqlIndex
+    def __init__(self, *args, **kwargs):
+        print('Source "virtual-directory" is deprecated. Use "indexed-directory" instead.')
+        LOG.warn('Source "virtual-directory" is deprecated. Use "indexed-directory" instead.')
+        super().__init__(*args, **kwargs)
 
 
 source = VirtualDirectorySource
