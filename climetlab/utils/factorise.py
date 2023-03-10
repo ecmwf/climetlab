@@ -457,7 +457,7 @@ class Tree:
         def parse_date(d):
             try:
                 return datetime.datetime.strptime(d, "%Y%m%d")
-            except:
+            except:  # noqa: E722
                 raise ReturnNoneNone()
 
         try:

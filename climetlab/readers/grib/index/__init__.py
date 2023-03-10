@@ -79,6 +79,9 @@ class FieldSet(FieldSetMixin, Index):
                 "max",
                 "valid",
                 "param_level",
+                "_path",
+                "_length",
+                "_offset",
             ]
         )
         return self.availability
