@@ -21,7 +21,7 @@ from climetlab.core.caching import purge_cache
 from climetlab.core.temporary import temp_directory
 from climetlab.mirrors import _reset_mirrors, get_active_mirrors
 from climetlab.mirrors.directory_mirror import DirectoryMirror
-from climetlab.testing import IN_GITHUB, NO_EOD, OfflineError, network_off
+from climetlab.testing import NO_EOD, OfflineError, network_off
 
 
 def load(**kwargs):

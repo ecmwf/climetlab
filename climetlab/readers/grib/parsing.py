@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 import datetime
+import fnmatch
 import logging
 import os
 
@@ -169,8 +170,9 @@ class DirectoryParserIterator:
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
-                if path in self.ignore:
-                    continue
+                for ignore in self.ignore:
+                    if fnmatch.fnmatch(os.path.basename(path), ignore):
+                        continue
                 tasks.append(path)
 
         if tasks:
@@ -188,21 +190,18 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
     def process_one_task(self, path):
         LOG.debug(f"Parsing file {path}")
 
-        if self.relative_paths is True:
-            _path = os.path.relpath(path, self.directory)
-        elif self.relative_paths is False:
-            _path = os.path.abspath(path)
-        elif self.relative_paths is None:
-            _path = path
-        else:
-            assert False, self.relative_paths
+        format_path = {
+            None: lambda x: x,
+            True: lambda x: os.path.relpath(x, self.directory),
+            False: lambda x: os.path.abspath(x),
+        }[self.relative_paths]
 
         try:
             # We could use reader(self, path) but this will create a json
             # grib-index auxiliary file in the cache.
             # Indexing 1M grib files lead to 1M in cache.
             #
-            # We would need either to refactor the grib reader.
+            # We would need to refactor the grib reader.
 
             from climetlab.readers.grib.parsing import _index_grib_file
 
@@ -210,7 +209,7 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
                 path,
                 with_statistics=self.with_statistics,
             ):
-                field["_path"] = _path
+                field["_path"] = format_path(path)
                 yield field
         except PermissionError as e:
             LOG.error(f"Could not read {path}: {e}")

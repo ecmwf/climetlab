@@ -154,8 +154,8 @@ class GribCmd:
             check_overwrite(db_path, force)
 
         ignore = []
-        ignore.append(IndexedDirectorySource.DEFAULT_DB_FILE)
-        ignore.append(IndexedDirectorySource.DEFAULT_JSON_FILE)
+        ignore.append("climetlab*.db")
+        ignore.append("climetlab*.json")
         # Do not add anything more to this ignore list, implement a pattern filter if needed.
         ignore.append("*.idx")
         if db_path is not None:
@@ -176,9 +176,10 @@ class GribCmd:
     )
     def do_dump_index(self, args):
         db_path = args.filename
+        from climetlab.sources.indexed_directory import IndexedDirectorySource
 
         if os.path.isdir(db_path):
-            db_path = os.path.join(db_path, "climetlab.db")
+            db_path = os.path.join(db_path, IndexedDirectorySource.DEFAULT_DB_FILE)
 
         from climetlab.indexing.database.sql import SqlDatabase
 

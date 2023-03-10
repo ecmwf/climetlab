@@ -34,7 +34,7 @@ class GenericDirectorySource(IndexedSource):
     INDEX_CLASS = None
 
     DEFAULT_JSON_FILE = "climetlab.index"
-    DEFAULT_DB_FILE = "climetlab.db"
+    DEFAULT_DB_FILE = "climetlab-2.db"
 
     def __init__(
         self,

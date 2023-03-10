@@ -21,6 +21,7 @@ import climetlab as cml
 from climetlab import settings
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
+from climetlab.sources.indexed_directory import IndexedDirectorySource
 from climetlab.testing import NO_CDS
 
 
@@ -106,8 +107,10 @@ def test_cli_index_directory():
             # use the newly created directory
             s = cml.load_source("indexed-directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
-            db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
-            assert s.db.db_path == db_path
+
+            db_path = os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE)
+
+            assert os.path.abspath(s.db.db_path) == os.path.abspath(db_path)
 
             # assert the data is correct
             assert s.to_numpy().mean() == 277.31256510416665
