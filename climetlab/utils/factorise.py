@@ -451,27 +451,27 @@ class Tree:
         return "".join(str(x) for x in text)
 
     def _to_date_interval(self, k, v):
-        class CannotBuilDateInterval(Exception):
+        class ReturnNoneNone(Exception):
             pass
 
         def parse_date(d):
             try:
                 return datetime.datetime.strptime(d, "%Y%m%d")
-            except ValueError:
-                raise CannotBuilDateInterval()
+            except:
+                raise ReturnNoneNone()
 
         try:
             if k != "date":
-                raise CannotBuilDateInterval()
+                raise ReturnNoneNone()
 
             if len(k) < 3:
-                raise CannotBuilDateInterval()
+                raise ReturnNoneNone()
 
             start = parse_date(str(v[0]))
             step = parse_date(str(v[1])) - start
 
             if step != datetime.timedelta(days=1):
-                raise CannotBuilDateInterval()
+                raise ReturnNoneNone()
 
             for i in range(2, len(v)):
                 current = parse_date(str(v[i]))
@@ -481,10 +481,10 @@ class Tree:
                     print(
                         f"expecting {previous + step} after {previous}, found {current}"
                     )
-                    raise CannotBuilDateInterval()
+                    raise ReturnNoneNone()
             return str(v[0]), str(v[-1])
 
-        except CannotBuilDateInterval:
+        except ReturnNoneNone:
             return None, None
 
     def tree(self):
