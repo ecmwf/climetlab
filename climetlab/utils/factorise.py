@@ -451,22 +451,41 @@ class Tree:
         return "".join(str(x) for x in text)
 
     def _to_date_interval(self, k, v):
-        if k != "date":
+        class CannotBuilDateInterval(Exception):
+            pass
+
+        def parse_date(d):
+            try:
+                return datetime.datetime.strptime(d, "%Y%m%d")
+            except ValueError:
+                raise CannotBuilDateInterval()
+
+        try:
+            if k != "date":
+                raise CannotBuilDateInterval()
+
+            if len(k) < 3:
+                raise CannotBuilDateInterval()
+
+            start = parse_date(str(v[0]))
+            step = parse_date(str(v[1])) - start
+
+            if step != datetime.timedelta(days=1):
+                raise CannotBuilDateInterval()
+
+            for i in range(2, len(v)):
+                current = parse_date(str(v[i]))
+                previous = parse_date(str(v[i - 1]))
+                if current - previous != step:
+                    print(int(v[i]))
+                    print(
+                        f"expecting {previous + step} after {previous}, found {current}"
+                    )
+                    raise CannotBuilDateInterval()
+            return str(v[0]), str(v[-1])
+
+        except CannotBuilDateInterval:
             return None, None
-        if len(k) < 3:
-            return None, None
-        start = datetime.datetime.strptime(str(v[0]), "%Y%m%d")
-        step = datetime.datetime.strptime(str(v[1]), "%Y%m%d") - start
-        if step != datetime.timedelta(days=1):
-            return None, None
-        for i in range(2, len(v)):
-            current = datetime.datetime.strptime(str(v[i]), "%Y%m%d")
-            previous = datetime.datetime.strptime(str(v[i - 1]), "%Y%m%d")
-            if current - previous != step:
-                print(int(v[i]))
-                print(f"expecting {previous + step} after {previous}, found {current}")
-                return None, None
-        return str(v[0]), str(v[-1])
 
     def tree(self):
         text = []
