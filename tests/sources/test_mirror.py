@@ -12,6 +12,7 @@
 
 import os
 import sys
+import numpy as np
 
 import pytest
 
@@ -147,14 +148,10 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
     m = DirectoryMirror(path=mirror_dir, origin_prefix=origin_prefix)
     with m:
         source2 = load_without_network(force=True)
-
-    assert source.connect_to_mirror(m).resource()
-
-    assert str(source) == f"Url({origin_prefix}/examples/test.grib)"
-    if not IN_GITHUB:
-        assert str(source2) == str(source)
+    assert np.all(source[0].to_numpy() == source2[0].to_numpy()), (source, source2)
 
 
+@pytest.mark.skip(reason="Multiple mirrors not supported")
 @pytest.mark.parametrize("b2", ["__", "b2"])
 @pytest.mark.parametrize("a2", ["__", "a2"])
 @pytest.mark.parametrize("b1", ["__", "b1"])

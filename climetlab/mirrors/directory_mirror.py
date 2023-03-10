@@ -49,7 +49,9 @@ class DirectoryMirror(BaseMirror):
     def connection_for_url(self, source, url, parts):
         if not url.startswith(self.origin_prefix):
             return None
+        LOG.debug(f"Mirror for {url} activated.")
         if parts:
+            LOG.debug(f"Mirror for {url} deactived for parts.")
             # return DirectoryMirrorConnectionForUrlWithPargs(self, source, url, parts)
             return None
         return DirectoryMirrorConnectionForUrl(self, source)

@@ -60,6 +60,8 @@ class BaseMirror:
         self._prefetch = prefetch
         global _MIRRORS
         _MIRRORS.append(self)
+        if len(_MIRRORS) > 1:
+            LOG.warn("Using multiple mirrors is not supported.")
 
     def deactivate(self):
         self._prefetch = False
