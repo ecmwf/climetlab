@@ -11,7 +11,7 @@ import warnings
 from collections import defaultdict
 
 from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
-from climetlab.sources.directory import GenericDirectorySource
+from climetlab.sources.indexed_directory import GenericDirectorySource
 from climetlab.utils import progress_bar
 
 LOG = logging.getLogger(__name__)

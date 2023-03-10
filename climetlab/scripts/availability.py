@@ -65,7 +65,7 @@ def availability_of_directory(dirpath):
     if not os.path.exists(db_path):
         print(f"ERROR: this directory is not indexed yet, cannot find {db_path}.")
 
-    source = cml.load_source("directory", dirpath)
+    source = cml.load_source("indexed-directory", dirpath)
     return source
 
 

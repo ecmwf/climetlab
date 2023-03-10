@@ -100,13 +100,13 @@ class GenericDirectorySource(IndexedSource):
             GribIndexingDirectoryParserIterator(
                 path, ignore=ignore, relative_paths=False
             ),
-            cache_metadata={"directory": self.path},
+            cache_metadata={"indexed-directory": self.path},
         )
         super().__init__(index, **kwargs)
 
 
-class DirectorySource(GenericDirectorySource):
+class IndexedDirectorySource(GenericDirectorySource):
     INDEX_CLASS = FieldsetInFilesWithSqlIndex
 
 
-source = DirectorySource
+source = IndexedDirectorySource

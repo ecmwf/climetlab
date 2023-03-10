@@ -26,7 +26,7 @@ from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
 @pytest.mark.parametrize(
-    "source_name", ["directory", "file", "indexed-url", "indexed-urls"]
+    "source_name", ["indexed-directory", "file", "indexed-url", "indexed-urls"]
 )
 def test_indexing_save(params, levels, source_name):
     request = dict(

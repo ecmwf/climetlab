@@ -20,7 +20,7 @@ def _test_directory_source_availability():
     params = ["z", "t"]
     levels = [500, 850]
     ds = cml.load_source(
-        "directory",
+        "indexed-directory",
         TEST_DIR,
         level=levels,
         variable=params,

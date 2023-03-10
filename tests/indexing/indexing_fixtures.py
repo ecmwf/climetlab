@@ -110,7 +110,7 @@ class GribIndexFromDicts(FieldSet):
 def get_fixtures_directory(request):
     tmp = dir_with_grib_files()
     total, n = 18, 4
-    ds = cml.load_source("directory", tmp.path, **request)
+    ds = cml.load_source("indexed-directory", tmp.path, **request)
     return ds, tmp, total, n
 
 
@@ -157,7 +157,7 @@ def get_fixtures_indexed_urls(request):
 
 def get_fixtures(source_name, *args, **kwargs):
     return {
-        "directory": get_fixtures_directory,
+        "indexed-directory": get_fixtures_directory,
         "file": get_fixtures_file,
         "list-of-dicts": get_fixtures_list_of_dicts,
         "indexed-url": get_fixtures_indexed_url,

@@ -26,7 +26,7 @@ from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 @pytest.mark.parametrize(
     "source_name",
     [
-        "directory",
+        "indexed-directory",
         # "list-of-dicts",
         # "file",
     ],

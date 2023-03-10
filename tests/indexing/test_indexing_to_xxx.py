@@ -25,7 +25,7 @@ from indexing_fixtures import get_fixtures  # noqa: E402
 @pytest.mark.parametrize(
     "source_name",
     [
-        "directory",
+        "indexed-directory",
         # "list-of-dicts",
         # "file",
     ],
@@ -47,7 +47,7 @@ def test_indexing_to_xarray(params, levels, source_name):
 @pytest.mark.parametrize(
     "source_name",
     [
-        "directory",
+        "indexed-directory",
         # "list-of-dicts",
         # "file",
     ],

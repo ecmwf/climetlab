@@ -112,7 +112,7 @@ class GribCmd:
 
         assert os.path.isdir(directory), directory
 
-        from climetlab.sources.directory import DirectorySource
+        from climetlab.sources.indexed_directory import IndexedDirectorySource
 
         if force_relative_paths_on:
             relative_paths = True
@@ -130,8 +130,8 @@ class GribCmd:
 
         def default_db_path():
             path = dict(
-                json=os.path.join(directory, DirectorySource.DEFAULT_JSON_FILE),
-                sql=os.path.join(directory, DirectorySource.DEFAULT_DB_FILE),
+                json=os.path.join(directory, IndexedDirectorySource.DEFAULT_JSON_FILE),
+                sql=os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE),
                 stdout=None,
             )[db_format]
             return path
@@ -154,8 +154,8 @@ class GribCmd:
             check_overwrite(db_path, force)
 
         ignore = []
-        ignore.append(DirectorySource.DEFAULT_DB_FILE)
-        ignore.append(DirectorySource.DEFAULT_JSON_FILE)
+        ignore.append(IndexedDirectorySource.DEFAULT_DB_FILE)
+        ignore.append(IndexedDirectorySource.DEFAULT_JSON_FILE)
         # Do not add anything more to this ignore list, implement a pattern filter if needed.
         ignore.append("*.idx")
         if db_path is not None:

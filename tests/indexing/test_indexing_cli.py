@@ -104,7 +104,7 @@ def test_cli_index_directory():
             app.onecmd(f"index_directory {directory} --format sql")
 
             # use the newly created directory
-            s = cml.load_source("directory", directory)
+            s = cml.load_source("indexed-directory", directory)
             assert len(s) == len(s1) + len(s2), (len(s1), len(s2), len(s))
             db_path = os.path.abspath(os.path.join(directory, "climetlab.db"))
             assert s.db.db_path == db_path

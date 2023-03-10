@@ -21,8 +21,8 @@ from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
-@pytest.mark.parametrize("source_name", ["directory"])
+# @pytest.mark.parametrize("source_name", ["indexed-directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["indexed-directory"])
 def test_indexing_order_by_with_request(params, levels, source_name):
     request = dict(
         level=levels,
@@ -41,8 +41,8 @@ def test_indexing_order_by_with_request(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts"])
-@pytest.mark.parametrize("source_name", ["directory"])
+# @pytest.mark.parametrize("source_name", ["indexed-directory", "list-of-dicts"])
+@pytest.mark.parametrize("source_name", ["indexed-directory"])
 def test_indexing_order_by_with_keyword(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     request["order_by"] = dict(level=levels, variable=params)
@@ -56,7 +56,7 @@ def test_indexing_order_by_with_keyword(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"],))
 @pytest.mark.parametrize("levels", ([500, 850],))
-@pytest.mark.parametrize("source_name", ["directory", "file"])
+@pytest.mark.parametrize("source_name", ["indexed-directory", "file"])
 def test_indexing_order_by_with_method_with_list(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = ["level", "variable"]
@@ -76,8 +76,8 @@ def test_indexing_order_by_with_method_with_list(params, levels, source_name):
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
-@pytest.mark.parametrize("source_name", ["directory", "file"])
+# @pytest.mark.parametrize("source_name", ["indexed-directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["indexed-directory", "file"])
 def test_indexing_order_by_with_method(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = dict(level=levels, variable=params)
@@ -111,8 +111,8 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 @pytest.mark.parametrize(
     "levels", ([500, 850], [850, 500], ["500", "850"], ["850", "500"])
 )
-# @pytest.mark.parametrize("source_name", ["directory", "list-of-dicts", "file"])
-@pytest.mark.parametrize("source_name", ["directory"])
+# @pytest.mark.parametrize("source_name", ["indexed-directory", "list-of-dicts", "file"])
+@pytest.mark.parametrize("source_name", ["indexed-directory"])
 def test_indexing_order_ascending_descending(params, levels, source_name):
     request = dict(variable=params, level=levels, date=20220929, time="1200")
     order_by = dict(level="descending", variable="ascending")
@@ -169,9 +169,9 @@ if __name__ == "__main__":
 
     # test_indexing_order_by_with_request(["u", "t"], [500, 850], "list-of-dicts")
     # test_indexing_order_by_with_method(["u", "t"], [500, 850], "file")
-    # test_indexing_order_by_with_method(["u", "t"], [500, 850], "directory")
+    # test_indexing_order_by_with_method(["u", "t"], [500, 850], "indexed-directory")
     # test_indexing_order_ascending_descending(["t", "u"], [500, 850], 'file')
-    # test_indexing_order_by_with_method_with_list(["t", "u"], [850, 500], 'directory')
-    # test_indexing_order_by_with_method(["t", "u"], [500, 850], 'directory')
+    # test_indexing_order_by_with_method_with_list(["t", "u"], [850, 500], 'indexed-directory')
+    # test_indexing_order_by_with_method(["t", "u"], [500, 850], 'indexed-directory')
 
     main(__file__)
