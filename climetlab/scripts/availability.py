@@ -61,7 +61,7 @@ class AvailabilityCmd:
 
 
 def availability_of_directory(dirpath):
-    db_path = os.path.join(dirpath, "climetlab.db")
+    db_path = os.path.join(dirpath, "climetlab-2.db")
     if not os.path.exists(db_path):
         print(f"ERROR: this directory is not indexed yet, cannot find {db_path}.")
 
