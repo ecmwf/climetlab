@@ -17,9 +17,9 @@ Reading GRIB files
   content. Using this index allows partial read of local files, and
   merging of mutliple GRIB sources.
 
-This can be performed using ``cml.load_source("directory", "my/dir")``.
+This can be performed using ``cml.load_source("indexed-directory", "my/dir")``.
 To allow fast access to the data in the directory, CliMetLab relies on an index.
-If the index has not been created already, CliMetLab will create one
+Note that the index must have been created on this directory, CliMetLab will create one
 (see GRIB indexing below).
 
 Writing GRIB files
@@ -49,7 +49,7 @@ How to build a index for a directory containing GRIB files ?
     climetlab index_directory my/dir
 
 This will create a CliMetLab index file in `my/local/dir`,
-allowing other to access the data with ``cml.load_source("directory", "my/dir")``.
+allowing other to access the data with ``cml.load_source("indexed-directory", "my/dir")``.
 
 
 How to build a index for **one** given URL containing a GRIB file ?
