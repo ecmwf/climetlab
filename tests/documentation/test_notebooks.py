@@ -42,6 +42,7 @@ SKIP = (
     "15-more-plotting.ipynb",
     "16-gruan.ipynb",
     "17-interactive-maps.ipynb",
+    "50-working-with-gribs.ipynb",
     "99-availability.ipynb",
 )
 
