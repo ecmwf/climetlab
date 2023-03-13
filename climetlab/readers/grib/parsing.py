@@ -12,6 +12,7 @@ import logging
 import os
 
 from climetlab.utils import progress_bar, tqdm
+from climetlab.utils.humanize import plural, seconds
 
 LOG = logging.getLogger(__name__)
 
@@ -47,6 +48,11 @@ def post_process_parameter_level(field, h):
     return field
 
 
+def ensure_levelist(field, h):
+    field["levelist"] = field.get("levelist", -1)
+    return field
+
+
 def _index_grib_file(
     path,
     with_statistics=False,
@@ -62,6 +68,7 @@ def _index_grib_file(
         post_process_mars.append(post_process_valid_date)
     if with_parameter_level:
         post_process_mars.append(post_process_parameter_level)
+    post_process_mars.append(ensure_levelist)
 
     def parse_field(h):
         field = h.as_mars()
@@ -127,7 +134,7 @@ def _index_path(path):
         yield from _index_grib_file(path)
 
 
-class DirectoryParserIterator:
+class GribIndexingDirectoryParserIterator:
     """This class delays parsing the directory for the list of files
     until the iterator is actually used (calling __iter__)
     """
@@ -152,10 +159,35 @@ class DirectoryParserIterator:
 
         self._tasks = None
 
-    def __iter__(self):
+    def load_database(self, db_path, db_format="sql"):
+        start = datetime.datetime.now()
+
+        from climetlab.indexing.database.json import (
+            JsonFileDatabase,
+            JsonStdoutDatabase,
+        )
+        from climetlab.indexing.database.sql import SqlDatabase
+
+        db = dict(
+            json=JsonFileDatabase,
+            sql=SqlDatabase,
+            stdout=JsonStdoutDatabase,
+        )[
+            db_format
+        ](db_path)
+
+        count = 0
         for path in tqdm(self.tasks, dynamic_ncols=True):
-            for entry in self.process_one_task(path):
-                yield entry
+            if db.already_loaded(path, self):
+                continue
+            lst = [entry for entry in self.process_one_task(path)]
+            if not lst:
+                print(f"No entry found in {path}.")
+                continue
+            count += db.load_iterator(lst)
+
+        end = datetime.datetime.now()
+        print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
 
     @property
     def tasks(self):
@@ -174,6 +206,7 @@ class DirectoryParserIterator:
                     if fnmatch.fnmatch(os.path.basename(path), ignore):
                         continue
                 tasks.append(path)
+        tasks = sorted(tasks)
 
         if tasks:
             if self.verbose:
@@ -185,8 +218,6 @@ class DirectoryParserIterator:
 
         return self.tasks
 
-
-class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
     def process_one_task(self, path):
         LOG.debug(f"Parsing file {path}")
 
@@ -202,8 +233,6 @@ class GribIndexingDirectoryParserIterator(DirectoryParserIterator):
             # Indexing 1M grib files lead to 1M in cache.
             #
             # We would need to refactor the grib reader.
-
-            from climetlab.readers.grib.parsing import _index_grib_file
 
             for field in _index_grib_file(
                 path,

@@ -91,7 +91,7 @@ class Database:
     def count(self, request):
         raise NotImplementedError("")
 
-    def load(self, iterator):
+    def load_iterator(self, iterator):
         raise NotImplementedError("")
 
     def sel(self, selection):
@@ -99,3 +99,6 @@ class Database:
 
     def order_by(self, order):
         raise NotImplementedError("")
+
+    def already_loaded(self, path_or_url, owner):
+        return False

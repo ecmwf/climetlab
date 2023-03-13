@@ -134,6 +134,14 @@ class EntriesLoader:
                 )
                 LOG.debug("%s", statement)
 
+            for k, v in entry.items():
+                dbname = entryname_to_dbname(k)
+                if dbname not in column_names:
+                    raise ValueError(
+                        f"Key '{k}' unknown. Cannot insert entry {entry} in database because"
+                        " '{dbname}' is not in database columns={','.join(column_names)}"
+                    )
+
             values = [entry.get(dbname_to_entryname(k)) for k, v in self.keys.items()]
             self.connection.execute(statement, tuple(values))
             count += 1
@@ -341,7 +349,11 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             filters=self._filters + [filter],
         )
 
-    def load(self, iterator):
+    def already_loaded(self, path_or_url, owner):
+        with self.connection as connection:
+            return False
+
+    def load_iterator(self, iterator):
         with self.connection as connection:
             loader = EntriesLoader(connection)
             count = loader.load_iterator(iterator)

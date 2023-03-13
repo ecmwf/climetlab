@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import datetime
 import json
 import logging
 import os
@@ -17,7 +16,6 @@ from climetlab.readers.grib.parsing import (
     GribIndexingDirectoryParserIterator,
     _index_url,
 )
-from climetlab.utils.humanize import plural, seconds
 
 from .tools import parse_args
 
@@ -59,7 +57,7 @@ class GribCmd:
             url = resolve_url(u)
             for e in _index_url(url):
                 e["_path"] = u
-                stdout.load([e])
+                stdout.load_iterator([e])
 
     @parse_args(
         url=(None, dict(metavar="URL", type=str, help="url to index")),
@@ -70,16 +68,10 @@ class GribCmd:
         stdout = JsonStdoutDatabase()
         for e in _index_url(args.url):
             assert "_path" not in e
-            stdout.load([e])
+            stdout.load_iterator([e])
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
-        format=dict(
-            default="sql",
-            metavar="FORMAT",
-            type=str,
-            help="sql or json or stdout.",
-        ),
         force=dict(action="store_true", help="overwrite existing index."),
         # pattern=dict(help="Files to index (patterns).", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
@@ -104,7 +96,6 @@ class GribCmd:
         db_path = args.output
         force = args.force
         force_relative_paths_on = args.relative_paths
-        db_format = args.format
 
         followlinks = True
         if args.no_follow_links:
@@ -128,16 +119,8 @@ class GribCmd:
                 )
                 relative_paths = False
 
-        def default_db_path():
-            path = dict(
-                json=os.path.join(directory, IndexedDirectorySource.DEFAULT_JSON_FILE),
-                sql=os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE),
-                stdout=None,
-            )[db_format]
-            return path
-
         if db_path is None:
-            db_path = default_db_path()
+            db_path = os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE)
 
         def check_overwrite(filename, force):
             if not os.path.exists(filename):
@@ -150,71 +133,33 @@ class GribCmd:
                 f"ERROR: File {filename} already exists (use --force to overwrite)."
             )
 
-        if db_path is not None:
-            check_overwrite(db_path, force)
+        check_overwrite(db_path, force)
 
         ignore = []
         ignore.append("climetlab*.db")
         ignore.append("climetlab*.json")
-        # Do not add anything more to this ignore list, implement a pattern filter if needed.
         ignore.append("*.idx")
-        if db_path is not None:
-            ignore.append(db_path)
+        ignore.append(db_path)
 
-        _index_directory(
+        parser = GribIndexingDirectoryParserIterator(
             directory,
-            db_path=db_path,
+            ignore=ignore,
             relative_paths=relative_paths,
             followlinks=followlinks,
-            ignore=ignore,
-            db_format=db_format,
             with_statistics=True,
         )
+        parser.load_database(db_path)
 
-    @parse_args(
-        filename=(None, dict(help="Database filename.")),
-    )
+    @parse_args(filename=(None, dict(help="Database filename.")))
     def do_dump_index(self, args):
         db_path = args.filename
+
+        from climetlab.indexing.database.sql import SqlDatabase
         from climetlab.sources.indexed_directory import IndexedDirectorySource
 
         if os.path.isdir(db_path):
             db_path = os.path.join(db_path, IndexedDirectorySource.DEFAULT_DB_FILE)
 
-        from climetlab.indexing.database.sql import SqlDatabase
-
         db = SqlDatabase(db_path=db_path)
         for d in db.lookup_dicts():
             print(json.dumps(d))
-
-
-def _index_directory(
-    directory,
-    db_path,
-    relative_paths,
-    followlinks,
-    ignore,
-    db_format,
-    with_statistics,
-):
-    from climetlab.indexing.database.json import JsonFileDatabase, JsonStdoutDatabase
-    from climetlab.indexing.database.sql import SqlDatabase
-
-    db = dict(
-        json=JsonFileDatabase,
-        sql=SqlDatabase,
-        stdout=JsonStdoutDatabase,
-    )[
-        db_format
-    ](db_path)
-    iterator = GribIndexingDirectoryParserIterator(
-        directory,
-        ignore=ignore,
-        relative_paths=relative_paths,
-        followlinks=followlinks,
-        with_statistics=with_statistics,
-    )
-    start = datetime.datetime.now()
-    count = db.load(iterator)
-    end = datetime.datetime.now()
-    print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")

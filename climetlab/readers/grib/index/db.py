@@ -54,7 +54,7 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
         def load(target, *args):
             LOG.debug(f"Building db in {target}")
             db = cls.DBCLASS(target)
-            db.load(iterator)
+            db.load_iterator(iterator)
 
         db_name = cache_file(
             "grib-index",

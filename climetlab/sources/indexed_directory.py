@@ -10,7 +10,6 @@ import logging
 import os
 
 from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
-from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
 from climetlab.sources.indexed import IndexedSource
 
 LOG = logging.getLogger(__name__)
@@ -40,7 +39,6 @@ class GenericDirectorySource(IndexedSource):
         self,
         path,
         db_path=None,
-        index_file=None,
         _index=None,
         **kwargs,
     ):
@@ -72,36 +70,13 @@ class GenericDirectorySource(IndexedSource):
             )
 
         # Try to use db_path if it exists:
-        if os.path.exists(db_path):
-            LOG.info(f"Using index file {db_path}")
-            index = self.INDEX_CLASS.from_existing_db(db_path=db_path)
-            super().__init__(index, **kwargs)
-            return
+        if not os.path.exists(db_path):
+            raise Exception(
+                f"This directory has not been indexed. Try running 'climetlab index_directory {self.path}'."
+            )
 
-        index_file = make_absolute(
-            index_file,
-            self.abspath,
-            default=self.DEFAULT_JSON_FILE,
-        )
-        assert db_path != index_file
-
-        # Try to use index_file (json) if it exists:
-        if os.path.exists(index_file):
-            LOG.info(f"Using index file {index_file}")
-            print(f"Using index file {index_file} (will happen only once).")
-            index = self.INDEX_CLASS.from_file(path=index_file)
-            super().__init__(index, **kwargs)
-            return
-
-        # Create the db_path file in cache (or used the cached one)
-        LOG.info(f"Did not find index files in {db_path} or {index_file}")
-        ignore = [self.DEFAULT_DB_FILE, self.DEFAULT_JSON_FILE, db_path, index_file]
-        index = self.INDEX_CLASS.from_iterator(
-            GribIndexingDirectoryParserIterator(
-                path, ignore=ignore, relative_paths=False
-            ),
-            cache_metadata={"indexed-directory": self.path},
-        )
+        LOG.info(f"Using index file {db_path}")
+        index = self.INDEX_CLASS.from_existing_db(db_path=db_path)
         super().__init__(index, **kwargs)
 
 

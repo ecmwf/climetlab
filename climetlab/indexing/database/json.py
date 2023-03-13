@@ -31,7 +31,7 @@ class JsonDatabase(Database):
 
 
 class JsonStdoutDatabase(JsonDatabase):
-    def load(self, iterator):
+    def load_iterator(self, iterator):
         count = 0
         for entry in iterator:
             print(self.json_dumps_entry(entry))
@@ -55,7 +55,7 @@ class JsonFileDatabase(JsonDatabase):
                 for entry in f:
                     self.entries.append(json.loads(entry))
 
-    def load(self, iterator):
+    def load_iterator(self, iterator):
         self.entries = []
 
         with open(self.db_path, "w") as f:
