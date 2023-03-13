@@ -73,6 +73,7 @@ class EntriesLoader:
     def __init__(self, connection):
         self.connection = connection
         self.keys = self.read_from_table()
+        self.path_table = PathTable(connection)
 
     @classmethod
     def guess_key_type(self, x, name=None):
@@ -106,47 +107,66 @@ class EntriesLoader:
     def create_table_from_entry_if_needed(self, entry):
         keys = {}
         for k, v in entry.items():
-            typ = type(v)
-            klass = self.guess_key_type(typ, name=k)
-            name = entryname_to_dbname(k)
-            keys[name] = klass(name)
+            dbkey = self._build_dbkey(k, v)
+            keys[dbkey.name] = dbkey
 
         assert keys, f"Cannot build from entry '{entry}'"
         LOG.debug(f"Created table {self} from entry {entry}.")
         columns_defs = ",".join([f"{v.name} {v.sql_type}" for k, v in keys.items()])
         statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
+        self.connection.execute(statement)
+        return self.read_from_table()
+
+    def _add_column(self, k, v):
+        dbkey = self._build_dbkey(k, v)
+        statement = (
+            f"ALTER TABLE {self.table_name} ADD COLUMN {dbkey.name} {dbkey.sql_type};"
+        )
         LOG.debug("%s", statement)
         self.connection.execute(statement)
-        return keys
+        self.keys[dbkey.name] = dbkey
+        return self.keys
+
+    def _build_dbkey(self, k, v):
+        typ = type(v)
+        klass = self.guess_key_type(typ, name=k)
+        name = entryname_to_dbname(k)
+        return klass(name)
 
     def load_iterator(self, iterator):
+        paths_or_urls = set()
+
         count = 0
         for entry in iterator:
             if count == 0:
                 self.keys = self.create_table_from_entry_if_needed(entry)
-                column_names = [k for k, v in self.keys.items()]
-                statement = (
-                    f"INSERT INTO {self.table_name} ("
-                    + ",".join(column_names)
-                    + ") VALUES("
-                    + ",".join(["?"] * len(column_names))
-                    + ");"
-                )
-                LOG.debug("%s", statement)
 
             for k, v in entry.items():
                 dbname = entryname_to_dbname(k)
-                if dbname not in column_names:
-                    raise ValueError(
-                        f"Key '{k}' unknown. Cannot insert entry {entry} in database because"
-                        " '{dbname}' is not in database columns={','.join(column_names)}"
-                    )
+                if dbname not in self.keys:
+                    LOG.debug(f"Inserting column in databse {k}, {dbname}")
+                    self.keys = self._add_column(k, v)
 
+            if "_path" in entry:
+                paths_or_urls.add(entry["_path"])
+            if "_url" in entry:
+                paths_or_urls.add(entry["_url"])
+
+            column_names = [k for k, v in self.keys.items()]
+            statement = (
+                f"INSERT INTO {self.table_name} ("
+                + ",".join(column_names)
+                + ") VALUES("
+                + ",".join(["?"] * len(column_names))
+                + ");"
+            )
             values = [entry.get(dbname_to_entryname(k)) for k, v in self.keys.items()]
             self.connection.execute(statement, tuple(values))
             count += 1
 
-        self.build_sql_indexes()
+        date = datetime.datetime.now().isoformat()
+        for path in paths_or_urls:
+            self.path_table.insert(path, date)
 
         return count
 
@@ -292,6 +312,31 @@ class VersionedDatabaseMixin:
         )
 
 
+class PathTable:
+    table_name = "paths"
+
+    def __init__(self, connection):
+        self.connection = connection
+        self.ensure_table()
+
+    def ensure_table(self):
+        statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} (key TEXT PRIMARY KEY, date TEXT);"
+        for i in self.connection.execute(statement):
+            LOG.error(str(i))  # Output of .execute should be empty
+
+    def insert(self, key, date):
+        statement = f"""INSERT INTO {self.table_name} (key, date) VALUES(?,?);"""
+        LOG.debug("%s", statement)
+        self.connection.execute(statement, (key, date))
+
+    def get_date(self, key):
+        statement = f"""SELECT * FROM {self.table_name} WHERE key="{key}";"""
+        LOG.debug("%s", statement)
+        for key, date in self.connection.execute(statement):
+            return date
+        return None
+
+
 class SqlDatabase(Database, VersionedDatabaseMixin):
     EXTENSION = ".db"
 
@@ -308,6 +353,9 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
         self._connection = None
 
         self.dbkeys = EntriesLoader(self.connection).keys
+
+    def build_indexes(self):
+        EntriesLoader(self.connection).build_sql_indexes()
 
     @property
     def view(self):
@@ -351,7 +399,8 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
 
     def already_loaded(self, path_or_url, owner):
         with self.connection as connection:
-            return False
+            date = PathTable(connection).get_date(path_or_url)
+            return date is not None
 
     def load_iterator(self, iterator):
         with self.connection as connection:

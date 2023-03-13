@@ -11,6 +11,7 @@ import fnmatch
 import logging
 import os
 
+import climetlab
 from climetlab.utils import progress_bar, tqdm
 from climetlab.utils.humanize import plural, seconds
 
@@ -48,11 +49,6 @@ def post_process_parameter_level(field, h):
     return field
 
 
-def ensure_levelist(field, h):
-    field["levelist"] = field.get("levelist", -1)
-    return field
-
-
 def _index_grib_file(
     path,
     with_statistics=False,
@@ -68,7 +64,6 @@ def _index_grib_file(
         post_process_mars.append(post_process_valid_date)
     if with_parameter_level:
         post_process_mars.append(post_process_parameter_level)
-    post_process_mars.append(ensure_levelist)
 
     def parse_field(h):
         field = h.as_mars()
@@ -162,32 +157,31 @@ class GribIndexingDirectoryParserIterator:
     def load_database(self, db_path, db_format="sql"):
         start = datetime.datetime.now()
 
-        from climetlab.indexing.database.json import (
-            JsonFileDatabase,
-            JsonStdoutDatabase,
-        )
-        from climetlab.indexing.database.sql import SqlDatabase
-
-        db = dict(
-            json=JsonFileDatabase,
-            sql=SqlDatabase,
-            stdout=JsonStdoutDatabase,
-        )[
-            db_format
-        ](db_path)
+        self.db = dict(
+            json=climetlab.indexing.database.json.JsonFileDatabase,
+            sql=climetlab.indexing.database.sql.SqlDatabase,
+            stdout=climetlab.indexing.database.json.JsonStdoutDatabase,
+        )[db_format](db_path)
 
         count = 0
         for path in tqdm(self.tasks, dynamic_ncols=True):
-            if db.already_loaded(path, self):
-                continue
-            lst = [entry for entry in self.process_one_task(path)]
-            if not lst:
-                print(f"No entry found in {path}.")
-                continue
-            count += db.load_iterator(lst)
+            n = self.process_one_task(path)
+            count += n
+
+        self.db.build_indexes()
 
         end = datetime.datetime.now()
         print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
+
+    def process_one_task(self, path):
+        if self.db.already_loaded(self._format_path(path), self):
+            print(f"Skipping {path}, already loaded")
+            return 0
+        lst = [entry for entry in self._parse_one_file(path)]
+        if not lst:
+            print(f"No entry found in {path}.")
+            return 0
+        return self.db.load_iterator(lst)
 
     @property
     def tasks(self):
@@ -198,13 +192,18 @@ class GribIndexingDirectoryParserIterator:
         assert os.path.exists(self.directory), f"{self.directory} does not exist"
         assert os.path.isdir(self.directory), f"{self.directory} is not a directory"
 
+        def _ignore(path):
+            for ignore in self.ignore:
+                if fnmatch.fnmatch(os.path.basename(path), ignore):
+                    return True
+            return False
+
         tasks = []
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
-                for ignore in self.ignore:
-                    if fnmatch.fnmatch(os.path.basename(path), ignore):
-                        continue
+                if _ignore(path):
+                    continue
                 tasks.append(path)
         tasks = sorted(tasks)
 
@@ -218,14 +217,15 @@ class GribIndexingDirectoryParserIterator:
 
         return self.tasks
 
-    def process_one_task(self, path):
-        LOG.debug(f"Parsing file {path}")
-
-        format_path = {
+    def _format_path(self, path):
+        return {
             None: lambda x: x,
             True: lambda x: os.path.relpath(x, self.directory),
             False: lambda x: os.path.abspath(x),
-        }[self.relative_paths]
+        }[self.relative_paths](path)
+
+    def _parse_one_file(self, path):
+        LOG.debug(f"Parsing file {path}")
 
         try:
             # We could use reader(self, path) but this will create a json
@@ -238,7 +238,7 @@ class GribIndexingDirectoryParserIterator:
                 path,
                 with_statistics=self.with_statistics,
             ):
-                field["_path"] = format_path(path)
+                field["_path"] = self._format_path(path)
                 yield field
         except PermissionError as e:
             LOG.error(f"Could not read {path}: {e}")

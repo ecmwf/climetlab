@@ -72,7 +72,6 @@ class GribCmd:
 
     @parse_args(
         directory=(None, dict(help="Directory containing the GRIB files to index.")),
-        force=dict(action="store_true", help="overwrite existing index."),
         # pattern=dict(help="Files to index (patterns).", nargs="*"),
         no_follow_links=dict(action="store_true", help="Do not follow symlinks."),
         relative_paths=dict(
@@ -94,7 +93,6 @@ class GribCmd:
         """Index a directory containing GRIB files."""
         directory = args.directory
         db_path = args.output
-        force = args.force
         force_relative_paths_on = args.relative_paths
 
         followlinks = True
@@ -122,22 +120,11 @@ class GribCmd:
         if db_path is None:
             db_path = os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE)
 
-        def check_overwrite(filename, force):
-            if not os.path.exists(filename):
-                return
-            if force:
-                print(f"File {filename} already exists, overwriting it.")
-                os.unlink(filename)
-                return
-            raise Exception(
-                f"ERROR: File {filename} already exists (use --force to overwrite)."
-            )
-
-        check_overwrite(db_path, force)
-
         ignore = []
         ignore.append("climetlab*.db")
         ignore.append("climetlab*.json")
+        ignore.append("**/climetlab*.db")
+        ignore.append("**/climetlab*.json")
         ignore.append("*.idx")
         ignore.append(db_path)
 
