@@ -654,6 +654,11 @@ class Table(object):
             if sa is None and sb is None:
                 continue
 
+            if isinstance(sa, (list, tuple)):
+                continue
+            if isinstance(sb, (list, tuple)):
+                continue
+
             if sa < sb:
                 return -1
 
