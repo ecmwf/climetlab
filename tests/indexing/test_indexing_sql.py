@@ -110,7 +110,7 @@ def test_load(cls):
     # TmpDirectory()
     with temp_file(extension=".db") as db_path:
         db = cls(db_path)
-        db.load(lst)
+        db.load_iterator(lst)
         for i, dic in enumerate(db.lookup_dicts()):
             assert len(dic) == len(lst[i])
             for k, v in dic.items():
