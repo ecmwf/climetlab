@@ -646,6 +646,25 @@ class Table(object):
 
         self.colidx.sort(key=lambda a: self.cols[a])
 
+    def compare_values(self, sa, sb):
+        if isinstance(sa, tuple) and isinstance(sb, tuple):
+            for a, b in zip(sa, sb):
+                n = self.compare_values(a, b)
+                if n != 0:
+                    return n
+            return 0
+
+        if type(sa) is type(sb):
+            if sa < sb:
+                return -1
+
+            if sa > sb:
+                return 1
+
+            return 0
+
+        return self.compare_values(str(type(sa)), str(type(sb)))
+
     def compare_rows(self, a, b):
         for idx in self.colidx:
             sa = self.cols[idx].value(a)
@@ -654,16 +673,10 @@ class Table(object):
             if sa is None and sb is None:
                 continue
 
-            if isinstance(sa, (list, tuple)):
-                continue
-            if isinstance(sb, (list, tuple)):
-                continue
+            n = self.compare_values(sa, sb)
 
-            if sa < sb:
-                return -1
-
-            if sa > sb:
-                return 1
+            if n != 0:
+                return n
 
         return 0
 
