@@ -130,12 +130,13 @@ class GribCmd:
 
         parser = GribIndexingDirectoryParserIterator(
             directory,
+            db_path=db_path,
             ignore=ignore,
             relative_paths=relative_paths,
             followlinks=followlinks,
             with_statistics=True,
         )
-        parser.load_database(db_path)
+        parser.load_database()
 
     @parse_args(filename=(None, dict(help="Database filename.")))
     def do_dump_index(self, args):

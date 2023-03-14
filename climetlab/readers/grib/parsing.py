@@ -10,6 +10,7 @@ import datetime
 import fnmatch
 import logging
 import os
+from multiprocessing import Pool
 
 import climetlab
 from climetlab.utils import progress_bar, tqdm
@@ -137,12 +138,14 @@ class GribIndexingDirectoryParserIterator:
     def __init__(
         self,
         directory,
+        db_path,
         relative_paths,
         ignore=None,
         followlinks=True,
         verbose=False,
         with_statistics=True,
     ):
+        self.db_path = db_path
         if ignore is None:
             ignore = []
         self.ignore = ignore
@@ -154,34 +157,31 @@ class GribIndexingDirectoryParserIterator:
 
         self._tasks = None
 
-    def load_database(self, db_path, db_format="sql"):
+    def _new_db(self):
+        return climetlab.indexing.database.sql.SqlDatabase(self.db_path)
+
+    def load_database(self):
         start = datetime.datetime.now()
 
-        self.db = dict(
-            json=climetlab.indexing.database.json.JsonFileDatabase,
-            sql=climetlab.indexing.database.sql.SqlDatabase,
-            stdout=climetlab.indexing.database.json.JsonStdoutDatabase,
-        )[db_format](db_path)
+        with Pool(5) as p:
+            p.map(self.process_one_task, self.tasks)
 
-        count = 0
-        for path in tqdm(self.tasks, dynamic_ncols=True):
-            n = self.process_one_task(path)
-            count += n
-
-        self.db.build_indexes()
+        self._new_db().build_indexes()
 
         end = datetime.datetime.now()
-        print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
+        print(f"Indexed {plural(-1,'field')} in {seconds(end - start)}.")
 
     def process_one_task(self, path):
-        if self.db.already_loaded(self._format_path(path), self):
+        db = self._new_db()
+
+        if db.already_loaded(self._format_path(path), self):
             print(f"Skipping {path}, already loaded")
             return 0
         lst = [entry for entry in self._parse_one_file(path)]
         if not lst:
             print(f"No entry found in {path}.")
             return 0
-        return self.db.load_iterator(lst)
+        return db.load_iterator(lst)
 
     @property
     def tasks(self):

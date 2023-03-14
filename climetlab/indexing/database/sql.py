@@ -123,7 +123,10 @@ class EntriesLoader:
             f"ALTER TABLE {self.table_name} ADD COLUMN {dbkey.name} {dbkey.sql_type};"
         )
         LOG.debug("%s", statement)
-        self.connection.execute(statement)
+        try:
+            self.connection.execute(statement)
+        except sqlite3.OperationalError as e:
+            LOG.debug(f"Add column failed, this is expected because of concurency")
         self.keys[dbkey.name] = dbkey
         return self.keys
 
