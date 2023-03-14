@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 def post_process_valid_date(field, h):
     date = h.get("validityDate")
     time = h.get("validityTime")
-    field["valid"] = datetime.datetime(
+    field["valid_datetime"] = datetime.datetime(
         date // 10000,
         date % 10000 // 100,
         date % 100,

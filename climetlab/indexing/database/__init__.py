@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 FILEPARTS_KEY_NAMES = ["_path", "_offset", "_length"]
 STATISTICS_KEY_NAMES = ["mean", "std", "min", "max"]
 MORE_KEY_NAMES_WITH_UNDERSCORE = ["_param_id"]
-MORE_KEY_NAMES = ["valid"]
+MORE_KEY_NAMES = ["valid_datetime"]
 
 
 class DBKey:
