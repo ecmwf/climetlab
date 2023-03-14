@@ -442,7 +442,7 @@ class Tree:
                     if start is not None:
                         text.append(f"{start}/to/{end}")
                     else:
-                        text.append("/".join(sorted(str(x) for x in v)))
+                        text.append("/".join([str(_) for _ in sorted(v)]))
                 sep = ","
             text.append("\n")
 
@@ -522,7 +522,7 @@ class Tree:
                         text.append(f"{start}/to/{end}")
                     else:
                         text.append("[")
-                        text.append(", ".join(sorted(str(x) for x in v)))
+                        text.append(", ".join([str(_) for _ in sorted(v)]))
                         text.append("]")
                 sep = ", "
             text.append("\n")
