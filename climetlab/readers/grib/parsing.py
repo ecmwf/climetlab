@@ -6,11 +6,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 import datetime
 import fnmatch
 import logging
 import os
-from multiprocessing import Pool
+from multiprocessing import Pool, Process, Queue
+import time
 
 import climetlab
 from climetlab.utils import progress_bar, tqdm
@@ -55,6 +57,7 @@ def _index_grib_file(
     with_statistics=False,
     with_valid_date=True,
     with_parameter_level=True,
+    position=0,
 ):
     import eccodes
 
@@ -93,7 +96,17 @@ def _index_grib_file(
         return field
 
     size = os.path.getsize(path)
-    pbar = progress_bar(desc=f"Parsing {path}", total=size)
+    pbar = tqdm(
+        desc=f"Parsing {path}",
+        total=size,
+        unit_scale=True,
+        unit_divisor=1024,
+        unit="B",
+        leave=False,
+        # position=TQDM_POSITION,
+        position=position,
+        dynamic_ncols=True,
+    )
 
     with open(path, "rb") as f:
         old_position = f.tell()
@@ -163,24 +176,76 @@ class GribIndexingDirectoryParserIterator:
     def load_database(self):
         start = datetime.datetime.now()
 
-        with Pool(5) as p:
-            p.map(self.process_one_task, self.tasks)
+        q_in = Queue()
+        q_out = Queue()
+
+        def worker(q_in, q_out, i, func):
+            _i = i
+            time.sleep(i)
+            while True:
+                task = q_in.get()
+                if task is None:
+                    break
+                n = func(_i, task)
+                q_out.put(n)
+
+        nproc = 3
+
+        workers = []
+        for i in range(nproc):
+            proc = Process(target=worker, args=(q_in, q_out, i, self.process_one_task))
+            proc.start()
+            workers.append(proc)
+
+        for path in self.tasks:
+            db = self._new_db()
+
+            if db.already_loaded(self._format_path(path), self):
+                LOG.warn(f"Skipping {path}, already loaded")
+                continue
+
+            q_in.put(path)
+
+        for i in range(nproc):
+            q_in.put(None)
+
+        count = 0
+        for _ in tqdm(self.tasks, total=len(self.tasks), dynamic_ncols=True):
+            count += q_out.get()
+
+        for p in workers:
+            p.join()
 
         self._new_db().build_indexes()
 
         end = datetime.datetime.now()
-        print(f"Indexed {plural(-1,'field')} in {seconds(end - start)}.")
+        print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
 
-    def process_one_task(self, path):
+    def process_one_task(self, i, path):
         db = self._new_db()
 
-        if db.already_loaded(self._format_path(path), self):
-            print(f"Skipping {path}, already loaded")
+        lst = []
+        LOG.debug(f"Parsing file {path}")
+
+        try:
+            for field in _index_grib_file(
+                path,
+                with_statistics=self.with_statistics,
+                position=i + 1,
+            ):
+                field["_path"] = self._format_path(path)
+                lst.append(field)
+        except PermissionError as e:
+            LOG.error(f"Could not read {path}: {e}")
             return 0
-        lst = [entry for entry in self._parse_one_file(path)]
+        except Exception as e:
+            LOG.exception(f"(grib-parsing) Ignoring {path}, {e}")
+            return 0
+
         if not lst:
-            print(f"No entry found in {path}.")
+            LOG.warn(f"No entry found in {path}.")
             return 0
+
         return db.load_iterator(lst)
 
     @property
@@ -223,27 +288,3 @@ class GribIndexingDirectoryParserIterator:
             True: lambda x: os.path.relpath(x, self.directory),
             False: lambda x: os.path.abspath(x),
         }[self.relative_paths](path)
-
-    def _parse_one_file(self, path):
-        LOG.debug(f"Parsing file {path}")
-
-        try:
-            # We could use reader(self, path) but this will create a json
-            # grib-index auxiliary file in the cache.
-            # Indexing 1M grib files lead to 1M in cache.
-            #
-            # We would need to refactor the grib reader.
-
-            for field in _index_grib_file(
-                path,
-                with_statistics=self.with_statistics,
-            ):
-                field["_path"] = self._format_path(path)
-                yield field
-        except PermissionError as e:
-            LOG.error(f"Could not read {path}: {e}")
-            return
-        except Exception as e:
-            print(f"(grib-parsing) Ignoring {path}, {e}")
-            LOG.exception(f"(grib-parsing) Ignoring {path}, {e}")
-            return
