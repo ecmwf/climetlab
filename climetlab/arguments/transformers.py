@@ -14,12 +14,7 @@ from climetlab.vocabularies.aliases import unalias
 LOG = logging.getLogger(__name__)
 
 
-class _all:
-    def __repr__(self):
-        return "climetlab.ALL"
-
-
-ALL = _all()
+ALL = all
 
 
 class Action:
