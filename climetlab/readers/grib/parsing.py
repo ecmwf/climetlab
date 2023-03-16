@@ -52,6 +52,16 @@ def post_process_parameter_level(field, h):
     return field
 
 
+def post_process_statistics(field, h):
+    values = h.get("values")
+    field["mean"] = values.mean()
+    field["std"] = values.std()
+    field["min"] = values.min()
+    field["max"] = values.max()
+    field["shape"] = ",".join([str(_) for _ in values.shape])
+    return field
+
+
 def _index_grib_file(
     path,
     with_statistics=False,
@@ -68,6 +78,8 @@ def _index_grib_file(
         post_process_mars.append(post_process_valid_date)
     if with_parameter_level:
         post_process_mars.append(post_process_parameter_level)
+    if with_statistics:
+        post_process_mars.append(post_process_statistics)
 
     def parse_field(h):
         field = h.as_mars()
@@ -85,13 +97,6 @@ def _index_grib_file(
         # eccodes.codes_get_string(h, "number") returns "0"
         # when "number" is not in the iterator
         # remove? field["number"] = h.get("number")
-
-        if with_statistics:
-            values = h.get("values")
-            field["mean"] = values.mean()
-            field["std"] = values.std()
-            field["min"] = values.min()
-            field["max"] = values.max()
 
         return field
 
