@@ -125,8 +125,8 @@ class EntriesLoader:
         LOG.debug("%s", statement)
         try:
             self.connection.execute(statement)
-        except sqlite3.OperationalError as e:
-            LOG.debug(f"Add column failed, this is expected because of concurency")
+        except sqlite3.OperationalError:
+            LOG.debug("Add column failed, this is expected because of concurency")
         self.keys[dbkey.name] = dbkey
         return self.keys
 

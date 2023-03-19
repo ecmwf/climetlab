@@ -168,6 +168,9 @@ class NetCDFField(Base):
             if s.is_info:
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
 
+    def to_numpy(self, *args, **kwargs):
+        raise Exception(self.path, self.variable, self.slices)
+
     def plot_map(self, backend):
         dimensions = dict((s.name, s.index) for s in self.slices)
 

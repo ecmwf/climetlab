@@ -13,7 +13,7 @@ import os
 from multiprocessing import Pool
 
 import climetlab
-from climetlab.utils import progress_bar, tqdm
+from climetlab.utils import progress_bar
 from climetlab.utils.humanize import plural, seconds
 
 LOG = logging.getLogger(__name__)

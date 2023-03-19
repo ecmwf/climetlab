@@ -86,17 +86,17 @@ class ReadField:
 
 
 class AllBatchesOfFields:
-    def __init__(self, next_queue, max, n_fields, runner):
+    def __init__(self, next_queue, max, n_features, runner):
         self.runner = runner
         self.dic = dict()
         self.condition = threading.Condition()
         # self.condition = threading.Lock()
         self.next_queue = next_queue
         self.max = max
-        self.n_fields = n_fields
+        self.n_features = n_features
 
     def append(self, j, arr):
-        k = j // self.n_fields  # batch_number
+        k = j // self.n_features  # batch_number
 
         with self.condition:
             while not (k in self.dic or len(self.dic) < self.max):
@@ -104,7 +104,7 @@ class AllBatchesOfFields:
 
             if not k in self.dic:
                 bof = OneBatchOfFields(k, self.runner)
-                # print('Created bof', bof, 'j',j,'n_fields', self.n_fields)
+                # print('Created bof', bof, 'j',j,'n_features', self.n_features)
                 assert len(self.dic) < self.max
                 self.dic[k] = bof
 
@@ -122,8 +122,8 @@ class OneBatchOfFields:
         self.k = k
         self.runner = runner
 
-        self.j_start = k * self.runner.n_fields
-        self.j_stop = min(self.runner.shape_j, (k + 1) * self.runner.n_fields)
+        self.j_start = k * self.runner.n_features
+        self.j_stop = min(self.runner.shape_j, (k + 1) * self.runner.n_features)
         self.length = self.j_stop - self.j_start
 
         self.lst = [None] * self.length
@@ -136,7 +136,7 @@ class OneBatchOfFields:
         assert self.j_start <= j < self.j_stop, (j, self.j_start, self.j_stop)
         assert self.count <= self.length
 
-        relative_j = j % self.runner.n_fields
+        relative_j = j % self.runner.n_features
 
         assert self.lst[relative_j] is None, (j, relative_j)
 
@@ -249,15 +249,15 @@ class TimeseriesWriter(Timeseries):
         nthreads_write=16,
         nthreads_read=2,
         n_gridpoints=512,
-        n_fields=2048,
+        n_features=2048,
     ):
-        # threads, n_fields, ETA
+        # threads, n_features, ETA
         # 1      , 1024  , 2h30
         print(f"Reading from {len(source)} fields")
         print(f"nthreads_write={nthreads_write}")
         print(f"nthreads_read={nthreads_read}")
         print(f"n_gridpoints={n_gridpoints}")
-        print(f"n_fields={n_fields}")
+        print(f"n_features={n_features}")
 
         if filename is None:
             filename = source.path_ts
@@ -269,7 +269,7 @@ class TimeseriesWriter(Timeseries):
         self.nthreads_read = nthreads_read
         self.nthreads_ready = 1
         self.n_gridpoints = n_gridpoints
-        self.n_fields = n_fields
+        self.n_features = n_features
 
         self.filename = filename
 
@@ -339,12 +339,15 @@ class TimeseriesWriter(Timeseries):
             ).start()
 
         all_bofs = AllBatchesOfFields(
-            self.ready_batch_of_fields_queue, max=1, n_fields=self.n_fields, runner=self
+            self.ready_batch_of_fields_queue,
+            max=1,
+            n_features=self.n_features,
+            runner=self,
         )
 
-        range_j = range(0, self.shape_j, self.n_fields)
+        range_j = range(0, self.shape_j, self.n_features)
         for j_start in range_j:  # each batch of fields
-            j_stop = min(j_start + self.n_fields, self.shape_j)
+            j_stop = min(j_start + self.n_features, self.shape_j)
 
             for j in range(j_start, j_stop):  # each field
                 task = ReadField(j, self, batches_of_fields=all_bofs)
@@ -446,7 +449,7 @@ def test1():
         source,
         filename="transpose.1.bin",
         n_gridpoints=5,
-        n_fields=3,
+        n_features=3,
         nthreads_read=1,
         nthreads_write=1,
     )
@@ -457,7 +460,9 @@ def test1():
 
 def test2():
     source = FakeSource(18, shape=(24))
-    t = WritterClass(source, filename="transpose.2.bin", n_gridpoints=200, n_fields=10)
+    t = WritterClass(
+        source, filename="transpose.2.bin", n_gridpoints=200, n_features=10
+    )
     t.run()
     r = TimeseriesReader(filename="transpose.2.bin")
     xds = r.to_xarray()
@@ -465,7 +470,7 @@ def test2():
 
 def test3():
     source = FakeSource(6, shape=(24, 36))
-    t = WritterClass(source, filename="transpose.3.bin", n_gridpoints=200, n_fields=4)
+    t = WritterClass(source, filename="transpose.3.bin", n_gridpoints=200, n_features=4)
     t.run()
     r = TimeseriesReader(filename="transpose.3.bin")
     xds = r.to_xarray()
@@ -474,7 +479,9 @@ def test3():
 
 def test4():
     source = FakeSource(6, 5, shape=(24, 36))
-    t = WritterClass(source, filename="transpose.4.bin", n_gridpoints=200, n_fields=50)
+    t = WritterClass(
+        source, filename="transpose.4.bin", n_gridpoints=200, n_features=50
+    )
     t.run()
     r = TimeseriesReader(filename="transpose.4.bin")
     xds = r.to_xarray()
@@ -542,7 +549,7 @@ if __name__ == "__main__":
     # ETA~1h30 with Timeseries
     # ETA~1h with Timeseries2
     # note: with early astype(): ETA~55 min with Timeseries2
-    # ETA with Refactored with queues: ETA~30min. Real: 1h30 (threads_write=8,nthreads_read=2,n_gridpoints=512,n_fields=1024)
+    # ETA with Refactored with queues: ETA~30min. Real: 1h30 (threads_write=8,nthreads_read=2,n_gridpoints=512,n_features=1024)
     # test5_read("large")
 
     # print("- TEST 5 - per year")
