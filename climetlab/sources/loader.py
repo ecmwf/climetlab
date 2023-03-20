@@ -9,7 +9,6 @@
 
 import logging
 
-
 from ..datasets import load_dataset
 from ..sources import load_source
 from . import Source
@@ -25,6 +24,7 @@ ACTIONS = {
 class Loader(Source):
     def __init__(self, config):
         from climetlab.utils import load_json_or_yaml
+
         if isinstance(config, str):
             config = load_json_or_yaml(config)
         self.config = config

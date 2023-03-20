@@ -7,19 +7,19 @@
 # nor does it submit to any jurisdiction.
 #
 
-from collections import defaultdict
 import logging
 import math
 import os
 from abc import abstractmethod
+from collections import defaultdict
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import alias_argument
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
+    MORE_KEY_NAMES,
     MORE_KEY_NAMES_WITH_UNDERSCORE,
     STATISTICS_KEY_NAMES,
-    MORE_KEY_NAMES,
 )
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin

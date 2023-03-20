@@ -9,6 +9,11 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import shutil
+from contextlib import contextmanager
+
+from climetlab.utils import download_and_cache
 
 TESTDATA_URL = (
     "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/grib"
@@ -18,12 +23,8 @@ TEST_DATA_URL_ALT = (
 )
 # CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 
-import os
-import shutil
-from climetlab.utils import download_and_cache
 
-
-def build_testdata(dir = 'testdata'):
+def build_testdata(dir="testdata"):
     os.makedirs(dir, exist_ok=True)
     for path in [
         "2t-tp.grib",
@@ -47,8 +48,6 @@ def build_testdata(dir = 'testdata'):
 
     return dir
 
-from contextlib import contextmanager
-import os
 
 @contextmanager
 def cd(dir):
@@ -60,9 +59,7 @@ def cd(dir):
         os.chdir(old)
 
 
-
 if __name__ == "__main__":
     from climetlab.testing import main
 
-    # main(__file__)
-    test_len()
+    main(__file__)

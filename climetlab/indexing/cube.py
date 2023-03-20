@@ -7,9 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 import itertools
-import math
-import numpy as np
 import logging
+import math
 
 LOG = logging.getLogger(__name__)
 
@@ -31,8 +30,8 @@ LOG = logging.getLogger(__name__)
 
 
 class FieldCube:
-    def __init__(self, ds, *args, datetime='valid'):
-        assert datetime == 'valid'
+    def __init__(self, ds, *args, datetime="valid"):
+        assert datetime == "valid"
         self.datetime = datetime
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
@@ -72,8 +71,9 @@ class FieldCube:
         # print(f"finding coords (in {len(self.source)} source={self.source})")
         # print(f"source coords: {list(source_coords.keys())}")
         # print(f"requested coords: {args}")
-        from functools import reduce
         import operator
+        from functools import reduce
+
         assert reduce(operator.mul, [len(v) for v in coords.values()], 1) == len(ds)
 
         coords = {k: coords[k] for k in args}  # reordering
@@ -82,7 +82,7 @@ class FieldCube:
         return coords
 
     def squeeze(self):
-        args = [k for k,v in self.coords.items() if len(v)>1]
+        args = [k for k, v in self.coords.items() if len(v) > 1]
         return FieldCube(self.source, *args, datetime=self.datetime)
 
     def check_shape(self):
@@ -137,30 +137,43 @@ class FieldCube:
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.shape, *self.field_shape)
 
-    def iterate_cubelets(self, reading_chunks=None, **kwargs):
+    def _names(self, reading_chunks=None, **kwargs):
         if reading_chunks is None:
             reading_chunks = list(self.coords.keys())
         if isinstance(reading_chunks, (list, tuple)):
             assert all(isinstance(_, str) for _ in reading_chunks)
-            reading_chunks = {k:len(self.coords[k]) for k in reading_chunks}
+            reading_chunks = {k: len(self.coords[k]) for k in reading_chunks}
 
         for k, requested in reading_chunks.items():
             full_len = len(self.coords[k])
             assert full_len == requested, "only full chunks supported for now"
 
-        names = list(self.coords[a] for a,_ in reading_chunks.items())
-        indexes = list(range(0,len(lst)) for lst in names)
+        names = list(self.coords[a] for a, _ in reading_chunks.items())
+
+        return names
+
+    def count(self, reading_chunks=None):
+        names = self._names(reading_chunks)
+        return math.prod(len(lst) for lst in names)
+
+    def iterate_cubelets(self, reading_chunks=None, **kwargs):
+
+        names = self._names(reading_chunks)
+        indexes = list(range(0, len(lst)) for lst in names)
 
         # print('names:',names)
         # print('indexes:',indexes)
-        return (Cubelet(self, i, indexes_names=n) for n, i in zip(itertools.product(*names), itertools.product(*indexes)))
+        return (
+            Cubelet(self, i, indexes_names=n)
+            for n, i in zip(itertools.product(*names), itertools.product(*indexes))
+        )
 
     def chunking(self, **chunks):
         if not chunks:
             return True
 
         out = []
-        for k,v in self.coords.items():
+        for k, v in self.coords.items():
             if k in chunks:
                 out.append(chunks[k])
             else:
@@ -175,7 +188,6 @@ class Cubelet:
         assert all(isinstance(_, int) for _ in indexes), indexes
         self.indexes = indexes
         self.index_names = indexes_names
-
 
     def __str__(self):
         return (

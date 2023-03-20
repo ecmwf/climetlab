@@ -8,8 +8,11 @@
 #
 
 
-import climetlab as cml
 import time
+
+import climetlab as cml
+from climetlab.utils import progress_bar
+from climetlab.utils.humanize import seconds
 
 from .tools import parse_args
 
@@ -33,7 +36,7 @@ class LoadZarrCmd:
 
         chunking = config["output"].get("chunking", {})
         chunks = cube.chunking(**chunking)
-        print(f'Creating zarr {args.path}, with {chunks}')
+        print(f"Creating zarr {args.path}, with {chunks}")
         z = zarr.open(
             args.path,
             mode="w",
@@ -46,9 +49,14 @@ class LoadZarrCmd:
         print(z.info)
         start = time.time()
 
-        for cublet in cube.iterate_cubelets():  # reading_chunks=["param"]):
+        reading_chunks = None
+        for cublet in progress_bar(
+            total=cube.count(reading_chunks),
+            iterable=cube.iterate_cubelets(reading_chunks),
+        ):  # reading_chunks=["param"]):
             # print(f"writing: z[{cublet.extended_icoords}] = {cublet.to_numpy().shape}")
             z[cublet.extended_icoords] = cublet.to_numpy()
-
-        print("Elapsed", time.time() - start)
+        print()
         print(z.info)
+        print()
+        print("Elapsed", seconds(time.time() - start))

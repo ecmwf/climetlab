@@ -11,7 +11,7 @@
 
 import climetlab as cml
 
-from . import build_testdata, cd, TESTDATA_URL
+from . import TESTDATA_URL, build_testdata, cd
 
 
 def check_len(source):
@@ -32,7 +32,7 @@ def test_indexing_len_for_source_url():
 
 
 if __name__ == "__main__":
-    from climetlab.testing import main
+    # from climetlab.testing import main
 
     # main(__file__)
     test_indexing_len_for_source_url()

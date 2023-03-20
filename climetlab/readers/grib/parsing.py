@@ -6,13 +6,12 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 import datetime
 import fnmatch
 import logging
 import os
-from multiprocessing import Pool, Process, Queue
 import time
+from multiprocessing import Process, Queue
 
 import climetlab
 from climetlab.utils import progress_bar
@@ -101,7 +100,7 @@ def _index_grib_file(
         return field
 
     size = os.path.getsize(path)
-    pbar = tqdm(
+    pbar = progress_bar(
         desc=f"Parsing {path}",
         total=size,
         unit_scale=True,
@@ -215,7 +214,11 @@ class GribIndexingDirectoryParserIterator:
             q_in.put(None)
 
         count = 0
-        for _ in tqdm(self.tasks, total=len(self.tasks), dynamic_ncols=True):
+        for _ in progress_bar(
+            iterable=self.tasks,
+            total=len(self.tasks),
+            dynamic_ncols=True,
+        ):
             count += q_out.get()
 
         for p in workers:
