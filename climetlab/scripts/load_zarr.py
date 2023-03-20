@@ -20,7 +20,7 @@ from .tools import parse_args
 class LoadZarrCmd:
     @parse_args(
         config=(None, dict(metavar="CONFIG", type=str)),
-        path=dict(metavar="PATH", type=str),
+        path=(None, dict(metavar="PATH", type=str)),
     )
     def do_zarr(self, args):
         import zarr
@@ -37,7 +37,7 @@ class LoadZarrCmd:
         chunking = config["output"].get("chunking", {})
         chunks = cube.chunking(**chunking)
 
-        print(f"Creating zarr {args.path}, with {chunks}")
+        print(f"Creating zarr file '{args.path}', with chunks={chunks}")
 
         z = zarr.open(
             args.path,

@@ -10,8 +10,7 @@
 #
 
 import climetlab as cml
-
-from . import TESTDATA_URL, build_testdata, cd
+from tests.indexing.indexing_generic import TESTDATA_URL, build_testdata, cd
 
 
 def check_len(source):
