@@ -36,7 +36,9 @@ class LoadZarrCmd:
 
         chunking = config["output"].get("chunking", {})
         chunks = cube.chunking(**chunking)
+
         print(f"Creating zarr {args.path}, with {chunks}")
+
         z = zarr.open(
             args.path,
             mode="w",
@@ -46,8 +48,11 @@ class LoadZarrCmd:
         )
         z.attrs["climetlab"] = dict(coords=cube.coords)
 
+        print()
         print(z.info)
         start = time.time()
+        load = 0
+        save = 0
 
         reading_chunks = None
         for cublet in progress_bar(
@@ -55,8 +60,20 @@ class LoadZarrCmd:
             iterable=cube.iterate_cubelets(reading_chunks),
         ):  # reading_chunks=["param"]):
             # print(f"writing: z[{cublet.extended_icoords}] = {cublet.to_numpy().shape}")
-            z[cublet.extended_icoords] = cublet.to_numpy()
+
+            now = time.time()
+            data = cublet.to_numpy()
+            load += time.time() - now
+
+            now = time.time()
+            z[cublet.extended_icoords] = data
+            save += time.time() - now
+
         print()
         print(z.info)
         print()
-        print("Elapsed", seconds(time.time() - start))
+        print(
+            f"Elapsed: {seconds(time.time() - start)},"
+            f" load time: {seconds(load)},"
+            f" write time: {seconds(save)}."
+        )
