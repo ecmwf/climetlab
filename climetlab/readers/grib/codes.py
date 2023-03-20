@@ -226,16 +226,21 @@ class ReaderLRUCache(dict):
         self.size = size
 
     def __getitem__(self, path):
+        key = (
+            path,
+            os.getpid(),
+        )  # PyTorch will fork and leave the cache in a funny state
         with self.lock:
             try:
-                return super().__getitem__(path)
+                return super().__getitem__(key)
             except KeyError:
                 pass
 
-            c = self[path] = CodesReader(path)
+            c = self[key] = CodesReader(path)
+
             while len(self) >= self.size:
-                oldest = min((v.last, v.path) for v in self.values())
-                del self[oldest[1]]
+                _, oldest = min((v.last, k) for k, v in self.items())
+                del self[oldest]
 
             return c
 
@@ -270,7 +275,7 @@ class CodesReader:
                 self.file,
                 eccodes.CODES_PRODUCT_GRIB,
             )
-            assert handle is not None
+            assert handle is not None, (self.file, offset)
             return CodesHandle(handle, self.path, offset)
 
 
