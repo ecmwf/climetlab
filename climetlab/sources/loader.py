@@ -7,10 +7,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-import json
 import logging
 
-import yaml
 
 from ..datasets import load_dataset
 from ..sources import load_source
@@ -26,13 +24,9 @@ ACTIONS = {
 
 class Loader(Source):
     def __init__(self, config):
+        from climetlab.utils import load_json_or_yaml
         if isinstance(config, str):
-            with open(config, "r") as f:
-                if config.endswith(".json"):
-                    config = json.load(f)
-                else:
-                    config = yaml.safe_load(f)
-
+            config = load_json_or_yaml(config)
         self.config = config
 
     def mutate(self):

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+from collections import defaultdict
 import logging
 import math
 import os
@@ -14,6 +15,12 @@ from abc import abstractmethod
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import alias_argument
+from climetlab.indexing.database import (
+    FILEPARTS_KEY_NAMES,
+    MORE_KEY_NAMES_WITH_UNDERSCORE,
+    STATISTICS_KEY_NAMES,
+    MORE_KEY_NAMES,
+)
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
@@ -49,15 +56,34 @@ class FieldSet(FieldSetMixin, Index):
     def availability_path(self):
         return None
 
-    def custom_availability(self, ignore_keys=None):
+    def _all_coords(self, args):
+        dic = defaultdict(dict)
+        for f in self:
+            for k in args:
+                assert isinstance(k, str), (k, type(k))
+                v = f.metadata(k)
+                dic[k][v] = True
+        dic = {k: tuple(values.keys()) for k, values in dic.items()}
+        return dic
+
+    def _custom_availability(self, ignore_keys=None, filter_keys=lambda k: True):
         def dicts():
             for i in progress_bar(
                 iterable=range(len(self)), desc="Building availability"
             ):
                 dic = self.get_metadata(i)
-                for i in ignore_keys:
-                    dic.pop(i, None)
-                dic = {k: v for k, v in dic.items() if v is not None}
+
+                for k in list(dic.keys()):
+                    if not filter_keys(k):
+                        dic.pop(k)
+                        continue
+                    if ignore_keys and k in ignore_keys:
+                        dic.pop(k)
+                        continue
+                    if dic[k] is None:
+                        dic.pop(k)
+                        continue
+
                 yield dic
 
         from climetlab.utils.availability import Availability
@@ -70,19 +96,11 @@ class FieldSet(FieldSetMixin, Index):
             return self._availability
         LOG.debug("Building availability")
 
-        self._availability = self.custom_availability(
-            ignore_keys=[
-                "_param_id",
-                "mean",
-                "std",
-                "min",
-                "max",
-                "valid",
-                "param_level",
-                "_path",
-                "_length",
-                "_offset",
-            ]
+        self._availability = self._custom_availability(
+            ignore_keys=FILEPARTS_KEY_NAMES
+            + STATISTICS_KEY_NAMES
+            + MORE_KEY_NAMES_WITH_UNDERSCORE
+            + MORE_KEY_NAMES
         )
         return self.availability
 

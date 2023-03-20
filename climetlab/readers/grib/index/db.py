@@ -37,6 +37,9 @@ class FieldsetInFilesWithDBIndex(FieldSetInFiles):
 
         super().__init__(**kwargs)
 
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.db})"
+
     @property
     def availability_path(self):
         dirpath = os.path.dirname(self.db.db_path)

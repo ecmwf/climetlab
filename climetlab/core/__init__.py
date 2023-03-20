@@ -124,8 +124,14 @@ class Base(metaclass=MetaBase):
         if not hasattr(self, "_options"):
             self._options = {}
         return self._options
+    
+    def cube(self, *args, **kwargs):
+        from climetlab.indexing.cube import FieldCube
+        return FieldCube(self, *args, **kwargs)
 
-    #
+    def get_metadata(self, i):
+        return self[i].metadata()
+
     def _not_implemented(self):
         import inspect
 

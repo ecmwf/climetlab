@@ -186,7 +186,7 @@ class EntriesLoader:
 
     def __str__(self):
         content = ",".join([k for k, v in self.keys.items()])
-        return f"{self.__class__}({self.table_name},{content}"
+        return f"{self.__class__.__name__}({self.table_name},{content}"
 
 
 class Connection(local):
@@ -356,6 +356,9 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
         self._connection = None
 
         self.dbkeys = EntriesLoader(self.connection).keys
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.db_path},filters=[{','.join([str(_) for _ in self._filters])}])"
 
     def build_indexes(self):
         EntriesLoader(self.connection).build_sql_indexes()
