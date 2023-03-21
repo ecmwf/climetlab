@@ -13,6 +13,8 @@ import os
 import time
 from multiprocessing import Process, Queue
 
+from tqdm import tqdm
+
 import climetlab
 from climetlab.utils import progress_bar
 from climetlab.utils.humanize import plural, seconds
@@ -23,7 +25,7 @@ LOG = logging.getLogger(__name__)
 def post_process_valid_date(field, h):
     date = h.get("validityDate")
     time = h.get("validityTime")
-    field["valid_datetime"] = datetime.datetime(
+    field["datetime"] = datetime.datetime(
         date // 10000,
         date % 10000 // 100,
         date % 100,
@@ -100,7 +102,7 @@ def _index_grib_file(
         return field
 
     size = os.path.getsize(path)
-    pbar = progress_bar(
+    pbar = tqdm(
         desc=f"Parsing {path}",
         total=size,
         unit_scale=True,
@@ -193,7 +195,7 @@ class GribIndexingDirectoryParserIterator:
                 n = func(_i, task)
                 q_out.put(n)
 
-        nproc = 3
+        nproc = 5
 
         workers = []
         for i in range(nproc):
@@ -217,7 +219,6 @@ class GribIndexingDirectoryParserIterator:
         for _ in progress_bar(
             iterable=self.tasks,
             total=len(self.tasks),
-            dynamic_ncols=True,
         ):
             count += q_out.get()
 

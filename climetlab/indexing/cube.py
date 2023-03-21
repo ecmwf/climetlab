@@ -6,6 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+from collections import defaultdict
 import itertools
 import logging
 import math
@@ -89,42 +90,44 @@ class FieldCube:
         content = ", ".join([f"{k}:{len(v)}" for k, v in self.user_coords.items()])
         return f"{self.__class__.__name__}({content} ({len(self.source)} fields))"
 
-    def _transform_args(self, args):
-        _args = []
+    def _transform_args(self, u_args):
+        internal_args = []
         slices = []
         splits = []
         i = 0
-        for a in args:
+        for a in u_args:
             lst = a.split("_")
-            _args += lst
+            internal_args += lst
             slices.append(slice(i, i + len(lst)))
             splits.append(tuple(lst))
             i += len(lst)
-        return _args, slices, splits
+        return internal_args, slices, splits
 
     def _build_coords(self, ds, args):
-        # return a dict where the keys are from the args, in the right order
-        # and the values are the coordinate.
+        user_args = args
+        internal_args, slices, splits = self._transform_args(args)
 
-        original_args = args
-        args, slices, splits = self._transform_args(args)
-
-        internal_coords = ds._all_coords(args)
-        internal_coords = {k: internal_coords[k] for k in args}  # reordering
+        internal_coords = ds._all_coords(internal_args)
+        internal_coords = {k: internal_coords[k] for k in internal_args}  # reordering
         assert math.prod(len(v) for v in internal_coords.values()) == len(ds)
 
         user_coords = {}
-        for a, s in zip(original_args, splits):
+        for a, s in zip(user_args, splits):
             if len(s) == 1:
                 user_coords[a] = internal_coords[a]
                 continue
 
             lists = [internal_coords[k] for k in s]
 
-            prod = list(_ for _ in itertools.product(*lists))
-            user_coords[a] = ["_".join([str(x) for x in tupl]) for tupl in prod]
+            prod = []
+            for tupl in itertools.product(*lists):
+                assert len(tupl) == len(s), (tupl, s)
+                joined = "_".join([str(x) for x in tupl])
+                prod.append(joined)
 
-        user_coords = {k: user_coords[k] for k in original_args}  # reordering
+            user_coords[a] = prod
+
+        user_coords = {k: user_coords[k] for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
             user_coords,
             len(ds),
@@ -148,7 +151,9 @@ class FieldCube:
             raise ValueError(f"{msg}\n{self.source.availability}")
 
     def __getitem__(self, indexes):
-        print("__getitem__", indexes)
+        # indexes are user_indexes
+        print("__getitem__ user_indexes =", indexes)
+
         if isinstance(indexes, int):
             indexes = [indexes]
 
@@ -165,19 +170,37 @@ class FieldCube:
 
         assert len(indexes) == len(self.user_shape), (indexes, self.user_shape)
 
-        args = []
-        selection_dict = {}
+        u_args = []
+        selection_dict = defaultdict(list)
 
-        names = self.user_coords.keys()
-        assert len(names) == len(indexes), (names, indexes, self.user_coords)
-        for i, name in zip(indexes, names):
-            values = self.user_coords[name]
+        u_names = self.user_coords.keys()
+        assert len(u_names) == len(indexes), (u_names, indexes, self.user_coords)
+        for i, u_name in zip(indexes, u_names):
+            u_values = self.user_coords[u_name]
+
             if isinstance(i, int):
-                if i >= len(values):
-                    raise IndexError(f"index {i} out of range in {name} = {values}")
-            selection_dict[name] = values[i]
+                if i >= len(u_values):
+                    raise IndexError(f"index {i} out of range in {u_name} = {u_values}")
+
             if isinstance(i, slice):
-                args.append(name)
+                u_args.append(u_name)
+
+            u_list = u_values[i]
+            if not isinstance(u_list, (list, tuple)):
+                u_list = [u_list]
+                assert not isinstance(i, slice)
+
+            if "_" not in u_name:
+                selection_dict[u_name] = u_list
+            else:
+                internal_names = u_name.split("_")
+                for u_value in u_list:
+                    internal_values = u_value.split("_")
+                    assert len(internal_values) == len(internal_names)
+                    for n, v in zip(internal_names, internal_values):
+                        if v != "None":
+                            # TODO: decide for param_level = "2t" or = "2t_None"
+                            selection_dict[n].append(v)
 
         if all(isinstance(x, int) for x in indexes):
             # # optimized version:
@@ -185,11 +208,11 @@ class FieldCube:
             # return self.source[i]
             # non-optimized version:
             _ds = self.source.sel(selection_dict)
+            assert len(_ds) == 1, (len(_ds), selection_dict, f"{indexes=}")
             return _ds[0]
 
-        print("s", selection_dict, args)
         _ds = self.source.sel(selection_dict)
-        return FieldCube(_ds, *args)
+        return FieldCube(_ds, *u_args)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)

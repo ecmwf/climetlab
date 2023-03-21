@@ -72,8 +72,15 @@ class EntriesLoader:
 
     def __init__(self, connection):
         self.connection = connection
+        self.patch()
         self.keys = self.read_from_table()
         self.path_table = PathTable(connection)
+
+    def patch(self):
+        try:
+            self.connection.execute("ALTER TABLE entries RENAME COLUMN i_valid_datetime TO i_datetime;")
+        except sqlite3.OperationalError:
+            pass
 
     @classmethod
     def guess_key_type(self, x, name=None):

@@ -434,11 +434,13 @@ class GribField(Base):
                 date % 100,
                 time // 100,
                 time % 100,
-            )
+            ).isoformat()
         if name == "param":
             name = "shortName"
         if name == "_param_id":
             name = "paramId"
+        if name == "level" and self[name] == 0:
+            return None
         return self[name]
 
     def __getitem__(self, name):

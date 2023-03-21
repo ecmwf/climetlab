@@ -57,10 +57,11 @@ class FieldSet(FieldSetMixin, Index):
         return None
 
     def _all_coords(self, args):
+        assert all(isinstance(k, str) for k in args), (k, type(k))
+
         dic = defaultdict(dict)
         for f in self:
             for k in args:
-                assert isinstance(k, str), (k, type(k))
                 v = f.metadata(k)
                 dic[k][v] = True
         dic = {k: tuple(values.keys()) for k, values in dic.items()}
