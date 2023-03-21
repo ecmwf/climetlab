@@ -42,11 +42,11 @@ class LoadZarrCmd:
         z = zarr.open(
             args.path,
             mode="w",
-            shape=cube.extended_shape,
+            shape=cube.extended_user_shape,
             chunks=chunks,
             dtype=config["output"]["dtype"],
         )
-        z.attrs["climetlab"] = dict(coords=cube.coords)
+        z.attrs["climetlab"] = dict(coords=cube.user_coords)
 
         print()
         print(z.info)

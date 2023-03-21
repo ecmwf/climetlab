@@ -15,7 +15,7 @@ from contextlib import contextmanager
 
 from climetlab.utils import download_and_cache
 
-TESTDATA_URL = (
+TEST_DATA_URL = (
     "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/grib"
 )
 TEST_DATA_URL_ALT = (
@@ -29,6 +29,14 @@ def build_testdata(dir="testdata"):
     for path in [
         "2t-tp.grib",
         "all.grib",
+        "all/climetlab.json",
+        "all/u.grib",
+        "all/v.grib",
+        "all/z.grib",
+        "all/2t.grib",
+        "all/climetlab.json",
+        "all/tp.grib",
+        "all/lsm.grib",
         "climetlab.json",
         "lsm.grib",
         "pl/climetlab.json",
@@ -44,7 +52,7 @@ def build_testdata(dir="testdata"):
         if os.path.exists(outpath):
             continue
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
-        shutil.copyfile(download_and_cache(TESTDATA_URL + "/" + path), outpath)
+        shutil.copyfile(download_and_cache(TEST_DATA_URL + "/" + path), outpath)
 
     return dir
 

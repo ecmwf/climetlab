@@ -25,15 +25,6 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     DB_CACHE_SIZE = 100_000
     DB_DICT_CACHE_SIZE = 100_000
 
-    def __init__(self, *args, **kwargs):
-        """
-        _filters are used to keep the state of the db
-        It is a list of **already applied** filters, not a list of filter to apply.
-        Use the method apply_filters for this.
-        """
-
-        super().__init__(*args, **kwargs)
-
     def apply_filters(self, filters):
         obj = self
         for f in filters:
@@ -69,6 +60,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         return self._cache.result[n % self.DB_CACHE_SIZE]
 
     def get_metadata(self, n):
+        assert "Used only in virtual"
         if self._dict_cache is None or not (
             self._dict_cache.first
             <= n

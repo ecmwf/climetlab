@@ -17,6 +17,7 @@ from itertools import islice
 import eccodes
 
 from climetlab.core import Base
+from climetlab.core.constants import DATETIME
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
 
@@ -424,6 +425,16 @@ class GribField(Base):
         return self.handle.get(name)
 
     def metadata(self, name):
+        if name == DATETIME:
+            date = self.metadata("validityDate")
+            time = self.metadata("validityTime")
+            return datetime.datetime(
+                date // 10000,
+                date % 10000 // 100,
+                date % 100,
+                time // 100,
+                time % 100,
+            )
         if name == "param":
             name = "shortName"
         if name == "_param_id":

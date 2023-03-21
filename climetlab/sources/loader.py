@@ -37,7 +37,8 @@ class Loader(Source):
                 if not isinstance(v, list):
                     v = [v]
                 for one in v:
-                    data.append(action(one["name"], **one["request"]))
+                    name = one.pop("name")
+                    data.append(action(name, **one))
 
         return load_source("multi", data)
 
