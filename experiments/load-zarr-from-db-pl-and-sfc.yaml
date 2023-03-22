@@ -1,0 +1,21 @@
+input:
+  dataset:
+    - name: era5-for-ai
+      date: '2000-01-01/to/2000-01-31'
+      time: [0, 1200]
+      param: [t, z, u,v,q]
+      level: [500, 600, 850]
+
+    - name: era5-for-ai
+      date: '2000-01-01/to/2000-01-31'
+      time: [0, 1200]
+      param: [2t]
+
+
+output:
+  chunking:
+    date: 1
+  order:
+    - datetime
+    - param_level
+  dtype: float32
