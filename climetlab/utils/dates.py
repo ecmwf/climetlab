@@ -9,7 +9,6 @@
 
 import datetime
 import logging
-import re
 
 import numpy as np
 
@@ -105,19 +104,3 @@ def to_datetime_list(datetimes):  # noqa C901
 
 def to_date_list(obj):
     return sorted(set(to_datetime_list(obj)))
-
-
-_DATE_STR_REGEXPR = re.compile(
-    "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]"
-)
-
-
-def _remove_t_in_isodate(date):
-    if isinstance(date, list):
-        return [_remove_t_in_isodate(d) for d in date]
-    if isinstance(date, tuple):
-        return tuple(_remove_t_in_isodate(d) for d in date)
-    if isinstance(date, str) and _DATE_STR_REGEXPR.match(date):
-        LOG.debug("Replacing T in iso datetime.")
-        date = date.replace("T", " ")
-    return date

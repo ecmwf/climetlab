@@ -112,18 +112,6 @@ class Source(Base):
     def connect_to_mirror(self, mirror):
         return None
 
-    def _all_coords(self, args):
-        assert all(isinstance(k, str) for k in args), (args)
-
-        dic = defaultdict(dict)
-        for f in progress_bar(
-            iterable=self, desc=f"Finding coords in dataset for {args}"
-        ):
-            for k in args:
-                v = f.metadata(k)
-                dic[k][v] = True
-        dic = {k: tuple(values.keys()) for k, values in dic.items()}
-        return dic
 
 
 class SourceLoader:

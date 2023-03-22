@@ -6,8 +6,11 @@
 # nor does it submit to any jurisdiction.
 #
 
+from collections import defaultdict
 import logging
 from abc import abstractmethod
+
+import climetlab
 
 LOG = logging.getLogger(__name__)
 
@@ -132,6 +135,30 @@ class Base(metaclass=MetaBase):
 
     def get_metadata(self, i):
         return self[i].metadata()
+
+    def unique_values(self, *coords, progress_bar=True):
+        """
+        Given a list of metadata attributes, such as date, param, levels,
+        returns the list of unique values for each attributes
+        """
+
+        assert all(isinstance(k, str) for k in coords), coords
+
+        iterable = self
+
+        if progress_bar:
+            iterable = climetlab.utils.progress_bar(
+                iterable=self,
+                desc=f"Finding coords in dataset for {coords}",
+            )
+
+        dic = defaultdict(dict)
+        for f in iterable:
+            for k in coords:
+                v = f.metadata(k)
+                dic[k][v] = True
+        dic = {k: tuple(values.keys()) for k, values in dic.items()}
+        return dic
 
     def _not_implemented(self):
         import inspect

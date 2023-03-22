@@ -9,8 +9,9 @@
 
 import logging
 from collections import namedtuple
+from climetlab.core.constants import DATETIME
 
-from climetlab.decorators import cached_method
+from climetlab.decorators import cached_method, normalize
 from climetlab.indexing.database.sql import SqlDatabase, SqlOrder, SqlSelection
 from climetlab.readers.grib.index.db import FieldsetInFilesWithDBIndex
 from climetlab.utils.serialise import register_serialisation
@@ -19,6 +20,10 @@ LOG = logging.getLogger(__name__)
 
 SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
+
+@normalize(DATETIME, 'date-list', format='%Y-%m-%d %H:%M:%S')
+def _normalize_grib_kwargs_values(**kwargs):
+    return kwargs
 
 class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     DBCLASS = SqlDatabase
@@ -43,6 +48,12 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         if not kwargs:
             return self
         return self.filter(SqlSelection(kwargs))
+
+    def normalize_selection(self, *args, **kwargs):
+        kwargs = super().normalize_selection(*args, **kwargs)
+        if DATETIME in kwargs and kwargs[DATETIME] is not None:
+            kwargs = _normalize_grib_kwargs_values(**kwargs)
+        return kwargs
 
     def order_by(self, *args, **kwargs):
         kwargs = self.normalize_order_by(*args, **kwargs)

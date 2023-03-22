@@ -107,7 +107,7 @@ class FieldCube:
         user_args = args
         internal_args, slices, splits = self._transform_args(args)
 
-        internal_coords = ds._all_coords(internal_args)
+        internal_coords = ds.unique_values(*internal_args)
         internal_coords = {k: internal_coords[k] for k in internal_args}  # reordering
         if math.prod(len(v) for v in internal_coords.values()) != len(ds):
             LOG.warn(

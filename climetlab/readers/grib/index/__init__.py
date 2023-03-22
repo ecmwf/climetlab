@@ -14,7 +14,7 @@ from abc import abstractmethod
 
 from climetlab.core.constants import DATETIME
 from climetlab.core.index import Index, MaskIndex, MultiIndex
-from climetlab.decorators import alias_argument
+from climetlab.decorators import alias_argument, normalize
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
@@ -25,7 +25,6 @@ from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
-from climetlab.utils.dates import _remove_t_in_isodate
 
 LOG = logging.getLogger(__name__)
 
@@ -34,9 +33,7 @@ LOG = logging.getLogger(__name__)
 @alias_argument("param", ["variable", "parameter"])
 @alias_argument("number", ["realization", "realisation"])
 @alias_argument("class", "klass")
-def normalize_grib_kwargs(**kwargs):
-    if DATETIME in kwargs:
-        kwargs[DATETIME] = _remove_t_in_isodate(kwargs[DATETIME])
+def _normalize_grib_kwargs_names(**kwargs):
     return kwargs
 
 
@@ -108,12 +105,12 @@ class FieldSet(FieldSetMixin, Index):
 
     def normalize_selection(self, *args, **kwargs):
         kwargs = super().normalize_selection(*args, **kwargs)
-        kwargs = normalize_grib_kwargs(**kwargs)
+        kwargs = _normalize_grib_kwargs_names(**kwargs)
         return kwargs
 
     def normalize_order_by(self, *args, **kwargs):
         kwargs = super().normalize_order_by(*args, **kwargs)
-        kwargs = normalize_grib_kwargs(**kwargs)
+        kwargs = _normalize_grib_kwargs_names(**kwargs)
         return kwargs
 
 
