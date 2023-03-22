@@ -1,9 +1,11 @@
 import itertools
 import math
 import time
+
 import numpy as np
-import climetlab as cml
 from tqdm import tqdm
+
+import climetlab as cml
 
 # cmlds = cml.load_source("indexed-directory", "/lus/h2resw01/fws4/lb/project/ai-ml/test")
 cmlds = cml.load_source(
@@ -18,7 +20,7 @@ ds = cmlds.sel(levtype="pl")
 
 print(ds)
 
-from climetlab.indexing.cube import FieldCube, Cubelet
+from climetlab.indexing.cube import Cubelet, FieldCube
 
 print()
 cube = ds.cube("date", "time", "param", "levelist")

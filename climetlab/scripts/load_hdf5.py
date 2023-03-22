@@ -8,25 +8,25 @@
 #
 
 
-import logging
+import os
 import time
+
+import numpy as np
 
 import climetlab as cml
 from climetlab.utils import progress_bar
-from climetlab.utils.humanize import seconds
+from climetlab.utils.humanize import seconds, bytes
 
 from .tools import parse_args
 
-LOG = logging.getLogger(__name__)
 
-
-class LoadZarrCmd:
+class LoadHDF5Cmd:
     @parse_args(
         config=(None, dict(metavar="CONFIG", type=str)),
         path=(None, dict(metavar="PATH", type=str)),
     )
-    def do_zarr(self, args):
-        import zarr
+    def do_hdf5(self, args):
+        import h5py
 
         from climetlab.utils import load_json_or_yaml
 
@@ -40,44 +40,45 @@ class LoadZarrCmd:
         chunking = config["output"].get("chunking", {})
         chunks = cube.chunking(**chunking)
 
+        print(f"Creating HDF5 file '{args.path}', with chunks={chunks}")
+        h5 = h5py.File(args.path, mode="w")
+
         dtype = config["output"].get("dtype", "float32")
 
-        print(f"Creating ZARR file '{args.path}', with chunks={chunks}")
-
-        z = zarr.open(
-            args.path,
-            mode="w",
-            shape=cube.extended_user_shape,
+        array = h5.create_dataset(
+            "fields",
             chunks=chunks,
+            maxshape=cube.extended_user_shape,
             dtype=dtype,
+            data=np.empty(cube.extended_user_shape),  # Can we avoid that? Looks like its needed for chuncking
+            # data = h5py.Empty(dtype),
         )
-        z.attrs["climetlab"] = dict(coords=cube.user_coords)
 
-        print()
-        print(z.info)
         start = time.time()
         load = 0
         save = 0
 
         reading_chunks = None
-        for cubelet in (
-            pbar := progress_bar(
-                total=cube.count(reading_chunks),
-                iterable=cube.iterate_cubelets(reading_chunks),
-                # reading_chunks=["param"]
-            )
+        for cublet in progress_bar(
+            total=cube.count(reading_chunks),
+            iterable=cube.iterate_cubelets(reading_chunks),
         ):
+
             now = time.time()
-            pbar.set_description(f"Processing {cubelet}")
-            data = cubelet.to_numpy()
+            data = cublet.to_numpy()
             load += time.time() - now
 
             now = time.time()
-            z[cubelet.extended_icoords] = data
+            array[cublet.extended_icoords] = data
             save += time.time() - now
 
+        now = time.time()
+        h5.close()
+        save += time.time() - now
+
         print()
-        print(z.info)
+        size = os.path.getsize(args.path)
+        print(f"HDF5 file {args.path}: {size:,} ({bytes(size)})")
         print()
         print(
             f"Elapsed: {seconds(time.time() - start)},"
