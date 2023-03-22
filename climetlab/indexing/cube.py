@@ -10,6 +10,7 @@ import itertools
 import logging
 import math
 from collections import defaultdict
+from collections import defaultdict
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class FieldCube:
             args = [_ for _ in args[0]]
 
         self._field_shape = None
-        print(f"* New FieldCube(args={args})")
+        LOG.debug(f"* New FieldCube(args={args})")
 
         self.source = ds.order_by(*args)
 
@@ -49,10 +50,9 @@ class FieldCube:
             self.source, args
         )
 
-        print("---")
-        print(f"{self.internal_coords=}")
-        print(f"{self.user_coords=}")
-        print("slices=", self.slices)
+        LOG.debug(f"{self.internal_coords=}")
+        LOG.debug(f"{self.user_coords=}")
+        LOG.debug("slices=", self.slices)
 
         self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
 
@@ -62,20 +62,20 @@ class FieldCube:
             self.user_shape.append(n)
         self.user_shape = tuple(self.user_shape)
 
-        print(f"{self.user_shape=}")
-        print(f"{self.internal_shape=}")
+        LOG.debug(f"{self.user_shape=}")
+        LOG.debug(f"{self.internal_shape=}")
 
         self.user_ndim = len(self.user_shape)
 
         self.check_shape(self.internal_shape)
         self.check_shape(self.user_shape)
-        print("extended_shape=", self.extended_user_shape)
+        LOG.debug("extended_shape=", self.extended_user_shape)
 
     @property
     def field_shape(self):
         if self._field_shape is None:
             self._field_shape = self.source[0].shape
-            print("fieldshape=", self._field_shape)
+            LOG.debug("fieldshape=", self._field_shape)
         return self._field_shape
 
     @property
@@ -109,7 +109,10 @@ class FieldCube:
 
         internal_coords = ds._all_coords(internal_args)
         internal_coords = {k: internal_coords[k] for k in internal_args}  # reordering
-        assert math.prod(len(v) for v in internal_coords.values()) == len(ds)
+        if math.prod(len(v) for v in internal_coords.values()) != len(ds):
+            LOG.warn(
+                "Input cube is not full (expected when mixing pressure levels and surface fields)"
+            )
 
         user_coords = {}
         for a, s in zip(user_args, splits):
@@ -129,8 +132,8 @@ class FieldCube:
 
         user_coords = {k: user_coords[k] for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
-            user_coords,
             len(ds),
+            user_coords,
         )
 
         return user_coords, internal_coords, slices
@@ -144,7 +147,7 @@ class FieldCube:
         return FieldCube(self.source, *args, datetime=self.datetime)
 
     def check_shape(self, shape):
-        print("shape=", shape)
+        LOG.debug("shape=", shape)
         if math.prod(shape) != len(self.source):
             msg = f"{shape} -> {math.prod(shape)} requested fields != {len(self.source)} available fields. "
             print("ERROR:", msg)
@@ -152,13 +155,12 @@ class FieldCube:
 
     def __getitem__(self, indexes):
         # indexes are user_indexes
-        # print("__getitem__ user_indexes =", indexes)
 
         if isinstance(indexes, int):
-            indexes = [indexes]
-
-        if not isinstance(indexes, tuple):
             indexes = (indexes,)  # make tuple
+        if isinstance(indexes, list):
+            indexes = tuple(indexes)
+        assert isinstance(indexes, tuple), (type(indexes), indexes)
 
         indexes = list(indexes)
 
@@ -203,8 +205,8 @@ class FieldCube:
                             selection_dict[n].append(v)
 
         if all(isinstance(x, int) for x in indexes):
-            # # optimized version:
-            # i = np.ravel_multi_index(indexes, self.internal_shape)
+            # # optimized version, we could use :
+            # np.ravel_multi_index(indexes, self.internal_shape)
             # return self.source[i]
             # non-optimized version:
             _ds = self.source.sel(selection_dict)
@@ -240,8 +242,6 @@ class FieldCube:
         names = self._names(reading_chunks=reading_chunks, coords=self.user_coords)
         indexes = list(range(0, len(lst)) for lst in names)
 
-        # print('names:',names)
-        # print('indexes:',indexes)
         return (
             Cubelet(self, i, indexes_names=n)
             for n, i in zip(itertools.product(*names), itertools.product(*indexes))
@@ -268,7 +268,6 @@ class Cubelet:
         assert all(isinstance(_, int) for _ in indexes), indexes
         self.indexes = indexes
         self.index_names = indexes_names
-        # print(self)
 
     def __repr__(self):
         return (

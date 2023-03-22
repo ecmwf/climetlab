@@ -11,8 +11,8 @@ import logging
 import math
 import os
 from abc import abstractmethod
-from collections import defaultdict
 
+from climetlab.core.constants import DATETIME
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import alias_argument
 from climetlab.indexing.database import (
@@ -25,6 +25,7 @@ from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
+from climetlab.utils.dates import _remove_t_in_isodate
 
 LOG = logging.getLogger(__name__)
 
@@ -34,6 +35,8 @@ LOG = logging.getLogger(__name__)
 @alias_argument("number", ["realization", "realisation"])
 @alias_argument("class", "klass")
 def normalize_grib_kwargs(**kwargs):
+    if DATETIME in kwargs:
+        kwargs[DATETIME] = _remove_t_in_isodate(kwargs[DATETIME])
     return kwargs
 
 
@@ -55,17 +58,6 @@ class FieldSet(FieldSetMixin, Index):
     @property
     def availability_path(self):
         return None
-
-    def _all_coords(self, args):
-        assert all(isinstance(k, str) for k in args), [type(k) for k in args]
-
-        dic = defaultdict(dict)
-        for f in self:
-            for k in args:
-                v = f.metadata(k)
-                dic[k][v] = True
-        dic = {k: tuple(values.keys()) for k, values in dic.items()}
-        return dic
 
     def _custom_availability(self, ignore_keys=None, filter_keys=lambda k: True):
         def dicts():
