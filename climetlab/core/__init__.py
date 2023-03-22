@@ -6,9 +6,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from collections import defaultdict
 import logging
 from abc import abstractmethod
+from collections import defaultdict
 
 import climetlab
 
@@ -158,6 +158,7 @@ class Base(metaclass=MetaBase):
                 v = f.metadata(k)
                 dic[k][v] = True
         dic = {k: tuple(values.keys()) for k, values in dic.items()}
+        print("uniques values: ", dic)
         return dic
 
     def _not_implemented(self):

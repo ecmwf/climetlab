@@ -257,6 +257,17 @@ class SqlOrder(SqlFilter):
     def __init__(self, kwargs):
         self.kwargs = kwargs
 
+    def merge(self, *others):
+        orders = reversed([self, *others])
+
+        kwargs = {}
+        for o in orders:
+            for k, v in o.kwargs.items():
+                if k not in kwargs:
+                    kwargs[k] = v
+
+        return SqlOrder(kwargs)
+
     def filter_statement(self, db, new_view):
         func_name = "userorder_" + new_view
 
@@ -377,7 +388,7 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
         if self._view is None:
             self._view = "entries"
             for f in self._filters:
-                self._apply_filter(f)
+                self._view = self._apply_filter(f, self._view)
             LOG.debug("DB %s %s", self.db_path, self.view)
         return self._view
 
@@ -387,24 +398,54 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             self._connection = Connection(self.db_path)
         return self._connection._conn
 
-    def _apply_filter(self, filter: SqlFilter):
-        # This method updates self.view with the additional filter
+    def unique_values(self, *coords, progress_bar=True):
+        """
+        Given a list of metadata attributes, such as date, param, levels,
+        returns the list of unique values for each attributes
+        """
 
-        old_view = self._view
-        new_view = old_view + "_" + filter.h(parent_view=old_view)
+        with self.connection as con:
+            results = {}
+            for c in coords:
+                column = entryname_to_dbname(c)
 
+                def get_order_statement():
+                    statement = ""
+                    orders = [f for f in self._filters if isinstance(f, SqlOrder)]
+                    if orders:
+                        order = orders[0].merge(*orders)
+                        new_view = order.h(parent_view=self.view)
+                        statement = order.filter_statement(self, new_view)
+                        LOG.debug(order, statement)
+                    return statement
+
+                values = [
+                    v[0]
+                    for v in con.execute(
+                        f"SELECT DISTINCT {column} FROM {self.view} {get_order_statement()}"
+                    )
+                ]
+
+                LOG.debug("Reordered values for {column}", column, values)
+
+                results[column] = values
+
+        return results
+
+    def _apply_filter(self, filter: SqlFilter, view):
+        new_view = view + "_" + filter.h(parent_view=view)
         filter_statement = filter.filter_statement(self, new_view)
 
         statement = (
             f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
-            + f"FROM {old_view} {filter_statement};"
+            + f"FROM {view} {filter_statement};"
         )
 
         LOG.debug("%s", statement)
         for i in self.connection.execute(statement):
             LOG.error(str(i))  # Output of .execute should be empty
 
-        self._view = new_view
+        return new_view
 
     def filter(self, filter: SqlFilter):
         return self.__class__(

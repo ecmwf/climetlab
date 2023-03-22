@@ -29,14 +29,6 @@ from climetlab.utils.availability import Availability
 LOG = logging.getLogger(__name__)
 
 
-@alias_argument("levelist", ["level"])
-@alias_argument("param", ["variable", "parameter"])
-@alias_argument("number", ["realization", "realisation"])
-@alias_argument("class", "klass")
-def _normalize_grib_kwargs_names(**kwargs):
-    return kwargs
-
-
 class FieldSet(FieldSetMixin, Index):
     _availability = None
 
@@ -105,12 +97,20 @@ class FieldSet(FieldSetMixin, Index):
 
     def normalize_selection(self, *args, **kwargs):
         kwargs = super().normalize_selection(*args, **kwargs)
-        kwargs = _normalize_grib_kwargs_names(**kwargs)
+        kwargs = self._normalize_grib_kwargs_names(**kwargs)
         return kwargs
 
     def normalize_order_by(self, *args, **kwargs):
         kwargs = super().normalize_order_by(*args, **kwargs)
-        kwargs = _normalize_grib_kwargs_names(**kwargs)
+        kwargs = self._normalize_grib_kwargs_names(**kwargs)
+        return kwargs
+
+    @alias_argument("levelist", ["level", "levellist"])
+    @alias_argument("levtype", ["leveltype"])
+    @alias_argument("param", ["variable", "parameter"])
+    @alias_argument("number", ["realization", "realisation"])
+    @alias_argument("class", "klass")
+    def _normalize_grib_kwargs_names(self, **kwargs):
         return kwargs
 
 

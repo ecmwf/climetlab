@@ -10,7 +10,6 @@ import itertools
 import logging
 import math
 from collections import defaultdict
-from collections import defaultdict
 
 LOG = logging.getLogger(__name__)
 

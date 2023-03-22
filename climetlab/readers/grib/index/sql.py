@@ -9,8 +9,8 @@
 
 import logging
 from collections import namedtuple
-from climetlab.core.constants import DATETIME
 
+from climetlab.core.constants import DATETIME
 from climetlab.decorators import cached_method, normalize
 from climetlab.indexing.database.sql import SqlDatabase, SqlOrder, SqlSelection
 from climetlab.readers.grib.index.db import FieldsetInFilesWithDBIndex
@@ -21,9 +21,10 @@ LOG = logging.getLogger(__name__)
 SqlResultCache = namedtuple("SqlResultCache", ["first", "length", "result"])
 
 
-@normalize(DATETIME, 'date-list', format='%Y-%m-%d %H:%M:%S')
+@normalize(DATETIME, "date-list", format="%Y-%m-%d %H:%M:%S")
 def _normalize_grib_kwargs_values(**kwargs):
     return kwargs
+
 
 class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     DBCLASS = SqlDatabase
@@ -38,6 +39,22 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     def _find_all_coords_dict(self):
         return self.db._find_all_coords_dict()
+
+    def unique_values(self, *coords, progress_bar=None):
+        """
+        Given a list of metadata attributes, such as date, param, levels,
+        returns the list of unique values for each attributes
+        """
+        keys = coords
+
+        coords = {k: None for k in coords}
+        coords = self._normalize_grib_kwargs_names(**coords)
+        coords = list(coords.keys())
+        values = self.db.unique_values(*coords).values()
+
+        dic = {k: v for k, v in zip(keys, values)}
+        print("Uniques values: ", dic)
+        return dic
 
     def filter(self, filter):
         db = self.db.filter(filter)
