@@ -61,6 +61,13 @@ def test_to_datetimes_list():
         datetime.datetime(2000, 1, 2),
         datetime.datetime(2000, 1, 3),
     ]
+    assert to_datetime_list("2000-01-01/to/2000-01-05") == [
+        datetime.datetime(2000, 1, 1),
+        datetime.datetime(2000, 1, 2),
+        datetime.datetime(2000, 1, 3),
+        datetime.datetime(2000, 1, 4),
+        datetime.datetime(2000, 1, 5),
+    ]
     assert to_datetime_list("2000-01-01/to/2000-01-10/by/3") == [
         datetime.datetime(2000, 1, 1),
         datetime.datetime(2000, 1, 4),

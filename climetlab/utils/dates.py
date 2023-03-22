@@ -83,6 +83,8 @@ def to_datetime_list(datetimes):  # noqa C901
 
         if (
             len(datetimes) == 5
+            and isinstance(datetimes[1], str)
+            and isinstance(datetimes[3], str)
             and datetimes[1].lower() == "to"
             and datetimes[3].lower() == "by"
         ):
