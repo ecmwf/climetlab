@@ -128,6 +128,7 @@ class LoadersCmd:
         ),
         config=(None, dict(metavar="CONFIG", type=str)),
         path=(None, dict(metavar="PATH", type=str)),
+        verbose=dict(action="store_true"),
     )
     def do_hdf5(self, args):
         return self._loader(args, HDF5Loader(args.path))
@@ -135,6 +136,7 @@ class LoadersCmd:
     @parse_args(
         config=(None, dict(metavar="CONFIG", type=str)),
         path=(None, dict(metavar="PATH", type=str)),
+        verbose=dict(action="store_true"),
     )
     def do_zarr(self, args):
         args.dataset = None
@@ -169,16 +171,18 @@ class LoadersCmd:
         save = 0
 
         reading_chunks = None
-        for cublet in progress_bar(
+        for cubelet in progress_bar(
             total=cube.count(reading_chunks),
             iterable=cube.iterate_cubelets(reading_chunks),
         ):
+            if args.verbose:
+                print(cubelet, "mean=", cubelet.to_numpy().mean())
             now = time.time()
-            data = cublet.to_numpy()
+            data = cubelet.to_numpy()
             load += time.time() - now
 
             now = time.time()
-            array[cublet.extended_icoords] = data
+            array[cubelet.extended_icoords] = data
             save += time.time() - now
 
         now = time.time()
