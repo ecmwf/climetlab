@@ -57,7 +57,7 @@ class FieldSet(FieldSetMixin, Index):
         return None
 
     def _all_coords(self, args):
-        assert all(isinstance(k, str) for k in args), (k, type(k))
+        assert all(isinstance(k, str) for k in args), [type(k) for k in args]
 
         dic = defaultdict(dict)
         for f in self:

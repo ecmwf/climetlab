@@ -6,10 +6,10 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-from collections import defaultdict
 import itertools
 import logging
 import math
+from collections import defaultdict
 
 LOG = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ class FieldCube:
 
     def __getitem__(self, indexes):
         # indexes are user_indexes
-        print("__getitem__ user_indexes =", indexes)
+        # print("__getitem__ user_indexes =", indexes)
 
         if isinstance(indexes, int):
             indexes = [indexes]
@@ -268,7 +268,7 @@ class Cubelet:
         assert all(isinstance(_, int) for _ in indexes), indexes
         self.indexes = indexes
         self.index_names = indexes_names
-        print(self)
+        # print(self)
 
     def __repr__(self):
         return (

@@ -24,6 +24,7 @@ from .cache import CacheCmd
 from .check import CheckCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
+from .load_hdf5 import LoadHDF5Cmd
 from .load_zarr import LoadZarrCmd
 from .settings import SettingsCmd
 
@@ -66,6 +67,7 @@ class CliMetLabApp(
     GribInfoCmd,
     AvailabilityCmd,
     LoadZarrCmd,
+    LoadHDF5Cmd,
     *get_plugins(),
 ):
     # intro = 'Welcome to climetlab. Type ? to list commands.\n'
