@@ -38,6 +38,7 @@ class Loader(Source):
                     v = [v]
                 for one in v:
                     name = one.pop("name")
+                    LOG.debug(f"Using data from: {name}, {one}")
                     data.append(action(name, **one))
 
         return load_source("multi", data)

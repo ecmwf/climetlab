@@ -142,6 +142,9 @@ class Dataset(Base):
     def annotate(self, data, **kargs):
         return annotate(data, self, **kargs)
 
+    def ignore(self):
+        return self.source.ignore()
+
 
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset

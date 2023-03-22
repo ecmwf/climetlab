@@ -8,6 +8,7 @@
 #
 
 
+import logging
 import time
 
 import climetlab as cml
@@ -15,6 +16,8 @@ from climetlab.utils import progress_bar
 from climetlab.utils.humanize import seconds
 
 from .tools import parse_args
+
+LOG = logging.getLogger(__name__)
 
 
 class LoadZarrCmd:
@@ -37,7 +40,7 @@ class LoadZarrCmd:
         chunking = config["output"].get("chunking", {})
         chunks = cube.chunking(**chunking)
 
-        print(f"Creating zarr file '{args.path}', with chunks={chunks}")
+        LOG.debug(f"Creating zarr file '{args.path}', with chunks={chunks}")
 
         z = zarr.open(
             args.path,
@@ -55,18 +58,20 @@ class LoadZarrCmd:
         save = 0
 
         reading_chunks = None
-        for cublet in progress_bar(
-            total=cube.count(reading_chunks),
-            iterable=cube.iterate_cubelets(reading_chunks),
-        ):  # reading_chunks=["param"]):
-            # print(f"writing: z[{cublet.extended_icoords}] = {cublet.to_numpy().shape}")
-
+        for cubelet in (
+            pbar := progress_bar(
+                total=cube.count(reading_chunks),
+                iterable=cube.iterate_cubelets(reading_chunks),
+                # reading_chunks=["param"]
+            )
+        ):
             now = time.time()
-            data = cublet.to_numpy()
+            pbar.set_description(f"Processing {cubelet}")
+            data = cubelet.to_numpy()
             load += time.time() - now
 
             now = time.time()
-            z[cublet.extended_icoords] = data
+            z[cubelet.extended_icoords] = data
             save += time.time() - now
 
         print()
