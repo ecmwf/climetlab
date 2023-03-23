@@ -74,6 +74,8 @@ class FieldCube:
 
         print("extended_shape=", self.extended_user_shape)
 
+        self.check_shape(self.user_shape)
+
     @property
     def field_shape(self):
         if self._field_shape is None:
