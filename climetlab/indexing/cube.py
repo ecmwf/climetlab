@@ -49,14 +49,12 @@ class FieldCube:
         self._field_shape = None
         LOG.debug(f"* New FieldCube(args={args})")
 
-        ds = ds.order_by(*args)
+        self.source = ds.order_by(*args)
 
         (
             self.user_coords,
             self.internal_coords,
             self.slices,
-            self.user_indexes,
-            self.source,
         ) = self._build_coords(ds, args)
 
         LOG.debug(f"{self.internal_coords=}")
@@ -67,18 +65,13 @@ class FieldCube:
         self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
-        # for s in self.slices:
-        #     n = math.prod(self.internal_shape[s])
-        #     self.user_shape.append(n)
-        # self.user_shape = tuple(self.user_shape)
 
         print(f"{self.user_shape=}")
         print(f"{self.internal_shape=}")
 
         self.user_ndim = len(self.user_shape)
 
-        # self.check_shape(self.internal_shape)
-        # self.check_shape(self.user_shape)
+
         print("extended_shape=", self.extended_user_shape)
 
     @property
@@ -124,16 +117,16 @@ class FieldCube:
 
         # We have some splits
 
-        user_indexes = defaultdict(lambda: defaultdict(list))
+        user_coords = defaultdict(dict)
 
         for i, p in enumerate(ds.combinations(*internal_args)):
             for name, split in zip(user_args, splits):
-                user_indexes[name][
+                user_coords[name][
                     "_".join(str(p[s]) for s in split if p[s] is not None)
-                ].append(i)
-        print(user_indexes)
+                ] = True
+        print(user_coords)
 
-        user_coords = {k: list(user_indexes[k].keys()) for k in user_args}  # reordering
+        user_coords = {k: list(user_coords[k].keys()) for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
             len(ds),
             user_coords,
@@ -141,7 +134,7 @@ class FieldCube:
 
         print("user_coords", user_coords)
 
-        return user_coords, internal_coords, slices, user_indexes, ds
+        return user_coords, internal_coords, slices
 
     def squeeze(self):
         return self
