@@ -12,9 +12,8 @@ import math
 import os
 from abc import abstractmethod
 
-from climetlab.core.constants import DATETIME
 from climetlab.core.index import Index, MaskIndex, MultiIndex
-from climetlab.decorators import alias_argument, normalize
+from climetlab.decorators import alias_argument
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,

@@ -1,12 +1,21 @@
 input:
+  inherit: true
   source:
-    name: cds
-    dataset: reanalysis-era5-single-levels
-    product_type: reanalysis
-    grid: 5/5
-    date: 2000-01-01/to/2000-12-31
-    time: [0, 12]
-    variable: 2m_temperature
+    name: file
+    path: q
+    # dataset: reanalysis-era5-single-levels
+    # product_type: reanalysis
+    # grid: 5/5
+    # date: 2000-01-01/to/2000-12-31
+    # time: [0, 12]
+    # variable: 2m_temperature
+    level: off
+
+
+    name: file
+    # time: [0, 12]
+    # variable: zsz
+
 
 output:
   chunking:

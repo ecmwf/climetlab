@@ -98,6 +98,12 @@ class CodesHandle:
         self.path = path
         self.offset = offset
 
+    @classmethod
+    def from_sample(cls, name):
+        return cls(
+            eccodes.codes_new_from_samples(name, eccodes.CODES_PRODUCT_GRIB), None, None
+        )
+
     def __del__(self):
         try:
             eccodes_codes_release(self.handle)

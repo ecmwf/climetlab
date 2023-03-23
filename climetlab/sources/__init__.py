@@ -10,7 +10,6 @@
 import os
 import re
 import weakref
-from collections import defaultdict
 from importlib import import_module
 
 from climetlab.core import Base
@@ -18,7 +17,6 @@ from climetlab.core.caching import cache_file
 from climetlab.core.plugins import find_plugin
 from climetlab.core.plugins import register as register_plugin
 from climetlab.core.settings import SETTINGS
-from climetlab.utils import progress_bar
 from climetlab.utils.html import table
 
 
@@ -111,7 +109,6 @@ class Source(Base):
 
     def connect_to_mirror(self, mirror):
         return None
-
 
 
 class SourceLoader:

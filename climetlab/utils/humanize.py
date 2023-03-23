@@ -282,14 +282,14 @@ def dict_to_human(query):
     return list_to_human(lst)
 
 
-def list_to_human(lst):
+def list_to_human(lst, conjunction="and"):
     if not lst:
         return "??"
 
     if len(lst) > 2:
         lst = [", ".join(lst[:-1]), lst[-1]]
 
-    return " and ".join(lst)
+    return f" {conjunction} ".join(lst)
 
 
 def as_number(value, name, units, none_ok):
