@@ -16,6 +16,18 @@ from .codes import CodesHandle
 
 LOG = logging.getLogger(__name__)
 
+# Make sure the
+
+ORDER = ("edition", "levtype", "levelist")
+ORDER = {k: i for i, k in enumerate(ORDER)}
+
+
+def order(kv):
+    name, _ = kv
+    if name not in ORDER:
+        ORDER[name] = len(ORDER)
+    return ORDER[name]
+
 
 class GribOutput:
     def __init__(self, filename, template=None, **kwargs):
@@ -42,6 +54,8 @@ class GribOutput:
             handle = self.handle_from_metadata(values, metadata)
         else:
             handle = template.handle.clone()
+
+        metadata = {k: v for k, v in sorted(metadata.items(), key=order)}
 
         LOG.debug("GribOutput.metadata %s", metadata)
 
@@ -86,6 +100,9 @@ class GribOutput:
             if "step" in metadata:
                 metadata["type"] = "fc"
 
+        if "levelist" in metadata:
+            metadata.setdefault("levtype", "pl")
+
         if "param" in metadata:
             param = metadata.pop("param")
             try:
@@ -126,10 +143,16 @@ class GribOutput:
 
         # We assume the scanning mode north->south, west->east
         west_east = 360 / Ni
-        north_south = 181 / Nj
 
-        north = 90
-        south = -90
+        if Nj % 2 == 0:
+            north_south = 180 / Nj
+            adjust = 0
+        else:
+            north_south = 181 / Nj
+            adjust = north_south / 2
+
+        north = 90 - adjust
+        south = -90 + adjust
         west = 0
         east = 360 - west_east
 
@@ -144,7 +167,7 @@ class GribOutput:
         edition = metadata.get("edition", 1)
         levtype = metadata.get("levtype")
         if levtype is None:
-            if "level" in metadata:
+            if "levelist" in metadata:
                 levtype = "pl"
             else:
                 levtype = "sfc"

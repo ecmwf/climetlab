@@ -9,9 +9,10 @@ import climetlab as cml
 
 # cmlds = cml.load_source("indexed-directory", "/lus/h2resw01/fws4/lb/project/ai-ml/test")
 cmlds = cml.load_source(
-    "indexed-directory", "/lus/h2resw01/fws4/lb/project/ai-ml/era5-for-ai"
-    #datetime=['date', 'time']
-    #datetime=['valid_date + valid_time']
+    "indexed-directory",
+    "/lus/h2resw01/fws4/lb/project/ai-ml/era5-for-ai"
+    # datetime=['date', 'time']
+    # datetime=['valid_date + valid_time']
 )
 cmlds = cmlds.sel(date=[19790501, 19790502])
 # cmlds = cml.load_source("indexed-directory", "testdir")
@@ -51,17 +52,17 @@ assert f.to_numpy().shape == (721, 1440), f
 def f(year, param_level, time):
     # implicit: all date in the year
     assert isinstance(year, int)
-    assert isinstance(param_level, (list, tuple)) #all str
-    assert isinstance(time, (list, tuple)) #all str
-    assert time[0] == '00:00'
-    assert time[1] == '06:00'
-    assert time[2] == '12:00'
-    assert time[3] == '18:00'
+    assert isinstance(param_level, (list, tuple))  # all str
+    assert isinstance(time, (list, tuple))  # all str
+    assert time[0] == "00:00"
+    assert time[1] == "06:00"
+    assert time[2] == "12:00"
+    assert time[3] == "18:00"
 
     ###
 
-    arr =  np.array()
-    assert arr.shape(20, 365 , 4, 721, 1440)
+    arr = np.array()
+    assert arr.shape(20, 365, 4, 721, 1440)
 
-    assert arr.shape(20*37, 365 , 4, 721, 1440)
+    assert arr.shape(20 * 37, 365, 4, 721, 1440)
     return arr

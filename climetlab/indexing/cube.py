@@ -71,7 +71,6 @@ class FieldCube:
 
         self.user_ndim = len(self.user_shape)
 
-
         print("extended_shape=", self.extended_user_shape)
 
         self.check_shape(self.user_shape)
