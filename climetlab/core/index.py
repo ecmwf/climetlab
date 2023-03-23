@@ -11,9 +11,9 @@
 import datetime
 import functools
 import logging
+import math
 from abc import abstractmethod
 from collections import defaultdict
-import math
 
 import climetlab as cml
 from climetlab.sources import Source
@@ -267,7 +267,7 @@ class Index(Source):
         if isinstance(n, slice):
             return self.from_slice(n)
         if isinstance(n, (list, tuple)):
-            return self.from_list(n)
+            return self.from_mask(n)
         if isinstance(n, dict):
             return self.from_dict(n)
         return self._getitem(n)
@@ -276,9 +276,12 @@ class Index(Source):
         indices = range(len(self))[s]
         return self.new_mask_index(self, indices)
 
-    def from_list(self, lst):
+    def from_mask(self, lst):
         indices = [i for i, x in enumerate(lst) if x]
         return self.new_mask_index(self, indices)
+
+    def from_list(self, lst):
+        return self.new_mask_index(self, lst)
 
     def from_dict(self, dic):
         return self.sel(dic)
@@ -374,10 +377,12 @@ class FullIndex(Index):
             self.holes[idx] = True
 
         self.holes = self.holes.flatten()
+        print('+++++++++', self.holes.shape, coords, self.shape)
 
     def __len__(self):
         return self.size
 
     def _getitem(self, n):
+        return self.index[n]
         assert self.holes[n], f"Attempting to access hole {n}"
         return self.index[sum(self.holes[:n])]

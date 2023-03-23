@@ -21,8 +21,9 @@ def coords_to_index(coords, shape):
     while i >= 0:
         a += coords[i] * n
         n *= shape[i]
-        i -=1
+        i -= 1
     return a
+
 
 def index_to_coords(index, shape):
     result = [None] * len(shape)
@@ -31,8 +32,9 @@ def index_to_coords(index, shape):
     while i >= 0:
         result[i] = index % shape[i]
         index = index // shape[i]
-        i -=1
+        i -= 1
     return tuple(result)
+
 
 class FieldCube:
     def __init__(self, ds, *args, datetime="valid"):
@@ -47,15 +49,20 @@ class FieldCube:
         self._field_shape = None
         LOG.debug(f"* New FieldCube(args={args})")
 
-        self.source = ds.order_by(*args)
+        ds = ds.order_by(*args)
 
-        self.user_coords, self.internal_coords, self.slices, self.user_indexes = self._build_coords(
-            self.source, args
-        )
+        (
+            self.user_coords,
+            self.internal_coords,
+            self.slices,
+            self.user_indexes,
+            self.source,
+        ) = self._build_coords(ds, args)
+
 
         LOG.debug(f"{self.internal_coords=}")
         LOG.debug(f"{self.user_coords=}")
-        LOG.debug("slices=", self.slices)
+        LOG.debug(f"{self.slices=}")
         print(f"{self.slices=}")
 
         self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
@@ -72,18 +79,19 @@ class FieldCube:
         self.user_ndim = len(self.user_shape)
 
         # self.check_shape(self.internal_shape)
-        self.check_shape(self.user_shape)
-        LOG.debug("extended_shape=", self.extended_user_shape)
+        # self.check_shape(self.user_shape)
+        print("extended_shape=", self.extended_user_shape)
 
     @property
     def field_shape(self):
         if self._field_shape is None:
             self._field_shape = self.source[0].shape
-            LOG.debug("fieldshape=", self._field_shape)
+            print("fieldshape=", self._field_shape)
         return self._field_shape
 
     @property
     def extended_user_shape(self):
+        # print(self.user_shape , self.field_shape)
         return self.user_shape + self.field_shape
 
     @property
@@ -113,11 +121,11 @@ class FieldCube:
         internal_coords = ds.unique_values(*internal_args)
 
         if all(len(s) == 1 for s in splits):
-            return internal_coords, internal_coords, slices
+            return internal_coords, internal_coords, slices, ds
 
         # We have some splits
 
-        user_indexes = defaultdict(lambda : defaultdict(list))
+        user_indexes = defaultdict(lambda: defaultdict(list))
 
         for i, p in enumerate(ds.combinations(*internal_args)):
             for name, split in zip(user_args, splits):
@@ -134,7 +142,7 @@ class FieldCube:
 
         print("user_coords", user_coords)
 
-        return user_coords, internal_coords, slices, user_indexes
+        return user_coords, internal_coords, slices, user_indexes, ds
 
     def squeeze(self):
         return self
@@ -152,6 +160,7 @@ class FieldCube:
             raise ValueError(f"{msg}")
 
     def __getitem__(self, indexes):
+        original = indexes
         # indexes are user_indexes
 
         if isinstance(indexes, int):
@@ -168,72 +177,28 @@ class FieldCube:
         while len(indexes) < self.user_ndim:
             indexes.append(slice(None, None, None))
 
-        assert len(indexes) == len(self.user_shape), (indexes, self.user_shape)
-        print(indexes, self.user_shape)
+        coords = []
+        for s, c in zip(indexes, self.user_coords.values()):
+            lst = list(range(len(c)))[s]
+            if not isinstance(lst, list):
+                lst = [lst]
+            coords.append(lst)
 
 
 
+        print(f'XXXXX {original=} => {coords=}', self.user_shape)
+        indexes = []
+        user_shape = self.user_shape
+        for x in itertools.product(*coords):
+            i = coords_to_index(x, user_shape)
+            print(x, "--->", i)
+            indexes.append(i)
+        print('======>>>>>', indexes)
 
-        print(self.user_indexes)
+        if all(len(_) == 1 for _ in coords):
+            return self.source.from_list(indexes)[0]
 
-        u_names = list(self.user_coords.keys())
-        i_names = list(self.internal_coords.keys())
-        print(u_names)
-        print()
-        for name, s, user_index in zip(u_names, self.slices, indexes):
-            print('*',name, "slice=",i_names[s], user_index)
-            ind = [i_value_to_index(i_names, _) for _ in i_names[s]]
-            print(ind)
-            
-
-        print()
-        assert False
-
-        u_args = []
-        selection_dict = defaultdict(list)
-        
-        selection_indexes = []
-        
-        
-        for one in itertools.product(indexes):
-            print(one)
-            u_names = self.user_coords.keys()
-
-
-
-
-
-        u_names = self.user_coords.keys()
-        assert len(u_names) == len(indexes), (u_names, indexes, self.user_coords)
-        for i, u_name in zip(indexes, u_names):
-            u_values = self.user_coords[u_name]
-
-            if isinstance(i, int):
-                if i >= len(u_values):
-                    raise IndexError(f"index {i} out of range in {u_name} = {u_values}")
-
-            if isinstance(i, slice):
-                u_args.append(u_name)
-
-            u_list = u_values[i]
-            if not isinstance(u_list, (list, tuple)):
-                u_list = [u_list]
-                assert not isinstance(i, slice)
-
-            if "_" not in u_name:
-                selection_dict[u_name] = u_list
-            else:
-                internal_names = u_name.split("_")
-                for u_value in u_list:
-                    internal_values = u_value.split("_")
-                    assert len(internal_values) == len(internal_names)
-                    for n, v in zip(internal_names, internal_values):
-                        if v != "None":
-                            # TODO: decide for param_level = "2t" or = "2t_None"
-                            selection_dict[n].append(v)
-
-        _ds = self.source[selection_indexes]
-        return FieldCube(_ds, *u_args)
+        return FieldCube(self.source.from_list(indexes), *self.user_coords)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
