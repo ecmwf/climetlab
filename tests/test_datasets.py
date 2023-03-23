@@ -25,7 +25,6 @@ def test_dataset_2():
     dataset.sample_bufr_data()
 
 
-@pytest.mark.skip(reason="Mars access currently restricted")  # TODO: remove this line
 @pytest.mark.long_test
 def test_era5_temperature():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
@@ -34,7 +33,6 @@ def test_era5_temperature():
     cml.load_dataset("era5-temperature", period=(1979, 1982), domain="France", time=12)
 
 
-@pytest.mark.skip(reason="Mars access currently restricted")  # TODO: remove this line
 @pytest.mark.long_test
 def test_datetime():
     if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
