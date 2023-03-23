@@ -42,7 +42,7 @@ def test_datetime():
         "era5-temperature", domain="france", period=(1980,), time=12
     )
     data["1980-12-09 12:00"]
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(ValueError):
         data.sel(date="1980-12-09 12:00")
 
 
