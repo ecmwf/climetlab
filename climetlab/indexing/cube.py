@@ -14,6 +14,26 @@ from collections import defaultdict
 LOG = logging.getLogger(__name__)
 
 
+def coords_to_index(coords, shape):
+    a = 0
+    n = 1
+    i = len(coords) - 1
+    while i >= 0:
+        a += coords[i] * n
+        n *= shape[i]
+        i -=1
+    return a
+
+def index_to_coords(index, shape):
+    result = [None] * len(shape)
+    i = len(shape) - 1
+
+    while i >= 0:
+        result[i] = index % shape[i]
+        index = index // shape[i]
+        i -=1
+    return tuple(result)
+
 class FieldCube:
     def __init__(self, ds, *args, datetime="valid"):
         assert len(ds), f"No data in {ds}"
@@ -29,13 +49,14 @@ class FieldCube:
 
         self.source = ds.order_by(*args)
 
-        self.user_coords, self.internal_coords, self.slices = self._build_coords(
+        self.user_coords, self.internal_coords, self.slices, self.user_indexes = self._build_coords(
             self.source, args
         )
 
         LOG.debug(f"{self.internal_coords=}")
         LOG.debug(f"{self.user_coords=}")
         LOG.debug("slices=", self.slices)
+        print(f"{self.slices=}")
 
         self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
 
@@ -97,15 +118,16 @@ class FieldCube:
 
         # We have some splits
 
-        user_coords = defaultdict(dict)
+        user_indexes = defaultdict(lambda : defaultdict(list))
 
-        for p in ds.combinations(*internal_args):
+        for i, p in enumerate(ds.combinations(*internal_args)):
             for name, split in zip(user_args, splits):
-                user_coords[name][
+                user_indexes[name][
                     "_".join(str(p[s]) for s in split if p[s] is not None)
-                ] = True
+                ].append(i)
+        print(user_indexes)
 
-        user_coords = {k: list(user_coords[k].keys()) for k in user_args}  # reordering
+        user_coords = {k: list(user_indexes[k].keys()) for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
             len(ds),
             user_coords,
@@ -113,7 +135,7 @@ class FieldCube:
 
         print("user_coords", user_coords)
 
-        return user_coords, internal_coords, slices
+        return user_coords, internal_coords, slices, user_indexes
 
     def squeeze(self):
         return self
@@ -148,9 +170,39 @@ class FieldCube:
             indexes.append(slice(None, None, None))
 
         assert len(indexes) == len(self.user_shape), (indexes, self.user_shape)
+        print(indexes, self.user_shape)
+
+
+
+
+        print(self.user_indexes)
+
+        u_names = list(self.user_coords.keys())
+        i_names = list(self.internal_coords.keys())
+        print(u_names)
+        print()
+        for name, s, user_index in zip(u_names, self.slices, indexes):
+            print('*',name, "slice=",i_names[s], user_index)
+            ind = [i_value_to_index(i_names, _) for _ in i_names[s]]
+            print(ind)
+            
+
+        print()
+        assert False
 
         u_args = []
         selection_dict = defaultdict(list)
+        
+        selection_indexes = []
+        
+        
+        for one in itertools.product(indexes):
+            print(one)
+            u_names = self.user_coords.keys()
+
+
+
+
 
         u_names = self.user_coords.keys()
         assert len(u_names) == len(indexes), (u_names, indexes, self.user_coords)
@@ -181,16 +233,7 @@ class FieldCube:
                             # TODO: decide for param_level = "2t" or = "2t_None"
                             selection_dict[n].append(v)
 
-        if all(isinstance(x, int) for x in indexes):
-            # # optimized version, we could use :
-            # np.ravel_multi_index(indexes, self.internal_shape)
-            # return self.source[i]
-            # non-optimized version:
-            _ds = self.source.sel(selection_dict)
-            assert len(_ds) == 1, (len(_ds), selection_dict, f"{indexes=}")
-            return _ds[0]
-
-        _ds = self.source.sel(selection_dict)
+        _ds = self.source[selection_indexes]
         return FieldCube(_ds, *u_args)
 
     def to_numpy(self, **kwargs):
