@@ -398,6 +398,9 @@ class Cache(threading.Thread):
             except OSError:
                 pass
 
+        # Detach from sqlite
+        entry = dict(**entry)
+
         if entry["size"] is None:
             entry["size"] = 0
 

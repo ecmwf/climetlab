@@ -11,7 +11,6 @@ import logging
 import os
 from urllib.parse import urlparse
 
-import s3fs
 import xarray as xr
 import zarr
 
@@ -39,6 +38,8 @@ class Cache:
 
 
 def url_to_s3_store(url, user=None, password=None):
+    import s3fs
+
     bits = url.split("/")
     if bits[0] == "s3:":
         bits[0] = "https:"

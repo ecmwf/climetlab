@@ -169,3 +169,5 @@ benchmark.json
 *.grib
 tempCodeRunnerFile.py
 *.dot
+*.zarr/
+testdata/

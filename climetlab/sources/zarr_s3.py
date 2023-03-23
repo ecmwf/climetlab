@@ -9,7 +9,6 @@
 
 import logging
 
-import s3fs
 import xarray as xr
 import zarr
 
@@ -44,6 +43,8 @@ class ZarrS3(Source):
             urls = [urls]
 
         def url_to_store(url):
+            import s3fs
+
             bits = url.split("/")
 
             url = "/".join(bits[:3])
