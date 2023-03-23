@@ -39,18 +39,18 @@ class FieldCube:
 
         self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
 
-        self.user_shape = []
-        for s in self.slices:
-            n = math.prod(self.internal_shape[s])
-            self.user_shape.append(n)
-        self.user_shape = tuple(self.user_shape)
+        self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
+        # for s in self.slices:
+        #     n = math.prod(self.internal_shape[s])
+        #     self.user_shape.append(n)
+        # self.user_shape = tuple(self.user_shape)
 
-        LOG.debug(f"{self.user_shape=}")
-        LOG.debug(f"{self.internal_shape=}")
+        print(f"{self.user_shape=}")
+        print(f"{self.internal_shape=}")
 
         self.user_ndim = len(self.user_shape)
 
-        self.check_shape(self.internal_shape)
+        # self.check_shape(self.internal_shape)
         self.check_shape(self.user_shape)
         LOG.debug("extended_shape=", self.extended_user_shape)
 
@@ -98,7 +98,6 @@ class FieldCube:
         # We have some splits
 
         user_coords = defaultdict(dict)
-        internal_coords = defaultdict(dict)
 
         for p in ds.combinations(*internal_args):
             for name, split in zip(user_args, splits):
@@ -106,7 +105,7 @@ class FieldCube:
                     "_".join(str(p[s]) for s in split if p[s] is not None)
                 ] = True
 
-        user_coords = {k: list(user_coords[k]) for k in user_args}  # reordering
+        user_coords = {k: list(user_coords[k].keys()) for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
             len(ds),
             user_coords,
@@ -125,7 +124,7 @@ class FieldCube:
         # return FieldCube(self.source, *args, datetime=self.datetime)
 
     def check_shape(self, shape):
-        LOG.debug("shape=", shape)
+        print("XXXX shape=", shape)
         if math.prod(shape) != len(self.source):
             msg = f"{shape} -> {math.prod(shape)} requested fields != {len(self.source)} available fields. "
             print("ERROR:", msg)
