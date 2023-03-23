@@ -196,20 +196,39 @@ class CodesHandle:
         eccodes.codes_set_long(self.handle, "generatingProcessIdentifier", 255)
 
     def set_long(self, name, value):
-        assert self.path is None, "Only cloned handles can have values changed"
-        eccodes.codes_set_long(self.handle, name, value)
+        try:
+            assert self.path is None, "Only cloned handles can have values changed"
+            eccodes.codes_set_long(self.handle, name, value)
+        except Exception as e:
+            LOG.error("Error setting %s=%s", name, value)
+            LOG.exception(e)
 
     def set_double(self, name, value):
-        assert self.path is None, "Only cloned handles can have values changed"
-        eccodes.codes_set_double(self.handle, name, value)
+        try:
+            assert self.path is None, "Only cloned handles can have values changed"
+            eccodes.codes_set_double(self.handle, name, value)
+        except Exception as e:
+            LOG.error("Error setting %s=%s", name, value)
+            LOG.exception(e)
 
     def set_string(self, name, value):
-        assert self.path is None, "Only cloned handles can have values changed"
-        eccodes.codes_set_string(self.handle, name, value)
+        try:
+            assert self.path is None, "Only cloned handles can have values changed"
+            eccodes.codes_set_string(self.handle, name, value)
+        except Exception as e:
+            LOG.error("Error setting %s=%s", name, value)
+            LOG.exception(e)
 
     def set(self, name, value):
-        assert self.path is None, "Only cloned handles can have values changed"
-        eccodes.codes_set(self.handle, name, value)
+        try:
+            assert self.path is None, "Only cloned handles can have values changed"
+            if isinstance(value, list):
+                return eccodes.codes_set_array(self.handle, name, value)
+            else:
+                return eccodes.codes_set(self.handle, name, value)
+        except Exception as e:
+            LOG.error("Error setting %s=%s", name, value)
+            LOG.exception(e)
 
     def write(self, f):
         eccodes.codes_write(self.handle, f)

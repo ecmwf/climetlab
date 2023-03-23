@@ -175,7 +175,51 @@ class GribOutput:
         return f"regular_ll_{levtype}_grib{edition}"
 
     def _gg_field(self, values, metadata):
-        raise NotImplementedError()
+
+        GAUSSIAN = {
+            6114: (32, False),
+            13280: (48, False),
+            24572: (64, False),
+            35718: (80, False),
+            40320: (96, True),
+            50662: (96, False),
+            88838: (128, False),
+            138346: (160, False),
+            213988: (200, False),
+            348528: (256, False),
+            542080: (320, False),
+            843490: (400, False),
+            1373624: (512, False),
+            2140702: (640, False),
+            5447118: (1024, False),
+            8505906: (1280, False),
+            20696844: (2000, False),
+        }
+
+        n = len(values)
+        if n not in GAUSSIAN:
+            raise ValueError(f"Unsupported GAUSSIAN grid. Number of grid points {n:,}")
+        N, octahedral = GAUSSIAN[n]
+
+        metadata["N"] = N
+        if octahedral:
+            half = list(range(20, 20 + N * 4, 4))
+            pl = half + list(reversed(half))
+            assert len(pl) == 2 * N, (len(pl), 2 * N)
+            metadata["pl"] = pl
+
+        edition = metadata.get("edition", 1)
+        levtype = metadata.get("levtype")
+        if levtype is None:
+            if "levelist" in metadata:
+                levtype = "pl"
+            else:
+                levtype = "sfc"
+
+        if octahedral:
+            return f"reduced_gg_{levtype}_grib{edition}"
+        else:
+            return f"reduced_gg_{levtype}_{N}_grib{edition}"
 
 
 def new_grib_output(*args, **kwargs):

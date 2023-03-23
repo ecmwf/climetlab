@@ -31,3 +31,16 @@ f.write(
 )
 
 print(os.path.getsize("test2.grib"))
+
+f = cml.new_grib_output("test3.grib")
+
+f.write(
+    np.random.rand(40320),
+    metadata=dict(
+        param="msl",
+        date="1990-01-01T12:00",
+        expver="xxxx",
+    ),
+)
+
+print(os.path.getsize("test3.grib"))
