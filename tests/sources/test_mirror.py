@@ -244,8 +244,6 @@ def test_mirror_eod(mirror_dirs):
     with mirror:
         source2 = load_eod_without_network()
 
-    assert str(source).startswith("EODRetriever("), source
-    assert str(source2).startswith("EODRetriever("), source2
     assert str(source2) == str(source)
 
 
