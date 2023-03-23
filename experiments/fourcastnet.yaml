@@ -1,37 +1,33 @@
 input:
-  dataset:
-    - name: era5-for-ai
-      date: '2000-01-01/to/2000-01-02'
-      time: [0, 600, 1200, 1800]
-      param: [u10, v10, t2m, sp, msl, tcwv]
-      levtype: sfc
+  inherit: true
+  source:
+  - name: cds
+    dataset: era5-complete
+    class: ea
+    date: '2000-01-01/to/2000-01-02'
+    time: ['0000', '0600', '1200', '1800']
+    param: [10u, 10v, 2t, sp, msl, tcwv]
+    levtype: sfc
+    grid: [0.25, 0.25]
 
-    - name: era5-for-ai
-      date: '2000-01-01/to/2000-01-02'
-      time: [0, 600, 1200, 1800]
-      param: [u, v]
-      level: [1000, 850, 500]
-      levtype: pl
+  - name: cds
+    param: [u, v]
+    level: [1000, 850, 500]
+    levtype: pl
 
-    - name: era5-for-ai
-      date: '2000-01-01/to/2000-01-02'
-      time: [0, 600, 1200, 1800]
-      param: z
-      level: [1000, 850, 500, 50]
-      levtype: pl
+  - name: cds
+    param: z
+    level: [1000, 850, 500, 50]
 
-    - name: era5-for-ai
-      date: '2000-01-01/to/2000-01-02'
-      time: [0, 600, 1200, 1800]
-      param: [t, r]
-      level: [850, 500]
-      levtype: pl
+  - name: cds
+    param: [t, r]
+    level: [850, 500]
 
 
 output:
   chunking:
     date: 1
   order:
-    - datetime
-    - param_level
+  - datetime
+  - param_level
   dtype: float32

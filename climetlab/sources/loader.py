@@ -31,13 +31,20 @@ class Loader(Source):
 
     def mutate(self):
         data = []
+        inherit = False
         for k, v in self.config.items():
+            if k == "inherit":
+                inherit = v
             action = ACTIONS.get(k)
             if action is not None:
                 if not isinstance(v, list):
                     v = [v]
+                last = {}
                 for one in v:
                     name = one.pop("name")
+                    if inherit:
+                        last.update(one)
+                        one = last
                     LOG.debug(f"Using data from: {name}, {one}")
                     data.append(action(name, **one))
 

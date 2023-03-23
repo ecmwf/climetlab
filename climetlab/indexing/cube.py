@@ -13,22 +13,6 @@ from collections import defaultdict
 
 LOG = logging.getLogger(__name__)
 
-# class Cube:
-#     def __init__(self, ds, *args, **kwargs):
-#         assert args[-1] == "lon"
-#         assert args[-2] == "lat"
-#         args = args[:-2]
-#         self._shape_spatial = ds[0].shape
-#         self.field_cube = FieldCube(ds, *args, **kwargs)
-#         self.shape = self.field_cube.shape + self._shape_spatial
-#
-#     def __getitem__(self, indexes):
-#         item = self.field_cube[indexes[:-2]]
-#         return item.to_numpy()[indexes[-2:]]
-#
-#     def to_numpy(self):
-#         return self.ds.to_numpy(**kwargs).reshape(self.shape)
-
 
 class FieldCube:
     def __init__(self, ds, *args, datetime="valid"):
@@ -105,52 +89,47 @@ class FieldCube:
     def _build_coords(self, ds, args):
         user_args = args
         internal_args, slices, splits = self._transform_args(args)
-
         internal_coords = ds.unique_values(*internal_args)
-        internal_coords = {k: internal_coords[k] for k in internal_args}  # reordering
-        if math.prod(len(v) for v in internal_coords.values()) != len(ds):
-            LOG.warn(
-                "Input cube is not full (expected when mixing pressure levels and surface fields)"
-            )
 
-        user_coords = {}
-        for a, s in zip(user_args, splits):
-            if len(s) == 1:
-                user_coords[a] = internal_coords[a]
-                continue
+        if all(len(s) == 1 for s in splits):
 
-            lists = [internal_coords[k] for k in s]
+            return internal_coords, internal_coords, slices
 
-            prod = []
-            for tupl in itertools.product(*lists):
-                assert len(tupl) == len(s), (tupl, s)
-                joined = "_".join([str(x) for x in tupl])
-                prod.append(joined)
+        # We have some splits
 
-            user_coords[a] = prod
+        user_coords = defaultdict(dict)
+        internal_coords = defaultdict(dict)
 
-        user_coords = {k: user_coords[k] for k in user_args}  # reordering
+        for p in ds.combinations(*internal_args):
+            for name, split in zip(user_args, splits):
+                user_coords[name][
+                    "_".join(str(p[s]) for s in split if p[s] is not None)
+                ] = True
+
+        user_coords = {k: list(user_coords[k]) for k in user_args}  # reordering
         assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
             len(ds),
             user_coords,
         )
 
+        print("user_coords", user_coords)
+
         return user_coords, internal_coords, slices
 
     def squeeze(self):
         return self
-        args = [k for k, v in self.coords.items() if len(v) > 1]
-        if not args:
-            # LOG.warn...
-            return self
-        return FieldCube(self.source, *args, datetime=self.datetime)
+        # args = [k for k, v in self.coords.items() if len(v) > 1]
+        # if not args:
+        #     # LOG.warn...
+        #     return self
+        # return FieldCube(self.source, *args, datetime=self.datetime)
 
     def check_shape(self, shape):
         LOG.debug("shape=", shape)
         if math.prod(shape) != len(self.source):
             msg = f"{shape} -> {math.prod(shape)} requested fields != {len(self.source)} available fields. "
             print("ERROR:", msg)
-            raise ValueError(f"{msg}\n{self.source.availability}")
+            raise ValueError(f"{msg}")
 
     def __getitem__(self, indexes):
         # indexes are user_indexes

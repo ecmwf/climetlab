@@ -161,6 +161,21 @@ class Base(metaclass=MetaBase):
         print("uniques values: ", dic)
         return dic
 
+    def combinations(self, *coords, progress_bar=True):
+
+        assert all(isinstance(k, str) for k in coords), coords
+
+        iterable = self
+
+        if progress_bar:
+            iterable = climetlab.utils.progress_bar(
+                iterable=self,
+                desc=f"Finding coords in dataset for {coords}",
+            )
+
+        for f in iterable:
+            yield {k: f.metadata(k) for k in coords}
+
     def _not_implemented(self):
         import inspect
 
