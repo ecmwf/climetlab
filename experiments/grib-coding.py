@@ -1,4 +1,6 @@
-import os, np
+import os
+
+import np
 
 import climetlab as cml
 import climetlab.debug
@@ -9,9 +11,9 @@ f.write(
     np.random.rand((181, 360)),
     metadata=dict(
         param="msl",
-        date="1990-01-01T12:00",
-        expver='pagu'
-    )
+        date="1990- 01-01T12:00",
+        expver="xxxx",
+    ),
 )
 
 print(os.path.getsize("test.grib"))

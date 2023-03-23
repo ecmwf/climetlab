@@ -162,7 +162,6 @@ class Base(metaclass=MetaBase):
         return dic
 
     def combinations(self, *coords, progress_bar=True):
-
         assert all(isinstance(k, str) for k in coords), coords
 
         iterable = self

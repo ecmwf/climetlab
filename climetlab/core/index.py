@@ -12,6 +12,8 @@ import datetime
 import functools
 import logging
 from abc import abstractmethod
+from collections import defaultdict
+import math
 
 import climetlab as cml
 from climetlab.sources import Source
@@ -291,6 +293,9 @@ class Index(Source):
 
         return torch.Tensor(self.to_numpy(*args, **kwargs))
 
+    def full(self, *coords):
+        return FullIndex(self, *coords)
+
 
 class MaskIndex(Index):
     def __init__(self, index, indices):
@@ -344,9 +349,35 @@ class MultiIndex(Index):
         return "MultiFieldSet(%s)" % ",".join(repr(i) for i in self.indexes)
 
 
-class ForwardingIndex(Index):
-    def __init__(self, index):
+class FullIndex(Index):
+    def __init__(self, index, *coords):
+        import numpy as np
+
         self.index = index
 
+        # Pass1, unique values
+        unique = index.unique_values(*coords)
+        shape = tuple(len(v) for v in unique.values())
+
+        name_to_index = defaultdict(dict)
+
+        for k, v in unique.items():
+            for i, e in enumerate(v):
+                name_to_index[k][e] = i
+
+        self.size = math.prod(shape)
+        self.shape = shape
+        self.holes = np.full(shape, False)
+
+        for f in index:
+            idx = tuple(name_to_index[k][f.metadata(k)] for k in coords)
+            self.holes[idx] = True
+
+        self.holes = self.holes.flatten()
+
     def __len__(self):
-        return len(self.index)
+        return self.size
+
+    def _getitem(self, n):
+        assert self.holes[n], f"Attempting to access hole {n}"
+        return self.index[sum(self.holes[:n])]
