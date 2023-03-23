@@ -59,7 +59,6 @@ class FieldCube:
             self.source,
         ) = self._build_coords(ds, args)
 
-
         LOG.debug(f"{self.internal_coords=}")
         LOG.debug(f"{self.user_coords=}")
         LOG.debug(f"{self.slices=}")
@@ -184,16 +183,14 @@ class FieldCube:
                 lst = [lst]
             coords.append(lst)
 
-
-
-        print(f'XXXXX {original=} => {coords=}', self.user_shape)
+        print(f"XXXXX {original=} => {coords=}", self.user_shape)
         indexes = []
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
             print(x, "--->", i)
             indexes.append(i)
-        print('======>>>>>', indexes)
+        print("======>>>>>", indexes)
 
         if all(len(_) == 1 for _ in coords):
             return self.source.from_list(indexes)[0]

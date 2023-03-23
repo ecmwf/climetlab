@@ -377,7 +377,7 @@ class FullIndex(Index):
             self.holes[idx] = True
 
         self.holes = self.holes.flatten()
-        print('+++++++++', self.holes.shape, coords, self.shape)
+        print("+++++++++", self.holes.shape, coords, self.shape)
 
     def __len__(self):
         return self.size
