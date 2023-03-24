@@ -168,8 +168,14 @@ class FieldCube:
         )
 
     def chunking(self, **chunks):
-        # TODO
-        return True
+        if not chunks:
+            return True  # Let ZARR choose
+
+        lst = list(self.user_shape)
+        for i, name in enumerate(self.user_coords):
+            lst[i] = chunks.get(name, lst[i])
+
+        return tuple(lst)
 
 
 class Cubelet:
