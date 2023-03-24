@@ -8,6 +8,7 @@
 #
 
 
+import itertools
 import json
 import os
 import re
@@ -80,28 +81,52 @@ def build_remapping(mapping):
     return mapping
 
 
+class OffsetView:
+    def __init__(self, array, offset):
+        self.array = array
+        self.offset = offset
+
+    def __setitem__(self, key, value):
+        key = (key[0] + self.offset,) + key[1:]
+        self.array[key] = value
+
+
 class ZarrLoader:
     def __init__(self, path):
         self.path = path
 
-    def create_array(self, dataset, shape, chunks, dtype, metadata):
+    def create_array(self, dataset, shape, chunks, dtype, metadata, append):
         import zarr
 
         print(
             f"Creating ZARR file '{self.path}', with {shape=}, {chunks=} and {dtype=}"
         )
 
-        self.z = zarr.open(
-            self.path,
-            mode="w",
-            shape=shape,
-            chunks=chunks,
-            dtype=dtype,
-        )
+        if append:
+            self.z = zarr.open(self.path, mode="r+")
 
-        self.z.attrs["climetlab"] = _tidy(metadata)
+            original_shape = self.z.shape
 
-        return self.z
+            assert original_shape[1:] == shape[1:]
+
+            new_shape = (original_shape[0] + shape[0],) + shape[1:]
+
+            self.z.resize(new_shape)
+
+            return OffsetView(self.z, original_shape[0])
+
+        else:
+            self.z = zarr.open(
+                self.path,
+                mode="w",
+                shape=shape,
+                chunks=chunks,
+                dtype=dtype,
+            )
+
+            self.z.attrs["climetlab"] = _tidy(metadata)
+
+            return self.z
 
     def close(self):
         pass
@@ -114,8 +139,11 @@ class HDF5Loader:
     def __init__(self, path):
         self.path = path
 
-    def create_array(self, dataset, shape, chunks, dtype, metadata):
+    def create_array(self, dataset, shape, chunks, dtype, metadata, append):
         import h5py
+
+        if append:
+            raise NotImplementedError("Appending do HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -161,8 +189,9 @@ class HDF5Loader:
             h5_tree(f, 1)
 
 
-def load(loader, manifest, dataset=None):
-    config = load_json_or_yaml(manifest)
+def _load(loader, config, append, dataset=None):
+
+    print("Loading dataset", config)
 
     data = cml.load_source("loader", config["input"])
     output = config["output"]
@@ -187,6 +216,7 @@ def load(loader, manifest, dataset=None):
         chunks,
         dtype,
         config,
+        append,
     )
 
     start = time.time()
@@ -219,3 +249,38 @@ def load(loader, manifest, dataset=None):
         f" load time: {seconds(load)},"
         f" write time: {seconds(save)}."
     )
+
+
+def substitute(x, vars):
+
+    if isinstance(x, (tuple, list)):
+        return [substitute(y, vars) for y in x]
+
+    if isinstance(x, dict):
+        return {k: substitute(v, vars) for k, v in x.items()}
+
+    if isinstance(x, str):
+        return re.sub(r"\$(\w+)", lambda y: str(vars[y.group(1)]), x)
+
+    return x
+
+
+def load(loader, manifest, append=False, **kwargs):
+    config = load_json_or_yaml(manifest)
+    loop = config.get("loop")
+    if loop is None:
+        _load(loader, config, append, **kwargs)
+        return
+
+    def loops():
+        yield from (
+            dict(zip(loop.keys(), items))
+            for items in itertools.product(
+                *loop.values(),
+            )
+        )
+
+    for vars in loops():
+        print(vars)
+        _load(loader, substitute(config, vars), append=append, **kwargs)
+        append = True

@@ -58,5 +58,5 @@ class LoadersCmd:
         return load(
             LOADERS[args.format](args.path),
             args.manifest,
-            args.dataset,
+            dataset=args.dataset,
         )

@@ -36,12 +36,11 @@ def index_to_coords(index, shape):
 
 
 class FieldCube:
-    def __init__(self, ds, *args, remapping, datetime="valid", user_coords=None):
+    def __init__(self, ds, *args, remapping=None, datetime="valid"):
         assert len(ds), f"No data in {ds}"
 
         assert datetime == "valid"
         self.datetime = datetime
-        self.user_coords = user_coords
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
@@ -55,23 +54,22 @@ class FieldCube:
 
         self._field_shape = None
 
-        if self.user_coords is None:
-            # Sort the source according to there
-            # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
-            self.source = ds.order_by(*args, remapping=remapping)
+        # Sort the source according to there
+        # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+        self.source = ds.order_by(*args, remapping=remapping)
 
-            # Get a mapping of user names to unique values
-            # With possible reduce dimentionality if the user use 'level+parm'
+        # Get a mapping of user names to unique values
+        # With possible reduce dimentionality if the user use 'level+parm'
 
-            self.user_coords = ds.unique_values(*names, remapping=remapping)
-        else:
-            self.source = ds
+        self.user_coords = ds.unique_values(*names, remapping=remapping)
 
         print(f"{self.user_coords=}")
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         if math.prod(self.user_shape) != len(self.source):
+            for f in self.source:
+                print(f)
             raise ValueError(
                 f"Shape {self.user_shape} does not match number of fields {len(self.source)}. "
             )
