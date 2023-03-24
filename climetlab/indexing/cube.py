@@ -61,6 +61,8 @@ class FieldCube:
             # With possible reduce dimentionality if the user use 'level+parm'
 
             self.user_coords = ds.unique_values(*args)
+        else:
+            self.source = ds
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
@@ -129,7 +131,7 @@ class FieldCube:
             return ds[0]
 
         # For more than one element, we return a new cube
-        return FieldCube(ds, *self.user_coords, user_coords=self.user_coords)
+        return FieldCube(ds, *self.user_coords) # user_coords=self.user_coords)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)

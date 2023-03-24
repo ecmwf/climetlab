@@ -383,6 +383,5 @@ class FullIndex(Index):
         return self.size
 
     def _getitem(self, n):
-        return self.index[n]
         assert self.holes[n], f"Attempting to access hole {n}"
         return self.index[sum(self.holes[:n])]
