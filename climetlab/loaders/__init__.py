@@ -63,6 +63,19 @@ class Remapping:
         return wrapped
 
 
+def build_remapping(mapping):
+    def noop(x):
+        return x
+
+    if mapping is None:
+        return noop
+
+    if isinstance(mapping, dict):
+        return Remapping(mapping)
+
+    return mapping
+
+
 class ZarrLoader:
     def __init__(self, path):
         self.path = path

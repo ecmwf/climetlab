@@ -11,6 +11,7 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab
+from climetlab.loaders import build_remapping
 
 LOG = logging.getLogger(__name__)
 
@@ -145,6 +146,7 @@ class Base(metaclass=MetaBase):
         assert len(coords)
         assert all(isinstance(k, str) for k in coords), coords
 
+        remapping = build_remapping(remapping)
         iterable = self
 
         if progress_bar:
@@ -152,12 +154,6 @@ class Base(metaclass=MetaBase):
                 iterable=self,
                 desc=f"Finding coords in dataset for {coords}",
             )
-
-        def noop(x):
-            return x
-
-        if remapping is None:
-            remapping = noop
 
         dic = defaultdict(dict)
         for f in iterable:

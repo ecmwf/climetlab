@@ -16,6 +16,7 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab as cml
+from climetlab.loaders import build_remapping
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
@@ -68,11 +69,7 @@ class Selection(OrderOrSelection):
 class OrderBase(OrderOrSelection):
     def __init__(self, kwargs, remapping):
         self.actions = self.build_actions(kwargs)
-
-        def noop(x):
-            return x
-
-        self.remapping = remapping if remapping else noop
+        self.remapping = remapping
 
     @abstractmethod
     def build_actions(self, kwargs):
@@ -257,6 +254,7 @@ class Index(Source):
         Returns a new index object.
         """
         kwargs = self.normalize_order_by(*args, **kwargs)
+        remapping = build_remapping(remapping)
 
         if not kwargs:
             return self
