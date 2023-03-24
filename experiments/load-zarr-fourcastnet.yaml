@@ -29,5 +29,5 @@ output:
     date: 1
   order:
   - datetime
-  - param+level
+  - param+level: [t+850, z+500,...]
   dtype: float32
