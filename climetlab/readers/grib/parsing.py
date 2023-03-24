@@ -207,7 +207,7 @@ class GribIndexingDirectoryParserIterator:
             db = self._new_db()
 
             if db.already_loaded(self._format_path(path), self):
-                LOG.warn(f"Skipping {path}, already loaded")
+                LOG.warning(f"Skipping {path}, already loaded")
                 continue
 
             q_in.put(path)

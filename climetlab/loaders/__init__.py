@@ -49,14 +49,18 @@ class Remapping:
             return func
 
         def wrapped(name):
-            def get(i, bit):
-                p = func(bit) if i % 2 else bit
-                return "" if p is None else str(p)
-
             if name in self.remapping:
-                return "".join(
-                    get(i, bit) for i, bit in enumerate(self.remapping[name])
-                )
+                lst = []
+                for i, bit in enumerate(self.remapping[name]):
+                    if i % 2:
+                        p = func(bit)
+                        if p is not None:
+                            lst.append(str(p))
+                        else:
+                            lst = lst[:-1]
+                    else:
+                        lst.append(bit)
+                return "".join(lst)
 
             return func(name)
 
