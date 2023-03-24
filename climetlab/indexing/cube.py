@@ -10,8 +10,10 @@ import itertools
 import logging
 import math
 from collections import defaultdict
+from climetlab.utils import Separator
 
 LOG = logging.getLogger(__name__)
+
 
 
 def coords_to_index(coords, shape):
@@ -101,7 +103,7 @@ class FieldCube:
         splits = []
         i = 0
         for a in u_args:
-            lst = a.split("_")
+            lst = Separator.split(a)
             internal_args += lst
             slices.append(slice(i, i + len(lst)))
             splits.append(tuple(lst))
@@ -123,7 +125,7 @@ class FieldCube:
         for i, p in enumerate(ds.combinations(*internal_args)):
             for name, split in zip(user_args, splits):
                 user_coords[name][
-                    "_".join(str(p[s]) for s in split if p[s] is not None)
+                    Separator.join(str(p[s]) for s in split if p[s] is not None)
                 ] = True
         print(user_coords)
 
