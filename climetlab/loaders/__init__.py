@@ -272,11 +272,25 @@ def load(loader, manifest, append=False, **kwargs):
         _load(loader, config, append, **kwargs)
         return
 
+    def expand(values):
+        print(values)
+        if isinstance(values, list):
+            return values
+
+        if isinstance(values, dict):
+            if 'start' in values and 'stop' in values:
+                start = values['start']
+                stop = values['stop']
+                step = values.get('step', 1)
+                return range(start, stop+1, step)
+
+
+        raise ValueError(f'Cannot expand loop from {values}')
     def loops():
         yield from (
             dict(zip(loop.keys(), items))
             for items in itertools.product(
-                *loop.values(),
+                expand(*list(loop.values())),
             )
         )
 
