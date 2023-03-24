@@ -108,7 +108,7 @@ class FieldCube:
         internal_coords = ds.unique_values(*internal_args)
 
         if all(len(s) == 1 for s in splits):
-            return internal_coords, internal_coords, slices, ds
+            return internal_coords, internal_coords, slices
 
         # We have some splits
 
