@@ -183,6 +183,7 @@ def module_installed(name):
 
     return MODULE_INSTALLED[name]
 
+
 class Separator:
     """
     >>> Separator.split("t+850")
@@ -194,7 +195,8 @@ class Separator:
     >>> Separator.join(["t", "850"])
     't+850'
     """
-    SEPARATOR = '+'
+
+    SEPARATOR = "+"
 
     @classmethod
     def split(cls, arg):
@@ -209,9 +211,9 @@ class Separator:
         return lst
 
     @classmethod
-    def join(cls,iterable):
+    def join(cls, iterable):
         assert not isinstance(iterable, str), iterable
-        if any (cls.SEPARATOR in a for a in iterable):
+        if any(cls.SEPARATOR in a for a in iterable):
             raise ValueError(f"'{cls.SEPARATOR}' found in {iterable}.")
 
         return cls.SEPARATOR.join(str(a) for a in iterable)

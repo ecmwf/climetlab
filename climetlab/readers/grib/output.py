@@ -18,7 +18,7 @@ LOG = logging.getLogger(__name__)
 
 # Make sure the
 
-ORDER = ("edition", "levtype", "levelist")
+ORDER = ("edition", "levtype", "levelist", "N")
 ORDER = {k: i for i, k in enumerate(ORDER)}
 
 
@@ -33,6 +33,7 @@ class GribOutput:
     def __init__(self, filename, template=None, **kwargs):
         self.f = open(filename, "wb")
         self.template = template
+        self._bbox = {}
 
     @alias_argument("levelist", ["level", "levellist"])
     @alias_argument("levtype", ["leveltype"])
@@ -200,14 +201,28 @@ class GribOutput:
             raise ValueError(f"Unsupported GAUSSIAN grid. Number of grid points {n:,}")
         N, octahedral = GAUSSIAN[n]
 
+        if N not in self._bbox:
+            import eccodes
+
+            self._bbox[N] = max(eccodes.grib_get_gaussian_latitudes(N))
+
+        metadata["latitudeOfFirstGridPointInDegrees"] = self._bbox[N]
+        metadata["latitudeOfLastGridPointInDegrees"] = -self._bbox[N]
+        metadata["longitudeOfFirstGridPointInDegrees"] = 0
+
         metadata["N"] = N
         if octahedral:
             half = list(range(20, 20 + N * 4, 4))
             pl = half + list(reversed(half))
             assert len(pl) == 2 * N, (len(pl), 2 * N)
             metadata["pl"] = pl
+            metadata["longitudeOfLastGridPointInDegrees"] = 360 - max(pl) / 360
+        else:
+            # Assumed to be set properly in the template
+            # metadata["longitudeOfLastGridPointInDegrees"] = east
+            pass
 
-        edition = metadata.get("edition", 1)
+        edition = metadata.get("edition", 2)
         levtype = metadata.get("levtype")
         if levtype is None:
             if "levelist" in metadata:

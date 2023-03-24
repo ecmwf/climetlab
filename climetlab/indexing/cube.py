@@ -10,10 +10,10 @@ import itertools
 import logging
 import math
 from collections import defaultdict
+
 from climetlab.utils import Separator
 
 LOG = logging.getLogger(__name__)
-
 
 
 def coords_to_index(coords, shape):
@@ -132,12 +132,8 @@ class FieldCube:
         return user_coords, internal_coords, slices
 
     def squeeze(self):
+        # TODO: remove an dimensions of one.
         return self
-        # args = [k for k, v in self.coords.items() if len(v) > 1]
-        # if not args:
-        #     # LOG.warn...
-        #     return self
-        # return FieldCube(self.source, *args, datetime=self.datetime)
 
     def check_shape(self, shape):
         print("XXXX shape=", shape)
@@ -147,13 +143,14 @@ class FieldCube:
             raise ValueError(f"{msg}")
 
     def __getitem__(self, indexes):
-        original = indexes
-        # indexes are user_indexes
+        # Make sure the requested indexes are a list of slices matching the shape
 
         if isinstance(indexes, int):
             indexes = (indexes,)  # make tuple
+
         if isinstance(indexes, list):
             indexes = tuple(indexes)
+
         assert isinstance(indexes, tuple), (type(indexes), indexes)
 
         indexes = list(indexes)
@@ -164,6 +161,8 @@ class FieldCube:
         while len(indexes) < self.user_ndim:
             indexes.append(slice(None, None, None))
 
+        # Map the slices to a list of indexes per dimension
+
         coords = []
         for s, c in zip(indexes, self.user_coords.values()):
             lst = list(range(len(c)))[s]
@@ -171,16 +170,21 @@ class FieldCube:
                 lst = [lst]
             coords.append(lst)
 
-        indexes = []
+        # Transform the coordinates to a list of indexes for the underlying dataset
+        dataset_indexes = []
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
-            indexes.append(i)
+            dataset_indexes.append(i)
 
+        ds = self.source.from_list(dataset_indexes)
+
+        # If we match just one element, we return it
         if all(len(_) == 1 for _ in coords):
-            return self.source.from_list(indexes)[0]
+            return ds[0]
 
-        return FieldCube(self.source.from_list(indexes), *self.user_coords)
+        # For more than one element, we return
+        return FieldCube(ds, *self.user_coords)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
