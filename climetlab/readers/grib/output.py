@@ -175,7 +175,6 @@ class GribOutput:
         return f"regular_ll_{levtype}_grib{edition}"
 
     def _gg_field(self, values, metadata):
-
         GAUSSIAN = {
             6114: (32, False),
             13280: (48, False),

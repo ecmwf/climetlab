@@ -62,12 +62,9 @@ class FieldCube:
         LOG.debug(f"{self.slices=}")
         print(f"{self.slices=}")
 
-        self.internal_shape = tuple(len(v) for k, v in self.internal_coords.items())
-
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         print(f"{self.user_shape=}")
-        print(f"{self.internal_shape=}")
 
         self.user_ndim = len(self.user_shape)
 
@@ -84,12 +81,7 @@ class FieldCube:
 
     @property
     def extended_user_shape(self):
-        # print(self.user_shape , self.field_shape)
         return self.user_shape + self.field_shape
-
-    @property
-    def extended_internal_shape(self):
-        return self.internal_shape + self.field_shape
 
     def __str__(self):
         content = ", ".join([f"{k}:{len(v)}" for k, v in self.user_coords.items()])
@@ -177,14 +169,11 @@ class FieldCube:
                 lst = [lst]
             coords.append(lst)
 
-        print(f"XXXXX {original=} => {coords=}", self.user_shape)
         indexes = []
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
-            print(x, "--->", i)
             indexes.append(i)
-        print("======>>>>>", indexes)
 
         if all(len(_) == 1 for _ in coords):
             return self.source.from_list(indexes)[0]
