@@ -16,6 +16,7 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab as cml
+from climetlab.loaders import build_remapping
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)
@@ -66,16 +67,19 @@ class Selection(OrderOrSelection):
 
 
 class OrderBase(OrderOrSelection):
-    def __init__(self, kwargs):
+    def __init__(self, kwargs, remapping):
         self.actions = self.build_actions(kwargs)
+        self.remapping = remapping
 
     @abstractmethod
     def build_actions(self, kwargs):
         raise NotImplementedError()
 
     def compare_elements(self, a, b):
+        a_metadata = self.remapping(a.metadata)
+        b_metadata = self.remapping(b.metadata)
         for k, v in self.actions.items():
-            n = v(a.metadata(k), b.metadata(k))
+            n = v(a_metadata(k), b_metadata(k))
             if n != 0:
                 return n
         return 0
@@ -241,7 +245,7 @@ class Index(Source):
 
         return _kwargs
 
-    def order_by(self, *args, **kwargs):
+    def order_by(self, *args, remapping=None, **kwargs):
         """Default order_by method.
         It expects that calling self[i] returns an element that and Order object can rank
         (i.e. order.get_element_ranking(element) -> tuple).
@@ -250,11 +254,12 @@ class Index(Source):
         Returns a new index object.
         """
         kwargs = self.normalize_order_by(*args, **kwargs)
+        remapping = build_remapping(remapping)
 
         if not kwargs:
             return self
 
-        order = Order(kwargs)
+        order = Order(kwargs, remapping=remapping)
 
         def cmp(i, j):
             return order.compare_elements(self[i], self[j])

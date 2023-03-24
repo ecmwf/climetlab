@@ -25,9 +25,32 @@ input:
 
 
 output:
+  remapping:
+    param_level: '{param}{level}'
+
   chunking:
     date: 1
   order:
   - datetime
-  - param+level: [t+850, z+500,...]
+  - param_level:
+    - t850
+    - u1000
+    - v1000
+    - z1000
+    - u850
+    - v850
+    - z850
+    - u500
+    - v500
+    - z500
+    - t500
+    - z50
+    - r500
+    - r850
+    - 10u
+    - 10v
+    - 2t
+    - sp
+    - msl
+    - tcwv
   dtype: float32

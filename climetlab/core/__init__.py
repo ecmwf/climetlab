@@ -11,6 +11,7 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab
+from climetlab.loaders import build_remapping
 
 LOG = logging.getLogger(__name__)
 
@@ -136,14 +137,16 @@ class Base(metaclass=MetaBase):
     def get_metadata(self, i):
         return self[i].metadata()
 
-    def unique_values(self, *coords, progress_bar=True):
+    def unique_values(self, *coords, remapping=None, progress_bar=True):
         """
         Given a list of metadata attributes, such as date, param, levels,
         returns the list of unique values for each attributes
         """
 
+        assert len(coords)
         assert all(isinstance(k, str) for k in coords), coords
 
+        remapping = build_remapping(remapping)
         iterable = self
 
         if progress_bar:
@@ -154,11 +157,13 @@ class Base(metaclass=MetaBase):
 
         dic = defaultdict(dict)
         for f in iterable:
+            metadata = remapping(f.metadata)
             for k in coords:
-                v = f.metadata(k)
+                v = metadata(k)
                 dic[k][v] = True
+
         dic = {k: tuple(values.keys()) for k, values in dic.items()}
-        print("uniques values: ", dic)
+
         return dic
 
     def combinations(self, *coords, progress_bar=True):

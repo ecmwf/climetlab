@@ -9,10 +9,6 @@
 import itertools
 import logging
 import math
-import operator
-from functools import reduce
-
-from climetlab.utils import Separator
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +36,7 @@ def index_to_coords(index, shape):
 
 
 class FieldCube:
-    def __init__(self, ds, *args, datetime="valid", user_coords=None):
+    def __init__(self, ds, *args, remapping, datetime="valid", user_coords=None):
         assert len(ds), f"No data in {ds}"
 
         assert datetime == "valid"
@@ -48,21 +44,30 @@ class FieldCube:
         self.user_coords = user_coords
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
-            args = [_ for _ in args[0]]
+            args = args[0]
+
+        names = []
+        for a in args:
+            if isinstance(a, str):
+                names.append(a)
+            elif isinstance(a, dict):
+                names += list(a.keys())
 
         self._field_shape = None
 
         if self.user_coords is None:
             # Sort the source according to there
-            internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
-            self.source = ds.order_by(*internal_args)
+            # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+            self.source = ds.order_by(*args, remapping=remapping)
 
             # Get a mapping of user names to unique values
             # With possible reduce dimentionality if the user use 'level+parm'
 
-            self.user_coords = ds.unique_values(*args)
+            self.user_coords = ds.unique_values(*names, remapping=remapping)
         else:
             self.source = ds
+
+        print(f"{self.user_coords=}")
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
@@ -131,7 +136,7 @@ class FieldCube:
             return ds[0]
 
         # For more than one element, we return a new cube
-        return FieldCube(ds, *self.user_coords) # user_coords=self.user_coords)
+        return FieldCube(ds, *self.user_coords)  # user_coords=self.user_coords)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
