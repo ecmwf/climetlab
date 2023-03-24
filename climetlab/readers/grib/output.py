@@ -204,7 +204,7 @@ class GribOutput:
         if N not in self._bbox:
             import eccodes
 
-            self._bbox[N] = max(eccodes.grib_get_gaussian_latitudes(N))
+            self._bbox[N] = max(eccodes.codes_get_gaussian_latitudes(N))
 
         metadata["latitudeOfFirstGridPointInDegrees"] = self._bbox[N]
         metadata["latitudeOfLastGridPointInDegrees"] = -self._bbox[N]
@@ -218,7 +218,7 @@ class GribOutput:
             metadata["pl"] = pl
             metadata["longitudeOfLastGridPointInDegrees"] = 360 - max(pl) / 360
         else:
-            # Assumed to be set properly in the template
+            # Assumed to be set properly in the sample
             # metadata["longitudeOfLastGridPointInDegrees"] = east
             pass
 

@@ -213,7 +213,8 @@ class Separator:
     @classmethod
     def join(cls, iterable):
         assert not isinstance(iterable, str), iterable
-        if any(cls.SEPARATOR in a for a in iterable):
-            raise ValueError(f"'{cls.SEPARATOR}' found in {iterable}.")
+        strings = [str(a) for a in iterable]
+        if any(cls.SEPARATOR in str(a) for a in strings):
+            raise ValueError(f"'{cls.SEPARATOR}' found in {strings}.")
 
-        return cls.SEPARATOR.join(str(a) for a in iterable)
+        return cls.SEPARATOR.join(strings)

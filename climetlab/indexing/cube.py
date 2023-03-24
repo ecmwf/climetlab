@@ -9,7 +9,8 @@
 import itertools
 import logging
 import math
-from collections import defaultdict
+import operator
+from functools import reduce
 
 from climetlab.utils import Separator
 
@@ -39,46 +40,39 @@ def index_to_coords(index, shape):
 
 
 class FieldCube:
-    def __init__(self, ds, *args, datetime="valid"):
+    def __init__(self, ds, *args, datetime="valid", user_coords=None):
         assert len(ds), f"No data in {ds}"
 
         assert datetime == "valid"
         self.datetime = datetime
+        self.user_coords = user_coords
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = [_ for _ in args[0]]
 
         self._field_shape = None
-        LOG.debug(f"* New FieldCube(args={args})")
 
-        self.source = ds.order_by(*args)
+        if self.user_coords is None:
+            # Sort the source according to there
+            internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+            self.source = ds.order_by(*internal_args)
 
-        (
-            self.user_coords,
-            self.internal_coords,
-            self.slices,
-        ) = self._build_coords(ds, args)
+            # Get a mapping of user names to unique values
+            # With possible reduce dimentionality if the user use 'level+parm'
 
-        LOG.debug(f"{self.internal_coords=}")
-        LOG.debug(f"{self.user_coords=}")
-        LOG.debug(f"{self.slices=}")
-        print(f"{self.slices=}")
+            self.user_coords = ds.unique_values(*args)
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
-        print(f"{self.user_shape=}")
-
-        self.user_ndim = len(self.user_shape)
-
-        print("extended_shape=", self.extended_user_shape)
-
-        self.check_shape(self.user_shape)
+        if math.prod(self.user_shape) != len(self.source):
+            raise ValueError(
+                f"Shape {self.user_shape} does not match number of fields {len(self.source)}. "
+            )
 
     @property
     def field_shape(self):
         if self._field_shape is None:
             self._field_shape = self.source[0].shape
-            print("fieldshape=", self._field_shape)
         return self._field_shape
 
     @property
@@ -89,58 +83,9 @@ class FieldCube:
         content = ", ".join([f"{k}:{len(v)}" for k, v in self.user_coords.items()])
         return f"{self.__class__.__name__}({content} ({len(self.source)} fields))"
 
-    def _transform_args(self, u_args):
-        internal_args = []
-        slices = []
-        splits = []
-        i = 0
-        for a in u_args:
-            lst = Separator.split(a)
-            internal_args += lst
-            slices.append(slice(i, i + len(lst)))
-            splits.append(tuple(lst))
-            i += len(lst)
-        return internal_args, slices, splits
-
-    def _build_coords(self, ds, args):
-        user_args = args
-        internal_args, slices, splits = self._transform_args(args)
-        internal_coords = ds.unique_values(*internal_args)
-
-        if all(len(s) == 1 for s in splits):
-            return internal_coords, internal_coords, slices
-
-        # We have some splits
-
-        user_coords = defaultdict(dict)
-
-        for i, p in enumerate(ds.combinations(*internal_args)):
-            for name, split in zip(user_args, splits):
-                user_coords[name][
-                    Separator.join(str(p[s]) for s in split if p[s] is not None)
-                ] = True
-        print(user_coords)
-
-        user_coords = {k: list(user_coords[k].keys()) for k in user_args}  # reordering
-        assert math.prod(len(v) for v in user_coords.values()) == len(ds), (
-            len(ds),
-            user_coords,
-        )
-
-        print("user_coords", user_coords)
-
-        return user_coords, internal_coords, slices
-
     def squeeze(self):
         # TODO: remove an dimensions of one.
         return self
-
-    def check_shape(self, shape):
-        print("XXXX shape=", shape)
-        if math.prod(shape) != len(self.source):
-            msg = f"{shape} -> {math.prod(shape)} requested fields != {len(self.source)} available fields. "
-            print("ERROR:", msg)
-            raise ValueError(f"{msg}")
 
     def __getitem__(self, indexes):
         # Make sure the requested indexes are a list of slices matching the shape
@@ -158,7 +103,7 @@ class FieldCube:
         if indexes[-1] is Ellipsis:
             indexes.pop()
 
-        while len(indexes) < self.user_ndim:
+        while len(indexes) < len(self.user_shape):
             indexes.append(slice(None, None, None))
 
         # Map the slices to a list of indexes per dimension
@@ -183,8 +128,8 @@ class FieldCube:
         if all(len(_) == 1 for _ in coords):
             return ds[0]
 
-        # For more than one element, we return
-        return FieldCube(ds, *self.user_coords)
+        # For more than one element, we return a new cube
+        return FieldCube(ds, *self.user_coords, user_coords=self.user_coords)
 
     def to_numpy(self, **kwargs):
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
@@ -218,18 +163,8 @@ class FieldCube:
         )
 
     def chunking(self, **chunks):
+        # TODO
         return True
-        if not chunks:
-            return True
-
-        out = []
-        for k, v in self.coords.items():
-            if k in chunks:
-                out.append(chunks[k])
-            else:
-                out.append(len(v))
-        out += list(self.field_shape)
-        return out
 
 
 class Cubelet:

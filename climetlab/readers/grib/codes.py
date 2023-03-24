@@ -19,6 +19,7 @@ import eccodes
 from climetlab.core import Base
 from climetlab.core.constants import DATETIME
 from climetlab.profiling import call_counter
+from climetlab.utils import Separator
 from climetlab.utils.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)
@@ -466,6 +467,11 @@ class GribField(Base):
             name = "paramId"
         if name == "level" and self[name] == 0:
             return None
+
+        if Separator.SEPARATOR in name:
+            lst = [self.metadata(n) for n in Separator.split(name)]
+            return Separator.join([v for v in lst if v is not None])
+
         return self[name]
 
     def __getitem__(self, name):

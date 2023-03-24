@@ -16,7 +16,7 @@ import numpy as np
 
 import climetlab as cml
 from climetlab.utils import load_json_or_yaml, progress_bar
-from climetlab.utils.humanize import bytes, seconds
+from climetlab.utils.humanize import bytes, list_to_human, seconds
 
 from .tools import parse_args
 
@@ -123,15 +123,41 @@ class LoadersCmd:
         dataset=(
             "--dataset",
             dict(
+                help="Name of the HDF5 dataset to use"
+                " (default from config or 'dataset')"
+            ),
+        ),
+        format=(
+            "--format",
+            dict(
+                help="The format of the storage into which to load the data"
+                " (default is inferred from output path extension)"
+            ),
+        ),
+        manifest=(
+            "--manifest",
+            dict(
+                help="The format of the storage into which to load the data"
+                " (default is inferred from output path extension)"
+            ),
+        ),
+        path=(
+            "path",
+            dict(
                 help="Name of the HDF5 dataset to use (default from config or 'dataset')"
             ),
         ),
-        config=(None, dict(metavar="CONFIG", type=str)),
-        path=(None, dict(metavar="PATH", type=str)),
-        verbose=dict(action="store_true"),
     )
-    def do_hdf5(self, args):
-        return self._loader(args, HDF5Loader(args.path))
+    def do_load(self, args):
+        if args.format is None:
+            _, ext = os.path.splitext(args.path)
+            args.format = ext[1:]
+
+        LOADERS = dict(zarr=ZarrLoader, h5=HDF5Loader, hdf5=HDF5Loader, hdf=HDF5Loader)
+        if args.format not in LOADERS:
+            lst = list_to_human(list(LOADERS.keys()), "or")
+            raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
+        return self._loader(args, LOADERS[args.format](args.path))
 
     @parse_args(
         config=(None, dict(metavar="CONFIG", type=str)),
@@ -143,7 +169,7 @@ class LoadersCmd:
         return self._loader(args, ZarrLoader(args.path))
 
     def _loader(self, args, loader):
-        config = load_json_or_yaml(args.config)
+        config = load_json_or_yaml(args.manifest)
 
         data = cml.load_source("loader", config["input"])
         output = config["output"]
@@ -175,8 +201,6 @@ class LoadersCmd:
             total=cube.count(reading_chunks),
             iterable=cube.iterate_cubelets(reading_chunks),
         ):
-            if args.verbose:
-                print(cubelet, "mean=", cubelet.to_numpy().mean())
             now = time.time()
             data = cubelet.to_numpy()
             load += time.time() - now
