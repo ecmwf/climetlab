@@ -182,3 +182,36 @@ def module_installed(name):
             MODULE_INSTALLED[name] = False
 
     return MODULE_INSTALLED[name]
+
+class Separator:
+    """
+    >>> Separator.split("t+850")
+    ['t', '850']
+    >>> Separator.split(" t + 850 ")
+    ['t', '850']
+    >>> Separator.split(["t"])
+    ['t']
+    >>> Separator.join(["t", "850"])
+    't+850'
+    """
+    SEPARATOR = '+'
+
+    @classmethod
+    def split(cls, arg):
+        if arg is None:
+            return None
+        assert isinstance(arg, str), arg
+
+        lst = []
+        for n in arg.split(cls.SEPARATOR):
+            n = n.strip()
+            lst.append(n)
+        return lst
+
+    @classmethod
+    def join(cls,iterable):
+        assert not isinstance(iterable, str), iterable
+        if any (cls.SEPARATOR in a for a in iterable):
+            raise ValueError(f"'{cls.SEPARATOR}' found in {iterable}.")
+
+        return cls.SEPARATOR.join(str(a) for a in iterable)
