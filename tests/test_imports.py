@@ -30,7 +30,10 @@ import pytest
         "tensorflow",
     ],
 )
-@pytest.mark.skipif(int(os.environ.get("SKIP_TEST_IMPORTS", "1")))
+@pytest.mark.skipif(
+    int(os.environ.get("SKIP_TEST_IMPORTS", "1")),
+    reason="Only activated if SKIP_TEST_IMPORTS=0",
+)
 def test_imports(module):
     import climetlab as cml
     from climetlab.aaa import loaded_modules
