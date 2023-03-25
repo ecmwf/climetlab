@@ -20,7 +20,7 @@ import pytest
         "pandas",
         "xarray",
         "eccodes",
-        "magics",
+        "Magics",
         "IPython",
         "jupyter",
         "torch",
@@ -37,7 +37,7 @@ def test_imports(module):
 
     modules = loaded_modules()
 
-    assert module not in modules, modules[module]
+    assert module not in modules, '\n'.join(modules[module])
 
 
 if __name__ == "__main__":

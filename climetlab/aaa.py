@@ -20,7 +20,7 @@ CLIMETLAB_DEBUG_IMPORTS = int(os.environ.get("CLIMETLAB_DEBUG_IMPORTS", 0))
 
 class Requested:
     def find_spec(self, name, path=None, target=None):
-        LOADED_MODULES[name] = True
+        LOADED_MODULES[name] = []
         if CLIMETLAB_DEBUG_IMPORTS:
             for f in inspect.stack():
                 if f.filename == __file__:
@@ -29,8 +29,7 @@ class Requested:
                 if "importlib._bootstrap" in f.filename:
                     continue
 
-                LOADED_MODULES[name] = f"{f.filename}:{f.lineno}"
-                break
+                LOADED_MODULES[name].append(f"{f.filename}:{f.lineno}")
 
 
 class NotFound:
