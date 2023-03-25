@@ -11,6 +11,7 @@
 
 import pytest
 
+
 # Make sure all these modules are loaded lazily
 # To find the culprit, rerun with:
 # CLIMETLAB_DEBUG_IMPORTS=1 pytest -k test_import
@@ -37,7 +38,7 @@ def test_imports(module):
 
     modules = loaded_modules()
 
-    assert module not in modules, '\n'.join(modules[module])
+    assert module not in modules, "\n".join(modules[module])
 
 
 if __name__ == "__main__":
