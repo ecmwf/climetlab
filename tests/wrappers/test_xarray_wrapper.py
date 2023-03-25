@@ -35,9 +35,6 @@ def get_reference_checksum():
     return checksum_of_plot_map(ds)
 
 
-CHECK = get_reference_checksum()
-
-
 @pytest.mark.parametrize(
     "coords",
     [
