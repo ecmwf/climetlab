@@ -102,9 +102,14 @@ jobs:
       run: |
         pip install pytest pytest-cov
         pip freeze
+        
+    - name: Check imports
+      run: |
+        pytest -k test_imports
+      env:
+        SKIP_TEST_IMPORTS: 0
 
     - name: Run short tests
       run: |
-        SKIP_TEST_IMPORTS=0 pytest -k test_imports
         # -E flag is defined in conftest.py
         pytest --durations=10 -vv -E short

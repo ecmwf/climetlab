@@ -27,42 +27,47 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Tokens
-        shell: python
-        env:
-          ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
-          CDSAPIRC: ${{ secrets.CDSAPIRC }}
+    - name: Tokens
+      shell: python
+      env:
+        ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
+        CDSAPIRC: ${{ secrets.CDSAPIRC }}
 
-        run: |
-          import os
-          for n in ('ECMWFAPIRC', 'CDSAPIRC'):
-              m = os.path.expanduser("~/." + n.lower())
-              if os.environ[n]:
-                  with open(m, "w") as f:
-                      print(os.environ[n], file=f)
+      run: |
+        import os
+        for n in ('ECMWFAPIRC', 'CDSAPIRC'):
+            m = os.path.expanduser("~/." + n.lower())
+            if os.environ[n]:
+                with open(m, "w") as f:
+                    print(os.environ[n], file=f)
 
-      - name: Install climetlab
-        run: |
-          pip install -e .[interactive,zarr,tensorflow]
-          pip freeze
+    - name: Install climetlab
+      run: |
+        pip install -e .[interactive,zarr,tensorflow]
+        pip freeze
 
-      - name: Install test tools
-        run: |
-          pip install pytest pytest-cov
-          pip install nbformat nbconvert ipykernel
-          pip freeze
+    - name: Install test tools
+      run: |
+        pip install pytest pytest-cov
+        pip install nbformat nbconvert ipykernel
+        pip freeze
 
-      - name: Tests with code coverage
-        run: |
-          SKIP_TEST_IMPORTS=0 pytest -k test_imports
-          # -E flag is defined in conftest.py
-          pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
+    - name: Check imports
+      run: |
+        pytest -k test_imports
+      env:
+        SKIP_TEST_IMPORTS: 0
 
-      - name: Codecov Upload
-        uses: codecov/codecov-action@v2
+    - name: Tests with code coverage
+      run: |
+        # -E flag is defined in conftest.py
+        pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
+
+    - name: Codecov Upload
+      uses: codecov/codecov-action@v2
