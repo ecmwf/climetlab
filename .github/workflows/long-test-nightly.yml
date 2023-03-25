@@ -23,34 +23,34 @@ jobs:
     name: Code QA
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: pip install black flake8 isort
-      - run: black --version
-      - run: isort --version
-      - run: flake8 --version
-      - run: isort --check .
-      - run: black --check .
-      - run: flake8 .
+    - uses: actions/checkout@v2
+    - run: pip install black flake8 isort
+    - run: black --version
+    - run: isort --version
+    - run: flake8 --version
+    - run: isort --check .
+    - run: black --check .
+    - run: flake8 .
 
   test_build_doc:
     name: Test building documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Install packages needed to build the documentation
-        run: |
-          pip install sphinx
-          pip install -r docs/requirements.txt
-          sudo apt-get install pandoc
-          pip freeze
+    - name: Install packages needed to build the documentation
+      run: |
+        pip install sphinx
+        pip install -r docs/requirements.txt
+        sudo apt-get install pandoc
+        pip freeze
 
-      - name: Documentation
-        run: |
-          make clean
-          make html
-          # make linkcheck (don't run yet)
-        working-directory: docs
+    - name: Documentation
+      run: |
+        make clean
+        make html
+        # make linkcheck (don't run yet)
+      working-directory: docs
 
   checks:
     strategy:
@@ -63,61 +63,62 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Tokens
-        shell: python
-        env:
-          ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
-          CDSAPIRC: ${{ secrets.CDSAPIRC }}
+    - name: Tokens
+      shell: python
+      env:
+        ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
+        CDSAPIRC: ${{ secrets.CDSAPIRC }}
 
-        run: |
-          import os
-          for n in ('ECMWFAPIRC', 'CDSAPIRC'):
-              m = os.path.expanduser("~/." + n.lower())
-              if os.environ[n]:
-                  with open(m, "w") as f:
-                      print(os.environ[n], file=f)
+      run: |
+        import os
+        for n in ('ECMWFAPIRC', 'CDSAPIRC'):
+            m = os.path.expanduser("~/." + n.lower())
+            if os.environ[n]:
+                with open(m, "w") as f:
+                    print(os.environ[n], file=f)
 
-      - name: Install climetlab
-        run: |
-          pip install -e .
-          pip freeze
+    - name: Install climetlab
+      run: |
+        pip install -e .
+        pip freeze
 
-      - name: Install test tools
-        run: |
-          pip install pytest pytest-cov
-          pip freeze
+    - name: Install test tools
+      run: |
+        pip install pytest pytest-cov
+        pip freeze
 
-      - name: Tests
-        run: |
-          # -E flag is defined in conftest.py
-          # notebooks are tested below, as they need more dependencies
-          pytest --cov=climetlab --durations=0 -E long -k 'not test_notebooks'
+    - name: Tests
+      run: |
+        SKIP_TEST_IMPORTS=0 pytest -k test_imports
+        # -E flag is defined in conftest.py
+        # notebooks are tested below, as they need more dependencies
+        pytest --cov=climetlab --durations=0 -E long -k 'not test_notebooks'
 
-      - name: Install test tools for notebooks
-        run: |
-          pip install nbformat nbconvert ipykernel
+    - name: Install test tools for notebooks
+      run: |
+        pip install nbformat nbconvert ipykernel
 
-      - name: Install climetlab[interactive] for the notebooks
-        run: |
-          pip install -e .[interactive]
-          pip freeze
+    - name: Install climetlab[interactive] for the notebooks
+      run: |
+        pip install -e .[interactive]
+        pip freeze
 
-      - name: Tests notebooks
-        run: |
-          pytest --durations=0 -E long tests/documentation/test_notebooks.py
+    - name: Tests notebooks
+      run: |
+        pytest --durations=0 -E long tests/documentation/test_notebooks.py
 
-      - name: Re-install packaging without -e
-        run: |
-          pip uninstall climetlab -y
-          pip install .
-          pip freeze
+    - name: Re-install packaging without -e
+      run: |
+        pip uninstall climetlab -y
+        pip install .
+        pip freeze
 
-      - name: Tests packaging
-        run: |
-          pytest --durations=0 -E long tests/core/test_version.py
+    - name: Tests packaging
+      run: |
+        pytest --durations=0 -E long tests/core/test_version.py

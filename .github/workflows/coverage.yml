@@ -60,6 +60,7 @@ jobs:
 
       - name: Tests with code coverage
         run: |
+          SKIP_TEST_IMPORTS=0 pytest -k test_imports
           # -E flag is defined in conftest.py
           pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
 

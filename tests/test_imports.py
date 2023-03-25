@@ -9,6 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+
 import pytest
 
 
@@ -28,6 +30,7 @@ import pytest
         "tensorflow",
     ],
 )
+@pytest.mark.skipif(int(os.environ.get("SKIP_TEST_IMPORTS", "1")))
 def test_imports(module):
 
     import climetlab as cml
