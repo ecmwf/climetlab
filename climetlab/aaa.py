@@ -7,18 +7,17 @@
 # nor does it submit to any jurisdiction.
 #
 
+# This module is called aaa so isort keeps it at the top on the imports
+# as it needs to run first
 
-from climetlab.utils import module_installed, module_loaded
-from climetlab.wrappers import get_wrapper
+import sys
+
+LOADED_MODULES = set()
 
 
-def wrapper(data, *args, **kwargs):
-    if not module_loaded("torch"):
-        return None
+class SpecFinder:
+    def find_spec(self, name, path=None, target=None):
+        LOADED_MODULES.add(name)
 
-    import torch  # noqa
 
-    if isinstance(data, torch.Tensor):
-        return get_wrapper(data.detach().cpu().numpy(), *args, **kwargs)
-
-    return None
+sys.meta_path.insert(0, SpecFinder())

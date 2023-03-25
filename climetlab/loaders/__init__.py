@@ -8,6 +8,7 @@
 #
 
 
+import datetime
 import itertools
 import json
 import os
@@ -33,6 +34,9 @@ def _tidy(o):
 
     if isinstance(o, (str, int, float)):
         return o
+
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
 
     return str(o)
 
@@ -190,7 +194,6 @@ class HDF5Loader:
 
 
 def _load(loader, config, append, dataset=None):
-
     print("Loading dataset", config)
 
     data = cml.load_source("loader", config["input"])
@@ -252,7 +255,6 @@ def _load(loader, config, append, dataset=None):
 
 
 def substitute(x, vars):
-
     if isinstance(x, (tuple, list)):
         return [substitute(y, vars) for y in x]
 
@@ -260,9 +262,60 @@ def substitute(x, vars):
         return {k: substitute(v, vars) for k, v in x.items()}
 
     if isinstance(x, str):
-        return re.sub(r"\$(\w+)", lambda y: str(vars[y.group(1)]), x)
+        if not re.match(r"\$(\w+)", x):
+            return x
+        lst = []
+        for i, bit in enumerate(re.split(r"\$(\w+)", x)):
+            if i % 2:
+                lst.append(vars[bit])
+            else:
+                lst.append(bit)
+
+        lst = [e for e in lst if e != ""]
+
+        if len(lst) == 1:
+            return lst[0]
+
+        return "".join(str(_) for _ in lst)
 
     return x
+
+
+def expand(values):
+    if isinstance(values, list):
+        return values
+
+    if isinstance(values, dict):
+        if "start" in values and "stop" in values:
+            start = values["start"]
+            stop = values["stop"]
+            step = values.get("step", 1)
+            return range(start, stop + 1, step)
+
+        if "monthly" in values:
+            start = values["monthly"]["start"]
+            stop = values["monthly"]["stop"]
+            date = start
+            last = None
+            result = []
+            lst = []
+            while True:
+                year, month = date.year, date.month
+                if (year, month) != last:
+                    if lst:
+                        result.append([d.isoformat() for d in lst])
+                    lst = []
+
+                lst.append(date)
+                last = (year, month)
+                date = date + datetime.timedelta(days=1)
+                if date > stop:
+                    break
+            if lst:
+                result.append([d.isoformat() for d in lst])
+            return result
+
+    raise ValueError(f"Cannot expand loop from {values}")
 
 
 def load(loader, manifest, append=False, **kwargs):
@@ -272,20 +325,6 @@ def load(loader, manifest, append=False, **kwargs):
         _load(loader, config, append, **kwargs)
         return
 
-    def expand(values):
-        print(values)
-        if isinstance(values, list):
-            return values
-
-        if isinstance(values, dict):
-            if 'start' in values and 'stop' in values:
-                start = values['start']
-                stop = values['stop']
-                step = values.get('step', 1)
-                return range(start, stop+1, step)
-
-
-        raise ValueError(f'Cannot expand loop from {values}')
     def loops():
         yield from (
             dict(zip(loop.keys(), items))

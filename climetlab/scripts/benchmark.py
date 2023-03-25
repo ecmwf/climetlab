@@ -11,8 +11,6 @@ import datetime
 import os
 import random
 
-import pandas as pd
-import xarray as xr
 from tqdm import tqdm
 
 import climetlab as cml
@@ -31,6 +29,8 @@ DATA_DATALOADING = {
 
 def benchmark_dataloading(*args):
     now = datetime.datetime.now
+    import pandas as pd
+    import xarray as xr
 
     class Exp:
         def __init__(self, directory):

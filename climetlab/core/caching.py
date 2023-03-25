@@ -30,7 +30,6 @@ import sqlite3
 import threading
 import time
 
-import pandas as pd
 from filelock import FileLock
 
 from climetlab.core.settings import SETTINGS
@@ -88,6 +87,8 @@ def disk_usage(path):
 
 
 def default_serialiser(o):
+    import pandas as pd
+
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
     if isinstance(o, (pd.Timestamp)):

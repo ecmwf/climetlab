@@ -14,13 +14,8 @@ from importlib import import_module
 import requests
 import yaml
 
-try:
-    # There is a bug in tqdm that expects ipywidgets
-    # to be installed if running in a notebook
-    import ipywidgets  # noqa F401
-    from tqdm.auto import tqdm  # noqa F401
-except ImportError:
-    from tqdm import tqdm  # noqa F401
+
+from tqdm.auto import tqdm
 
 
 def download_and_cache(url, return_none_on_404=False, **kwargs):
@@ -183,6 +178,9 @@ def module_installed(name):
 
     return MODULE_INSTALLED[name]
 
+def module_loaded(name):
+    from ..aaa import LOADED_MODULES
+    return name in LOADED_MODULES
 
 class Separator:
     """

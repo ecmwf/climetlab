@@ -6,6 +6,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+
+from .aaa import LOADED_MODULES
 from .arguments.transformers import ALL
 from .core.caching import CACHE as cache
 from .core.constants import DATETIME
@@ -29,6 +31,7 @@ from .wrappers import Wrapper
 __all__ = [
     "ALL",
     "DATETIME",
+    "LOADED_MODULES",
     "cache",
     "dataset",
     "Dataset",

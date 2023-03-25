@@ -117,13 +117,15 @@ class XDataArray(XMetadata):
         super().__init__(xarray_obj)
 
 
-try:
-    import xarray as xr
+if False:
+    # This takes too long
+    try:
+        import xarray as xr
 
-    xr.register_dataset_accessor("climetlab")(XDataset)
-    xr.register_dataarray_accessor("climetlab")(XDataArray)
-except Exception:
-    pass
+        xr.register_dataset_accessor("climetlab")(XDataset)
+        xr.register_dataarray_accessor("climetlab")(XDataArray)
+    except Exception:
+        pass
 
 
 def init_metadata():
