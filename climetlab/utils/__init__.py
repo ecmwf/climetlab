@@ -178,9 +178,9 @@ def module_installed(name):
 
 
 def module_loaded(name):
-    from ..aaa import LOADED_MODULES
+    from ..aaa import loaded_modules
 
-    return name in LOADED_MODULES
+    return name in loaded_modules()
 
 
 class Separator:

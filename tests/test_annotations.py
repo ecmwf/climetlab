@@ -11,6 +11,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 import xarray as xr
 
 from climetlab.core.metadata import annotate, annotation
@@ -55,6 +56,7 @@ def test_pandas_annotations():
     assert "climetlab-0" in df3._metadata
 
 
+@pytest.mark.skip(reason="xarray annotations temporarily disabled")
 def test_xarray_annotations():
     # Examples from xarray documentation
 

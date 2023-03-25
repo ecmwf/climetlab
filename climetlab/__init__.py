@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .aaa import LOADED_MODULES
+from .aaa import loaded_modules
 from .arguments.transformers import ALL
 from .core.caching import CACHE as cache
 from .core.constants import DATETIME
@@ -29,17 +29,18 @@ from .version import __version__
 from .wrappers import Wrapper
 
 __all__ = [
+    "__version__",
     "ALL",
-    "DATETIME",
-    "LOADED_MODULES",
     "cache",
     "dataset",
     "Dataset",
-    "Wrapper",
+    "DATETIME",
     "interactive_map",
     "load_dataset",
-    "load_source",
     "load_source_lazily",
+    "load_source",
+    "loaded_modules",
+    "new_grib_output",
     "new_plot",
     "new_table",
     "plot_map",
@@ -49,8 +50,7 @@ __all__ = [
     "source",
     "Source",
     "start_dask",
-    "new_grib_output",
-    "__version__",
+    "Wrapper",
 ]
 
 

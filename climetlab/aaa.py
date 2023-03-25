@@ -15,9 +15,20 @@ import sys
 LOADED_MODULES = set()
 
 
-class SpecFinder:
+class Requested:
     def find_spec(self, name, path=None, target=None):
         LOADED_MODULES.add(name)
 
 
-sys.meta_path.insert(0, SpecFinder())
+class NotFound:
+    def find_spec(self, name, path=None, target=None):
+        LOADED_MODULES.discard(name)
+
+
+def loaded_modules():
+    global LOADED_MODULES
+    return LOADED_MODULES
+
+
+sys.meta_path.insert(0, Requested())
+sys.meta_path.append(NotFound())
