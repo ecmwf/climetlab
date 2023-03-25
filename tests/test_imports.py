@@ -11,11 +11,9 @@
 
 import pytest
 
-import climetlab as cml
-from climetlab.utils import module_loaded
-
-
 # Make sure all these modules are loaded lazily
+# To find the culprit, rerun with:
+# CLIMETLAB_DEBUG_IMPORTS=1 pytest -k test_import
 @pytest.mark.parametrize(
     "module",
     [
@@ -30,10 +28,16 @@ from climetlab.utils import module_loaded
     ],
 )
 def test_imports(module):
+
+    import climetlab as cml
+    from climetlab.aaa import loaded_modules
+
     # This will trigger the loading of wrappers
     cml.load_source("file", __file__)
 
-    assert not module_loaded(module)
+    modules = loaded_modules()
+
+    assert module not in modules, modules[module]
 
 
 if __name__ == "__main__":

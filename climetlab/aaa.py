@@ -10,19 +10,32 @@
 # This module is called aaa so isort keeps it at the top on the imports
 # as it needs to run first
 
+import inspect
+import os
 import sys
 
-LOADED_MODULES = set()
+LOADED_MODULES = {}
+CLIMETLAB_DEBUG_IMPORTS = int(os.environ.get("CLIMETLAB_DEBUG_IMPORTS", 0))
 
 
 class Requested:
     def find_spec(self, name, path=None, target=None):
-        LOADED_MODULES.add(name)
+        LOADED_MODULES[name] = True
+        if CLIMETLAB_DEBUG_IMPORTS:
+            for f in inspect.stack():
+                if f.filename == __file__:
+                    continue
+
+                if "importlib._bootstrap" in f.filename:
+                    continue
+
+                LOADED_MODULES[name] = f"{f.filename}:{f.lineno}"
+                break
 
 
 class NotFound:
     def find_spec(self, name, path=None, target=None):
-        LOADED_MODULES.discard(name)
+        LOADED_MODULES.pop(name, None)
 
 
 def loaded_modules():
