@@ -13,8 +13,6 @@ from importlib import import_module
 
 import requests
 import yaml
-
-
 from tqdm.auto import tqdm
 
 
@@ -178,9 +176,12 @@ def module_installed(name):
 
     return MODULE_INSTALLED[name]
 
+
 def module_loaded(name):
     from ..aaa import LOADED_MODULES
+
     return name in LOADED_MODULES
+
 
 class Separator:
     """

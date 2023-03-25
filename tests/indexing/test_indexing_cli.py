@@ -9,22 +9,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-import filecmp
-import glob
-import os
 import shutil
-import sys
 
 import numpy as np
-import pytest
-from indexing_generic import TEST_DATA_URL, build_testdata, cd
+from indexing_generic import build_testdata
 
 import climetlab as cml
-from climetlab import settings
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
-from climetlab.sources.indexed_directory import IndexedDirectorySource
-from climetlab.testing import NO_CDS
 
 
 def test_indexing_cli_index_directory():
@@ -61,24 +53,24 @@ def test_indexing_cli_index_directory():
             assert np.all(f1.to_numpy() == f2.to_numpy())
 
 
-def _test_indexing_cli_export_cache():
-    with cd(build_testdata()) as dir:
-        print("Using data in ", dir)
-        with temp_directory() as cache_dir:
-            with settings.temporary():
-                settings.set("cache-directory", cache_dir)
+# def _test_indexing_cli_export_cache():
+#     with cd(build_testdata()) as dir:
+#         print("Using data in ", dir)
+#         with temp_directory() as cache_dir:
+#             with settings.temporary():
+#                 settings.set("cache-directory", cache_dir)
 
-            app = CliMetLabApp()
-            app.onecmd(f"index_directory {dir}")
-            # app.onecmd(f'export_cache --match "era5" {export_dir}')
+#             app = CliMetLabApp()
+#             app.onecmd(f"index_directory {dir}")
+#             # app.onecmd(f'export_cache --match "era5" {export_dir}')
 
-            exported_files = glob.glob(os.path.join(export_dir, "*"))
-            assert len(exported_files) == 2, exported_files
+#             exported_files = glob.glob(os.path.join(export_dir, "*"))
+#             assert len(exported_files) == 2, exported_files
 
-            target = f"{export_dir}/{os.path.basename(original)}"
-            assert filecmp.cmp(original, target), (original, target)
+#             target = f"{export_dir}/{os.path.basename(original)}"
+#             assert filecmp.cmp(original, target), (original, target)
 
-            check_len(source)
+#             check_len(source)
 
 
 if __name__ == "__main__":

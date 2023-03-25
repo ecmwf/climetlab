@@ -15,7 +15,6 @@ from itertools import product
 
 import numpy as np
 
-
 from climetlab.core import Base
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
@@ -215,6 +214,7 @@ class NetCDFReader(Reader):
 
     def get_fields(self):
         import xarray as xr
+
         with closing(
             xr.open_mfdataset(self.path, combine="by_coords")
         ) as ds:  # or nested

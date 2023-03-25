@@ -12,8 +12,6 @@ import logging
 from climetlab.decorators import alias_argument, normalize
 from climetlab.utils.humanize import list_to_human
 
-
-
 LOG = logging.getLogger(__name__)
 
 # Make sure the
@@ -75,7 +73,7 @@ class GribOutput:
         self.close()
 
     def handle_from_metadata(self, values, metadata):
-        from .codes import CodesHandle # Lazy loading of eccodes
+        from .codes import CodesHandle  # Lazy loading of eccodes
 
         if len(values.shape) == 1:
             sample = self._gg_field(values, metadata)

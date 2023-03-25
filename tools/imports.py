@@ -12,39 +12,50 @@
 import inspect
 import sys
 
-show_stack = '--stack' in sys.argv
-show_first = '--first' in sys.argv
+show_stack = "--stack" in sys.argv
+show_first = "--first" in sys.argv
+show_fail_if_loaded = "--fail" in sys.argv
+
+
+def call_stack():
+    for f in inspect.stack():
+        if f.filename == __file__:
+            continue
+
+        if "importlib._bootstrap" in f.filename:
+            continue
+
+        yield (f.filename, f.lineno)
 
 
 class SpecFinder:
     def find_spec(self, name, path=None, target=None):
+        if show_fail_if_loaded:
+            if name in sys.argv[1:]:
+                filename = "?"
+                lineno = 0
+                for filename, lineno in call_stack():
+                    break
+                print(f"{name} loaded from {filename}:{lineno}")
+                sys.exit(1)
+            return
         if show_first:
-            for f in inspect.stack():
-                if f.filename == __file__:
-                    continue
-
-                if "importlib._bootstrap" in f.filename:
-                    continue
-
-                print('=', name, f.filename, f.lineno)
+            for filename, lineno in call_stack():
+                print("=", name, f"{filename}:{lineno}")
                 return
 
-        print('=', name)
+        print("=", name)
         if show_stack:
-            for f in inspect.stack():
-                if f.filename == __file__:
-                    continue
-
-                if "importlib._bootstrap" in f.filename:
-                    continue
-
-                print("    ", f.filename, f.lineno)
+            for filename, lineno in call_stack():
+                print(
+                    f"    {filename}:{lineno}",
+                )
 
 
 sys.meta_path.insert(0, SpecFinder())
 
 
-import climetlab as cml # noqa
+import climetlab as cml  # noqa
 
 # This should trigger a lot of wrappers
-cml.load_source('file', __file__)
+cml.load_source("file", __file__)

@@ -15,14 +15,26 @@ on:
 
 jobs:
 
+  quality:
+    name: Code QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: pip install black flake8 isort
+      - run: black --version
+      - run: isort --version
+      - run: flake8 --version
+      - run: isort --check .
+      - run: black --check .
+      - run: flake8 .
+
   checks:
     strategy:
       fail-fast: false
       matrix:
         platform: ["ubuntu-latest", "windows-latest"]
-        python-version: ["3.8"]
-#        platform: ["ubuntu-latest", "macos-latest", "windows-latest"]
-#        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.10"]
+
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
@@ -52,19 +64,6 @@ jobs:
         run: |
           pip install -e .
           pip freeze
-
-# 
-#       - name: Install plugin
-#         run: |
-#           cd ..
-#           git clone https://github.com/Climdyn/climetlab-eumetnet-postprocessing-benchmark.git
-#           pip install -e ./climetlab-eumetnet-postprocessing-benchmark
-#           cd climetlab
-
-#      - name: Run plugin tests
-#        run: |
-#          cd ../climetlab-eumetnet-postprocessing-benchmark/tests
-#          pytest test_training_data_forecasts.py
 
       - name: Install test tools
         run: |

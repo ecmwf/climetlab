@@ -13,10 +13,11 @@ ipython is not None when running a notebook
 
 import logging
 import sys
+
 from ..utils import module_loaded
 
 ipython_active = None
-if module_loaded('IPython'):
+if module_loaded("IPython"):
     try:
         from IPython import get_ipython
 

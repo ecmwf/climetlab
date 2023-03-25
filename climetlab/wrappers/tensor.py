@@ -8,7 +8,7 @@
 #
 
 
-from climetlab.utils import module_installed, module_loaded
+from climetlab.utils import module_loaded
 from climetlab.wrappers import get_wrapper
 
 
