@@ -32,7 +32,6 @@ import pytest
 )
 @pytest.mark.skipif(int(os.environ.get("SKIP_TEST_IMPORTS", "1")))
 def test_imports(module):
-
     import climetlab as cml
     from climetlab.aaa import loaded_modules
 
