@@ -105,7 +105,7 @@ jobs:
 
     - name: Check imports
       run: |
-        pytest tests/test_imports.pys
+        pytest tests/test_imports.py
       env:
         SKIP_TEST_IMPORTS: 0
 
