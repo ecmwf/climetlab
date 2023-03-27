@@ -175,7 +175,8 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    def normalize_selection(self, *args, **kwargs):
+    @classmethod
+    def normalize_selection(cls, *args, **kwargs):
         _kwargs = {}
         for a in args:
             if a is None:
@@ -214,7 +215,8 @@ class Index(Source):
 
         return self.new_mask_index(self, indices)
 
-    def normalize_order_by(self, *args, **kwargs):
+    @classmethod
+    def normalize_order_by(cls, *args, **kwargs):
         _kwargs = {}
         for a in args:
             if a is None:

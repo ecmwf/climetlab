@@ -180,6 +180,9 @@ class Base(metaclass=MetaBase):
         for f in iterable:
             yield {k: f.metadata(k) for k in coords}
 
+    def __add__(self, other):
+        return climetlab.load_source("multi", self, other)
+
     def _not_implemented(self):
         import inspect
 
