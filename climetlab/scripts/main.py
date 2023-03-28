@@ -109,6 +109,15 @@ class CliMetLabApp(
 
     def onecmd(self, line):
         try:
+            lst = line.split()
+
+            def replace_dashes(txt):
+                return txt.replace("-", "_")
+
+            if len(lst) == 1:
+                line = replace_dashes(lst[0])
+            if len(lst) > 1:
+                line = " ".join([replace_dashes(lst[0])] + lst[1:])
             return super().onecmd(line)
         except ValueError as e:
             traceback.print_exc()

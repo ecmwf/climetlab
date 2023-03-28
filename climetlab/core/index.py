@@ -175,7 +175,8 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    def normalize_selection(self, *args, **kwargs):
+    @classmethod
+    def normalize_selection(cls, *args, **kwargs):
         _kwargs = {}
         for a in args:
             if a is None:
@@ -183,7 +184,7 @@ class Index(Source):
             if isinstance(a, dict):
                 _kwargs.update(a)
                 continue
-            assert False, a
+            raise ValueError(f"Cannot make a selection with {a}")
 
         _kwargs.update(kwargs)
 
@@ -214,7 +215,8 @@ class Index(Source):
 
         return self.new_mask_index(self, indices)
 
-    def normalize_order_by(self, *args, **kwargs):
+    @classmethod
+    def normalize_order_by(cls, *args, **kwargs):
         _kwargs = {}
         for a in args:
             if a is None:
@@ -227,21 +229,27 @@ class Index(Source):
                 continue
             if isinstance(a, (list, tuple)):
                 for k in a:
-                    assert isinstance(k, str), (a, k)
+                    if not isinstance(k, str):
+                        raise ValueError(
+                            f"Expected type 'str' but got {k} of type {type(k)} in {a}"
+                        )
                     _kwargs[k] = "ascending"
                 continue
 
-            assert False, f"Unsupported argument {a} of type {type(a)}"
+            raise ValueError(f"Unsupported argument {a} of type {type(a)}")
 
         _kwargs.update(kwargs)
 
         for k, v in _kwargs.items():
-            assert (
+            if not (
                 v is None
                 or callable(v)
                 or isinstance(v, (list, tuple, set))
                 or v in ["ascending", "descending"]
-            ), f"Unsupported order: {v} of type {type(v)} for key {k}"
+            ):
+                raise ValueError(
+                    f"Unsupported order: {v} of type {type(v)} for key {k}"
+                )
 
         return _kwargs
 
