@@ -16,7 +16,7 @@ import pytest
 
 # Make sure all these modules are loaded lazily
 # To find the culprit, rerun with:
-# CLIMETLAB_DEBUG_IMPORTS=1 pytest -k test_import
+# CLIMETLAB_DEBUG_IMPORTS=1 pytest tests/test_imports.py
 @pytest.mark.parametrize(
     "module",
     [
