@@ -47,7 +47,7 @@ class Selection(OrderOrSelection):
 
         self.actions = {}
         for k, v in kwargs.items():
-            if v is None or v == cml.ALL:
+            if v is None or v is cml.ALL:
                 self.actions[k] = lambda x: True
                 continue
 
@@ -191,7 +191,7 @@ class Index(Source):
         for k, v in _kwargs.items():
             assert (
                 v is None
-                or v == cml.ALL
+                or v is cml.ALL
                 or callable(v)
                 or isinstance(v, (list, tuple, set))
                 or isinstance(v, (str, int, float, datetime.datetime))
