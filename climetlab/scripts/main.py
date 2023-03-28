@@ -22,9 +22,9 @@ from .availability import AvailabilityCmd
 from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
+from .create import LoadersCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
-from .loaders import LoadersCmd
 from .settings import SettingsCmd
 
 LOG = logging.getLogger(__name__)
