@@ -181,7 +181,7 @@ class Base(metaclass=MetaBase):
             yield {k: f.metadata(k) for k in coords}
 
     def __add__(self, other):
-        return climetlab.load_source("multi", self, other)
+        self._not_implemented()
 
     def _not_implemented(self):
         import inspect

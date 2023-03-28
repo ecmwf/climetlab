@@ -82,6 +82,10 @@ class Dataset(Base):
         """
         return self
 
+    def __add__(self, other):
+        from climetlab.sources import load_source
+        return load_source("multi", self.source, other.source)
+
     @property
     def source(self):
         """Most methods are delegated to the ``source`` of the dataset.

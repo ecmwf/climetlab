@@ -48,7 +48,12 @@ class Loader(Source):
                     LOG.debug(f"Using data from: {name}, {one}")
                     data.append(action(name, **one))
 
-        return load_source("multi", data)
+        result = data[0]
+        for d in data[1:]:
+            result = result + d
+
+        return result
+
 
 
 source = Loader
