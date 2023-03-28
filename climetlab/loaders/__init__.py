@@ -194,17 +194,23 @@ class HDF5Loader:
 
 
 def _load(loader, config, append, dataset=None):
+    start = time.time()
     print("Loading dataset", config)
 
     data = cml.load_source("loader", config["input"])
+    print(f"Done in {seconds(time.time()-start)}, length: {len(data)}.")
+
     output = config["output"]
     order = output["order"]
 
+    start = time.time()
+    print("Sort dataset")
     cube = data.cube(
         order,
         remapping=Remapping(output.get("remapping")),
     )
     cube = cube.squeeze()
+    print(f"Done in {seconds(time.time()-start)}.")
 
     chunking = output.get("chunking", {})
     chunks = cube.chunking(**chunking)
