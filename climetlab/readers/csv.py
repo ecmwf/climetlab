@@ -208,7 +208,10 @@ class CSVReader(Reader):
 def reader(source, path, magic, deeper_check, fwf=False):
     kind, compression = mimetypes.guess_type(path)
 
-    if kind == "text/csv":
+    if kind in [
+        "text/csv",
+        "application/vnd.ms-excel",  # See: https://github.com/ecmwf/climetlab/issues/48
+    ]:
         return CSVReader(source, path, compression=compression)
 
     if deeper_check and False:

@@ -234,7 +234,7 @@ class SqlSelection(SqlFilter):
     def filter_statement(self, db, *args, **kwargs):
         conditions = []
         for k, v in self.kwargs.items():
-            if v is None or v == cml.ALL:
+            if v is None or v is cml.ALL:
                 continue
 
             name = entryname_to_dbname(k)
