@@ -198,6 +198,7 @@ def _load(loader, config, append, dataset=None):
     print("Loading dataset", config)
 
     data = cml.load_source("loader", config["input"])
+    assert len(data), config["input"]
     print(f"Done in {seconds(time.time()-start)}, length: {len(data)}.")
 
     output = config["output"]

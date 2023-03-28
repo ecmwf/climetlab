@@ -79,7 +79,7 @@ class EntriesLoader:
     def patch(self):
         try:
             self.connection.execute(
-                "ALTER TABLE entries RENAME COLUMN i_valid_datetime TO i_datetime;"
+                "ALTER TABLE entries RENAME COLUMN i_datetime TO i_valid_datetime;"
             )
         except sqlite3.OperationalError:
             pass

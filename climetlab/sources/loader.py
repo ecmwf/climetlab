@@ -46,7 +46,9 @@ class Loader(Source):
                         last.update(one)
                         one = last
                     LOG.debug(f"Using data from: {name}, {one}")
-                    data.append(action(name, **one))
+                    source = action(name, **one)
+                    assert len(source), f"No data for {(action,name, one)}"
+                    data.append(source)
 
         result = data[0]
         for d in data[1:]:
