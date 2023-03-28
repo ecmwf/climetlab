@@ -53,7 +53,6 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         values = self.db.unique_values(*coords).values()
 
         dic = {k: v for k, v in zip(keys, values)}
-        print("Uniques values: ", dic)
         return dic
 
     def filter(self, filter):
