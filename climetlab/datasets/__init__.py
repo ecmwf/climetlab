@@ -84,6 +84,7 @@ class Dataset(Base):
 
     def __add__(self, other):
         from climetlab.sources import load_source
+
         return load_source("multi", self.source, other.source)
 
     @property
