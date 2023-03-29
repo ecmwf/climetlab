@@ -1,0 +1,10 @@
+[tool.black]
+extend-exclude = '''
+(
+experiments/*
+)
+'''
+
+[tool.isort]
+extend_skip = ["grib.py", "experimentsy"]
+profile = "black"
