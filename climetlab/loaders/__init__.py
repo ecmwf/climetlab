@@ -73,7 +73,7 @@ class Remapping:
                 return str(x)
 
             def join(self, args):
-                return "".join(args)
+                return "".join(str(x) for x in args)
 
         joiner = CustomJoiner()
 
