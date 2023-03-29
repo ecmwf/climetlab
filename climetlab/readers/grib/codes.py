@@ -343,7 +343,8 @@ class GribField(Base):
         Nj = missing_is_none(self.handle.get("Nj"))
         Ni = missing_is_none(self.handle.get("Ni"))
         if Ni is None or Nj is None:
-            return self.handle.get("numberOfDataPoints")
+            n = self.handle.get("numberOfDataPoints")
+            return (n,)  # shape must be a tuple
         return (Nj, Ni)
 
     def plot_map(self, backend):
