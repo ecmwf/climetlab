@@ -42,7 +42,7 @@ class JsonStdoutDatabase(JsonDatabase):
 def json_serialiser(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
-    if hasattr(o, 'as_dict'):
+    if hasattr(o, "as_dict"):
         return o.as_dict()
 
 

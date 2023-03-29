@@ -19,9 +19,10 @@ from threading import local
 import numpy as np
 
 import climetlab as cml
+from climetlab.indexing.database.json import json_serialiser
+from climetlab.loaders import build_remapping
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
-from climetlab.indexing.database.json import json_serialiser
 
 from . import (
     FILEPARTS_KEY_NAMES,
@@ -37,7 +38,37 @@ from . import (
 LOG = logging.getLogger(__name__)
 
 
+def dump_sql(statement):
+    statement = statement.replace(",", ", ")
+    statement = statement.replace(";", " ;")
+    statement = statement.replace("(", " (")
+    lst = statement.split()
+    lst = [
+        "userorder_entries_...\n" if x.startswith("userorder_entries") else x
+        for x in lst
+    ]
+    print(" ".join(lst))
+
+
+def execute(connection, statement, *arg, **kwargs):
+    if LOG.level == logging.DEBUG:
+        assert False
+        dump_sql(statement)
+    return connection.execute(statement, *arg, **kwargs)
+
+
 def entryname_to_dbname(n):
+    n = dict(
+        levellist="levelist",
+        level="levelist",
+        leveltype="levtype",
+        variable="param",
+        parameter="param",
+        realization="number",
+        realisation="number",
+        klass="class",
+    ).get(n, n)
+
     def add_mars(x):
         return "i_" + x
 
@@ -79,8 +110,16 @@ class EntriesLoader:
 
     def patch(self):
         try:
-            self.connection.execute(
-                "ALTER TABLE entries RENAME COLUMN i_datetime TO i_valid_datetime;"
+            execute(
+                self.connection,
+                "ALTER TABLE entries RENAME COLUMN i_datetime TO i_valid_datetime;",
+            )
+        except sqlite3.OperationalError:
+            pass
+
+        try:
+            execute(
+                self.connection, "ALTER TABLE entries DROP COLUMN i_param_levelist;"
             )
         except sqlite3.OperationalError:
             pass
@@ -104,7 +143,7 @@ class EntriesLoader:
 
     def read_from_table(self):
         keys = {}
-        cursor = self.connection.execute(f"PRAGMA table_info({self.table_name})")
+        cursor = execute(self.connection, f"PRAGMA table_info({self.table_name})")
         for x in cursor.fetchall():
             name, typ = x[1], x[2]
             klass = self.guess_key_type(typ, name)
@@ -124,7 +163,7 @@ class EntriesLoader:
         LOG.debug(f"Created table {self} from entry {entry}.")
         columns_defs = ",".join([f"{v.name} {v.sql_type}" for k, v in keys.items()])
         statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_defs});"
-        self.connection.execute(statement)
+        execute(self.connection, statement)
         return self.read_from_table()
 
     def _add_column(self, k, v):
@@ -134,7 +173,7 @@ class EntriesLoader:
         )
         LOG.debug("%s", statement)
         try:
-            self.connection.execute(statement)
+            execute(self.connection, statement)
         except sqlite3.OperationalError:
             LOG.debug("Add column failed, this is expected because of concurency")
         self.keys[dbkey.name] = dbkey
@@ -174,7 +213,7 @@ class EntriesLoader:
                 + ");"
             )
             values = [entry.get(dbname_to_entryname(k)) for k, v in self.keys.items()]
-            self.connection.execute(statement, tuple(values))
+            execute(self.connection, statement, tuple(values))
             count += 1
 
         date = datetime.datetime.now().isoformat()
@@ -190,8 +229,9 @@ class EntriesLoader:
         pbar = tqdm(indexed_columns, desc="Building indexes")
         for n in pbar:
             pbar.set_description(f"Building index for {n}")
-            self.connection.execute(
-                f"CREATE INDEX IF NOT EXISTS {n}_index ON {self.table_name} ({n});"
+            execute(
+                self.connection,
+                f"CREATE INDEX IF NOT EXISTS {n}_index ON {self.table_name} ({n});",
             )
 
     def __str__(self):
@@ -208,12 +248,21 @@ class Connection(local):
 
 
 class SqlFilter:
+    def __init__(self, kwargs=None, remapping=None):
+        self.kwargs = kwargs or {}
+        self.remapping = build_remapping(remapping)
+
     def h(self, *args, **kwargs):
-        m = hashlib.sha256()
+        m = hashlib.md5()
         m.update(str(args).encode("utf-8"))
         m.update(str(kwargs).encode("utf-8"))
+        m.update(str(self.remapping.as_dict()).encode("utf-8"))
         m.update(str(self.__class__.__name__).encode("utf-8"))
-        m.update(json.dumps(self.kwargs, sort_keys=True, default=json_serialiser).encode("utf-8"))
+        m.update(
+            json.dumps(self.kwargs, sort_keys=True, default=json_serialiser).encode(
+                "utf-8"
+            )
+        )
         return m.hexdigest()
 
     def __str__(self):
@@ -223,16 +272,24 @@ class SqlFilter:
     def is_empty(self):
         return not self.kwargs
 
-    @abstractmethod
-    def filter_statement(self, db, *args, **kwargs):
-        pass
+    def create_new_view(self, db, view):
+        new_view = "entries_" + self.h(parent_view=view)
+        assert new_view != view
+        view_statement = self.create_view_statement(
+            db, old_view=view, new_view=new_view
+        )
+        if not view_statement:
+            # nothing to do
+            return view
+
+        LOG.debug("%s", view_statement)
+        for i in execute(db.connection, view_statement):
+            LOG.error(str(i))
+        return new_view
 
 
 class SqlSelection(SqlFilter):
-    def __init__(self, kwargs: dict):
-        self.kwargs = kwargs
-
-    def filter_statement(self, db, *args, **kwargs):
+    def create_view_statement(self, db, old_view, new_view):
         conditions = []
         for k, v in self.kwargs.items():
             if v is None or v is cml.ALL:
@@ -250,14 +307,53 @@ class SqlSelection(SqlFilter):
             conditions.append(f"{name} IN ({', '.join(v)})")
 
         if not conditions:
-            return ""
-        return " WHERE " + " AND ".join(conditions)
+            return None
+
+        assert new_view != old_view
+        return (
+            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
+            + f"FROM {old_view} WHERE "
+            + " AND ".join(conditions)
+            + ";"
+        )
+
+
+class SqlRemapping(SqlFilter):
+    def create_view_statement(self, db, old_view, new_view):
+        class SqlCustomJoiner:
+            def format_name(self, x):
+                return entryname_to_dbname(x)
+
+            def format_string(self, name):
+                if not name:
+                    return name
+                return "'" + str(name) + "'"
+
+            def join(self, lst):
+                assert not len(lst) == 0, lst
+                lst = [_ for _ in lst if len(_)]
+                return " || ".join(lst)
+
+        sql_concatenations = []
+        for k, v in self.remapping.remapping.items():
+            joiner = SqlCustomJoiner()
+            alias = entryname_to_dbname(k)
+            expr = self.remapping.substitute(k, joiner)
+            sql_concatenations.append(f"{expr} AS {alias}")
+
+        select = ", ".join(sql_concatenations)
+
+        if not sql_concatenations:
+            return None
+
+        assert new_view != old_view
+        return (
+            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT *, {select} "
+            f"FROM {old_view};"
+        )
 
 
 class SqlOrder(SqlFilter):
-    def __init__(self, kwargs):
-        self.kwargs = kwargs
-
     def merge(self, *others):
         orders = reversed([self, *others])
 
@@ -269,7 +365,7 @@ class SqlOrder(SqlFilter):
 
         return SqlOrder(kwargs)
 
-    def filter_statement(self, db, new_view):
+    def create_view_statement(self, db, old_view, new_view):
         func_name = "userorder_" + new_view
 
         order_bys = []
@@ -278,7 +374,7 @@ class SqlOrder(SqlFilter):
         for k, v in self.kwargs.items():
             name = entryname_to_dbname(k)
 
-            dbkey = db.dbkeys[name]
+            dbkey = db.dbkeys.get(name, StrDBKey(name))
 
             if v == "ascending" or v is None:
                 order_bys.append(name + " ASC")
@@ -294,16 +390,25 @@ class SqlOrder(SqlFilter):
 
             raise ValueError(f"{k},{v}, {type(v)}")
 
+        if not order_bys:
+            return None
+
         if dict_of_dicts:
 
             def order_func(k, v):
                 return dict_of_dicts[k][v]
 
+            if LOG.level == logging.DEBUG:
+                sqlite3.enable_callback_tracebacks(True)
             db.connection.create_function(func_name, 2, order_func, deterministic=True)
 
-        if not order_bys:
-            return ""
-        return "ORDER BY " + ",".join(order_bys)
+        assert new_view != old_view
+        return (
+            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
+            + f"FROM {old_view} ORDER BY "
+            + ",".join(order_bys)
+            + ";"
+        )
 
 
 class VersionedDatabaseMixin:
@@ -311,7 +416,7 @@ class VersionedDatabaseMixin:
 
     @property
     def _version(self):
-        cursor = self.connection.execute("PRAGMA user_version;")
+        cursor = execute(self.connection, "PRAGMA user_version;")
         for res in cursor:
             version = res[0]
             return version if version else None
@@ -319,7 +424,7 @@ class VersionedDatabaseMixin:
 
     def _set_version(self):
         if self._version is None:
-            self.connection.execute(f"PRAGMA user_version = {self.VERSION};")
+            execute(self.connection, f"PRAGMA user_version = {self.VERSION};")
             return
         self._check_version()
 
@@ -345,18 +450,18 @@ class PathTable:
 
     def ensure_table(self):
         statement = f"CREATE TABLE IF NOT EXISTS {self.table_name} (key TEXT PRIMARY KEY, date TEXT);"
-        for i in self.connection.execute(statement):
+        for i in execute(self.connection, statement):
             LOG.error(str(i))  # Output of .execute should be empty
 
     def insert(self, key, date):
         statement = f"""INSERT INTO {self.table_name} (key, date) VALUES(?,?);"""
         LOG.debug("%s", statement)
-        self.connection.execute(statement, (key, date))
+        execute(self.connection, statement, (key, date))
 
     def get_date(self, key):
         statement = f"""SELECT * FROM {self.table_name} WHERE key="{key}";"""
         LOG.debug("%s", statement)
-        for key, date in self.connection.execute(statement):
+        for key, date in execute(self.connection, statement):
             return date
         return None
 
@@ -389,8 +494,8 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
         if self._view is None:
             self._view = "entries"
             for f in self._filters:
-                self._view = self._apply_filter(f, self._view)
-            LOG.debug("DB %s %s", self.db_path, self.view)
+                self._view = f.create_new_view(self, self._view)
+            LOG.debug("DB %s %s", self.db_path, self._view)
         return self._view
 
     @property
@@ -399,54 +504,30 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             self._connection = Connection(self.db_path)
         return self._connection._conn
 
-    def unique_values(self, *coords, progress_bar=True):
+    def unique_values(self, *coords, remapping=None, progress_bar=True):
         """
         Given a list of metadata attributes, such as date, param, levels,
         returns the list of unique values for each attributes
         """
 
+        remapping = build_remapping(remapping)
         with self.connection as con:
+            view = self.view
+            # orders = [f for f in self._filters if isinstance(f, SqlOrder)]
+            # if orders:
+            #     order = orders[0].merge(*orders)
+            #     view = order.create_new_view(self, view)
+
             results = {}
             for c in coords:
                 column = entryname_to_dbname(c)
-
-                def get_order_statement():
-                    statement = ""
-                    orders = [f for f in self._filters if isinstance(f, SqlOrder)]
-                    if orders:
-                        order = orders[0].merge(*orders)
-                        new_view = order.h(parent_view=self.view)
-                        statement = order.filter_statement(self, new_view)
-                        LOG.debug(order, statement)
-                    return statement
-
                 values = [
-                    v[0]
-                    for v in con.execute(
-                        f"SELECT DISTINCT {column} FROM {self.view} {get_order_statement()}"
-                    )
+                    v[0] for v in execute(con, f"SELECT DISTINCT {column} FROM {view};")
                 ]
-
                 LOG.debug("Reordered values for {column}", column, values)
-
                 results[column] = values
 
         return results
-
-    def _apply_filter(self, filter: SqlFilter, view):
-        new_view = view + "_" + filter.h(parent_view=view)
-        filter_statement = filter.filter_statement(self, new_view)
-
-        statement = (
-            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT * "
-            + f"FROM {view} {filter_statement};"
-        )
-
-        LOG.debug("%s", statement)
-        for i in self.connection.execute(statement):
-            LOG.error(str(i))  # Output of .execute should be empty
-
-        return new_view
 
     def filter(self, filter: SqlFilter):
         return self.__class__(
@@ -513,12 +594,12 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
         statement = f"SELECT {names_str} FROM {self.view} {limit_str} {offset_str};"
         LOG.debug("%s", statement)
 
-        for tupl in self.connection.execute(statement):
+        for tupl in execute(self.connection, statement):
             yield tupl
 
     def count(self):
         statement = f"SELECT COUNT(*) FROM {self.view};"
-        for result in self.connection.execute(statement):
+        for result in execute(self.connection, statement):
             return result[0]
         assert False, statement  # Fail if result is empty.
 

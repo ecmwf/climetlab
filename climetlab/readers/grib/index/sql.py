@@ -12,7 +12,13 @@ from collections import namedtuple
 
 from climetlab.core.constants import DATETIME
 from climetlab.decorators import cached_method, normalize
-from climetlab.indexing.database.sql import SqlDatabase, SqlOrder, SqlSelection
+from climetlab.indexing.database.sql import (
+    SqlDatabase,
+    SqlOrder,
+    SqlRemapping,
+    SqlSelection,
+)
+from climetlab.loaders import build_remapping
 from climetlab.readers.grib.index.db import FieldsetInFilesWithDBIndex
 from climetlab.utils.serialise import register_serialisation
 
@@ -40,17 +46,21 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     def _find_all_coords_dict(self):
         return self.db._find_all_coords_dict()
 
-    def unique_values(self, *coords, progress_bar=None):
+    def unique_values(self, *coords, remapping=None, progress_bar=None):
         """
         Given a list of metadata attributes, such as date, param, levels,
         returns the list of unique values for each attributes
         """
         keys = coords
 
+        remapping = build_remapping(remapping)
+        print("Not using remapping here")
+
         coords = {k: None for k in coords}
         coords = self._normalize_grib_kwargs_names(**coords)
         coords = list(coords.keys())
-        values = self.db.unique_values(*coords).values()
+        print("coords:", coords)
+        values = self.db.unique_values(*coords, remapping=remapping).values()
 
         dic = {k: v for k, v in zip(keys, values)}
         return dic
@@ -59,11 +69,11 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         db = self.db.filter(filter)
         return self.__class__(db=db)
 
-    def sel(self, *args, **kwargs):
+    def sel(self, *args, remapping=None, **kwargs):
         kwargs = self.normalize_selection(*args, **kwargs)
         if not kwargs:
             return self
-        return self.filter(SqlSelection(kwargs))
+        return self.filter(SqlSelection(kwargs, remapping))
 
     def normalize_selection(self, *args, **kwargs):
         kwargs = super().normalize_selection(*args, **kwargs)
@@ -71,11 +81,17 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
             kwargs = _normalize_grib_kwargs_values(**kwargs)
         return kwargs
 
-    def order_by(self, *args, **kwargs):
+    def order_by(self, *args, remapping=None, **kwargs):
         kwargs = self.normalize_order_by(*args, **kwargs)
-        if not kwargs:
-            return self
-        return self.filter(SqlOrder(kwargs))
+        out = self
+
+        if remapping is not None:
+            out = out.filter(SqlRemapping(remapping=remapping))
+
+        if kwargs:
+            out = out.filter(SqlOrder(kwargs))
+
+        return out
 
     def part(self, n):
         if self._cache is None or not (

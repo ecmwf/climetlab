@@ -76,6 +76,10 @@ class FieldCube:
     def field_shape(self):
         if self._field_shape is None:
             self._field_shape = self.source[0].shape
+            assert isinstance(self._field_shape, tuple), (
+                self._field_shape,
+                self.source[0],
+            )
         return self._field_shape
 
     @property

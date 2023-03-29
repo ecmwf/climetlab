@@ -48,39 +48,62 @@ class Remapping:
         for k, v in remapping.items():
             m = re.split(r"\{([^}]*)\}", v)
             self.remapping[k] = m
+            # ex:
+            # if remapping == '{param}_{level}'
+            # self.remapping['param_level'] == ['', 'param', '_', level', '']
+
+    def required_keys(self, k):
+        if k not in self.remapping:
+            return [k]
+        lst = []
+        for i, bit in enumerate(self.remapping[k]):
+            if i % 2:
+                lst.append(bit)
+        return lst
 
     def __call__(self, func):
         if self.remapping is None:
             return func
 
-        def wrapped(name):
-            if name in self.remapping:
-                lst = []
-                for i, bit in enumerate(self.remapping[name]):
-                    if i % 2:
-                        p = func(bit)
-                        if p is not None:
-                            lst.append(str(p))
-                        else:
-                            lst = lst[:-1]
-                    else:
-                        lst.append(bit)
-                return "".join(lst)
+        class CustomJoiner:
+            def format_name(self, x):
+                return func(x)
 
-            return func(name)
+            def format_string(self, x):
+                return str(x)
+
+            def join(self, args):
+                return "".join(args)
+
+        joiner = CustomJoiner()
+
+        def wrapped(name):
+            return self.substitute(name, joiner)
 
         return wrapped
+
+    def substitute(self, name, joiner):
+        if name in self.remapping:
+            lst = []
+            for i, bit in enumerate(self.remapping[name]):
+                if i % 2:
+                    p = joiner.format_name(bit)
+                    if p is not None:
+                        lst.append(p)
+                    else:
+                        lst = lst[:-1]
+                else:
+                    lst.append(joiner.format_string(bit))
+            return joiner.join(lst)
+        return joiner.format_name(name)
 
     def as_dict(self):
         return self.remapping
 
 
 def build_remapping(mapping):
-    def noop(x):
-        return x
-
     if mapping is None:
-        return noop
+        return Remapping({})
 
     if isinstance(mapping, dict):
         return Remapping(mapping)

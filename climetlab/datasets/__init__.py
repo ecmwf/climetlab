@@ -153,6 +153,7 @@ class Dataset(Base):
     def unique_values(self, *args, **kwargs):
         return self.source.unique_values(*args, **kwargs)
 
+
 def _module_callback(plugin):
     return import_module(plugin, package=__name__).dataset
 
