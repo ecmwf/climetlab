@@ -48,6 +48,11 @@ class Source(Base):
         # Used by multi-source
         return False
 
+    def __add__(self, other):
+        from climetlab.sources import load_source
+
+        return load_source("multi", self, other)
+
     def cache_file(self, create, args, **kwargs):
         owner = self.name
         if self.dataset:

@@ -50,7 +50,11 @@ class Loader(Source):
                     assert len(source), f"No data for {(action,name, one)}"
                     data.append(source)
 
-        return load_source("multi", data)
+        result = data[0]
+        for d in data[1:]:
+            result = result + d
+
+        return result
 
 
 source = Loader
