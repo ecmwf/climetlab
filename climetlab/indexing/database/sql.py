@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import sqlite3
-from abc import abstractmethod
 from threading import local
 
 import numpy as np
@@ -322,7 +321,8 @@ class SqlRemapping(SqlFilter):
     def create_view_statement(self, db, old_view, new_view):
         class SqlCustomJoiner:
             def format_name(self, x):
-                return entryname_to_dbname(x)
+                name = entryname_to_dbname(x)
+                return f"COALESCE({name},'')"
 
             def format_string(self, name):
                 if not name:
@@ -330,8 +330,8 @@ class SqlRemapping(SqlFilter):
                 return "'" + str(name) + "'"
 
             def join(self, lst):
-                assert not len(lst) == 0, lst
                 lst = [_ for _ in lst if len(_)]
+                assert len(lst) > 0, lst
                 return " || ".join(lst)
 
         sql_concatenations = []
@@ -339,7 +339,7 @@ class SqlRemapping(SqlFilter):
             joiner = SqlCustomJoiner()
             alias = entryname_to_dbname(k)
             expr = self.remapping.substitute(k, joiner)
-            sql_concatenations.append(f"{expr} AS {alias}")
+            sql_concatenations.append(f"TRIM({expr},'_') AS {alias}")
 
         select = ", ".join(sql_concatenations)
 

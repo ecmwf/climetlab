@@ -279,7 +279,9 @@ class Index(Source):
     def __getitem__(self, n):
         if isinstance(n, slice):
             return self.from_slice(n)
-        if isinstance(n, (list, tuple)):
+        if isinstance(n, tuple):
+            return self.from_tuple(n)
+        if isinstance(n, list):
             return self.from_mask(n)
         if isinstance(n, dict):
             return self.from_dict(n)
@@ -293,11 +295,16 @@ class Index(Source):
         indices = [i for i, x in enumerate(lst) if x]
         return self.new_mask_index(self, indices)
 
-    def from_list(self, lst):
+    def from_tuple(self, lst):
         return self.new_mask_index(self, lst)
 
     def from_dict(self, dic):
         return self.sel(dic)
+
+    @classmethod
+    def merge(cls, sources):
+        assert all(isinstance(_, Index) for _ in sources)
+        return MultiIndex(sources)
 
     def to_numpy(self, *args, **kwargs):
         import numpy as np

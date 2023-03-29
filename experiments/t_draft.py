@@ -1,6 +1,6 @@
 import itertools
-import time
 import math
+import time
 
 import numpy as np
 from tqdm import tqdm

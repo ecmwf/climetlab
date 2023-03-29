@@ -69,7 +69,9 @@ class FieldCube:
 
         if math.prod(self.user_shape) != len(self.source):
             raise ValueError(
-                f"Shape {self.user_shape} does not match number of fields {len(self.source)}. "
+                f"Shape {self.user_shape} [{math.prod(self.user_shape):,}]"
+                f" does not match number of fields {len(self.source):,}. "
+                f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
             )
 
     @property
@@ -129,7 +131,7 @@ class FieldCube:
             i = coords_to_index(x, user_shape)
             dataset_indexes.append(i)
 
-        ds = self.source.from_list(dataset_indexes)
+        ds = self.source[tuple(dataset_indexes)]
 
         # If we match just one element, we return it
         if all(len(_) == 1 for _ in coords):

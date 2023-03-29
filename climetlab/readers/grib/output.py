@@ -148,7 +148,7 @@ class GribOutput:
 
         if Nj % 2 == 0:
             north_south = 180 / Nj
-            adjust =  north_south / 2
+            adjust = north_south / 2
         else:
             north_south = 181 / Nj
             adjust = 0
