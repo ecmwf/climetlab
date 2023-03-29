@@ -68,8 +68,6 @@ class FieldCube:
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         if math.prod(self.user_shape) != len(self.source):
-            for f in self.source:
-                print(f)
             raise ValueError(
                 f"Shape {self.user_shape} does not match number of fields {len(self.source)}. "
             )

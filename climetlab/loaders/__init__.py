@@ -71,6 +71,9 @@ class Remapping:
 
         return wrapped
 
+    def as_dict(self):
+        return self.remapping
+
 
 def build_remapping(mapping):
     def noop(x):

@@ -21,6 +21,7 @@ import numpy as np
 import climetlab as cml
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
+from climetlab.indexing.database.json import json_serialiser
 
 from . import (
     FILEPARTS_KEY_NAMES,
@@ -212,7 +213,7 @@ class SqlFilter:
         m.update(str(args).encode("utf-8"))
         m.update(str(kwargs).encode("utf-8"))
         m.update(str(self.__class__.__name__).encode("utf-8"))
-        m.update(json.dumps(self.kwargs, sort_keys=True).encode("utf-8"))
+        m.update(json.dumps(self.kwargs, sort_keys=True, default=json_serialiser).encode("utf-8"))
         return m.hexdigest()
 
     def __str__(self):
