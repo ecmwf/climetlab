@@ -1,6 +1,6 @@
 import itertools
-import math
 import time
+import math
 
 import numpy as np
 from tqdm import tqdm
@@ -17,7 +17,7 @@ cmlds = cml.load_source(
 cmlds = cmlds.sel(date=[19790501, 19790502])
 # cmlds = cml.load_source("indexed-directory", "testdir")
 
-ds = cmlds.sel(levtype="pl")
+ds = cmlds.sel(levtype='pl')
 
 print(ds)
 

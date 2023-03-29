@@ -1,3 +1,4 @@
+exclude: 'experiments'
 repos:
 -   repo: https://github.com/ambv/black
     rev: 23.1.0
