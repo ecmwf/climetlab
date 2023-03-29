@@ -14,6 +14,7 @@ import json
 import os
 import re
 import time
+import warnings
 
 import numpy as np
 
@@ -48,18 +49,6 @@ class Remapping:
         for k, v in remapping.items():
             m = re.split(r"\{([^}]*)\}", v)
             self.remapping[k] = m
-            # ex:
-            # if remapping == '{param}_{level}'
-            # self.remapping['param_level'] == ['', 'param', '_', level', '']
-
-    def required_keys(self, k):
-        if k not in self.remapping:
-            return [k]
-        lst = []
-        for i, bit in enumerate(self.remapping[k]):
-            if i % 2:
-                lst.append(bit)
-        return lst
 
     def __call__(self, func):
         if self.remapping is None:
@@ -125,7 +114,7 @@ class ZarrLoader:
     def __init__(self, path):
         self.path = path
 
-    def create_array(self, dataset, shape, chunks, dtype, metadata, append):
+    def create_array(self, dataset, shape, chunks, dtype, append):
         import zarr
 
         print(
@@ -154,8 +143,6 @@ class ZarrLoader:
                 dtype=dtype,
             )
 
-            self.z.attrs["climetlab"] = _tidy(metadata)
-
             return self.z
 
     def close(self):
@@ -163,6 +150,63 @@ class ZarrLoader:
 
     def print_info(self):
         print(self.z.info)
+
+    def add_metadata(self, config):
+        metadata = {}
+
+        statistics = -1
+
+        statistics_axis = config.get("statistics")
+        output = config["output"]
+        order = output["order"]
+
+        for i, k in enumerate(order):
+            if isinstance(k, dict):
+                if list(k.keys())[0] == statistics_axis:
+                    statistics = i
+
+        if statistics >= 0:
+            mean = stdev = minimum = maximum = self.z
+            for i in range(len(self.z.shape)):
+                if i == statistics:
+                    continue
+                mean = np.mean(mean, axis=i, keepdims=True)
+                stdev = np.std(stdev, axis=i, keepdims=True)
+                minimum = np.amin(minimum, axis=i, keepdims=True)
+                maximum = np.amax(maximum, axis=i, keepdims=True)
+
+            mean = mean.flatten()
+            stdev = stdev.flatten()
+            minimum = minimum.flatten()
+            maximum = maximum.flatten()
+
+            statistics_names = list(order[statistics].values())[0]
+            assert isinstance(statistics_names, list)
+            assert len(statistics_names) == len(mean), (
+                statistics_names,
+                len(statistics_names),
+                len(mean),
+            )
+
+            name_to_index = metadata["name_to_index"] = {}
+            statistics_by_name = metadata["statistics_by_name"] = {}
+            for i, name in enumerate(statistics_names):
+                statistics_by_name[name] = {}
+                statistics_by_name[name]["mean"] = mean[i]
+                statistics_by_name[name]["stdev"] = stdev[i]
+                statistics_by_name[name]["minimum"] = minimum[i]
+                statistics_by_name[name]["maximum"] = maximum[i]
+                name_to_index[name] = i
+
+            statistics_by_index = metadata["statistics_by_index"] = {}
+            statistics_by_index["mean"] = list(mean)
+            statistics_by_index["stdev"] = list(stdev)
+            statistics_by_index["maximum"] = list(maximum)
+            statistics_by_index["minimum"] = list(minimum)
+
+        metadata["config"] = _tidy(config)
+
+        self.z.attrs["climetlab"] = metadata
 
 
 class HDF5Loader:
@@ -218,6 +262,9 @@ class HDF5Loader:
             print("Content:")
             h5_tree(f, 1)
 
+    def add_metadata(self, config):
+        warnings.warn("HDF5Loader.add_metadata not yet implemented")
+
 
 def _load(loader, config, append, dataset=None):
     start = time.time()
@@ -251,7 +298,6 @@ def _load(loader, config, append, dataset=None):
         cube.extended_user_shape,
         chunks,
         dtype,
-        config,
         append,
     )
 
@@ -351,22 +397,24 @@ def expand(values):
     raise ValueError(f"Cannot expand loop from {values}")
 
 
-def load(loader, manifest, append=False, **kwargs):
-    config = load_json_or_yaml(manifest)
+def load(loader, config, append=False, **kwargs):
+    config = load_json_or_yaml(config)
     loop = config.get("loop")
     if loop is None:
         _load(loader, config, append, **kwargs)
-        return
+    else:
 
-    def loops():
-        yield from (
-            dict(zip(loop.keys(), items))
-            for items in itertools.product(
-                expand(*list(loop.values())),
+        def loops():
+            yield from (
+                dict(zip(loop.keys(), items))
+                for items in itertools.product(
+                    expand(*list(loop.values())),
+                )
             )
-        )
 
-    for vars in loops():
-        print(vars)
-        _load(loader, substitute(config, vars), append=append, **kwargs)
-        append = True
+        for vars in loops():
+            print(vars)
+            _load(loader, substitute(config, vars), append=append, **kwargs)
+            append = True
+
+    loader.add_metadata(config)
