@@ -124,6 +124,7 @@ class GribOutput:
             metadata["date"] = date.hour * 100 + date.minute
 
         if "date" in metadata:
+            date = metadata["date"]
             metadata["date"] = date.year * 10000 + date.month * 100 + date.day
 
         for check in compulsary:
