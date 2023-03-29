@@ -124,6 +124,7 @@ class GribOutput:
             metadata["date"] = date.hour * 100 + date.minute
 
         if "date" in metadata:
+            date = metadata["date"]
             metadata["date"] = date.year * 10000 + date.month * 100 + date.day
 
         for check in compulsary:
@@ -147,10 +148,10 @@ class GribOutput:
 
         if Nj % 2 == 0:
             north_south = 180 / Nj
-            adjust = 0
+            adjust =  north_south / 2
         else:
             north_south = 181 / Nj
-            adjust = north_south / 2
+            adjust = 0
 
         north = 90 - adjust
         south = -90 + adjust
