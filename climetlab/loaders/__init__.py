@@ -11,6 +11,7 @@
 import datetime
 import itertools
 import json
+import logging
 import os
 import re
 import time
@@ -21,6 +22,8 @@ import numpy as np
 import climetlab as cml
 from climetlab.utils import load_json_or_yaml, progress_bar
 from climetlab.utils.humanize import bytes, seconds
+
+LOG = logging.getLogger(__name__)
 
 
 def _tidy(o):
@@ -42,72 +45,17 @@ def _tidy(o):
     return str(o)
 
 
-class Remapping:
-    def __init__(self, remapping):
-        self.remapping = {}
-
-        for k, v in remapping.items():
-            m = re.split(r"\{([^}]*)\}", v)
-            self.remapping[k] = m
-
-    def __call__(self, func):
-        if self.remapping is None:
-            return func
-
-        class CustomJoiner:
-            def format_name(self, x):
-                return func(x)
-
-            def format_string(self, x):
-                return str(x)
-
-            def join(self, args):
-                return "".join(str(x) for x in args)
-
-        joiner = CustomJoiner()
-
-        def wrapped(name):
-            return self.substitute(name, joiner)
-
-        return wrapped
-
-    def substitute(self, name, joiner):
-        if name in self.remapping:
-            lst = []
-            for i, bit in enumerate(self.remapping[name]):
-                if i % 2:
-                    p = joiner.format_name(bit)
-                    if p is not None:
-                        lst.append(p)
-                    else:
-                        lst = lst[:-1]
-                else:
-                    lst.append(joiner.format_string(bit))
-            return joiner.join(lst)
-        return joiner.format_name(name)
-
-    def as_dict(self):
-        return self.remapping
-
-
-def build_remapping(mapping):
-    if mapping is None:
-        return Remapping({})
-
-    if isinstance(mapping, dict):
-        return Remapping(mapping)
-
-    return mapping
-
-
 class OffsetView:
-    def __init__(self, array, offset):
+    def __init__(self, array, offset, axis):
         self.array = array
         self.offset = offset
+        self.axis = axis
 
     def __setitem__(self, key, value):
-        key = (key[0] + self.offset,) + key[1:]
-        self.array[key] = value
+        new_key = tuple(
+            k + self.offset if i == self.axis else k for i, k in enumerate(key)
+        )
+        self.array[new_key] = value
 
 
 class ZarrLoader:
@@ -126,14 +74,21 @@ class ZarrLoader:
             self.z = zarr.open(self.path, mode="r+")
 
             original_shape = self.z.shape
+            assert len(shape) == len(original_shape)
 
-            assert original_shape[1:] == shape[1:]
+            axis = 1 if grid_points_first else 0
 
-            new_shape = (original_shape[0] + shape[0],) + shape[1:]
+            new_shape = []
+            for i, (o, s) in enumerate(zip(original_shape, shape)):
+                if i == axis:
+                    new_shape.append(o + s)
+                else:
+                    assert o == s, (original_shape, shape, i)
+                    new_shape.append(o)
 
-            self.z.resize(new_shape)
+            self.z.resize(tuple(new_shape))
 
-            z = OffsetView(self.z, original_shape[0])
+            z = OffsetView(self.z, original_shape[axis], axis)
 
         else:
             self.z = zarr.open(
@@ -303,7 +258,7 @@ def _load(loader, config, append, dataset=None):
 
     data = cml.load_source("loader", config["input"])
     assert len(data), config["input"]
-    print(f"Done in {seconds(time.time()-start)}, length: {len(data)}.")
+    print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
     output = config["output"]
     order = output["order"]

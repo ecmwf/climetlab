@@ -8,7 +8,6 @@
 #
 
 
-import datetime
 import functools
 import logging
 import math
@@ -16,6 +15,8 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab as cml
+from climetlab.core.order import normalize_order_by
+from climetlab.core.select import normalize_selection
 from climetlab.loaders import build_remapping
 from climetlab.sources import Source
 
@@ -175,35 +176,12 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    @classmethod
-    def normalize_selection(cls, *args, **kwargs):
-        _kwargs = {}
-        for a in args:
-            if a is None:
-                continue
-            if isinstance(a, dict):
-                _kwargs.update(a)
-                continue
-            raise ValueError(f"Cannot make a selection with {a}")
-
-        _kwargs.update(kwargs)
-
-        for k, v in _kwargs.items():
-            assert (
-                v is None
-                or v is cml.ALL
-                or callable(v)
-                or isinstance(v, (list, tuple, set))
-                or isinstance(v, (str, int, float, datetime.datetime))
-            ), f"Unsupported type: {type(v)} for key {k}"
-        return _kwargs
-
     def sel(self, *args, **kwargs):
         """Filter elements on their metadata(), according to kwargs.
         Returns a new index object.
         """
 
-        kwargs = self.normalize_selection(*args, **kwargs)
+        kwargs = normalize_selection(*args, **kwargs)
         if not kwargs:
             return self
 
@@ -215,44 +193,6 @@ class Index(Source):
 
         return self.new_mask_index(self, indices)
 
-    @classmethod
-    def normalize_order_by(cls, *args, **kwargs):
-        _kwargs = {}
-        for a in args:
-            if a is None:
-                continue
-            if isinstance(a, dict):
-                _kwargs.update(a)
-                continue
-            if isinstance(a, str):
-                _kwargs[a] = "ascending"
-                continue
-            if isinstance(a, (list, tuple)):
-                for k in a:
-                    if not isinstance(k, str):
-                        raise ValueError(
-                            f"Expected type 'str' but got {k} of type {type(k)} in {a}"
-                        )
-                    _kwargs[k] = "ascending"
-                continue
-
-            raise ValueError(f"Unsupported argument {a} of type {type(a)}")
-
-        _kwargs.update(kwargs)
-
-        for k, v in _kwargs.items():
-            if not (
-                v is None
-                or callable(v)
-                or isinstance(v, (list, tuple, set))
-                or v in ["ascending", "descending"]
-            ):
-                raise ValueError(
-                    f"Unsupported order: {v} of type {type(v)} for key {k}"
-                )
-
-        return _kwargs
-
     def order_by(self, *args, remapping=None, **kwargs):
         """Default order_by method.
         It expects that calling self[i] returns an element that and Order object can rank
@@ -261,7 +201,7 @@ class Index(Source):
 
         Returns a new index object.
         """
-        kwargs = self.normalize_order_by(*args, **kwargs)
+        kwargs = normalize_order_by(*args, **kwargs)
         remapping = build_remapping(remapping)
 
         if not kwargs:
