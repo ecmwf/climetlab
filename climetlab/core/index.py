@@ -176,12 +176,16 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
+    def _normalize_kwargs_names(**kwargs):
+        return kwargs
+
     def sel(self, *args, **kwargs):
         """Filter elements on their metadata(), according to kwargs.
         Returns a new index object.
         """
 
         kwargs = normalize_selection(*args, **kwargs)
+        kwargs = self._normalize_kwargs_names(**kwargs)
         if not kwargs:
             return self
 
@@ -202,6 +206,8 @@ class Index(Source):
         Returns a new index object.
         """
         kwargs = normalize_order_by(*args, **kwargs)
+        kwargs = self._normalize_kwargs_names(**kwargs)
+
         remapping = build_remapping(remapping)
 
         if not kwargs:

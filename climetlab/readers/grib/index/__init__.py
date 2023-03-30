@@ -99,22 +99,12 @@ class FieldSet(FieldSetMixin, Index):
         expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
         return len(self) == expected_size
 
-    def normalize_selection(self, *args, **kwargs):
-        kwargs = super().normalize_selection(*args, **kwargs)
-        kwargs = self._normalize_grib_kwargs_names(**kwargs)
-        return kwargs
-
-    def normalize_order_by(self, *args, **kwargs):
-        kwargs = super().normalize_order_by(*args, **kwargs)
-        kwargs = self._normalize_grib_kwargs_names(**kwargs)
-        return kwargs
-
     @alias_argument("levelist", ["level", "levellist"])
     @alias_argument("levtype", ["leveltype"])
     @alias_argument("param", ["variable", "parameter"])
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
-    def _normalize_grib_kwargs_names(self, **kwargs):
+    def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
 

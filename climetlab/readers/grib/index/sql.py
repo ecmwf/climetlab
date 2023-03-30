@@ -11,6 +11,8 @@ import logging
 from collections import namedtuple
 
 from climetlab.core.constants import DATETIME
+from climetlab.core.order import normalize_order_by
+from climetlab.core.select import normalize_selection
 from climetlab.decorators import cached_method, normalize
 from climetlab.indexing.database.sql import (
     SqlDatabase,
@@ -57,7 +59,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         print("Not using remapping here")
 
         coords = {k: None for k in coords}
-        coords = self._normalize_grib_kwargs_names(**coords)
+        coords = self._normalize_kwargs_names(**coords)
         coords = list(coords.keys())
         print("coords:", coords)
         values = self.db.unique_values(*coords, remapping=remapping).values()
@@ -70,19 +72,19 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         return self.__class__(db=db)
 
     def sel(self, *args, remapping=None, **kwargs):
-        kwargs = self.normalize_selection(*args, **kwargs)
+        kwargs = normalize_selection(*args, **kwargs)
+        kwargs = self._normalize_kwargs_names(**kwargs)
+        if DATETIME in kwargs and kwargs[DATETIME] is not None:
+            kwargs = _normalize_grib_kwargs_values(**kwargs)
+
         if not kwargs:
             return self
         return self.filter(SqlSelection(kwargs, remapping))
 
-    def normalize_selection(self, *args, **kwargs):
-        kwargs = super().normalize_selection(*args, **kwargs)
-        if DATETIME in kwargs and kwargs[DATETIME] is not None:
-            kwargs = _normalize_grib_kwargs_values(**kwargs)
-        return kwargs
-
     def order_by(self, *args, remapping=None, **kwargs):
-        kwargs = self.normalize_order_by(*args, **kwargs)
+        kwargs = normalize_order_by(*args, **kwargs)
+        kwargs = self._normalize_kwargs_names(**kwargs)
+
         out = self
 
         if remapping is not None:

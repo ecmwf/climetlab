@@ -39,12 +39,12 @@ class GribOutput:
     @alias_argument("number", ["realization", "realisation"])
     @alias_argument("class", "klass")
     @normalize("date", "date")
-    def _normalize_grib_kwargs_names(self, **kwargs):
+    def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
     def write(self, values, metadata={}, template=None):
         # Make a copy as we may modify it
-        metadata = self._normalize_grib_kwargs_names(**metadata)
+        metadata = self._normalize_kwargs_names(**metadata)
 
         if template is None:
             template = self.template
