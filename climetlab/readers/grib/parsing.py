@@ -15,7 +15,6 @@ from multiprocessing import Process, Queue
 
 from tqdm import tqdm
 
-import climetlab
 from climetlab.utils import progress_bar
 from climetlab.utils.humanize import plural, seconds
 
@@ -177,29 +176,31 @@ class GribIndexingDirectoryParserIterator:
         self._tasks = None
 
     def _new_db(self):
-        return climetlab.indexing.database.sql.SqlDatabase(self.db_path)
+        from climetlab.indexing.database.sql import SqlDatabase
+
+        return SqlDatabase(self.db_path)
+
+    def worker(self, i):
+        _i = i
+        time.sleep(i)
+        while True:
+            task = self.q_in.get()
+            if task is None:
+                break
+            n = self.process_one_task(_i, task)
+            self.q_out.put(n)
 
     def load_database(self):
         start = datetime.datetime.now()
 
-        q_in = Queue()
-        q_out = Queue()
-
-        def worker(q_in, q_out, i, func):
-            _i = i
-            time.sleep(i)
-            while True:
-                task = q_in.get()
-                if task is None:
-                    break
-                n = func(_i, task)
-                q_out.put(n)
+        self.q_in = Queue()
+        self.q_out = Queue()
 
         nproc = 5
 
         workers = []
         for i in range(nproc):
-            proc = Process(target=worker, args=(q_in, q_out, i, self.process_one_task))
+            proc = Process(target=self.worker, args=(i,))
             proc.start()
             workers.append(proc)
 
@@ -210,17 +211,14 @@ class GribIndexingDirectoryParserIterator:
                 LOG.warning(f"Skipping {path}, already loaded")
                 continue
 
-            q_in.put(path)
+            self.q_in.put(path)
 
         for i in range(nproc):
-            q_in.put(None)
+            self.q_in.put(None)
 
         count = 0
-        for _ in progress_bar(
-            iterable=self.tasks,
-            total=len(self.tasks),
-        ):
-            count += q_out.get()
+        for _ in progress_bar(iterable=self.tasks, total=len(self.tasks)):
+            count += self.q_out.get()
 
         for p in workers:
             p.join()
