@@ -167,13 +167,14 @@ class ZarrLoader:
 
         if statistics >= 0:
             mean = stdev = minimum = maximum = self.z
-            for i in range(len(self.z.shape)):
-                if i == statistics:
-                    continue
-                mean = np.mean(mean, axis=i, keepdims=True)
-                stdev = np.std(stdev, axis=i, keepdims=True)
-                minimum = np.amin(minimum, axis=i, keepdims=True)
-                maximum = np.amax(maximum, axis=i, keepdims=True)
+            axis = tuple(i for i in range(len(self.z.shape)) if i != statistics)
+
+            mean = np.mean(mean, axis=axis)
+            stdev = np.std(stdev, axis=axis)
+            minimum = np.amin(minimum, axis=axis)
+            maximum = np.amax(maximum, axis=axis)
+
+            print(mean.shape)
 
             mean = mean.flatten()
             stdev = stdev.flatten()
