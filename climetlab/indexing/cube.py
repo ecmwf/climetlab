@@ -36,11 +36,18 @@ def index_to_coords(index, shape):
 
 
 class FieldCube:
-    def __init__(self, ds, *args, remapping=None, datetime="valid"):
+    def __init__(
+        self,
+        ds,
+        *args,
+        remapping=None,
+        flatten_values=False,
+        grid_points_first=False,
+    ):
         assert len(ds), f"No data in {ds}"
 
-        assert datetime == "valid"
-        self.datetime = datetime
+        self.flatten_values = flatten_values
+        self.grid_points_first = grid_points_first
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
@@ -78,6 +85,10 @@ class FieldCube:
     def field_shape(self):
         if self._field_shape is None:
             self._field_shape = self.source[0].shape
+
+            if self.flatten_values:
+                self._field_shape = (math.prod(self._field_shape),)
+
             assert isinstance(self._field_shape, tuple), (
                 self._field_shape,
                 self.source[0],
@@ -86,7 +97,10 @@ class FieldCube:
 
     @property
     def extended_user_shape(self):
-        return self.user_shape + self.field_shape
+        if self.grid_points_first:
+            return self.field_shape + self.user_shape
+        else:
+            return self.user_shape + self.field_shape
 
     def __str__(self):
         content = ", ".join([f"{k}:{len(v)}" for k, v in self.user_coords.items()])
@@ -138,9 +152,15 @@ class FieldCube:
             return ds[0]
 
         # For more than one element, we return a new cube
-        return FieldCube(ds, *self.user_coords)  # user_coords=self.user_coords)
+        return FieldCube(
+            ds,
+            *self.user_coords,
+            flatten_values=self.flatten_values,
+            grid_points_first=self.grid_points_first,
+        )
 
     def to_numpy(self, **kwargs):
+        assert not self.grid_points_first, "Not yes implemented"
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
 
     def _names(self, coords, reading_chunks=None, **kwargs):
@@ -166,8 +186,10 @@ class FieldCube:
         names = self._names(reading_chunks=reading_chunks, coords=self.user_coords)
         indexes = list(range(0, len(lst)) for lst in names)
 
+        CUBELT = GridPointFirstCubelet if self.grid_points_first else Cubelet
+
         return (
-            Cubelet(self, i, indexes_names=n)
+            CUBELT(self, i, coords_names=n)
             for n, i in zip(itertools.product(*names), itertools.product(*indexes))
         )
 
@@ -183,20 +205,57 @@ class FieldCube:
 
 
 class Cubelet:
-    def __init__(self, cube, indexes, indexes_names=None):
+    def __init__(self, cube, coords, coords_names=None):
         self.owner = cube
-        assert all(isinstance(_, int) for _ in indexes), indexes
-        self.indexes = indexes
-        self.index_names = indexes_names
+        assert all(isinstance(_, int) for _ in coords), coords
+        self.coords = coords
+        self.coords_names = coords_names
+        self.flatten_values = cube.flatten_values
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}({self.indexes},index_names={self.index_names})"
+            f"{self.__class__.__name__}({self.coords},index_names={self.coords_names})"
         )
 
     @property
     def extended_icoords(self):
-        return self.indexes
+        return self.coords
 
     def to_numpy(self, **kwargs):
-        return self.owner[self.indexes].to_numpy(**kwargs)
+        return self.owner[self.coords].to_numpy(
+            reshape=not self.flatten_values, **kwargs
+        )
+
+
+class GridPointFirstCubelet:
+    def __init__(self, cube, coords, coords_names=None):
+        self.owner = cube
+        assert all(isinstance(_, int) for _ in coords), coords
+        self.coords = coords
+
+        # print("-----", cube.user_shape, self.coords)
+
+        self.coords_names = coords_names
+        self.flatten_values = cube.flatten_values
+        assert (
+            self.flatten_values
+        ), "GridPointFirstCubelet only supports flatten_values=True (for now)"
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}({self.coords},index_names={self.coords_names})"
+        )
+
+    @property
+    def extended_icoords(self):
+        num_grid_points = self.owner.field_shape[0]
+        # offset = coords_to_index(self.coords, self.owner.user_shape) * num_grid_points
+        idx = (slice(0, num_grid_points),) + self.coords
+        # print("----->", idx)
+        return idx
+
+    def to_numpy(self, **kwargs):
+        data = self.owner[self.coords].to_numpy(
+            reshape=not self.flatten_values, **kwargs
+        )
+        return data

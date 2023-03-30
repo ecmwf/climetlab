@@ -45,6 +45,10 @@ class LoadersCmd:
                 "Currently only a path to a new ZARR or HDF5 file is supported."
             ),
         ),
+        metadata=(
+            "--metadata",
+            dict(action="store_true", help="Update metadata."),
+        ),
     )
     def do_create(self, args):
         if args.format is None:
@@ -65,4 +69,5 @@ class LoadersCmd:
             LOADERS[args.format](args.target),
             args.config,
             dataset=args.dataset,
+            metadata_only=args.metadata,
         )

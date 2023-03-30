@@ -113,8 +113,9 @@ class OffsetView:
 class ZarrLoader:
     def __init__(self, path):
         self.path = path
+        self.z = None
 
-    def create_array(self, dataset, shape, chunks, dtype, append):
+    def create_array(self, dataset, shape, chunks, dtype, append, grid_points_first):
         import zarr
 
         print(
@@ -132,7 +133,7 @@ class ZarrLoader:
 
             self.z.resize(new_shape)
 
-            return OffsetView(self.z, original_shape[0])
+            z = OffsetView(self.z, original_shape[0])
 
         else:
             self.z = zarr.open(
@@ -143,7 +144,9 @@ class ZarrLoader:
                 dtype=dtype,
             )
 
-            return self.z
+            z = self.z
+
+        return z
 
     def close(self):
         pass
@@ -152,13 +155,27 @@ class ZarrLoader:
         print(self.z.info)
 
     def add_metadata(self, config):
+        import zarr
+
+        if self.z is None:
+            self.z = zarr.open(self.path, mode="r+")
+            self.print_info()
+
         metadata = {}
 
         statistics = -1
 
-        statistics_axis = config.get("statistics")
         output = config["output"]
         order = output["order"]
+
+        flatten_values = output.get("flatten_values", False)
+        grid_points_first = output.get("grid_points_first", False)
+        if grid_points_first and not flatten_values:
+            raise NotImplementedError(
+                "For now, grid_points_first is only valid if flatten_values"
+            )
+
+        statistics_axis = output.get("statistics")
 
         for i, k in enumerate(order):
             if isinstance(k, dict):
@@ -166,20 +183,28 @@ class ZarrLoader:
                     statistics = i
 
         if statistics >= 0:
+            axis = statistics + 1 if grid_points_first else statistics
+
             mean = stdev = minimum = maximum = self.z
-            axis = tuple(i for i in range(len(self.z.shape)) if i != statistics)
+            axis = tuple(i for i in range(len(self.z.shape)) if i != axis)
 
+            start = time.time()
+
+            print("Compute mean")
             mean = np.mean(mean, axis=axis)
+            print(seconds(time.time() - start))
+            start = time.time()
+            print("Compute stdev")
             stdev = np.std(stdev, axis=axis)
+            print(seconds(time.time() - start))
+            start = time.time()
+            print("Compute minimum")
             minimum = np.amin(minimum, axis=axis)
+            print(seconds(time.time() - start))
+            start = time.time()
+            print("Compute maximum")
             maximum = np.amax(maximum, axis=axis)
-
-            print(mean.shape)
-
-            mean = mean.flatten()
-            stdev = stdev.flatten()
-            minimum = minimum.flatten()
-            maximum = maximum.flatten()
+            print(seconds(time.time() - start))
 
             statistics_names = list(order[statistics].values())[0]
             assert isinstance(statistics_names, list)
@@ -214,11 +239,16 @@ class HDF5Loader:
     def __init__(self, path):
         self.path = path
 
-    def create_array(self, dataset, shape, chunks, dtype, metadata, append):
+    def create_array(
+        self, dataset, shape, chunks, dtype, metadata, append, grid_points_first
+    ):
         import h5py
 
         if append:
             raise NotImplementedError("Appending do HDF5 not yet implemented")
+
+        if grid_points_first:
+            raise NotImplementedError("grid_points_first in HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -278,11 +308,20 @@ def _load(loader, config, append, dataset=None):
     output = config["output"]
     order = output["order"]
 
+    flatten_values = output.get("flatten_values", False)
+    grid_points_first = output.get("grid_points_first", False)
+    if grid_points_first and not flatten_values:
+        raise NotImplementedError(
+            "For now, grid_points_first is only valid if flatten_values"
+        )
+
     start = time.time()
     print("Sort dataset")
     cube = data.cube(
         order,
         remapping=Remapping(output.get("remapping")),
+        flatten_values=output.get("flatten_values", False),
+        grid_points_first=grid_points_first,
     )
     cube = cube.squeeze()
     print(f"Done in {seconds(time.time()-start)}.")
@@ -300,6 +339,7 @@ def _load(loader, config, append, dataset=None):
         chunks,
         dtype,
         append,
+        grid_points_first,
     )
 
     start = time.time()
@@ -314,6 +354,8 @@ def _load(loader, config, append, dataset=None):
         now = time.time()
         data = cubelet.to_numpy()
         load += time.time() - now
+
+        # print("data", data.shape,cubelet.extended_icoords)
 
         now = time.time()
         array[cubelet.extended_icoords] = data
@@ -398,8 +440,13 @@ def expand(values):
     raise ValueError(f"Cannot expand loop from {values}")
 
 
-def load(loader, config, append=False, **kwargs):
+def load(loader, config, append=False, metadata_only=False, **kwargs):
     config = load_json_or_yaml(config)
+
+    if metadata_only:
+        loader.add_metadata(config)
+        return
+
     loop = config.get("loop")
     if loop is None:
         _load(loader, config, append, **kwargs)
