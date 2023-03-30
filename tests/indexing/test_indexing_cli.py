@@ -37,8 +37,10 @@ def test_indexing_cli_index_directory():
         source1 = cml.load_source("file", tmpdir, filter="*.grib")
 
         app = CliMetLabApp()
-        print(f"index_directory {tmpdir}")
-        app.onecmd(f"index_directory {tmpdir}")
+        cmd = f"index_directory {tmpdir}"
+        out = app.onecmd(cmd)
+        assert out is None, cmd
+
         source2 = cml.load_source("indexed-directory", tmpdir)
 
         source1 = source1.order_by("param", "time", "date")
