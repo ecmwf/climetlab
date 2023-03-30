@@ -309,7 +309,10 @@ class MultiIndex(Index):
             s.graph(depth + 3)
 
     def __repr__(self):
-        return "MultiFieldSet(%s)" % ",".join(repr(i) for i in self.indexes)
+        return "%s(%s)" % (
+            self.__class__.__name__,
+            ",".join(repr(i) for i in self.indexes),
+        )
 
 
 class FullIndex(Index):

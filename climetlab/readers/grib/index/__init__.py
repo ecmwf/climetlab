@@ -47,6 +47,11 @@ class FieldSet(FieldSetMixin, Index):
     def availability_path(self):
         return None
 
+    @classmethod
+    def merge(cls, sources):
+        assert all(isinstance(_, FieldSet) for _ in sources)
+        return MultiFieldSet(sources)
+
     def _custom_availability(self, ignore_keys=None, filter_keys=lambda k: True):
         def dicts():
             for i in progress_bar(

@@ -31,7 +31,7 @@ jobs:
     name: Code QA
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: pip install black flake8 isort
     - run: black --version
     - run: isort --version
@@ -45,7 +45,7 @@ jobs:
     name: Test building documentation
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install packages needed to build the documentation
       run: |
@@ -77,7 +77,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - uses: actions/setup-python@v2
       with:
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Check that tag version matches climetlab version
       run: |
