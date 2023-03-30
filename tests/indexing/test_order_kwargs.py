@@ -12,9 +12,9 @@
 
 import pytest
 
-from climetlab.core.index import Index
+from climetlab.core.order import normalize_order_by
 
-to_kwargs = Index.normalize_order_by
+to_kwargs = normalize_order_by
 
 
 def test_order_1():

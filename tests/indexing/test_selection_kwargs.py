@@ -15,9 +15,9 @@ import datetime
 import pytest
 
 import climetlab as cml
-from climetlab.core.index import Index
+from climetlab.core.select import normalize_selection
 
-to_kwargs = Index.normalize_selection
+to_kwargs = normalize_selection
 
 
 def test_selection_1():

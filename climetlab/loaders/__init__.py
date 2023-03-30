@@ -20,6 +20,7 @@ import warnings
 import numpy as np
 
 import climetlab as cml
+from climetlab.core.order import build_remapping
 from climetlab.utils import load_json_or_yaml, progress_bar
 from climetlab.utils.humanize import bytes, seconds
 
@@ -274,7 +275,7 @@ def _load(loader, config, append, dataset=None):
     print("Sort dataset")
     cube = data.cube(
         order,
-        remapping=Remapping(output.get("remapping")),
+        remapping=build_remapping(output.get("remapping")),
         flatten_values=output.get("flatten_values", False),
         grid_points_first=grid_points_first,
     )
