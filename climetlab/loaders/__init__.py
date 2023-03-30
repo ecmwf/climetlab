@@ -46,16 +46,39 @@ def _tidy(o):
     return str(o)
 
 
+class FastWriter:
+    def __init__(self, array, shape):
+        self.array = array
+        self.cache = np.zeros(shape)
+        self.shape = shape
+
+    def __setitem__(self, key, value):
+        self.cache[key] = value
+
+    def flush(self):
+        self.array[:] = self.cache[:]
+
+
 class OffsetView:
-    def __init__(self, array, offset, axis):
+    def __init__(self, array, offset, axis, shape):
         self.array = array
         self.offset = offset
         self.axis = axis
+        self.shape = shape
 
     def __setitem__(self, key, value):
-        new_key = tuple(
-            k + self.offset if i == self.axis else k for i, k in enumerate(key)
-        )
+        if isinstance(key, slice):
+            assert key.start is None and key.stop is None, key
+            new_key = tuple(
+                slice(self.offset, self.offset + value.shape[i])
+                if i == self.axis
+                else slice(None)
+                for i in range(len(self.shape))
+            )
+        else:
+            new_key = tuple(
+                k + self.offset if i == self.axis else k for i, k in enumerate(key)
+            )
         self.array[new_key] = value
 
 
@@ -89,7 +112,15 @@ class ZarrLoader:
 
             self.z.resize(tuple(new_shape))
 
-            z = OffsetView(self.z, original_shape[axis], axis)
+            self.writer = FastWriter(
+                OffsetView(
+                    self.z,
+                    original_shape[axis],
+                    axis,
+                    shape,
+                ),
+                shape,
+            )
 
         else:
             self.z = zarr.open(
@@ -100,12 +131,12 @@ class ZarrLoader:
                 dtype=dtype,
             )
 
-            z = self.z
+            self.writer = FastWriter(self.z, shape)
 
-        return z
+        return self.writer
 
     def close(self):
-        pass
+        self.writer.flush()
 
     def print_info(self):
         print(self.z.info)
@@ -283,7 +314,7 @@ def _load(loader, config, append, dataset=None):
     print(f"Done in {seconds(time.time()-start)}.")
 
     chunking = output.get("chunking", {})
-    chunks = cube.chunking(**chunking)
+    chunks = cube.chunking(chunking)
 
     dtype = output.get("dtype", "float32")
     if dataset is None:

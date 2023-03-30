@@ -9,6 +9,7 @@
 import itertools
 import logging
 import math
+import re
 
 LOG = logging.getLogger(__name__)
 
@@ -193,7 +194,24 @@ class FieldCube:
             for n, i in zip(itertools.product(*names), itertools.product(*indexes))
         )
 
-    def chunking(self, **chunks):
+    def chunking(self, chunks):
+        if isinstance(chunks, (str, int)):
+            m = re.match(r"(\d+)\s*(.*)?", str(chunks))
+            if not m:
+                raise ValueError(f"Cannot parse {chunks}")
+            size = int(m.group(1))
+            unit = m.group(2).lower()
+            if unit == "":
+                unit = "m"
+            size *= dict(k=1024, m=1024 * 1024, g=1024 * 1024 * 1024)[unit[0]]
+
+            # TODO: use dtype.
+            # We assuming float32 = 4 bytes per
+
+            rest = math.prod(self.extended_user_shape[1:]) * 4
+            first = int(size / rest + 0.5)
+            return (first,) + self.extended_user_shape[1:]
+
         if not chunks:
             return True  # Let ZARR choose
 
