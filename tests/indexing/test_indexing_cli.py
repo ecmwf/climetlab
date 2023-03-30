@@ -12,11 +12,11 @@
 import shutil
 
 import numpy as np
-from indexing_generic import build_testdata
 
 import climetlab as cml
 from climetlab.core.temporary import temp_directory
 from climetlab.scripts.main import CliMetLabApp
+from climetlab.testing import build_testdata
 
 
 def test_indexing_cli_index_directory():
