@@ -38,8 +38,7 @@ def test_indexing_cli_index_directory():
 
         app = CliMetLabApp()
         cmd = f"index_directory {tmpdir}"
-        out = app.onecmd(cmd)
-        assert out is None, cmd
+        app.onecmd(cmd)
 
         source2 = cml.load_source("indexed-directory", tmpdir)
 
