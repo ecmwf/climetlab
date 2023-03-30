@@ -10,13 +10,14 @@
 import logging
 import os
 import pathlib
+import shutil
 from contextlib import contextmanager
 from unittest.mock import patch
 
 from climetlab import load_source
 from climetlab.readers.text import TextReader
 from climetlab.sources.empty import EmptySource
-from climetlab.utils import module_installed
+from climetlab.utils import download_and_cache, module_installed
 
 LOG = logging.getLogger(__name__)
 
@@ -70,6 +71,9 @@ def MISSING(*modules):
 
 UNSAFE_SAMPLES_URL = "https://github.com/jwilk/traversal-archives/releases/download/0"
 TEST_DATA_URL = "https://get.ecmwf.int/repository/test-data/climetlab"
+TEST_DATA_URL_INPUT_GRIB = TEST_DATA_URL + "/test-data/input/grib"
+# TEST_DATA_URL_INPUT_GRIB_ALT = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/input/grib"
+# CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 
 
 def empty(ds):
@@ -100,6 +104,51 @@ def check_unsafe_archives(extension):
         LOG.debug("%s.%s", archive, extension)
         ds = load_source("url", f"{UNSAFE_SAMPLES_URL}/{archive}{extension}")
         check(ds)
+
+
+def build_testdata(dir="testdata"):
+    os.makedirs(dir, exist_ok=True)
+    for path in [
+        "2t-tp.grib",
+        "all.grib",
+        "all/climetlab.json",
+        "all/u.grib",
+        "all/v.grib",
+        "all/z.grib",
+        "all/2t.grib",
+        "all/climetlab.json",
+        "all/tp.grib",
+        "all/lsm.grib",
+        "climetlab.json",
+        "lsm.grib",
+        "pl/climetlab.json",
+        "pl/u.grib",
+        "pl/v.grib",
+        "pl/z.grib",
+        "sfc/2t.grib",
+        "sfc/climetlab.json",
+        "sfc/tp.grib",
+        "uvz.grib",
+    ]:
+        outpath = os.path.join(dir, path)
+        if os.path.exists(outpath):
+            continue
+        os.makedirs(os.path.dirname(outpath), exist_ok=True)
+        shutil.copyfile(
+            download_and_cache(TEST_DATA_URL_INPUT_GRIB + "/" + path), outpath
+        )
+
+    return dir
+
+
+@contextmanager
+def cd(dir):
+    old = os.getcwd()
+    os.chdir(os.path.expanduser(dir))
+    try:
+        yield dir
+    finally:
+        os.chdir(old)
 
 
 def main(path):

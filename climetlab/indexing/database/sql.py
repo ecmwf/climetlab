@@ -379,7 +379,7 @@ class SqlOrder(SqlFilter):
             if v == "ascending" or v is None:
                 order_bys.append(name + " ASC")
                 continue
-            if v == "descending" or v is None:
+            if v == "descending":
                 order_bys.append(name + " DESC")
                 continue
             if isinstance(v, (list, tuple)):

@@ -9,9 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
-from indexing_generic import TEST_DATA_URL, build_testdata, cd
-
 import climetlab as cml
+from climetlab.testing import TEST_DATA_URL_INPUT_GRIB, build_testdata, cd
 
 
 def check_len(source):
@@ -27,7 +26,7 @@ def test_indexing_len_for_source_file():
 
 
 def test_indexing_len_for_source_url():
-    source = cml.load_source("url", f"{TEST_DATA_URL}/all.grib")
+    source = cml.load_source("url", f"{TEST_DATA_URL_INPUT_GRIB}/all.grib")
     check_len(source)
 
 
