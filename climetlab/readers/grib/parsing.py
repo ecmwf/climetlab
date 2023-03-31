@@ -196,7 +196,7 @@ class GribIndexingDirectoryParserIterator:
 
         n_proc = 5
         if sys.platform == "win32":
-            n_proc = 1  # deactivate mutliprocessing for window
+            n_proc = 1  # deactivate multiprocessing for window
 
         if n_proc == 1:
             count = 0
