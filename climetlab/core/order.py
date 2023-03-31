@@ -83,12 +83,11 @@ def normalize_order_by(*args, **kwargs):
             _kwargs[a] = "ascending"
             continue
         if isinstance(a, (list, tuple)):
-            for k in a:
-                if not isinstance(k, str):
-                    raise ValueError(
-                        f"Expected type 'str' but got {k} of type {type(k)} in {a}"
-                    )
-                _kwargs[k] = "ascending"
+            if not all(isinstance(k, str) for k in a):
+                _kwargs.update(normalize_order_by(*a))
+            else:
+                for k in a:
+                    _kwargs[k] = "ascending"
             continue
 
         raise ValueError(f"Unsupported argument {a} of type {type(a)}")

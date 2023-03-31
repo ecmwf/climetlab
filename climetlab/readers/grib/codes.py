@@ -312,12 +312,7 @@ class GribField(Base):
         self._length = length
         self._handle = None
         self._values = None
-
-    # def __enter__(self):
-    #     return self
-
-    # def __exit__(self, exc_type, exc_val, exc_tb):
-    #     pass
+        self._cache = {}
 
     @property
     def handle(self):
@@ -476,20 +471,23 @@ class GribField(Base):
     def __getitem__(self, name):
         """For cfgrib"""
 
-        proc = self.handle.get
-        if ":" in name:
-            try:
-                name, kind = name.split(":")
-                proc = dict(
-                    str=self.handle.get_string,
-                    int=self.handle.get_long,
-                    float=self.handle.get_double,
-                )[kind]
-            except Exception:
-                LOG.exception(f"Unsupported kind '{kind}'")
-                raise ValueError(f"Unsupported kind '{kind}'")
+        if name not in self._cache:
+            proc = self.handle.get
+            if ":" in name:
+                try:
+                    name, kind = name.split(":")
+                    proc = dict(
+                        str=self.handle.get_string,
+                        int=self.handle.get_long,
+                        float=self.handle.get_double,
+                    )[kind]
+                except Exception:
+                    LOG.exception(f"Unsupported kind '{kind}'")
+                    raise ValueError(f"Unsupported kind '{kind}'")
 
-        return proc(name)
+            self._cache[name] = proc(name)
+
+        return self._cache[name]
 
     @property
     def data(self):
