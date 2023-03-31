@@ -10,6 +10,7 @@
 import json
 import logging
 import os
+import sys
 
 from climetlab.indexing.database.json import JsonStdoutDatabase
 from climetlab.readers.grib.parsing import (
@@ -91,6 +92,11 @@ class GribCmd:
     )
     def do_index_directory(self, args):
         """Index a directory containing GRIB files."""
+
+        if sys.platform == "win32":
+            print("Not supported on windows")
+            return
+
         directory = args.directory
         db_path = args.output
         force_relative_paths_on = args.relative_paths

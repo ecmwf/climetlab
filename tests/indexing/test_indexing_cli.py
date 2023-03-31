@@ -10,8 +10,10 @@
 #
 
 import shutil
+import sys
 
 import numpy as np
+import pytest
 
 import climetlab as cml
 from climetlab.core.temporary import temp_directory
@@ -19,6 +21,7 @@ from climetlab.scripts.main import CliMetLabApp
 from climetlab.testing import build_testdata
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Not supported on windows")
 def test_indexing_cli_index_directory():
     dir = build_testdata()
     print("Using data in ", dir)
