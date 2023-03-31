@@ -10,6 +10,7 @@ import datetime
 import fnmatch
 import logging
 import os
+import sys
 import time
 from multiprocessing import Process, Queue
 
@@ -187,49 +188,59 @@ class GribIndexingDirectoryParserIterator:
             task = self.q_in.get()
             if task is None:
                 break
-            n = self.process_one_task(_i, task)
+            n = self.process_path(_i, task)
             self.q_out.put(n)
 
     def load_database(self):
         start = datetime.datetime.now()
 
-        self.q_in = Queue()
-        self.q_out = Queue()
+        n_proc = 5
+        if sys.platform == "win32":
+            n_proc = 1  # deactivate multiprocessing for window
 
-        nproc = 5
+        if n_proc == 1:
+            count = 0
+            for path in self.tasks:
+                count += self.process_path(0, path)
+        else:
+            assert n_proc > 1, n_proc
 
-        workers = []
-        for i in range(nproc):
-            proc = Process(target=self.worker, args=(i,))
-            proc.start()
-            workers.append(proc)
+            self.q_in = Queue()
+            self.q_out = Queue()
 
-        for path in self.tasks:
-            db = self._new_db()
+            workers = []
+            for i in range(n_proc):
+                proc = Process(target=self.worker, args=(i,))
+                proc.start()
+                workers.append(proc)
 
-            if db.already_loaded(self._format_path(path), self):
-                LOG.warning(f"Skipping {path}, already loaded")
-                continue
+            for path in self.tasks:
+                self.q_in.put(path)
 
-            self.q_in.put(path)
+            for i in range(n_proc):
+                self.q_in.put(None)
 
-        for i in range(nproc):
-            self.q_in.put(None)
+            count = 0
+            for _ in progress_bar(iterable=self.tasks, total=len(self.tasks)):
+                count += self.q_out.get()
 
-        count = 0
-        for _ in progress_bar(iterable=self.tasks, total=len(self.tasks)):
-            count += self.q_out.get()
+            for p in workers:
+                p.join()
 
-        for p in workers:
-            p.join()
+            del self.q_in
+            del self.q_out
 
         self._new_db().build_indexes()
 
         end = datetime.datetime.now()
         print(f"Indexed {plural(count,'field')} in {seconds(end - start)}.")
 
-    def process_one_task(self, i, path):
+    def process_path(self, i, path):
         db = self._new_db()
+
+        if db.already_loaded(self._format_path(path), self):
+            LOG.warning(f"Skipping {path}, already loaded")
+            return 0
 
         lst = []
         LOG.debug(f"Parsing file {path}")
