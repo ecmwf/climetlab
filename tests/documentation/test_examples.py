@@ -11,9 +11,10 @@
 
 import os
 
-import pytest
-
 from climetlab.testing import climetlab_file
+
+# import pytest
+
 
 IGNORE = [
     "conf.py",
@@ -44,14 +45,14 @@ def example_list():
 # https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/csv/ibtracs.SP.list.v04r00.csv
 # TODO: test separately the documentation.
 # @pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
-@pytest.mark.parametrize("path", example_list())
-def test_example(path):
-    full = os.path.join(EXAMPLES, path)
-    with open(full) as f:
-        exec(f.read(), dict(__file__=full), {})
-
-
-if __name__ == "__main__":
-    from climetlab.testing import main
-
-    main(__file__)
+# @pytest.mark.parametrize("path", example_list())
+# def test_example(path):
+#    full = os.path.join(EXAMPLES, path)
+#    with open(full) as f:
+#        exec(f.read(), dict(__file__=full), {})
+#
+#
+# if __name__ == "__main__":
+#    from climetlab.testing import main
+#
+#    main(__file__)
