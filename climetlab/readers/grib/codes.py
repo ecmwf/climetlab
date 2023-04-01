@@ -526,3 +526,12 @@ class GribField(Base):
     def iterate_grid_points(self):
         latlon = self.handle.get("latitudeLongitudeValues")
         yield from zip(islice(latlon, 0, None, 3), islice(latlon, 1, None, 3))
+
+    def grid_points(self):
+        import numpy as np
+
+        data = self.data
+        lat = np.array([d["lat"] for d in data])
+        lon = np.array([d["lon"] for d in data])
+
+        return lat, lon
