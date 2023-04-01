@@ -8,20 +8,23 @@
 #
 
 import datetime
+import itertools
 import logging
 
 import numpy as np
 
-from climetlab.decorators import cached_method
+from climetlab.decorators import cached_method, normalize
+from climetlab.indexing.cube import index_to_coords
 from climetlab.readers.grib.index import FieldSet
 from climetlab.utils.dates import to_datetime
 
 LOG = logging.getLogger(__name__)
 
 
-class ConstantGenerator:
+class ConstantMaker:
     def __init__(self, field):
         self.field = field
+        self.shape = self.field.shape
 
     @cached_method
     def grid_points(self):
@@ -48,6 +51,10 @@ class ConstantGenerator:
         z = sin_phi
 
         return x, y, z
+
+    @cached_method
+    def latitudes_(self):
+        return self.grid_points()[0].reshape()
 
     def latitudes(self, date):
         return self.grid_points()[0]
@@ -122,17 +129,82 @@ class ConstantGenerator:
         return np.sin(radians)
 
 
+class ConstantField:
+    def __init__(self, date, name, values, shape):
+        self.date = date
+        self.name = name
+        self.values = values
+        self.shape = shape
+
+    def to_numpy(self, reshape=True, dtype=None):
+        values = self.values
+        if reshape:
+            values = values.reshape(self.shape)
+        if dtype is not None:
+            values = values.astype(dtype)
+        return values
+
+    def __repr__(self):
+        return "ConstantField(%s,%s)" % (
+            self.name,
+            self.date,
+        )
+
+
+def make_datetime(date, time):
+    assert time is None, time
+    return date
+
+
 class Constants(FieldSet):
-    def __init__(self, data, names):
-        self.data = data
-        self.names = names
-        self.params = data.unique_values("param")["param"]
+    @normalize("date", "date-list")
+    def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
+        request = dict(**request)
+        request.update(kwargs)
+
+        request.setdefault("time", [None])
+
+        self.request = self._request(request)
+        print(self.request)
+
+        self.dates = [
+            make_datetime(date, time)
+            for date, time in itertools.product(
+                self.request["date"], self.request["time"]
+            )
+        ]
+
+        self.params = self.request["param"]
+        self.repeat = repeat  # For ensembles
+        self.maker = ConstantMaker(source_or_dataset[0])
+        self.procs = {param: getattr(self.maker, param) for param in self.params}
+        self._len = len(self.dates) * len(self.params) * self.repeat
+
+    @normalize("date", "date-list")
+    @normalize("time", "int-list")
+    def _request(self, request):
+        return request
 
     def __len__(self):
-        return len(self.data) * len(self.names) // len(self.params)
+        return self._len
 
     def _getitem(self, i):
-        assert False
+        if i >= self._len:
+            raise IndexError(i)
+        date, param, repeat = index_to_coords(
+            i, (len(self.dates), len(self.params), self.repeat)
+        )
+        print(i, (date, param, repeat))
+        assert repeat == 0
+
+        date = self.dates[date]
+        param = self.params[param]
+        return ConstantField(
+            date,
+            param,
+            self.procs[param](date),
+            self.maker.shape,
+        )
 
     def mutate(self):
         return self
