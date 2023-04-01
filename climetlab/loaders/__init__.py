@@ -34,6 +34,7 @@ class Config:
         self.config = config
         self.input = config["input"]
         self.output = config["output"]
+        self.constants = config.get("constants")
         self.order = normalize_order_by(self.output["order"])
         self.remapping = build_remapping(self.output.get("remapping"))
 
@@ -372,6 +373,8 @@ def _load(loader, config, append, **kwargs):
     print("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
+    if config.constants:
+        data = data + cml.load_source("constants", data, config.constants)
 
     assert len(data)
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
