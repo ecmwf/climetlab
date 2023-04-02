@@ -121,7 +121,7 @@ class GribOutput:
 
         if "time" not in metadata and "date" in metadata:
             date = metadata["date"]
-            metadata["date"] = date.hour * 100 + date.minute
+            metadata["time"] = date.hour * 100 + date.minute
 
         if "date" in metadata:
             date = metadata["date"]
