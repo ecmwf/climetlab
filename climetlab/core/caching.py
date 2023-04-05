@@ -431,8 +431,12 @@ class Cache(threading.Thread):
                 db.execute("DELETE FROM cache WHERE path=?", (path,))
             return total
 
-        LOG.warning(f"CliMetLab cache: deleting {path} ({humanize.bytes(size)})")
-        LOG.warning(f"CliMetLab cache: {owner} {args}")
+        try:
+            LOG.warning(f"CliMetLab cache: deleting {path} ({humanize.bytes(size)}, " f"{humanize.seconds(time.time()-os.path.getmtime(path))})")
+            LOG.warning(f"CliMetLab cache: {owner} {args}")
+        except OSError as e:
+            LOG.exception(e)
+            
         self._delete_file(path)
 
         with self.connection as db:
@@ -453,6 +457,9 @@ class Cache(threading.Thread):
 
         with self.connection as db:
             latest = datetime.datetime.now() if purge else self._latest_date()
+            age = datetime.datetime.now() - latest
+            age = age.hours * 3600 + age.seconds
+            LOG.warning(f"Decaching files oldest than {latest.isoformat()} (age: {humanize.seconds(age)})")
 
             for stmt in (
                 "SELECT * FROM cache WHERE size IS NOT NULL AND owner='orphans' AND creation_date < ?",

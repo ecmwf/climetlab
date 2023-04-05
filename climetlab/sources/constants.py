@@ -53,42 +53,42 @@ class ConstantMaker:
         return x, y, z
 
     @cached_method
-    def latitudes_(self):
+    def latitude_(self):
         return self.grid_points()[0].reshape()
 
-    def latitudes(self, date):
+    def latitude(self, date):
         return self.grid_points()[0]
 
     @cached_method
-    def cos_latitudes_(self):
+    def cos_latitude_(self):
         return np.cos(np.deg2rad(self.grid_points()[0]))
 
-    def cos_latitudes(self, date):
-        return self.cos_latitudes_()
+    def cos_latitude(self, date):
+        return self.cos_latitude_()
 
     @cached_method
-    def sin_latitudes_(self):
+    def sin_latitude_(self):
         return np.sin(np.deg2rad(self.grid_points()[0]))
 
-    def sin_latitudes(self, date):
-        return self.sin_latitudes_()
+    def sin_latitude(self, date):
+        return self.sin_latitude_()
 
-    def longitudes(self, date):
+    def longitude(self, date):
         return self.grid_points()[1]
 
     @cached_method
-    def cos_longitudes_(self):
+    def cos_longitude_(self):
         return np.cos(np.deg2rad(self.grid_points()[1]))
 
-    def cos_longitudes(self, date):
-        return self.cos_longitudes_()
+    def cos_longitude(self, date):
+        return self.cos_longitude_()
 
     @cached_method
-    def sin_longitudes_(self):
+    def sin_longitude_(self):
         return np.sin(np.deg2rad(self.grid_points()[1]))
 
-    def sin_longitudes(self, date):
-        return self.sin_longitudes_()
+    def sin_longitude(self, date):
+        return self.sin_longitude_()
 
     def ecef_x(self, date):
         return self.ecef_xyz()[0]
@@ -103,7 +103,7 @@ class ConstantMaker:
         date = to_datetime(date)
         delta = date - datetime.datetime(date.year, 1, 1)
         julian_day = delta.days + delta.seconds / 86400.0
-        return np.full(self.field.shape, julian_day)
+        return np.full((np.prod(self.field.shape),), julian_day)
 
     def cos_julian_day(self, date):
         radians = self.julian_day(date) / 365.25 * np.pi * 2
@@ -114,7 +114,7 @@ class ConstantMaker:
         return np.sin(radians)
 
     def local_time(self, date):
-        lon = self.longitudes(date)
+        lon = self.longitude(date)
         date = to_datetime(date)
         delta = date - datetime.datetime(date.year, date.month, date.day)
         since_midnight = delta.days + delta.seconds / 86400.0
@@ -130,30 +130,42 @@ class ConstantMaker:
 
 
 class ConstantField:
-    def __init__(self, date, name, values, shape):
+    def __init__(self, date, param, proc, shape):
         self.date = date
-        self.name = name
-        self.values = values
+        self.param = param
+        self.proc = proc
         self.shape = shape
+        self._metadata = dict(
+            valid_datetime=date.isoformat(),
+            param=param,
+            level=None,
+        )
 
     def to_numpy(self, reshape=True, dtype=None):
-        values = self.values
+
+        values = self.proc(self.date)
         if reshape:
             values = values.reshape(self.shape)
         if dtype is not None:
             values = values.astype(dtype)
+
+        # assert len(values.shape) == 1, (self, self.name, reshape, dtype, values.shape)
         return values
 
     def __repr__(self):
         return "ConstantField(%s,%s)" % (
-            self.name,
+            self.param,
             self.date,
         )
 
+    def metadata(self, name):
+        return self._metadata[name]
+
 
 def make_datetime(date, time):
-    assert time is None, time
-    return date
+    if time is None:
+        return date
+    return datetime.datetime(date.year, date.month, date.day, int(time) // 100)
 
 
 class Constants(FieldSet):
@@ -191,18 +203,19 @@ class Constants(FieldSet):
     def _getitem(self, i):
         if i >= self._len:
             raise IndexError(i)
+
         date, param, repeat = index_to_coords(
             i, (len(self.dates), len(self.params), self.repeat)
         )
-        print(i, (date, param, repeat))
-        assert repeat == 0
+
+        assert repeat == 0, "Not implemented"
 
         date = self.dates[date]
         param = self.params[param]
         return ConstantField(
             date,
             param,
-            self.procs[param](date),
+            self.procs[param],
             self.maker.shape,
         )
 

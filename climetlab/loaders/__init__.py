@@ -69,6 +69,7 @@ class Config:
             self.statistics_axis = (
                 statistics_axis + 1 if self.grid_points_first else statistics_axis
             )
+            self.collect_statistics = True
 
     def substitute(self, vars):
         def substitute(x, vars):
@@ -249,7 +250,7 @@ class ZarrLoader(Loader):
             warnings.warn("FastWriter already closed")
         else:
             self.writer.flush()
-            if self.config.collect_statistics is not None:
+            if self.config.collect_statistics:
                 self.statistics.append(self.writer.stats(self.config.statistics_axis))
 
             self.writer = None
@@ -268,7 +269,7 @@ class ZarrLoader(Loader):
 
         metadata = {}
 
-        if self.statistics is not None:
+        if config.collect_statistics:
             count, sums, squares, minimum, maximum = self.statistics[0]
             for s in self.statistics[1:]:
                 count = count + s[0]
@@ -288,8 +289,6 @@ class ZarrLoader(Loader):
                 statistics_by_name[name]["stdev"] = stdev[i]
                 statistics_by_name[name]["minimum"] = minimum[i]
                 statistics_by_name[name]["maximum"] = maximum[i]
-                statistics_by_name[name]["means"] = squares[i] / count
-                statistics_by_name[name]["mean2"] = mean[i] * mean[i]
                 statistics_by_name[name]["sums"] = sums[i]
                 statistics_by_name[name]["squares"] = sums[i]
                 statistics_by_name[name]["count"] = count

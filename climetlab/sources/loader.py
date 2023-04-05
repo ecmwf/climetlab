@@ -15,9 +15,56 @@ from . import Source
 
 LOG = logging.getLogger(__name__)
 
+
+class LoadAction:
+    def execute(self, v, data, last, inherit):
+        if not isinstance(v, list):
+            v = [v]
+        for one in v:
+            name = one.pop("name")
+            if inherit:
+                last.update(one)
+                one = last
+            print(f"Using data from: {name}, {one}")
+            source = self.load(name, **one)
+            assert len(source), f"No data for {(name, one)}"
+            data.append(source)
+
+
+class LoadSource(LoadAction):
+    def load(self, *args, **kwargs):
+        return load_source(*args, **kwargs)
+
+
+class LoadDataset(LoadAction):
+    def load(self, *args, **kwargs):
+        return load_dataset(*args, **kwargs)
+
+
+class Inherit:
+    def execute(self, *args, **kwargs):
+        pass
+
+
+class LoadConstants(LoadSource):
+    def execute(self, v, data, last, inherit):
+        super().execute(
+            {
+                "name": "constants",
+                "source_or_dataset": data[0],
+                "param": v,
+            },
+            data,
+            last,
+            inherit,
+        )
+
+
 ACTIONS = {
-    "source": load_source,
-    "dataset": load_dataset,
+    "inherit": Inherit,
+    "source": LoadSource,
+    "dataset": LoadDataset,
+    "constants": LoadConstants,
 }
 
 
@@ -32,23 +79,12 @@ class Loader(Source):
     def mutate(self):
         data = []
         inherit = False
+        last = {}
         for k, v in self.config.items():
             if k == "inherit":
                 inherit = v
-            action = ACTIONS.get(k)
-            if action is not None:
-                if not isinstance(v, list):
-                    v = [v]
-                last = {}
-                for one in v:
-                    name = one.pop("name")
-                    if inherit:
-                        last.update(one)
-                        one = last
-                    LOG.debug(f"Using data from: {name}, {one}")
-                    source = action(name, **one)
-                    assert len(source), f"No data for {(action,name, one)}"
-                    data.append(source)
+
+            ACTIONS[k]().execute(v, data, last, inherit)
 
         result = data[0]
         for d in data[1:]:
