@@ -22,8 +22,9 @@ LOG = logging.getLogger(__name__)
 
 
 class ConstantMaker:
-    def __init__(self, field):
-        self.field = field
+    def __init__(self, source_or_dataset):
+        self.source_or_dataset = source_or_dataset
+        self.field = source_or_dataset[0]
         self.shape = self.field.shape
 
     @cached_method
@@ -54,10 +55,10 @@ class ConstantMaker:
 
     @cached_method
     def latitude_(self):
-        return self.grid_points()[0].reshape()
+        return self.grid_points()[0]
 
     def latitude(self, date):
-        return self.grid_points()[0]
+        return self.latitude_()
 
     @cached_method
     def cos_latitude_(self):
@@ -73,8 +74,12 @@ class ConstantMaker:
     def sin_latitude(self, date):
         return self.sin_latitude_()
 
-    def longitude(self, date):
+    @cached_method
+    def longitude_(self):
         return self.grid_points()[1]
+
+    def longitude(self, date):
+        return self.longitude_()
 
     @cached_method
     def cos_longitude_(self):
@@ -128,6 +133,12 @@ class ConstantMaker:
         radians = self.local_time(date) / 24 * np.pi * 2
         return np.sin(radians)
 
+    def insolation(self, date):
+        from ecmwf_mlkit.variables.insolation import insolation
+
+        result = insolation([date], self.latitude_(), self.longitude_())
+        return result.flatten()
+
 
 class ConstantField:
     def __init__(self, date, param, proc, shape):
@@ -136,13 +147,13 @@ class ConstantField:
         self.proc = proc
         self.shape = shape
         self._metadata = dict(
-            valid_datetime=date.isoformat(),
+            valid_datetime=date if isinstance(date, str) else date.isoformat(),
             param=param,
             level=None,
+            levelist=None,
         )
 
     def to_numpy(self, reshape=True, dtype=None):
-
         values = self.proc(self.date)
         if reshape:
             values = values.reshape(self.shape)
@@ -179,16 +190,23 @@ class Constants(FieldSet):
         self.request = self._request(request)
         print(self.request)
 
-        self.dates = [
-            make_datetime(date, time)
-            for date, time in itertools.product(
-                self.request["date"], self.request["time"]
-            )
-        ]
+        if "date" in self.request:
+            self.dates = [
+                make_datetime(date, time)
+                for date, time in itertools.product(
+                    self.request["date"], self.request["time"]
+                )
+            ]
+        else:
+            self.dates = source_or_dataset.unique_values("valid_datetime")[
+                "valid_datetime"
+            ]
 
         self.params = self.request["param"]
+        if not isinstance(self.params, list):
+            self.params = [self.params]
         self.repeat = repeat  # For ensembles
-        self.maker = ConstantMaker(source_or_dataset[0])
+        self.maker = ConstantMaker(source_or_dataset)
         self.procs = {param: getattr(self.maker, param) for param in self.params}
         self._len = len(self.dates) * len(self.params) * self.repeat
 
@@ -211,6 +229,8 @@ class Constants(FieldSet):
         assert repeat == 0, "Not implemented"
 
         date = self.dates[date]
+        # assert isinstance(date, datetime.datetime), (date, type(date))
+
         param = self.params[param]
         return ConstantField(
             date,
