@@ -72,7 +72,7 @@ install_requires += [
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
-    "ecmwflibs>=0.5.3",
+    "ecmwflibs",
     "pdbufr",
     "pyodc",
     "toolz",
