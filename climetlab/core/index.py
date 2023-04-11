@@ -33,7 +33,9 @@ class OrderOrSelection:
 
 
 class Selection(OrderOrSelection):
-    def __init__(self, kwargs):
+    def __init__(self, kwargs, remapping=None):
+        self.remapping = build_remapping(remapping)
+
         class InList:
             def __init__(self, lst):
                 self.first = True
@@ -64,7 +66,8 @@ class Selection(OrderOrSelection):
             self.actions[k] = InList(v)
 
     def match_element(self, element):
-        return all(v(element.metadata(k)) for k, v in self.actions.items())
+        metadata = self.remapping(element.metadata)
+        return all(v(metadata(k)) for k, v in self.actions.items())
 
 
 class OrderBase(OrderOrSelection):
@@ -180,7 +183,7 @@ class Index(Source):
     def _normalize_kwargs_names(**kwargs):
         return kwargs
 
-    def sel(self, *args, **kwargs):
+    def sel(self, *args, remapping=None, **kwargs):
         """Filter elements on their metadata(), according to kwargs.
         Returns a new index object.
         """
@@ -190,7 +193,7 @@ class Index(Source):
         if not kwargs:
             return self
 
-        selection = Selection(kwargs)
+        selection = Selection(kwargs, remapping=remapping)
 
         indices = (
             i for i, element in enumerate(self) if selection.match_element(element)

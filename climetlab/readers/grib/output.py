@@ -32,19 +32,24 @@ class GribOutput:
         self.f = open(filename, "wb")
         self.template = template
         self._bbox = {}
+        self.kwargs = kwargs
 
     @alias_argument("levelist", ["level", "levellist"])
     @alias_argument("levtype", ["leveltype"])
     @alias_argument("param", ["variable", "parameter"])
     @alias_argument("number", ["realization", "realisation"])
-    @alias_argument("class", "klass")
+    @alias_argument("class", ["klass", "class_"])
     @normalize("date", "date")
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
-    def write(self, values, metadata={}, template=None):
+    def write(self, values, metadata={}, template=None, **kwarg):
         # Make a copy as we may modify it
-        metadata = self._normalize_kwargs_names(**metadata)
+        md = self._normalize_kwargs_names(**self.kwargs)
+        md.update(self._normalize_kwargs_names(**metadata))
+        md.update(self._normalize_kwargs_names(**kwarg))
+
+        metadata = md
 
         if template is None:
             template = self.template
