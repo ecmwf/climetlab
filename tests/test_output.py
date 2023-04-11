@@ -24,7 +24,7 @@ def test_latlon():
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "a.grib")
 
-        f = cml.new_grib_output(path, date=20010101, klass="ml")
+        f = cml.new_grib_output(path, date=20010101)
         f.write(data, param="2t")
         f.close()
 
