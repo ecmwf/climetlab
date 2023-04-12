@@ -38,8 +38,9 @@ class NotFound:
 
 
 def loaded_modules():
-    global LOADED_MODULES
-    return LOADED_MODULES
+    # global LOADED_MODULES
+    # return LOADED_MODULES
+    return set(sys.modules.keys())
 
 
 sys.meta_path.insert(0, Requested())
