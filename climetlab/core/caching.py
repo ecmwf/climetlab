@@ -461,7 +461,7 @@ class Cache(threading.Thread):
         with self.connection as db:
             latest = datetime.datetime.now() if purge else self._latest_date()
             age = datetime.datetime.now() - latest
-            age = age.hours * 3600 + age.seconds
+            age = age.days * 24 * 3600 + age.seconds
             LOG.warning(
                 f"Decaching files oldest than {latest.isoformat()} (age: {humanize.seconds(age)})"
             )
