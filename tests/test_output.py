@@ -71,6 +71,10 @@ def test_o96():
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_o160():
     data = np.random.random((108160,))
 
