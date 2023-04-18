@@ -125,8 +125,8 @@ jobs:
       run: |
         pip install pytest
         pip freeze
-    - name: Tests notebooks
-      run: pytest tests/documentation/test_notebooks.py    
+    - name: Long Tests
+      run: pytest --durations=0 -E release -k 'not test_notebooks'
 
   tests-notebooks:
     if: github.event_name == 'release' && github.event.action == 'created'
