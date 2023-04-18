@@ -16,15 +16,7 @@ LOG = logging.getLogger(__name__)
 
 # Make sure the
 
-ORDER = ("edition", "addExtraLocalSection", "levtype", "levelist", "N")
-ORDER = {k: i for i, k in enumerate(ORDER)}
-
-
-def order(kv):
-    name, _ = kv
-    if name not in ORDER:
-        ORDER[name] = len(ORDER)
-    return ORDER[name]
+ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
 
 
 class GribOutput:
@@ -59,19 +51,18 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
-        metadata = {k: v for k, v in sorted(metadata.items(), key=order)}
-        rest = {}
+        other = {}
 
         for k, v in list(metadata.items()):
             if not isinstance(v, (int, float, str)):
-                rest[k] = metadata.pop(k)
+                other[k] = metadata.pop(k)
 
         LOG.debug("GribOutput.metadata %s", metadata)
-        LOG.debug("GribOutput.metadata %s", rest)
+        LOG.debug("GribOutput.metadata %s", other)
 
         handle.set_multiple(metadata)
 
-        for k, v in rest.items():
+        for k, v in other.items():
             handle.set(k, v)
 
         handle.set_values(values)
@@ -124,6 +115,25 @@ class GribOutput:
                 metadata["paramId"] = int(param)
             except ValueError:
                 metadata["shortName"] = param
+
+        metadata.update(
+            ACCUMULATIONS.get(
+                (
+                    metadata.get("paramId"),
+                    metadata.get("edition", 2),
+                ),
+                {},
+            )
+        )
+        metadata.update(
+            ACCUMULATIONS.get(
+                (
+                    metadata.get("shortName"),
+                    metadata.get("edition", 2),
+                ),
+                {},
+            )
+        )
 
         if "time" in metadata:  # TODO, use a normalizer
             try:
@@ -190,7 +200,7 @@ class GribOutput:
         metadata["longitudeOfFirstGridPointInDegrees"] = west
         metadata["longitudeOfLastGridPointInDegrees"] = east
 
-        edition = metadata.get("edition", 1)
+        edition = metadata.get("edition", 2)
         levtype = metadata.get("levtype")
         if levtype is None:
             if "levelist" in metadata:
