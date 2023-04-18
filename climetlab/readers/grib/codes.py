@@ -195,6 +195,10 @@ class CodesHandle:
         # This is writing on the GRIB that something has been modified (255=unknown)
         eccodes.codes_set_long(self.handle, "generatingProcessIdentifier", 255)
 
+    def set_multiple(self, values):
+        assert self.path is None, "Only cloned handles can have values changed"
+        eccodes.codes_set_key_vals(self.handle, values)
+
     def set_long(self, name, value):
         try:
             assert self.path is None, "Only cloned handles can have values changed"
@@ -222,10 +226,11 @@ class CodesHandle:
     def set(self, name, value):
         try:
             assert self.path is None, "Only cloned handles can have values changed"
+
             if isinstance(value, list):
                 return eccodes.codes_set_array(self.handle, name, value)
-            else:
-                return eccodes.codes_set(self.handle, name, value)
+
+            return eccodes.codes_set(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
             LOG.exception(e)

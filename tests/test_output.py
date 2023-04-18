@@ -16,6 +16,7 @@ import tempfile
 import numpy as np
 
 import climetlab as cml
+import climetlab.debug
 
 
 def test_latlon():
@@ -32,8 +33,36 @@ def test_latlon():
         print(ds[0])
 
 
+def test_o96():
+    data = np.random.random((40320,))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "a.grib")
+
+        f = cml.new_grib_output(path, date=20010101)
+        f.write(data, param="2t")
+        f.close()
+
+        ds = cml.load_source("file", path)
+        print(ds[0])
+
+
+def test_mars_labeling():
+    data = np.random.random((40320,))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "a.grib")
+
+        f = cml.new_grib_output(path, date=20010101)
+        f.write(data, class_="ml", type="fc", expver="test", step=24, param="msl")
+        f.close()
+
+        ds = cml.load_source("file", path)
+        print(ds[0])
+
+
 if __name__ == "__main__":
-    test_latlon()
+    test_mars_labeling()
     # from climetlab.testing import main
 
     # main(__file__)

@@ -16,7 +16,7 @@ LOG = logging.getLogger(__name__)
 
 # Make sure the
 
-ORDER = ("edition", "levtype", "levelist", "N")
+ORDER = ("edition", "addExtraLocalSection", "levtype", "levelist", "N")
 ORDER = {k: i for i, k in enumerate(ORDER)}
 
 
@@ -60,11 +60,20 @@ class GribOutput:
             handle = template.handle.clone()
 
         metadata = {k: v for k, v in sorted(metadata.items(), key=order)}
+        rest = {}
+
+        for k, v in list(metadata.items()):
+            if not isinstance(v, (int, float, str)):
+                rest[k] = metadata.pop(k)
 
         LOG.debug("GribOutput.metadata %s", metadata)
+        LOG.debug("GribOutput.metadata %s", rest)
 
-        for k, v in metadata.items():
+        handle.set_multiple(metadata)
+
+        for k, v in rest.items():
             handle.set(k, v)
+
         handle.set_values(values)
         handle.write(self.f)
 
@@ -132,6 +141,16 @@ class GribOutput:
             date = metadata["date"]
             metadata["date"] = date.year * 10000 + date.month * 100 + date.day
 
+        if (
+            "class" in metadata
+            or "type" in metadata
+            or "stream" in metadata
+            or "expver" in metadata
+        ):
+            # MARS labelling
+            metadata["setLocalDefinition"] = 1
+            # metadata['grib2LocalSectionNumber'] = 1
+
         for check in compulsary:
             if not isinstance(check, tuple):
                 check = [check]
@@ -190,6 +209,7 @@ class GribOutput:
             40320: (96, True),
             50662: (96, False),
             88838: (128, False),
+            108160: (160, True),
             138346: (160, False),
             213988: (200, False),
             348528: (256, False),
