@@ -111,7 +111,7 @@ jobs:
                 with open(m, "w") as f:
                     print(os.environ[n], file=f)
     - name: Install climetlab
-      run: pip install .  # run: pip install .[interactive,tensorflow,zarr]
+      run: pip install -e .  # run: pip install .[interactive,tensorflow,zarr]
     - run: climetlab versions
     - name: Install test tools
       run: |
@@ -143,7 +143,7 @@ jobs:
                 with open(m, "w") as f:
                     print(os.environ[n], file=f)
     - name: Install climetlab
-      run: pip install .  # run: pip install .[interactive,tensorflow,zarr]
+      run: pip install -e .  # run: pip install .[interactive,tensorflow,zarr]
     - run: climetlab versions
     - name: Install test tools
       run: |
@@ -187,7 +187,7 @@ jobs:
                 with open(m, "w") as f:
                     print(os.environ[n], file=f)
     - name: Install climetlab
-      run: pip install .
+      run: pip install -e .
     - run: climetlab versions
     - name: Install test tools
       run: |
