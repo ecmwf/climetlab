@@ -106,7 +106,7 @@ def test_mars_labeling():
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
-        f.write(data, class_="ml", type="fc", expver="test", step=24, param="msl")
+        f.write(data, type="fc", expver="test", step=24, param="msl")
         f.close()
 
         ds = cml.load_source("file", path)
