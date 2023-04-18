@@ -32,6 +32,7 @@ def test_url_file_source():
 
 @pytest.mark.ftp
 @pytest.mark.external_download
+@pytest.mark.download
 def test_url_ftp_source_anonymous():
     date = datetime.datetime.now() - datetime.timedelta(days=1)
     load_source(
@@ -45,6 +46,8 @@ def test_url_ftp_source_anonymous():
 
 
 @pytest.mark.ftp
+@pytest.mark.download
+@pytest.mark.external_download
 def test_url_ftp_source_with_user_pass():
     import ftplib
 
@@ -66,6 +69,8 @@ def test_url_ftp_source_with_user_pass():
         pass
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_url_source_1():
     load_source(
         "url",
@@ -73,6 +78,8 @@ def test_url_source_1():
     )
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_url_source_check_out_of_date():
     def load():
         load_source(
@@ -90,6 +97,8 @@ def test_url_source_check_out_of_date():
                 load()
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_url_source_2():
     load_source(
         "url",
@@ -97,6 +106,8 @@ def test_url_source_2():
     )
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_url_source_3():
     load_source(
         "url",
@@ -105,6 +116,7 @@ def test_url_source_3():
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 def test_extension():
     s = load_source(
         "url",
@@ -118,6 +130,8 @@ def test_extension():
     assert s.path.endswith(".1.tfrecord")
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_part_url():
     ds = load_source(
         "url",

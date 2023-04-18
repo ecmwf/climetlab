@@ -22,6 +22,8 @@ from climetlab.testing import OfflineError, network_off
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_unpack_zip():
     TEST_URL = "https://get.ecmwf.int/test-data/climetlab/input/grib.zip"
 

@@ -95,6 +95,7 @@ def test_csv_tfdataset():
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
+@pytest.mark.download
 def test_csv_icoads():
     r = {
         "class": "e2",
@@ -136,6 +137,7 @@ def test_csv_mimetypes():
     assert mimetypes.guess_type("x.csv.bz2") == ("text/csv", "bzip2")
 
 
+@pytest.mark.download
 def test_download_tfdataset():
     ds = cml.load_source(
         "url-pattern",

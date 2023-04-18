@@ -10,16 +10,22 @@
 #
 
 
+import pytest
+
 from climetlab import load_source
 
 
+@pytest.mark.download
 def test_url_pattern_source_3():
-    load_source(
+    source = load_source(
         "url-pattern",
         "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.{format}",
         {"format": ["nc", "grib"]},
     )
-    # source.to_xarray()
+    # note that both files contain the same data
+    assert len(source) == 4
+    for i in source:
+        print(i)
 
 
 if __name__ == "__main__":

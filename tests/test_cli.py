@@ -14,6 +14,7 @@ import pytest
 import yaml
 
 from climetlab import settings
+from climetlab.core.temporary import temp_env
 from climetlab.scripts.main import CliMetLabApp
 
 LOG = logging.getLogger(__name__)
@@ -69,10 +70,11 @@ def settings_dict():
 
 
 def test_cli_setting_2(capsys, settings_dict):
-    app = CliMetLabApp()
-    app.onecmd("settings")
-    out, err = capsys.readouterr()
-    assert err == "", err
+    with temp_env(NO_COLOR=1):
+        app = CliMetLabApp()
+        app.onecmd("settings")
+        out, err = capsys.readouterr()
+        assert err == "", err
 
     lines = out.splitlines(True)
     assert lines

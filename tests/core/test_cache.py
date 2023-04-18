@@ -62,7 +62,8 @@ def test_cache_1():
     assert cnt == 2
 
 
-@pytest.mark.skipif(True, reason="Test fails in github, needs fixing")
+# @pytest.mark.skipif(True, reason="Test fails in github, needs fixing")
+@pytest.mark.download
 def test_cache_2():
     with temp_directory() as tmpdir:
         with settings.temporary():

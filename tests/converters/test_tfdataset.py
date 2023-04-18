@@ -10,20 +10,16 @@
 #
 
 import logging
-import os
 
 import pytest
 
 import climetlab as cml
-from climetlab.testing import MISSING, climetlab_file
+from climetlab.testing import MISSING, NO_CDS, climetlab_file
 
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(
-    MISSING("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_grib_1():
     s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
     dataset = s.to_tfdataset()
@@ -41,10 +37,7 @@ def test_tfdataset_grib_1():
     assert cnt == 2
 
 
-@pytest.mark.skipif(
-    MISSING("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_grib_2():
     s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
     dataset = s.to_tfdataset(dtype="float64")
@@ -52,10 +45,7 @@ def test_tfdataset_grib_2():
         pass
 
 
-@pytest.mark.skipif(
-    MISSING("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_grib_4():
     s = cml.load_source(
         "multi",
@@ -68,14 +58,9 @@ def test_tfdataset_grib_4():
 
 
 @pytest.mark.long_test
-@pytest.mark.skipif(
-    not os.path.exists(os.path.expanduser("~/.cdsapirc")),
-    reason="No ~/.cdsapirc",
-)
-@pytest.mark.skipif(
-    MISSING("tensorflow"),
-    reason="Tensorflow not installed",
-)
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_2():
     from tensorflow.keras.layers import Dense, Flatten, Input
     from tensorflow.keras.models import Sequential

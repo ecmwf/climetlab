@@ -161,7 +161,6 @@ def _concat_var_different_coords_1(kind1, kind2):
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    # print(target)
 
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
     ds.graph()
@@ -196,7 +195,6 @@ def test_nc_concat_var_different_coords_2():
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    # print(target)
 
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
     ds.graph()
@@ -225,7 +223,6 @@ def test_nc_wrong_concat_var():
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    print(target)
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
 
     ds.graph()
@@ -307,18 +304,21 @@ def test_nc_merge_concat_var():
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_merge_pangeo_1():
     _merge_pangeo(inner_merger="concat(concat_dim=time)")
 
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_merge_pangeo_2():
     _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
 
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_merge_pangeo_3():
     def preprocess(ds):

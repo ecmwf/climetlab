@@ -16,6 +16,7 @@ from climetlab.testing import MISSING, TEST_DATA_URL
 
 
 @pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
+@pytest.mark.download
 def test_download_tfdataset():
     ds = load_source(
         "url-pattern",

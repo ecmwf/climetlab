@@ -10,14 +10,13 @@
 #
 
 import datetime
-import os
 
 import pytest
 
 import climetlab as cml
 from climetlab import load_source, plot_map
 from climetlab.readers.netcdf import NetCDFField
-from climetlab.testing import climetlab_file
+from climetlab.testing import NO_CDS, climetlab_file
 
 
 def test_netcdf():
@@ -93,9 +92,9 @@ def test_dummy_netcdf_4():
 
 
 @pytest.mark.long_test
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_multi():
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
