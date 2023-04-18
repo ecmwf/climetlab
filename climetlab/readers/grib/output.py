@@ -16,15 +16,7 @@ LOG = logging.getLogger(__name__)
 
 # Make sure the
 
-ORDER = ("edition", "levtype", "levelist", "N")
-ORDER = {k: i for i, k in enumerate(ORDER)}
-
-
-def order(kv):
-    name, _ = kv
-    if name not in ORDER:
-        ORDER[name] = len(ORDER)
-    return ORDER[name]
+ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
 
 
 class GribOutput:
@@ -59,12 +51,20 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
-        metadata = {k: v for k, v in sorted(metadata.items(), key=order)}
+        other = {}
+
+        for k, v in list(metadata.items()):
+            if not isinstance(v, (int, float, str)):
+                other[k] = metadata.pop(k)
 
         LOG.debug("GribOutput.metadata %s", metadata)
+        LOG.debug("GribOutput.metadata %s", other)
 
-        for k, v in metadata.items():
+        handle.set_multiple(metadata)
+
+        for k, v in other.items():
             handle.set(k, v)
+
         handle.set_values(values)
         handle.write(self.f)
 
@@ -116,6 +116,25 @@ class GribOutput:
             except ValueError:
                 metadata["shortName"] = param
 
+        metadata.update(
+            ACCUMULATIONS.get(
+                (
+                    metadata.get("paramId"),
+                    metadata.get("edition", 2),
+                ),
+                {},
+            )
+        )
+        metadata.update(
+            ACCUMULATIONS.get(
+                (
+                    metadata.get("shortName"),
+                    metadata.get("edition", 2),
+                ),
+                {},
+            )
+        )
+
         if "time" in metadata:  # TODO, use a normalizer
             try:
                 time = int(metadata["time"])
@@ -131,6 +150,16 @@ class GribOutput:
         if "date" in metadata:
             date = metadata["date"]
             metadata["date"] = date.year * 10000 + date.month * 100 + date.day
+
+        if (
+            "class" in metadata
+            or "type" in metadata
+            or "stream" in metadata
+            or "expver" in metadata
+        ):
+            # MARS labelling
+            metadata["setLocalDefinition"] = 1
+            # metadata['grib2LocalSectionNumber'] = 1
 
         for check in compulsary:
             if not isinstance(check, tuple):
@@ -171,7 +200,7 @@ class GribOutput:
         metadata["longitudeOfFirstGridPointInDegrees"] = west
         metadata["longitudeOfLastGridPointInDegrees"] = east
 
-        edition = metadata.get("edition", 1)
+        edition = metadata.get("edition", 2)
         levtype = metadata.get("levtype")
         if levtype is None:
             if "levelist" in metadata:
@@ -190,6 +219,7 @@ class GribOutput:
             40320: (96, True),
             50662: (96, False),
             88838: (128, False),
+            108160: (160, True),
             138346: (160, False),
             213988: (200, False),
             348528: (256, False),
