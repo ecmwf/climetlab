@@ -11,20 +11,25 @@
 
 
 import os
+import sys
 import tempfile
 
 import numpy as np
+import pytest
 
 import climetlab as cml
-import climetlab.debug
 
 EPSILON = 1e-4
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_latlon():
     data = np.random.random((181, 360))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
@@ -42,10 +47,14 @@ def test_latlon():
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_o96():
     data = np.random.random((40320,))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
@@ -65,7 +74,7 @@ def test_o96():
 def test_o160():
     data = np.random.random((108160,))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
@@ -82,10 +91,14 @@ def test_o160():
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_mars_labeling():
     data = np.random.random((40320,))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
@@ -105,10 +118,14 @@ def test_mars_labeling():
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_pl():
     data = np.random.random((40320,))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
@@ -126,10 +143,14 @@ def test_pl():
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="ignore_cleanup_errors requires Python 3.10 or later",
+)
 def test_tp():
     data = np.random.random((181, 360))
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
