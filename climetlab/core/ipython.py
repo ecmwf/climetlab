@@ -16,23 +16,11 @@ import sys
 
 from ..utils import module_loaded
 
-# ipython_active = None
-# if module_loaded("IPython"):
-#     try:
-#         from IPython import get_ipython
-
-#         ipython_active = get_ipython()
-#     except Exception:
-#         pass
-
-# modify by  longtsing 
-# try to get the ipython_activate
-
 ipython_active = None
 try:
-    from IPython import get_ipython
+    from IPython import get_ipython as _gipyt
 
-    ipython_active = get_ipython()
+    ipython_active = _gipyt()
 except Exception:
     ipython_active=None
 
@@ -53,12 +41,8 @@ def guess_which_ipython():
     if ipython_active.ipython_dir == "/deepnote-config/ipython":
         return ("deepnote", None)
 
-    # if ipython_active.ipython_dir == "/home/jovyan/.ipython":
-    #     return ("jupyter-lab", None)
 
-    # modify by longtsing
-    # try to check the ipython type in jupyter-lab
-    if ipython_active.ipython_dir.endswith('.ipython'):
+    if ipython_active.__class__.__name__== 'ZMQInteractiveShell':
         return ("jupyter-lab", None)
 
     if "google.colab" in repr(ipython_active.inspector):
