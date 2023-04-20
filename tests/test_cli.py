@@ -20,7 +20,7 @@ from climetlab.scripts.main import CliMetLabApp, command_list
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize("command", command_list)
+@pytest.mark.parametrize("command", command_list())
 def test_cli_no_args(command, capsys):
     app = CliMetLabApp()
     app.onecmd(command)
