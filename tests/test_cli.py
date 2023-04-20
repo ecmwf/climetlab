@@ -15,12 +15,12 @@ import yaml
 
 from climetlab import settings
 from climetlab.core.temporary import temp_env
-from climetlab.scripts.main import CliMetLabApp
+from climetlab.scripts.main import CliMetLabApp, command_list
 
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize("command", CliMetLabApp.command_list)
+@pytest.mark.parametrize("command", command_list)
 def test_cli_no_args(command, capsys):
     app = CliMetLabApp()
     app.onecmd(command)
