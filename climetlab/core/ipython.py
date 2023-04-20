@@ -17,12 +17,13 @@ import sys
 from ..utils import module_loaded
 
 ipython_active = None
-try:
-    from IPython import get_ipython as _gipyt
+if module_loaded("IPython"):
+    try:
+        from IPython import get_ipython
 
-    ipython_active = _gipyt()
-except Exception:
-    ipython_active=None
+        ipython_active = get_ipython()
+    except Exception:
+        pass
 
 """
 
