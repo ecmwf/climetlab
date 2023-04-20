@@ -48,11 +48,13 @@ def guess_which_ipython():
     if "IPython.terminal" in repr(ipython_active.parent):
         return ("ipython", None)
 
-    if ipython_active.__class__.__name__== 'ZMQInteractiveShell':
+    if ipython_active.__class__.__name__ == "ZMQInteractiveShell":
         return ("jupyter-lab", None)
 
-     if isinstance(ipython_active.python_dir, str) and ipython_active.python_dir.endswith('.ipython'):
-         return ("jupyter-lab", None)
+    if isinstance(
+        ipython_active.python_dir, str
+    ) and ipython_active.python_dir.endswith(".ipython"):
+        return ("jupyter-lab", None)
     return ("unknown", None)
 
 
