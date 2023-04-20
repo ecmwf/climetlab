@@ -22,8 +22,8 @@ from .availability import AvailabilityCmd
 from .benchmark import BenchmarkCmd
 from .cache import CacheCmd
 from .check import CheckCmd
-from .create import LoadersCmd
 from .completion import CompletionCmd
+from .create import LoadersCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
