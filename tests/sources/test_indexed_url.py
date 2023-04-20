@@ -23,6 +23,7 @@ from climetlab.scripts.main import CliMetLabApp
 
 @pytest.mark.skip(reason="Global index not supported.")
 @pytest.mark.long_test
+@pytest.mark.download
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 @pytest.mark.parametrize("source_name", ["indexed-url", "indexed-url-with-json-index"])
 def test_global_index(source_name, baseurl):
@@ -71,6 +72,7 @@ def check_line_2(line2):
 
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 # @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
+@pytest.mark.download
 def test_cli_index_url(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(f"index_url {baseurl}/test-data/input/indexed-urls/large_grib_1.grb")
@@ -87,6 +89,7 @@ def test_cli_index_url(baseurl, capsys):
 
 # @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
+@pytest.mark.download
 def test_cli_index_urls(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(
@@ -105,6 +108,7 @@ def test_cli_index_urls(baseurl, capsys):
 
 # @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 @pytest.mark.parametrize("baseurl", [CML_BASEURL_S3])
+@pytest.mark.download
 def test_cli_index_urls_full_url(baseurl, capsys):
     app = CliMetLabApp()
     app.onecmd(
