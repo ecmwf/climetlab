@@ -135,7 +135,7 @@ def test_cache_4():
         settings.set("cache-directory", "/Volumes/RAMDisk/climetlab")
         settings.set("maximum-cache-disk-usage", "90%")
         for n in range(10):
-            load_source("dummy-source", "zeros", size=100 * 1024 * 1024, n=n)
+            load_source("climetlab-testing", "zeros", size=100 * 1024 * 1024, n=n)
 
 
 @pytest.mark.skip("Not implemented yet")

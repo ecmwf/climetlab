@@ -67,7 +67,7 @@ def test_multi():
 
 def test_dummy_grib():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="grib",
         paramId=[129, 130],
         date=[19900101, 19900102],
@@ -86,7 +86,7 @@ def test_datetime():
     ], s.to_datetime_list()
 
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="grib",
         paramId=[129, 130],
         date=[19900101, 19900102],

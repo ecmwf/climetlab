@@ -24,15 +24,15 @@ LOG = logging.getLogger(__name__)
 
 
 def test_multi_graph_1():
-    a11 = load_source("dummy-source", kind="grib", date=20000101)
-    a12 = load_source("dummy-source", kind="grib", date=20000102)
-    b11 = load_source("dummy-source", kind="grib", date=20000103)
-    b12 = load_source("dummy-source", kind="grib", date=20000104)
+    a11 = load_source("climetlab-testing", kind="grib", date=20000101)
+    a12 = load_source("climetlab-testing", kind="grib", date=20000102)
+    b11 = load_source("climetlab-testing", kind="grib", date=20000103)
+    b12 = load_source("climetlab-testing", kind="grib", date=20000104)
 
-    a21 = load_source("dummy-source", kind="grib", date=20000105)
-    a22 = load_source("dummy-source", kind="grib", date=20000106)
-    b21 = load_source("dummy-source", kind="grib", date=20000107)
-    b22 = load_source("dummy-source", kind="grib", date=20000108)
+    a21 = load_source("climetlab-testing", kind="grib", date=20000105)
+    a22 = load_source("climetlab-testing", kind="grib", date=20000106)
+    b21 = load_source("climetlab-testing", kind="grib", date=20000107)
+    b22 = load_source("climetlab-testing", kind="grib", date=20000108)
 
     m1 = load_source(
         "multi",
@@ -65,15 +65,15 @@ def test_multi_graph_1():
 
 def test_multi_graph_2():
     with temp_directory() as tmpdir:
-        a11 = load_source("dummy-source", kind="grib", date=20000101)
-        a12 = load_source("dummy-source", kind="grib", date=20000102)
-        b11 = load_source("dummy-source", kind="grib", date=20000103)
-        b12 = load_source("dummy-source", kind="grib", date=20000104)
+        a11 = load_source("climetlab-testing", kind="grib", date=20000101)
+        a12 = load_source("climetlab-testing", kind="grib", date=20000102)
+        b11 = load_source("climetlab-testing", kind="grib", date=20000103)
+        b12 = load_source("climetlab-testing", kind="grib", date=20000104)
 
-        a21 = load_source("dummy-source", kind="grib", date=20000105)
-        a22 = load_source("dummy-source", kind="grib", date=20000106)
-        b21 = load_source("dummy-source", kind="grib", date=20000107)
-        b22 = load_source("dummy-source", kind="grib", date=20000108)
+        a21 = load_source("climetlab-testing", kind="grib", date=20000105)
+        a22 = load_source("climetlab-testing", kind="grib", date=20000106)
+        b21 = load_source("climetlab-testing", kind="grib", date=20000107)
+        b22 = load_source("climetlab-testing", kind="grib", date=20000108)
 
         os.mkdir(os.path.join(tmpdir, "a1"))
         os.mkdir(os.path.join(tmpdir, "b1"))
@@ -103,7 +103,7 @@ def test_multi_graph_2():
 def test_multi_directory_1():
     with temp_directory() as directory:
         for date in (20000101, 20000102):
-            ds = load_source("dummy-source", kind="grib", date=date)
+            ds = load_source("climetlab-testing", kind="grib", date=date)
             ds.save(os.path.join(directory, f"{date}.grib"))
 
         ds = load_source("file", directory)
@@ -159,8 +159,8 @@ def test_download_zip_2():
 def test_multi_grib():
     ds = load_source(
         "multi",
-        load_source("dummy-source", kind="grib", date=20000101),
-        load_source("dummy-source", kind="grib", date=20000102),
+        load_source("climetlab-testing", kind="grib", date=20000101),
+        load_source("climetlab-testing", kind="grib", date=20000102),
     )
     assert len(ds) == 2
     ds.to_xarray()
@@ -170,9 +170,9 @@ def test_multi_grib():
 def test_multi_grib_mixed():
     ds = load_source(
         "multi",
-        load_source("dummy-source", kind="grib", date=20000101),
-        load_source("dummy-source", kind="grib", date=20000102),
-        load_source("dummy-source", kind="unknown", hello="world"),
+        load_source("climetlab-testing", kind="grib", date=20000101),
+        load_source("climetlab-testing", kind="grib", date=20000102),
+        load_source("climetlab-testing", kind="unknown", hello="world"),
     )
     assert len(ds) == 2
 

@@ -39,7 +39,7 @@ from climetlab.wrappers.xarray import find_lat_lon
 )
 def test_wrapper_xarray_plot_map(coords):
     source = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=coords.split(","),
     )
@@ -63,7 +63,7 @@ def test_wrapper_xarray_plot_map(coords):
 )
 def test_wrapper_xarray_plot_map_2(coords):
     source = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=coords.split(","),
     )
@@ -82,12 +82,12 @@ def test_wrapper_xarray_plot_map_2(coords):
 
 
 def test_plot_map_grib():
-    source = load_source("dummy-source", kind="grib", date=20000101)
+    source = load_source("climetlab-testing", kind="grib", date=20000101)
     cml.plot_map(source)
 
 
 def test_wrapper_xarray_grib():
-    source = load_source("dummy-source", kind="grib", date=20000101)
+    source = load_source("climetlab-testing", kind="grib", date=20000101)
     ds = source.to_xarray()
 
     lat, lon = find_lat_lon(ds)

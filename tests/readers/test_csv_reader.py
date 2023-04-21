@@ -19,7 +19,7 @@ from climetlab.testing import MISSING, TEST_DATA_URL
 
 def test_csv_1():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         lines=[
@@ -34,7 +34,7 @@ def test_csv_1():
 
 def test_csv_2():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         lines=[
@@ -49,7 +49,7 @@ def test_csv_2():
 
 def test_csv_3():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         lines=[
@@ -64,7 +64,7 @@ def test_csv_3():
 
 def test_csv_4():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         quote_strings=True,
@@ -81,7 +81,7 @@ def test_csv_4():
 @pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_csv_tfdataset():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["lat", "lon", "value"],
         lines=[
@@ -116,7 +116,7 @@ def test_csv_icoads():
 
 def test_csv_text():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         quote_strings=True,

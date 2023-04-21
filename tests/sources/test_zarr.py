@@ -126,7 +126,7 @@ def test_zarr_source_5():
 @pytest.mark.skipif(MISSING("zarr"), reason="Zarr not installed")
 def test_zarr_from_directory():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="zarr",
     )
     ds = s.to_xarray()
@@ -136,7 +136,7 @@ def test_zarr_from_directory():
 @pytest.mark.skipif(MISSING("zarr"), reason="Zarr not installed")
 def test_zarr_from_zip_file():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="zarr-zip",
     )
     ds = s.to_xarray()

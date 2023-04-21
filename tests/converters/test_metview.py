@@ -38,7 +38,7 @@ def test_metview_netcdf():
 @pytest.mark.skipif(MISSING("metview"), reason="Metview not installed")
 def test_metview_csv():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         lines=[
