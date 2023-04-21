@@ -50,7 +50,8 @@ def test_selection_with_date_3():
 
 def test_selection_with_date_4():
     ref = dict(
-        date=[datetime.datetime(2008, 7, 19), datetime.datetime(2008, 7, 20)], step=5
+        date=[datetime.datetime(2008, 7, 19), datetime.datetime(2008, 7, 20)],
+        step=5,
     )
 
     assert to_kwargs(ref) == ref

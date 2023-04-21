@@ -12,6 +12,7 @@
 from climetlab.testing import check_unsafe_archives
 
 
+# @pytest.mark.download # not marked as download to make sure we run this every time
 def test_zip_safety():
     check_unsafe_archives(".zip")
 

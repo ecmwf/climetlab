@@ -55,6 +55,7 @@ def mirror_dirs():
                     yield mirrordir, mirrordir2
 
 
+@pytest.mark.download
 def test_mirror_url_source_0(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -64,6 +65,7 @@ def test_mirror_url_source_0(mirror_dirs):
         load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_1(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -75,6 +77,7 @@ def test_mirror_url_source_1(mirror_dirs):
         load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_1bis(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -86,6 +89,7 @@ def test_mirror_url_source_1bis(mirror_dirs):
             load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_2(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -96,6 +100,7 @@ def test_mirror_url_source_2(mirror_dirs):
     load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_2bis(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -107,6 +112,7 @@ def test_mirror_url_source_2bis(mirror_dirs):
         load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_3(mirror_dirs):
     tmpdir, _ = mirror_dirs
     mirror = DirectoryMirror(path=tmpdir)
@@ -119,6 +125,7 @@ def test_mirror_url_source_3(mirror_dirs):
         load_without_network(force=True)
 
 
+@pytest.mark.download
 def test_mirror_url_source_env_var_1(mirror_dirs):
     mirror_dir, _ = mirror_dirs
 
@@ -135,6 +142,7 @@ def test_mirror_url_source_env_var_1(mirror_dirs):
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Cannot unlink tmp directory on Windows"
 )
+@pytest.mark.download
 def test_mirror_url_source_env_var_2(mirror_dirs):
     mirror_dir, _ = mirror_dirs
     source = load(force=True)
@@ -156,6 +164,7 @@ def test_mirror_url_source_env_var_2(mirror_dirs):
 @pytest.mark.parametrize("a2", ["__", "a2"])
 @pytest.mark.parametrize("b1", ["__", "b1"])
 @pytest.mark.parametrize("a1", ["__", "a1"])
+@pytest.mark.download
 def test_mirror_url_source_multiple_copy(
     mirror_dirs,
     a1,
@@ -231,6 +240,7 @@ def load_eod_without_network(**kwargs):
 
 
 @pytest.mark.skipif(NO_EOD, reason="No access to Open data")
+@pytest.mark.download
 def test_mirror_eod(mirror_dirs):
     tmpdir, _ = mirror_dirs
 

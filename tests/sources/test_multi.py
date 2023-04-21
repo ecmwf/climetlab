@@ -24,15 +24,15 @@ LOG = logging.getLogger(__name__)
 
 
 def test_multi_graph_1():
-    a11 = load_source("dummy-source", kind="grib", date=20000101)
-    a12 = load_source("dummy-source", kind="grib", date=20000102)
-    b11 = load_source("dummy-source", kind="grib", date=20000103)
-    b12 = load_source("dummy-source", kind="grib", date=20000104)
+    a11 = load_source("climetlab-testing", kind="grib", date=20000101)
+    a12 = load_source("climetlab-testing", kind="grib", date=20000102)
+    b11 = load_source("climetlab-testing", kind="grib", date=20000103)
+    b12 = load_source("climetlab-testing", kind="grib", date=20000104)
 
-    a21 = load_source("dummy-source", kind="grib", date=20000105)
-    a22 = load_source("dummy-source", kind="grib", date=20000106)
-    b21 = load_source("dummy-source", kind="grib", date=20000107)
-    b22 = load_source("dummy-source", kind="grib", date=20000108)
+    a21 = load_source("climetlab-testing", kind="grib", date=20000105)
+    a22 = load_source("climetlab-testing", kind="grib", date=20000106)
+    b21 = load_source("climetlab-testing", kind="grib", date=20000107)
+    b22 = load_source("climetlab-testing", kind="grib", date=20000108)
 
     m1 = load_source(
         "multi",
@@ -52,31 +52,42 @@ def test_multi_graph_1():
     assert len(ds) == 8
     ds.to_xarray()
 
+    m1_ = (a11 + a12) + (b11 + b12)
+    m2_ = (a21 + a22) + (b21 + b22)
+    ds_ = m1_ + m2_
+    for i, j in zip(m1, m1_):
+        assert str(i) == str(j), (i, j)
+    for i, j in zip(m2, m2_):
+        assert str(i) == str(j), (i, j)
+    for i, j in zip(ds, ds_):
+        assert str(i) == str(j), (i, j)
+
 
 def test_multi_graph_2():
     with temp_directory() as tmpdir:
-        os.mkdir(os.path.join(tmpdir, "a1"))
-        a11 = load_source("dummy-source", kind="grib", date=20000101)
-        a11.save(os.path.join(tmpdir, "a1", "a11.grib"))
-        a12 = load_source("dummy-source", kind="grib", date=20000102)
-        a12.save(os.path.join(tmpdir, "a1", "a12.grib"))
+        a11 = load_source("climetlab-testing", kind="grib", date=20000101)
+        a12 = load_source("climetlab-testing", kind="grib", date=20000102)
+        b11 = load_source("climetlab-testing", kind="grib", date=20000103)
+        b12 = load_source("climetlab-testing", kind="grib", date=20000104)
 
+        a21 = load_source("climetlab-testing", kind="grib", date=20000105)
+        a22 = load_source("climetlab-testing", kind="grib", date=20000106)
+        b21 = load_source("climetlab-testing", kind="grib", date=20000107)
+        b22 = load_source("climetlab-testing", kind="grib", date=20000108)
+
+        os.mkdir(os.path.join(tmpdir, "a1"))
         os.mkdir(os.path.join(tmpdir, "b1"))
-        b11 = load_source("dummy-source", kind="grib", date=20000103)
+        os.mkdir(os.path.join(tmpdir, "a2"))
+        os.mkdir(os.path.join(tmpdir, "b2"))
+
+        a11.save(os.path.join(tmpdir, "a1", "a11.grib"))
+        a12.save(os.path.join(tmpdir, "a1", "a12.grib"))
         b11.save(os.path.join(tmpdir, "b1", "b11.grib"))
-        b12 = load_source("dummy-source", kind="grib", date=20000104)
         b12.save(os.path.join(tmpdir, "b1", "b12.grib"))
 
-        os.mkdir(os.path.join(tmpdir, "a2"))
-        a21 = load_source("dummy-source", kind="grib", date=20000105)
         a21.save(os.path.join(tmpdir, "a2", "a21.grib"))
-        a22 = load_source("dummy-source", kind="grib", date=20000106)
         a22.save(os.path.join(tmpdir, "a2", "a22.grib"))
-
-        os.mkdir(os.path.join(tmpdir, "b2"))
-        b21 = load_source("dummy-source", kind="grib", date=20000107)
         b21.save(os.path.join(tmpdir, "b2", "b21.grib"))
-        b22 = load_source("dummy-source", kind="grib", date=20000108)
         b22.save(os.path.join(tmpdir, "b2", "b22.grib"))
 
         def filter(path_or_url):
@@ -92,7 +103,7 @@ def test_multi_graph_2():
 def test_multi_directory_1():
     with temp_directory() as directory:
         for date in (20000101, 20000102):
-            ds = load_source("dummy-source", kind="grib", date=date)
+            ds = load_source("climetlab-testing", kind="grib", date=date)
             ds.save(os.path.join(directory, f"{date}.grib"))
 
         ds = load_source("file", directory)
@@ -107,6 +118,7 @@ def test_multi_directory_1():
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
+@pytest.mark.download
 def test_download_zip_2():
     def filter(path_or_url):
         LOG.debug("test_download_zip_2.filter %s", path_or_url)
@@ -147,8 +159,8 @@ def test_download_zip_2():
 def test_multi_grib():
     ds = load_source(
         "multi",
-        load_source("dummy-source", kind="grib", date=20000101),
-        load_source("dummy-source", kind="grib", date=20000102),
+        load_source("climetlab-testing", kind="grib", date=20000101),
+        load_source("climetlab-testing", kind="grib", date=20000102),
     )
     assert len(ds) == 2
     ds.to_xarray()
@@ -158,13 +170,14 @@ def test_multi_grib():
 def test_multi_grib_mixed():
     ds = load_source(
         "multi",
-        load_source("dummy-source", kind="grib", date=20000101),
-        load_source("dummy-source", kind="grib", date=20000102),
-        load_source("dummy-source", kind="unknown", hello="world"),
+        load_source("climetlab-testing", kind="grib", date=20000101),
+        load_source("climetlab-testing", kind="grib", date=20000102),
+        load_source("climetlab-testing", kind="unknown", hello="world"),
     )
     assert len(ds) == 2
 
 
+@pytest.mark.download
 def test_download_tar():
     ds = load_source(
         "url",
@@ -173,6 +186,7 @@ def test_download_tar():
     assert len(ds) == 6, len(ds)
 
 
+@pytest.mark.download
 def test_download_tgz():
     ds = load_source(
         "url",
@@ -181,6 +195,7 @@ def test_download_tgz():
     assert len(ds) == 6, len(ds)
 
 
+@pytest.mark.download
 def test_download_tar_gz():
     ds = load_source(
         "url",
@@ -190,6 +205,7 @@ def test_download_tar_gz():
 
 
 @pytest.mark.skipif(True, reason="Not yet implemented")
+@pytest.mark.download
 def test_download_gz():
     ds = load_source(
         "url",
@@ -198,6 +214,7 @@ def test_download_gz():
     assert len(ds) == 2, len(ds)
 
 
+@pytest.mark.download
 def test_download_zip_1():
     ds = load_source(
         "url",
@@ -207,6 +224,7 @@ def test_download_zip_1():
     assert len(ds) == 6, len(ds)
 
 
+@pytest.mark.download
 def test_download_zip_3():
     ds = load_source(
         "url-pattern",
@@ -220,6 +238,7 @@ def test_download_zip_3():
 
 
 @pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")
+@pytest.mark.download
 def test_download_tfdataset():
     ds = load_source(
         "url-pattern",
@@ -234,6 +253,7 @@ def test_download_tfdataset():
     assert len(ds) == 200, len(ds)
 
 
+@pytest.mark.download
 def test_multi_missing_url():
     from requests.exceptions import HTTPError
 

@@ -10,14 +10,13 @@
 #
 
 import datetime
-import os
 
 import pytest
 
 import climetlab as cml
 from climetlab import load_source, plot_map
 from climetlab.readers.netcdf import NetCDFField
-from climetlab.testing import climetlab_file
+from climetlab.testing import NO_CDS, climetlab_file
 
 
 def test_netcdf():
@@ -36,7 +35,7 @@ def test_dummy_netcdf_reader_1():
 @pytest.mark.parametrize("attribute", ["coordinates", "bounds", "grid_mapping"])
 def test_dummy_netcdf_reader_2(attribute):
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         attributes={"a": {attribute: f"{attribute}_of_a"}},
         variables=["a", f"{attribute}_of_a"],
@@ -49,19 +48,22 @@ def test_dummy_netcdf_reader_2(attribute):
 
 
 def test_dummy_netcdf_reader_plot():
-    s = load_source("dummy-source", kind="netcdf")
+    s = load_source("climetlab-testing", kind="netcdf")
     cml.plot_map(s)
 
 
 def test_dummy_netcdf():
-    s = load_source("dummy-source", kind="netcdf")
+    s = load_source("climetlab-testing", kind="netcdf")
     ds = s.to_xarray()
     assert "lat" in ds.dims
 
 
 def test_dummy_netcdf_2():
     s = load_source(
-        "dummy-source", kind="netcdf", dims=["lat", "lon", "time"], variables=["a", "b"]
+        "climetlab-testing",
+        kind="netcdf",
+        dims=["lat", "lon", "time"],
+        variables=["a", "b"],
     )
     ds = s.to_xarray()
     assert "lat" in ds.dims
@@ -69,7 +71,7 @@ def test_dummy_netcdf_2():
 
 def test_dummy_netcdf_3():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
         variables=["a", "b"],
@@ -80,7 +82,7 @@ def test_dummy_netcdf_3():
 
 def test_dummy_netcdf_4():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims={"lat": dict(size=3), "lon": dict(size=2), "time": dict(size=2)},
         variables={
@@ -93,9 +95,9 @@ def test_dummy_netcdf_4():
 
 
 @pytest.mark.long_test
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_multi():
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
@@ -132,7 +134,7 @@ def test_datetime():
     ], s.to_datetime_list()
 
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],

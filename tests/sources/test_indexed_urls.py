@@ -47,6 +47,7 @@ REQUEST_1 = {
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_indexed_urls_deprecated(baseurl):
     PER_URL_INDEX = PerUrlIndex(
@@ -59,6 +60,7 @@ def test_indexed_urls_deprecated(baseurl):
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_indexed_urls(baseurl):
     source = load_source(
@@ -72,6 +74,7 @@ def test_indexed_urls(baseurl):
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index(baseurl):
     request = dict(param="r", time="1000", date="19970101")
@@ -83,6 +86,7 @@ def test_per_url_index(baseurl):
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 # @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_per_url_index_2():
     baseurl = CML_BASEURL_S3
@@ -167,6 +171,7 @@ def timing():
 
 
 @pytest.mark.long_test
+@pytest.mark.download
 def test_grib_index_eumetnet():
     request = {
         "param": "2ti",

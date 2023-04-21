@@ -16,6 +16,7 @@ from climetlab.testing import NO_CDS
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.download
 def test_cds_grib_1():
     s = load_source(
         "cds",
@@ -30,6 +31,7 @@ def test_cds_grib_1():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.download
 def test_cds_grib_2():
     s = load_source(
         "cds",
@@ -44,6 +46,8 @@ def test_cds_grib_2():
     assert len(s) == 2
 
 
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.download
 def test_cds_grib_3():
     s = load_source(
         "cds",
@@ -58,6 +62,7 @@ def test_cds_grib_3():
 
 
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.download
 def test_cds_netcdf():
     s = load_source(
         "cds",
@@ -72,6 +77,8 @@ def test_cds_netcdf():
     assert len(s) == 2
 
 
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+@pytest.mark.download
 def test_cds_csv_zip():
     s = load_source(
         "cds",

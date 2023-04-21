@@ -9,12 +9,11 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
-
 import pytest
 
 import climetlab as cml
 from climetlab import dataset, load_dataset
+from climetlab.testing import NO_CDS
 
 
 def test_dataset_1():
@@ -26,18 +25,16 @@ def test_dataset_2():
 
 
 @pytest.mark.long_test
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_era5_temperature():
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
-
     cml.load_dataset("era5-temperature", period=(1979, 1982), domain="France", time=12)
 
 
 @pytest.mark.long_test
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_datetime():
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
-
     data = cml.load_dataset(
         "era5-temperature", domain="france", period=(1980,), time=12
     )
@@ -47,6 +44,7 @@ def test_datetime():
 
 
 @pytest.mark.external_download
+@pytest.mark.download
 def test_pandas_filter():
     data = cml.load_dataset("hurricane-database", bassin="atlantic")
     irma = data.to_pandas(name="irma", year=2017)
@@ -58,10 +56,12 @@ def test_unknown_dataset():
         load_dataset("do-not-exist-lkj45a45qsdf3")
 
 
+@pytest.mark.download
 def test_remote_dataset_from_climetlab_catalog():
     load_dataset("sample-netcdf-data")
 
 
+@pytest.mark.download
 def test_samples():
     cml.load_dataset("meteonet-samples-radar")
 

@@ -13,6 +13,8 @@ import os
 import pathlib
 import time
 
+import pytest
+
 from climetlab import settings
 from climetlab.utils import download_and_cache
 
@@ -21,6 +23,8 @@ def path_to_url(path):
     return pathlib.Path(os.path.abspath(path)).as_uri()
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_download_1():
     url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib?_=%s" % (
         time.time(),
@@ -28,17 +32,23 @@ def test_download_1():
     download_and_cache(url)
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_download_2():
     url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib"
     download_and_cache(url)
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_download_3():
     with settings.temporary("download-out-of-date-urls", True):
         url = "https://get.ecmwf.int/test-data/climetlab/input/test.txt"
         download_and_cache(url)
 
 
+@pytest.mark.download
+@pytest.mark.small_download
 def test_download_4():
     url = "https://get.ecmwf.int/test-data/climetlab/input/missing.txt"
     r = download_and_cache(url, return_none_on_404=True)
