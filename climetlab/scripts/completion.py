@@ -16,19 +16,26 @@ class CompletionCmd:
     @parse_args(
         shell=(
             None,
-            dict(help="Shell to use for autocompletion. Must be zsh or bash."),
+            dict(
+                metavar="SHELL",
+                help="Shell to use for autocompletion. Must be zsh or bash.",
+                nargs="?",
+            ),
         ),
     )
     def do_completion(self, args):
         """
         Enable autocompletion for the "climetlab" shell command.
 
-        Supported shells are : zsh.
+        Supported shells are : zsh bash.
 
         Usage:
             climetlab completion
         """
         from climetlab.scripts.main import command_list
+
+        if not args.shell:
+            return self.do_completion("--help")
 
         home = os.path.expanduser("~")
 
