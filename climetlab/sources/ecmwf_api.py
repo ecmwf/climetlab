@@ -8,10 +8,11 @@
 #
 
 import logging
+import os
 
 from climetlab.core.thread import SoftThreadPool
 from climetlab.decorators import normalize
-from climetlab.utils import tqdm
+from climetlab.utils import load_json_or_yaml, tqdm
 
 from .file import FileSource
 from .prompt import APIKeyPrompt
@@ -46,9 +47,21 @@ class MARSAPIKeyPrompt(APIKeyPrompt):
     rcfile = "~/.ecmwfapirc"
 
 
+def load_args_0_if_it_is_a_yaml(args):
+    if not isinstance(args[0], str):
+        return args
+    path = args[0]
+    _, ext = os.path.splitext(path)
+    if ext in (".json", ".yaml", ".yml"):
+        dic = load_json_or_yaml(path)
+    return (dic, args[1:])
+
+
 class ECMWFApi(FileSource):
     def __init__(self, *args, **kwargs):
         super().__init__()
+
+        args = load_args_0_if_it_is_a_yaml(args)
 
         request = {}
         for a in args:
