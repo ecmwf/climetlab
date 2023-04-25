@@ -239,8 +239,5 @@ class Constants(FieldSet):
             self.maker.shape,
         )
 
-    def mutate(self):
-        return self
-
 
 source = Constants
