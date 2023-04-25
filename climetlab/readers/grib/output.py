@@ -8,6 +8,7 @@
 #
 
 import logging
+import re
 
 from climetlab.decorators import alias_argument, normalize
 from climetlab.utils.humanize import list_to_human
@@ -19,9 +20,30 @@ LOG = logging.getLogger(__name__)
 ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
 
 
+class Combined:
+    def __init__(self, handle, metadata):
+        self.handle = handle
+        self.metadata = metadata
+
+    def __contains__(self, key):
+        raise NotImplementedError()
+
+    def __getitem__(self, key):
+        if key in self.metadata:
+            return self.metadata[key]
+        return self.handle.get(key)
+
+
 class GribOutput:
-    def __init__(self, filename, template=None, **kwargs):
-        self.f = open(filename, "wb")
+    def __init__(self, filename, split_output=False, template=None, **kwargs):
+        self._files = {}
+        self.filename = filename
+
+        if split_output:
+            self.split_output = re.findall(r"\{(.*?)\}", self.filename)
+        else:
+            self.split_output = None
+
         self.template = template
         self._bbox = {}
         self.kwargs = kwargs
@@ -35,7 +57,25 @@ class GribOutput:
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
-    def write(self, values, metadata={}, template=None, **kwarg):
+    def f(self, handle):
+        if self.split_output:
+            path = self.filename.format(**{k: handle.get(k) for k in self.split_output})
+        else:
+            path = self.filename
+
+        if path not in self._files:
+            self._files[path] = open(path, "wb")
+        return self._files[path]
+
+    def write(
+        self,
+        values,
+        check_nans=False,
+        missing_value=1e36,
+        metadata={},
+        template=None,
+        **kwarg,
+    ):
         # Make a copy as we may modify it
         md = self._normalize_kwargs_names(**self.kwargs)
         md.update(self._normalize_kwargs_names(**metadata))
@@ -51,11 +91,21 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
+        self.update_metadata(handle, metadata)
+
         other = {}
 
         for k, v in list(metadata.items()):
             if not isinstance(v, (int, float, str)):
                 other[k] = metadata.pop(k)
+
+        if check_nans:
+            import numpy as np
+
+            if np.isnan(values).any():
+                missing_value = np.finfo(values.dtype).max
+                values = np.nan_to_num(values, nan=missing_value)
+                metadata["bitmapPresent"] = 1
 
         LOG.debug("GribOutput.metadata %s", metadata)
         LOG.debug("GribOutput.metadata %s", other)
@@ -66,7 +116,7 @@ class GribOutput:
             handle.set(k, v)
 
         handle.set_values(values)
-        handle.write(self.f)
+        handle.write(self.f(handle))
 
     def close(self):
         self.f.close()
@@ -76,6 +126,13 @@ class GribOutput:
 
     def __exit__(self, exc_type, exc_value, trace):
         self.close()
+
+    def update_metadata(self, handle, metadata):
+        # TODO: revisit that logic
+        combined = Combined(handle, metadata)
+        if "step" in metadata:
+            if combined["type"] == "an":
+                metadata["type"] = "fc"
 
     def handle_from_metadata(self, values, metadata):
         from .codes import CodesHandle  # Lazy loading of eccodes
@@ -101,10 +158,6 @@ class GribOutput:
 
         if "number" in metadata:
             compulsary += ("numberOfForecastsInEnsemble",)
-
-        if "type" not in metadata:
-            if "step" in metadata:
-                metadata["type"] = "fc"
 
         if "levelist" in metadata:
             metadata.setdefault("levtype", "pl")

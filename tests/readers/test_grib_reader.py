@@ -15,7 +15,7 @@ import os
 import pytest
 
 from climetlab import load_source, plot_map
-from climetlab.testing import climetlab_file
+from climetlab.testing import NO_CDS, climetlab_file
 
 
 def test_plot():
@@ -38,9 +38,8 @@ def test_sel():
 
 @pytest.mark.long_test
 # @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_multi():
-    if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-        pytest.skip("No ~/.cdsapirc")
     s1 = load_source(
         "cds",
         "reanalysis-era5-single-levels",
@@ -68,7 +67,7 @@ def test_multi():
 
 def test_dummy_grib():
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="grib",
         paramId=[129, 130],
         date=[19900101, 19900102],
@@ -87,7 +86,7 @@ def test_datetime():
     ], s.to_datetime_list()
 
     s = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="grib",
         paramId=[129, 130],
         date=[19900101, 19900102],

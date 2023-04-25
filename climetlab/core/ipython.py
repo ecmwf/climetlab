@@ -42,15 +42,19 @@ def guess_which_ipython():
     if ipython_active.ipython_dir == "/deepnote-config/ipython":
         return ("deepnote", None)
 
-    if ipython_active.ipython_dir == "/home/jovyan/.ipython":
-        return ("jupyter-lab", None)
-
     if "google.colab" in repr(ipython_active.inspector):
         return ("colab", None)
 
     if "IPython.terminal" in repr(ipython_active.parent):
         return ("ipython", None)
 
+    if ipython_active.__class__.__name__ == "ZMQInteractiveShell":
+        return ("jupyter-lab", None)
+
+    if isinstance(
+        ipython_active.python_dir, str
+    ) and ipython_active.python_dir.endswith(".ipython"):
+        return ("jupyter-lab", None)
     return ("unknown", None)
 
 

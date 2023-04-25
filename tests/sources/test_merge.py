@@ -47,7 +47,7 @@ class Merger_obj:
 @pytest.mark.parametrize("custom_merger", (merger_func, Merger_obj()))
 def test_nc_merge_custom(custom_merger):
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],
@@ -55,7 +55,7 @@ def test_nc_merge_custom(custom_merger):
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["c", "d"],
@@ -76,7 +76,7 @@ def test_nc_merge_custom(custom_merger):
 
 def test_nc_merge_var():
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],
@@ -84,7 +84,7 @@ def test_nc_merge_var():
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["c", "d"],
@@ -104,7 +104,7 @@ def test_nc_merge_var():
 
 def _merge_var_different_coords(kind1, kind2):
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind=kind1,
         dims=["lat", "lon"],
         variables=["a", "b"],
@@ -112,7 +112,7 @@ def _merge_var_different_coords(kind1, kind2):
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind=kind2,
         dims=["lat", "time"],
         variables=["c", "d"],
@@ -143,7 +143,7 @@ def test_grib_nc_merge_var_different_coords():
 
 def _concat_var_different_coords_1(kind1, kind2):
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind=kind1,
         variables=["a"],
         dims=["lat", "lon", "time"],
@@ -152,7 +152,7 @@ def _concat_var_different_coords_1(kind1, kind2):
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind=kind2,
         variables=["a"],
         dims=["lat", "lon", "time"],
@@ -161,7 +161,6 @@ def _concat_var_different_coords_1(kind1, kind2):
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    # print(target)
 
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
     ds.graph()
@@ -178,7 +177,7 @@ def test_nc_concat_var_different_coords_1():
 
 def test_nc_concat_var_different_coords_2():
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon", "time"],
@@ -187,7 +186,7 @@ def test_nc_concat_var_different_coords_2():
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         variables=["a"],
         dims=["lat", "lon", "time"],
@@ -196,7 +195,6 @@ def test_nc_concat_var_different_coords_2():
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    # print(target)
 
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
     ds.graph()
@@ -207,7 +205,7 @@ def test_nc_concat_var_different_coords_2():
 
 def test_nc_wrong_concat_var():
     s1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "time"],
         variables=["a", "b"],
@@ -216,7 +214,7 @@ def test_nc_wrong_concat_var():
     ds1 = s1.to_xarray()
 
     s2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "time"],
         variables=["a", "b"],
@@ -225,7 +223,6 @@ def test_nc_wrong_concat_var():
     ds2 = s2.to_xarray()
 
     target = xr.concat([ds1, ds2], dim="time")
-    print(target)
     ds = load_source("multi", [s1, s2], merger="concat(concat_dim=time)")
 
     ds.graph()
@@ -236,28 +233,28 @@ def test_nc_wrong_concat_var():
 
 def get_hierarchy():
     a1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "forecast_time"],
         variables=["a"],
         coord_values=dict(forecast_time=[1, 3]),
     )
     a2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "forecast_time"],
         variables=["a"],
         coord_values=dict(forecast_time=[2, 4]),
     )
     b1 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "forecast_time"],
         variables=["b"],
         coord_values=dict(forecast_time=[1, 3]),
     )
     b2 = load_source(
-        "dummy-source",
+        "climetlab-testing",
         kind="netcdf",
         dims=["lat", "lon", "forecast_time"],
         variables=["b"],
@@ -307,18 +304,21 @@ def test_nc_merge_concat_var():
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_merge_pangeo_1():
     _merge_pangeo(inner_merger="concat(concat_dim=time)")
 
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_merge_pangeo_2():
     _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
 
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_merge_pangeo_3():
     def preprocess(ds):

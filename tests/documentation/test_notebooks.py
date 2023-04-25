@@ -24,10 +24,6 @@ EXAMPLES = climetlab_file("docs", "examples")
 
 SKIP = (
     "13-icoads.ipynb",
-    # disable testing documentation because external download is failing
-    # https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/csv/ibtracs.SP.list.v04r00.csv
-    # TODO: test separately the documentation.
-    "02-source-url.ipynb",
     "03-source-cds.ipynb",
     "04-source-mars.ipynb",
     "05-source-open-data.ipynb",
@@ -76,7 +72,7 @@ def notebooks_list():
     return sorted(notebooks)
 
 
-@pytest.mark.notebook
+@pytest.mark.documentation
 @pytest.mark.skipif(
     MISSING("nbformat", "nbconvert", "ipykernel"),
     reason="python package nbformat not installed",

@@ -136,6 +136,19 @@ class SourceMaker:
     def __call__(self, name, *args, **kwargs):
         loader = SourceLoader()
 
+        if ("." in name or "/" in name) and os.path.exists(name):
+            raise ValueError(
+                (
+                    f'"{name}" is not a valid source name, but the file exists. '
+                    'Did you mean load_source("file", "{name}") ?'
+                )
+            )
+
+        if name.startswith("http://") or name.startswith("https://"):
+            raise ValueError(
+                f'"{name}" is not a valid source name. Did you mean load_source("url", "{name}") ?'
+            )
+
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 
         if os.environ.get("CLIMETLAB_TESTING_ENABLE_MOCKUP_SOURCE", False):

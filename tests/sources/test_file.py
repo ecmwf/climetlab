@@ -23,7 +23,6 @@ from climetlab.testing import climetlab_file
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.long_test
 def test_file_source_grib():
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
     assert len(s) == 2

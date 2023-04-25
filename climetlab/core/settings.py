@@ -56,7 +56,7 @@ _ = Setting
 SETTINGS_AND_HELP = {
     "cache-directory": _(
         os.path.join(tempfile.gettempdir(), "climetlab-%s" % (getpass.getuser(),)),
-        """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
+        """Directory of where the downloaded files are cached, with ``${USER}`` is the user id.
         See :doc:`/guide/caching` for more information.""",
     ),
     "styles-directories": _(

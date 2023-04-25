@@ -24,6 +24,7 @@ def only_csv(path):
 
 
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_1():
     ds = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
 
@@ -32,6 +33,7 @@ def test_zenodo_1():
 
 
 @pytest.mark.external_download
+@pytest.mark.download
 @pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_zenodo_2():
     ds = cml.load_source(
@@ -44,8 +46,9 @@ def test_zenodo_2():
     ds = ds.to_tfdataset()
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_3():
     ds = cml.load_source(
         "zenodo",
@@ -57,8 +60,9 @@ def test_zenodo_3():
     ds = ds.to_pandas()
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_error_1():
     with pytest.raises(ValueError, match=r"No .*"):
         cml.load_source(
@@ -67,8 +71,9 @@ def test_zenodo_error_1():
         )
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_error_2():
     with pytest.raises(ValueError, match=r"Invalid zenodo key.*"):
         cml.load_source(
@@ -78,8 +83,9 @@ def test_zenodo_error_2():
         )
 
 
-@pytest.mark.skipif(True, reason="Zenodo disabled")
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_read_nc():
     def file_filter(path):
         return path.endswith("analysis_2t_2013-01-02.nc")
@@ -95,7 +101,9 @@ def test_zenodo_read_nc():
     assert "t2m" in list(ds.keys())
 
 
+@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_list_content():
     ds = cml.load_source("zenodo", record_id="3403963", list_only=True)
@@ -110,6 +118,7 @@ def test_zenodo_read_nc_list_content():
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
+@pytest.mark.download
 def test_zenodo_read_nc_partial():
     ds = cml.load_source(
         "zenodo",
@@ -122,28 +131,12 @@ def test_zenodo_read_nc_partial():
 
 @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
 @pytest.mark.external_download
-@pytest.mark.skipif(True, reason="Test not yet implemented")
+@pytest.mark.download
+# @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_read_nc_partial_regexpr():
     ds = cml.load_source("zenodo", record_id="3403963", zenodo_file_filter="2000_.*.nc")
     ds = ds.to_xarray()
     assert "t_min" in list(ds.keys())
-
-
-# def test_zenodo_merge():
-#     an = cml.load_source(
-#         "zenodo",
-#         record_id="3403963",
-#         zenodo_file_filter="analysis/2000_.*.nc",
-#         merger=an_merger,
-#     )
-#     fc = cml.load_source(
-#         "zenodo",
-#         record_id="3403963",
-#         zenodo_file_filter="forecast/2000_.*.nc",
-#         merger=fc_merger,
-#     )
-#     ds = load_source("multi", an, fc, merger=an_with_fc)
-#     ds.to_xarray()
 
 
 def load_yaml(name, *args, **kwargs):
@@ -151,7 +144,7 @@ def load_yaml(name, *args, **kwargs):
     return dataset_from_yaml(full, *args, **kwargs)
 
 
-@pytest.mark.skipif(True, reason="Test not yet implemented")
+# @pytest.mark.skipif(True, reason="Test not yet implemented")
 def test_zenodo_from_yaml_1():
     s = load_yaml("zedono-dataset-1.yaml")
     s.to_pandas()

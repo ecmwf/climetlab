@@ -9,6 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import pytest
+
 import climetlab as cml
 from climetlab.testing import climetlab_file
 
@@ -18,16 +20,17 @@ i.e. for bounding box, style, etc.
 """
 
 
-# def test_numpy_grib():
-#     s = cml.load_source("file", "docs/examples/test.grib")
-#     x = s.to_xarray()
-#     cml.plot_map(x.msl.values, metadata=s[1])
+def test_numpy_grib():
+    s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
+    x = s.to_xarray()
+    cml.plot_map(x.msl.values, metadata=s[1])
 
 
-# def test_numpy_netcdf():
-#     s = cml.load_source("file", "docs/examples/test.nc")
-#     x = s.to_xarray()
-#     cml.plot_map(x.msl.values, metadata=s[1])
+@pytest.mark.skip("Not implemented yet")
+def test_numpy_netcdf():
+    s = cml.load_source("file", climetlab_file("docs/examples/test.nc"))
+    x = s.to_xarray()
+    cml.plot_map(x.msl.values, metadata=s[1])
 
 
 def test_numpy_xarray():

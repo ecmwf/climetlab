@@ -15,6 +15,7 @@ import mimetypes
 from climetlab.testing import check_unsafe_archives
 
 
+# @pytest.mark.download # not marked as download to make sure we run this every time
 def test_tar_safety():
     check_unsafe_archives(".tar")
 

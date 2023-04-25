@@ -14,19 +14,10 @@ import pytest
 import yaml
 
 from climetlab import settings
-from climetlab.scripts.main import CliMetLabApp
+from climetlab.core.temporary import temp_env
+from climetlab.scripts.main import CliMetLabApp, command_list
 
 LOG = logging.getLogger(__name__)
-
-
-def command_list():
-    return [
-        func[3:]
-        for func in dir(CliMetLabApp)
-        if callable(getattr(CliMetLabApp, func))
-        and func.startswith("do_")
-        and getattr(CliMetLabApp, func).__module__.startswith("climetlab.")
-    ]
 
 
 @pytest.mark.parametrize("command", command_list())
@@ -79,10 +70,11 @@ def settings_dict():
 
 
 def test_cli_setting_2(capsys, settings_dict):
-    app = CliMetLabApp()
-    app.onecmd("settings")
-    out, err = capsys.readouterr()
-    assert err == "", err
+    with temp_env(NO_COLOR=1):
+        app = CliMetLabApp()
+        app.onecmd("settings")
+        out, err = capsys.readouterr()
+        assert err == "", err
 
     lines = out.splitlines(True)
     assert lines

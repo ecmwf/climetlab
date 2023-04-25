@@ -19,10 +19,7 @@ from climetlab.testing import MISSING, climetlab_file
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(
-    MISSING("metview"),
-    reason="Metview not installed",
-)
+@pytest.mark.skipif(MISSING("metview"), reason="Metview not installed")
 def test_metview_grib():
     s = cml.load_source("file", climetlab_file("docs/examples/test.grib"))
     fs = s.to_metview()
@@ -30,10 +27,7 @@ def test_metview_grib():
     assert fs.url() == s.path
 
 
-@pytest.mark.skipif(
-    MISSING("metview"),
-    reason="Metview not installed",
-)
+@pytest.mark.skipif(MISSING("metview"), reason="Metview not installed")
 def test_metview_netcdf():
     s = cml.load_source("file", climetlab_file("docs/examples/test.nc"))
     fs = s.to_metview()
@@ -41,13 +35,10 @@ def test_metview_netcdf():
     assert fs.url() == s.path
 
 
-@pytest.mark.skipif(
-    MISSING("metview"),
-    reason="Metview not installed",
-)
+@pytest.mark.skipif(MISSING("metview"), reason="Metview not installed")
 def test_metview_csv():
     s = cml.load_source(
-        "dummy-source",
+        "climetlab-testing",
         "csv",
         headers=["a", "b", "c"],
         lines=[

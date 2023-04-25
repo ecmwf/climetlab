@@ -10,6 +10,10 @@
 #
 
 
+import pytest
+
+
+@pytest.mark.documentation
 def test_generate_cmdline_help():
     from climetlab.sphinxext.generate_cmdline_help import execute
 

@@ -210,7 +210,7 @@ GENERATORS = {
 }
 
 
-class DummySource(FileSource):
+class ClimetlabTestingSource(FileSource):
     def __init__(self, kind, request=None, force=False, extension=None, **kwargs):
         super().__init__()
 
@@ -234,4 +234,4 @@ class DummySource(FileSource):
         )
 
 
-source = DummySource
+source = ClimetlabTestingSource
