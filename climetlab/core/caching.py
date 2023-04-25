@@ -236,6 +236,8 @@ class Cache(threading.Thread):
                 ).fetchone()[0]
             if latest is None:
                 latest = datetime.datetime.now()
+            if isinstance(latest, str):
+                latest = datetime.datetime.fromisoformat(latest)
             return latest
 
     def _purge_cache(self, matcher=None):
