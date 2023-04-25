@@ -155,37 +155,9 @@ class Order(OrderBase):
 
 
 class Index(Source):
-    _init_args = None
-    _init_kwargs = None
-    _init_order_by = None
-
     @classmethod
     def new_mask_index(self, *args, **kwargs):
         return MaskIndex(*args, **kwargs)
-
-    def __init__(self, *args, order_by=None, **kwargs):
-        if order_by is None:
-            order_by = {}
-        self._init_args = args
-        self._init_kwargs = kwargs
-        self._init_order_by = order_by
-        self._coords = {}
-
-    def mutate(self):
-        # TODO: Not sure if this
-        if not self._init_args:
-            self._init_args = []
-        if not self._init_kwargs:
-            self._init_kwargs = {}
-        if not self._init_order_by:
-            self._init_order_by = {}
-
-        source = self
-        source = source.sel(*self._init_args, **self._init_kwargs)
-        source = source.order_by(*self._init_args, **self._init_kwargs)
-        if self._init_order_by is not None:
-            source = source.order_by(self._init_order_by)
-        return source
 
     @abstractmethod
     def __len__(self):
@@ -285,11 +257,6 @@ class MaskIndex(Index):
     def __init__(self, index, indices):
         self.index = index
         self.indices = list(indices)
-        super().__init__(
-            *self.index._init_args,
-            order_by=self.index._init_order_by,
-            **self.index._init_kwargs,
-        )
 
     def _getitem(self, n):
         n = self.indices[n]
