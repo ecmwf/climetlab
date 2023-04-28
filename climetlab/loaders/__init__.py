@@ -85,7 +85,12 @@ class Config:
                 lst = []
                 for i, bit in enumerate(re.split(r"\$(\w+)", x)):
                     if i % 2:
-                        lst.append(vars[bit])
+                        if bit.upper() == bit:
+                            # substitute by the var env if $UPPERCASE
+                            lst.append(os.environ[bit])
+                        else:
+                            # substitute by the value in the 'vars' dict
+                            lst.append(vars[bit])
                     else:
                         lst.append(bit)
 
