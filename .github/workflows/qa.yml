@@ -19,6 +19,8 @@ on:
 
   pull_request:
 
+  push:
+
 jobs:
   quality:
     name: Code QA
