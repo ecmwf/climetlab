@@ -23,6 +23,9 @@ on:
   push:
     branches:
       - "*"
+      - "feature/*"
+      - "hotfix/*"
+      - "release/*"
 
   repository_dispatch:
     types:
