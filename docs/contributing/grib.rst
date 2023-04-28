@@ -57,62 +57,78 @@ How to build a index for **one** given URL containing a GRIB file ?
 
 .. code-block:: bash
 
-    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb" > large_grib_1.index
+    export URL="https://get.ecmwf.int/repository/test-data/climetlab/test-data"
 
-Then upload the file `large_grib_1.index` and make sure it is available at:
-"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
+    climetlab index_url "$URL/input/indexed-urls/large_grib_1.grb" > large_grib_1.index
+
+Then upload the index file `large_grib_1.index` and make sure it is available at: "$URL/input/indexed-urls/large_grib_1.index"
 
 This allows accessing the data with 
 
 .. code-block:: python
 
+    from climetlab.testing import CML_TEST_DATA_URL as URL
+
     cml.load_source("indexed-url",
-                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb"
+                    URL + "/input/indexed-urls/large_grib_1.grb",
     ) 
 
 
-How to build indexes for a set of URLs containing GRIB files ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to build indexes for **a set of URLs** containing GRIB files (one index per url)?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Or, if you do the same for another URL "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.grb".
 
 .. code-block:: bash
 
-    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb" > large_grib_1.index
-    climetlab index_url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.grb" > large_grib_2.index
+    export URL="https://get.ecmwf.int/repository/test-data/climetlab/test-data"
+
+    climetlab index_url "$URL/indexed-urls/large_grib_1.grb" > large_grib_1.index
+    climetlab index_url "$URL/indexed-urls/large_grib_2.grb" > large_grib_2.index
 
 Then upload the files `large_grib_1.index` and `large_grib_2.index` and make sure they are available on the server at:
-"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
-"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.index"
+"$URL/indexed-urls/large_grib_1.index"
+"$URL/indexed-urls/large_grib_2.index"
 
 This allows accessing the data with 
 
 .. code-block:: python
 
-    cml.load_source("indexed-urls",
-                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_{n}.grb",
+    from climetlab.testing import CML_TEST_DATA_URL as BASEURL
+
+    ds = cml.load_source("indexed-urls",
+                    BASEURL + "/input/indexed-urls/large_grib_{n}.grb",
                     {"n": [1, 2]},
     )
+    for field in ds.sel(param='q', date=['19970102', '19970103'], time='1200'):
+        print(field, field.to_numpy().shape())
+
+    GribField(q,700,19970102,1200,0,0) (125, 93)
+    GribField(q,700,19970103,1200,0,0) (125, 93)
 
 
-How to build a index for a set of URLs containing GRIB files ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to build a unique index for a set of URLs containing GRIB files (one index for all URLs)?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. todo::
     Not implemented yet.
 
 .. code-block:: bash
 
-    climetlab index_urls --base-url "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls" large_grib_1.grb large_grib_2.grb > global_index.index
+    export URL="https://get.ecmwf.int/repository/test-data/climetlab/test-data"
+    climetlab index_urls --baseurl "$URL/input/indexed-urls" large_grib_1.grb large_grib_2.grb > global_index.index
 
 Then upload the file `global_index.index` and make sure it is available at:
-"https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/global_index.index"
+"$URL/input/indexed-urls/global_index.index"
 
-This allows others to access the data with :
+This allows accessing the data with :
 
-.. code-block:: bash
+.. code-block:: python
+
+    from climetlab.testing import CML_TEST_DATA_URL as BASEURL
+
     cml.load_source("indexed-urls",
-                    "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/global_index.index",
+                    BASEURL + "/input/indexed-urls/global_index",
                     {"n": [1, 2]},
     )
 

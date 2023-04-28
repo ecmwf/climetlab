@@ -21,6 +21,8 @@ from climetlab.utils import download_and_cache, module_installed
 
 LOG = logging.getLogger(__name__)
 
+CML_TEST_DATA_URL = "https://get.ecmwf.int/repository/test-data/climetlab/test-data"
+
 
 class OfflineError(Exception):
     pass
