@@ -17,6 +17,9 @@ from .tools import parse_args
 LOG = logging.getLogger(__name__)
 
 
+default_keys = ["param", "time", "date", "step", "levelist"]
+
+
 class AvailabilityCmd:
     @parse_args(
         source=(
@@ -27,9 +30,25 @@ class AvailabilityCmd:
             ),
         ),
         stdout=dict(action="store_true", help="Output to stdout (no file)."),
+        yaml=dict(action="store_true", help="Output yaml format."),
+        keys=(
+            "--keys",
+            dict(
+                type=str,
+                help=f"Keys to use in availability default is ({','.join(default_keys)}).",
+                nargs="+",
+            ),
+        ),
     )
     def do_availability(self, args):
         """Create json availability file."""
+
+        keys = args.keys
+        if keys == []:
+            keys = default_keys
+
+        if keys == ["*"]:
+            keys = None
 
         self.avail = None
 
@@ -37,27 +56,34 @@ class AvailabilityCmd:
 
         if not os.path.exists(path):
             print(f"{path} does not exists.")
+            return
 
         if os.path.isdir(path):
             source = availability_of_directory(path)
         else:
             source = availability_of_file(path)
 
-        if args.stdout:
-            print(source.availability.tree())
+        availability = source._custom_availability(keys=keys)
+
+        if args.yaml:
+            print(availability.to_yaml())
             return
 
-        self.write(source.availability, source.availability_path)
+        if args.stdout:
+            print(availability.tree())
+            return
 
-    def write(self, avail, output):
-        if os.path.exists(output):
-            i = 1
-            while os.path.exists(f"{output}.{i}"):
-                i += 1
-            output = f"{output}.{i}"
-            print(f"File already exists, writing to {output}")
+        # self.write(availability, source.availability_path)
 
-        avail.to_pickle(output)
+    # def write(self, avail, output):
+    #    if os.path.exists(output):
+    #        i = 1
+    #        while os.path.exists(f"{output}.{i}"):
+    #            i += 1
+    #        output = f"{output}.{i}"
+    #        print(f"File already exists, writing to {output}")
+
+    #    avail.to_pickle(output)
 
 
 def availability_of_directory(dirpath):

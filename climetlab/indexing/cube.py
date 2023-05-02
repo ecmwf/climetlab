@@ -76,10 +76,19 @@ class FieldCube:
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         if math.prod(self.user_shape) != len(self.source):
+            details = []
+            for k, v in self.user_coords.items():
+                details += f"{k=}, {len(v)}, {v}"
+            for i, f in enumerate(self.source):
+                details.append(f"{i}={f}")
+                if i > 30:
+                    details.append("...")
+                    break
             raise ValueError(
                 f"Shape {self.user_shape} [{math.prod(self.user_shape):,}]"
                 f" does not match number of fields {len(self.source):,}. "
                 f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
+                "\n".join(details)
             )
 
     @property
