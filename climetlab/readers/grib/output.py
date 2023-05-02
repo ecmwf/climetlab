@@ -123,7 +123,8 @@ class GribOutput:
         handle.write(self.f(handle))
 
     def close(self):
-        self.f.close()
+        for f in self._files.values():
+            f.close()
 
     def __enter__(self):
         return self

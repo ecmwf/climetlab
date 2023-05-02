@@ -16,29 +16,20 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  checks:
-    strategy:
-      fail-fast: true
-      matrix:
-        platform: ["ubuntu-latest"]
-        python-version: ["3.8"]
+  coverage:
 
-    name: Python ${{ matrix.python-version }} on ${{ matrix.platform }}
-    runs-on: ${{ matrix.platform }}
-
+    runs-on: "ubuntu-latest"
     steps:
     - uses: actions/checkout@v3
-
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: "3.10"
 
     - name: Tokens
       shell: python
       env:
         ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
         CDSAPIRC: ${{ secrets.CDSAPIRC }}
-
       run: |
         import os
         for n in ('ECMWFAPIRC', 'CDSAPIRC'):
@@ -48,26 +39,18 @@ jobs:
                     print(os.environ[n], file=f)
 
     - name: Install climetlab
-      run: |
-        pip install -e .[interactive,zarr,tensorflow]
-        pip freeze
+      run: pip install -e .[interactive,zarr,tensorflow]
 
     - name: Install test tools
-      run: |
-        pip install pytest pytest-cov
-        pip install nbformat nbconvert ipykernel
-        pip freeze
+      run: pip install pytest pytest-cov nbformat nbconvert ipykernel
 
     - name: Check imports
-      run: |
-        pytest tests/test_imports.py
       env:
         SKIP_TEST_IMPORTS: 0
+      run: pytest tests/test_imports.py
 
     - name: Tests with code coverage
-      run: |
-        # -E flag is defined in conftest.py
-        pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
+      run: pytest --cov=climetlab --cov-report=html --cov-report=xml -E release
 
     - name: Codecov Upload
       uses: codecov/codecov-action@v2
