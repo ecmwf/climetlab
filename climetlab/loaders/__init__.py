@@ -42,6 +42,7 @@ class Config:
         self.chunking = self.output.get("chunking", {})
         self.dtype = self.output.get("dtype", "float32")
 
+        self.reading_chunks = config.get("reading_chunks")
         self.flatten_values = self.output.get("flatten_values", False)
         self.grid_points_first = self.output.get("grid_points_first", False)
         if self.grid_points_first and not self.flatten_values:
