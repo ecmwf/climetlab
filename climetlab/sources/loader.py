@@ -68,12 +68,28 @@ ACTIONS = {
 }
 
 
+def instanciate_values(o, kwargs):
+    if isinstance(o, dict):
+        return {k: instanciate_values(v, kwargs) for k, v in o.items()}
+    if isinstance(o, list):
+        return [instanciate_values(v, kwargs) for v in o]
+    if isinstance(o, tuple):
+        return tuple([instanciate_values(v, kwargs) for v in o])
+    if isinstance(o, str) and o.startswith("$"):
+        return kwargs[o[1:]]
+    return o
+
+
 class Loader(Source):
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         from climetlab.utils import load_json_or_yaml
 
         if isinstance(config, str):
             config = load_json_or_yaml(config)
+            if "input" in config:
+                config = config["input"]
+                config = instanciate_values(config, kwargs)
+
         self.config = config
 
     def mutate(self):
