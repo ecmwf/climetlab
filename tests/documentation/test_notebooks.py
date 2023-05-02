@@ -23,31 +23,28 @@ from climetlab.testing import IN_GITHUB, MISSING, climetlab_file
 EXAMPLES = climetlab_file("docs", "examples")
 
 SKIP = (
-    "13-icoads.ipynb",
-    "03-source-cds.ipynb",
-    "04-source-mars.ipynb",
     "05-source-open-data.ipynb",
-    "06-era5-temperature.ipynb",
-    "07-high-lows.ipynb",
-    "08-bufr-data.ipynb",
-    "09-mars-odb.ipynb",
-    "10-meteonet.ipynb",
-    "11-weatherbench.ipynb",
-    "12-hurricane-database.ipynb",
-    "13-icoads.ipynb",
-    "14-external-plugins.ipynb",
-    "15-more-plotting.ipynb",
-    "16-gruan.ipynb",
-    "17-interactive-maps.ipynb",
-    "50-working-with-gribs.ipynb",
-    "99-availability.ipynb",
+    # "06-era5-temperature.ipynb",
+    # "07-high-lows.ipynb",
+    # "08-bufr-data.ipynb",
+    "09-mars-odb.ipynb",  # https://github.com/ecmwf/pyodc/pull/9
+    # "10-meteonet.ipynb",
+    # "11-weatherbench.ipynb",
+    # "12-hurricane-database.ipynb",
+    # "13-icoads.ipynb",
+    # "14-external-plugins.ipynb",
+    # "15-more-plotting.ipynb",
+    # "16-gruan.ipynb",
+    # "17-interactive-maps.ipynb",
+    # "99-availability.ipynb",
 )
 
 MARS = (
     "04-source-mars.ipynb",
-    "08-mars-odb.ipynb",
+    "09-mars-odb.ipynb",  # https://github.com/ecmwf/pyodc/pull/9
     "11-weatherbench.ipynb",
     "13-icoads.ipynb",
+    "50-working-with-gribs.ipynb",
 )
 
 CDS = (
