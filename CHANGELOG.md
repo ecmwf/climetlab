@@ -4,7 +4,7 @@ All notable changes to CliMetLab will be documented in this file.
 
 Notice that CliMetLab is still alpha. Things will break, public API will change.
 
-## [Unreleased]
+## [0.14.30]
 
 ## [0.11.1] - 2022-04-11
 
