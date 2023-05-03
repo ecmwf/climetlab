@@ -8,6 +8,7 @@
 #
 
 import logging
+import os
 from collections import defaultdict
 
 from climetlab.core.data import data_entries, get_data_entry
@@ -106,7 +107,7 @@ class Plot:
         return self.backend.save(path)
 
 
-def files_to_movie(files, path, fps):
+def files_to_apng(files, path, fps):
     import imageio
     from numpngw import write_apng
 
@@ -115,6 +116,53 @@ def files_to_movie(files, path, fps):
     write_apng(path, frames, delay=int(1000.0 / fps + 0.5))
 
     return path
+
+
+def files_to_xxx(files, path, fps):
+    try:
+        import cv2
+    except ImportError:
+        raise RuntimeError(
+            "OpenCV is required to save movies (pip install opencv-python)"
+        )
+
+    frame = cv2.imread(files[0])
+    height, width, layers = frame.shape
+
+    _, ext = os.path.splitext(path)
+
+    fourcc = {
+        ".avi": cv2.VideoWriter_fourcc(*"DIVX"),
+        ".mp4": cv2.VideoWriter_fourcc(*"mp4v"),
+    }[ext]
+
+    video = cv2.VideoWriter(path, fourcc, fps, (width, height))
+
+    for image in files:
+        video.write(cv2.imread(image))
+
+    cv2.destroyAllWindows()
+    video.release()
+
+
+CODECS = {
+    ".png": files_to_apng,
+    ".avi": files_to_xxx,
+    ".mp4": files_to_xxx,
+}
+
+
+def unsupported(files, path, fps):
+    raise NotImplementedError(
+        f"Unsupported format for '{path}'."
+        f" Supported formats are {list(CODECS.keys())}"
+    )
+
+
+def files_to_movie(files, path, fps):
+    _, ext = os.path.splitext(path)
+
+    return CODECS.get(ext, unsupported)(files, path, fps)
 
 
 class MapPlot(Plot):
