@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 import datetime
-import fnmatch
 import logging
 import os
 import sys
@@ -159,15 +158,13 @@ class GribIndexingDirectoryParserIterator:
         directory,
         db_path,
         relative_paths,
-        ignore=None,
+        extensions=[".grib", ".grib1", ".grib2"],
         followlinks=True,
         verbose=False,
         with_statistics=True,
     ):
         self.db_path = db_path
-        if ignore is None:
-            ignore = []
-        self.ignore = ignore
+        self.extensions = set(extensions)
         self.directory = directory
         self.relative_paths = relative_paths
         self.followlinks = followlinks
@@ -275,17 +272,12 @@ class GribIndexingDirectoryParserIterator:
         assert os.path.exists(self.directory), f"{self.directory} does not exist"
         assert os.path.isdir(self.directory), f"{self.directory} is not a directory"
 
-        def _ignore(path):
-            for ignore in self.ignore:
-                if fnmatch.fnmatch(os.path.basename(path), ignore):
-                    return True
-            return False
-
         tasks = []
         for root, _, files in os.walk(self.directory, followlinks=self.followlinks):
             for name in files:
                 path = os.path.join(root, name)
-                if _ignore(path):
+                _, ext = os.path.splitext(path)
+                if ext not in self.extensions:
                     continue
                 tasks.append(path)
         tasks = sorted(tasks)

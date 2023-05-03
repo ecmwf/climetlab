@@ -17,6 +17,7 @@ import pickle
 
 import yaml
 
+from climetlab.utils import load_json_or_yaml
 from climetlab.utils.factorise import Tree, factorise
 
 from .humanize import dict_to_human, list_to_human
@@ -86,6 +87,14 @@ class Availability:
         with open(filename, "rb") as f:
             tree = pickle.load(f)
             return cls(tree)
+
+    def to_yaml(self):
+        return yaml.dump(self._tree)
+
+    @classmethod
+    def from_yaml(cls, filename):
+        dic = load_json_or_yaml(filename)
+        return cls(dic)
 
     @classmethod
     def from_mars_list(cls, tree, intervals=None):

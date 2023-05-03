@@ -42,6 +42,7 @@ class Config:
         self.chunking = self.output.get("chunking", {})
         self.dtype = self.output.get("dtype", "float32")
 
+        self.reading_chunks = config.get("reading_chunks")
         self.flatten_values = self.output.get("flatten_values", False)
         self.grid_points_first = self.output.get("grid_points_first", False)
         if self.grid_points_first and not self.flatten_values:
@@ -85,7 +86,12 @@ class Config:
                 lst = []
                 for i, bit in enumerate(re.split(r"\$(\w+)", x)):
                     if i % 2:
-                        lst.append(vars[bit])
+                        if bit.upper() == bit:
+                            # substitute by the var env if $UPPERCASE
+                            lst.append(os.environ[bit])
+                        else:
+                            # substitute by the value in the 'vars' dict
+                            lst.append(vars[bit])
                     else:
                         lst.append(bit)
 

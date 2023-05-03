@@ -8,7 +8,9 @@
 #
 
 import logging
+import os
 from collections import defaultdict
+from functools import partial
 
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import Image, display
@@ -106,7 +108,7 @@ class Plot:
         return self.backend.save(path)
 
 
-def files_to_movie(files, path, fps):
+def files_to_apng(files, path, fps):
     import imageio
     from numpngw import write_apng
 
@@ -115,6 +117,65 @@ def files_to_movie(files, path, fps):
     write_apng(path, frames, delay=int(1000.0 / fps + 0.5))
 
     return path
+
+
+def files_to_gif(files, path, fps):
+    import imageio
+
+    with imageio.get_writer(path, mode="I", duration=1.0 / fps) as writer:
+        for filename in files:
+            image = imageio.imread(filename)
+            writer.append_data(image)
+
+    return path
+
+
+def files_to_opencv(files, path, fps, cccc):
+    try:
+        import cv2
+    except ImportError:
+        raise RuntimeError(
+            "OpenCV is required to save movies (pip install opencv-python)"
+        )
+
+    frame = cv2.imread(files[0])
+    height, width, _ = frame.shape
+
+    video = cv2.VideoWriter(
+        path,
+        cv2.VideoWriter_fourcc(*cccc),
+        fps,
+        (width, height),
+    )
+
+    for image in files:
+        video.write(cv2.imread(image))
+
+    cv2.destroyAllWindows()
+    video.release()
+
+
+CODECS = {
+    ".gif": files_to_gif,
+    ".png": files_to_apng,
+    ".avi": partial(files_to_opencv, cccc="XVID"),
+    ".mp4": partial(files_to_opencv, cccc="mp4v"),
+    ".wmv": partial(files_to_opencv, cccc="WMV2"),
+    ".mov": partial(files_to_opencv, cccc="mp4v"),
+}
+
+
+def unsupported(files, path, fps):
+    raise NotImplementedError(
+        f"Unsupported format for '{path}'."
+        f" Supported formats are {list(CODECS.keys())}"
+    )
+
+
+def files_to_movie(files, path, fps):
+    _, ext = os.path.splitext(path)
+
+    return CODECS.get(ext, unsupported)(files, path, fps)
 
 
 class MapPlot(Plot):

@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import logging
 import re
 
@@ -83,15 +84,17 @@ class GribOutput:
 
         metadata = md
 
+        compulsary = ("date", ("param", "paramId", "shortName"))
+
         if template is None:
             template = self.template
 
         if template is None:
-            handle = self.handle_from_metadata(values, metadata)
+            handle = self.handle_from_metadata(values, metadata, compulsary)
         else:
             handle = template.handle.clone()
 
-        self.update_metadata(handle, metadata)
+        self.update_metadata(handle, metadata, compulsary)
 
         other = {}
 
@@ -107,8 +110,7 @@ class GribOutput:
                 values = np.nan_to_num(values, nan=missing_value)
                 metadata["bitmapPresent"] = 1
 
-        LOG.debug("GribOutput.metadata %s", metadata)
-        LOG.debug("GribOutput.metadata %s", other)
+        LOG.debug("GribOutput.metadata %s, other %s", metadata, other)
 
         handle.set_multiple(metadata)
 
@@ -128,29 +130,32 @@ class GribOutput:
     def __exit__(self, exc_type, exc_value, trace):
         self.close()
 
-    def update_metadata(self, handle, metadata):
+    def update_metadata(self, handle, metadata, compulsary):
         # TODO: revisit that logic
         combined = Combined(handle, metadata)
+
         if "step" in metadata:
             if combined["type"] == "an":
                 metadata["type"] = "fc"
 
-    def handle_from_metadata(self, values, metadata):
-        from .codes import CodesHandle  # Lazy loading of eccodes
+        if "time" in metadata:  # TODO, use a normalizer
+            try:
+                time = int(metadata["time"])
+                if time < 100:
+                    metadata["time"] = time * 100
+            except ValueError:
+                pass
 
-        if len(values.shape) == 1:
-            sample = self._gg_field(values, metadata)
-        elif len(values.shape) == 2:
-            sample = self._ll_field(values, metadata)
-        else:
-            raise ValueError(
-                f"Invalid shape {values.shape} for GRIB, must be 1 or 2 dimension "
-            )
+        if "time" not in metadata and "date" in metadata:
+            date = metadata["date"]
+            metadata["time"] = date.hour * 100 + date.minute
 
-        compulsary = ("date", ("param", "paramId", "shortName"))
-
-        metadata.setdefault("bitsPerValue", 16)
-        metadata["scanningMode"] = 0
+        if "date" in metadata:
+            if isinstance(metadata["date"], datetime.datetime):
+                date = metadata["date"]
+                metadata["date"] = date.year * 10000 + date.month * 100 + date.day
+            else:
+                metadata["date"] = int(metadata["date"])
 
         if "stream" not in metadata:
             if "number" in metadata:
@@ -170,6 +175,21 @@ class GribOutput:
             except ValueError:
                 metadata["shortName"] = param
 
+    def handle_from_metadata(self, values, metadata, compulsary):
+        from .codes import CodesHandle  # Lazy loading of eccodes
+
+        if len(values.shape) == 1:
+            sample = self._gg_field(values, metadata)
+        elif len(values.shape) == 2:
+            sample = self._ll_field(values, metadata)
+        else:
+            raise ValueError(
+                f"Invalid shape {values.shape} for GRIB, must be 1 or 2 dimension "
+            )
+
+        metadata.setdefault("bitsPerValue", 16)
+        metadata["scanningMode"] = 0
+
         metadata.update(
             ACCUMULATIONS.get(
                 (
@@ -188,22 +208,6 @@ class GribOutput:
                 {},
             )
         )
-
-        if "time" in metadata:  # TODO, use a normalizer
-            try:
-                time = int(metadata["time"])
-                if time < 100:
-                    metadata["time"] = time * 100
-            except ValueError:
-                pass
-
-        if "time" not in metadata and "date" in metadata:
-            date = metadata["date"]
-            metadata["time"] = date.hour * 100 + date.minute
-
-        if "date" in metadata:
-            date = metadata["date"]
-            metadata["date"] = date.year * 10000 + date.month * 100 + date.day
 
         if (
             "class" in metadata
