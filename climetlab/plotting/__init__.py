@@ -10,6 +10,7 @@
 import logging
 import os
 from collections import defaultdict
+from functools import partial
 
 from climetlab.core.data import data_entries, get_data_entry
 from climetlab.core.ipython import Image, display
@@ -118,7 +119,18 @@ def files_to_apng(files, path, fps):
     return path
 
 
-def files_to_xxx(files, path, fps):
+def files_to_gif(files, path, fps):
+    import imageio
+
+    with imageio.get_writer(path, mode="I", duration=1.0 / fps) as writer:
+        for filename in files:
+            image = imageio.imread(filename)
+            writer.append_data(image)
+
+    return path
+
+
+def files_to_opencv(files, path, fps, cccc):
     try:
         import cv2
     except ImportError:
@@ -127,16 +139,14 @@ def files_to_xxx(files, path, fps):
         )
 
     frame = cv2.imread(files[0])
-    height, width, layers = frame.shape
+    height, width, _ = frame.shape
 
-    _, ext = os.path.splitext(path)
-
-    fourcc = {
-        ".avi": cv2.VideoWriter_fourcc(*"DIVX"),
-        ".mp4": cv2.VideoWriter_fourcc(*"mp4v"),
-    }[ext]
-
-    video = cv2.VideoWriter(path, fourcc, fps, (width, height))
+    video = cv2.VideoWriter(
+        path,
+        cv2.VideoWriter_fourcc(*cccc),
+        fps,
+        (width, height),
+    )
 
     for image in files:
         video.write(cv2.imread(image))
@@ -146,9 +156,12 @@ def files_to_xxx(files, path, fps):
 
 
 CODECS = {
+    ".gif": files_to_gif,
     ".png": files_to_apng,
-    ".avi": files_to_xxx,
-    ".mp4": files_to_xxx,
+    ".avi": partial(files_to_opencv, cccc="XVID"),
+    ".mp4": partial(files_to_opencv, cccc="mp4v"),
+    ".wmv": partial(files_to_opencv, cccc="WMV2"),
+    ".mov": partial(files_to_opencv, cccc="mp4v"),
 }
 
 
