@@ -158,7 +158,7 @@ def test_tp():
         path = os.path.join(tmp, "a.grib")
 
         f = cml.new_grib_output(path, date=20010101)
-        f.write(data, param="tp", step=48)
+        f.write(data, param="tp", step=48, edition=1)
         f.close()
 
         ds = cml.load_source("file", path)
@@ -167,7 +167,7 @@ def test_tp():
         assert ds[0].metadata("date") == 20010101
         assert ds[0].metadata("param") == "tp"
         assert ds[0].metadata("levtype") == "sfc"
-        assert ds[0].metadata("edition") == 2
+        assert ds[0].metadata("edition") == 1
         assert ds[0].metadata("step") == 48
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
