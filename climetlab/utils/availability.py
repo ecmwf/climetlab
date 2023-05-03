@@ -16,8 +16,8 @@ import os
 import pickle
 
 import yaml
-from climetlab.utils import load_json_or_yaml
 
+from climetlab.utils import load_json_or_yaml
 from climetlab.utils.factorise import Tree, factorise
 
 from .humanize import dict_to_human, list_to_human

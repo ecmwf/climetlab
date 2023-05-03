@@ -7,9 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
+import datetime
 import logging
 import re
-import datetime
 
 from climetlab.decorators import alias_argument, normalize
 from climetlab.utils.humanize import list_to_human
@@ -84,7 +84,6 @@ class GribOutput:
 
         metadata = md
 
-
         compulsary = ("date", ("param", "paramId", "shortName"))
 
         if template is None:
@@ -111,8 +110,7 @@ class GribOutput:
                 values = np.nan_to_num(values, nan=missing_value)
                 metadata["bitmapPresent"] = 1
 
-        LOG.info("GribOutput.metadata %s", metadata)
-        LOG.info("GribOutput.metadata %s", other)
+        LOG.debug("GribOutput.metadata %s, other %s", metadata, other)
 
         handle.set_multiple(metadata)
 
@@ -139,7 +137,7 @@ class GribOutput:
         if "step" in metadata:
             if combined["type"] == "an":
                 metadata["type"] = "fc"
-                
+
         if "time" in metadata:  # TODO, use a normalizer
             try:
                 time = int(metadata["time"])

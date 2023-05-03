@@ -52,16 +52,17 @@ class FieldSet(FieldSetMixin, Index):
         assert all(isinstance(_, FieldSet) for _ in sources)
         return MultiFieldSet(sources)
 
-    def _custom_availability(self, keys=None, ignore_keys=None, filter_keys=lambda k: True):
+    def _custom_availability(
+        self, keys=None, ignore_keys=None, filter_keys=lambda k: True
+    ):
         def dicts():
             for i in progress_bar(
                 iterable=range(len(self)), desc="Building availability"
             ):
                 if keys is not None:
                     dic = self.get_metadata(i)
-                    dic = {k:str(dic.get(k, '-')) for k in keys}
+                    dic = {k: str(dic.get(k, "-")) for k in keys}
                 else:
-
                     dic = self.get_metadata(i)
 
                     for k in list(dic.keys()):

@@ -126,18 +126,9 @@ class GribCmd:
         if db_path is None:
             db_path = os.path.join(directory, IndexedDirectorySource.DEFAULT_DB_FILE)
 
-        ignore = []
-        ignore.append("climetlab*.db")
-        ignore.append("climetlab*.json")
-        ignore.append("**/climetlab*.db")
-        ignore.append("**/climetlab*.json")
-        ignore.append("*.idx")
-        ignore.append(db_path)
-
         parser = GribIndexingDirectoryParserIterator(
             directory,
             db_path=db_path,
-            ignore=ignore,
             relative_paths=relative_paths,
             followlinks=followlinks,
             with_statistics=True,
