@@ -72,7 +72,7 @@ class Config:
             )
             self.collect_statistics = True
 
-    def iter_loops(self):
+    def _iter_loops(self):
         yield from (
             dict(zip(self.loop.keys(), items))
             for items in itertools.product(
@@ -489,7 +489,7 @@ def load(loader, config, append=False, metadata_only=False, **kwargs):
         loader.add_metadata(config)
         return
 
-    for vars in config.iter_loops():
+    for vars in config._iter_loops():
         print(vars)
         _load(loader, config.substitute(vars), append=append, **kwargs)
         loader.add_metadata(config)
