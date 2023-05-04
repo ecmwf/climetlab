@@ -73,12 +73,24 @@ class Config:
             self.collect_statistics = True
 
     def _iter_loops(self):
+        # see also iter_configs
         yield from (
             dict(zip(self.loop.keys(), items))
             for items in itertools.product(
                 expand(*list(self.loop.values())),
             )
         )
+
+    def iter_configs(self):
+        if self.loop is None:
+            return [self]
+
+        for items in itertools.product(
+                expand(*list(self.loop.values())),
+            ):
+            vars = dict(zip(self.loop.keys(), items))
+            yield (vars, self.substitute(vars))
+
 
     def substitute(self, vars):
         def substitute(x, vars):
