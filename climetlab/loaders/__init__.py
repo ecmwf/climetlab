@@ -72,6 +72,14 @@ class Config:
             )
             self.collect_statistics = True
 
+    def iter_loops(self):
+        yield from (
+            dict(zip(self.loop.keys(), items))
+            for items in itertools.product(
+                expand(*list(self.loop.values())),
+            )
+        )
+
     def substitute(self, vars):
         def substitute(x, vars):
             if isinstance(x, (tuple, list)):
@@ -481,15 +489,7 @@ def load(loader, config, append=False, metadata_only=False, **kwargs):
         loader.add_metadata(config)
         return
 
-    def loops():
-        yield from (
-            dict(zip(config.loop.keys(), items))
-            for items in itertools.product(
-                expand(*list(config.loop.values())),
-            )
-        )
-
-    for vars in loops():
+    for vars in config.iter_loops():
         print(vars)
         _load(loader, config.substitute(vars), append=append, **kwargs)
         loader.add_metadata(config)
