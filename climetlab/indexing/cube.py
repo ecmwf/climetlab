@@ -78,18 +78,23 @@ class FieldCube:
         if math.prod(self.user_shape) != len(self.source):
             details = []
             for k, v in self.user_coords.items():
-                details += f"{k=}, {len(v)}, {v}"
+                details.append(f"{k=}, {len(v)}, {v}")
+            assert not isinstance(
+                self.source, str
+            ), f"Not expecting a str here ({self.source})"
             for i, f in enumerate(self.source):
                 details.append(f"{i}={f}")
                 if i > 30:
                     details.append("...")
                     break
-            raise ValueError(
+
+            msg = (
                 f"Shape {self.user_shape} [{math.prod(self.user_shape):,}]"
-                f" does not match number of fields {len(self.source):,}. "
-                f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
-                "\n".join(details)
+                + f" does not match number of available fields {len(self.source):,}. "
+                + f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
+                + "\n".join(details)
             )
+            raise ValueError(msg)
 
     @property
     def field_shape(self):
