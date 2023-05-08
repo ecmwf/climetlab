@@ -61,18 +61,46 @@ class Config:
             config = load_json_or_yaml(config)
         self.config = config
         self.input = config["input"]
-        self.output = config["output"]
-        self.constants = config.get("constants")
+        self.extra = self.config.get("extra")
+        self.loop = self.config.get("loop")
+
+    def _iter_loops(self):
+        # see also iter_configs
+        yield from (
+            dict(zip(self.loop.keys(), items))
+            for items in itertools.product(
+                expand(*list(self.loop.values())),
+            )
+        )
+
+    def iter_configs(self):
+        if self.loop is None:
+            return [self]
+
+        for items in itertools.product(
+            expand(*list(self.loop.values())),
+        ):
+            vars = dict(zip(self.loop.keys(), items))
+            yield (vars, self.substitute(vars))
+
+    def substitute(self, *args, **kwargs):
+        return Config(substitute(self.config, *args, **kwargs))
+
+
+class LoadersConfig(Config):
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(config, *args, **kwargs)
+
+        self.output = self.config["output"]
+        self.constants = self.config.get("constants")
         if "order" in self.output:
             self.order = normalize_order_by(self.output["order"])
         self.remapping = build_remapping(self.output.get("remapping"))
 
-        self.loop = self.config.get("loop")
-        self.extra = self.config.get("extra")
         self.chunking = self.output.get("chunking", {})
         self.dtype = self.output.get("dtype", "float32")
 
-        self.reading_chunks = config.get("reading_chunks")
+        self.reading_chunks = self.config.get("reading_chunks")
         self.flatten_values = self.output.get("flatten_values", False)
         self.grid_points_first = self.output.get("grid_points_first", False)
         if self.grid_points_first and not self.flatten_values:
@@ -101,32 +129,6 @@ class Config:
                 statistics_axis + 1 if self.grid_points_first else statistics_axis
             )
             self.collect_statistics = True
-
-    def _iter_loops(self):
-        # see also iter_configs
-        yield from (
-            dict(zip(self.loop.keys(), items))
-            for items in itertools.product(
-                expand(*list(self.loop.values())),
-            )
-        )
-
-    def iter_configs(self):
-        if self.loop is None:
-            return [self]
-
-        for items in itertools.product(
-            expand(*list(self.loop.values())),
-        ):
-            vars = dict(zip(self.loop.keys(), items))
-            yield (vars, self.substitute(vars))
-
-    def substitute(self, *args, **kwargs):
-        return Config(substitute(self.config, *args, **kwargs))
-
-
-class LoadersConfig(Config):
-    pass
 
 
 def substitute(x, vars=None, ignore_missing=False):
