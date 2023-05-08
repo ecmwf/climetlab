@@ -20,7 +20,7 @@ import numpy as np
 import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
-from climetlab.utils.config import Config
+from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)

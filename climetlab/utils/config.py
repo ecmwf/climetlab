@@ -56,6 +56,9 @@ def expand(values):
 
 
 class Config:
+    pass
+
+class LoadersConfig:
     def __init__(self, config, **kwargs):
         if isinstance(config, str):
             config = load_json_or_yaml(config)
