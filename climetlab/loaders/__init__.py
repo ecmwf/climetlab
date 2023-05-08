@@ -351,7 +351,7 @@ def _load(loader, config, append, **kwargs):
 
 
 def load(loader, config, append=False, metadata_only=False, **kwargs):
-    config = Config(config)
+    config = LoadersConfig(config)
 
     if metadata_only:
         loader.add_metadata(config)

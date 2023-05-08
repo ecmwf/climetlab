@@ -6,11 +6,11 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import datetime
 import itertools
 import logging
 import os
 import re
-import datetime
 
 from climetlab.core.order import build_remapping, normalize_order_by
 from climetlab.utils import load_json_or_yaml
@@ -56,9 +56,6 @@ def expand(values):
 
 
 class Config:
-    pass
-
-class LoadersConfig:
     def __init__(self, config, **kwargs):
         if isinstance(config, str):
             config = load_json_or_yaml(config)
@@ -124,36 +121,71 @@ class LoadersConfig:
             vars = dict(zip(self.loop.keys(), items))
             yield (vars, self.substitute(vars))
 
-    def substitute(self, vars):
-        def substitute(x, vars):
-            if isinstance(x, (tuple, list)):
-                return [substitute(y, vars) for y in x]
+    def substitute(self, *args, **kwargs):
+        return Config(substitute(self.config, *args, **kwargs))
 
-            if isinstance(x, dict):
-                return {k: substitute(v, vars) for k, v in x.items()}
 
-            if isinstance(x, str):
-                if not re.match(r"\$(\w+)", x):
-                    return x
-                lst = []
-                for i, bit in enumerate(re.split(r"\$(\w+)", x)):
-                    if i % 2:
-                        if bit.upper() == bit:
-                            # substitute by the var env if $UPPERCASE
-                            lst.append(os.environ[bit])
-                        else:
-                            # substitute by the value in the 'vars' dict
-                            lst.append(vars[bit])
-                    else:
-                        lst.append(bit)
+class LoadersConfig(Config):
+    pass
 
-                lst = [e for e in lst if e != ""]
 
-                if len(lst) == 1:
-                    return lst[0]
+def substitute(x, vars=None, ignore_missing=False):
+    """Recursively substitute environment variables and dict values in a nested list ot dict of string.
+    substitution is performed using the environment var (if UPPERCASE) or the input dictionary.
 
-                return "".join(str(_) for _ in lst)
+    >>> substitute({'bar': '$bar'}, {'bar': '43'})
+    {'bar': '43'}
 
+    >>> substitute({'bar': '$BAR'}, {'BAR': '43'})
+    Traceback (most recent call last):
+        ...
+    KeyError: 'BAR'
+
+    >>> substitute({'bar': '$BAR'}, skip_missing=True)
+    {'bar': '$BAR'}
+
+    >>> os.environ["BAR"] = "42"
+    >>> substitute({'bar': '$BAR'})
+    {'bar': '42'}
+
+    """
+    if vars is None:
+        vars = {}
+    if isinstance(x, (tuple, list)):
+        return [substitute(y, vars, ignore_missing=ignore_missing) for y in x]
+
+    if isinstance(x, dict):
+        return {
+            k: substitute(v, vars, ignore_missing=ignore_missing) for k, v in x.items()
+        }
+
+    if isinstance(x, str):
+        if "$" not in x:
             return x
 
-        return Config(substitute(self.config, vars))
+        lst = []
+        for i, bit in enumerate(re.split(r"\$(\w+)", x)):
+            if i % 2:
+                try:
+                    if bit.upper() == bit:
+                        # substitute by the var env if $UPPERCASE
+                        bit = os.environ[bit]
+                    else:
+                        # substitute by the value in the 'vars' dict
+                        bit = vars[bit]
+                except KeyError as e:
+                    if not ignore_missing:
+                        raise e
+
+            bit = substitute(bit, vars, ignore_missing=ignore_missing)
+
+            lst.append(bit)
+
+        lst = [e for e in lst if e != ""]
+
+        if len(lst) == 1:
+            return lst[0]
+
+        return "".join(str(_) for _ in lst)
+
+    return x
