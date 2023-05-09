@@ -124,10 +124,9 @@ class CliMetLabApp(
         except ValueError as e:
             traceback.print_exc()
             print(colored(str(e), "red"))
-            sys.exit(3)
         except Exception:
             traceback.print_exc()
-            sys.exit(3)
+        return False
 
 
 def main():
@@ -161,7 +160,9 @@ def main():
     app = CliMetLabApp()
 
     if cmdline:
-        return app.onecmd(" ".join(cmdline))
+        res = app.onecmd(" ".join(cmdline))
+        if not res:
+            sys.exit(33)
     else:
         app.cmdloop()
 
