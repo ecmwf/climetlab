@@ -126,7 +126,7 @@ class CliMetLabApp(
             print(colored(str(e), "red"))
         except Exception:
             traceback.print_exc()
-        return False
+        return 33
 
 
 def main():
@@ -161,8 +161,8 @@ def main():
 
     if cmdline:
         res = app.onecmd(" ".join(cmdline))
-        if not res:
-            sys.exit(33)
+        if res:
+            sys.exit(res)
     else:
         app.cmdloop()
 
