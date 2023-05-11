@@ -273,7 +273,7 @@ def load_dataset(name: str, *args, **kwargs) -> Dataset:
     klass = get_dataset.lookup(name)
 
     if name not in TERMS_OF_USE_SHOWN:
-        if klass.terms_of_use is not None:
+        if hasattr(klass, "terms_of_use") and klass.terms_of_use is not None:
             print(klass.terms_of_use)
         TERMS_OF_USE_SHOWN.add(name)
 
