@@ -121,8 +121,8 @@ class ZarrLoader(Loader):
             self.statistics = []
 
         shape = cube.extended_user_shape
-        chunks = cube.chunking(config.chunking)
-        dtype = config.dtype
+        chunks = cube.chunking(config.output.chunking)
+        dtype = config.output.dtype
 
         print(
             f"Creating ZARR file '{self.path}', with {shape=}, "
@@ -135,7 +135,7 @@ class ZarrLoader(Loader):
             original_shape = self.z.shape
             assert len(shape) == len(original_shape)
 
-            axis = config.append_axis
+            axis = config.output.append_axis
 
             new_shape = []
             for i, (o, s) in enumerate(zip(original_shape, shape)):
@@ -225,7 +225,7 @@ class ZarrLoader(Loader):
             statistics_by_index["maximum"] = list(maximum)
             statistics_by_index["minimum"] = list(minimum)
 
-        metadata["config"] = _tidy(config.config)
+        metadata["config"] = _tidy(config)
 
         self.z.attrs["climetlab"] = metadata
 
@@ -297,8 +297,8 @@ def _load(loader, config, append, **kwargs):
     print("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
-    if config.constants:
-        data = data + cml.load_source("constants", data, config.constants)
+    if 'constant' in config.input:
+        data = data + cml.load_source("constants", data, config.input.constants)
 
     assert len(data)
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
@@ -306,10 +306,10 @@ def _load(loader, config, append, **kwargs):
     start = time.time()
     print("Sort dataset")
     cube = data.cube(
-        config.order,
-        remapping=config.remapping,
-        flatten_values=config.flatten_values,
-        grid_points_first=config.grid_points_first,
+        config.output.order_by,
+        remapping=config.output.remapping,
+        flatten_values=config.output.flatten_values,
+        grid_points_first=config.output.grid_points_first,
     )
     cube = cube.squeeze()
     print(f"Done in {seconds(time.time()-start)}.")
