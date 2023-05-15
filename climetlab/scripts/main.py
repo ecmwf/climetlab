@@ -27,6 +27,7 @@ from .create import LoadersCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
+from .test_data import TestDataCmd
 
 LOG = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class CliMetLabApp(
     GribInfoCmd,
     AvailabilityCmd,
     LoadersCmd,
+    TestDataCmd,
     *get_plugins(),
 ):
     # intro = 'Welcome to climetlab. Type ? to list commands.\n'

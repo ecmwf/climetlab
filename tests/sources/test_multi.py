@@ -260,7 +260,7 @@ def test_multi_missing_url():
     with pytest.raises(HTTPError, match=".*this-file-does-not-exists.*"):
         load_source(
             "url-pattern",
-            "http://download.ecmwf.int/test-data/metview/gallery/{x}",
+            "http://get.ecmwf.int/test-data/metview/gallery/{x}",
             x=["temp.bufr", "this-file-does-not-exists.bufr"],
         )
 
