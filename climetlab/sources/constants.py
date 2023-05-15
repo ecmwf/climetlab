@@ -188,7 +188,6 @@ class Constants(FieldSet):
         request.setdefault("time", [None])
 
         self.request = self._request(request)
-        print(self.request)
 
         if "date" in self.request:
             self.dates = [

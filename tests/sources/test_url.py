@@ -74,7 +74,7 @@ def test_url_ftp_source_with_user_pass():
 def test_url_source_1():
     load_source(
         "url",
-        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        "http://get.ecmwf.int/test-data/metview/gallery/temp.bufr",
     )
 
 
@@ -84,7 +84,7 @@ def test_url_source_check_out_of_date():
     def load():
         load_source(
             "url",
-            "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+            "http://get.ecmwf.int/test-data/metview/gallery/temp.bufr",
         )
 
     with temp_directory() as tmpdir:
@@ -135,12 +135,12 @@ def test_extension():
 def test_part_url():
     ds = load_source(
         "url",
-        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        "http://get.ecmwf.int/test-data/metview/gallery/temp.bufr",
     )
 
     ds = load_source(
         "url",
-        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        "http://get.ecmwf.int/test-data/metview/gallery/temp.bufr",
         parts=((0, 4),),
     )
 
@@ -151,7 +151,7 @@ def test_part_url():
 
     ds = load_source(
         "url",
-        "http://download.ecmwf.int/test-data/metview/gallery/temp.bufr",
+        "http://get.ecmwf.int/test-data/metview/gallery/temp.bufr",
         parts=((0, 10), (50, 10), (60, 10)),
     )
 
