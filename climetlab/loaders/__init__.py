@@ -131,8 +131,9 @@ class ZarrLoader(Loader):
 
         if append:
             self.z = zarr.open(self.path, mode="r+")
+            self.zdata = self.z["data"]
 
-            original_shape = self.z.shape
+            original_shape = self.zdata.shape
             assert len(shape) == len(original_shape)
 
             axis = config.output.append_axis
@@ -145,11 +146,11 @@ class ZarrLoader(Loader):
                     assert o == s, (original_shape, shape, i)
                     new_shape.append(o)
 
-            self.z.resize(tuple(new_shape))
+            self.zdata.resize(tuple(new_shape))
 
             self.writer = FastWriter(
                 OffsetView(
-                    self.z,
+                    self.zdata,
                     original_shape[axis],
                     axis,
                     shape,
@@ -158,15 +159,15 @@ class ZarrLoader(Loader):
             )
 
         else:
-            self.z = zarr.open(
-                self.path,
-                mode="w",
+            self.z = zarr.open(self.path, mode="w")
+            self.zdata = self.z.create_dataset(
+                "data",
                 shape=shape,
                 chunks=chunks,
                 dtype=dtype,
             )
 
-            self.writer = FastWriter(self.z, shape)
+            self.writer = FastWriter(self.zdata, shape)
 
         return self.writer
 
@@ -182,6 +183,7 @@ class ZarrLoader(Loader):
 
     def print_info(self):
         print(self.z.info)
+        print(self.zdata.info)
 
     def add_metadata(self, config):
         import zarr
