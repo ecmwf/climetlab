@@ -106,6 +106,9 @@ class Loader:
     pass
 
 
+VERSION = 2
+
+
 class ZarrLoader(Loader):
     def __init__(self, path):
         self.path = path
@@ -230,6 +233,7 @@ class ZarrLoader(Loader):
         metadata["config"] = _tidy(config)
 
         self.z.attrs["climetlab"] = metadata
+        self.z.attrs["version"] = VERSION
 
 
 class HDF5Loader:
