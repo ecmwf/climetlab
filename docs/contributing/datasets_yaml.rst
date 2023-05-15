@@ -14,7 +14,7 @@ source when the data consists of a single file downloadable from a URL.
   dataset:
     source: url
     args:
-      url: http://download.ecmwf.int/test-data/metview/gallery/temp.bufr
+      url: http://get.ecmwf.int/test-data/metview/gallery/temp.bufr
 
     metadata:
       documentation: Sample BUFR file containing TEMP messages
