@@ -77,6 +77,7 @@ def expand(values):
 class Config(DictObj):
     def __init__(self, config):
         if isinstance(config, str):
+            self._config_path = config
             config = load_json_or_yaml(config)
         super().__init__(config)
 
