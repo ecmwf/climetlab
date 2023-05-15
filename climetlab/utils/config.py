@@ -17,6 +17,7 @@ from climetlab.utils import load_json_or_yaml
 
 LOG = logging.getLogger(__name__)
 
+
 class DictObj(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,7 +26,9 @@ class DictObj(dict):
                 self[key] = DictObj(value)
                 continue
             if isinstance(value, list):
-                self[key] = [DictObj(item) if isinstance(item, dict) else item for item in value]
+                self[key] = [
+                    DictObj(item) if isinstance(item, dict) else item for item in value
+                ]
                 continue
 
     def __getattr__(self, attr):
@@ -36,6 +39,7 @@ class DictObj(dict):
 
     def __setattr__(self, attr, value):
         self[attr] = value
+
 
 def expand(values):
     if isinstance(values, list):
@@ -113,8 +117,8 @@ class LoadersConfig(Config):
         if "order_by" in self.output:
             self.output.order_by = normalize_order_by(self.output.order_by)
 
-        self.input.constants = self.input.get('constants')
-        self.output.remapping = self.output.get('remapping', {})
+        self.input.constants = self.input.get("constants")
+        self.output.remapping = self.output.get("remapping", {})
         self.output.remapping = build_remapping(self.output.remapping)
 
         self.output.chunking = self.output.get("chunking", {})
@@ -146,7 +150,9 @@ class LoadersConfig(Config):
 
             # TODO: consider 2D grid points
             self.statistics_axis = (
-                statistics_axis + 1 if self.output.grid_points_first else statistics_axis
+                statistics_axis + 1
+                if self.output.grid_points_first
+                else statistics_axis
             )
             self.collect_statistics = True
 
