@@ -105,7 +105,8 @@ class GribOutput:
             import numpy as np
 
             if np.isnan(values).any():
-                missing_value = np.finfo(values.dtype).max
+                # missing_value = np.finfo(values.dtype).max
+                missing_value = 9999
                 values = np.nan_to_num(values, nan=missing_value)
                 metadata["missingValue"] = missing_value
                 metadata["bitmapPresent"] = 1
