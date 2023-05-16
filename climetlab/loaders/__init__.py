@@ -115,7 +115,7 @@ class ZarrLoader(Loader):
         self.z = None
         self.statistics = []
 
-    def create_array(self, config, cube, append):
+    def create_array(self, config, cube, append, grid_points):
         import zarr
 
         self.config = config
@@ -170,17 +170,28 @@ class ZarrLoader(Loader):
                 dtype=dtype,
             )
 
+            lat = self._add_dataset("latitude", grid_points[0])
+            lon = self._add_dataset("longitude", grid_points[1])
+            assert lat.shape == lon.shape
+
             self.writer = FastWriter(self.zdata, shape)
 
         return self.writer
+
+    def _add_dataset(self, name, nparray, dtype=np.float32):
+        assert len(nparray.shape) == 1, "Not implemented"
+        a = self.z.create_dataset(
+            name, shape=nparray.shape, dtype=dtype, overwrite=True
+        )
+        a[:] = nparray[:]
+        return a
 
     def close(self):
         if self.writer is None:
             warnings.warn("FastWriter already closed")
         else:
             self.writer.flush()
-            if self.config.collect_statistics:
-                self.statistics.append(self.writer.stats(self.config.statistics_axis))
+            self.statistics.append(self.writer.stats(self.config.statistics_axis))
 
             self.writer = None
 
@@ -199,36 +210,42 @@ class ZarrLoader(Loader):
 
         metadata = {}
 
-        if config.collect_statistics:
-            count, sums, squares, minimum, maximum = self.statistics[0]
-            for s in self.statistics[1:]:
-                count = count + s[0]
-                sums = sums + s[1]
-                squares = squares + s[2]
-                minimum = np.minimum(minimum, s[3])
-                maximum = np.maximum(maximum, s[4])
+        count, sums, squares, minimum, maximum = self.statistics[0]
+        for s in self.statistics[1:]:
+            count = count + s[0]
+            sums = sums + s[1]
+            squares = squares + s[2]
+            minimum = np.minimum(minimum, s[3])
+            maximum = np.maximum(maximum, s[4])
 
-            mean = sums / count
-            stdev = np.sqrt(squares / count - mean * mean)
+        mean = sums / count
+        stdev = np.sqrt(squares / count - mean * mean)
 
-            name_to_index = metadata["name_to_index"] = {}
-            statistics_by_name = metadata["statistics_by_name"] = {}
-            for i, name in enumerate(self.config.statistics_names):
-                statistics_by_name[name] = {}
-                statistics_by_name[name]["mean"] = mean[i]
-                statistics_by_name[name]["stdev"] = stdev[i]
-                statistics_by_name[name]["minimum"] = minimum[i]
-                statistics_by_name[name]["maximum"] = maximum[i]
-                statistics_by_name[name]["sums"] = sums[i]
-                statistics_by_name[name]["squares"] = sums[i]
-                statistics_by_name[name]["count"] = count
-                name_to_index[name] = i
+        name_to_index = metadata["name_to_index"] = {}
+        statistics_by_name = metadata["statistics_by_name"] = {}
+        for i, name in enumerate(self.config.statistics_names):
+            statistics_by_name[name] = {}
+            statistics_by_name[name]["mean"] = mean[i]
+            statistics_by_name[name]["stdev"] = stdev[i]
+            statistics_by_name[name]["minimum"] = minimum[i]
+            statistics_by_name[name]["maximum"] = maximum[i]
+            statistics_by_name[name]["sums"] = sums[i]
+            statistics_by_name[name]["squares"] = sums[i]
+            statistics_by_name[name]["count"] = count
+            name_to_index[name] = i
 
-            statistics_by_index = metadata["statistics_by_index"] = {}
-            statistics_by_index["mean"] = list(mean)
-            statistics_by_index["stdev"] = list(stdev)
-            statistics_by_index["maximum"] = list(maximum)
-            statistics_by_index["minimum"] = list(minimum)
+        statistics_by_index = metadata["statistics_by_index"] = {}
+        statistics_by_index["mean"] = list(mean)
+        statistics_by_index["stdev"] = list(stdev)
+        statistics_by_index["maximum"] = list(maximum)
+        statistics_by_index["minimum"] = list(minimum)
+
+        self._add_dataset("mean", mean)
+        self._add_dataset("stdev", stdev)
+        self._add_dataset("minimum", minimum)
+        self._add_dataset("maximum", maximum)
+        self._add_dataset("sums", sums)
+        self._add_dataset("squares", squares)
 
         metadata["config"] = _tidy(config)
 
@@ -241,15 +258,19 @@ class HDF5Loader:
         self.path = path
 
     def create_array(
-        self, dataset, shape, chunks, dtype, metadata, append, grid_points_first
+        self,
+        dataset,
+        shape,
+        chunks,
+        dtype,
+        metadata,
+        append,
+        grid_points,
     ):
         import h5py
 
         if append:
             raise NotImplementedError("Appending do HDF5 not yet implemented")
-
-        if grid_points_first:
-            raise NotImplementedError("grid_points_first in HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -315,12 +336,12 @@ def _load(loader, config, append, **kwargs):
         config.output.order_by,
         remapping=config.output.remapping,
         flatten_values=config.output.flatten_values,
-        grid_points_first=config.output.grid_points_first,
     )
     cube = cube.squeeze()
     print(f"Done in {seconds(time.time()-start)}.")
 
-    array = loader.create_array(config, cube, append)
+    grid_points = data[0].grid_points()
+    array = loader.create_array(config, cube, append, grid_points)
 
     start = time.time()
     load = 0

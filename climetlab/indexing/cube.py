@@ -43,12 +43,10 @@ class FieldCube:
         *args,
         remapping=None,
         flatten_values=False,
-        grid_points_first=False,
     ):
         assert len(ds), f"No data in {ds}"
 
         self.flatten_values = flatten_values
-        self.grid_points_first = grid_points_first
 
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
@@ -112,10 +110,7 @@ class FieldCube:
 
     @property
     def extended_user_shape(self):
-        if self.grid_points_first:
-            return self.field_shape + self.user_shape
-        else:
-            return self.user_shape + self.field_shape
+        return self.user_shape + self.field_shape
 
     def __str__(self):
         content = ", ".join([f"{k}:{len(v)}" for k, v in self.user_coords.items()])
@@ -171,11 +166,9 @@ class FieldCube:
             ds,
             *self.user_coords,
             flatten_values=self.flatten_values,
-            grid_points_first=self.grid_points_first,
         )
 
     def to_numpy(self, **kwargs):
-        assert not self.grid_points_first, "Not yes implemented"
         return self.source.to_numpy(**kwargs).reshape(*self.extended_user_shape)
 
     def _names(self, coords, reading_chunks=None, **kwargs):
@@ -201,10 +194,8 @@ class FieldCube:
         names = self._names(reading_chunks=reading_chunks, coords=self.user_coords)
         indexes = list(range(0, len(lst)) for lst in names)
 
-        CUBELT = GridPointFirstCubelet if self.grid_points_first else Cubelet
-
         return (
-            CUBELT(self, i, coords_names=n)
+            Cubelet(self, i, coords_names=n)
             for n, i in zip(itertools.product(*names), itertools.product(*indexes))
         )
 
