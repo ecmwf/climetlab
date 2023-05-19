@@ -93,11 +93,12 @@ eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
 # For some reason, cffi can ge stuck in the GC if that function
 # needs to be called defined for the first time in a GC thread.
-
 try:
-    eccodes.codes_release(None)
-except TypeError:
+    _h = eccodes.codes_new_from_samples("regular_ll_pl_grib1", eccodes.CODES_PRODUCT_GRIB)
+    eccodes.codes_release(_h)
+except:
     pass
+
 
 class CodesHandle:
     def __init__(self, handle, path, offset):
