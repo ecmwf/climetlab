@@ -27,6 +27,7 @@ from .create import LoadersCmd
 from .grib import GribCmd
 from .grib_info import GribInfoCmd
 from .settings import SettingsCmd
+from .test_data import TestDataCmd
 
 LOG = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class CliMetLabApp(
     GribInfoCmd,
     AvailabilityCmd,
     LoadersCmd,
+    TestDataCmd,
     *get_plugins(),
 ):
     # intro = 'Welcome to climetlab. Type ? to list commands.\n'
@@ -126,7 +128,7 @@ class CliMetLabApp(
             print(colored(str(e), "red"))
         except Exception:
             traceback.print_exc()
-        return False
+        return 33
 
 
 def main():
@@ -160,7 +162,9 @@ def main():
     app = CliMetLabApp()
 
     if cmdline:
-        return app.onecmd(" ".join(cmdline))
+        res = app.onecmd(" ".join(cmdline))
+        if res:
+            sys.exit(res)
     else:
         app.cmdloop()
 

@@ -9,110 +9,21 @@
 
 
 import datetime
-import itertools
 import json
 import logging
 import os
-import re
 import time
 import warnings
 
 import numpy as np
 
 import climetlab as cml
-from climetlab.core.order import build_remapping, normalize_order_by
-from climetlab.utils import load_json_or_yaml, progress_bar
+from climetlab.core.order import build_remapping  # noqa:F401
+from climetlab.utils import progress_bar
+from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)
-
-
-class Config:
-    def __init__(self, config, **kwargs):
-        if isinstance(config, str):
-            config = load_json_or_yaml(config)
-        self.config = config
-        self.input = config["input"]
-        self.output = config["output"]
-        self.constants = config.get("constants")
-        self.order = normalize_order_by(self.output["order"])
-        self.remapping = build_remapping(self.output.get("remapping"))
-
-        self.loop = self.config.get("loop")
-        self.chunking = self.output.get("chunking", {})
-        self.dtype = self.output.get("dtype", "float32")
-
-        self.reading_chunks = config.get("reading_chunks")
-        self.flatten_values = self.output.get("flatten_values", False)
-        self.grid_points_first = self.output.get("grid_points_first", False)
-        if self.grid_points_first and not self.flatten_values:
-            raise NotImplementedError(
-                "For now, grid_points_first is only valid if flatten_values"
-            )
-
-        # The axis along which we append new data
-        # TODO: assume grid points can be 2d as well
-        self.append_axis = 1 if self.grid_points_first else 0
-
-        self.collect_statistics = False
-        if "statistics" in self.output:
-            statistics_axis_name = self.output["statistics"]
-            statistics_axis = -1
-            for i, k in enumerate(self.order):
-                if k == statistics_axis_name:
-                    statistics_axis = i
-
-            assert statistics_axis >= 0, (statistics_axis_name, self.order)
-
-            self.statistics_names = self.order[statistics_axis_name]
-
-            # TODO: consider 2D grid points
-            self.statistics_axis = (
-                statistics_axis + 1 if self.grid_points_first else statistics_axis
-            )
-            self.collect_statistics = True
-
-    def iter_loops(self):
-        yield from (
-            dict(zip(self.loop.keys(), items))
-            for items in itertools.product(
-                expand(*list(self.loop.values())),
-            )
-        )
-
-    def substitute(self, vars):
-        def substitute(x, vars):
-            if isinstance(x, (tuple, list)):
-                return [substitute(y, vars) for y in x]
-
-            if isinstance(x, dict):
-                return {k: substitute(v, vars) for k, v in x.items()}
-
-            if isinstance(x, str):
-                if not re.match(r"\$(\w+)", x):
-                    return x
-                lst = []
-                for i, bit in enumerate(re.split(r"\$(\w+)", x)):
-                    if i % 2:
-                        if bit.upper() == bit:
-                            # substitute by the var env if $UPPERCASE
-                            lst.append(os.environ[bit])
-                        else:
-                            # substitute by the value in the 'vars' dict
-                            lst.append(vars[bit])
-                    else:
-                        lst.append(bit)
-
-                lst = [e for e in lst if e != ""]
-
-                if len(lst) == 1:
-                    return lst[0]
-
-                return "".join(str(_) for _ in lst)
-
-            return x
-
-        return Config(substitute(self.config, vars))
 
 
 def _tidy(o):
@@ -195,13 +106,16 @@ class Loader:
     pass
 
 
+VERSION = 2
+
+
 class ZarrLoader(Loader):
     def __init__(self, path):
         self.path = path
         self.z = None
         self.statistics = []
 
-    def create_array(self, config, cube, append):
+    def create_array(self, config, cube, append, grid_points):
         import zarr
 
         self.config = config
@@ -210,8 +124,8 @@ class ZarrLoader(Loader):
             self.statistics = []
 
         shape = cube.extended_user_shape
-        chunks = cube.chunking(config.chunking)
-        dtype = config.dtype
+        chunks = cube.chunking(config.output.chunking)
+        dtype = config.output.dtype
 
         print(
             f"Creating ZARR file '{self.path}', with {shape=}, "
@@ -220,11 +134,12 @@ class ZarrLoader(Loader):
 
         if append:
             self.z = zarr.open(self.path, mode="r+")
+            self.zdata = self.z["data"]
 
-            original_shape = self.z.shape
+            original_shape = self.zdata.shape
             assert len(shape) == len(original_shape)
 
-            axis = config.append_axis
+            axis = config.output.append_axis
 
             new_shape = []
             for i, (o, s) in enumerate(zip(original_shape, shape)):
@@ -234,11 +149,11 @@ class ZarrLoader(Loader):
                     assert o == s, (original_shape, shape, i)
                     new_shape.append(o)
 
-            self.z.resize(tuple(new_shape))
+            self.zdata.resize(tuple(new_shape))
 
             self.writer = FastWriter(
                 OffsetView(
-                    self.z,
+                    self.zdata,
                     original_shape[axis],
                     axis,
                     shape,
@@ -247,30 +162,42 @@ class ZarrLoader(Loader):
             )
 
         else:
-            self.z = zarr.open(
-                self.path,
-                mode="w",
+            self.z = zarr.open(self.path, mode="w")
+            self.zdata = self.z.create_dataset(
+                "data",
                 shape=shape,
                 chunks=chunks,
                 dtype=dtype,
             )
 
-            self.writer = FastWriter(self.z, shape)
+            lat = self._add_dataset("latitude", grid_points[0])
+            lon = self._add_dataset("longitude", grid_points[1])
+            assert lat.shape == lon.shape
+
+            self.writer = FastWriter(self.zdata, shape)
 
         return self.writer
+
+    def _add_dataset(self, name, nparray, dtype=np.float32):
+        assert len(nparray.shape) == 1, "Not implemented"
+        a = self.z.create_dataset(
+            name, shape=nparray.shape, dtype=dtype, overwrite=True
+        )
+        a[:] = nparray[:]
+        return a
 
     def close(self):
         if self.writer is None:
             warnings.warn("FastWriter already closed")
         else:
             self.writer.flush()
-            if self.config.collect_statistics:
-                self.statistics.append(self.writer.stats(self.config.statistics_axis))
+            self.statistics.append(self.writer.stats(self.config.statistics_axis))
 
             self.writer = None
 
     def print_info(self):
         print(self.z.info)
+        print(self.zdata.info)
 
     def add_metadata(self, config):
         import zarr
@@ -283,40 +210,47 @@ class ZarrLoader(Loader):
 
         metadata = {}
 
-        if config.collect_statistics:
-            count, sums, squares, minimum, maximum = self.statistics[0]
-            for s in self.statistics[1:]:
-                count = count + s[0]
-                sums = sums + s[1]
-                squares = squares + s[2]
-                minimum = np.minimum(minimum, s[3])
-                maximum = np.maximum(maximum, s[4])
+        count, sums, squares, minimum, maximum = self.statistics[0]
+        for s in self.statistics[1:]:
+            count = count + s[0]
+            sums = sums + s[1]
+            squares = squares + s[2]
+            minimum = np.minimum(minimum, s[3])
+            maximum = np.maximum(maximum, s[4])
 
-            mean = sums / count
-            stdev = np.sqrt(squares / count - mean * mean)
+        mean = sums / count
+        stdev = np.sqrt(squares / count - mean * mean)
 
-            name_to_index = metadata["name_to_index"] = {}
-            statistics_by_name = metadata["statistics_by_name"] = {}
-            for i, name in enumerate(self.config.statistics_names):
-                statistics_by_name[name] = {}
-                statistics_by_name[name]["mean"] = mean[i]
-                statistics_by_name[name]["stdev"] = stdev[i]
-                statistics_by_name[name]["minimum"] = minimum[i]
-                statistics_by_name[name]["maximum"] = maximum[i]
-                statistics_by_name[name]["sums"] = sums[i]
-                statistics_by_name[name]["squares"] = sums[i]
-                statistics_by_name[name]["count"] = count
-                name_to_index[name] = i
+        name_to_index = metadata["name_to_index"] = {}
+        statistics_by_name = metadata["statistics_by_name"] = {}
+        for i, name in enumerate(self.config.statistics_names):
+            statistics_by_name[name] = {}
+            statistics_by_name[name]["mean"] = mean[i]
+            statistics_by_name[name]["stdev"] = stdev[i]
+            statistics_by_name[name]["minimum"] = minimum[i]
+            statistics_by_name[name]["maximum"] = maximum[i]
+            statistics_by_name[name]["sums"] = sums[i]
+            statistics_by_name[name]["squares"] = sums[i]
+            statistics_by_name[name]["count"] = count
+            name_to_index[name] = i
 
-            statistics_by_index = metadata["statistics_by_index"] = {}
-            statistics_by_index["mean"] = list(mean)
-            statistics_by_index["stdev"] = list(stdev)
-            statistics_by_index["maximum"] = list(maximum)
-            statistics_by_index["minimum"] = list(minimum)
+        statistics_by_index = metadata["statistics_by_index"] = {}
+        statistics_by_index["mean"] = list(mean)
+        statistics_by_index["stdev"] = list(stdev)
+        statistics_by_index["maximum"] = list(maximum)
+        statistics_by_index["minimum"] = list(minimum)
 
-        metadata["config"] = _tidy(config.config)
+        self._add_dataset("mean", mean)
+        self._add_dataset("stdev", stdev)
+        self._add_dataset("minimum", minimum)
+        self._add_dataset("maximum", maximum)
+        self._add_dataset("sums", sums)
+        self._add_dataset("squares", squares)
+
+        metadata["config"] = _tidy(config)
 
         self.z.attrs["climetlab"] = metadata
+        self.z.attrs["version"] = VERSION
 
 
 class HDF5Loader:
@@ -324,15 +258,19 @@ class HDF5Loader:
         self.path = path
 
     def create_array(
-        self, dataset, shape, chunks, dtype, metadata, append, grid_points_first
+        self,
+        dataset,
+        shape,
+        chunks,
+        dtype,
+        metadata,
+        append,
+        grid_points,
     ):
         import h5py
 
         if append:
             raise NotImplementedError("Appending do HDF5 not yet implemented")
-
-        if grid_points_first:
-            raise NotImplementedError("grid_points_first in HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -386,8 +324,8 @@ def _load(loader, config, append, **kwargs):
     print("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
-    if config.constants:
-        data = data + cml.load_source("constants", data, config.constants)
+    if "constant" in config.input:
+        data = data + cml.load_source("constants", data, config.input.constants)
 
     assert len(data)
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
@@ -395,15 +333,15 @@ def _load(loader, config, append, **kwargs):
     start = time.time()
     print("Sort dataset")
     cube = data.cube(
-        config.order,
-        remapping=config.remapping,
-        flatten_values=config.flatten_values,
-        grid_points_first=config.grid_points_first,
+        config.output.order_by,
+        remapping=config.output.remapping,
+        flatten_values=config.output.flatten_values,
     )
     cube = cube.squeeze()
     print(f"Done in {seconds(time.time()-start)}.")
 
-    array = loader.create_array(config, cube, append)
+    grid_points = data[0].grid_points()
+    array = loader.create_array(config, cube, append, grid_points)
 
     start = time.time()
     load = 0
@@ -439,45 +377,8 @@ def _load(loader, config, append, **kwargs):
     )
 
 
-def expand(values):
-    if isinstance(values, list):
-        return values
-
-    if isinstance(values, dict):
-        if "start" in values and "stop" in values:
-            start = values["start"]
-            stop = values["stop"]
-            step = values.get("step", 1)
-            return range(start, stop + 1, step)
-
-        if "monthly" in values:
-            start = values["monthly"]["start"]
-            stop = values["monthly"]["stop"]
-            date = start
-            last = None
-            result = []
-            lst = []
-            while True:
-                year, month = date.year, date.month
-                if (year, month) != last:
-                    if lst:
-                        result.append([d.isoformat() for d in lst])
-                    lst = []
-
-                lst.append(date)
-                last = (year, month)
-                date = date + datetime.timedelta(days=1)
-                if date > stop:
-                    break
-            if lst:
-                result.append([d.isoformat() for d in lst])
-            return result
-
-    raise ValueError(f"Cannot expand loop from {values}")
-
-
 def load(loader, config, append=False, metadata_only=False, **kwargs):
-    config = Config(config)
+    config = LoadersConfig(config)
 
     if metadata_only:
         loader.add_metadata(config)
@@ -489,7 +390,7 @@ def load(loader, config, append=False, metadata_only=False, **kwargs):
         loader.add_metadata(config)
         return
 
-    for vars in config.iter_loops():
+    for vars in config._iter_loops():
         print(vars)
         _load(loader, config.substitute(vars), append=append, **kwargs)
         loader.add_metadata(config)

@@ -27,6 +27,7 @@ class LoadAction:
                 one = last
             print(f"Using data from: {name}, {one}")
             source = self.load(name, **one)
+
             assert len(source), f"No data for {(name, one)}"
             data.append(source)
 
