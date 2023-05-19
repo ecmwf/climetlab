@@ -91,6 +91,13 @@ def get_messages_positions(path):
 eccodes_codes_release = call_counter(eccodes.codes_release)
 eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 
+# For some reason, cffi can ge stuck in the GC if that function
+# needs to be called defined for the first time in a GC thread.
+
+try:
+    eccodes.codes_release(None)
+except TypeError:
+    pass
 
 class CodesHandle:
     def __init__(self, handle, path, offset):
@@ -283,13 +290,11 @@ class CodesReader:
     def __init__(self, path):
         self.path = path
         self.lock = threading.Lock()
-        # print("OPEN", self.path)
         self.file = open(self.path, "rb")
         self.last = time.time()
 
     def __del__(self):
         try:
-            # print("CLOSE", self.path)
             self.file.close()
         except Exception:
             pass
