@@ -221,8 +221,8 @@ class ZarrLoader(Loader):
         mean = sums / count
         stdev = np.sqrt(squares / count - mean * mean)
 
-        name_to_index = metadata["name_to_index"] = {}
-        statistics_by_name = metadata["statistics_by_name"] = {}
+        name_to_index = {}
+        statistics_by_name = {}
         for i, name in enumerate(self.config.statistics_names):
             statistics_by_name[name] = {}
             statistics_by_name[name]["mean"] = mean[i]
@@ -230,15 +230,18 @@ class ZarrLoader(Loader):
             statistics_by_name[name]["minimum"] = minimum[i]
             statistics_by_name[name]["maximum"] = maximum[i]
             statistics_by_name[name]["sums"] = sums[i]
-            statistics_by_name[name]["squares"] = sums[i]
+            statistics_by_name[name]["squares"] = squares[i]
             statistics_by_name[name]["count"] = count
             name_to_index[name] = i
+        metadata["name_to_index"] = name_to_index
+        metadata["statistics_by_name"] = statistics_by_name
 
-        statistics_by_index = metadata["statistics_by_index"] = {}
+        statistics_by_index = {}
         statistics_by_index["mean"] = list(mean)
         statistics_by_index["stdev"] = list(stdev)
         statistics_by_index["maximum"] = list(maximum)
         statistics_by_index["minimum"] = list(minimum)
+        metadata["statistics_by_index"] = statistics_by_index
 
         self._add_dataset("mean", mean)
         self._add_dataset("stdev", stdev)
@@ -246,10 +249,14 @@ class ZarrLoader(Loader):
         self._add_dataset("maximum", maximum)
         self._add_dataset("sums", sums)
         self._add_dataset("squares", squares)
+        self._add_dataset("count", mean * 0 + count)
 
-        metadata["config"] = _tidy(config)
+        metadata["create_yaml_config"] = _tidy(config)
+        for k, v in config.get("metadata", {}).items():
+            self.z.attrs[k] = v
 
         self.z.attrs["climetlab"] = metadata
+        self.z["data"].attrs["climetlab"] = metadata
         self.z.attrs["version"] = VERSION
 
 
