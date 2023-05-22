@@ -11,7 +11,7 @@ import datetime
 import logging
 import re
 
-from climetlab.decorators import alias_argument, normalize
+from climetlab.decorators import alias_argument, normalize, normalize_grib_keys
 from climetlab.utils.humanize import list_to_human
 
 LOG = logging.getLogger(__name__)
@@ -49,11 +49,7 @@ class GribOutput:
         self._bbox = {}
         self.kwargs = kwargs
 
-    @alias_argument("levelist", ["level", "levellist"])
-    @alias_argument("levtype", ["leveltype"])
-    @alias_argument("param", ["variable", "parameter"])
-    @alias_argument("number", ["realization", "realisation"])
-    @alias_argument("class", ["klass", "class_"])
+    @normalize_grib_keys
     @normalize("date", "date")
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
