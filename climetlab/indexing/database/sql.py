@@ -14,6 +14,7 @@ import logging
 import os
 import sqlite3
 from threading import local
+import time
 
 import numpy as np
 
@@ -53,7 +54,18 @@ def execute(connection, statement, *arg, **kwargs):
     if LOG.level == logging.DEBUG:
         assert False
         dump_sql(statement)
-    return connection.execute(statement, *arg, **kwargs)
+
+    delay = 1
+    while delay < 30 * 60: # max delay 30 min
+        try:
+            return connection.execute(statement, *arg, **kwargs)
+        except sqlite3.OperationalError as e:
+            time.sleep(delay)
+            dump_sql(statement)
+            print(e)
+            print(f"Retrying in {delay} seconds.")
+            delay = delay * 1.5
+    raise e
 
 
 def entryname_to_dbname(n):
