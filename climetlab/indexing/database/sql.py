@@ -56,14 +56,15 @@ def execute(connection, statement, *arg, **kwargs):
         dump_sql(statement)
 
     delay = 1
-    while delay < 30 * 60: # max delay 30 min
+    while delay < 30 * 60:  # max delay 30 min
         try:
             return connection.execute(statement, *arg, **kwargs)
         except sqlite3.OperationalError as e:
+            if not str(e).endswith("database is locked"):
+                raise e
             time.sleep(delay)
             dump_sql(statement)
-            print(e)
-            print(f"Retrying in {delay} seconds.")
+            print(f"{e}. Retrying in {delay} seconds.")
             delay = delay * 1.5
     raise e
 
