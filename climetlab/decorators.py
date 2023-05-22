@@ -91,6 +91,67 @@ OPTIONS = {
 }
 
 
+def normalize_grib_keys(f):
+    f = alias_argument("levelist", ["level", "levellist"])(f)
+    f = alias_argument("levtype", ["leveltype"])(f)
+    f = alias_argument("param", ["variable", "parameter"])(f)
+    f = alias_argument("number", ["realization", "realisation"])(f)
+    f = alias_argument("class", ["klass", "class_"])(f)
+    return f
+
+
+def _normalize_time(time, type):
+    assert type in (int, str), type
+
+    if time is None or time == all:
+        return time
+
+    if isinstance(time, list):
+        return [_normalize_time(t, type) for t in time]
+    if isinstance(time, tuple):
+        return tuple([_normalize_time(t, type) for t in time])
+
+    try:
+        t = int(time)
+    except ValueError:
+        return t
+
+    if t % 100:  # not multiple of 100
+        t = t * 100
+
+    assert t <= 2400, t
+    assert t >= 0, t
+
+    if type is str:
+        return f"{t:04d}"
+    assert isinstance(t, int)
+    return t
+
+
+def _normalize_expver(expver):
+    if isinstance(expver, str):
+        return expver
+    return f"{expver:04}"
+
+
+def normalize_grib_key_values(kwargs, accept_none=True):
+    def f(kwargs):
+        return kwargs
+
+    f = normalize_grib_keys(f)
+    f = normalize("param", "variable-list(mars)")(f)
+    f = normalize("date", "date-list(%Y-%m-%d)")(f)
+    f = normalize("area", "bounding-box(list)")(f)
+    f = normalize("levelist", "int-list")(f)
+
+    if "time" in kwargs:
+        kwargs["time"] = _normalize_time(kwargs["time"], int)
+    if "expver" in kwargs:
+        kwargs["expver"] = _normalize_expver(kwargs["expver"])
+
+    return kwargs
+
+
 class alias_argument(Decorator):
     def __init__(
         self,

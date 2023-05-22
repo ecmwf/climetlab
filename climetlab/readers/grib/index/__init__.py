@@ -13,7 +13,7 @@ import os
 from abc import abstractmethod
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
-from climetlab.decorators import alias_argument
+from climetlab.decorators import normalize_grib_keys
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
@@ -51,6 +51,71 @@ class FieldSet(FieldSetMixin, Index):
     def merge(cls, sources):
         assert all(isinstance(_, FieldSet) for _ in sources)
         return MultiFieldSet(sources)
+
+    def available(self, request, remapping=None, as_list_of_dicts=False):
+        # for k,v in cml.load_source('indexed-directory', '.').available(dict(param='u', date=[20150418, 19930221], time=[12,1500], level=500)).items(): print(k,"\n",v)
+        from climetlab.decorators import _normalize_time
+        from climetlab.utils.availability import Availability
+
+        if remapping is None:
+            remapping = {}
+        assert isinstance(request, dict), (type(request), request)
+
+        if not request:
+            return None, None
+
+        if remapping:
+            raise NotImplementedError()
+
+        keys = list(request.keys())
+
+        ds = self.sel(**request)  # , remapping=remapping)
+
+        def normalize_for_availability(k, v):
+            if k == "time":
+                v = _normalize_time(v, str)
+            if k == "levelist":
+                k = "level"
+
+            if isinstance(v, list):
+                return k, [normalize_for_availability(k, _)[1] for _ in v]
+            if isinstance(v, tuple):
+                v = [normalize_for_availability(k, _)[1] for _ in v]
+                return k, tuple(v)
+
+            v = str(v)
+            return k, v
+
+        def dicts():
+            for i in progress_bar(
+                iterable=range(len(ds)),
+                desc="Building availability",
+            ):
+                metadata = ds.get_metadata(i)
+                dic = {}
+                for k in keys:
+                    if k == "level":
+                        k = "levelist"
+                    v = metadata.get(k, "-")
+                    k, v = normalize_for_availability(k, v)
+                    dic[k] = v
+                yield dic
+
+        available = Availability(dicts())
+
+        request_ = {}
+        for k, v in request.items():
+            k, v = normalize_for_availability(k, v)
+            assert k not in request_, (k, request_)
+            request_[k] = v
+        missing = available.missing(**request_)
+
+        if as_list_of_dicts:
+            # available = available.as_list_of_dicts()
+            # missing = missing.as_list_of_dicts()
+            raise NotImplemented()
+
+        return dict(available=available, missing=missing)
 
     def _custom_availability(
         self, keys=None, ignore_keys=None, filter_keys=lambda k: True
@@ -105,11 +170,7 @@ class FieldSet(FieldSetMixin, Index):
         expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
         return len(self) == expected_size
 
-    @alias_argument("levelist", ["level", "levellist"])
-    @alias_argument("levtype", ["leveltype"])
-    @alias_argument("param", ["variable", "parameter"])
-    @alias_argument("number", ["realization", "realisation"])
-    @alias_argument("class", "klass")
+    @normalize_grib_keys
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 

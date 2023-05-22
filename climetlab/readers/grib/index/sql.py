@@ -13,7 +13,7 @@ from collections import namedtuple
 from climetlab.core.constants import DATETIME
 from climetlab.core.order import normalize_order_by
 from climetlab.core.select import normalize_selection
-from climetlab.decorators import cached_method, normalize
+from climetlab.decorators import cached_method, normalize, normalize_grib_key_values
 from climetlab.indexing.database.sql import (
     SqlDatabase,
     SqlOrder,
@@ -74,6 +74,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     def sel(self, *args, remapping=None, **kwargs):
         kwargs = normalize_selection(*args, **kwargs)
         kwargs = self._normalize_kwargs_names(**kwargs)
+        kwargs = normalize_grib_key_values(kwargs)
         if DATETIME in kwargs and kwargs[DATETIME] is not None:
             kwargs = _normalize_grib_kwargs_values(**kwargs)
 
@@ -105,7 +106,6 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         return self._cache.result[n % self.DB_CACHE_SIZE]
 
     def get_metadata(self, n):
-        assert "Used only in virtual"
         if self._dict_cache is None or not (
             self._dict_cache.first
             <= n
