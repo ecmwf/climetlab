@@ -13,8 +13,8 @@ import json
 import logging
 import os
 import sqlite3
-from threading import local
 import time
+from threading import local
 
 import numpy as np
 
@@ -66,7 +66,7 @@ def execute(connection, statement, *arg, **kwargs):
             dump_sql(statement)
             print(f"{e}. Retrying in {delay} seconds.")
             delay = delay * 1.5
-    raise e
+    raise e  # noqa: F821
 
 
 def entryname_to_dbname(n):
