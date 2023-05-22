@@ -74,12 +74,12 @@ class GribOutput:
         check_nans=False,
         metadata={},
         template=None,
-        **kwarg,
+        **kwargs,
     ):
         # Make a copy as we may modify it
         md = self._normalize_kwargs_names(**self.kwargs)
         md.update(self._normalize_kwargs_names(**metadata))
-        md.update(self._normalize_kwargs_names(**kwarg))
+        md.update(self._normalize_kwargs_names(**kwargs))
 
         metadata = md
 
