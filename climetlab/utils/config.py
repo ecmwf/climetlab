@@ -75,6 +75,18 @@ def expand(values):
                 result.append([d.isoformat() for d in lst])
             return result
 
+        if "daily" in values:
+            start = values["daily"]["start"]
+            stop = values["daily"]["stop"]
+            date = start
+            result = []
+            while True:
+                result.append([date])
+                date = date + datetime.timedelta(days=1)
+                if date > stop:
+                    break
+            return result
+
     raise ValueError(f"Cannot expand loop from {values}")
 
 
