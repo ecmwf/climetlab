@@ -13,7 +13,7 @@ import os
 from abc import abstractmethod
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
-from climetlab.decorators import normalize_grib_keys
+from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
@@ -52,39 +52,24 @@ class FieldSet(FieldSetMixin, Index):
         assert all(isinstance(_, FieldSet) for _ in sources)
         return MultiFieldSet(sources)
 
-    def available(self, request, remapping=None, as_list_of_dicts=False):
-        # for k,v in cml.load_source('indexed-directory', '.').available(dict(param='u', date=[20150418, 19930221], time=[12,1500], level=500)).items(): print(k,"\n",v)
+    def available(self, request,  as_list_of_dicts=False):
+        # for k,v in cml.load_source('indexed-directory', '.').available(param='u', date=[20150418, 19930221], time=[12,1500], level=500).items(): print(k,"\n",v)
         from climetlab.decorators import _normalize_time
         from climetlab.utils.availability import Availability
-
-        if remapping is None:
-            remapping = {}
-        assert isinstance(request, dict), (type(request), request)
 
         if not request:
             return None, None
 
-        if remapping:
-            raise NotImplementedError()
+        @normalize_grib_keys
+        def f(**_):
+            return _
+
+        request = f(**request)
+        request = normalize_grib_key_values(request, as_tuple=True)
 
         keys = list(request.keys())
 
         ds = self.sel(**request)  # , remapping=remapping)
-
-        def normalize_for_availability(k, v):
-            if k == "time":
-                v = _normalize_time(v, str)
-            if k == "levelist":
-                k = "level"
-
-            if isinstance(v, list):
-                return k, [normalize_for_availability(k, _)[1] for _ in v]
-            if isinstance(v, tuple):
-                v = [normalize_for_availability(k, _)[1] for _ in v]
-                return k, tuple(v)
-
-            v = str(v)
-            return k, v
 
         def dicts():
             for i in progress_bar(
@@ -92,23 +77,22 @@ class FieldSet(FieldSetMixin, Index):
                 desc="Building availability",
             ):
                 metadata = ds.get_metadata(i)
+
                 dic = {}
                 for k in keys:
                     if k == "level":
+                        assert False
                         k = "levelist"
                     v = metadata.get(k, "-")
-                    k, v = normalize_for_availability(k, v)
                     dic[k] = v
+
+                dic = normalize_grib_key_values(dic, as_tuple=False)
+
                 yield dic
 
         available = Availability(dicts())
 
-        request_ = {}
-        for k, v in request.items():
-            k, v = normalize_for_availability(k, v)
-            assert k not in request_, (k, request_)
-            request_[k] = v
-        missing = available.missing(**request_)
+        missing = available.missing(**request)
 
         if as_list_of_dicts:
             # available = available.as_list_of_dicts()
