@@ -67,7 +67,7 @@ class FieldSet(FieldSetMixin, Index):
 
         keys = list(request.keys())
 
-        ds = self.sel(**request)  # , remapping=remapping)
+        ds = self.sel(**request)
 
         def dicts():
             for i in progress_bar(
@@ -75,19 +75,9 @@ class FieldSet(FieldSetMixin, Index):
                 desc="Building availability",
             ):
                 metadata = ds.get_metadata(i)
-
-                dic = {}
-                for k in keys:
-                    if k == "level":
-                        assert False
-                        k = "levelist"
-                    v = metadata.get(k, "-")
-                    dic[k] = v
-
+                dic = {k: metadata.get(k, "-") for k in keys}
                 dic = normalize_grib_key_values(dic, as_tuple=False)
-
                 yield dic
-
         available = Availability(dicts())
 
         missing = available.missing(**request)
