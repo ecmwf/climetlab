@@ -74,7 +74,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
     def sel(self, *args, remapping=None, **kwargs):
         kwargs = normalize_selection(*args, **kwargs)
         kwargs = self._normalize_kwargs_names(**kwargs)
-        kwargs = normalize_grib_key_values(kwargs)
+        kwargs = normalize_grib_key_values(kwargs, as_tuple=True)
         if DATETIME in kwargs and kwargs[DATETIME] is not None:
             kwargs = _normalize_grib_kwargs_values(**kwargs)
 

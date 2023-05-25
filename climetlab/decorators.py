@@ -100,6 +100,11 @@ def normalize_grib_keys(f):
     return f
 
 
+def _normalize_time_as_tuple(time, type):
+    if isinstance(time, str):
+        time = (time,)
+    return tuple(_normalize_time(t, type) for t in time)
+
 def _normalize_time(time, type):
     assert type in (int, str), type
 
@@ -112,30 +117,39 @@ def _normalize_time(time, type):
         return tuple([_normalize_time(t, type) for t in time])
 
     try:
-        t = int(time)
+        time = int(time)
     except ValueError:
-        return t
+        return time
 
-    if t % 100:  # not multiple of 100
-        t = t * 100
+    if time % 100:  # not multiple of 100
+        time = time * 100
 
-    assert t <= 2400, t
-    assert t >= 0, t
+    assert time <= 2400, time
+    assert time >= 0, time
 
     if type is str:
-        return f"{t:04d}"
-    assert isinstance(t, int)
-    return t
+        return f"{time:04d}"
+    assert isinstance(time, int)
+    return time
 
 
 def _normalize_expver(expver):
     if isinstance(expver, str):
         return expver
+    assert isinstance(expver, int)
     return f"{expver:04}"
 
+def _normalize_expver_as_tuple(expver):
+    lst = []
+    for x in expver:
+        if not isinstance(x, str):
+            x = "%04d" % x
+        lst.append(x)
+    return tuple(lst)
 
-def normalize_grib_key_values(kwargs, accept_none=True):
-    def f(kwargs):
+
+def normalize_grib_key_values(kwargs, accept_none=True, as_tuple=False):
+    def f(**kwargs):
         return kwargs
 
     f = normalize_grib_keys(f)
@@ -143,11 +157,12 @@ def normalize_grib_key_values(kwargs, accept_none=True):
     f = normalize("date", "date-list(%Y-%m-%d)")(f)
     f = normalize("area", "bounding-box(list)")(f)
     f = normalize("levelist", "int-list")(f)
+    kwargs = f(**kwargs)
 
     if "time" in kwargs:
-        kwargs["time"] = _normalize_time(kwargs["time"], int)
+        kwargs["time"] = {False:_normalize_time, True:_normalize_time_as_tuple}[as_tuple](kwargs["time"], int)
     if "expver" in kwargs:
-        kwargs["expver"] = _normalize_expver(kwargs["expver"])
+        kwargs["expver"] = {False:_normalize_expver, True:_normalize_expver_as_tuple}[as_tuple](kwargs["expver"])
 
     return kwargs
 
