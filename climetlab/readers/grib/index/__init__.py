@@ -52,7 +52,7 @@ class FieldSet(FieldSetMixin, Index):
         assert all(isinstance(_, FieldSet) for _ in sources)
         return MultiFieldSet(sources)
 
-    def available(self, request,  as_list_of_dicts=False):
+    def available(self, request, as_list_of_dicts=False):
         # for k,v in cml.load_source('indexed-directory', '.').available(param='u', date=[20150418, 19930221], time=[12,1500], level=500).items(): print(k,"\n",v)
         from climetlab.decorators import _normalize_time
         from climetlab.utils.availability import Availability

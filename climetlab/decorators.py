@@ -105,6 +105,7 @@ def _normalize_time_as_tuple(time, type):
         time = (time,)
     return tuple(_normalize_time(t, type) for t in time)
 
+
 def _normalize_time(time, type):
     assert type in (int, str), type
 
@@ -139,6 +140,7 @@ def _normalize_expver(expver):
     assert isinstance(expver, int)
     return f"{expver:04}"
 
+
 def _normalize_expver_as_tuple(expver):
     lst = []
     for x in expver:
@@ -160,9 +162,13 @@ def normalize_grib_key_values(kwargs, accept_none=True, as_tuple=False):
     kwargs = f(**kwargs)
 
     if "time" in kwargs:
-        kwargs["time"] = {False:_normalize_time, True:_normalize_time_as_tuple}[as_tuple](kwargs["time"], int)
+        kwargs["time"] = {False: _normalize_time, True: _normalize_time_as_tuple}[
+            as_tuple
+        ](kwargs["time"], int)
     if "expver" in kwargs:
-        kwargs["expver"] = {False:_normalize_expver, True:_normalize_expver_as_tuple}[as_tuple](kwargs["expver"])
+        kwargs["expver"] = {False: _normalize_expver, True: _normalize_expver_as_tuple}[
+            as_tuple
+        ](kwargs["expver"])
 
     return kwargs
 
