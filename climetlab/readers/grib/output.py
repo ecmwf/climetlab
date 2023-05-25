@@ -11,7 +11,7 @@ import datetime
 import logging
 import re
 
-from climetlab.decorators import alias_argument, normalize, normalize_grib_keys
+from climetlab.decorators import normalize, normalize_grib_keys
 from climetlab.utils.humanize import list_to_human
 
 LOG = logging.getLogger(__name__)

@@ -98,7 +98,7 @@ try:
         "regular_ll_pl_grib1", eccodes.CODES_PRODUCT_GRIB
     )
     eccodes.codes_release(_h)
-except:
+except:  # noqa E722
     pass
 
 

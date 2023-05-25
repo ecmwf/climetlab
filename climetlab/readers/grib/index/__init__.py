@@ -53,8 +53,6 @@ class FieldSet(FieldSetMixin, Index):
         return MultiFieldSet(sources)
 
     def available(self, request, as_list_of_dicts=False):
-        # for k,v in cml.load_source('indexed-directory', '.').available(param='u', date=[20150418, 19930221], time=[12,1500], level=500).items(): print(k,"\n",v)
-        from climetlab.decorators import _normalize_time
         from climetlab.utils.availability import Availability
 
         if not request:
@@ -97,7 +95,7 @@ class FieldSet(FieldSetMixin, Index):
         if as_list_of_dicts:
             # available = available.as_list_of_dicts()
             # missing = missing.as_list_of_dicts()
-            raise NotImplemented()
+            raise NotImplementedError()
 
         return dict(available=available, missing=missing)
 
