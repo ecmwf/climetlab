@@ -78,6 +78,7 @@ class FieldSet(FieldSetMixin, Index):
                 dic = {k: metadata.get(k, "-") for k in keys}
                 dic = normalize_grib_key_values(dic, as_tuple=False)
                 yield dic
+
         available = Availability(dicts())
 
         missing = available.missing(**request)
