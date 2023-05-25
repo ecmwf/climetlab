@@ -65,9 +65,32 @@ class LoadersCmd:
             lst = list_to_human(list(LOADERS.keys()), "or")
             raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
 
+        def no_callback(*args, **kwargs):
+            return
+
+        if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
+
+            def callback(msg):
+                import subprocess
+                import traceback
+
+                cmd = os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK")
+                cmd = cmd.format(msg)
+                try:
+                    print(f"Running {cmd}")
+                    subprocess.run(cmd.split(" "))
+                except Exception as e:
+                    print(f"Exception when running {cmd}" + traceback.format_exc())
+                    print(e)
+
+            callback("Starting-loader.")
+        else:
+            callback = no_callback
+
         return load(
             LOADERS[args.format](args.target),
             args.config,
             dataset=args.dataset,
             metadata_only=args.metadata,
+            callback=callback,
         )

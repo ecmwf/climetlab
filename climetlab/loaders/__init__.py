@@ -345,7 +345,7 @@ class HDF5Loader:
         warnings.warn("HDF5Loader.add_metadata not yet implemented")
 
 
-def _load(loader, config, append, **kwargs):
+def _load(loader, config, append, callback, **kwargs):
     start = time.time()
     print("Loading input", config.input)
 
@@ -374,10 +374,14 @@ def _load(loader, config, append, **kwargs):
     save = 0
 
     reading_chunks = None
-    for cubelet in progress_bar(
-        total=cube.count(reading_chunks),
-        iterable=cube.iterate_cubelets(reading_chunks),
+    total = (cube.count(reading_chunks),)
+    for i, cubelet in enumerate(
+        progress_bar(
+            iterable=cube.iterate_cubelets(reading_chunks),
+            total=total,
+        )
     ):
+        callback(f"{i}/{total}")
         now = time.time()
         data = cubelet.to_numpy()
         load += time.time() - now
