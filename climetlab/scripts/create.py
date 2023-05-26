@@ -71,6 +71,7 @@ class LoadersCmd:
         if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
 
             def callback(msg):
+                import shlex
                 import subprocess
                 import traceback
 
@@ -78,7 +79,8 @@ class LoadersCmd:
                 cmd = cmd.format(msg)
                 try:
                     print(f"Running {cmd}")
-                    subprocess.run(cmd.split(" "))
+                    args = shlex.split(cmd)  # shlex honors the quotes
+                    subprocess.run(args)
                 except Exception as e:
                     print(f"Exception when running {cmd}" + traceback.format_exc())
                     print(e)
