@@ -92,5 +92,5 @@ class LoadersCmd:
             args.config,
             dataset=args.dataset,
             metadata_only=args.metadata,
-            callback=callback,
+            print=callback,
         )

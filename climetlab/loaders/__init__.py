@@ -345,9 +345,9 @@ class HDF5Loader:
         warnings.warn("HDF5Loader.add_metadata not yet implemented")
 
 
-def _load(loader, config, append, callback, **kwargs):
+def _load(loader, config, append, print_=print, **kwargs):
     start = time.time()
-    print("Loading input", config.input)
+    print_("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
     if "constant" in config.input:
@@ -357,7 +357,7 @@ def _load(loader, config, append, callback, **kwargs):
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
     start = time.time()
-    print("Sort dataset")
+    print_("Sort dataset")
     cube = data.cube(
         config.output.order_by,
         remapping=config.output.remapping,
@@ -374,14 +374,13 @@ def _load(loader, config, append, callback, **kwargs):
     save = 0
 
     reading_chunks = None
-    total = (cube.count(reading_chunks),)
+    total = cube.count(reading_chunks)
     for i, cubelet in enumerate(
         progress_bar(
             iterable=cube.iterate_cubelets(reading_chunks),
             total=total,
         )
     ):
-        callback(f"{i}/{total}")
         now = time.time()
         data = cubelet.to_numpy()
         load += time.time() - now
@@ -391,6 +390,9 @@ def _load(loader, config, append, callback, **kwargs):
         now = time.time()
         array[cubelet.extended_icoords] = data
         save += time.time() - now
+
+        if print_ != print:
+            print_(f"{i}/{total}")
 
     now = time.time()
     loader.close()
