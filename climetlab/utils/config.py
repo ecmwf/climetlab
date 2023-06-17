@@ -42,6 +42,8 @@ class DictObj(dict):
 
 
 def expand(values):
+    from climetlab.utils.dates import to_datetime
+
     if isinstance(values, list):
         return values
 
@@ -55,6 +57,10 @@ def expand(values):
         if "monthly" in values:
             start = values["monthly"]["start"]
             stop = values["monthly"]["stop"]
+
+            start = to_datetime(start)
+            stop = to_datetime(stop)
+
             date = start
             last = None
             result = []
