@@ -75,8 +75,11 @@ class Availability:
                 avail = factorise(avail, intervals=intervals)
         self._tree = avail
 
-    def as_mars_list(self):
-        return self._tree.as_mars_list()
+    def as_mars_list(self, *args, **kwargs):
+        return self._tree.as_mars_list(*args, **kwargs)
+
+    def as_mars(self, *args, **kwargs):
+        return self._tree.as_mars(*args, **kwargs)
 
     def to_pickle(self, filename):
         with open(filename, "wb") as f:

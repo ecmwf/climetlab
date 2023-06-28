@@ -148,7 +148,14 @@ def main():
     p.add_argument(
         "-h", "--help", action="store_true", help="show this help message and exit"
     )
+    p.add_argument("-v", "--version", action="store_true", help="show version and exit")
     args = p.parse_args()
+    if args.version:
+        from climetlab import __version__
+
+        print(__version__)
+        sys.exit()
+
     if args.help:
         p.print_help()
         cmdline = ["help"]

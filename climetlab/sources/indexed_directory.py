@@ -9,6 +9,7 @@
 import logging
 import os
 
+from climetlab.exceptions import NotIndexedDirectoryError
 from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
 from climetlab.sources.indexed import IndexedSource
 
@@ -71,7 +72,7 @@ class GenericDirectorySource(IndexedSource):
 
         # Try to use db_path if it exists:
         if not os.path.exists(db_path):
-            raise Exception(
+            raise NotIndexedDirectoryError(
                 f"This directory has not been indexed. Try running 'climetlab index_directory {self.path}'."
             )
 

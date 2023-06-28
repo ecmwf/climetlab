@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import sqlite3
+import time
 from threading import local
 
 import numpy as np
@@ -53,7 +54,19 @@ def execute(connection, statement, *arg, **kwargs):
     if LOG.level == logging.DEBUG:
         assert False
         dump_sql(statement)
-    return connection.execute(statement, *arg, **kwargs)
+
+    delay = 1
+    while delay < 30 * 60:  # max delay 30 min
+        try:
+            return connection.execute(statement, *arg, **kwargs)
+        except sqlite3.OperationalError as e:
+            if not str(e).endswith("database is locked"):
+                raise e
+            time.sleep(delay)
+            dump_sql(statement)
+            print(f"{e}. Retrying in {delay} seconds.")
+            delay = delay * 1.5
+    raise e  # noqa: F821
 
 
 def entryname_to_dbname(n):

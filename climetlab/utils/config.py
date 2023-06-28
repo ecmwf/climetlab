@@ -42,6 +42,8 @@ class DictObj(dict):
 
 
 def expand(values):
+    from climetlab.utils.dates import to_datetime
+
     if isinstance(values, list):
         return values
 
@@ -55,6 +57,10 @@ def expand(values):
         if "monthly" in values:
             start = values["monthly"]["start"]
             stop = values["monthly"]["stop"]
+
+            start = to_datetime(start)
+            stop = to_datetime(stop)
+
             date = start
             last = None
             result = []
@@ -73,6 +79,18 @@ def expand(values):
                     break
             if lst:
                 result.append([d.isoformat() for d in lst])
+            return result
+
+        if "daily" in values:
+            start = values["daily"]["start"]
+            stop = values["daily"]["stop"]
+            date = start
+            result = []
+            while True:
+                result.append([date])
+                date = date + datetime.timedelta(days=1)
+                if date > stop:
+                    break
             return result
 
     raise ValueError(f"Cannot expand loop from {values}")
@@ -126,35 +144,26 @@ class LoadersConfig(Config):
 
         self.reading_chunks = self.get("reading_chunks")
         self.output.flatten_values = self.output.get("flatten_values", False)
-        self.output.grid_points_first = self.output.get("grid_points_first", False)
-        if self.output.grid_points_first and not self.output.flatten_values:
-            raise NotImplementedError(
-                "For now, grid_points_first is only valid if flatten_values"
-            )
 
         # The axis along which we append new data
         # TODO: assume grid points can be 2d as well
-        self.output.append_axis = 1 if self.output.grid_points_first else 0
+        self.output.append_axis = 0
 
-        self.collect_statistics = False
-        if "statistics" in self.output:
-            statistics_axis_name = self.output["statistics"]
-            statistics_axis = -1
-            for i, k in enumerate(self.output.order_by):
-                if k == statistics_axis_name:
-                    statistics_axis = i
+        assert "statistics" in self.output
+        statistics_axis_name = self.output.statistics
+        statistics_axis = -1
+        for i, k in enumerate(self.output.order_by):
+            if k == statistics_axis_name:
+                statistics_axis = i
 
-            assert statistics_axis >= 0, (statistics_axis_name, self.output.order_by)
+        assert (
+            statistics_axis >= 0
+        ), f"{self.output.statistics} not in {list(self.output.order_by.keys())}"
 
-            self.statistics_names = self.output.order_by[statistics_axis_name]
+        self.statistics_names = self.output.order_by[statistics_axis_name]
 
-            # TODO: consider 2D grid points
-            self.statistics_axis = (
-                statistics_axis + 1
-                if self.output.grid_points_first
-                else statistics_axis
-            )
-            self.collect_statistics = True
+        # TODO: consider 2D grid points
+        self.statistics_axis = statistics_axis
 
 
 def substitute(x, vars=None, ignore_missing=False):

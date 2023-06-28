@@ -110,7 +110,13 @@ class Plot:
 
 def files_to_apng(files, path, fps):
     import imageio
-    from numpngw import write_apng
+
+    try:
+        from numpngw import write_apng
+    except ImportError:
+        raise RuntimeError(
+            "Package numpngw is required to save animated PNGs (pip install numpngw)"
+        )
 
     frames = [imageio.imread(f) for f in files]
 
@@ -135,7 +141,7 @@ def files_to_opencv(files, path, fps, cccc):
         import cv2
     except ImportError:
         raise RuntimeError(
-            "OpenCV is required to save movies (pip install opencv-python)"
+            "Package OpenCV is required to save movies (pip install opencv-python)"
         )
 
     frame = cv2.imread(files[0])
@@ -259,10 +265,13 @@ class LayoutPlot:
         return path
 
     def render(self, step, path):
-        import imageio
+        try:
+            import imageio
+        except ImportError:
+            raise RuntimeError(
+                "Package imageio is required to create animations (pip install imageio)"
+            )
         import numpy as np
-
-        # from numpngw import write_apng
 
         WHITE = {1: 255}
 
