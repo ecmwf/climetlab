@@ -142,6 +142,9 @@ def _normalize_expver(expver):
 
 
 def _normalize_expver_as_tuple(expver):
+    if isinstance(expver, (int, str)):
+        exver = _normalize_expver(expver)
+        expver = (expver,)
     lst = []
     for x in expver:
         if not isinstance(x, str):
