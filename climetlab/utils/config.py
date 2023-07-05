@@ -135,7 +135,8 @@ class LoadersConfig(Config):
         if "order_by" in self.output:
             self.output.order_by = normalize_order_by(self.output.order_by)
 
-        self.input.constants = self.input.get("constants")
+        if "constants" in self.input:
+            self.input.constants = self.input["constants"]
         self.output.remapping = self.output.get("remapping", {})
         self.output.remapping = build_remapping(self.output.remapping)
 

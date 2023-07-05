@@ -350,7 +350,8 @@ def _load(loader, config, append, print_=print, **kwargs):
     print_("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
-    if "constant" in config.input:
+
+    if "constants" in config.input and config.input.constants:
         data = data + cml.load_source("constants", data, config.input.constants)
 
     assert len(data)
