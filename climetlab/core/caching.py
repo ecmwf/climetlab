@@ -683,16 +683,20 @@ def cache_file(
         ),
     )
 
-    record = register_cache_file(path, owner, args)
-    if os.path.exists(path):
-        if callable(force):
-            owner_data = record["owner_data"]
-            if owner_data is not None:
-                owner_data = json.loads(owner_data)
-            force = force(args, path, owner_data)
+    try:
 
-        if force:
-            decache_file(path)
+        record = register_cache_file(path, owner, args)
+        if os.path.exists(path):
+            if callable(force):
+                owner_data = record["owner_data"]
+                if owner_data is not None:
+                    owner_data = json.loads(owner_data)
+                force = force(args, path, owner_data)
+
+            if force:
+                decache_file(path)
+    except Exception as e:
+        LOG.warning("Cannot register cache file %s: %s", path, e)
 
     if not os.path.exists(path):
         lock = path + ".lock"
