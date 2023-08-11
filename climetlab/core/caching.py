@@ -684,7 +684,6 @@ def cache_file(
     )
 
     try:
-
         record = register_cache_file(path, owner, args)
         if os.path.exists(path):
             if callable(force):
