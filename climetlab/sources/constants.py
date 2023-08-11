@@ -151,6 +151,7 @@ class ConstantField:
             param=param,
             level=None,
             levelist=None,
+            number=None,
         )
 
     def to_numpy(self, reshape=True, dtype=None):
