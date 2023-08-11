@@ -62,7 +62,7 @@ class GribOutput:
 
         if path not in self._files:
             self._files[path] = open(path, "wb")
-        return self._files[path]
+        return self._files[path], path
 
     def write(
         self,
@@ -115,7 +115,11 @@ class GribOutput:
             handle.set(k, v)
 
         handle.set_values(values)
-        handle.write(self.f(handle))
+
+        file, path = self.f(handle)
+        handle.write(file)
+
+        return handle, path
 
     def close(self):
         for f in self._files.values():
