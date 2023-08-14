@@ -136,7 +136,31 @@ class ConstantMaker:
     def insolation(self, date):
         from ecmwf_mlkit.variables.insolation import insolation
 
+        date = to_datetime(date)
         result = insolation([date], self.latitude_(), self.longitude_())
+        return result.flatten()
+
+    def toa_incident_solar_radiation(self, date):
+        from earthkit.meteo.solar import toa_incident_solar_radiation
+
+        date = to_datetime(date)
+        result = toa_incident_solar_radiation(
+            date - datetime.timedelta(hours=1),
+            date,
+            self.latitude_(),
+            self.longitude_(),
+        )
+        return result.flatten()
+
+    def cos_solar_zenith_angle(self, date):
+        from earthkit.meteo.solar import cos_solar_zenith_angle
+
+        date = to_datetime(date)
+        result = cos_solar_zenith_angle(
+            date,
+            self.latitude_(),
+            self.longitude_(),
+        )
         return result.flatten()
 
 
