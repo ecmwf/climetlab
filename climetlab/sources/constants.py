@@ -207,9 +207,6 @@ def make_datetime(date, time):
 class Constants(FieldSet):
     @normalize("date", "date-list")
     def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
-        if isinstance(request, list):
-            request = {k: k for k in request}
-
         request = dict(**request)
         request.update(kwargs)
 
