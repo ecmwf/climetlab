@@ -44,6 +44,12 @@ def test_types():
 
     assert TypeTransformer(None, type=IntType).transform("42") == 42
     assert TypeTransformer(None, type=IntListType).transform("42") == [42]
+    assert TypeTransformer(None, type=IntListType).transform("42/to/44") == [42, 43, 44]
+    assert TypeTransformer(None, type=IntListType).transform("42/to/48/by/3") == [
+        42,
+        45,
+        48,
+    ]
 
     assert TypeTransformer(None, type=FloatType).transform("3.14") == 3.14
     assert TypeTransformer(None, type=FloatListType).transform(3.14) == [3.14]

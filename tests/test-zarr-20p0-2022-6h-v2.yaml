@@ -1,0 +1,92 @@
+input:
+  - sfc_data:
+      kwargs:
+        name: mars
+        class: ea
+        date: $dates
+        expver: '0001'
+        grid: 20./20.
+        levtype: sfc
+        param: [z, 2t]
+        stream: oper
+        time: 0/to/12/by/12
+        type: an
+  - pl_data:
+      inherit: $sfc_data
+      kwargs:
+        name: mars
+        level: 100
+        levtype: pl
+        param: z
+  - forcings:
+      kwargs:
+        name: forcing
+        param: insolation
+        source_or_dataset: $pl_data
+
+  - sfc_data2:
+      kwargs:
+        name: mars
+        class: ea
+        date: $dates
+        expver: '0001'
+        grid: 20./20.
+        levtype: sfc
+        param: [z, 2t]
+        stream: oper
+        time: 0/to/12/by/12
+        type: an
+  - pl_data2:
+      inherit: $sfc_data2
+      kwargs:
+        name: mars
+        level: 100
+        levtype: pl
+        param: z
+  - forcings2:
+      kwargs:
+        name: forcing
+        param: insolation
+        source_or_dataset: $pl_data2
+
+loops:
+  - loop_a:
+      applies_to: [sfc_data, pl_data, forcings]
+      dates:
+        start: 2022-01-01
+        stop: 2022-01-02
+        group_by: monthly
+  - loop_b:
+      applies_to: [sfc_data2, pl_data2, forcings2]
+      dates:
+       start: 2022-01-03
+       stop: 2022-02-07
+       group_by: monthly
+      #hdates: 
+      #  type: hindcast
+      #  reference_date: $dates
+      #  number_of_years: 20
+       # day_of_week: monday
+       # time: 0
+     #number:
+     # start: 1
+     # stop: 3
+     # #group_by: 1
+
+output:
+  chunking:
+    valid_datetime: 1
+  dtype: float32
+  order_by:
+    - valid_datetime
+    - param_level:
+      - z_100
+      - z
+      - 2t
+      - insolation
+  remapping:
+    param_level: '{param}_{levelist}'
+  statistics: param_level
+  #statistics_start: 20
+  statistics_end: 20220103
+

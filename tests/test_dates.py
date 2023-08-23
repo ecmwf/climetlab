@@ -143,7 +143,7 @@ def test_pandas_dates_2():
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="zarr or s3fs not installed")
 def test_zarr_dates():
     S3_URL = (
-        "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
+        "https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
     )
     source = load_source(
         "zarr-s3",

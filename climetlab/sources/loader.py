@@ -11,6 +11,7 @@ import logging
 
 from ..datasets import load_dataset
 from ..sources import load_source
+from ..sources.multi import MultiSource
 from . import Source
 
 LOG = logging.getLogger(__name__)
@@ -21,6 +22,8 @@ class LoadAction:
         if not isinstance(v, list):
             v = [v]
         for one in v:
+            one = dict(**one)
+            assert "name" in one, one
             name = one.pop("name")
             if inherit:
                 last.update(one)
@@ -34,17 +37,12 @@ class LoadAction:
 
 class LoadSource(LoadAction):
     def load(self, *args, **kwargs):
-        return load_source(*args, **kwargs)
+        return (load_source, args, kwargs)
 
 
 class LoadDataset(LoadAction):
     def load(self, *args, **kwargs):
-        return load_dataset(*args, **kwargs)
-
-
-class Inherit:
-    def execute(self, *args, **kwargs):
-        pass
+        return (load_dataset, args, kwargs)
 
 
 class LoadConstants(LoadSource):
@@ -62,7 +60,6 @@ class LoadConstants(LoadSource):
 
 
 ACTIONS = {
-    "inherit": Inherit,
     "source": LoadSource,
     "dataset": LoadDataset,
     "constants": LoadConstants,
@@ -81,7 +78,7 @@ def instanciate_values(o, kwargs):
     return o
 
 
-class Loader(Source):
+class Input:
     def __init__(self, config, **kwargs):
         from climetlab.utils import load_json_or_yaml
 
@@ -91,23 +88,40 @@ class Loader(Source):
                 config = config["input"]
                 config = instanciate_values(config, kwargs)
 
+        assert isinstance(config, (list, tuple)), config
+
         self.config = config
 
-    def mutate(self):
+    def expand(self):
+        """
+        The config provided to this "loader" source can have
+        multiple sources/datasets. Let's iterate along each of
+        them, and concatenate them as a unique source.
+        """
         data = []
         inherit = False
         last = {}
-        for k, v in self.config.items():
+        for input in self.config:
+            assert isinstance(input, dict), input
+
+            k = list(input.keys())[0]
+            v = input[k]
             if k == "inherit":
                 inherit = v
+                assert len(input) == 1, input
+                continue
 
             ACTIONS[k]().execute(v, data, last, inherit)
 
-        result = data[0]
-        for d in data[1:]:
-            result = result + d
+        return data
 
-        return result
+
+class Loader(Source):
+    def __init__(self, config, **kwargs):
+        self.input = Input(config, **kwargs)
+
+    def mutate(self):
+        return MultiSource(self.input.expand())
 
 
 source = Loader

@@ -92,7 +92,7 @@ def build_mirror_from_env_var():
         return None
 
     if " " in env_var:
-        # export CLIMETLAB_MIRROR='https://storage.ecmwf.europeanweather.cloud file:///data/mirror/https/storage.ecmwf.europeanweather.cloud' # noqa
+        # export CLIMETLAB_MIRROR='https://object-store.os-api.cci1.ecmwf.int file:///data/mirror/https/object-store.os-api.cci1.ecmwf.int' # noqa
         LOG.warning(
             "Deprecation warning: this use of CLIMETLAB_MIRROR environment variable"
             " to define a mirror will be deprecated."

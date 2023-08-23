@@ -29,6 +29,22 @@ _ORDER = (
     "productDefinitionTemplateNumber",
 )
 
+ORDER = {}
+for i, k in enumerate(_ORDER):
+    ORDER[k] = i
+
+
+def order(key):
+    ORDER.setdefault(key, len(ORDER))
+    return ORDER[key]
+
+_ORDER = (
+    "edition",
+    "setLocalDefinition",
+    "typeOfGeneratingProcess",
+    "productDefinitionTemplateNumber",
+)
+
 NOT_IN_EDITION_1 = (
     "productDefinitionTemplateNumber",
     "typeOfGeneratingProcess",
@@ -135,6 +151,16 @@ class GribOutput:
         if str(metadata.get("edition")) == "1":
             for k in NOT_IN_EDITION_1:
                 metadata.pop(k, None)
+
+        LOG.debug("GribOutput.metadata %s", metadata)
+
+        # print('-----------------')
+        # for k, v in metadata.items():
+        #     try:
+        #         print(k, v,  handle.get(k))
+        #     except Exception as e:
+        #         print(k, v, e)
+        # print('-----------------')
 
         LOG.debug("GribOutput.metadata %s", metadata)
 
