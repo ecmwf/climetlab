@@ -239,9 +239,11 @@ class ZarrLoader(Loader):
 
         mean = sums / count
         stdev = np.sqrt(squares / count - mean * mean)
-
         name_to_index = {}
         statistics_by_name = {}
+        assert isinstance(
+            self.config.statistics_names, (tuple, list)
+        ), self.config.statistics_names
         for i, name in enumerate(self.config.statistics_names):
             statistics_by_name[name] = {}
             statistics_by_name[name]["mean"] = mean[i]

@@ -65,6 +65,8 @@ class LoadersCmd:
             lst = list_to_human(list(LOADERS.keys()), "or")
             raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
 
+        loader = LOADERS[args.format](args.target)
+
         def no_callback(*args, **kwargs):
             return
 
@@ -90,7 +92,7 @@ class LoadersCmd:
             callback = no_callback
 
         return load(
-            LOADERS[args.format](args.target),
+            loader,
             args.config,
             dataset=args.dataset,
             metadata_only=args.metadata,
