@@ -115,6 +115,12 @@ class Config(DictObj):
             )
         )
 
+    def _len_of_iter_loops(self):
+        n = 0
+        for _ in self._iter_loops():
+            n += 1
+        return n
+
     def iter_configs(self):
         if self.loop is None:
             return [self]

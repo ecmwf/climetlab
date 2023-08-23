@@ -9,7 +9,8 @@
 
 import os
 
-from climetlab.loaders import HDF5Loader, ZarrLoader, load
+from climetlab.loaders import HDF5Loader, ZarrLoader
+from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import list_to_human
 
 from .tools import parse_args
@@ -49,23 +50,40 @@ class LoadersCmd:
             "--metadata",
             dict(action="store_true", help="Update metadata."),
         ),
+        partial_loop_chunk_size=(
+            "--partial-loop-chunk-size",
+            dict(
+                metavar="N",
+                default=1,
+                type=int,
+                help="Process partially the data, grouping loop items by groups (loop chunks) of size N.",
+            ),
+        ),
+        partial_loop_chunk_number=(
+            "--partial-loop-chunk-number",
+            dict(
+                metavar="I",
+                type=int,
+                help="Process partially the data, only the loop chunk number I.",
+            ),
+        ),
+        total_loop_chunk_number=(
+            "--total-loop-chunk-number",
+            dict(
+                action="store_true",
+                help="Do not run anything. Returns the number of loop chunks.",
+            ),
+        ),
     )
     def do_create(self, args):
+        if args.total_loop_chunk_number:
+            config = LoadersConfig(args.config)
+            print(config._len_of_iter_loops())
+            return
+
         if args.format is None:
             _, ext = os.path.splitext(args.target)
             args.format = ext[1:]
-
-        LOADERS = dict(
-            zarr=ZarrLoader,
-            h5=HDF5Loader,
-            hdf5=HDF5Loader,
-            hdf=HDF5Loader,
-        )
-        if args.format not in LOADERS:
-            lst = list_to_human(list(LOADERS.keys()), "or")
-            raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
-
-        loader = LOADERS[args.format](args.target)
 
         def no_callback(*args, **kwargs):
             return
@@ -91,10 +109,22 @@ class LoadersCmd:
         else:
             callback = no_callback
 
-        return load(
-            loader,
-            args.config,
+        LOADERS = dict(
+            zarr=ZarrLoader,
+            h5=HDF5Loader,
+            hdf5=HDF5Loader,
+            hdf=HDF5Loader,
+        )
+        if args.format not in LOADERS:
+            lst = list_to_human(list(LOADERS.keys()), "or")
+            raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
+
+        loader = LOADERS[args.format](args.target, config=args.config)
+
+        return loader.load(
             dataset=args.dataset,
             metadata_only=args.metadata,
+            partial_loop_chunk_size=args.partial_loop_chunk_size,
+            partial_loop_chunk_number=args.partial_loop_chunk_number,
             print=callback,
         )
