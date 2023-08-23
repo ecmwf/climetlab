@@ -132,22 +132,16 @@ class Loader:
         partial_loop_chunk_size,
         partial_loop_chunk_number,
         append=False,
-        metadata_only=False,
         **kwargs,
     ):
         config = self.main_config
 
-        if metadata_only:
-            self.add_metadata(config)
-            return
-
         if "loop" not in config or config.loop is None:
             assert not append, "Not yet implemented"
             self.partial_load(config, append, **kwargs)
-            self.add_metadata(config)
             return
 
-        nloop = config._len_of_iter_loops()
+        self.nloop = config._len_of_iter_loops()
         for iloop, vars in enumerate(config._iter_loops()):
             assert partial_loop_chunk_size == 1, "only 1 supported"
             if (
@@ -155,15 +149,19 @@ class Loader:
                 and iloop != partial_loop_chunk_number
             ):
                 continue
-            append = iloop != 0
-            print("------------------------------------------------")
-            print(f"Processing {iloop}/{nloop}: {vars}")
-            self.partial_load(config.substitute(vars), append=append, **kwargs)
-            self.add_metadata(config)
+            self.partial_load(
+                config.substitute(vars), append=append, iloop=iloop, **kwargs
+            )
+            append = True
 
-    def partial_load(self, config, append, print_=print, **kwargs):
+    def add_metadata(self):
+        raise NotImplementedError()
+
+    def partial_load(self, config, append, *, iloop, print_=print, **kwargs):
         start = time.time()
-        print_("Loading input", config.input)
+        print("------------------------------------------------")
+        print(f"Processing : {vars}")
+        print_(f"Loading input {iloop}/{self.nloop}", config.input)
 
         data = cml.load_source("loader", config.input)
         # if "constants" in config.input and config.input.constants:
@@ -242,23 +240,20 @@ class ZarrLoader(Loader):
 
         self.config = config
 
-        self.statistics = []
-
         shape = cube.extended_user_shape
         chunks = cube.chunking(config.output.chunking)
         dtype = config.output.dtype
 
-        print(
-            f"Creating ZARR file '{self.path}', with {shape=}, "
-            f"{chunks=} and {dtype=}"
-        )
+        print(f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}")
 
         self.z = zarr.open(self.path, mode="w")
         self.zdata = self.z.create_dataset(
-            "data",
-            shape=shape,
-            chunks=chunks,
-            dtype=dtype,
+            "data", shape=shape, chunks=chunks, dtype=dtype
+        )
+        self._build_flags = self._add_dataset(
+            "_build",
+            np.full(self.nloop, False),
+            dtype=bool,
         )
 
         lat = self._add_dataset("latitude", grid_points[0])
@@ -272,19 +267,14 @@ class ZarrLoader(Loader):
 
         self.config = config
 
-        self.statistics = []
-
         shape = cube.extended_user_shape
         chunks = cube.chunking(config.output.chunking)
-        dtype = config.output.dtype
 
-        print(
-            f"Appending to ZARR file '{self.path}', with {shape=}, "
-            f"{chunks=} and {dtype=}"
-        )
+        print(f"Appending to ZARR '{self.path}', with {shape=}, " f"{chunks=}")
 
         self.z = zarr.open(self.path, mode="r+")
         self.zdata = self.z["data"]
+        self._build_flags = self.z["_build"]
 
         original_shape = self.zdata.shape
         assert len(shape) == len(original_shape)
@@ -314,9 +304,12 @@ class ZarrLoader(Loader):
         return self.writer
 
     def _add_dataset(self, name, nparray, dtype=np.float32):
-        assert len(nparray.shape) == 1, "Not implemented"
+        assert len(nparray.shape) == 1, f"Not implemented ({name})"
         a = self.z.create_dataset(
-            name, shape=nparray.shape, dtype=dtype, overwrite=True
+            name,
+            shape=nparray.shape,
+            dtype=dtype,
+            overwrite=True,
         )
         a[:] = nparray[:]
         return a
@@ -334,8 +327,10 @@ class ZarrLoader(Loader):
         print(self.z.info)
         print(self.zdata.info)
 
-    def add_metadata(self, config):
+    def add_metadata(self):
         import zarr
+
+        config = self.main_config
 
         assert self.writer is None
 
@@ -398,6 +393,9 @@ class ZarrLoader(Loader):
 
 
 class HDF5Loader:
+    def append_array(self, *args, **kwargs):
+        raise NotImplementedError("Appending do HDF5 not yet implemented")
+
     def create_array(
         self,
         dataset,
@@ -405,13 +403,10 @@ class HDF5Loader:
         chunks,
         dtype,
         metadata,
-        append,
         grid_points,
+        nloop,
     ):
         import h5py
-
-        if append:
-            raise NotImplementedError("Appending do HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -456,5 +451,5 @@ class HDF5Loader:
             print("Content:")
             h5_tree(f, 1)
 
-    def add_metadata(self, config):
+    def add_metadata(self):
         warnings.warn("HDF5Loader.add_metadata not yet implemented")

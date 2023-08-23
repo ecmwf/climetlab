@@ -121,10 +121,14 @@ class LoadersCmd:
 
         loader = LOADERS[args.format](args.target, config=args.config)
 
-        return loader.load(
+        if args.metadata:
+            loader.add_metadata()
+            return
+
+        loader.load(
             dataset=args.dataset,
-            metadata_only=args.metadata,
             partial_loop_chunk_size=args.partial_loop_chunk_size,
             partial_loop_chunk_number=args.partial_loop_chunk_number,
             print=callback,
         )
+        loader.add_metadata()
