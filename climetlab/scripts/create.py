@@ -65,6 +65,14 @@ class LoadersCmd:
                 help="Do not run anything. Returns the number parts",
             ),
         ),
+        statistics=(
+            "--statistics",
+            dict(action="store_true", help="Also compute statistics."),
+        ),
+        statistics_only=(
+            "--statistics-only",
+            dict(action="store_true", help="Only compute statistics."),
+        ),
     )
     def do_create(self, args):
         if args.n_parts:
@@ -118,6 +126,13 @@ class LoadersCmd:
             loader.add_metadata()
             return
 
+        if args.statistics_only:
+            loader.add_statistics()
+            return
+
         loader.load()
         if not args.no_metadata:
             loader.add_metadata()
+
+        if args.statistics:
+            loader.add_statistics()
