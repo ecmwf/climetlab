@@ -121,33 +121,35 @@ class OffsetView:
         self.array[new_key] = value
 
 
+class LoopItemsFilter:
+    def __init__(self, **kwargs):
+        assert False, kwargs
+        pass
+
+    def __call__(self, iloop, vars):
+        return True
+
+
 class Loader:
-    def __init__(self, path, *, config):
+    def __init__(self, path, *, config, **kwargs):
         self.main_config = LoadersConfig(config)
         self.path = path
+        self.kwargs = kwargs
 
-    def load(
-        self,
-        *,
-        partial_loop_chunk_size,
-        partial_loop_chunk_number,
-        **kwargs,
-    ):
-        config = self.main_config
+    def load(self):
+        kwargs = self.kwargs
 
-        if "loop" not in config or config.loop is None:
-            self.load_part(config, iloop=0, **kwargs)
+        filter = LoopItemsFilter(**kwargs)
+
+        if "loop" not in self.main_config or self.main_config.loop is None:
+            self.load_part(self.main_config, iloop=0, **kwargs)
             return
 
-        self.nloop = config._len_of_iter_loops()
-        for iloop, vars in enumerate(config._iter_loops()):
-            assert partial_loop_chunk_size == 1, "only 1 supported"
-            if (
-                partial_loop_chunk_number is not None
-                and iloop != partial_loop_chunk_number
-            ):
+        self.nloop = self.main_config._len_of_iter_loops()
+        for iloop, vars in enumerate(self.main_config._iter_loops()):
+            if not filter(iloop, vars):
                 continue
-            part_config = config.substitute(vars)
+            part_config = self.main_config.substitute(vars)
             self.load_part(part_config, iloop=iloop, **kwargs)
 
     def add_metadata(self):

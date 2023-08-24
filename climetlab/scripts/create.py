@@ -119,16 +119,13 @@ class LoadersCmd:
             lst = list_to_human(list(LOADERS.keys()), "or")
             raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
 
-        loader = LOADERS[args.format](args.target, config=args.config)
+        kwargs = vars(args)
+        path = kwargs.pop("target")
+        loader = LOADERS[args.format](path, print=callback, **kwargs)
 
         if args.metadata:
             loader.add_metadata()
             return
 
-        loader.load(
-            dataset=args.dataset,
-            partial_loop_chunk_size=args.partial_loop_chunk_size,
-            partial_loop_chunk_number=args.partial_loop_chunk_number,
-            print=callback,
-        )
+        loader.load()
         loader.add_metadata()
