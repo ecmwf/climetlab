@@ -172,8 +172,8 @@ class Loader:
             print("------------------------------------------------")
             print(f"Processing : {vars}")
             print_(f"Loading input {iloop+1}/{self.nloops}")
-            print(part_config.input)
             self.load_part(part_config, iloop=iloop, **kwargs)
+            print_(f"Loaded input {iloop+1}/{self.nloops}")
 
     def add_metadata(self):
         raise NotImplementedError()
