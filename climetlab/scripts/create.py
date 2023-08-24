@@ -46,14 +46,6 @@ class LoadersCmd:
                 "Currently only a path to a new ZARR or HDF5 file is supported."
             ),
         ),
-        no_metadata=(
-            "--no-metadata",
-            dict(action="store_true", help="Do not update metadata."),
-        ),
-        metadata_only=(
-            "--metadata-only",
-            dict(action="store_true", help="Only update metadata."),
-        ),
         parts=(
             "--parts",
             dict(nargs="+", help="Process partially the data (starts at 1)"),
@@ -67,11 +59,7 @@ class LoadersCmd:
         ),
         statistics=(
             "--statistics",
-            dict(action="store_true", help="Also compute statistics."),
-        ),
-        statistics_only=(
-            "--statistics-only",
-            dict(action="store_true", help="Only compute statistics."),
+            dict(action="store_true", help="Compute statistics."),
         ),
     )
     def do_create(self, args):
@@ -85,6 +73,7 @@ class LoadersCmd:
             args.format = ext[1:]
 
         def no_callback(*args, **kwargs):
+            print(*args, **kwargs)
             return
 
         if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
@@ -120,19 +109,12 @@ class LoadersCmd:
 
         kwargs = vars(args)
         path = kwargs.pop("target")
-        loader = LOADERS[args.format](path, print=callback, **kwargs)
+        loader_class = LOADERS[args.format]
 
-        if args.metadata_only:
-            loader.add_metadata()
-            return
-
-        if args.statistics_only:
-            loader.add_statistics()
-            return
-
-        loader.load()
-        if not args.no_metadata:
+        if args.config:
+            loader = loader_class(path, print=callback, **kwargs)
+            loader.load()
             loader.add_metadata()
 
         if args.statistics:
-            loader.add_statistics()
+            loader_class.add_statistics(path, print=callback)

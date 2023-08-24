@@ -370,15 +370,19 @@ class ZarrLoader(Loader):
 
         return self.writer
 
-    def _add_dataset(self, name, nparray, dtype=np.float32):
-        assert len(nparray.shape) == 1, f"Not implemented ({name})"
-        a = self.z.create_dataset(
+    def _add_dataset(self, *args, **kwargs):
+        return self._add_dataset_(*args, **kwargs, zarr_root=self.z)
+
+    @classmethod
+    def _add_dataset_(self, name, nparray, *, zarr_root, dtype=np.float32):
+        a = zarr_root.create_dataset(
             name,
             shape=nparray.shape,
             dtype=dtype,
             overwrite=True,
         )
-        a[:] = nparray[:]
+        print(nparray.shape)
+        a[...] = nparray[...]
         return a
 
     def close(self):
@@ -433,22 +437,14 @@ class ZarrLoader(Loader):
             statistics_by_name[name]["count"] = count
             name_to_index[name] = i
         metadata["name_to_index"] = name_to_index
-        metadata["_deprecated_statistics_by_name"] = statistics_by_name
+        metadata["statistics_by_name"] = statistics_by_name
 
         statistics_by_index = {}
         statistics_by_index["mean"] = list(mean)
         statistics_by_index["stdev"] = list(stdev)
         statistics_by_index["maximum"] = list(maximum)
         statistics_by_index["minimum"] = list(minimum)
-        metadata["_deprecated_statistics_by_index"] = statistics_by_index
-
-        self._add_dataset("mean", mean)
-        self._add_dataset("stdev", stdev)
-        self._add_dataset("minimum", minimum)
-        self._add_dataset("maximum", maximum)
-        self._add_dataset("sums", sums)
-        self._add_dataset("squares", squares)
-        self._add_dataset("count", mean * 0 + count)
+        metadata["statistics_by_index"] = statistics_by_index
 
         metadata["create_yaml_config"] = _tidy(config)
         for k, v in config.get("metadata", {}).items():
@@ -457,6 +453,64 @@ class ZarrLoader(Loader):
         self.z.attrs["climetlab"] = metadata
         self.z["data"].attrs["climetlab"] = metadata
         self.z.attrs["version"] = VERSION
+
+    @classmethod
+    def add_statistics(cls, path, print):
+        import zarr
+
+        z = zarr.open(path, mode="r+")
+        data = z.data
+        shape = z.data.shape
+        assert len(shape) in [3, 4]  # if 4, we expect to have latitude/longitude
+
+        stats_shape = (shape[0], shape[1])
+
+        mean = np.zeros(shape=stats_shape)
+        stdev = np.zeros(shape=stats_shape)
+        minimum = np.zeros(shape=stats_shape)
+        maximum = np.zeros(shape=stats_shape)
+        sums = np.zeros(shape=stats_shape)
+        squares = np.zeros(shape=stats_shape)
+        count = np.zeros(shape=stats_shape)
+
+        COUNT = shape[0]
+        for i in range(COUNT):
+            chunk = data[i, ...]
+            for j, name in enumerate(range(shape[1])):
+                field = chunk[j, ...]
+                mean[i, j] = np.mean(field)
+                minimum[i, j] = np.amin(field)
+                maximum[i, j] = np.amax(field)
+                sums[i, j] = np.sum(field)
+                squares[i, j] = np.sum(field * field)
+                count[i, j] = 1
+                stdev[i, j] = np.sqrt(
+                    squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
+                )
+
+        cls._add_dataset_("mean_by_index", mean, zarr_root=z)
+        cls._add_dataset_("stdev_by_index", stdev, zarr_root=z)
+        cls._add_dataset_("minimum_by_index", minimum, zarr_root=z)
+        cls._add_dataset_("maximum_by_index", maximum, zarr_root=z)
+        cls._add_dataset_("sums_by_index", sums, zarr_root=z)
+        cls._add_dataset_("squares_by_index", squares, zarr_root=z)
+        cls._add_dataset_("count_by_index", mean * 0 + count, zarr_root=z)
+
+        _mean = np.mean(mean, axis=0)
+        _minimum = np.amin(minimum, axis=0)
+        _maximum = np.amax(maximum, axis=0)
+        _sums = np.sum(sums, axis=0)
+        _squares = np.sum(squares, axis=0)
+        _count = np.sum(count, axis=0)
+        _stdev = np.sqrt(_squares / _count - _mean * _mean)
+
+        cls._add_dataset_("mean", _mean, zarr_root=z)
+        cls._add_dataset_("stdev", _stdev, zarr_root=z)
+        cls._add_dataset_("minimum", _minimum, zarr_root=z)
+        cls._add_dataset_("maximum", _maximum, zarr_root=z)
+        cls._add_dataset_("sums", _sums, zarr_root=z)
+        cls._add_dataset_("squares", _squares, zarr_root=z)
+        cls._add_dataset_("count", _count, zarr_root=z)
 
 
 class HDF5Loader:
