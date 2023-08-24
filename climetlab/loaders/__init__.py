@@ -130,14 +130,12 @@ class LoopItemsFilter:
             self.parts = None
             return
 
-        print(parts)
-
         if len(parts) == 1 and "/" in parts[0]:
             total = self.loader.nloops
             i_chunk, n_chunks = parts[0].split("/")
             i_chunk, n_chunks = int(i_chunk), int(n_chunks)
             chunk_size = math.ceil(total / n_chunks)
-            parts = list(range((i_chunk - 1) * chunk_size, i_chunk * chunk_size))
+            parts = range((i_chunk - 1) * chunk_size + 1, i_chunk * chunk_size + 1)
 
         parts = [int(_) for _ in parts]
 
@@ -146,6 +144,8 @@ class LoopItemsFilter:
     def __call__(self, iloop, vars):
         if self.parts is None:
             return True
+        # iloop index starts at 0
+        # self.parts is a list of indices starting at 1
         return (iloop + 1) in self.parts
 
 
