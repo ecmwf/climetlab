@@ -46,9 +46,13 @@ class LoadersCmd:
                 "Currently only a path to a new ZARR or HDF5 file is supported."
             ),
         ),
-        metadata=(
-            "--metadata",
-            dict(action="store_true", help="Update metadata."),
+        no_metadata=(
+            "--no-metadata",
+            dict(action="store_true", help="Do not update metadata."),
+        ),
+        metadata_only=(
+            "--metadata-only",
+            dict(action="store_true", help="Only update metadata."),
         ),
         parts=(
             "--parts",
@@ -110,9 +114,10 @@ class LoadersCmd:
         path = kwargs.pop("target")
         loader = LOADERS[args.format](path, print=callback, **kwargs)
 
-        if args.metadata:
+        if args.metadata_only:
             loader.add_metadata()
             return
 
         loader.load()
-        loader.add_metadata()
+        if not args.no_metadata:
+            loader.add_metadata()
