@@ -475,13 +475,13 @@ class ZarrLoader(Loader):
         for i in range(COUNT):
             chunk = data[i, ...]
             for j, name in enumerate(range(shape[1])):
-                field = chunk[j, ...]
-                mean[i, j] = np.mean(field)
-                minimum[i, j] = np.amin(field)
-                maximum[i, j] = np.amax(field)
-                sums[i, j] = np.sum(field)
-                squares[i, j] = np.sum(field * field)
-                count[i, j] = 1
+                values = chunk[j, :]
+                minimum[i, j] = np.amin(values)
+                maximum[i, j] = np.amax(values)
+                sums[i, j] = np.sum(values)
+                squares[i, j] = np.sum(values * values)
+                count[i, j] = values.size
+                mean[i, j] = sums[i, j] / count[i, j]
                 stdev[i, j] = np.sqrt(
                     squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
                 )
@@ -494,12 +494,12 @@ class ZarrLoader(Loader):
         cls._add_dataset_("squares_by_index", squares, zarr_root=z)
         cls._add_dataset_("count_by_index", mean * 0 + count, zarr_root=z)
 
-        _mean = np.mean(mean, axis=0)
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
         _sums = np.sum(sums, axis=0)
         _squares = np.sum(squares, axis=0)
         _count = np.sum(count, axis=0)
+        _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
 
         cls._add_dataset_("mean", _mean, zarr_root=z)
