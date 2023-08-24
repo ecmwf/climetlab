@@ -137,7 +137,7 @@ class LoopItemsFilter:
             i_chunk, n_chunks = parts[0].split("/")
             i_chunk, n_chunks = int(i_chunk), int(n_chunks)
             chunk_size = math.ceil(total / n_chunks)
-            parts = list(range(i_chunk * chunk_size, (i_chunk + 1) * chunk_size))
+            parts = list(range((i_chunk - 1) * chunk_size, i_chunk * chunk_size))
 
         parts = [int(_) for _ in parts]
 
@@ -171,10 +171,8 @@ class Loader:
             part_config = self.main_config.substitute(vars)
             print("------------------------------------------------")
             print(f"Processing : {vars}")
-            print_(
-                f"Loading input {iloop+1}/{self.nloops}",
-                part_config.input,
-            )
+            print_(f"Loading input {iloop+1}/{self.nloops}")
+            print(part_config.input)
             self.load_part(part_config, iloop=iloop, **kwargs)
 
     def add_metadata(self):
@@ -437,14 +435,14 @@ class ZarrLoader(Loader):
             statistics_by_name[name]["count"] = count
             name_to_index[name] = i
         metadata["name_to_index"] = name_to_index
-        metadata["statistics_by_name"] = statistics_by_name
+        metadata["_deprecated_statistics_by_name"] = statistics_by_name
 
         statistics_by_index = {}
         statistics_by_index["mean"] = list(mean)
         statistics_by_index["stdev"] = list(stdev)
         statistics_by_index["maximum"] = list(maximum)
         statistics_by_index["minimum"] = list(minimum)
-        metadata["statistics_by_index"] = statistics_by_index
+        metadata["_deprecated_statistics_by_index"] = statistics_by_index
 
         metadata["create_yaml_config"] = _tidy(config)
         for k, v in config.get("metadata", {}).items():
