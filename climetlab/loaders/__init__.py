@@ -11,6 +11,7 @@
 import datetime
 import json
 import logging
+import math
 import os
 import time
 import warnings
@@ -122,12 +123,30 @@ class OffsetView:
 
 
 class LoopItemsFilter:
-    def __init__(self, **kwargs):
-        assert False, kwargs
-        pass
+    def __init__(self, *, loader, parts, **kwargs):
+        self.loader = loader
+
+        if parts is None:
+            self.parts = None
+            return
+
+        print(parts)
+
+        if len(parts) == 1 and "/" in parts[0]:
+            total = self.loader.nloops
+            i_chunk, n_chunks = parts[0].split("/")
+            i_chunk, n_chunks = int(i_chunk), int(n_chunks)
+            chunk_size = math.ceil(total / n_chunks)
+            parts = list(range(i_chunk * chunk_size, (i_chunk + 1) * chunk_size))
+
+        parts = [int(_) for _ in parts]
+
+        self.parts = parts
 
     def __call__(self, iloop, vars):
-        return True
+        if self.parts is None:
+            return True
+        return (iloop + 1) in self.parts
 
 
 class Loader:
@@ -138,18 +157,24 @@ class Loader:
 
     def load(self):
         kwargs = self.kwargs
-
-        filter = LoopItemsFilter(**kwargs)
+        print_ = kwargs["print"]
 
         if "loop" not in self.main_config or self.main_config.loop is None:
             self.load_part(self.main_config, iloop=0, **kwargs)
             return
 
-        self.nloop = self.main_config._len_of_iter_loops()
+        self.nloops = self.main_config._len_of_iter_loops()
+        filter = LoopItemsFilter(loader=self, **kwargs)
         for iloop, vars in enumerate(self.main_config._iter_loops()):
             if not filter(iloop, vars):
                 continue
             part_config = self.main_config.substitute(vars)
+            print("------------------------------------------------")
+            print(f"Processing : {vars}")
+            print_(
+                f"Loading input {iloop+1}/{self.nloops}",
+                part_config.input,
+            )
             self.load_part(part_config, iloop=iloop, **kwargs)
 
     def add_metadata(self):
@@ -157,9 +182,6 @@ class Loader:
 
     def load_part(self, config, *, iloop, print_=print, **kwargs):
         start = time.time()
-        print("------------------------------------------------")
-        print(f"Processing : {vars}")
-        print_(f"Loading input {iloop}/{self.nloop}", config.input)
 
         data = cml.load_source("loader", config.input)
         # if "constants" in config.input and config.input.constants:
@@ -212,7 +234,6 @@ class Loader:
         now = time.time()
         self.close()
         save += time.time() - now
-        self._built_flags.set(iloop)
 
         print()
         self.print_info()
@@ -223,6 +244,7 @@ class Loader:
             f" load time: {seconds(load)},"
             f" write time: {seconds(save)}."
         )
+        self._built_flags.set(iloop)
 
 
 VERSION = 2
@@ -283,7 +305,7 @@ class ZarrLoader(Loader):
 
     @property
     def _built_flags(self):
-        return ZarrFlagArray("_build", self.path, size=self.nloop)
+        return ZarrFlagArray("_build", self.path, size=self.nloops)
 
     def create_array(self, config, cube, grid_points):
         import zarr
@@ -449,7 +471,7 @@ class HDF5Loader:
         dtype,
         metadata,
         grid_points,
-        nloop,
+        nloops,
     ):
         import h5py
 

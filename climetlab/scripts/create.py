@@ -50,33 +50,20 @@ class LoadersCmd:
             "--metadata",
             dict(action="store_true", help="Update metadata."),
         ),
-        partial_loop_chunk_size=(
-            "--partial-loop-chunk-size",
-            dict(
-                metavar="N",
-                default=1,
-                type=int,
-                help="Process partially the data, grouping loop items by groups (loop chunks) of size N.",
-            ),
+        parts=(
+            "--parts",
+            dict(nargs="+", help="Process partially the data (starts at 1)"),
         ),
-        partial_loop_chunk_number=(
-            "--partial-loop-chunk-number",
-            dict(
-                metavar="I",
-                type=int,
-                help="Process partially the data, only the loop chunk number I.",
-            ),
-        ),
-        total_loop_chunk_number=(
-            "--total-loop-chunk-number",
+        n_parts=(
+            "--n-parts",
             dict(
                 action="store_true",
-                help="Do not run anything. Returns the number of loop chunks.",
+                help="Do not run anything. Returns the number parts",
             ),
         ),
     )
     def do_create(self, args):
-        if args.total_loop_chunk_number:
+        if args.n_parts:
             config = LoadersConfig(args.config)
             print(config._len_of_iter_loops())
             return
