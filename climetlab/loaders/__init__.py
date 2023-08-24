@@ -131,14 +131,12 @@ class Loader:
         *,
         partial_loop_chunk_size,
         partial_loop_chunk_number,
-        append=False,
         **kwargs,
     ):
         config = self.main_config
 
         if "loop" not in config or config.loop is None:
-            assert not append, "Not yet implemented"
-            self.partial_load(config, append, **kwargs)
+            self.load_part(config, iloop=0, **kwargs)
             return
 
         self.nloop = config._len_of_iter_loops()
@@ -149,15 +147,13 @@ class Loader:
                 and iloop != partial_loop_chunk_number
             ):
                 continue
-            self.partial_load(
-                config.substitute(vars), append=append, iloop=iloop, **kwargs
-            )
-            append = True
+            part_config = config.substitute(vars)
+            self.load_part(part_config, iloop=iloop, **kwargs)
 
     def add_metadata(self):
         raise NotImplementedError()
 
-    def partial_load(self, config, append, *, iloop, print_=print, **kwargs):
+    def load_part(self, config, *, iloop, print_=print, **kwargs):
         start = time.time()
         print("------------------------------------------------")
         print(f"Processing : {vars}")
@@ -181,10 +177,10 @@ class Loader:
         print(f"Done in {seconds(time.time()-start)}.")
 
         grid_points = data[0].grid_points()
-        if append:
-            array = self.append_array(config, cube, grid_points)
-        else:
+        if iloop == 0:
             array = self.create_array(config, cube, grid_points)
+        else:
+            array = self.append_array(config, cube, grid_points)
 
         start = time.time()
         load = 0
@@ -214,6 +210,7 @@ class Loader:
         now = time.time()
         self.close()
         save += time.time() - now
+        self._built_flags.set(iloop)
 
         print()
         self.print_info()
@@ -229,11 +226,62 @@ class Loader:
 VERSION = 2
 
 
+class ZarrFlagArray:
+    def __init__(self, name, zarr_path, *, size):
+        self.name = name
+        self.zarr_path = zarr_path
+        self.size = size
+
+    def create(self):
+        import zarr
+
+        z = zarr.open(self.zarr_path, mode="w+")
+
+        nparray = np.full(self.size, False)
+
+        a = z.create_dataset(
+            self.name,
+            shape=nparray.shape,
+            dtype=bool,
+            overwrite=True,
+        )
+        a[:] = nparray[:]
+        a.attrs["_size"] = self.size
+        return self
+
+    def set_value(self, i, value):
+        import zarr
+
+        assert i < self.size, i
+        z = zarr.open(self.zarr_path, mode="w+")
+        a = z[self.name]
+        a[i] = value
+
+    def set(self, i):
+        self.set_value(i, True)
+
+    def unset(self, i):
+        self.set_value(i, False)
+
+    def get(self, i=None):
+        import zarr
+
+        z = zarr.open(self.zarr_path, mode="r")
+        a = z[self.name]
+        if i is None:
+            return a
+        return a[i]
+
+
 class ZarrLoader(Loader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.z = None
         self.statistics = []
+
+    @property
+    def _built_flags(self):
+        return ZarrFlagArray("_build", self.path, size=self.nloop)
 
     def create_array(self, config, cube, grid_points):
         import zarr
@@ -247,13 +295,9 @@ class ZarrLoader(Loader):
         print(f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}")
 
         self.z = zarr.open(self.path, mode="w")
+        self._built_flags.create()
         self.zdata = self.z.create_dataset(
             "data", shape=shape, chunks=chunks, dtype=dtype
-        )
-        self._build_flags = self._add_dataset(
-            "_build",
-            np.full(self.nloop, False),
-            dtype=bool,
         )
 
         lat = self._add_dataset("latitude", grid_points[0])
@@ -274,7 +318,6 @@ class ZarrLoader(Loader):
 
         self.z = zarr.open(self.path, mode="r+")
         self.zdata = self.z["data"]
-        self._build_flags = self.z["_build"]
 
         original_shape = self.zdata.shape
         assert len(shape) == len(original_shape)
