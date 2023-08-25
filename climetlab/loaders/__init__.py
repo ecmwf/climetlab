@@ -184,9 +184,6 @@ class Loader:
             self.load_part(part_config, iloop=iloop, **kwargs)
             print_(f"Loaded input {iloop+1}/{self.nloops}")
 
-    def add_metadata(self):
-        raise NotImplementedError()
-
     def load_part(self, config, *, iloop, print_=print, **kwargs):
         cube, grid_points = self.config_to_data_cube(config)
 
@@ -239,28 +236,56 @@ class Loader:
 VERSION = 2
 
 
-class ZarrFlagArray:
-    def __init__(self, name, zarr_path, *, size):
-        self.name = name
-        self.zarr_path = zarr_path
-        self.size = size
+def add_zarr_dataset(name, nparray, *, zarr_root, dtype=np.float32):
+    if isinstance(nparray, (tuple, list)):
+        nparray = np.array(nparray, dtype=dtype)
+    a = zarr_root.create_dataset(
+        name,
+        shape=nparray.shape,
+        dtype=dtype,
+        overwrite=True,
+    )
+    a[...] = nparray[...]
+    return a
 
-    def create(self):
+
+class ZarrBuiltRegistry:
+    name = "_built"
+    lengths = None
+    flags = None
+    z = None
+
+    def __init__(self, path):
+        assert isinstance(path, str), path
+        self.zarr_path = path
+
+    @property
+    def total(self):
+        return sum(self.lengths)
+
+    @property
+    def nlenghts(self):
+        return len(self.lengths)
+
+    def create(self, lengths):
         import zarr
 
-        z = zarr.open(self.zarr_path, mode="w+")
+        z = zarr.open(self.zarr_path, mode="r+")
 
-        nparray = np.full(self.size, False)
-
-        a = z.create_dataset(
-            self.name,
-            shape=nparray.shape,
-            dtype=bool,
-            overwrite=True,
+        add_zarr_dataset(
+            f"{self.name}_lengths",
+            lengths,
+            zarr_root=z,
+            dtype="i4",
+            # overwrite=True,
         )
-        a[:] = nparray[:]
-        a.attrs["_size"] = self.size
-        return self
+        add_zarr_dataset(
+            f"{self.name}_flags",
+            len(lengths) * [False],
+            zarr_root=z,
+            dtype=bool,
+            # overwrite=True,
+        )
 
     def set_value(self, i, value):
         import zarr
@@ -324,7 +349,7 @@ class ZarrLoader(Loader):
         for vars in self.main_config._iter_loops():
             yield vars
 
-    def init(self):
+    def initialise(self):
         """Create empty zarr from self.main_config and self.path"""
         import zarr
 
@@ -334,16 +359,15 @@ class ZarrLoader(Loader):
             return dic[keys[0]]
 
         def compute_lengths():
-            lengths = {}
+            lengths = []
             for i, vars in enumerate(self.iter_loops()):
                 lst = squeeze_dict(vars)
                 assert isinstance(lst, (tuple, list)), lst
-                lengths[i] = len(lst)
+                lengths.append(len(lst))
             return lengths
 
         lengths = compute_lengths()
-        total_length = sum(lengths.values())
-        nloops = len(lengths)
+        total_length = sum(lengths)
 
         def get_one_element_config():
             for i, vars in enumerate(self.iter_loops()):
@@ -382,6 +406,10 @@ class ZarrLoader(Loader):
         self.z.attrs["climetlab"] = metadata
         self.z["data"].attrs["climetlab"] = metadata
         self.z.attrs["version"] = VERSION
+        self.z = None
+
+        registry = ZarrBuiltRegistry(self.path)
+        registry.create(lengths=lengths)
 
     def config_to_data_cube(self, config):
         start = time.time()
@@ -448,19 +476,7 @@ class ZarrLoader(Loader):
         return self.writer
 
     def _add_dataset(self, *args, **kwargs):
-        return self._add_dataset_(*args, **kwargs, zarr_root=self.z)
-
-    @classmethod
-    def _add_dataset_(self, name, nparray, *, zarr_root, dtype=np.float32):
-        a = zarr_root.create_dataset(
-            name,
-            shape=nparray.shape,
-            dtype=dtype,
-            overwrite=True,
-        )
-        print(nparray.shape)
-        a[...] = nparray[...]
-        return a
+        return add_zarr_dataset(*args, **kwargs, zarr_root=self.z)
 
     def close(self):
         if self.writer is None:
@@ -474,62 +490,6 @@ class ZarrLoader(Loader):
     def print_info(self):
         print(self.z.info)
         print(self.zdata.info)
-
-    def add_metadata(self):
-        import zarr
-
-        config = self.main_config
-
-        assert self.writer is None
-
-        if self.z is None:
-            self.z = zarr.open(self.path, mode="r+")
-            self.print_info()
-
-        metadata = {}
-
-        count, sums, squares, minimum, maximum = self.statistics[0]
-        for s in self.statistics[1:]:
-            count = count + s[0]
-            sums = sums + s[1]
-            squares = squares + s[2]
-            minimum = np.minimum(minimum, s[3])
-            maximum = np.maximum(maximum, s[4])
-
-        mean = sums / count
-        stdev = np.sqrt(squares / count - mean * mean)
-        name_to_index = {}
-        statistics_by_name = {}
-        assert isinstance(
-            self.config.statistics_names, (tuple, list)
-        ), self.config.statistics_names
-        for i, name in enumerate(self.config.statistics_names):
-            statistics_by_name[name] = {}
-            statistics_by_name[name]["mean"] = mean[i]
-            statistics_by_name[name]["stdev"] = stdev[i]
-            statistics_by_name[name]["minimum"] = minimum[i]
-            statistics_by_name[name]["maximum"] = maximum[i]
-            statistics_by_name[name]["sums"] = sums[i]
-            statistics_by_name[name]["squares"] = squares[i]
-            statistics_by_name[name]["count"] = count
-            name_to_index[name] = i
-        metadata["name_to_index"] = name_to_index
-        metadata["_deprecated_statistics_by_name"] = statistics_by_name
-
-        statistics_by_index = {}
-        statistics_by_index["mean"] = list(mean)
-        statistics_by_index["stdev"] = list(stdev)
-        statistics_by_index["maximum"] = list(maximum)
-        statistics_by_index["minimum"] = list(minimum)
-        metadata["_deprecated_statistics_by_index"] = statistics_by_index
-
-        metadata["create_yaml_config"] = _tidy(config)
-        for k, v in config.get("metadata", {}).items():
-            self.z.attrs[k] = v
-
-        self.z.attrs["climetlab"] = metadata
-        self.z["data"].attrs["climetlab"] = metadata
-        self.z.attrs["version"] = VERSION
 
     @classmethod
     def add_statistics(cls, path, print):
@@ -647,6 +607,3 @@ class HDF5Loader:
         with h5py.File(self.path, mode="r") as f:
             print("Content:")
             h5_tree(f, 1)
-
-    def add_metadata(self):
-        warnings.warn("HDF5Loader.add_metadata not yet implemented")

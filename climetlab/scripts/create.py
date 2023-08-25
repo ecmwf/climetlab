@@ -55,7 +55,7 @@ class LoadersCmd:
         ),
         parts=(
             "--parts",
-            dict(nargs="+", help="Process partially the data (starts at 1)"),
+            dict(nargs="+", help="Part(s) of the data to process"),
         ),
         number_of_parts=(
             "--number-of-parts",
@@ -128,13 +128,12 @@ class LoadersCmd:
         if args.init:
             assert args.config
             loader = loader_class.from_config(**kwargs)
-            loader.init()
+            loader.initialise()
             exit()
 
         if args.parts:
             loader = loader_class.from_zarr(**kwargs)
             loader.load()
-            loader.add_metadata()
 
         if args.statistics:
             loader = loader_class.from_path(**kwargs)
