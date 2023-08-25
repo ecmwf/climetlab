@@ -133,7 +133,7 @@ class LoadersCmd:
 
         if args.parts:
             loader = loader_class.from_zarr(**kwargs)
-            loader.load()
+            loader.load(**kwargs)
 
         if args.statistics:
             loader = loader_class.from_path(**kwargs)
