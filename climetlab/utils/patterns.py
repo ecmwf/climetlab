@@ -15,6 +15,7 @@ from .dates import to_datetime
 RE1 = re.compile(r"{([^}]*)}")
 RE2 = re.compile(r"\(([^}]*)\)")
 
+RE3 = re.compile(r"\(([^}]*)\)")
 
 class Any:
     def substitute(self, value, name):
@@ -114,6 +115,22 @@ class Variable:
             raise ValueError("Missing parameter '{}'".format(self.name))
         return self.kind.substitute(params[self.name], self.name)
 
+FUNCTIONS = dict(lower=lambda s: s.lower())
+
+class Function:
+    def __init__(self, value):
+        functions = value.split('|')
+        self.name = functions[0]
+        self.variable = Variable(functions[0])
+        self.functions = functions[1:]
+
+    def substitute(self, params):
+        value = self.variable.substitute(params)
+        for f in self.functions:
+            value = FUNCTIONS[f](value)
+        return value
+
+
 
 class Pattern:
     def __init__(self, pattern, ignore_missing_keys=False):
@@ -125,7 +142,10 @@ class Pattern:
             if i % 2 == 0:
                 self.pattern.append(Constant(p))
             else:
-                v = Variable(p)
+                if '|' in p:
+                    v = Function(p)
+                else:
+                    v = Variable(p)
                 self.variables.append(v)
                 self.pattern.append(v)
 

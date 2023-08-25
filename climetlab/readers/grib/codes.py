@@ -99,6 +99,7 @@ try:
 except TypeError:
     pass
 
+
 class CodesHandle:
     def __init__(self, handle, path, offset):
         self.handle = handle
