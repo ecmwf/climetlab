@@ -42,6 +42,8 @@ class DictObj(dict):
 
 
 def expand(values):
+    from climetlab.utils.dates import to_datetime
+
     if isinstance(values, list):
         return values
 
@@ -55,6 +57,10 @@ def expand(values):
         if "monthly" in values:
             start = values["monthly"]["start"]
             stop = values["monthly"]["stop"]
+
+            start = to_datetime(start)
+            stop = to_datetime(stop)
+
             date = start
             last = None
             result = []
@@ -73,6 +79,18 @@ def expand(values):
                     break
             if lst:
                 result.append([d.isoformat() for d in lst])
+            return result
+
+        if "daily" in values:
+            start = values["daily"]["start"]
+            stop = values["daily"]["stop"]
+            date = start
+            result = []
+            while True:
+                result.append([date])
+                date = date + datetime.timedelta(days=1)
+                if date > stop:
+                    break
             return result
 
     raise ValueError(f"Cannot expand loop from {values}")
@@ -117,7 +135,8 @@ class LoadersConfig(Config):
         if "order_by" in self.output:
             self.output.order_by = normalize_order_by(self.output.order_by)
 
-        self.input.constants = self.input.get("constants")
+        if "constants" in self.input:
+            self.input.constants = self.input["constants"]
         self.output.remapping = self.output.get("remapping", {})
         self.output.remapping = build_remapping(self.output.remapping)
 

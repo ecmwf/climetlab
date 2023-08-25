@@ -109,7 +109,17 @@ class Backend:
         self._layers.append(Layer(data))
 
     def plot_grib(self, path: str, offset: int):
-        assert offset < 2**31, "grib_field_position must be less than 2**31"
+        if offset >= 2**31:
+            # Because Magics (version <4.14) does not support input
+            # grib files whihc are > 2**31 Bytes.
+            from climetlab.readers.grib.codes import CodesReader
+
+            tmp = self.temporary_file(".grib")
+            reader = CodesReader.from_cache(path)
+            handle = reader.at_offset(int(offset))
+            handle.save(tmp)
+            path = tmp
+            offset = 0
 
         self._push_layer(
             mgrib(

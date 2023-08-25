@@ -91,6 +91,91 @@ OPTIONS = {
 }
 
 
+def normalize_grib_keys(f):
+    f = alias_argument("levelist", ["level", "levellist"])(f)
+    f = alias_argument("levtype", ["leveltype"])(f)
+    f = alias_argument("param", ["variable", "parameter"])(f)
+    f = alias_argument("number", ["realization", "realisation"])(f)
+    f = alias_argument("class", ["klass", "class_"])(f)
+    return f
+
+
+def _normalize_time_as_tuple(time, type):
+    if isinstance(time, str):
+        time = (time,)
+    return tuple(_normalize_time(t, type) for t in time)
+
+
+def _normalize_time(time, type):
+    assert type in (int, str), type
+
+    if time is None or time == all:
+        return time
+
+    if isinstance(time, list):
+        return [_normalize_time(t, type) for t in time]
+    if isinstance(time, tuple):
+        return tuple([_normalize_time(t, type) for t in time])
+
+    try:
+        time = int(time)
+    except ValueError:
+        return time
+
+    if time % 100:  # not multiple of 100
+        time = time * 100
+
+    assert time <= 2400, time
+    assert time >= 0, time
+
+    if type is str:
+        return f"{time:04d}"
+    assert isinstance(time, int)
+    return time
+
+
+def _normalize_expver(expver):
+    if isinstance(expver, str):
+        return expver
+    assert isinstance(expver, int)
+    return f"{expver:04}"
+
+
+def _normalize_expver_as_tuple(expver):
+    if isinstance(expver, (int, str)):
+        expver = _normalize_expver(expver)
+        expver = (expver,)
+    lst = []
+    for x in expver:
+        if not isinstance(x, str):
+            x = "%04d" % x
+        lst.append(x)
+    return tuple(lst)
+
+
+def normalize_grib_key_values(kwargs, accept_none=True, as_tuple=False):
+    def f(**kwargs):
+        return kwargs
+
+    f = normalize_grib_keys(f)
+    f = normalize("param", "variable-list(mars)")(f)
+    f = normalize("date", "date-list(%Y%m%d)")(f)
+    f = normalize("area", "bounding-box(list)")(f)
+    f = normalize("levelist", "int-list")(f)
+    kwargs = f(**kwargs)
+
+    if "time" in kwargs:
+        kwargs["time"] = {False: _normalize_time, True: _normalize_time_as_tuple}[
+            as_tuple
+        ](kwargs["time"], int)
+    if "expver" in kwargs:
+        kwargs["expver"] = {False: _normalize_expver, True: _normalize_expver_as_tuple}[
+            as_tuple
+        ](kwargs["expver"])
+
+    return kwargs
+
+
 class alias_argument(Decorator):
     def __init__(
         self,

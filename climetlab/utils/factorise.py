@@ -404,6 +404,7 @@ class Tree:
             if extra is not None:
                 req.append(extra)
             for k, v in r.items():
+                v = [str(_) for _ in v]
                 req.append(f"{k}={'/'.join(v)}")
             result.append(",".join(req))
         return "\n".join(result)

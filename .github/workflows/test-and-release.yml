@@ -271,6 +271,6 @@ jobs:
       run: python setup.py sdist
     - name: Publish
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN_CLIMETLAB }}
       run: twine upload --verbose dist/*

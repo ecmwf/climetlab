@@ -48,14 +48,7 @@ def _tidy(o):
 class FastWriter:
     def __init__(self, array, shape):
         self.array = array
-        self.cache = np.zeros(shape)
         self.shape = shape
-
-    def __setitem__(self, key, value):
-        self.cache[key] = value
-
-    def flush(self):
-        self.array[:] = self.cache[:]
 
     def stats(self, axis):
         sel = [slice(None)] * len(self.shape)
@@ -66,7 +59,7 @@ class FastWriter:
         count = None
         for k in range(self.shape[axis]):
             sel[axis] = k
-            values = self.cache[tuple(sel)]
+            values = self.__getitem__(tuple(sel))
             sums[k] = np.sum(values)
             squares[k] = np.sum(values * values)
             minima[k] = np.amin(values)
@@ -77,6 +70,32 @@ class FastWriter:
                 assert count == values.size
 
         return (count, sums, squares, minima, maxima)
+
+
+class FastWriterWithoutCache(FastWriter):
+    def __setitem__(self, key, value):
+        self.array[key] = value
+
+    def __getitem__(self, key):
+        return self.array[key]
+
+    def flush(self):
+        pass
+
+
+class FastWriterWithCache(FastWriter):
+    def __init__(self, array, shape):
+        super().__init__(array, shape)
+        self.cache = np.zeros(shape)
+
+    def __setitem__(self, key, value):
+        self.cache[key] = value
+
+    def __getitem__(self, key):
+        return self.cache[key]
+
+    def flush(self):
+        self.array[:] = self.cache[:]
 
 
 class OffsetView:
@@ -151,7 +170,7 @@ class ZarrLoader(Loader):
 
             self.zdata.resize(tuple(new_shape))
 
-            self.writer = FastWriter(
+            self.writer = FastWriterWithCache(
                 OffsetView(
                     self.zdata,
                     original_shape[axis],
@@ -174,7 +193,7 @@ class ZarrLoader(Loader):
             lon = self._add_dataset("longitude", grid_points[1])
             assert lat.shape == lon.shape
 
-            self.writer = FastWriter(self.zdata, shape)
+            self.writer = FastWriterWithCache(self.zdata, shape)
 
         return self.writer
 
@@ -221,8 +240,8 @@ class ZarrLoader(Loader):
         mean = sums / count
         stdev = np.sqrt(squares / count - mean * mean)
 
-        name_to_index = metadata["name_to_index"] = {}
-        statistics_by_name = metadata["statistics_by_name"] = {}
+        name_to_index = {}
+        statistics_by_name = {}
         for i, name in enumerate(self.config.statistics_names):
             statistics_by_name[name] = {}
             statistics_by_name[name]["mean"] = mean[i]
@@ -230,15 +249,18 @@ class ZarrLoader(Loader):
             statistics_by_name[name]["minimum"] = minimum[i]
             statistics_by_name[name]["maximum"] = maximum[i]
             statistics_by_name[name]["sums"] = sums[i]
-            statistics_by_name[name]["squares"] = sums[i]
+            statistics_by_name[name]["squares"] = squares[i]
             statistics_by_name[name]["count"] = count
             name_to_index[name] = i
+        metadata["name_to_index"] = name_to_index
+        metadata["statistics_by_name"] = statistics_by_name
 
-        statistics_by_index = metadata["statistics_by_index"] = {}
+        statistics_by_index = {}
         statistics_by_index["mean"] = list(mean)
         statistics_by_index["stdev"] = list(stdev)
         statistics_by_index["maximum"] = list(maximum)
         statistics_by_index["minimum"] = list(minimum)
+        metadata["statistics_by_index"] = statistics_by_index
 
         self._add_dataset("mean", mean)
         self._add_dataset("stdev", stdev)
@@ -246,10 +268,14 @@ class ZarrLoader(Loader):
         self._add_dataset("maximum", maximum)
         self._add_dataset("sums", sums)
         self._add_dataset("squares", squares)
+        self._add_dataset("count", mean * 0 + count)
 
-        metadata["config"] = _tidy(config)
+        metadata["create_yaml_config"] = _tidy(config)
+        for k, v in config.get("metadata", {}).items():
+            self.z.attrs[k] = v
 
         self.z.attrs["climetlab"] = metadata
+        self.z["data"].attrs["climetlab"] = metadata
         self.z.attrs["version"] = VERSION
 
 
@@ -319,19 +345,20 @@ class HDF5Loader:
         warnings.warn("HDF5Loader.add_metadata not yet implemented")
 
 
-def _load(loader, config, append, **kwargs):
+def _load(loader, config, append, print_=print, **kwargs):
     start = time.time()
-    print("Loading input", config.input)
+    print_("Loading input", config.input)
 
     data = cml.load_source("loader", config.input)
-    if "constant" in config.input:
-        data = data + cml.load_source("constants", data, config.input.constants)
+
+    # if "constants" in config.input and config.input.constants:
+    #    data = data + cml.load_source("constants", data, config.input.constants)
 
     assert len(data)
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
     start = time.time()
-    print("Sort dataset")
+    print_("Sort dataset")
     cube = data.cube(
         config.output.order_by,
         remapping=config.output.remapping,
@@ -348,9 +375,12 @@ def _load(loader, config, append, **kwargs):
     save = 0
 
     reading_chunks = None
-    for cubelet in progress_bar(
-        total=cube.count(reading_chunks),
-        iterable=cube.iterate_cubelets(reading_chunks),
+    total = cube.count(reading_chunks)
+    for i, cubelet in enumerate(
+        progress_bar(
+            iterable=cube.iterate_cubelets(reading_chunks),
+            total=total,
+        )
     ):
         now = time.time()
         data = cubelet.to_numpy()
@@ -361,6 +391,9 @@ def _load(loader, config, append, **kwargs):
         now = time.time()
         array[cubelet.extended_icoords] = data
         save += time.time() - now
+
+        if print_ != print:
+            print_(f"{i}/{total}")
 
     now = time.time()
     loader.close()
