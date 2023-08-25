@@ -296,6 +296,8 @@ class ZarrFlagArray:
 
 
 class ZarrLoader(Loader):
+    writer = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.z = None
