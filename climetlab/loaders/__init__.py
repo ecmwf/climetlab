@@ -126,6 +126,7 @@ class LoopItemsFilter:
     def __init__(self, *, loader, parts, **kwargs):
         self.loader = loader
 
+        print("parts", parts)
         if parts is None:
             self.parts = None
             return
@@ -138,6 +139,7 @@ class LoopItemsFilter:
             parts = range((i_chunk - 1) * chunk_size + 1, i_chunk * chunk_size + 1)
 
         parts = [int(_) for _ in parts]
+        print("parts", parts)
 
         self.parts = parts
 
@@ -150,10 +152,11 @@ class LoopItemsFilter:
 
 
 class Loader:
-    def __init__(self, path, *, config, **kwargs):
+    def __init__(self, *, path, config, print=print, **kwargs):
         self.main_config = LoadersConfig(config)
         self.path = path
         self.kwargs = kwargs
+        self.print = print
 
     def load(self):
         kwargs = self.kwargs
@@ -163,10 +166,16 @@ class Loader:
             self.load_part(self.main_config, iloop=0, **kwargs)
             return
 
+        #        n = 0
+        #        for iloop, vars in enumerate(self.main_config._iter_loops()):
+        #            n +=
+
         self.nloops = self.main_config._len_of_iter_loops()
         filter = LoopItemsFilter(loader=self, **kwargs)
         for iloop, vars in enumerate(self.main_config._iter_loops()):
+            print(f"{iloop=}")
             if not filter(iloop, vars):
+                print(f" . skipping {iloop=}")
                 continue
             part_config = self.main_config.substitute(vars)
             print("------------------------------------------------")
@@ -179,26 +188,8 @@ class Loader:
         raise NotImplementedError()
 
     def load_part(self, config, *, iloop, print_=print, **kwargs):
-        start = time.time()
+        cube, grid_points = self.config_to_data_cube(config)
 
-        data = cml.load_source("loader", config.input)
-        # if "constants" in config.input and config.input.constants:
-        #    data = data + cml.load_source("constants", data, config.input.constants)
-
-        assert len(data), config
-        print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
-
-        start = time.time()
-        print_("Sort dataset")
-        cube = data.cube(
-            config.output.order_by,
-            remapping=config.output.remapping,
-            flatten_values=config.output.flatten_values,
-        )
-        cube = cube.squeeze()
-        print(f"Done in {seconds(time.time()-start)}.")
-
-        grid_points = data[0].grid_points()
         if iloop == 0:
             array = self.create_array(config, cube, grid_points)
         else:
@@ -307,28 +298,114 @@ class ZarrLoader(Loader):
     def _built_flags(self):
         return ZarrFlagArray("_build", self.path, size=self.nloops)
 
-    def create_array(self, config, cube, grid_points):
+    @classmethod
+    def from_config(cls, *, config, path, **kwargs):
+        # config is the path to the config file
+        # or a dict with the config
+        obj = cls(config=config, path=path, **kwargs)
+        return obj
+
+    @classmethod
+    def from_path(cls, *, config, path, **kwargs):
         import zarr
 
-        self.config = config
+        assert os.path.exists(path), path
+        z = zarr.open(path, mode="r")
+        metadata = z.attrs["climetlab"]
+        config = metadata["create_yaml_config"]
+        return cls.from_config(config, path=path, **kwargs)
 
-        shape = cube.extended_user_shape
-        chunks = cube.chunking(config.output.chunking)
-        dtype = config.output.dtype
+    def iter_loops(self):
+        if "loop" not in self.main_config or self.main_config.loop is None:
+            raise NotImplementedError()
+            yield None  # ?
+            return
+
+        for vars in self.main_config._iter_loops():
+            yield vars
+
+    def init(self):
+        """Create empty zarr from self.main_config and self.path"""
+        import zarr
+
+        def squeeze_dict(dic):
+            keys = list(dic.keys())
+            assert len(dic) == 1, keys
+            return dic[keys[0]]
+
+        def compute_lengths():
+            lengths = {}
+            for i, vars in enumerate(self.iter_loops()):
+                lst = squeeze_dict(vars)
+                assert isinstance(lst, (tuple, list)), lst
+                lengths[i] = len(lst)
+            return lengths
+
+        lengths = compute_lengths()
+        total_length = sum(lengths.values())
+        nloops = len(lengths)
+
+        def get_one_element_config():
+            for i, vars in enumerate(self.iter_loops()):
+                keys = list(vars.keys())
+                assert len(vars) == 1, keys
+                key = keys[0]
+                vars = {key: vars[key][0]}
+                return self.main_config.substitute(vars)
+
+        config = get_one_element_config()
+
+        cube, grid_points = self.config_to_data_cube(config)
+
+        shape = list(cube.extended_user_shape)
+        # Notice that shape[0] can be >1, we replace it be the full length
+        shape[0] = total_length
+        chunks = cube.chunking(self.main_config.output.chunking)
+        dtype = self.main_config.output.dtype
 
         print(f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}")
-
         self.z = zarr.open(self.path, mode="w")
-        self._built_flags.create()
-        self.zdata = self.z.create_dataset(
-            "data", shape=shape, chunks=chunks, dtype=dtype
-        )
+        # self._built_flags.create()
+        self.z.create_dataset("data", shape=shape, chunks=chunks, dtype=dtype)
 
         lat = self._add_dataset("latitude", grid_points[0])
         lon = self._add_dataset("longitude", grid_points[1])
         assert lat.shape == lon.shape
-        self.writer = FastWriterWithCache(self.zdata, shape)
-        return self.writer
+
+        metadata = {}
+        metadata["name_to_index"] = self.main_config.output.order_by[
+            self.main_config.output.statistics
+        ]
+        metadata["create_yaml_config"] = _tidy(self.main_config)
+        for k, v in self.main_config.get("metadata", {}).items():
+            self.z.attrs[k] = v
+        self.z.attrs["climetlab"] = metadata
+        self.z["data"].attrs["climetlab"] = metadata
+        self.z.attrs["version"] = VERSION
+
+    def config_to_data_cube(self, config):
+        start = time.time()
+        data = cml.load_source("loader", config.input)
+        assert len(data), f"No data for {config}"
+        self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
+
+        start = time.time()
+        self.print("Sort dataset")
+        cube = data.cube(
+            config.output.order_by,
+            remapping=config.output.remapping,
+            flatten_values=config.output.flatten_values,
+        )
+        cube = cube.squeeze()
+        self.print(f"Done in {seconds(time.time()-start)}.")
+
+        grid_points = data[0].grid_points()
+
+        self.print(f"{grid_points=}")
+        for i in grid_points:
+            self.print(len(i))
+
+        return cube, grid_points
 
     def append_array(self, config, cube, grid_points):
         import zarr
@@ -465,42 +542,41 @@ class ZarrLoader(Loader):
 
         stats_shape = (shape[0], shape[1])
 
-        mean = np.zeros(shape=stats_shape)
-        stdev = np.zeros(shape=stats_shape)
+        # mean = np.zeros(shape=stats_shape)
+        # stdev = np.zeros(shape=stats_shape)
         minimum = np.zeros(shape=stats_shape)
         maximum = np.zeros(shape=stats_shape)
         sums = np.zeros(shape=stats_shape)
         squares = np.zeros(shape=stats_shape)
-        count = np.zeros(shape=stats_shape)
 
-        COUNT = shape[0]
-        for i in range(COUNT):
+        for i in range(shape[0]):
             chunk = data[i, ...]
-            for j, name in enumerate(range(shape[1])):
+            for j in range(shape[1]):
                 values = chunk[j, :]
                 minimum[i, j] = np.amin(values)
                 maximum[i, j] = np.amax(values)
                 sums[i, j] = np.sum(values)
                 squares[i, j] = np.sum(values * values)
-                count[i, j] = values.size
-                mean[i, j] = sums[i, j] / count[i, j]
-                stdev[i, j] = np.sqrt(
-                    squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
-                )
+                # mean[i, j] = sums[i, j] / count[i, j]
+                # stdev[i, j] = np.sqrt(
+                #     squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
+                # )
 
-        cls._add_dataset_("mean_by_index", mean, zarr_root=z)
-        cls._add_dataset_("stdev_by_index", stdev, zarr_root=z)
-        cls._add_dataset_("minimum_by_index", minimum, zarr_root=z)
-        cls._add_dataset_("maximum_by_index", maximum, zarr_root=z)
-        cls._add_dataset_("sums_by_index", sums, zarr_root=z)
-        cls._add_dataset_("squares_by_index", squares, zarr_root=z)
-        cls._add_dataset_("count_by_index", mean * 0 + count, zarr_root=z)
+        _count = z.data.size / shape[1]
+        assert _count == int(_count), _count
+
+        # cls._add_dataset_("mean_by_datetime", mean, zarr_root=z)
+        # cls._add_dataset_("stdev_by_datetime", stdev, zarr_root=z)
+        # cls._add_dataset_("minimum_by_datetime", minimum, zarr_root=z)
+        # cls._add_dataset_("maximum_by_datetime", maximum, zarr_root=z)
+        # cls._add_dataset_("sums_by_datetime", sums, zarr_root=z)
+        # cls._add_dataset_("squares_by_datetime", squares, zarr_root=z)
+        # cls._add_dataset_("count_by_datetime", mean * 0 + count, zarr_root=z)
 
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
         _sums = np.sum(sums, axis=0)
         _squares = np.sum(squares, axis=0)
-        _count = np.sum(count, axis=0)
         _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
 

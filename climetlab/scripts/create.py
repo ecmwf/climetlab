@@ -39,22 +39,29 @@ class LoadersCmd:
                 " and how to organise them in the target"
             ),
         ),
-        target=(
+        path=(
             "--target",
             dict(
                 help="Where to store the data. "
                 "Currently only a path to a new ZARR or HDF5 file is supported."
             ),
         ),
+        init=(
+            "--init",
+            dict(
+                action="store_true",
+                help="Initialise zarr",
+            ),
+        ),
         parts=(
             "--parts",
             dict(nargs="+", help="Process partially the data (starts at 1)"),
         ),
-        n_parts=(
-            "--n-parts",
+        number_of_parts=(
+            "--number-of-parts",
             dict(
                 action="store_true",
-                help="Do not run anything. Returns the number parts",
+                help="Do not run anything. Returns the number of parts",
             ),
         ),
         statistics=(
@@ -63,13 +70,13 @@ class LoadersCmd:
         ),
     )
     def do_create(self, args):
-        if args.n_parts:
+        if args.number_of_parts:
             config = LoadersConfig(args.config)
             print(config._len_of_iter_loops())
             return
 
         if args.format is None:
-            _, ext = os.path.splitext(args.target)
+            _, ext = os.path.splitext(args.path)
             args.format = ext[1:]
 
         def no_callback(*args, **kwargs):
@@ -109,13 +116,26 @@ class LoadersCmd:
             raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
 
         kwargs = vars(args)
-        path = kwargs.pop("target")
         loader_class = LOADERS[args.format]
 
-        if args.config:
-            loader = loader_class(path, print=callback, **kwargs)
+        lst = [args.parts, args.statistics, args.init]
+        if sum(1 for x in lst if x) != 1:
+            raise ValueError(
+                "Too many options provided."
+                'Must choose exactly one option in "--parts", "--statistics", "--config"'
+            )
+
+        if args.init:
+            assert args.config
+            loader = loader_class.from_config(**kwargs)
+            loader.init()
+            exit()
+
+        if args.parts:
+            loader = loader_class.from_zarr(**kwargs)
             loader.load()
             loader.add_metadata()
 
         if args.statistics:
-            loader_class.add_statistics(path, print=callback)
+            loader = loader_class.from_path(**kwargs)
+            loader_class.add_statistics()
