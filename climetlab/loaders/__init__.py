@@ -380,9 +380,10 @@ class ZarrLoader(Loader):
 
         assert os.path.exists(path), path
         z = zarr.open(path, mode="r")
+        # metadata = json.loads(z.attrs["_climetlab"])
         metadata = yaml.safe_load(z.attrs["_climetlab"])
+        kwargs.get('print', print)("config loaded from zarr ", z.attrs["_climetlab"])
         config = metadata["create_yaml_config"]
-        print("***", config)
         return cls.from_config(config=config, path=path, **kwargs)
 
     def iter_loops(self):
@@ -448,6 +449,7 @@ class ZarrLoader(Loader):
             self.z.attrs[k] = v
 
         metadatastr = yaml.dump(metadata, sort_keys=False)
+        # metadatastr = json.dumps(metadata, sort_keys=False)
 
         self.z.attrs["climetlab"] = metadata
         self.z.attrs["_climetlab"] = metadatastr
@@ -462,7 +464,6 @@ class ZarrLoader(Loader):
 
     def config_to_data_cube(self, config, with_gridpoints=False):
         start = time.time()
-        print(f"{config.input=}")
         data = cml.load_source("loader", config.input)
         assert len(data), f"No data for {config}"
         self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
