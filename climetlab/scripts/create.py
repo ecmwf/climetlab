@@ -10,7 +10,6 @@
 import os
 
 from climetlab.loaders import HDF5Loader, ZarrLoader
-from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import list_to_human
 
 from .tools import parse_args

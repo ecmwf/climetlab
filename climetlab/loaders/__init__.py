@@ -333,7 +333,7 @@ class ZarrBuiltRegistry:
             dtype=bool,
             overwrite=overwrite,
         )
-        flags.attrs['_initialised'] = True
+        flags.attrs["_initialised"] = True
 
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
