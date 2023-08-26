@@ -54,15 +54,8 @@ class LoadersCmd:
             ),
         ),
         parts=(
-            "--parts",
+            "--load-parts",
             dict(nargs="+", help="Part(s) of the data to process"),
-        ),
-        number_of_parts=(
-            "--number-of-parts",
-            dict(
-                action="store_true",
-                help="Do not run anything. Returns the number of parts",
-            ),
         ),
         statistics=(
             "--statistics",
@@ -70,11 +63,6 @@ class LoadersCmd:
         ),
     )
     def do_create(self, args):
-        if args.number_of_parts:
-            config = LoadersConfig(args.config)
-            print(config._len_of_iter_loops())
-            return
-
         if args.format is None:
             _, ext = os.path.splitext(args.path)
             args.format = ext[1:]
@@ -136,5 +124,5 @@ class LoadersCmd:
             loader.load(**kwargs)
 
         if args.statistics:
-            loader = loader_class.from_path(**kwargs)
+            loader = loader_class.from_zarr(**kwargs)
             loader_class.add_statistics()
