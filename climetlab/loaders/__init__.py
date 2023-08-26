@@ -178,6 +178,8 @@ class Loader:
     def load(self, **kwargs):
         import zarr
 
+        self.z = zarr.open(self.path, mode="r+")
+
         filter = LoopItemsFilter(loader=self, **kwargs)
         nloop = len(list((self.iter_loops())))
         for iloop, vars in enumerate(self.iter_loops()):
@@ -186,7 +188,6 @@ class Loader:
             if self.registry.get_flag(iloop):
                 print(f" -> Skipping {iloop} total={nloop} (already done)")
                 continue
-
             self.print(f" -> Processing {iloop=} total={nloop}")
 
             config = self.main_config.substitute(vars)
@@ -194,16 +195,10 @@ class Loader:
 
             shape = cube.extended_user_shape
             chunks = cube.chunking(config.output.chunking)
-
-            self.z = zarr.open(self.path, mode="r+")
-            zdata = self.z["data"]
-
-            # array = self.append_array(config, cube)
-
             axis = config.output.append_axis
 
             slice = self.registry.get_slice_for(iloop)
-            print(
+            self.print(
                 (
                     f"Writing to ZARR '{self.path}' at {slice}"
                     f", with {shape=}, {chunks=}"
@@ -211,7 +206,7 @@ class Loader:
             )
             offset = slice.start
             array = FastWriterWithCache(
-                OffsetView(zdata, offset=offset, axis=axis, shape=shape),
+                OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape),
                 shape,
             )
 

@@ -90,7 +90,7 @@ class LoadersCmd:
                     print(f"Exception when running {cmd}" + traceback.format_exc())
                     print(e)
 
-            callback("Starting-loader.")
+            callback("Starting-zarr-loader.")
         else:
             callback = no_callback
 
@@ -105,6 +105,7 @@ class LoadersCmd:
             raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
 
         kwargs = vars(args)
+        kwargs["print"] = callback
         loader_class = LOADERS[args.format]
 
         lst = [args.load, args.statistics, args.init]
