@@ -11,6 +11,7 @@
 import datetime
 import json
 import logging
+import math
 import os
 import time
 import warnings
@@ -136,16 +137,22 @@ class LoopItemsFilter:
         self.loader = loader
 
         print("parts", parts)
-        if parts is None or parts == ["all"] or parts == ["*"]:
+        if parts is None:
             self.parts = None
             return
 
-        # if len(parts) == 1 and "/" in parts[0]:
-        #    total = self.loader.nloops
-        #    i_chunk, n_chunks = parts[0].split("/")
-        #    i_chunk, n_chunks = int(i_chunk), int(n_chunks)
-        #    chunk_size = math.ceil(total / n_chunks)
-        #    parts = range((i_chunk - 1) * chunk_size + 1, i_chunk * chunk_size + 1)
+        if len(parts) == 1:
+            part = parts[0]
+            if part.lower() in ["all", "*"]:
+                self.parts = None
+                return
+
+            if "/" in part:
+                total = len(self.loader.registry.get_flags())
+                i_chunk, n_chunks = part.split("/")
+                i_chunk, n_chunks = int(i_chunk), int(n_chunks)
+                chunk_size = math.ceil(total / n_chunks)
+                parts = range((i_chunk - 1) * chunk_size, i_chunk * chunk_size)
 
         parts = [int(_) for _ in parts]
         print("parts", parts)
@@ -172,17 +179,15 @@ class Loader:
         import zarr
 
         filter = LoopItemsFilter(loader=self, **kwargs)
+        nloop = len(list((self.iter_loops())))
         for iloop, vars in enumerate(self.iter_loops()):
             if not filter(iloop, vars):
-                print(f" . skipping {iloop=}")
                 continue
             if self.registry.get_flag(iloop):
-                print(f" . skipping {iloop=} (already done)")
+                print(f" -> Skipping {iloop} total={nloop} (already done)")
                 continue
 
-            self.print(f" . processing {iloop=}")
-            self.print("------------------------------------------------")
-            self.print(f"Processing : {vars}")
+            self.print(f" -> Processing {iloop=} total={nloop}")
 
             config = self.main_config.substitute(vars)
             cube = self.config_to_data_cube(config)
@@ -544,6 +549,9 @@ class ZarrLoader(Loader):
 
 
 class HDF5Loader:
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError()
+
     def append_array(self, *args, **kwargs):
         raise NotImplementedError("Appending do HDF5 not yet implemented")
 

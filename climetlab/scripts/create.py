@@ -17,18 +17,19 @@ from .tools import parse_args
 
 class LoadersCmd:
     @parse_args(
-        dataset=(
-            "--dataset",
-            dict(
-                help="Name of the HDF5 dataset to use"
-                " (default from config or 'dataset')"
-            ),
-        ),
+        # dataset=(
+        #     "--dataset",
+        #     dict(
+        #         help="Name of the HDF5 dataset to use"
+        #         " (default from config or 'dataset')"
+        #     ),
+        # ),
         format=(
             "--format",
             dict(
                 help="The format of the target storage into which to load the data"
                 " (default is inferred from target path extension)"
+                " only .zarr is currently supported."
             ),
         ),
         config=(
@@ -47,14 +48,15 @@ class LoadersCmd:
         ),
         init=(
             "--init",
-            dict(
-                action="store_true",
-                help="Initialise zarr",
-            ),
+            dict(action="store_true", help="Initialise zarr"),
+        ),
+        load=(
+            "--load",
+            dict(action="store_true", help="Load data into zarr"),
         ),
         parts=(
-            "--load-parts",
-            dict(nargs="+", help="Part(s) of the data to process"),
+            "--parts",
+            dict(nargs="+", help="Use with --load. Part(s) of the data to process"),
         ),
         statistics=(
             "--statistics",
@@ -105,23 +107,30 @@ class LoadersCmd:
         kwargs = vars(args)
         loader_class = LOADERS[args.format]
 
-        lst = [args.parts, args.statistics, args.init]
+        lst = [args.load, args.statistics, args.init]
         if sum(1 for x in lst if x) != 1:
             raise ValueError(
                 "Too many options provided."
                 'Must choose exactly one option in "--parts", "--statistics", "--config"'
             )
+        if args.parts:
+            assert args.load, "Use --parts only with --load"
 
         if args.init:
-            assert args.config
+            assert args.config, "--init requires --config"
+            assert args.path, "--init requires --target"
             loader = loader_class.from_config(**kwargs)
             loader.initialise()
             exit()
 
-        if args.parts:
+        if args.load:
+            assert args.config is None, "--load requires only a zarr target, no config."
             loader = loader_class.from_zarr(**kwargs)
             loader.load(**kwargs)
 
         if args.statistics:
+            assert (
+                args.config is None
+            ), "--statistics requires only a zarr target, no config."
             loader = loader_class.from_zarr(**kwargs)
             loader_class.add_statistics()
