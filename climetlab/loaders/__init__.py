@@ -11,7 +11,6 @@
 import datetime
 import json
 import logging
-import math
 import os
 import time
 import warnings
@@ -136,7 +135,6 @@ class LoopItemsFilter:
     def __init__(self, *, loader, parts, **kwargs):
         self.loader = loader
 
-        print("parts", parts)
         if parts is None:
             self.parts = None
             return
@@ -148,14 +146,24 @@ class LoopItemsFilter:
                 return
 
             if "/" in part:
-                total = len(self.loader.registry.get_flags())
                 i_chunk, n_chunks = part.split("/")
                 i_chunk, n_chunks = int(i_chunk), int(n_chunks)
-                chunk_size = math.ceil(total / n_chunks)
-                parts = range((i_chunk - 1) * chunk_size, i_chunk * chunk_size)
+
+                total = len(self.loader.registry.get_flags())
+                assert i_chunk > 0, f"Chunk number {i_chunk} must be positive."
+                assert (
+                    i_chunk <= total
+                ), f"Chunk number {i_chunk} must be less than {total}+1."
+
+                chunk_size = total / n_chunks
+                parts = [
+                    x
+                    for x in range(total)
+                    if x >= (i_chunk - 1) * chunk_size and x < i_chunk * chunk_size
+                ]
 
         parts = [int(_) for _ in parts]
-        print("parts", parts)
+        print(f"Running parts: {parts}")
 
         self.parts = parts
 
@@ -188,7 +196,7 @@ class Loader:
             if self.registry.get_flag(iloop):
                 print(f" -> Skipping {iloop} total={nloop} (already done)")
                 continue
-            self.print(f" -> Processing {iloop=} total={nloop}")
+            self.print(f" -> Processing i={iloop=} total={nloop}")
 
             config = self.main_config.substitute(vars)
             cube = self.config_to_data_cube(config)
@@ -198,12 +206,9 @@ class Loader:
             axis = config.output.append_axis
 
             slice = self.registry.get_slice_for(iloop)
-            self.print(
-                (
-                    f"Writing to ZARR '{self.path}' at {slice}"
-                    f", with {shape=}, {chunks=}"
-                )
-            )
+            print(f"Building to ZARR '{self.path}':")
+            self.print(f"Building to ZARR at {slice}, with {shape=}, {chunks=}")
+
             offset = slice.start
             array = FastWriterWithCache(
                 OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape),
@@ -237,16 +242,16 @@ class Loader:
             array[cubelet.extended_icoords] = data
             save += time.time() - now
 
-            if self.print != print:
-                self.print(f"{i}/{total}")
+            # if self.print != print:
+            #    self.print(f"Read {i+1}/{total}")
 
         now = time.time()
         array.flush()
         save += time.time() - now
 
-        self.print()
+        print("Written")
         self.print_info()
-        self.print()
+        print("Written.")
 
         self.print(
             f"Elapsed: {seconds(time.time() - start)},"
@@ -284,7 +289,6 @@ class ZarrBuiltRegistry:
 
     def get_slice_for(self, iloop):
         lengths = self.get_lengths()
-        print(lengths)
         assert iloop >= 0 and iloop < len(lengths)
         start = sum(lengths[:iloop])
         stop = sum(lengths[: (iloop + 1)])
@@ -296,6 +300,7 @@ class ZarrBuiltRegistry:
 
     def get_flags(self):
         z = self._open_read()
+        print(list(z[self.name_flags][:]))
         return list(z[self.name_flags][:])
 
     def get_flag(self, iloop):
@@ -417,7 +422,9 @@ class ZarrLoader(Loader):
         chunks = cube.chunking(self.main_config.output.chunking)
         dtype = self.main_config.output.dtype
 
-        print(f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}")
+        self.print(
+            f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}"
+        )
         self.z = zarr.open(self.path, mode="w")
         self.z.create_dataset("data", shape=shape, chunks=chunks, dtype=dtype)
 
@@ -453,14 +460,14 @@ class ZarrLoader(Loader):
         self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
         start = time.time()
-        self.print("Sort dataset")
+        self.print("Sorting dataset")
         cube = data.cube(
             config.output.order_by,
             remapping=config.output.remapping,
             flatten_values=config.output.flatten_values,
         )
         cube = cube.squeeze()
-        self.print(f"Done in {seconds(time.time()-start)}.")
+        self.print(f"Sorting done in {seconds(time.time()-start)}.")
 
         if not with_gridpoints:
             return cube
@@ -468,7 +475,13 @@ class ZarrLoader(Loader):
             return cube, data[0].grid_points()
 
     def _add_dataset(self, *args, **kwargs):
-        return add_zarr_dataset(*args, **kwargs, zarr_root=self.z)
+        import zarr
+
+        z = self.z
+        if z is None:
+            z = zarr.open(self.path, mode="r+")
+
+        return add_zarr_dataset(*args, **kwargs, zarr_root=z)
 
     def close(self):
         if self.writer is None:
@@ -480,8 +493,16 @@ class ZarrLoader(Loader):
             self.writer = None
 
     def print_info(self):
-        self.print(self.z.info)
-        self.print(self.z["data"].info)
+        assert self.z is not None
+        try:
+            print(self.z["data"].info)
+        except Exception as e:
+            print(e)
+        print("...")
+        try:
+            print(self.z["data"].info)
+        except Exception as e:
+            print(e)
 
     def add_statistics(self, **kwargs):
         import zarr
@@ -489,9 +510,9 @@ class ZarrLoader(Loader):
         if not all(self.registry.get_flags()):
             raise Exception(f"Zarr {self.path} is not fully built.")
 
-        z = zarr.open(self.path, mode="r+")
-        data = z.data
-        shape = z.data.shape
+        z_read = zarr.open(self.path, mode="r")
+        data = z_read["data"]
+        shape = data.shape
         assert len(shape) in [3, 4]  # if 4, we expect to have latitude/longitude
 
         stats_shape = (shape[0], shape[1])
@@ -505,6 +526,7 @@ class ZarrLoader(Loader):
 
         for i in range(shape[0]):
             chunk = data[i, ...]
+            self.print(f"Computing statistics on {i+1}/{shape[0]}")
             for j in range(shape[1]):
                 values = chunk[j, :]
                 minimum[i, j] = np.amin(values)
@@ -516,7 +538,7 @@ class ZarrLoader(Loader):
                 #     squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
                 # )
 
-        _count = z.data.size / shape[1]
+        _count = data.size / shape[1]
         assert _count == int(_count), _count
 
         # self._add_dataset("mean_by_datetime", mean)
@@ -533,6 +555,8 @@ class ZarrLoader(Loader):
         _squares = np.sum(squares, axis=0)
         _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
+
+        _count = _mean * 0 + _count
 
         self._add_dataset("mean", _mean)
         self._add_dataset("stdev", _stdev)

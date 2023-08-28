@@ -112,7 +112,7 @@ class LoadersCmd:
         if sum(1 for x in lst if x) != 1:
             raise ValueError(
                 "Too many options provided."
-                'Must choose exactly one option in "--parts", "--statistics", "--config"'
+                'Must choose exactly one option in "--load", "--statistics", "--config"'
             )
         if args.parts:
             assert args.load, "Use --parts only with --load"
@@ -134,4 +134,4 @@ class LoadersCmd:
                 args.config is None
             ), "--statistics requires only a zarr target, no config."
             loader = loader_class.from_zarr(**kwargs)
-            loader_class.add_statistics()
+            loader.add_statistics()
