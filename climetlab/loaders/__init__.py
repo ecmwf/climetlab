@@ -434,9 +434,12 @@ class ZarrLoader(Loader):
 
         metadata = {}
         metadata["create_yaml_config"] = _tidy(self.main_config)
-        metadata["name_to_index"] = self.main_config.output.order_by[
-            self.main_config.output.statistics
-        ]
+        metadata["name_to_index"] = {
+            name: i
+            for i, name in enumerate(
+                self.main_config.output.order_by[self.main_config.output.statistics]
+            )
+        }
         for k, v in self.main_config.get("metadata", {}).items():
             self.z.attrs[k] = v
 
