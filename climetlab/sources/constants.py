@@ -145,10 +145,11 @@ class ConstantMaker:
 
         date = to_datetime(date)
         result = toa_incident_solar_radiation(
-            date - datetime.timedelta(hours=1),
-            date,
+            date - datetime.timedelta(minutes=30),
+            date + datetime.timedelta(minutes=30),
             self.latitude_(),
             self.longitude_(),
+            intervals_per_hour=2,
         )
         return result.flatten()
 

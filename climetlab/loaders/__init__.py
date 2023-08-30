@@ -351,8 +351,8 @@ def _load(loader, config, append, print_=print, **kwargs):
 
     data = cml.load_source("loader", config.input)
 
-    if "constants" in config.input and config.input.constants:
-        data = data + cml.load_source("constants", data, config.input.constants)
+    # if "constants" in config.input and config.input.constants:
+    #    data = data + cml.load_source("constants", data, config.input.constants)
 
     assert len(data)
     print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")

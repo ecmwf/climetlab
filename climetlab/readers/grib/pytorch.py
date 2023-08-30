@@ -11,7 +11,7 @@ import logging
 
 import numpy as np
 
-from climetlab.ml.torch import to_pytorch_dataloader
+# from climetlab.ml.torch import to_pytorch_dataloader
 
 from .tensorflow import default_merger, to_funcs
 
