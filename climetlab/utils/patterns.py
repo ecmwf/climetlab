@@ -17,6 +17,7 @@ RE2 = re.compile(r"\(([^}]*)\)")
 
 RE3 = re.compile(r"\(([^}]*)\)")
 
+
 class Any:
     def substitute(self, value, name):
         return value
@@ -115,11 +116,13 @@ class Variable:
             raise ValueError("Missing parameter '{}'".format(self.name))
         return self.kind.substitute(params[self.name], self.name)
 
+
 FUNCTIONS = dict(lower=lambda s: s.lower())
+
 
 class Function:
     def __init__(self, value):
-        functions = value.split('|')
+        functions = value.split("|")
         self.name = functions[0]
         self.variable = Variable(functions[0])
         self.functions = functions[1:]
@@ -129,7 +132,6 @@ class Function:
         for f in self.functions:
             value = FUNCTIONS[f](value)
         return value
-
 
 
 class Pattern:
@@ -142,7 +144,7 @@ class Pattern:
             if i % 2 == 0:
                 self.pattern.append(Constant(p))
             else:
-                if '|' in p:
+                if "|" in p:
                     v = Function(p)
                 else:
                     v = Variable(p)

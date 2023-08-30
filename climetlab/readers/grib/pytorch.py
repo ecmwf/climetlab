@@ -11,8 +11,6 @@ import logging
 
 import numpy as np
 
-# from climetlab.ml.torch import to_pytorch_dataloader
-
 from .tensorflow import default_merger, to_funcs
 
 LOG = logging.getLogger(__name__)
@@ -63,6 +61,8 @@ def to_pytorch(
 
 class PytorchMixIn:
     def to_pytorch_dataloader(self, *args, dataloader_kwargs=None, **kwargs):
+        from climetlab.ml.torch import to_pytorch_dataloader
+
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
         dataset = self.to_pytorch(*args, **kwargs)
