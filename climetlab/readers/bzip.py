@@ -8,7 +8,6 @@
 #
 
 import bz2
-import os
 
 from . import Reader
 from . import reader as find_reader
@@ -33,7 +32,7 @@ class BZReader(Reader):
         )
 
     def mutate(self):
-        print('mutare', self.source, self.unzipped)
+        print("mutare", self.source, self.unzipped)
         return find_reader(self.source, self.unzipped)
 
 
