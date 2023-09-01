@@ -94,6 +94,11 @@ class Loader(Source):
         self.config = config
 
     def mutate(self):
+        """
+        The config provided to this "loader" source can have
+        multiple sources/datasets. Let's iterate along each of
+        them, and concatenate them as a unique source.
+        """
         data = []
         inherit = False
         last = {}

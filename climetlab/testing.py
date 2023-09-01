@@ -129,6 +129,7 @@ def build_testdata(dir="testdata"):
         "sfc/climetlab.json",
         "sfc/tp.grib",
         "uvz.grib",
+        "uvz-20150418.grib",
     ]:
         outpath = os.path.join(dir, path)
         if os.path.exists(outpath):

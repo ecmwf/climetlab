@@ -84,13 +84,16 @@ def expand(values):
         if "daily" in values:
             start = values["daily"]["start"]
             stop = values["daily"]["stop"]
+            start = to_datetime(start)
+            stop = to_datetime(stop)
             date = start
             result = []
             while True:
-                result.append([date])
+                result.append(date)
                 date = date + datetime.timedelta(days=1)
                 if date > stop:
                     break
+            result = [d.isoformat() for d in result]
             return result
 
     raise ValueError(f"Cannot expand loop from {values}")
@@ -111,6 +114,12 @@ class Config(DictObj):
                 expand(*list(self.loop.values())),
             )
         )
+
+    def _len_of_iter_loops(self):
+        n = 0
+        for _ in self._iter_loops():
+            n += 1
+        return n
 
     def iter_configs(self):
         if self.loop is None:

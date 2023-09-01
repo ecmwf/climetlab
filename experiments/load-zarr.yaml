@@ -1,28 +1,29 @@
+loop:
+  dates:
+    daily:
+      start: '2015-04-18'
+      stop: '2015-04-19'
 input:
   inherit: true
   source:
-    name: file
-    path: q
-    # dataset: reanalysis-era5-single-levels
-    # product_type: reanalysis
-    # grid: 5/5
-    # date: 2000-01-01/to/2000-12-31
-    # time: [0, 12]
-    # variable: 2m_temperature
-    level: off
-
-
-    name: file
-    # time: [0, 12]
-    # variable: zsz
+    - name: file
+      path: test-data/uvz-20150418.grib
 
 
 output:
+  remapping:
+    param_level: '{param}_{levelist}'
+  statistics: param_level
   chunking:
-    date: 30
-  order:
-    - date
-    - time
-    - param
-    - levelist
+    valid_datetime: 1
+  order_by:
+  - valid_datetime
+  - param_level:
+    - u_500
+    - u_850
+    - v_500
+    - v_850
+    - z_500
+    - z_850
+
   dtype: float32

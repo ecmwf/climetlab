@@ -80,6 +80,7 @@ class OrderBase(OrderOrSelection):
         raise NotImplementedError()
 
     def compare_elements(self, a, b):
+        assert callable(self.remapping), (type(self.remapping), self.remapping)
         a_metadata = self.remapping(a.metadata)
         b_metadata = self.remapping(b.metadata)
         for k, v in self.actions.items():
