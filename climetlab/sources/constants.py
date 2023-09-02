@@ -122,8 +122,8 @@ class ConstantMaker:
         lon = self.longitude(date)
         date = to_datetime(date)
         delta = date - datetime.datetime(date.year, date.month, date.day)
-        since_midnight = delta.days + delta.seconds / 86400.0
-        return (lon / 360 * 24.0 + since_midnight) % 24
+        hours_since_midnight = (delta.days + delta.seconds / 86400.0) * 24
+        return (lon / 360.0 * 24.0 + hours_since_midnight) % 24
 
     def cos_local_time(self, date):
         radians = self.local_time(date) / 24 * np.pi * 2
