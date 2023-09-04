@@ -10,6 +10,7 @@
 import datetime
 import itertools
 import logging
+from warnings import warn
 
 import numpy as np
 
@@ -134,11 +135,10 @@ class ConstantMaker:
         return np.sin(radians)
 
     def insolation(self, date):
-        from ecmwf_mlkit.variables.insolation import insolation
-
-        date = to_datetime(date)
-        result = insolation([date], self.latitude_(), self.longitude_())
-        return result.flatten()
+        warn(
+            "The function `insolation` is deprecated, please use `cos_solar_zenith_angle` instead"
+        )
+        return self.cos_solar_zenith_angle(date)
 
     def toa_incident_solar_radiation(self, date):
         from earthkit.meteo.solar import toa_incident_solar_radiation
