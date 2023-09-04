@@ -16,6 +16,7 @@ import time
 import warnings
 
 import numpy as np
+import yaml
 
 import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
@@ -99,111 +100,391 @@ class FastWriterWithCache(FastWriter):
 
 
 class OffsetView:
-    def __init__(self, array, offset, axis, shape):
-        self.array = array
+    def __init__(self, large_array, *, offset, axis, shape):
+        """
+        A view on a portion of the large_array.
+        'axis' is the axis along which the offset applies.
+        'shape' is the shape of the view.
+        """
+        self.large_array = large_array
         self.offset = offset
         self.axis = axis
         self.shape = shape
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, values):
         if isinstance(key, slice):
+            # Ensure that the slice covers the entire view along the axis.
             assert key.start is None and key.stop is None, key
+
+            # Create a new key for indexing the large array.
             new_key = tuple(
-                slice(self.offset, self.offset + value.shape[i])
+                slice(self.offset, self.offset + values.shape[i])
                 if i == self.axis
                 else slice(None)
                 for i in range(len(self.shape))
             )
         else:
+            # For non-slice keys, adjust the key based on the offset and axis.
             new_key = tuple(
                 k + self.offset if i == self.axis else k for i, k in enumerate(key)
             )
-        self.array[new_key] = value
+        self.large_array[new_key] = values
+
+
+class LoopItemsFilter:
+    def __init__(self, *, loader, parts, **kwargs):
+        self.loader = loader
+
+        if parts is None:
+            self.parts = None
+            return
+
+        if len(parts) == 1:
+            part = parts[0]
+            if part.lower() in ["all", "*"]:
+                self.parts = None
+                return
+
+            if "/" in part:
+                i_chunk, n_chunks = part.split("/")
+                i_chunk, n_chunks = int(i_chunk), int(n_chunks)
+
+                total = len(self.loader.registry.get_flags())
+                assert i_chunk > 0, f"Chunk number {i_chunk} must be positive."
+                assert (
+                    i_chunk <= total
+                ), f"Chunk number {i_chunk} must be less than {total}+1."
+
+                chunk_size = total / n_chunks
+                parts = [
+                    x
+                    for x in range(total)
+                    if x >= (i_chunk - 1) * chunk_size and x < i_chunk * chunk_size
+                ]
+
+        parts = [int(_) for _ in parts]
+        print(f"Running parts: {parts}")
+
+        self.parts = parts
+
+    def __call__(self, iloop, vars):
+        if self.parts is None:
+            return True
+        # iloop index starts at 0
+        # self.parts is a list of indices starting at 1
+        return iloop in self.parts
 
 
 class Loader:
-    pass
-
-
-VERSION = 2
-
-
-class ZarrLoader(Loader):
-    def __init__(self, path):
+    def __init__(self, *, path, config, print=print, **kwargs):
+        self.main_config = LoadersConfig(config)
         self.path = path
-        self.z = None
-        self.statistics = []
+        self.kwargs = kwargs
+        self.print = print
+        self.registry = ZarrBuiltRegistry(self.path)
 
-    def create_array(self, config, cube, append, grid_points):
+    def load(self, **kwargs):
         import zarr
 
-        self.config = config
+        self.z = zarr.open(self.path, mode="r+")
 
-        if not append:
-            self.statistics = []
+        filter = LoopItemsFilter(loader=self, **kwargs)
+        nloop = len(list((self.iter_loops())))
+        for iloop, vars in enumerate(self.iter_loops()):
+            if not filter(iloop, vars):
+                continue
+            if self.registry.get_flag(iloop):
+                print(f" -> Skipping {iloop} total={nloop} (already done)")
+                continue
+            self.print(f" -> Processing i={iloop=} total={nloop}")
 
-        shape = cube.extended_user_shape
-        chunks = cube.chunking(config.output.chunking)
-        dtype = config.output.dtype
+            config = self.main_config.substitute(vars)
+            cube = self.config_to_data_cube(config)
 
-        print(
-            f"Creating ZARR file '{self.path}', with {shape=}, "
-            f"{chunks=} and {dtype=}"
-        )
-
-        if append:
-            self.z = zarr.open(self.path, mode="r+")
-            self.zdata = self.z["data"]
-
-            original_shape = self.zdata.shape
-            assert len(shape) == len(original_shape)
-
+            shape = cube.extended_user_shape
+            chunks = cube.chunking(config.output.chunking)
             axis = config.output.append_axis
 
-            new_shape = []
-            for i, (o, s) in enumerate(zip(original_shape, shape)):
-                if i == axis:
-                    new_shape.append(o + s)
-                else:
-                    assert o == s, (original_shape, shape, i)
-                    new_shape.append(o)
+            slice = self.registry.get_slice_for(iloop)
+            print(f"Building to ZARR '{self.path}':")
+            self.print(f"Building to ZARR at {slice}, with {shape=}, {chunks=}")
 
-            self.zdata.resize(tuple(new_shape))
-
-            self.writer = FastWriterWithCache(
-                OffsetView(
-                    self.zdata,
-                    original_shape[axis],
-                    axis,
-                    shape,
-                ),
+            offset = slice.start
+            array = FastWriterWithCache(
+                OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape),
                 shape,
             )
 
-        else:
-            self.z = zarr.open(self.path, mode="w")
-            self.zdata = self.z.create_dataset(
-                "data",
-                shape=shape,
-                chunks=chunks,
-                dtype=dtype,
+            self.load_datacube(cube, array)
+
+            self.registry.set_flag(iloop)
+
+    def load_datacube(self, cube, array):
+        start = time.time()
+        load = 0
+        save = 0
+
+        reading_chunks = None
+        total = cube.count(reading_chunks)
+        for i, cubelet in enumerate(
+            progress_bar(
+                iterable=cube.iterate_cubelets(reading_chunks),
+                total=total,
             )
+        ):
+            now = time.time()
+            data = cubelet.to_numpy()
+            load += time.time() - now
 
-            lat = self._add_dataset("latitude", grid_points[0])
-            lon = self._add_dataset("longitude", grid_points[1])
-            assert lat.shape == lon.shape
+            # self.print("data", data.shape,cubelet.extended_icoords)
 
-            self.writer = FastWriterWithCache(self.zdata, shape)
+            now = time.time()
+            array[cubelet.extended_icoords] = data
+            save += time.time() - now
 
-        return self.writer
+            # if self.print != print:
+            #    self.print(f"Read {i+1}/{total}")
 
-    def _add_dataset(self, name, nparray, dtype=np.float32):
-        assert len(nparray.shape) == 1, "Not implemented"
-        a = self.z.create_dataset(
-            name, shape=nparray.shape, dtype=dtype, overwrite=True
+        now = time.time()
+        array.flush()
+        save += time.time() - now
+
+        print("Written")
+        self.print_info()
+        print("Written.")
+
+        self.print(
+            f"Elapsed: {seconds(time.time() - start)},"
+            f" load time: {seconds(load)},"
+            f" write time: {seconds(save)}."
         )
-        a[:] = nparray[:]
-        return a
+
+
+VERSION = 3
+
+
+def add_zarr_dataset(name, nparray, *, zarr_root, overwrite=True, dtype=np.float32):
+    if isinstance(nparray, (tuple, list)):
+        nparray = np.array(nparray, dtype=dtype)
+    a = zarr_root.create_dataset(
+        name,
+        shape=nparray.shape,
+        dtype=dtype,
+        overwrite=overwrite,
+    )
+    a[...] = nparray[...]
+    return a
+
+
+class ZarrBuiltRegistry:
+    name_lengths = "_build_lengths"
+    name_flags = "_build_flags"
+    lengths = None
+    flags = None
+    z = None
+
+    def __init__(self, path):
+        assert isinstance(path, str), path
+        self.zarr_path = path
+
+    def get_slice_for(self, iloop):
+        lengths = self.get_lengths()
+        assert iloop >= 0 and iloop < len(lengths)
+        start = sum(lengths[:iloop])
+        stop = sum(lengths[: (iloop + 1)])
+        return slice(start, stop)
+
+    def get_lengths(self):
+        z = self._open_read()
+        return list(z[self.name_lengths][:])
+
+    def get_flags(self):
+        z = self._open_read()
+        print(list(z[self.name_flags][:]))
+        return list(z[self.name_flags][:])
+
+    def get_flag(self, iloop):
+        z = self._open_read()
+        return z[self.name_flags][iloop]
+
+    def set_flag(self, iloop, value=True):
+        z = self._open_write()
+        z[self.name_flags][iloop] = value
+
+    def _open_read(self):
+        import zarr
+
+        return zarr.open(self.zarr_path, mode="r")
+
+    def _open_write(self):
+        import zarr
+
+        return zarr.open(self.zarr_path, mode="r+")
+
+    def create(self, lengths, overwrite=False):
+        z = self._open_write()
+
+        add_zarr_dataset(
+            self.name_lengths,
+            lengths,
+            zarr_root=z,
+            dtype="i4",
+            overwrite=overwrite,
+        )
+        flags = add_zarr_dataset(
+            self.name_flags,
+            len(lengths) * [False],
+            zarr_root=z,
+            dtype=bool,
+            overwrite=overwrite,
+        )
+        flags.attrs["_initialised"] = True
+
+    def reset(self, lengths):
+        return self.create(lengths, overwrite=True)
+
+
+class ZarrLoader(Loader):
+    writer = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.z = None
+        self.statistics = []
+
+    @classmethod
+    def from_config(cls, *, config, path, **kwargs):
+        # config is the path to the config file
+        # or a dict with the config
+        obj = cls(config=config, path=path, **kwargs)
+        return obj
+
+    @classmethod
+    def from_zarr(cls, *, config, path, **kwargs):
+        import zarr
+
+        assert os.path.exists(path), path
+        z = zarr.open(path, mode="r")
+        # metadata = json.loads(z.attrs["_climetlab"])
+        metadata = yaml.safe_load(z.attrs["_climetlab"])
+        kwargs.get("print", print)("config loaded from zarr ", z.attrs["_climetlab"])
+        config = metadata["create_yaml_config"]
+        return cls.from_config(config=config, path=path, **kwargs)
+
+    def iter_loops(self):
+        if "loop" not in self.main_config or self.main_config.loop is None:
+            raise NotImplementedError()
+            yield None  # ?
+            return
+
+        for vars in self.main_config._iter_loops():
+            yield vars
+
+    def _compute_lengths(self, multiply):
+        def squeeze_dict(dic):
+            keys = list(dic.keys())
+            assert len(dic) == 1, keys
+            return dic[keys[0]]
+
+        lengths = []
+        for i, vars in enumerate(self.iter_loops()):
+            lst = squeeze_dict(vars)
+            assert isinstance(lst, (tuple, list)), lst
+            lengths.append(len(lst))
+
+        lengths = [x * multiply for x in lengths]
+        return lengths
+
+    def initialise(self):
+        """Create empty zarr from self.main_config and self.path"""
+        import zarr
+
+        def get_one_element_config():
+            for i, vars in enumerate(self.iter_loops()):
+                keys = list(vars.keys())
+                assert len(vars) == 1, keys
+                key = keys[0]
+                vars = {key: vars[key][0]}
+                return self.main_config.substitute(vars)
+
+        config = get_one_element_config()
+
+        cube, grid_points = self.config_to_data_cube(config, with_gridpoints=True)
+
+        shape = list(cube.extended_user_shape)
+        # Notice that shape[0] can be >1
+        # we are assuming that all data has the same shape
+        one_element_length = shape[0]
+        lengths = self._compute_lengths(one_element_length)
+
+        shape[0] = sum(lengths)
+
+        chunks = cube.chunking(self.main_config.output.chunking)
+        dtype = self.main_config.output.dtype
+
+        self.print(
+            f"Creating ZARR '{self.path}', with {shape=}, " f"{chunks=} and {dtype=}"
+        )
+        self.z = zarr.open(self.path, mode="w")
+        self.z.create_dataset("data", shape=shape, chunks=chunks, dtype=dtype)
+
+        lat = self._add_dataset("latitude", grid_points[0])
+        lon = self._add_dataset("longitude", grid_points[1])
+        assert lat.shape == lon.shape
+
+        metadata = {}
+        metadata["create_yaml_config"] = _tidy(self.main_config)
+        metadata["name_to_index"] = {
+            name: i
+            for i, name in enumerate(
+                self.main_config.output.order_by[self.main_config.output.statistics]
+            )
+        }
+        for k, v in self.main_config.get("metadata", {}).items():
+            self.z.attrs[k] = v
+
+        metadatastr = yaml.dump(metadata, sort_keys=False)
+        # metadatastr = json.dumps(metadata, sort_keys=False)
+
+        self.z.attrs["climetlab"] = metadata
+        self.z.attrs["_climetlab"] = metadatastr
+        self.z["data"].attrs["climetlab"] = metadata
+        self.z["data"].attrs["_climetlab"] = metadatastr
+        self.z.attrs["version"] = VERSION
+
+        self.z = None
+
+        self.registry.create(lengths=lengths)
+
+    def config_to_data_cube(self, config, with_gridpoints=False):
+        start = time.time()
+        data = cml.load_source("loader", config.input)
+        assert len(data), f"No data for {config}"
+        self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
+
+        start = time.time()
+        self.print("Sorting dataset")
+        cube = data.cube(
+            config.output.order_by,
+            remapping=config.output.remapping,
+            flatten_values=config.output.flatten_values,
+        )
+        cube = cube.squeeze()
+        self.print(f"Sorting done in {seconds(time.time()-start)}.")
+
+        if not with_gridpoints:
+            return cube
+        else:
+            return cube, data[0].grid_points()
+
+    def _add_dataset(self, *args, **kwargs):
+        import zarr
+
+        z = self.z
+        if z is None:
+            z = zarr.open(self.path, mode="r+")
+
+        return add_zarr_dataset(*args, **kwargs, zarr_root=z)
 
     def close(self):
         if self.writer is None:
@@ -215,73 +496,86 @@ class ZarrLoader(Loader):
             self.writer = None
 
     def print_info(self):
-        print(self.z.info)
-        print(self.zdata.info)
+        assert self.z is not None
+        try:
+            print(self.z["data"].info)
+        except Exception as e:
+            print(e)
+        print("...")
+        try:
+            print(self.z["data"].info)
+        except Exception as e:
+            print(e)
 
-    def add_metadata(self, config):
+    def add_statistics(self, **kwargs):
         import zarr
 
-        assert self.writer is None
+        if not all(self.registry.get_flags()):
+            raise Exception(f"Zarr {self.path} is not fully built.")
 
-        if self.z is None:
-            self.z = zarr.open(self.path, mode="r+")
-            self.print_info()
+        z_read = zarr.open(self.path, mode="r")
+        data = z_read["data"]
+        shape = data.shape
+        assert len(shape) in [3, 4]  # if 4, we expect to have latitude/longitude
 
-        metadata = {}
+        stats_shape = (shape[0], shape[1])
 
-        count, sums, squares, minimum, maximum = self.statistics[0]
-        for s in self.statistics[1:]:
-            count = count + s[0]
-            sums = sums + s[1]
-            squares = squares + s[2]
-            minimum = np.minimum(minimum, s[3])
-            maximum = np.maximum(maximum, s[4])
+        # mean = np.zeros(shape=stats_shape)
+        # stdev = np.zeros(shape=stats_shape)
+        minimum = np.zeros(shape=stats_shape)
+        maximum = np.zeros(shape=stats_shape)
+        sums = np.zeros(shape=stats_shape)
+        squares = np.zeros(shape=stats_shape)
 
-        mean = sums / count
-        stdev = np.sqrt(squares / count - mean * mean)
+        for i in range(shape[0]):
+            chunk = data[i, ...]
+            self.print(f"Computing statistics on {i+1}/{shape[0]}")
+            for j in range(shape[1]):
+                values = chunk[j, :]
+                minimum[i, j] = np.amin(values)
+                maximum[i, j] = np.amax(values)
+                sums[i, j] = np.sum(values)
+                squares[i, j] = np.sum(values * values)
+                # mean[i, j] = sums[i, j] / count[i, j]
+                # stdev[i, j] = np.sqrt(
+                #     squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
+                # )
 
-        name_to_index = {}
-        statistics_by_name = {}
-        for i, name in enumerate(self.config.statistics_names):
-            statistics_by_name[name] = {}
-            statistics_by_name[name]["mean"] = mean[i]
-            statistics_by_name[name]["stdev"] = stdev[i]
-            statistics_by_name[name]["minimum"] = minimum[i]
-            statistics_by_name[name]["maximum"] = maximum[i]
-            statistics_by_name[name]["sums"] = sums[i]
-            statistics_by_name[name]["squares"] = squares[i]
-            statistics_by_name[name]["count"] = count
-            name_to_index[name] = i
-        metadata["name_to_index"] = name_to_index
-        metadata["statistics_by_name"] = statistics_by_name
+        _count = data.size / shape[1]
+        assert _count == int(_count), _count
 
-        statistics_by_index = {}
-        statistics_by_index["mean"] = list(mean)
-        statistics_by_index["stdev"] = list(stdev)
-        statistics_by_index["maximum"] = list(maximum)
-        statistics_by_index["minimum"] = list(minimum)
-        metadata["statistics_by_index"] = statistics_by_index
+        # self._add_dataset("mean_by_datetime", mean)
+        # self._add_dataset("stdev_by_datetime", stdev)
+        # self._add_dataset("minimum_by_datetime", minimum)
+        # self._add_dataset("maximum_by_datetime", maximum)
+        # self._add_dataset("sums_by_datetime", sum)
+        # self._add_dataset("squares_by_datetime", squares)
+        # self._add_dataset("count_by_datetime", mean * 0 + count)
 
-        self._add_dataset("mean", mean)
-        self._add_dataset("stdev", stdev)
-        self._add_dataset("minimum", minimum)
-        self._add_dataset("maximum", maximum)
-        self._add_dataset("sums", sums)
-        self._add_dataset("squares", squares)
-        self._add_dataset("count", mean * 0 + count)
+        _minimum = np.amin(minimum, axis=0)
+        _maximum = np.amax(maximum, axis=0)
+        _sums = np.sum(sums, axis=0)
+        _squares = np.sum(squares, axis=0)
+        _mean = _sums / _count
+        _stdev = np.sqrt(_squares / _count - _mean * _mean)
 
-        metadata["create_yaml_config"] = _tidy(config)
-        for k, v in config.get("metadata", {}).items():
-            self.z.attrs[k] = v
+        _count = _mean * 0 + _count
 
-        self.z.attrs["climetlab"] = metadata
-        self.z["data"].attrs["climetlab"] = metadata
-        self.z.attrs["version"] = VERSION
+        self._add_dataset("mean", _mean)
+        self._add_dataset("stdev", _stdev)
+        self._add_dataset("minimum", _minimum)
+        self._add_dataset("maximum", _maximum)
+        self._add_dataset("sums", _sums)
+        self._add_dataset("squares", _squares)
+        self._add_dataset("count", _count)
 
 
 class HDF5Loader:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def append_array(self, *args, **kwargs):
+        raise NotImplementedError("Appending do HDF5 not yet implemented")
 
     def create_array(
         self,
@@ -290,13 +584,10 @@ class HDF5Loader:
         chunks,
         dtype,
         metadata,
-        append,
         grid_points,
+        nloops,
     ):
         import h5py
-
-        if append:
-            raise NotImplementedError("Appending do HDF5 not yet implemented")
 
         if not isinstance(chunks, tuple):
             chunks = None
@@ -340,91 +631,3 @@ class HDF5Loader:
         with h5py.File(self.path, mode="r") as f:
             print("Content:")
             h5_tree(f, 1)
-
-    def add_metadata(self, config):
-        warnings.warn("HDF5Loader.add_metadata not yet implemented")
-
-
-def _load(loader, config, append, print_=print, **kwargs):
-    start = time.time()
-    print_("Loading input", config.input)
-
-    data = cml.load_source("loader", config.input)
-
-    # if "constants" in config.input and config.input.constants:
-    #    data = data + cml.load_source("constants", data, config.input.constants)
-
-    assert len(data)
-    print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
-
-    start = time.time()
-    print_("Sort dataset")
-    cube = data.cube(
-        config.output.order_by,
-        remapping=config.output.remapping,
-        flatten_values=config.output.flatten_values,
-    )
-    cube = cube.squeeze()
-    print(f"Done in {seconds(time.time()-start)}.")
-
-    grid_points = data[0].grid_points()
-    array = loader.create_array(config, cube, append, grid_points)
-
-    start = time.time()
-    load = 0
-    save = 0
-
-    reading_chunks = None
-    total = cube.count(reading_chunks)
-    for i, cubelet in enumerate(
-        progress_bar(
-            iterable=cube.iterate_cubelets(reading_chunks),
-            total=total,
-        )
-    ):
-        now = time.time()
-        data = cubelet.to_numpy()
-        load += time.time() - now
-
-        # print("data", data.shape,cubelet.extended_icoords)
-
-        now = time.time()
-        array[cubelet.extended_icoords] = data
-        save += time.time() - now
-
-        if print_ != print:
-            print_(f"{i}/{total}")
-
-    now = time.time()
-    loader.close()
-    save += time.time() - now
-
-    print()
-    loader.print_info()
-    print()
-
-    print(
-        f"Elapsed: {seconds(time.time() - start)},"
-        f" load time: {seconds(load)},"
-        f" write time: {seconds(save)}."
-    )
-
-
-def load(loader, config, append=False, metadata_only=False, **kwargs):
-    config = LoadersConfig(config)
-
-    if metadata_only:
-        loader.add_metadata(config)
-        return
-
-    if config.loop is None:
-        assert not append, "Not yet implemented"
-        _load(loader, config, append, **kwargs)
-        loader.add_metadata(config)
-        return
-
-    for vars in config._iter_loops():
-        print(vars)
-        _load(loader, config.substitute(vars), append=append, **kwargs)
-        loader.add_metadata(config)
-        append = True

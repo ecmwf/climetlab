@@ -13,16 +13,20 @@ import re
 LOG = logging.getLogger(__name__)
 
 
-class Remapping:
-    def __init__(self, remapping):
-        self.remapping = {}
+class Remapping(dict):
+    # inherit from dict to make it serialisable
 
+    def __init__(self, remapping):
+        super().__init__(remapping)
+
+        self.lists = {}
         for k, v in remapping.items():
-            m = re.split(r"\{([^}]*)\}", v)
-            self.remapping[k] = m
+            if isinstance(v, str):
+                v = re.split(r"\{([^}]*)\}", v)
+            self.lists[k] = v
 
     def __call__(self, func):
-        if self.remapping is None:
+        if not self:
             return func
 
         class CustomJoiner:
@@ -43,9 +47,9 @@ class Remapping:
         return wrapped
 
     def substitute(self, name, joiner):
-        if name in self.remapping:
+        if name in self.lists:
             lst = []
-            for i, bit in enumerate(self.remapping[name]):
+            for i, bit in enumerate(self.lists[name]):
                 if i % 2:
                     p = joiner.format_name(bit)
                     if p is not None:
@@ -58,14 +62,14 @@ class Remapping:
         return joiner.format_name(name)
 
     def as_dict(self):
-        return self.remapping
+        return dict(self)
 
 
 def build_remapping(mapping):
     if mapping is None:
         return Remapping({})
 
-    if isinstance(mapping, dict):
+    if not isinstance(mapping, Remapping) and isinstance(mapping, dict):
         return Remapping(mapping)
 
     return mapping
