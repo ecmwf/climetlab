@@ -27,6 +27,20 @@ from climetlab.utils.humanize import bytes, seconds
 LOG = logging.getLogger(__name__)
 
 
+def get_packages_versions():
+    dic = {}
+
+    import climetlab
+
+    dic["climetlab"] = climetlab.__version__
+
+    import earthkit.meteo
+
+    dic["earthkit.meteo"] = earthkit.meteo.__version__
+
+    return dic
+
+
 def _tidy(o):
     if isinstance(o, dict):
         return {k: _tidy(v) for k, v in o.items()}
@@ -434,6 +448,8 @@ class ZarrLoader(Loader):
 
         metadata = {}
         metadata["create_yaml_config"] = _tidy(self.main_config)
+        metadata["creation_timestamp"] = datetime.datetime.utcnow().isoformat()
+        metadata["versions"] = get_packages_versions()
         metadata["name_to_index"] = {
             name: i
             for i, name in enumerate(
