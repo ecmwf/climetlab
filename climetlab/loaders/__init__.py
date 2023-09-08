@@ -164,10 +164,13 @@ class LoopItemsFilter:
                 i_chunk, n_chunks = int(i_chunk), int(n_chunks)
 
                 total = len(self.loader.registry.get_flags())
+                print(self.loader.registry.get_flags())
+                print(total)
                 assert i_chunk > 0, f"Chunk number {i_chunk} must be positive."
-                assert (
-                    i_chunk <= total
-                ), f"Chunk number {i_chunk} must be less than {total}+1."
+                if n_chunks <= total:
+                    warnings.warn(
+                        f"Number of chunks {n_chunks} is larger than the total number of chunks: {total}+1."
+                    )
 
                 chunk_size = total / n_chunks
                 parts = [
@@ -178,6 +181,8 @@ class LoopItemsFilter:
 
         parts = [int(_) for _ in parts]
         print(f"Running parts: {parts}")
+        if not parts:
+            warnings.warn(f"Nothing to do for chunk {i_chunk}.")
 
         self.parts = parts
 
@@ -298,8 +303,13 @@ class ZarrBuiltRegistry:
     z = None
 
     def __init__(self, path):
+        import zarr
+
         assert isinstance(path, str), path
         self.zarr_path = path
+        self.synchronizer = zarr.ProcessSynchronizer(
+            os.path.join(self.zarr_path, "registry.sync")
+        )
 
     def get_slice_for(self, iloop):
         lengths = self.get_lengths()
@@ -328,12 +338,12 @@ class ZarrBuiltRegistry:
     def _open_read(self):
         import zarr
 
-        return zarr.open(self.zarr_path, mode="r")
+        return zarr.open(self.zarr_path, mode="r", synchronizer=self.synchronizer)
 
     def _open_write(self):
         import zarr
 
-        return zarr.open(self.zarr_path, mode="r+")
+        return zarr.open(self.zarr_path, mode="r+", synchronizer=self.synchronizer)
 
     def create(self, lengths, overwrite=False):
         z = self._open_write()

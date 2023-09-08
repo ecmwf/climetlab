@@ -8,6 +8,7 @@
 #
 
 import os
+from contextlib import contextmanager
 
 from climetlab import settings
 from climetlab.loaders import HDF5Loader, ZarrLoader
@@ -127,29 +128,32 @@ class LoadersCmd:
         if args.parts:
             assert args.load, "Use --parts only with --load"
 
-        if args.init:
-            assert args.config, "--init requires --config"
-            assert args.path, "--init requires --target"
-            loader = loader_class.from_config(**kwargs)
-            loader.initialise()
-            exit()
+        @contextmanager
+        def dummy_context():
+            yield
 
-        if args.load:
-            assert args.config is None, "--load requires only a --target, no --config."
+        context = dummy_context
+        if kwargs["cache_dir"]:
+            context = settings.temporary("cache-directory", kwargs["cache_dir"])
 
-            def load():
+        with context:
+            if args.init:
+                assert args.config, "--init requires --config"
+                assert args.path, "--init requires --target"
+                loader = loader_class.from_config(**kwargs)
+                loader.initialise()
+                exit()
+
+            if args.load:
+                assert (
+                    args.config is None
+                ), "--load requires only a --target, no --config."
                 loader = loader_class.from_zarr(**kwargs)
                 loader.load(**kwargs)
 
-            if kwargs["cache_dir"]:
-                with settings.temporary("cache-directory", kwargs["cache_dir"]):
-                    load()
-            else:
-                load()
-
-        if args.statistics:
-            assert (
-                args.config is None
-            ), "--statistics requires only --target, no --config."
-            loader = loader_class.from_zarr(**kwargs)
-            loader.add_statistics()
+            if args.statistics:
+                assert (
+                    args.config is None
+                ), "--statistics requires only --target, no --config."
+                loader = loader_class.from_zarr(**kwargs)
+                loader.add_statistics()
