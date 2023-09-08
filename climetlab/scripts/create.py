@@ -132,7 +132,7 @@ class LoadersCmd:
         def dummy_context():
             yield
 
-        context = dummy_context
+        context = dummy_context()
         if kwargs["cache_dir"]:
             context = settings.temporary("cache-directory", kwargs["cache_dir"])
 
