@@ -9,7 +9,7 @@
 
 import os
 
-from climetlab.core import settings
+from climetlab import settings
 from climetlab.loaders import HDF5Loader, ZarrLoader
 from climetlab.utils.humanize import list_to_human
 
@@ -136,9 +136,16 @@ class LoadersCmd:
 
         if args.load:
             assert args.config is None, "--load requires only a --target, no --config."
-            with settings.temporary("cache-directory", kwargs.cache_dir):
+
+            def load():
                 loader = loader_class.from_zarr(**kwargs)
                 loader.load(**kwargs)
+
+            if kwargs["cache_dir"]:
+                with settings.temporary("cache-directory", kwargs["cache_dir"]):
+                    load()
+            else:
+                load()
 
         if args.statistics:
             assert (
