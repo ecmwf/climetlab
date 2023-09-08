@@ -42,11 +42,6 @@ class LoadDataset(LoadAction):
         return load_dataset(*args, **kwargs)
 
 
-class Inherit:
-    def execute(self, *args, **kwargs):
-        pass
-
-
 class LoadConstants(LoadSource):
     def execute(self, v, data, last, inherit):
         super().execute(
@@ -62,7 +57,6 @@ class LoadConstants(LoadSource):
 
 
 ACTIONS = {
-    "inherit": Inherit,
     "source": LoadSource,
     "dataset": LoadDataset,
     "constants": LoadConstants,
@@ -91,6 +85,8 @@ class Loader(Source):
                 config = config["input"]
                 config = instanciate_values(config, kwargs)
 
+        assert isinstance(config, (list, tuple)), config
+
         self.config = config
 
     def mutate(self):
@@ -102,9 +98,15 @@ class Loader(Source):
         data = []
         inherit = False
         last = {}
-        for k, v in self.config.items():
+        for input in self.config:
+            assert len(input) == 1, input
+            assert isinstance(input, dict), input
+
+            k = list(input.keys())[0]
+            v = input[k]
             if k == "inherit":
                 inherit = v
+                continue
 
             ACTIONS[k]().execute(v, data, last, inherit)
 
