@@ -21,6 +21,7 @@ class LoadAction:
         if not isinstance(v, list):
             v = [v]
         for one in v:
+            one = dict(**one)
             name = one.pop("name")
             if inherit:
                 last.update(one)
