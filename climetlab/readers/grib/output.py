@@ -10,7 +10,6 @@
 import datetime
 import logging
 import re
-import warnings
 
 from climetlab.decorators import normalize, normalize_grib_keys
 from climetlab.utils.humanize import list_to_human
@@ -20,7 +19,23 @@ LOG = logging.getLogger(__name__)
 # Make sure the
 
 ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
-ACCUMULATIONS_ENS = {("tp", 2): {"productDefinitionTemplateNumber": 11}}
+
+
+_ORDER = (
+    "edition",
+    "setLocalDefinition",
+    "typeOfGeneratingProcess",
+    "productDefinitionTemplateNumber",
+)
+
+ORDER = {}
+for i, k in enumerate(_ORDER):
+    ORDER[k] = i
+
+
+def order(key):
+    ORDER.setdefault(key, len(ORDER))
+    return ORDER[key]
 
 
 class Combined:
@@ -92,9 +107,9 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
-        print("->", metadata)
+        # print("->", metadata)
         self.update_metadata(handle, metadata, compulsary)
-        print("<-", metadata)
+        # print("<-", metadata)
 
         if check_nans:
             import numpy as np
@@ -106,27 +121,14 @@ class GribOutput:
                 metadata["missingValue"] = missing_value
                 metadata["bitmapPresent"] = 1
 
-        LOG.debug("GribOutput.metadata %s, other %s", metadata)
+        metadata = {
+            k: v for k, v in sorted(metadata.items(), key=lambda x: order(x[0]))
+        }
 
-        # print('-----------------')
-        # for k, v in metadata.items():
-        #     try:
-        #         print(k, v,  handle.get(k))
-        #     except Exception as e:
-        #         print(k, v, e)
-        # print('-----------------')
+        LOG.debug("GribOutput.metadata %s", metadata)
 
-        # try_method_2 = False
-
-        # print('-----------------')
-        param = handle.get("shortName")
-        print(param)
-        print()
         for k, v in metadata.items():
-            # print(k, v)
             handle.set(k, v)
-        assert handle.get("shortName") == param, (handle.get("shortName"), param)
-        # print('-----------------')
 
         handle.set_values(values)
 
