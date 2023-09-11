@@ -10,6 +10,7 @@
 import datetime
 import logging
 import re
+import warnings
 
 from climetlab.decorators import normalize, normalize_grib_keys
 from climetlab.utils.humanize import list_to_human
@@ -19,7 +20,7 @@ LOG = logging.getLogger(__name__)
 # Make sure the
 
 ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
-
+ACCUMULATIONS_ENS = {("tp", 2): {"productDefinitionTemplateNumber": 11}}
 
 class Combined:
     def __init__(self, handle, metadata):
@@ -27,6 +28,7 @@ class Combined:
         self.metadata = metadata
 
     def __contains__(self, key):
+        # return key in self.metadata or key in self.handle
         raise NotImplementedError()
 
     def __getitem__(self, key):
@@ -89,13 +91,9 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
+        print('->', metadata)
         self.update_metadata(handle, metadata, compulsary)
-
-        other = {}
-
-        for k, v in list(metadata.items()):
-            if not isinstance(v, (int, float, str)):
-                other[k] = metadata.pop(k)
+        print('<-', metadata)
 
         if check_nans:
             import numpy as np
@@ -107,12 +105,29 @@ class GribOutput:
                 metadata["missingValue"] = missing_value
                 metadata["bitmapPresent"] = 1
 
-        LOG.debug("GribOutput.metadata %s, other %s", metadata, other)
+        LOG.debug("GribOutput.metadata %s, other %s", metadata)
 
-        handle.set_multiple(metadata)
 
-        for k, v in other.items():
+        # print('-----------------')
+        # for k, v in metadata.items():
+        #     try:
+        #         print(k, v,  handle.get(k))
+        #     except Exception as e:
+        #         print(k, v, e)
+        # print('-----------------')
+
+
+        # try_method_2 = False
+
+        # print('-----------------')
+        param = handle.get("shortName")
+        print(param)
+        print()
+        for k, v in metadata.items():
+            # print(k, v)
             handle.set(k, v)
+        assert handle.get("shortName") == param, (handle.get("shortName"), param)
+        # print('-----------------')
 
         handle.set_values(values)
 
@@ -166,10 +181,7 @@ class GribOutput:
         if "number" in metadata:
             compulsary += ("numberOfForecastsInEnsemble",)
             productDefinitionTemplateNumber = {"tp": 11}
-            metadata.setdefault(
-                "productDefinitionTemplateNumber",
-                productDefinitionTemplateNumber.get(handle.get("shortName"), 1),
-            )
+            metadata[ "productDefinitionTemplateNumber"] =productDefinitionTemplateNumber.get(handle.get("shortName"), 1)
 
         if metadata.get("type") in ("pf", "cf"):
             metadata.setdefault("typeOfGeneratingProcess", 4)
