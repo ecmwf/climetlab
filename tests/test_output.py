@@ -174,7 +174,7 @@ def test_tp():
 
 
 if __name__ == "__main__":
-    test_tp()
+    test_mars_labeling()
     # from climetlab.testing import main
 
     # main(__file__)
