@@ -22,6 +22,7 @@ LOG = logging.getLogger(__name__)
 ACCUMULATIONS = {("tp", 2): {"productDefinitionTemplateNumber": 8}}
 ACCUMULATIONS_ENS = {("tp", 2): {"productDefinitionTemplateNumber": 11}}
 
+
 class Combined:
     def __init__(self, handle, metadata):
         self.handle = handle
@@ -91,9 +92,9 @@ class GribOutput:
         else:
             handle = template.handle.clone()
 
-        print('->', metadata)
+        print("->", metadata)
         self.update_metadata(handle, metadata, compulsary)
-        print('<-', metadata)
+        print("<-", metadata)
 
         if check_nans:
             import numpy as np
@@ -107,7 +108,6 @@ class GribOutput:
 
         LOG.debug("GribOutput.metadata %s, other %s", metadata)
 
-
         # print('-----------------')
         # for k, v in metadata.items():
         #     try:
@@ -115,7 +115,6 @@ class GribOutput:
         #     except Exception as e:
         #         print(k, v, e)
         # print('-----------------')
-
 
         # try_method_2 = False
 
@@ -181,7 +180,9 @@ class GribOutput:
         if "number" in metadata:
             compulsary += ("numberOfForecastsInEnsemble",)
             productDefinitionTemplateNumber = {"tp": 11}
-            metadata[ "productDefinitionTemplateNumber"] =productDefinitionTemplateNumber.get(handle.get("shortName"), 1)
+            metadata[
+                "productDefinitionTemplateNumber"
+            ] = productDefinitionTemplateNumber.get(handle.get("shortName"), 1)
 
         if metadata.get("type") in ("pf", "cf"):
             metadata.setdefault("typeOfGeneratingProcess", 4)
