@@ -8,7 +8,9 @@
 #
 
 import os
+from contextlib import contextmanager
 
+from climetlab import settings
 from climetlab.loaders import HDF5Loader, ZarrLoader
 from climetlab.utils.humanize import list_to_human
 
@@ -24,6 +26,42 @@ class LoadersCmd:
         #         " (default from config or 'dataset')"
         #     ),
         # ),
+        path=(
+            "--target",
+            dict(
+                help="Where to store the final data. "
+                "Currently only a path to a new ZARR is supported."
+            ),
+        ),
+        init=(
+            "--init",
+            dict(action="store_true", help="Initialise zarr."),
+        ),
+        load=(
+            "--load",
+            dict(action="store_true", help="Load data into zarr."),
+        ),
+        statistics=(
+            "--statistics",
+            dict(action="store_true", help="Compute statistics."),
+        ),
+        config=(
+            "--config",
+            dict(
+                help="Use with --init. A yaml file that describes which data to use as input"
+                " and how to organise them in the target."
+            ),
+        ),
+        parts=(
+            "--parts",
+            dict(nargs="+", help="Use with --load. Part(s) of the data to process."),
+        ),
+        cache_dir=(
+            "--cache-dir",
+            dict(
+                help="Use with --load. Location of cache directory for temporary data."
+            ),
+        ),
         format=(
             "--format",
             dict(
@@ -32,41 +70,14 @@ class LoadersCmd:
                 " only .zarr is currently supported."
             ),
         ),
-        config=(
-            "--config",
-            dict(
-                help="A yaml file that describes which data to use as input"
-                " and how to organise them in the target"
-            ),
-        ),
-        path=(
-            "--target",
-            dict(
-                help="Where to store the data. "
-                "Currently only a path to a new ZARR or HDF5 file is supported."
-            ),
-        ),
-        init=(
-            "--init",
-            dict(action="store_true", help="Initialise zarr"),
-        ),
-        load=(
-            "--load",
-            dict(action="store_true", help="Load data into zarr"),
-        ),
-        parts=(
-            "--parts",
-            dict(nargs="+", help="Use with --load. Part(s) of the data to process"),
-        ),
-        statistics=(
-            "--statistics",
-            dict(action="store_true", help="Compute statistics."),
-        ),
     )
     def do_create(self, args):
-        if args.format is None:
+        format = args.format
+
+        if format is None:
             _, ext = os.path.splitext(args.path)
-            args.format = ext[1:]
+            format = ext[1:]
+        assert format == "zarr", f"Unsupported format={format}"
 
         def no_callback(*args, **kwargs):
             print(*args, **kwargs)
@@ -100,38 +111,49 @@ class LoadersCmd:
             hdf5=HDF5Loader,
             hdf=HDF5Loader,
         )
-        if args.format not in LOADERS:
+        if format not in LOADERS:
             lst = list_to_human(list(LOADERS.keys()), "or")
-            raise ValueError(f"Invalid format '{args.format}', must be one of {lst}.")
+            raise ValueError(f"Invalid format '{format}', must be one of {lst}.")
 
         kwargs = vars(args)
         kwargs["print"] = callback
-        loader_class = LOADERS[args.format]
+        loader_class = LOADERS[format]
 
         lst = [args.load, args.statistics, args.init]
         if sum(1 for x in lst if x) != 1:
             raise ValueError(
                 "Too many options provided."
-                'Must choose exactly one option in "--load", "--statistics", "--config"'
+                'Must choose exactly one option in "--load", "--statistics", "--init"'
             )
         if args.parts:
             assert args.load, "Use --parts only with --load"
 
-        if args.init:
-            assert args.config, "--init requires --config"
-            assert args.path, "--init requires --target"
-            loader = loader_class.from_config(**kwargs)
-            loader.initialise()
-            exit()
+        @contextmanager
+        def dummy_context():
+            yield
 
-        if args.load:
-            assert args.config is None, "--load requires only a zarr target, no config."
-            loader = loader_class.from_zarr(**kwargs)
-            loader.load(**kwargs)
+        context = dummy_context()
+        if kwargs["cache_dir"]:
+            context = settings.temporary("cache-directory", kwargs["cache_dir"])
 
-        if args.statistics:
-            assert (
-                args.config is None
-            ), "--statistics requires only a zarr target, no config."
-            loader = loader_class.from_zarr(**kwargs)
-            loader.add_statistics()
+        with context:
+            if args.init:
+                assert args.config, "--init requires --config"
+                assert args.path, "--init requires --target"
+                loader = loader_class.from_config(**kwargs)
+                loader.initialise()
+                exit()
+
+            if args.load:
+                assert (
+                    args.config is None
+                ), "--load requires only a --target, no --config."
+                loader = loader_class.from_zarr(**kwargs)
+                loader.load(**kwargs)
+
+            if args.statistics:
+                assert (
+                    args.config is None
+                ), "--statistics requires only --target, no --config."
+                loader = loader_class.from_zarr(**kwargs)
+                loader.add_statistics()
