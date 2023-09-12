@@ -481,7 +481,13 @@ class ZarrLoader(Loader):
         frequency = (
             (last_date - first_date).total_seconds() / 3600 / (total_shape[0] - 1)
         )
-        assert int(frequency) == frequency, frequency
+        if int(frequency) != frequency:
+            raise ValueError(
+                (
+                    "Cannot compute frequency. Data is not regularly organised ? "
+                    f"{first_date=}; {last_date=}; {total_shape[0]=}; {frequency=}"
+                )
+            )
         frequency = int(frequency)
         metadata["frequency"] = frequency
 
