@@ -423,7 +423,7 @@ class ZarrLoader(Loader):
         frequency = int(frequency)
 
         def check(name, resolution, first_date, last_date, frequency):
-            resolution_str = str(resolution).replace(".", "p")
+            resolution_str = str(resolution).replace(".", "p").lower()
             if f"-{resolution_str}-" not in name:
                 raise ValueError(
                     f"Resolution {resolution_str} should appear in the dataset name. Use --no-check to ignore."
