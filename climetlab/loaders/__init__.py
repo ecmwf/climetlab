@@ -425,24 +425,24 @@ class ZarrLoader(Loader):
         def check(name, resolution, first_date, last_date, frequency):
             resolution_str = str(resolution).replace(".", "p").lower()
             if f"-{resolution_str}-" not in name:
-                raise ValueError(
-                    f"Resolution {resolution_str} should appear in the dataset name. Use --no-check to ignore."
-                )
+                msg = f"Resolution {resolution_str} should appear in the dataset name. Use --no-check to ignore."
+                self.print(msg)
+                raise ValueError(msg)
 
             if f"-{frequency}h-" not in name:
-                raise ValueError(
-                    f"Frequency {frequency}h should appear in the dataset name. Use --no-check to ignore."
-                )
+                msg = f"Frequency {frequency}h should appear in the dataset name. Use --no-check to ignore."
+                self.print(msg)
+                raise ValueError(msg)
 
             if f"-{first_date.year}-" not in name:
-                raise ValueError(
-                    f"Year {first_date.year} should appear in the dataset name. Use --no-check to ignore."
-                )
+                msg = f"Year {first_date.year} should appear in the dataset name. Use --no-check to ignore."
+                self.print(msg)
+                raise ValueError(msg)
 
             if f"-{last_date.year}-" not in name:
-                raise ValueError(
-                    f"Year {last_date.year} should appear in the dataset name. Use --no-check to ignore."
-                )
+                msg = f"Year {last_date.year} should appear in the dataset name. Use --no-check to ignore."
+                self.print(msg)
+                raise ValueError(msg)
 
         if not self.kwargs["no_check"]:
             check(
