@@ -405,22 +405,11 @@ class ZarrLoader(Loader):
             f"Creating ZARR '{self.path}', with {total_shape=}, "
             f"{chunks=} and {dtype=}"
         )
-        self.z = zarr.open(self.path, mode="w")
-        self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
 
-        lat = self._add_dataset("latitude", grid_points[0])
-        lon = self._add_dataset("longitude", grid_points[1])
-        assert lat.shape == lon.shape
-
-        metadata = {}
-        metadata["create_yaml_config"] = _tidy(self.main_config)
-        metadata["creation_timestamp"] = datetime.datetime.utcnow().isoformat()
+        resolution = first_cube.source[0].resolution
 
         first_date = to_datetime(first_cube.user_coords["valid_datetime"][0])
         last_date = to_datetime(last_cube.user_coords["valid_datetime"][-1])
-        metadata["start_date"] = first_date.isoformat()
-        metadata["end_date"] = last_date.isoformat()
-
         frequency = (
             (last_date - first_date).total_seconds() / 3600 / (total_shape[0] - 1)
         )
@@ -432,9 +421,54 @@ class ZarrLoader(Loader):
                 )
             )
         frequency = int(frequency)
-        metadata["frequency"] = frequency
 
-        metadata["resolution"] = first_cube.source[0].resolution
+        def check(name, resolution, first_date, last_date, frequency):
+            resolution_str = str(resolution).replace(".", "p")
+            if f"-{resolution_str}-" not in name:
+                raise ValueError(
+                    f"Resolution {resolution_str} should appear in the dataset name. Use --no-check to ignore."
+                )
+
+            if f"-{frequency}h-" not in name:
+                raise ValueError(
+                    f"Frequency {frequency}h should appear in the dataset name. Use --no-check to ignore."
+                )
+
+            if f"-{first_date.year}-" not in name:
+                raise ValueError(
+                    f"Year {first_date.year} should appear in the dataset name. Use --no-check to ignore."
+                )
+
+            if f"-{last_date.year}-" not in name:
+                raise ValueError(
+                    f"Year {last_date.year} should appear in the dataset name. Use --no-check to ignore."
+                )
+
+        if not self.kwargs["no_check"]:
+            check(
+                os.path.basename(self.path),
+                resolution,
+                first_date,
+                last_date,
+                frequency,
+            )
+
+        self.z = zarr.open(self.path, mode="w")
+        self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
+
+        lat = self._add_dataset("latitude", grid_points[0])
+        lon = self._add_dataset("longitude", grid_points[1])
+        assert lat.shape == lon.shape
+
+        metadata = {}
+        metadata["create_yaml_config"] = _tidy(self.main_config)
+        metadata["creation_timestamp"] = datetime.datetime.utcnow().isoformat()
+
+        metadata["start_date"] = first_date.isoformat()
+        metadata["end_date"] = last_date.isoformat()
+
+        metadata["frequency"] = frequency
+        metadata["resolution"] = resolution
 
         metadata["versions"] = get_packages_versions()
         metadata["name_to_index"] = {

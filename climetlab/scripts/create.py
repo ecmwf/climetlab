@@ -70,6 +70,10 @@ class LoadersCmd:
                 " only .zarr is currently supported."
             ),
         ),
+        no_check=(
+            "--no-check",
+            dict(action="store_true", help="Skip checks."),
+        ),
     )
     def do_create(self, args):
         format = args.format
