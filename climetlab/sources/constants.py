@@ -242,10 +242,12 @@ class Constants(FieldSet):
             # MARS style lists
             bits = request["time"].split("/")
             if len(bits) == 3 and bits[1].lower() == "to":
-                request["time"] = list(range(int(bits[0]), int(bits[2]), 1))
+                request["time"] = list(range(int(bits[0]), int(bits[2]) + 1, 1))
 
             elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-                request["time"] = list(range(int(bits[0]), int(bits[2]), int(bits[4])))
+                request["time"] = list(
+                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
+                )
             else:
                 raise ValueError(f"Cannot parse {request['time']=}")
 
