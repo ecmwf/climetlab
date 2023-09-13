@@ -60,59 +60,6 @@ def _tidy(o):
     return str(o)
 
 
-class FastWriter:
-    def __init__(self, array, shape):
-        self.array = array
-        self.shape = shape
-
-    def stats(self, axis):
-        sel = [slice(None)] * len(self.shape)
-        sums = np.zeros(self.shape[axis])
-        squares = np.zeros(self.shape[axis])
-        minima = np.zeros(self.shape[axis])
-        maxima = np.zeros(self.shape[axis])
-        count = None
-        for k in range(self.shape[axis]):
-            sel[axis] = k
-            values = self.__getitem__(tuple(sel))
-            sums[k] = np.sum(values)
-            squares[k] = np.sum(values * values)
-            minima[k] = np.amin(values)
-            maxima[k] = np.amax(values)
-            if count is None:
-                count = values.size
-            else:
-                assert count == values.size
-
-        return (count, sums, squares, minima, maxima)
-
-
-class FastWriterWithoutCache(FastWriter):
-    def __setitem__(self, key, value):
-        self.array[key] = value
-
-    def __getitem__(self, key):
-        return self.array[key]
-
-    def flush(self):
-        pass
-
-
-class FastWriterWithCache(FastWriter):
-    def __init__(self, array, shape):
-        super().__init__(array, shape)
-        self.cache = np.zeros(shape)
-
-    def __setitem__(self, key, value):
-        self.cache[key] = value
-
-    def __getitem__(self, key):
-        return self.cache[key]
-
-    def flush(self):
-        self.array[:] = self.cache[:]
-
-
 class OffsetView:
     def __init__(self, large_array, *, offset, axis, shape):
         """
@@ -229,10 +176,7 @@ class Loader:
             self.print(f"Building to ZARR at {slice}, with {shape=}, {chunks=}")
 
             offset = slice.start
-            array = FastWriterWithCache(
-                OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape),
-                shape,
-            )
+            array = OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape)
 
             self.load_datacube(cube, array)
 
@@ -265,7 +209,6 @@ class Loader:
             #    self.print(f"Read {i+1}/{total}")
 
         now = time.time()
-        array.flush()
         save += time.time() - now
 
         print("Written")
@@ -543,15 +486,6 @@ class ZarrLoader(Loader):
             z = zarr.open(self.path, mode="r+")
 
         return add_zarr_dataset(*args, **kwargs, zarr_root=z)
-
-    def close(self):
-        if self.writer is None:
-            warnings.warn("FastWriter already closed")
-        else:
-            self.writer.flush()
-            self.statistics.append(self.writer.stats(self.config.statistics_axis))
-
-            self.writer = None
 
     def print_info(self):
         assert self.z is not None
