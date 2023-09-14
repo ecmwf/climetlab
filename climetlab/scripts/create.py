@@ -74,9 +74,22 @@ class LoadersCmd:
             "--no-check",
             dict(action="store_true", help="Skip checks."),
         ),
+        timeout=(
+            "--timeout",
+            dict(
+                type=int,
+                default=0,
+                help="Stop with error (SIGALARM) after TIMEOUT seconds.",
+            ),
+        ),
     )
     def do_create(self, args):
         format = args.format
+
+        if args.timeout:
+            import signal
+
+            signal.alarm(args.timeout)
 
         if format is None:
             _, ext = os.path.splitext(args.path)
