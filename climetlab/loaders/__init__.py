@@ -118,7 +118,7 @@ class LoopItemsFilter:
                 print(self.loader.registry.get_flags())
                 print(total)
                 assert i_chunk > 0, f"Chunk number {i_chunk} must be positive."
-                if n_chunks <= total:
+                if n_chunks > total:
                     warnings.warn(
                         f"Number of chunks {n_chunks} is larger than the total number of chunks: {total}+1."
                     )
