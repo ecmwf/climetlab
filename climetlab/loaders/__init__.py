@@ -26,8 +26,10 @@ from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)
 
+VERSION = "0.4"
 
-def get_packages_versions():
+
+def get_versions():
     dic = {}
 
     import climetlab
@@ -37,6 +39,8 @@ def get_packages_versions():
     import earthkit.meteo
 
     dic["earthkit.meteo"] = earthkit.meteo.__version__
+
+    dic["FORMAT"] = VERSION
 
     return dic
 
@@ -222,9 +226,6 @@ class Loader:
         )
 
 
-VERSION = 3
-
-
 def add_zarr_dataset(name, nparray, *, zarr_root, overwrite=True, dtype=np.float32):
     if isinstance(nparray, (tuple, list)):
         nparray = np.array(nparray, dtype=dtype)
@@ -332,10 +333,8 @@ class ZarrLoader(Loader):
 
         assert os.path.exists(path), path
         z = zarr.open(path, mode="r")
-        # metadata = json.loads(z.attrs["_climetlab"])
-        metadata = yaml.safe_load(z.attrs["_climetlab"])
-        kwargs.get("print", print)("config loaded from zarr ", z.attrs["_climetlab"])
-        config = metadata["create_yaml_config"]
+        config = yaml.safe_load(z.attrs["_yaml_dump"])["create_yaml_config"]
+        kwargs.get("print", print)("Config loaded from zarr: ", config)
         return cls.from_config(config=config, path=path, **kwargs)
 
     def iter_loops(self):
@@ -364,6 +363,7 @@ class ZarrLoader(Loader):
 
     def initialise(self):
         """Create empty zarr from self.main_config and self.path"""
+        import pandas as pd
         import zarr
 
         from climetlab.utils.dates import to_datetime  # avoid circular imports
@@ -425,22 +425,25 @@ class ZarrLoader(Loader):
         def check(name, resolution, first_date, last_date, frequency):
             resolution_str = str(resolution).replace(".", "p").lower()
             if f"-{resolution_str}-" not in name:
-                msg = f"Resolution {resolution_str} should appear in the dataset name. Use --no-check to ignore."
+                msg = (
+                    f"Resolution {resolution_str} should appear in the dataset name ({name})."
+                    " Use --no-check to ignore."
+                )
                 self.print(msg)
                 raise ValueError(msg)
 
             if f"-{frequency}h-" not in name:
-                msg = f"Frequency {frequency}h should appear in the dataset name. Use --no-check to ignore."
+                msg = f"Frequency {frequency}h should appear in the dataset name ({name}). Use --no-check to ignore."
                 self.print(msg)
                 raise ValueError(msg)
 
             if f"-{first_date.year}-" not in name:
-                msg = f"Year {first_date.year} should appear in the dataset name. Use --no-check to ignore."
+                msg = f"Year {first_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
                 self.print(msg)
                 raise ValueError(msg)
 
             if f"-{last_date.year}-" not in name:
-                msg = f"Year {last_date.year} should appear in the dataset name. Use --no-check to ignore."
+                msg = f"Year {last_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
                 self.print(msg)
                 raise ValueError(msg)
 
@@ -453,42 +456,64 @@ class ZarrLoader(Loader):
                 frequency,
             )
 
-        self.z = zarr.open(self.path, mode="w")
-        self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
-
-        lat = self._add_dataset("latitude", grid_points[0])
-        lon = self._add_dataset("longitude", grid_points[1])
-        assert lat.shape == lon.shape
-
         metadata = {}
+
+        metadata.update(self.main_config.get("add_metadata", {}))
+
         metadata["create_yaml_config"] = _tidy(self.main_config)
         metadata["creation_timestamp"] = datetime.datetime.utcnow().isoformat()
 
-        metadata["start_date"] = first_date.isoformat()
-        metadata["end_date"] = last_date.isoformat()
-
-        metadata["frequency"] = frequency
         metadata["resolution"] = resolution
 
-        metadata["versions"] = get_packages_versions()
         metadata["name_to_index"] = {
             name: i
             for i, name in enumerate(
                 self.main_config.output.order_by[self.main_config.output.statistics]
             )
         }
-        for k, v in self.main_config.get("metadata", {}).items():
-            self.z.attrs[k] = v
 
-        metadatastr = yaml.dump(metadata, sort_keys=False)
-        self.z.attrs["climetlab"] = metadata
-        self.z.attrs["_climetlab"] = metadatastr
-        self.z["data"].attrs["climetlab"] = metadata
-        self.z["data"].attrs["_climetlab"] = metadatastr
-        self.z.attrs["version"] = VERSION
+        metadata["versions"] = get_versions()
+        metadata["version"] = VERSION
+
+        pandas_date_range_kwargs = dict(
+            start=first_date.isoformat(),
+            end=last_date.isoformat(),
+            freq=f"{frequency}h",
+            unit="s",
+        )
+        metadata["pandas_date_range_kwargs"] = pandas_date_range_kwargs
+        metadata["frequency"] = frequency
+        metadata["first_date"] = first_date.isoformat()
+        metadata["last_date"] = last_date.isoformat()
+
+        metadata.update(self.main_config.get("force_metadata", {}))
+
+        # write data
+        self.z = zarr.open(self.path, mode="w")
+
+        self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
+
+        pd_dates = pd.date_range(**pandas_date_range_kwargs)
+        assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
+        assert pd_dates[-1] == last_date, (pd_dates, last_date)
+        np_dates = pd_dates.to_numpy()
+        z_dates = self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
+        z_dates.attrs["pandas_date_range_kwargs"] = pandas_date_range_kwargs
+
+        lat = self._add_dataset("latitude", grid_points[0])
+        lon = self._add_dataset("longitude", grid_points[1])
+        lat.attrs["resolution"] = resolution
+        lon.attrs["resolution"] = resolution
+        assert lat.shape == lon.shape
+
+        # write metadata
+        for k, v in metadata.items():
+            print(v)
+            self.z.attrs[k] = v
+            self.z["data"].attrs[k] = v
+        self.z.attrs["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
 
         self.z = None
-
         self.registry.create(lengths=lengths)
 
     def config_to_data_cube(self, config, with_gridpoints=False):

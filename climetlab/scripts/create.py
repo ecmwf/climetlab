@@ -74,6 +74,10 @@ class LoadersCmd:
             "--no-check",
             dict(action="store_true", help="Skip checks."),
         ),
+        force=(
+            "--force",
+            dict(action="store_true", help="Overwrite if already exists."),
+        ),
         timeout=(
             "--timeout",
             dict(
@@ -85,6 +89,17 @@ class LoadersCmd:
     )
     def do_create(self, args):
         format = args.format
+
+        import zarr
+
+        try:
+            zarr.open(args.path, "r")
+            if not args.force:
+                raise Exception(
+                    f"{args.path} already exists. Use --force to overwrite."
+                )
+        except zarr.errors.PathNotFoundError:
+            pass
 
         if args.timeout:
             import signal
