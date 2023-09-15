@@ -107,6 +107,7 @@ class LoadersCmd:
         if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
 
             def callback(*msg):
+                msg = [str(_) for _ in msg]
                 msg = "\n".join(msg)
                 import shlex
                 import subprocess
