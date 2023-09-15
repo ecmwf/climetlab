@@ -90,17 +90,6 @@ class LoadersCmd:
     def do_create(self, args):
         format = args.format
 
-        import zarr
-
-        try:
-            zarr.open(args.path, "r")
-            if not args.force:
-                raise Exception(
-                    f"{args.path} already exists. Use --force to overwrite."
-                )
-        except zarr.errors.PathNotFoundError:
-            pass
-
         if args.timeout:
             import signal
 
@@ -172,6 +161,18 @@ class LoadersCmd:
             if args.init:
                 assert args.config, "--init requires --config"
                 assert args.path, "--init requires --target"
+
+                import zarr
+
+                try:
+                    zarr.open(args.path, "r")
+                    if not args.force:
+                        raise Exception(
+                            f"{args.path} already exists. Use --force to overwrite."
+                        )
+                except zarr.errors.PathNotFoundError:
+                    pass
+
                 loader = loader_class.from_config(**kwargs)
                 loader.initialise()
                 exit()
