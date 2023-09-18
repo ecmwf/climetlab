@@ -15,7 +15,7 @@ import pytest
 from climetlab import load_source
 from climetlab.indexing import PerUrlIndex
 
-CML_BASEURL_S3 = "https://storage.ecmwf.europeanweather.cloud/climetlab"
+CML_BASEURL_S3 = "https://object-store.os-api.cci1.ecmwf.int/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 CML_BASEURL_GET = "https://get.ecmwf.int/repository/test-data/climetlab"
 CML_BASEURLS = [CML_BASEURL_S3, CML_BASEURL_GET, CML_BASEURL_CDS]
@@ -151,7 +151,7 @@ def test_grib_index_eumetnet():
         "date": "20171228",
         "step": ["0-24", "24-48", "48-72", "72-96", "96-120", "120-144", "144-168"],
         # Parameters passed to the filename mangling
-        "url": "https://storage.ecmwf.europeanweather.cloud/eumetnet-postprocessing-benchmark-training-dataset/",
+        "url": "https://object-store.os-api.cci1.ecmwf.int/eumetnet-postprocessing-benchmark-training-dataset/",
         "month": "12",
         "year": "2017",
     }

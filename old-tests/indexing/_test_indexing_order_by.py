@@ -138,7 +138,7 @@ def test_indexing_order_ascending_descending(params, levels, source_name):
 
 
 # Index files have been created with :
-#  export BASEURL=https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/input/indexed-urls
+#  export BASEURL=https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/input/indexed-urls
 #  climetlab index_gribs $BASEURL/large_grib_1.grb > large_grib_1.grb.index
 #  climetlab index_gribs $BASEURL/large_grib_2.grb > large_grib_2.grb.index
 #  climetlab index_gribs large_grib_1.grb large_grib_2.grb --baseurl $BASEURL > global_index.index

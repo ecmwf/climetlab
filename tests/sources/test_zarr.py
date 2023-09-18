@@ -16,8 +16,8 @@ from climetlab import load_source
 from climetlab.testing import MISSING, TEST_DATA_URL
 
 NOT_S3_URL = f"{TEST_DATA_URL}/input"
-S3_URL = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
-S3_URL2 = "s3://storage.ecmwf.europeanweather.cloud/climetlab/test-data/0.5/fixtures"
+S3_URL = "https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
+S3_URL2 = "s3://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
 
 
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")

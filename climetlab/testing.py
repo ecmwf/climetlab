@@ -72,8 +72,6 @@ def MISSING(*modules):
 UNSAFE_SAMPLES_URL = "https://github.com/jwilk/traversal-archives/releases/download/0"
 TEST_DATA_URL = "https://get.ecmwf.int/repository/test-data/climetlab"
 TEST_DATA_URL_INPUT_GRIB = TEST_DATA_URL + "/test-data/input/grib"
-# TEST_DATA_URL_INPUT_GRIB_ALT = "https://storage.ecmwf.europeanweather.cloud/climetlab/test-data/input/grib"
-# CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"
 
 
 def empty(ds):
