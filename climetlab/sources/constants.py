@@ -237,20 +237,8 @@ class Constants(FieldSet):
 
     @normalize("date", "date-list")
     @normalize("time", "int-list")
+    @normalize("number", "int-list")
     def _request(self, request):
-        if "time" in request and "/" in request["time"]:
-            # MARS style lists
-            bits = request["time"].split("/")
-            if len(bits) == 3 and bits[1].lower() == "to":
-                request["time"] = list(range(int(bits[0]), int(bits[2]) + 1, 1))
-
-            elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-                request["time"] = list(
-                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
-                )
-            else:
-                raise ValueError(f"Cannot parse {request['time']=}")
-
         return request
 
     def __len__(self):
