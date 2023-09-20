@@ -277,6 +277,7 @@ class ZarrBuiltRegistry:
 
     def set_flag(self, iloop, value=True):
         z = self._open_write()
+        z.attrs["latest_write_timestamp"] = datetime.datetime.utcnow().isoformat()
         z[self.name_flags][iloop] = value
 
     def _open_read(self):
