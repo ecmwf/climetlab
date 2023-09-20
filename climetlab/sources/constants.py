@@ -202,18 +202,18 @@ class ConstantField:
 def make_datetime(date, time):
     if time is None:
         return date
+    assert str(time).isdigit(), (type(time), time)
     return datetime.datetime(date.year, date.month, date.day, int(time) // 100)
 
 
 class Constants(FieldSet):
-    @normalize("date", "date-list")
     def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
         request = dict(**request)
         request.update(kwargs)
 
         request.setdefault("time", [None])
 
-        self.request = self._request(request)
+        self.request = self._request(**request)
 
         if "date" in self.request:
             self.dates = [
@@ -238,7 +238,7 @@ class Constants(FieldSet):
     @normalize("date", "date-list")
     @normalize("time", "int-list")
     @normalize("number", "int-list")
-    def _request(self, request):
+    def _request(self, **request):
         return request
 
     def __len__(self):
