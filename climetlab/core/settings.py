@@ -380,8 +380,7 @@ try:
         parts = v.split(".")
         major = int(parts[0])
         minor = int(parts[1]) if len(parts) > 1 else 0
-        patch = int(parts[2]) if len(parts) > 2 else 0
-        return major, minor, patch
+        return major, minor
 
     if parse(settings.get("version")) < parse(VERSION):
         save = True
