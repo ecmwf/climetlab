@@ -376,15 +376,21 @@ try:
     # if s != settings:
     #     save = True
 
-    if settings.get("version") != VERSION:
+    def parse(v):
+        parts = v.split(".")
+        major = int(parts[0])
+        minor = int(parts[1]) if len(parts) > 1 else 0
+        return major, minor
+
+    if parse(settings.get("version")) < parse(VERSION):
         save = True
 
 except Exception:
     LOG.error(
         "Cannot load CliMetLab settings (%s), reverting to defaults",
         settings_yaml,
-        exc_info=True,
     )
+    save = True
 
 SETTINGS = Settings(settings_yaml, settings)
 if save:
