@@ -15,7 +15,7 @@ from climetlab import load_source
 from climetlab.testing import climetlab_file
 
 
-def test_constant():
+def test_constant_1():
     sample = load_source("file", climetlab_file("docs/examples/test.grib"))
 
     start = sample[0].datetime()
@@ -47,6 +47,43 @@ def test_constant():
     ds = ds.order_by("param", "valid_datetime")
 
     assert len(ds) == len(params) * len(dates)
+
+
+def test_constant_2():
+    sample = load_source("file", climetlab_file("docs/examples/test.grib"))
+
+    start = sample[0].datetime()
+    start = datetime.datetime(start.year, start.month, start.day)
+    first_step = 1
+    last_step = 10
+    step_increment = 1
+    dates = []
+    for step in range(first_step, last_step + step_increment, step_increment):
+        dates.append(start + datetime.timedelta(days=step))
+
+    params = [
+        "cos_latitude",
+        "cos_longitude",
+        "sin_latitude",
+        "sin_longitude",
+        "cos_julian_day",
+        "cos_local_time",
+        "sin_julian_day",
+        "sin_local_time",
+    ]
+
+    ntimes = 4
+    ds = load_source(
+        "constants",
+        sample,
+        date=dates,
+        time=f"0/to/18/by/{24//ntimes}",
+        param=params,
+    )
+
+    ds = ds.order_by("param", "valid_datetime")
+
+    assert len(ds) == len(params) * len(dates) * ntimes
 
 
 if __name__ == "__main__":

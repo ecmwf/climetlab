@@ -202,6 +202,12 @@ class ConstantField:
 def make_datetime(date, time):
     if time is None:
         return date
+    if date.hour or date.minute:
+        raise ValueError(
+            f"Duplicate information about time time={time}, and time={date.hour}:{date.minute} from date={date}"
+        )
+    assert date.hour == 0, (date, time)
+    assert date.minute == 0, (date, time)
     assert str(time).isdigit(), (type(time), time)
     return datetime.datetime(date.year, date.month, date.day, int(time) // 100)
 
@@ -211,15 +217,13 @@ class Constants(FieldSet):
         request = dict(**request)
         request.update(kwargs)
 
-        request.setdefault("time", [None])
-
         self.request = self._request(**request)
 
         if "date" in self.request:
             self.dates = [
                 make_datetime(date, time)
                 for date, time in itertools.product(
-                    self.request["date"], self.request["time"]
+                    self.request["date"], self.request.get("time", [None])
                 )
             ]
         else:
