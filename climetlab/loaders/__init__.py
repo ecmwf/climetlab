@@ -501,8 +501,8 @@ class ZarrLoader(Loader):
         z_dates = self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
         z_dates.attrs["pandas_date_range_kwargs"] = pandas_date_range_kwargs
 
-        lat = self._add_dataset("latitude", grid_points[0])
-        lon = self._add_dataset("longitude", grid_points[1])
+        lat = self._add_dataset("latitudes", grid_points[0])
+        lon = self._add_dataset("longitudes", grid_points[1])
         lat.attrs["resolution"] = resolution
         lon.attrs["resolution"] = resolution
         assert lat.shape == lon.shape
