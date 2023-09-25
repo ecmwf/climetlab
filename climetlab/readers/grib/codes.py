@@ -445,8 +445,15 @@ class GribField(Base):
         )
 
     def valid_datetime(self):
-        step = self.handle.get("endStep")
-        return self.datetime() + datetime.timedelta(hours=step)
+        date = self.handle.get("validityDate")
+        time = self.handle.get("validityTime")
+        return datetime.datetime(
+            int(date[0:4]),
+            int(date[4:6]),
+            int(date[6:8]),
+            int(time[0:2]),
+            int(time[2:4]),
+        )
 
     def to_datetime_list(self):
         return [self.valid_datetime()]
