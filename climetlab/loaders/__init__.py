@@ -40,8 +40,6 @@ def get_versions():
 
     dic["earthkit.meteo"] = earthkit.meteo.__version__
 
-    dic["FORMAT"] = VERSION
-
     return dic
 
 
