@@ -26,7 +26,7 @@ from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.4"
+VERSION = "0.5"
 
 
 def get_versions():
@@ -310,6 +310,10 @@ class ZarrBuiltRegistry:
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
 
+    def set_attribute(self, key, value):
+        z = self._open_write()
+        z[self.name_flags].attrs[key] = value
+
 
 class ZarrLoader(Loader):
     writer = None
@@ -464,26 +468,24 @@ class ZarrLoader(Loader):
 
         metadata["resolution"] = resolution
 
-        metadata["name_to_index"] = {
-            name: i
-            for i, name in enumerate(
-                self.main_config.output.order_by[self.main_config.output.statistics]
-            )
-        }
+        metadata["variables"] = self.main_config.output.order_by[
+            self.main_config.output.statistics
+        ]
 
         metadata["versions"] = get_versions()
         metadata["version"] = VERSION
 
-        pandas_date_range_kwargs = dict(
-            start=first_date.isoformat(),
-            end=last_date.isoformat(),
-            freq=f"{frequency}h",
-            unit="s",
-        )
-        metadata["pandas_date_range_kwargs"] = pandas_date_range_kwargs
         metadata["frequency"] = frequency
         metadata["first_date"] = first_date.isoformat()
         metadata["last_date"] = last_date.isoformat()
+        pd_dates = pd.date_range(
+            start=metadata["first_date"],
+            end=metadata["last_date"],
+            freq=f"{metadata['frequency']}h",
+            unit="s",
+        )
+        assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
+        assert pd_dates[-1] == last_date, (pd_dates, last_date)
 
         metadata.update(self.main_config.get("force_metadata", {}))
 
@@ -492,22 +494,17 @@ class ZarrLoader(Loader):
 
         self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
 
-        pd_dates = pd.date_range(**pandas_date_range_kwargs)
-        assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
-        assert pd_dates[-1] == last_date, (pd_dates, last_date)
         np_dates = pd_dates.to_numpy()
-        z_dates = self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
-        z_dates.attrs["pandas_date_range_kwargs"] = pandas_date_range_kwargs
+        self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
 
-        lat = self._add_dataset("latitudes", grid_points[0])
-        lon = self._add_dataset("longitudes", grid_points[1])
-        assert lat.shape == lon.shape
+        assert grid_points[0].shape == grid_points[1].shape
+        self._add_dataset("latitudes", grid_points[0])
+        self._add_dataset("longitudes", grid_points[1])
 
         # write metadata
         for k, v in metadata.items():
             print(v)
             self.z.attrs[k] = v
-            self.z["data"].attrs[k] = v
         self.z.attrs["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
 
         self.z = None
@@ -592,13 +589,14 @@ class ZarrLoader(Loader):
         _count = data.size / shape[1]
         assert _count == int(_count), _count
 
-        # self._add_dataset("mean_by_datetime", mean)
-        # self._add_dataset("stdev_by_datetime", stdev)
-        # self._add_dataset("minimum_by_datetime", minimum)
-        # self._add_dataset("maximum_by_datetime", maximum)
-        # self._add_dataset("sums_by_datetime", sum)
-        # self._add_dataset("squares_by_datetime", squares)
-        # self._add_dataset("count_by_datetime", mean * 0 + count)
+        mean = sums / _count
+        self._add_dataset("_mean_by_datetime", mean)
+        self._add_dataset("_stdev_by_datetime", np.sqrt(squares / _count - mean * mean))
+        self._add_dataset("_minimum_by_datetime", minimum)
+        self._add_dataset("_maximum_by_datetime", maximum)
+        self._add_dataset("_sums_by_datetime", sums)
+        self._add_dataset("_squares_by_datetime", squares)
+        self._add_dataset("_count_by_datetime", mean * 0 + _count)
 
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
@@ -616,6 +614,8 @@ class ZarrLoader(Loader):
         self._add_dataset("sums", _sums)
         self._add_dataset("squares", _squares)
         self._add_dataset("count", _count)
+
+        self.registry.set_attribute("_statistics_computed", True)
 
 
 class HDF5Loader:
