@@ -501,8 +501,6 @@ class ZarrLoader(Loader):
 
         lat = self._add_dataset("latitudes", grid_points[0])
         lon = self._add_dataset("longitudes", grid_points[1])
-        lat.attrs["resolution"] = resolution
-        lon.attrs["resolution"] = resolution
         assert lat.shape == lon.shape
 
         # write metadata
