@@ -565,8 +565,8 @@ class ZarrLoader(Loader):
 
         stats_shape = (shape[0], shape[1])
 
-        # mean = np.zeros(shape=stats_shape)
-        # stdev = np.zeros(shape=stats_shape)
+        mean = np.zeros(shape=stats_shape)
+        stdev = np.zeros(shape=stats_shape)
         minimum = np.zeros(shape=stats_shape)
         maximum = np.zeros(shape=stats_shape)
         sums = np.zeros(shape=stats_shape)
@@ -581,17 +581,16 @@ class ZarrLoader(Loader):
                 maximum[i, j] = np.amax(values)
                 sums[i, j] = np.sum(values)
                 squares[i, j] = np.sum(values * values)
-                # mean[i, j] = sums[i, j] / count[i, j]
-                # stdev[i, j] = np.sqrt(
-                #     squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
-                # )
+                mean[i, j] = sums[i, j] / (chunk.size / shape[1])
+                stdev[i, j] = np.sqrt(
+                    squares[i, j] / (chunk.size / shape[1]) - mean[i, j] * mean[i, j]
+                )
 
         _count = data.size / shape[1]
         assert _count == int(_count), _count
 
-        mean = sums / _count
         self._add_dataset("_mean_by_datetime", mean)
-        self._add_dataset("_stdev_by_datetime", np.sqrt(squares / _count - mean * mean))
+        self._add_dataset("_stdev_by_datetime", stdev)
         self._add_dataset("_minimum_by_datetime", minimum)
         self._add_dataset("_maximum_by_datetime", maximum)
         self._add_dataset("_sums_by_datetime", sums)
