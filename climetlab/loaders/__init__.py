@@ -9,7 +9,6 @@
 
 
 import datetime
-import json
 import logging
 import os
 import time
@@ -155,6 +154,7 @@ class Loader:
         import zarr
 
         self.z = zarr.open(self.path, mode="r+")
+        self.registry.add_to_history("loading_data_start", parts=kwargs.get("parts"))
 
         filter = LoopItemsFilter(loader=self, **kwargs)
         nloop = len(list((self.iter_loops())))
@@ -183,6 +183,8 @@ class Loader:
             self.load_datacube(cube, array)
 
             self.registry.set_flag(iloop)
+
+        self.registry.add_to_history("loading_data_end", parts=kwargs.get("parts"))
 
     def load_datacube(self, cube, array):
         start = time.time()
@@ -298,21 +300,31 @@ class ZarrBuiltRegistry:
             dtype="i4",
             overwrite=overwrite,
         )
-        flags = add_zarr_dataset(
+        add_zarr_dataset(
             self.name_flags,
             len(lengths) * [False],
             zarr_root=z,
             dtype=bool,
             overwrite=overwrite,
         )
-        flags.attrs["_initialised"] = True
+        z = None
+        self.add_to_history("initialised")
 
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
 
-    def set_attribute(self, key, value):
+    def add_to_history(self, action, **kwargs):
+        new = dict(
+            action=action,
+            timestamp=datetime.datetime.utcnow().isoformat(),
+            versions=get_versions(),
+        )
+        new.update(kwargs)
+
         z = self._open_write()
-        z[self.name_flags].attrs[key] = value
+        history = z.attrs.get("history", [])
+        history.append(new)
+        z.attrs["history"] = history
 
 
 class ZarrLoader(Loader):
@@ -556,7 +568,11 @@ class ZarrLoader(Loader):
         import zarr
 
         if not all(self.registry.get_flags()):
-            raise Exception(f"Zarr {self.path} is not fully built.")
+            raise Exception(
+                f"Zarr {self.path} is not fully built, not computing statistics."
+            )
+
+        self.registry.add_to_history("compute_statistics_start")
 
         z_read = zarr.open(self.path, mode="r")
         data = z_read["data"]
@@ -614,7 +630,7 @@ class ZarrLoader(Loader):
         self._add_dataset("squares", _squares)
         self._add_dataset("count", _count)
 
-        self.registry.set_attribute("_statistics_computed", True)
+        self.registry.add_to_history("compute_statistics_end")
 
 
 class HDF5Loader:
@@ -654,7 +670,6 @@ class HDF5Loader:
             )  # Can we avoid that? Looks like its needed for chuncking
             # data = h5py.Empty(dtype),
         )
-        array.attrs["climetlab"] = json.dumps(_tidy(metadata))
         return array
 
     def close(self):
