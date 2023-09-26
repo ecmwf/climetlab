@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+
 import datetime
 import logging
 import os
@@ -14,7 +15,6 @@ import time
 import warnings
 
 import numpy as np
-import yaml
 
 import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
@@ -358,8 +358,8 @@ class ZarrLoader(Loader):
 
         assert os.path.exists(path), path
         z = zarr.open(path, mode="r")
-        # config = yaml.z.attrs["create_yaml_config"]
-        config = yaml.safe_load(z.attrs["_yaml_dump"])["create_yaml_config"]
+        config = z.attrs["create_yaml_config"]
+        # config = yaml.safe_load(z.attrs["_yaml_dump"])["create_yaml_config"]
         kwargs.get("print", print)("Config loaded from zarr: ", config)
         return cls.from_config(config=config, path=path, **kwargs)
 
@@ -508,7 +508,7 @@ class ZarrLoader(Loader):
         assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
         assert pd_dates[-1] == last_date, (pd_dates, last_date)
 
-        metadata["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
+        # metadata["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
         metadata.update(self.main_config.get("force_metadata", {}))
 
         # write data
