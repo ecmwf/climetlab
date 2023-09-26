@@ -476,7 +476,6 @@ class ZarrLoader(Loader):
         metadata.update(self.main_config.get("add_metadata", {}))
 
         metadata["create_yaml_config"] = _tidy(self.main_config)
-        metadata["creation_timestamp"] = datetime.datetime.utcnow().isoformat()
 
         metadata["resolution"] = resolution
 
@@ -484,7 +483,6 @@ class ZarrLoader(Loader):
             self.main_config.output.statistics
         ]
 
-        metadata["versions"] = get_versions()
         metadata["version"] = VERSION
 
         metadata["frequency"] = frequency
@@ -520,6 +518,7 @@ class ZarrLoader(Loader):
         self.z.attrs["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
 
         self.z = None
+
         self.registry.create(lengths=lengths)
 
     def config_to_data_cube(self, config, with_gridpoints=False):
@@ -576,8 +575,12 @@ class ZarrLoader(Loader):
 
         z_read = zarr.open(self.path, mode="r")
         data = z_read["data"]
+        dates = z_read["dates"]
         shape = data.shape
-        assert len(shape) in [3, 4]  # if 4, we expect to have latitude/longitude
+        assert len(dates) == shape[0]
+
+        start_statistics = kwargs.get("statistics_start")
+        end_statistics = kwargs.get("end_statistics")
 
         stats_shape = (shape[0], shape[1])
 
@@ -588,9 +591,10 @@ class ZarrLoader(Loader):
         sums = np.zeros(shape=stats_shape)
         squares = np.zeros(shape=stats_shape)
 
-        for i in range(shape[0]):
+        subset = []
+        for i, date in zip(range(shape[0]), dates):
             chunk = data[i, ...]
-            self.print(f"Computing statistics on {i+1}/{shape[0]}")
+            self.print(f"Computing statistics on {i+1}/{shape[0]} ({date})")
             for j in range(shape[1]):
                 values = chunk[j, :]
                 minimum[i, j] = np.amin(values)
@@ -601,6 +605,10 @@ class ZarrLoader(Loader):
                 stdev[i, j] = np.sqrt(
                     squares[i, j] / (chunk.size / shape[1]) - mean[i, j] * mean[i, j]
                 )
+            if (start_statistics is None or start_statistics <= date) and (
+                end_statistics is None or date <= end_statistics
+            ):
+                subset.append(i)
 
         _count = data.size / shape[1]
         assert _count == int(_count), _count
@@ -612,6 +620,11 @@ class ZarrLoader(Loader):
         self._add_dataset("_sums_by_datetime", sums)
         self._add_dataset("_squares_by_datetime", squares)
         self._add_dataset("_count_by_datetime", mean * 0 + _count)
+
+        minimum = minimum[subset, ...]
+        maximum = maximum[subset, ...]
+        sums = sums[subset, ...]
+        squares = squares[subset, ...]
 
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
