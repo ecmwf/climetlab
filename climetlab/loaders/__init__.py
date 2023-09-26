@@ -15,7 +15,6 @@ import time
 import warnings
 
 import numpy as np
-import yaml
 
 import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
@@ -25,7 +24,7 @@ from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.5"
+VERSION = "0.6"
 
 
 def get_versions():
@@ -42,12 +41,23 @@ def get_versions():
     return dic
 
 
-def _tidy(o):
+def _prepare_serialisation(o):
     if isinstance(o, dict):
-        return {k: _tidy(v) for k, v in o.items()}
+        dic = {}
+        for k, v in o.items():
+            v = _prepare_serialisation(v)
+            if k == "order_by":
+                # zarr attributes are saved with sort_keys=True
+                # and ordered dict are reordered.
+                # This is a problem for "order_by"
+                # We ensure here that the order_by key contains
+                # a list of dict
+                v = [{kk: vv} for kk, vv in v.items()]
+            dic[k] = v
+        return dic
 
     if isinstance(o, (list, tuple)):
-        return [_tidy(v) for v in o]
+        return [_prepare_serialisation(v) for v in o]
 
     if o in (None, True, False):
         return o
@@ -348,7 +358,7 @@ class ZarrLoader(Loader):
 
         assert os.path.exists(path), path
         z = zarr.open(path, mode="r")
-        config = yaml.safe_load(z.attrs["_yaml_dump"])["create_yaml_config"]
+        config = z.attrs["create_yaml_config"]
         kwargs.get("print", print)("Config loaded from zarr: ", config)
         return cls.from_config(config=config, path=path, **kwargs)
 
@@ -475,7 +485,7 @@ class ZarrLoader(Loader):
 
         metadata.update(self.main_config.get("add_metadata", {}))
 
-        metadata["create_yaml_config"] = _tidy(self.main_config)
+        metadata["create_yaml_config"] = _prepare_serialisation(self.main_config)
 
         metadata["resolution"] = resolution
 
@@ -515,7 +525,6 @@ class ZarrLoader(Loader):
         for k, v in metadata.items():
             print(v)
             self.z.attrs[k] = v
-        self.z.attrs["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
 
         self.z = None
 
