@@ -53,6 +53,14 @@ def check_data_values(arr, *, name: str, log=[]):
         assert min >= 173.15, (name, min, max, *log)
 
 
+def check_stats(minimum, maximum, mean, msg, **kwargs):
+    tolerance = (abs(minimum) + abs(maximum)) * 0.01
+    if (mean - minimum < -tolerance) or (mean - minimum < -tolerance):
+        raise ValueError(
+            f"Mean is not in min/max interval{msg} : we should have {minimum} <= {mean} <= {maximum}"
+        )
+
+
 def _prepare_serialisation(o):
     if isinstance(o, dict):
         dic = {}
@@ -134,8 +142,6 @@ class LoopItemsFilter:
                 i_chunk, n_chunks = int(i_chunk), int(n_chunks)
 
                 total = len(self.loader.registry.get_flags())
-                print(self.loader.registry.get_flags())
-                print(total)
                 assert i_chunk > 0, f"Chunk number {i_chunk} must be positive."
                 if n_chunks > total:
                     warnings.warn(
@@ -236,9 +242,6 @@ class Loader:
             array[cubelet.extended_icoords] = data
             save += time.time() - now
 
-            # if self.print != print:
-            #    self.print(f"Read {i+1}/{total}")
-
         now = time.time()
         save += time.time() - now
 
@@ -293,8 +296,8 @@ class ZarrBuiltRegistry:
         z = self._open_read()
         return list(z[self.name_lengths][:])
 
-    def get_flags(self):
-        z = self._open_read()
+    def get_flags(self, **kwargs):
+        z = self._open_read(**kwargs)
         print(list(z[self.name_flags][:]))
         return list(z[self.name_flags][:])
 
@@ -307,10 +310,13 @@ class ZarrBuiltRegistry:
         z.attrs["latest_write_timestamp"] = datetime.datetime.utcnow().isoformat()
         z[self.name_flags][iloop] = value
 
-    def _open_read(self):
+    def _open_read(self, sync=True):
         import zarr
 
-        return zarr.open(self.zarr_path, mode="r", synchronizer=self.synchronizer)
+        if sync:
+            return zarr.open(self.zarr_path, mode="r", synchronizer=self.synchronizer)
+        else:
+            return zarr.open(self.zarr_path, mode="r")
 
     def _open_write(self):
         import zarr
@@ -605,50 +611,89 @@ class ZarrLoader(Loader):
             print(e)
 
     def add_statistics(self, statistics_start, statistics_end, no_write, **kwargs):
-        import zarr
+        do_write = not no_write
+
+        incomplete = not all(self.registry.get_flags(sync=False))
+        if do_write and incomplete:
+            raise Exception(
+                f"Zarr {self.path} is not fully built, not writing statistics."
+            )
+
+        if statistics_start is None:
+            statistics_start = self.main_config.output.get("statistics_start")
+        if statistics_end is None:
+            statistics_end = self.main_config.output.get("statistics_end")
+
+        if do_write:
+            self.registry.add_to_history(
+                "compute_statistics_start",
+                start=statistics_start,
+                end=statistics_end,
+            )
 
         try:
             from ecml_tools.data import open_dataset
         except ImportError:
             raise Exception("Need to pip install ecml_tools")
+        ds = open_dataset(self.path)
 
-        if not all(self.registry.get_flags()):
-            raise Exception(
-                f"Zarr {self.path} is not fully built, not computing statistics."
+        stats = self.compute_statistics(ds, statistics_start, statistics_end)
+
+        print(
+            "\n".join(
+                (
+                    f"{v.rjust(10)}: "
+                    f"min/max = {stats['minimum'][j]:.6g} {stats['maximum'][j]:.6g}"
+                    "   \t:   "
+                    f"mean/stdev = {stats['mean'][j]:.6g} {stats['stdev'][j]:.6g}"
+                )
+                for j, v in enumerate(ds.variables)
+            )
+        )
+
+        if do_write:
+            for k in [
+                "mean",
+                "stdev",
+                "minimum",
+                "maximum",
+                "sums",
+                "squares",
+                "count",
+            ]:
+                self._add_dataset(k, stats[k])
+
+            self.registry.add_to_history(
+                "compute_statistics_end",
+                start=statistics_start,
+                end=statistics_end,
             )
 
-        if not no_write:
-            self.registry.add_to_history("compute_statistics_start")
+    def compute_statistics(self, ds, statistics_start, statistics_end):
+        import zarr
 
-        z_read = zarr.open(self.path, mode="r")
-        data = z_read["data"]
-        dates = z_read["dates"]
+        data = zarr.open(self.path, mode="r")["data"]
+
         shape = data.shape
-        assert len(dates) == shape[0]
-
-        statistics_start = statistics_start or self.main_config.output.get(
-            "statistics_start"
-        )
-        statistics_end = statistics_end or self.main_config.output.get("statistics_end")
-        ds = open_dataset(self.path)
-        variables = ds.variables
-        assert variables == self._variables_names
+        assert shape[0] == len(ds.dates)
+        assert shape[1] == len(ds.variables)
+        assert ds.variables == self._variables_names
 
         subset = ds._dates_to_indices(start=statistics_start, end=statistics_end)
 
         self.print(
             f"Statistics computed on {len(subset)}/{shape[0]} samples "
-            f"first={dates[subset[0]]} "
-            f"last={dates[subset[-1]]}"
+            f"first={ds.dates[subset[0]]} "
+            f"last={ds.dates[subset[-1]]}"
         )
         if not subset:
             raise ValueError(
                 f"Cannot compute statistics on an empty interval."
                 f" Requested : {statistics_start=} {statistics_end=}."
-                f" Available: {dates[0]=} {dates[-1]=}"
+                f" Available: {ds.dates[0]=} {ds.dates[-1]=}"
             )
 
-        stats_shape = (shape[0], shape[1])
+        stats_shape = (len(subset), shape[1])
 
         mean = np.zeros(shape=stats_shape)
         stdev = np.zeros(shape=stats_shape)
@@ -656,38 +701,38 @@ class ZarrLoader(Loader):
         maximum = np.zeros(shape=stats_shape)
         sums = np.zeros(shape=stats_shape)
         squares = np.zeros(shape=stats_shape)
+        count = np.zeros(shape=stats_shape)
 
-        for i, date in zip(range(shape[0]), dates):
-            chunk = data[i, ...]
-            self.print(f"Computing statistics on {i+1}/{shape[0]} ({date})")
+        for i, i_data in enumerate(subset):
+            chunk = data[i_data, ...]
+            self.print(
+                f"Computing statistics on {i_data+1}/{shape[0]} ({ds.dates[i_data]})"
+            )
             for j in range(shape[1]):
                 values = chunk[j, :]
+                check_data_values(
+                    values,
+                    name=ds.variables[j],
+                    log=[j, i, i_data, "statistics"],
+                )
                 minimum[i, j] = np.amin(values)
                 maximum[i, j] = np.amax(values)
                 sums[i, j] = np.sum(values)
                 squares[i, j] = np.sum(values * values)
-                mean[i, j] = sums[i, j] / (chunk.size / shape[1])
+                count[i, j] = values.size
+                mean[i, j] = sums[i, j] / count[i, j]
                 stdev[i, j] = np.sqrt(
-                    squares[i, j] / (chunk.size / shape[1]) - mean[i, j] * mean[i, j]
+                    squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
                 )
-                print(j, variables[j], mean[i, j], maximum[i, j])
 
-        _count = data.size / shape[1]
-        assert _count == int(_count), _count
+                check_stats(
+                    minimum=minimum[i, j],
+                    maximum=maximum[i, j],
+                    mean=mean[i, j],
+                    msg=f" for {j} {ds.variables[j]}",
+                )
 
-        # if not no_write:
-        #     self._add_dataset("_mean_by_datetime", mean)
-        #     self._add_dataset("_stdev_by_datetime", stdev)
-        #     self._add_dataset("_minimum_by_datetime", minimum)
-        #     self._add_dataset("_maximum_by_datetime", maximum)
-        #     self._add_dataset("_sums_by_datetime", sums)
-        #     self._add_dataset("_squares_by_datetime", squares)
-        #     self._add_dataset("_count_by_datetime", mean * 0 + _count)
-
-        minimum = minimum[subset, ...]
-        maximum = maximum[subset, ...]
-        sums = sums[subset, ...]
-        squares = squares[subset, ...]
+        assert (count == count[:][0]).all(), count
 
         assert len(minimum.shape) == 2
         assert minimum.shape[0] == len(subset)
@@ -695,38 +740,29 @@ class ZarrLoader(Loader):
 
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
+        _count = np.sum(count, axis=0)
         _sums = np.sum(sums, axis=0)
         _squares = np.sum(squares, axis=0)
         _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
 
-        _count = _mean * 0 + _count
+        stats = {
+            "mean": _mean,
+            "stdev": _stdev,
+            "minimum": _minimum,
+            "maximum": _maximum,
+            "sums": _sums,
+            "squares": _squares,
+            "count": _count,
+        }
 
-        def _(array):
-            return ", ".join(str(x) for x in array)
+        for v in stats.values():
+            assert v.shape == stats["mean"].shape
 
-        ds = open_dataset(self.path)
-        for i, v in enumerate(ds.variables):
-            print(
-                f"{v.rjust(10)}: mean/stdev = {_mean[i]:0.1f} {_stdev[i]:0.1f}"
-                f"\tmin/max = {_minimum[i]:0.1f} {_maximum[i]:0.1f}"
-                # f"\tcount={int(_count[i])}"
-            )
+        for i, name in enumerate(ds.variables):
+            check_stats(**{k: v[i] for k, v in stats.items()}, msg=f"{i} {name}")
 
-        if not no_write:
-            self._add_dataset("mean", _mean)
-            self._add_dataset("stdev", _stdev)
-            self._add_dataset("minimum", _minimum)
-            self._add_dataset("maximum", _maximum)
-            self._add_dataset("sums", _sums)
-            self._add_dataset("squares", _squares)
-            self._add_dataset("count", _count)
-
-            self.registry.add_to_history(
-                "compute_statistics_end",
-                start=statistics_start,
-                end=statistics_end,
-            )
+        return stats
 
 
 class HDF5Loader:
