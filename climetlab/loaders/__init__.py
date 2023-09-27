@@ -24,7 +24,7 @@ from climetlab.utils.humanize import bytes, seconds
 
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.6"
+VERSION = "0.7"
 
 
 def get_versions():
