@@ -41,6 +41,18 @@ def get_versions():
     return dic
 
 
+def check_data_values(arr, *, name: str, log=[]):
+    if name == ["lsm", "insolation"]:  # 0. to 1.
+        min, max = arr.min(), arr.max()
+        assert max <= 1, (name, min, max, *log)
+        assert min >= 0, (name, min, max, *log)
+
+    if name == "2t":
+        min, max = arr.min(), arr.max()
+        assert max <= 373.15, (name, min, max, *log)
+        assert min >= 173.15, (name, min, max, *log)
+
+
 def _prepare_serialisation(o):
     if isinstance(o, dict):
         dic = {}
@@ -185,7 +197,7 @@ class Loader:
 
             slice = self.registry.get_slice_for(iloop)
             print(f"Building to ZARR '{self.path}':")
-            self.print(f"Building to ZARR at {slice}, with {shape=}, {chunks=}")
+            self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
             offset = slice.start
             array = OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape)
@@ -213,7 +225,12 @@ class Loader:
             data = cubelet.to_numpy()
             load += time.time() - now
 
-            # self.print("data", data.shape,cubelet.extended_icoords)
+            j = cubelet.extended_icoords[1]
+            check_data_values(
+                data[:],
+                name=self._variables_names[j],
+                log=[i, j, data.shape, cubelet.extended_icoords],
+            )
 
             now = time.time()
             array[cubelet.extended_icoords] = data
@@ -387,12 +404,18 @@ class ZarrLoader(Loader):
         lengths = [x * multiply for x in lengths]
         return lengths
 
+    @property
+    def _variables_names(self):
+        return self.main_config.output.order_by[self.main_config.output.statistics]
+
     def initialise(self):
         """Create empty zarr from self.main_config and self.path"""
         import pandas as pd
         import zarr
 
         from climetlab.utils.dates import to_datetime  # avoid circular imports
+
+        variables = self._variables_names
 
         def get_first_and_last_element_configs():
             first = None
@@ -411,6 +434,15 @@ class ZarrLoader(Loader):
         last_cube, grid_points_ = self.config_to_data_cube(last, with_gridpoints=True)
         for _ in zip(grid_points, grid_points_):
             assert (_[0] == _[1]).all(), (grid_points_, grid_points)
+
+        assert first_cube.extended_user_shape[1] == len(variables), (
+            first_cube.extended_user_shape,
+            len(variables),
+        )
+        assert last_cube.extended_user_shape[1] == len(variables), (
+            last_cube.extended_user_shape,
+            len(variables),
+        )
 
         shape = list(first_cube.extended_user_shape)
         assert shape == list(last_cube.extended_user_shape), (
@@ -490,9 +522,7 @@ class ZarrLoader(Loader):
 
         metadata["resolution"] = resolution
 
-        metadata["variables"] = self.main_config.output.order_by[
-            self.main_config.output.statistics
-        ]
+        metadata["variables"] = self._variables_names
 
         metadata["version"] = VERSION
 
@@ -602,6 +632,8 @@ class ZarrLoader(Loader):
         statistics_end = statistics_end or self.main_config.output.get("statistics_end")
         ds = open_dataset(self.path)
         variables = ds.variables
+        assert variables == self._variables_names
+
         subset = ds._dates_to_indices(start=statistics_start, end=statistics_end)
 
         self.print(
@@ -643,14 +675,14 @@ class ZarrLoader(Loader):
         _count = data.size / shape[1]
         assert _count == int(_count), _count
 
-        if not no_write:
-            self._add_dataset("_mean_by_datetime", mean)
-            self._add_dataset("_stdev_by_datetime", stdev)
-            self._add_dataset("_minimum_by_datetime", minimum)
-            self._add_dataset("_maximum_by_datetime", maximum)
-            self._add_dataset("_sums_by_datetime", sums)
-            self._add_dataset("_squares_by_datetime", squares)
-            self._add_dataset("_count_by_datetime", mean * 0 + _count)
+        # if not no_write:
+        #     self._add_dataset("_mean_by_datetime", mean)
+        #     self._add_dataset("_stdev_by_datetime", stdev)
+        #     self._add_dataset("_minimum_by_datetime", minimum)
+        #     self._add_dataset("_maximum_by_datetime", maximum)
+        #     self._add_dataset("_sums_by_datetime", sums)
+        #     self._add_dataset("_squares_by_datetime", squares)
+        #     self._add_dataset("_count_by_datetime", mean * 0 + _count)
 
         minimum = minimum[subset, ...]
         maximum = maximum[subset, ...]
