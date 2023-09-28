@@ -209,7 +209,10 @@ def make_datetime(date, time):
     assert date.hour == 0, (date, time)
     assert date.minute == 0, (date, time)
     assert str(time).isdigit(), (type(time), time)
-    return datetime.datetime(date.year, date.month, date.day, int(time) // 100)
+    time = int(time)
+    if time > 24:
+        time = time // 100
+    return datetime.datetime(date.year, date.month, date.day, time)
 
 
 class Constants(FieldSet):
@@ -226,6 +229,9 @@ class Constants(FieldSet):
                     self.request["date"], self.request.get("time", [None])
                 )
             ]
+            assert len(set(self.dates)) == len(
+                self.dates
+            ), "Duplicates dates in constants."
         else:
             self.dates = source_or_dataset.unique_values("valid_datetime")[
                 "valid_datetime"

@@ -56,6 +56,26 @@ class LoadersCmd:
             "--parts",
             dict(nargs="+", help="Use with --load. Part(s) of the data to process."),
         ),
+        statistics_start=(
+            "--start",
+            dict(
+                help="Start date to compute the statistics (such as '2015' or '2015-04-18' or 201504)."
+                " The given year (or day, or month) will be INCLUDED in the statistics."
+            ),
+        ),
+        statistics_end=(
+            "--end",
+            dict(
+                help="End date to compute the statistics (such as '2015' or '2015-04-18' or 201504)."
+                " The given year (or day, or month) will be INCLUDED in the statistics."
+            ),
+        ),
+        no_write=(
+            "--no-write",
+            dict(
+                action="store_true", help="Only compute statistics, do not write them."
+            ),
+        ),
         cache_dir=(
             "--cache-dir",
             dict(
@@ -149,6 +169,12 @@ class LoadersCmd:
             )
         if args.parts:
             assert args.load, "Use --parts only with --load"
+        if args.no_write:
+            assert args.statistics, "Use --no-write only with --statistics"
+        if args.statistics_start:
+            assert args.statistics, "Use --start only with --statistics"
+        if args.statistics_end:
+            assert args.statistics, "Use --end only with --statistics"
 
         @contextmanager
         def dummy_context():
@@ -190,4 +216,4 @@ class LoadersCmd:
                     args.config is None
                 ), "--statistics requires only --target, no --config."
                 loader = loader_class.from_zarr(**kwargs)
-                loader.add_statistics()
+                loader.add_statistics(**kwargs)
