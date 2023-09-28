@@ -83,8 +83,20 @@ class ECMWFApi(FileSource):
     @normalize("date", "date-list(%Y-%m-%d)")
     @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
+        def value_to_list(v):
+            if isinstance(v, (list, tuple)):
+                return v
+            return (v,)
+
+        def to_lists(dic):
+            # Ensure that we only give lists.
+            # this is workaround because time=0 is treated as null or None and removed
+            # and replaced by the default value with may be != 0 (such as 12)
+            return {k: value_to_list(v) for k, v in dic.items()}
+
         split_on = kwargs.pop("split_on", None)
         if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):
+            kwargs = to_lists(kwargs)
             return [kwargs]
 
         result = []
@@ -92,6 +104,7 @@ class ECMWFApi(FileSource):
         for v in kwargs[split_on]:
             r = dict(**kwargs)
             r[split_on] = v
+            r = to_lists(r)
             result.append(r)
 
         return result
