@@ -42,13 +42,19 @@ def get_versions():
 
 
 def check_data_values(arr, *, name: str, log=[]):
+    min, max = arr.min(), arr.max()
+    assert not (np.isnan(arr).any()), (name, min, max, *log)
+
+    if min == 9999.0:
+        warnings.warn(f"Min value 9999 for {name}")
+    if max == 9999.0:
+        warnings.warn(f"Max value 9999 for {name}")
+
     if name == ["lsm", "insolation"]:  # 0. to 1.
-        min, max = arr.min(), arr.max()
         assert max <= 1, (name, min, max, *log)
         assert min >= 0, (name, min, max, *log)
 
-    if name == "2t":
-        min, max = arr.min(), arr.max()
+    if name == "2t":  # surface temp between -100 celcius and +100 celcius
         assert max <= 373.15, (name, min, max, *log)
         assert min >= 173.15, (name, min, max, *log)
 
