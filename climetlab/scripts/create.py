@@ -162,9 +162,14 @@ class LoadersCmd:
         loader_class = LOADERS[format]
 
         lst = [args.load, args.statistics, args.init]
-        if sum(1 for x in lst if x) != 1:
+        if sum(1 for x in lst if x) > 1:
             raise ValueError(
                 "Too many options provided."
+                'Must choose exactly one option in "--load", "--statistics", "--init"'
+            )
+        if sum(1 for x in lst if x) < 1:
+            raise ValueError(
+                "Not enough options provided."
                 'Must choose exactly one option in "--load", "--statistics", "--init"'
             )
         if args.parts:
