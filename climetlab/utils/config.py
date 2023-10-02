@@ -226,6 +226,9 @@ def substitute(x, vars=None, ignore_missing=False):
             if i == 1:
                 try:
                     if "(" in bit:
+                        # substitute by a function
+                        FUNCTIONS = dict(hdates_from_date=hdates_from_date)
+
                         pattern = r"\$(\w+)\(([^)]*)\)"
                         match = re.match(pattern, bit)
                         assert match, bit
@@ -237,9 +240,7 @@ def substitute(x, vars=None, ignore_missing=False):
                             for p in params
                         ]
 
-                        bit = dict(hdates_from_date=hdates_from_date)[function_name](
-                            *params
-                        )
+                        bit = FUNCTIONS[function_name](*params)
 
                     elif bit.upper() == bit:
                         # substitute by the var env if $UPPERCASE
@@ -256,7 +257,17 @@ def substitute(x, vars=None, ignore_missing=False):
 
             lst.append(bit)
 
-        return "".join(str(_) for _ in lst)
+        lst = [_ for _ in lst if _ != ""]
+        if len(lst) == 1:
+            return lst[0]
+
+        out = []
+        for elt in lst:
+            # if isinstance(elt, str):
+            #    elt = [elt]
+            assert isinstance(elt, (list, tuple)), elt
+            out += elt
+        return out
 
     return x
 
@@ -282,6 +293,9 @@ def hdates_from_date(date, start_year, end_year):
     end_year = int(end_year)
 
     from climetlab.utils.dates import to_datetime
+
+    if isinstance(date, (list, tuple)):
+        raise NotImplementedError(f"{date}")
 
     date = to_datetime(date)
     assert not (date.hour or date.minute or date.second), date
