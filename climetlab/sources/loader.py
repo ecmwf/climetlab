@@ -11,6 +11,7 @@ import logging
 
 from ..datasets import load_dataset
 from ..sources import load_source
+from ..sources.multi import MultiSource
 from . import Source
 
 LOG = logging.getLogger(__name__)
@@ -112,11 +113,7 @@ class Loader(Source):
 
             ACTIONS[k]().execute(v, data, last, inherit)
 
-        result = data[0]
-        for d in data[1:]:
-            result = result + d
-
-        return result
+        return MultiSource(data)
 
 
 source = Loader

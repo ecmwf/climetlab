@@ -393,12 +393,7 @@ class ZarrLoader(Loader):
         return cls.from_config(config=config, path=path, **kwargs)
 
     def iter_loops(self):
-        if "loop" not in self.main_config or self.main_config.loop is None:
-            raise NotImplementedError()
-            yield None  # ?
-            return
-
-        for vars in self.main_config._iter_loops():
+        for vars in self.main_config.iter_loops():
             yield vars
 
     def _compute_lengths(self, multiply):
@@ -455,7 +450,7 @@ class ZarrLoader(Loader):
                 assert new_shape[1] == len(variables), (new_shape, len(variables))
 
                 if previous_variables is not None:
-                    if previous_shape != new_shape:
+                    if previous_shape[1:] != new_shape[1:]:
                         raise ValueError(
                             f"Shape mismatch: previous shape {previous_shape} "
                             f"does not match new shape {new_shape} for block "

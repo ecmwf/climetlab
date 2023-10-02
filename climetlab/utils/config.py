@@ -11,6 +11,7 @@ import itertools
 import logging
 import os
 import re
+from copy import deepcopy
 from functools import cached_property
 
 from climetlab.core.order import build_remapping, normalize_order_by
@@ -52,50 +53,34 @@ def expand(values):
         if "start" in values and "stop" in values:
             start = values["start"]
             stop = values["stop"]
-            step = values.get("step", 1)
-            return range(start, stop + 1, step)
 
-        if "monthly" in values:
-            start = values["monthly"]["start"]
-            stop = values["monthly"]["stop"]
+            group_by = values.get("group_by")
+            if group_by in ["monthly", "daily"]:
+                values["type"] = values.get("type", "date")
 
-            start = to_datetime(start)
-            stop = to_datetime(stop)
+            if values.get("type") == "date":
+                start = to_datetime(start)
+                stop = to_datetime(stop)
+                step = datetime.timedelta(days=1)
+                format = lambda x: x.isoformat() # noqa: E731
+            else:
+                step = values.get("step", 1)
+                format = lambda x: x # noqa: E731
 
-            date = start
-            last = None
-            result = []
-            lst = []
-            while True:
-                year, month = date.year, date.month
-                if (year, month) != last:
-                    if lst:
-                        result.append([d.isoformat() for d in lst])
-                    lst = []
+            all = []
+            while start <= stop:
+                all.append(start)
+                start += step
 
-                lst.append(date)
-                last = (year, month)
-                date = date + datetime.timedelta(days=1)
-                if date > stop:
-                    break
-            if lst:
-                result.append([d.isoformat() for d in lst])
-            return result
-
-        if "daily" in values:
-            start = values["daily"]["start"]
-            stop = values["daily"]["stop"]
-            start = to_datetime(start)
-            stop = to_datetime(stop)
-            date = start
-            result = []
-            while True:
-                result.append(date)
-                date = date + datetime.timedelta(days=1)
-                if date > stop:
-                    break
-            result = [d.isoformat() for d in result]
-            return result
+            grouper = {
+                None: lambda x: 0,  # only one group
+                # None: lambda x: x, # one group per value
+                "monthly": lambda dt: (dt.year, dt.month),
+                "daily": lambda dt: (dt.year, dt.month, dt.day),
+                "MMDD": lambda dt: (dt.month, dt.day),
+            }[group_by]
+            result = [list(g) for _, g in itertools.groupby(all, key=grouper)]
+            return [[format(x) for x in g] for g in result]
 
     raise ValueError(f"Cannot expand loop from {values}")
 
@@ -108,17 +93,28 @@ class Config(DictObj):
         super().__init__(config)
 
 
-class Loop(DictObj):
-    def iterate(self):
-        yield from (
-            dict(zip(self.keys(), items))
-            for items in itertools.product(
-                expand(*list(self.values())),
-            )
-        )
+def count_fields(request):
+    dic = deepcopy(request)
+    print(dic)
+    product = 1
+    for k, value in dic.items():
+        if k in ["grid"]:
+            continue
 
-    def __repr__(self) -> str:
-        return super().__repr__()
+        if isinstance(value, str) and "/" in value:
+            bits = value.split("/")
+            if len(bits) == 3 and bits[1].lower() == "to":
+                value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
+
+            elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+                value = list(
+                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
+                )
+
+        if isinstance(value, list):
+            product *= len(value)
+
+    return product
 
 
 class InputBlockLoadersConfig(list):
@@ -133,12 +129,37 @@ class InputBlockLoadersConfig(list):
             only_key = list(elt.keys())[0]
             assert only_key in ["loop", "source", "constants", "inherit"], only_key
             if only_key == "loop":
-                self.loop = Loop(elt["loop"])
+                self.loop = elt["loop"]
 
         super().__init__(config)
 
     def iter_loops(self):
-        yield from self.loop.iterate()
+        if not self.loop:
+            yield (self, {}, self._count(self))
+
+        for items in itertools.product(expand(*list(self.loop.values()))):
+            vars = dict(zip(self.loop.keys(), items))
+            config = self.substitute(vars)
+            length = self._count(config)
+
+            import climetlab as cml
+
+            data = cml.load_source("loader", config)
+            print(data)
+            exit()
+
+        yield (config, vars, length)
+
+    def _count(self, config):
+        sum = 0
+        for elt in config:
+            if "loop" in elt:
+                continue
+            if "source" in elt:
+                for s in elt["source"]:
+                    print("counted", count_fields(s), " fields in ", s)
+                    sum += count_fields(s)
+        return sum
 
     @cached_property
     def n_iter_loops(self):
@@ -148,11 +169,12 @@ class InputBlockLoadersConfig(list):
         return super().__repr__() + " Loop=" + str(self.loop)
 
     def get_first_config(self):
-        for vars in self.iter_loops():
+        for item in self.iter_loops():
+            config = item[0]
+            vars = item[1]
             keys = list(vars.keys())
-            assert len(vars) == 1, keys
-            key = keys[0]
-            return self.substitute({key: vars[key][0]})
+            assert len(vars) == 1, (keys, "not implemented")
+            return config
 
     def substitute(self, *args, **kwargs):
         self_without_loop = [i for i in self if "loop" not in i]
