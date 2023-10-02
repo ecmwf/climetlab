@@ -11,6 +11,7 @@ import itertools
 import logging
 import os
 import re
+from functools import cached_property
 
 from climetlab.core.order import build_remapping, normalize_order_by
 from climetlab.utils import load_json_or_yaml
@@ -106,46 +107,84 @@ class Config(DictObj):
             config = load_json_or_yaml(config)
         super().__init__(config)
 
-    def _iter_loops(self):
-        # see also iter_configs
+
+class Loop(DictObj):
+    def iterate(self):
         yield from (
-            dict(zip(self.loop.keys(), items))
+            dict(zip(self.keys(), items))
             for items in itertools.product(
-                expand(*list(self.loop.values())),
+                expand(*list(self.values())),
             )
         )
 
-    def _len_of_iter_loops(self):
-        n = 0
-        for _ in self._iter_loops():
-            n += 1
-        return n
+    def __repr__(self) -> str:
+        return super().__repr__()
 
-    def iter_configs(self):
-        if self.loop is None:
-            return [self]
 
-        for items in itertools.product(
-            expand(*list(self.loop.values())),
-        ):
-            vars = dict(zip(self.loop.keys(), items))
-            yield (vars, self.substitute(vars))
+class InputBlockLoadersConfig(list):
+    loop = None
+
+    def __init__(self, config):
+        assert isinstance(config, list), config
+
+        for elt in config:
+            assert isinstance(elt, dict), elt
+            assert len(elt) == 1
+            only_key = list(elt.keys())[0]
+            assert only_key in ["loop", "source", "constants", "inherit"], only_key
+            if only_key == "loop":
+                self.loop = Loop(elt["loop"])
+
+        super().__init__(config)
+
+    def iter_loops(self):
+        yield from self.loop.iterate()
+
+    @cached_property
+    def n_iter_loops(self):
+        return len([self.iter_loops()])
+
+    def __repr__(self) -> str:
+        return super().__repr__() + " Loop=" + str(self.loop)
+
+    def get_first_config(self):
+        for vars in self.iter_loops():
+            keys = list(vars.keys())
+            assert len(vars) == 1, keys
+            key = keys[0]
+            return self.substitute({key: vars[key][0]})
 
     def substitute(self, *args, **kwargs):
-        return Config(substitute(self, *args, **kwargs))
+        self_without_loop = [i for i in self if "loop" not in i]
+        return InputBlockLoadersConfig(substitute(self_without_loop, *args, **kwargs))
+
+    # def get_first_and_last_configs(self):
+    #     first = None
+    #     for i, vars in enumerate(self.iter_loops()):
+    #         keys = list(vars.keys())
+    #         assert len(vars) == 1, keys
+    #         key = keys[0]
+    #         if first is None:
+    #             first = self.main_config.substitute({key: vars[key][0]})
+    #     last = self.main_config.substitute({key: vars[key][-1]})
+    #     return first, last
 
 
 class LoadersConfig(Config):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
 
+        if not isinstance(self.input, list):
+            print(f"warning: {self.input=} is not a list")
+            self.input = [self.input]
+
+        self.input = [InputBlockLoadersConfig(c) for c in self.input]
+
         if "order" in self.output:
             raise ValueError(f"Do not use 'order'. Use order_by in {config}")
         if "order_by" in self.output:
             self.output.order_by = normalize_order_by(self.output.order_by)
 
-        if "constants" in self.input:
-            self.input.constants = self.input["constants"]
         self.output.remapping = self.output.get("remapping", {})
         self.output.remapping = build_remapping(self.output.remapping)
 
@@ -174,6 +213,18 @@ class LoadersConfig(Config):
 
         # TODO: consider 2D grid points
         self.statistics_axis = statistics_axis
+
+    def iter_loops(self):
+        for block in self.input:
+            yield from block.iter_loops()
+
+    @cached_property
+    def n_iter_loops(self):
+        return sum([block.n_iter_loops for block in self.input])
+
+    def substitute(self, *args, **kwargs):
+        raise NotImplementedError()
+        return Config(substitute(self, *args, **kwargs))
 
 
 def substitute(x, vars=None, ignore_missing=False):

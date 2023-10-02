@@ -22,6 +22,7 @@ class LoadAction:
             v = [v]
         for one in v:
             one = dict(**one)
+            assert "name" in one, one
             name = one.pop("name")
             if inherit:
                 last.update(one)
@@ -100,13 +101,13 @@ class Loader(Source):
         inherit = False
         last = {}
         for input in self.config:
-            assert len(input) == 1, input
             assert isinstance(input, dict), input
 
             k = list(input.keys())[0]
             v = input[k]
             if k == "inherit":
                 inherit = v
+                assert len(input) == 1, input
                 continue
 
             ACTIONS[k]().execute(v, data, last, inherit)

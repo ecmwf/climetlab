@@ -427,44 +427,56 @@ class ZarrLoader(Loader):
 
         from climetlab.utils.dates import to_datetime  # avoid circular imports
 
+        print("config loaded ok:")
+        print(self.main_config)
+        print("---------")
+
         variables = self._variables_names
 
-        def get_first_and_last_element_configs():
-            first = None
-            for i, vars in enumerate(self.iter_loops()):
-                keys = list(vars.keys())
-                assert len(vars) == 1, keys
-                key = keys[0]
-                if first is None:
-                    first = self.main_config.substitute({key: vars[key][0]})
-            last = self.main_config.substitute({key: vars[key][-1]})
-            return first, last
+        def get_shape(blocks):
+            previous_shape = None
+            previous_variables = None
+            previous_block = None
+            for i, block in enumerate(blocks):
+                first = block.get_first_config()
+                first_cube, grid_points = self.config_to_data_cube(
+                    first, with_gridpoints=True
+                )
+                coords = first_cube.user_coords
+                print(f"First piece of data for block ({i}/{len(blocks)}): {block}")
+                print(f" Shape: {first_cube.extended_user_shape}")
+                for k, v in coords.items():
+                    print(f" {k} ({len(v)}) : {v}")
+                print(f" Grid points shape: {grid_points[0].shape}")
 
-        first, last = get_first_and_last_element_configs()
+                new_shape = first_cube.extended_user_shape
+                new_variables = coords[list(coords.keys())[1]]
 
-        first_cube, grid_points = self.config_to_data_cube(first, with_gridpoints=True)
-        last_cube, grid_points_ = self.config_to_data_cube(last, with_gridpoints=True)
-        for _ in zip(grid_points, grid_points_):
-            assert (_[0] == _[1]).all(), (grid_points_, grid_points)
+                assert new_shape[1] == len(variables), (new_shape, len(variables))
+                if previous_shape:
+                    assert previous_shape == new_shape, (
+                        previous_shape,
+                        new_shape,
+                        block,
+                        previous_block,
+                    )
+                    assert previous_variables == new_variables, (
+                        previous_variables,
+                        new_variables,
+                        block,
+                        previous_block,
+                    )
+            return new_shape
 
-        assert first_cube.extended_user_shape[1] == len(variables), (
-            first_cube.extended_user_shape,
-            len(variables),
-        )
-        assert last_cube.extended_user_shape[1] == len(variables), (
-            last_cube.extended_user_shape,
-            len(variables),
-        )
+        shape = get_shape(self.main_config.input)
+        exit()
 
-        shape = list(first_cube.extended_user_shape)
-        assert shape == list(last_cube.extended_user_shape), (
-            shape,
-            list(last_cube.extended_user_shape),
-        )
         # Notice that shape[0] can be >1
         # we are assuming that all data has the same shape
         one_element_length = shape[0]
         lengths = self._compute_lengths(one_element_length)
+        print(one_element_length)
+        print(lengths)
 
         total_shape = [sum(lengths), *shape[1:]]
 
@@ -576,16 +588,16 @@ class ZarrLoader(Loader):
 
     def config_to_data_cube(self, config, with_gridpoints=False):
         start = time.time()
-        data = cml.load_source("loader", config.input)
+        data = cml.load_source("loader", config)
         assert len(data), f"No data for {config}"
         self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
         start = time.time()
         self.print("Sorting dataset")
         cube = data.cube(
-            config.output.order_by,
-            remapping=config.output.remapping,
-            flatten_values=config.output.flatten_values,
+            self.main_config.output.order_by,
+            remapping=self.main_config.output.remapping,
+            flatten_values=self.main_config.output.flatten_values,
         )
         cube = cube.squeeze()
         self.print(f"Sorting done in {seconds(time.time()-start)}.")
