@@ -453,19 +453,24 @@ class ZarrLoader(Loader):
                 new_variables = coords[list(coords.keys())[1]]
 
                 assert new_shape[1] == len(variables), (new_shape, len(variables))
-                if previous_shape:
-                    assert previous_shape == new_shape, (
-                        previous_shape,
-                        new_shape,
-                        block,
-                        previous_block,
-                    )
-                    assert previous_variables == new_variables, (
-                        previous_variables,
-                        new_variables,
-                        block,
-                        previous_block,
-                    )
+
+                if previous_variables is not None:
+                    if previous_shape != new_shape:
+                        raise ValueError(
+                            f"Shape mismatch: previous shape {previous_shape} "
+                            f"does not match new shape {new_shape} for block "
+                            f"{block} (previous block: {previous_block})"
+                        )
+                    if previous_variables != new_variables:
+                        raise ValueError(
+                            "Variables names mismatch: previous variables "
+                            f"{previous_variables} do not match new variables "
+                            f"{new_variables} for block {block} (previous block: "
+                            f"{previous_block})"
+                        )
+                previous_shape = new_shape
+                previous_variables = new_variables
+
             return new_shape
 
         shape = get_shape(self.main_config.input)
