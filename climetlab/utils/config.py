@@ -43,48 +43,6 @@ class DictObj(dict):
         self[attr] = value
 
 
-def expand(values):
-    from climetlab.utils.dates import to_datetime
-
-    if isinstance(values, list):
-        return values
-
-    if isinstance(values, dict):
-        if "start" in values and "stop" in values:
-            start = values["start"]
-            stop = values["stop"]
-
-            group_by = values.get("group_by")
-            if group_by in ["monthly", "daily"]:
-                values["type"] = values.get("type", "date")
-
-            if values.get("type") == "date":
-                start = to_datetime(start)
-                stop = to_datetime(stop)
-                step = datetime.timedelta(days=1)
-                format = lambda x: x.isoformat() # noqa: E731
-            else:
-                step = values.get("step", 1)
-                format = lambda x: x # noqa: E731
-
-            all = []
-            while start <= stop:
-                all.append(start)
-                start += step
-
-            grouper = {
-                None: lambda x: 0,  # only one group
-                # None: lambda x: x, # one group per value
-                "monthly": lambda dt: (dt.year, dt.month),
-                "daily": lambda dt: (dt.year, dt.month, dt.day),
-                "MMDD": lambda dt: (dt.month, dt.day),
-            }[group_by]
-            result = [list(g) for _, g in itertools.groupby(all, key=grouper)]
-            return [[format(x) for x in g] for g in result]
-
-    raise ValueError(f"Cannot expand loop from {values}")
-
-
 class Config(DictObj):
     def __init__(self, config):
         if isinstance(config, str):
@@ -117,79 +75,203 @@ def count_fields(request):
     return product
 
 
-class InputBlockLoadersConfig(list):
+class InputConfigs(list):
+    def process_inheritance(self):
+        for i in self:
+            i.process_inheritance(self)
+
+
+class InputConfig(dict):
     loop = None
+    _inheritance_done = False
 
-    def __init__(self, config):
-        assert isinstance(config, list), config
+    def __init__(self, dic):
+        assert isinstance(dic, dict), dic
+        assert len(dic) == 1
+        super().__init__(dic)
 
-        for elt in config:
-            assert isinstance(elt, dict), elt
-            assert len(elt) == 1
-            only_key = list(elt.keys())[0]
-            assert only_key in ["loop", "source", "constants", "inherit"], only_key
-            if only_key == "loop":
-                self.loop = elt["loop"]
+        self.name = list(dic.keys())[0]
+        self.config = dic[self.name]
 
-        super().__init__(config)
+        self.kwargs = self.config.get("kwargs", {})
+        self.inherit = self.config.pop("inherit", [])
 
-    def iter_loops(self):
-        if not self.loop:
-            yield (self, {}, self._count(self))
+        import climetlab as cml
 
-        for items in itertools.product(expand(*list(self.loop.values()))):
-            vars = dict(zip(self.loop.keys(), items))
-            config = self.substitute(vars)
-            length = self._count(config)
+        self.func = cml.load_source
 
-            import climetlab as cml
-
-            data = cml.load_source("loader", config)
-            print(data)
-            exit()
-
-        yield (config, vars, length)
-
-    def _count(self, config):
-        sum = 0
-        for elt in config:
-            if "loop" in elt:
+    def process_inheritance(self, others):
+        for o in others:
+            if o == self:
                 continue
-            if "source" in elt:
-                for s in elt["source"]:
-                    print("counted", count_fields(s), " fields in ", s)
-                    sum += count_fields(s)
-        return sum
+            name = o.name
+            if name.startswith("$"):
+                name = name[1:]
+            if name not in self.inherit:
+                continue
+            if not o._inheritance_done:
+                o.process_inheritance(others)
 
-    @cached_property
-    def n_iter_loops(self):
-        return len([self.iter_loops()])
+            kwargs = {}
+            kwargs.update(o.kwargs)
+            kwargs.update(self.kwargs)  # self.kwargs has priority
+            self.kwargs = kwargs
+
+        self._inheritance_done = True
 
     def __repr__(self) -> str:
-        return super().__repr__() + " Loop=" + str(self.loop)
+        def repr(v):
+            if isinstance(v, list):
+                return f"{'/'.join(str(x) for x in v)}"
+            return str(v)
 
-    def get_first_config(self):
-        for item in self.iter_loops():
-            config = item[0]
-            vars = item[1]
-            keys = list(vars.keys())
-            assert len(vars) == 1, (keys, "not implemented")
-            return config
+        return "InputConfig({}, {})".format(
+            self.name, ", ".join(f"{k}={repr(v)}" for k, v in self.kwargs.items())
+        )
 
     def substitute(self, *args, **kwargs):
-        self_without_loop = [i for i in self if "loop" not in i]
-        return InputBlockLoadersConfig(substitute(self_without_loop, *args, **kwargs))
+        return substitute(self, *args, **kwargs)
 
-    # def get_first_and_last_configs(self):
-    #     first = None
-    #     for i, vars in enumerate(self.iter_loops()):
-    #         keys = list(vars.keys())
-    #         assert len(vars) == 1, keys
-    #         key = keys[0]
-    #         if first is None:
-    #             first = self.main_config.substitute({key: vars[key][0]})
-    #     last = self.main_config.substitute({key: vars[key][-1]})
-    #     return first, last
+    # def iter_loops(self):
+    #    if not self.loop:
+    #        yield (self, {}, self._count(self))
+
+    #    for items in itertools.product(expand(*list(self.loop.values()))):
+    #        vars = dict(zip(self.loop.keys(), items))
+    #        config = self.substitute(vars)
+    #        length = self._count(config)
+
+    #        import climetlab as cml
+
+
+#   #         data = cml.load_source("loader", config)
+#   #         print(data)
+
+#    yield (config, vars, length)
+
+# def _count(self, config):
+#    sum = 0
+#    for elt in config:
+#        if "loop" in elt:
+#            continue
+#        if "source" in elt:
+#            for s in elt["source"]:
+#
+
+#   #                 print("counted", count_fields(s), " fields in ", s)
+#                sum += count_fields(s)
+#    return sum
+
+# @cached_property
+# def n_iter_loops(self):
+#    return len([self.iter_loops()])
+
+# def __repr__(self) -> str:
+#    return super().__repr__() + " Loop=" + str(self.loop)
+
+# def get_first_config(self):
+#    for item in self.iter_loops():
+#        config = item[0]
+#        vars = item[1]
+#        keys = list(vars.keys())
+#        assert len(vars) == 1, (keys, "not implemented")
+#        return config
+
+# def substitute(self, *args, **kwargs):
+#    self_without_loop = [i for i in self if "loop" not in i]
+#    return InputConfig(substitute(self_without_loop, *args, **kwargs))
+
+# def get_first_and_last_configs(self):
+#     first = None
+#     for i, vars in enumerate(self.iter_loops()):
+#         keys = list(vars.keys())
+#         assert len(vars) == 1, keys
+#         key = keys[0]
+#         if first is None:
+#             first = self.main_config.substitute({key: vars[key][0]})
+#     last = self.main_config.substitute({key: vars[key][-1]})
+#     return first, last
+
+
+class Loops(list):
+    def iterate(self):
+        if not self:
+            # TODO: if no loop, we should return the config as is
+            yield CubeConfig({})
+
+        for loop in self:
+            yield from loop.iterate()
+
+
+class Loop(dict):
+    def __init__(self, dic, inputs):
+        assert isinstance(dic, dict), dic
+        assert len(dic) == 1
+        super().__init__(dic)
+
+        self.name = list(dic.keys())[0]
+        self.config = dic[self.name]
+
+        applies_to = self.config.pop("applies_to")
+        self.applies_to_inputs = [input for input in inputs if input.name in applies_to]
+
+        self.values = {}
+        for k, v in self.config.items():
+            self.values[k] = self.expand(v)
+
+    def expand(self, values):
+        return expand(values)
+
+    def __repr__(self) -> str:
+        def repr_lengths(v):
+            return f"{','.join([str(len(x)) for x in v])}"
+
+        lenghts = [f"{k}({repr_lengths(v)})" for k, v in self.values.items()]
+        return f"Loop({self.name}, {','.join(lenghts)}) {self.config}"
+
+    def iterate(self):
+        for items in itertools.product(*self.values.values()):
+            vars = dict(zip(self.values.keys(), items))
+            yield CubeConfig(
+                inputs=self.applies_to_inputs, vars=vars, loop_config=self.config
+            )
+            # config = self.substitute(vars)
+            # length = self._count(config)
+            # yield  vars
+            # yield (config, vars, length)
+
+
+#           data = cml.load_source("loader", config)
+#           print(data)
+#    yield (config, vars, length)
+
+
+class CubeConfig:
+    def __init__(self, inputs, vars, loop_config):
+        self._loop_config = loop_config
+        self._vars = vars
+        self._inputs = inputs
+
+        self.inputs = InputConfigs(
+            [InputConfig(i.substitute(vars=vars, ignore_missing=True)) for i in inputs]
+        )
+
+    @property
+    def length(self):
+        return 1
+
+    def __repr__(self) -> str:
+        out = f"CubeConfig ({self.length}):\n"
+        out += f" loop_config: {self._loop_config}"
+        out += f" vars: {self._vars}\n"
+        out += f" Inputs:\n"
+        for _i, i in zip(self._inputs, self.inputs):
+            out += f"  {_i}\n"
+            out += f"->{i}\n"
+        return out
+
+    def load(self):
+        pass
 
 
 class LoadersConfig(Config):
@@ -200,7 +282,14 @@ class LoadersConfig(Config):
             print(f"warning: {self.input=} is not a list")
             self.input = [self.input]
 
-        self.input = [InputBlockLoadersConfig(c) for c in self.input]
+        self.input = InputConfigs(InputConfig(c) for c in self.input)
+        self.input.process_inheritance()
+        for i in self.input:
+            print(i)
+
+        self.loops = Loops(Loop(l, self.input) for l in self.loops)
+        for l in self.loops:
+            print(l)
 
         if "order" in self.output:
             raise ValueError(f"Do not use 'order'. Use order_by in {config}")
@@ -237,16 +326,11 @@ class LoadersConfig(Config):
         self.statistics_axis = statistics_axis
 
     def iter_loops(self):
-        for block in self.input:
-            yield from block.iter_loops()
+        return self.loops.iterate()
 
     @cached_property
     def n_iter_loops(self):
-        return sum([block.n_iter_loops for block in self.input])
-
-    def substitute(self, *args, **kwargs):
-        raise NotImplementedError()
-        return Config(substitute(self, *args, **kwargs))
+        return sum([loop.n_iter_loops for loop in self.loops])
 
 
 def substitute(x, vars=None, ignore_missing=False):
@@ -375,3 +459,56 @@ def hdates_from_date(date, start_year, end_year):
 
     hdates = [date.replace(year=year) for year in range(start_year, end_year + 1)]
     return "/".join(d.strftime("%Y-%m-%d") for d in hdates)
+
+
+def expand(values):
+    from climetlab.utils.dates import to_datetime
+
+    if isinstance(values, list):
+        return values
+
+    if isinstance(values, dict):
+        if "end" in values:
+            raise ValueError("Use 'stop' not 'end' in loop. {values}")
+
+        group_by = values.get("group_by")
+        start = values.get("start")
+        stop = values.get("stop")
+        type = values.get("type")
+        step = values.get("step")
+
+        # Infer
+        if group_by in ["monthly", "daily"] or isinstance(start, datetime.datetime):
+            assert (
+                type is None or type == "date"
+            ), f"type must be date, not {type} ({values}))"
+            type = "date"
+
+        step = 1 if step is None else step
+        type = "int" if type is None else type
+
+        if start is not None and stop is not None:
+            if type == "date":
+                step = datetime.timedelta(days=step)
+                format = lambda x: x.isoformat()  # noqa: E731
+            elif type == "int":
+                format = lambda x: str(x)  # noqa: E731
+            else:
+                raise ValueError(f"Unknown type {type}")
+
+            all = []
+            while start <= stop:
+                all.append(start)
+                start += step
+
+            grouper = {
+                None: lambda x: 0,  # only one group
+                # None: lambda x: x, # one group per value
+                "monthly": lambda dt: (dt.year, dt.month),
+                "daily": lambda dt: (dt.year, dt.month, dt.day),
+                "MMDD": lambda dt: (dt.month, dt.day),
+            }[group_by]
+            result = [list(g) for _, g in itertools.groupby(all, key=grouper)]
+            return [[format(x) for x in g] for g in result]
+
+    raise ValueError(f"Cannot expand loop from {values}, {start}, {stop}")

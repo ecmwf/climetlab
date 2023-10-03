@@ -407,6 +407,7 @@ class ZarrLoader(Loader):
             lst = squeeze_dict(vars)
             assert isinstance(lst, (tuple, list)), lst
             lengths.append(len(lst))
+            print("i vars", i, vars, lengths, lst, f"{multiply=}")
 
         lengths = [x * multiply for x in lengths]
         return lengths
@@ -424,9 +425,13 @@ class ZarrLoader(Loader):
 
         print("config loaded ok:")
         print(self.main_config)
-        print("---------")
+        print("-------------------------")
 
         variables = self._variables_names
+
+        for c in self.iter_loops():
+            print(c)
+        exit()
 
         def get_shape(blocks):
             previous_shape = None
@@ -438,11 +443,11 @@ class ZarrLoader(Loader):
                     first, with_gridpoints=True
                 )
                 coords = first_cube.user_coords
-                print(f"First piece of data for block ({i}/{len(blocks)}): {block}")
-                print(f" Shape: {first_cube.extended_user_shape}")
+                print(f"First piece of data for block ({i+1}/{len(blocks)}): {block}")
+                print(f"  Shape: {first_cube.extended_user_shape}")
                 for k, v in coords.items():
-                    print(f" {k} ({len(v)}) : {v}")
-                print(f" Grid points shape: {grid_points[0].shape}")
+                    print(f"  {k} ({len(v)}) : {v}")
+                print(f"  Grid points shape: {grid_points[0].shape}")
 
                 new_shape = first_cube.extended_user_shape
                 new_variables = coords[list(coords.keys())[1]]
@@ -468,7 +473,18 @@ class ZarrLoader(Loader):
 
             return new_shape
 
+        print("-------------------------")
         shape = get_shape(self.main_config.input)
+        for i, l in enumerate(self.iter_loops()):
+            print(f"loop {i}: {l}")
+        print("-------------------------")
+
+        for iloop, item in enumerate(self.iter_loops()):
+            __config, __vars, __length = item
+            print(__config, __vars, shape)
+            print(__length)
+
+        print(f"nloops = {self.main_config.n_iter_loops}")
         exit()
 
         # Notice that shape[0] can be >1
@@ -586,10 +602,10 @@ class ZarrLoader(Loader):
 
         self.registry.create(lengths=lengths)
 
-    def config_to_data_cube(self, config, with_gridpoints=False):
+    def config_to_data_cube(self, cube_config, with_gridpoints=False):
         start = time.time()
-        data = cml.load_source("loader", config)
-        assert len(data), f"No data for {config}"
+        data = cml.load_source("loader", cube_config)
+        assert len(data), f"No data for {cube_config}"
         self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
 
         start = time.time()
