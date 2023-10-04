@@ -132,6 +132,12 @@ class GribOutput:
 
         handle.set_values(values)
 
+        # Set values will set generatingProcessIdentifier to 255
+        if "generatingProcessIdentifier" in metadata:
+            handle.set(
+                "generatingProcessIdentifier", metadata["generatingProcessIdentifier"]
+            )
+
         file, path = self.f(handle)
         handle.write(file)
 
