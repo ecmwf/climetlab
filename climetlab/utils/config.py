@@ -76,9 +76,14 @@ def count_fields(request):
 
 
 class InputConfigs(list):
-    def process_inheritance(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         for i in self:
             i.process_inheritance(self)
+
+    def substitute(self, *args, **kwargs):
+        new = [i.substitute(*args, **kwargs) for i in self]
+        return InputConfigs(new)
 
 
 class InputConfig(dict):
@@ -94,7 +99,7 @@ class InputConfig(dict):
         self.config = dic[self.name]
 
         self.kwargs = self.config.get("kwargs", {})
-        self.inherit = self.config.pop("inherit", [])
+        self.inherit = self.config.get("inherit", [])
 
         import climetlab as cml
 
@@ -125,12 +130,11 @@ class InputConfig(dict):
                 return f"{'/'.join(str(x) for x in v)}"
             return str(v)
 
-        return "InputConfig({}, {})".format(
-            self.name, ", ".join(f"{k}={repr(v)}" for k, v in self.kwargs.items())
-        )
+        details = ", ".join(f"{k}={repr(v)}" for k, v in self.kwargs.items())
+        return f"InputConfig({self.name}, {details})<{self.inherit}"
 
     def substitute(self, *args, **kwargs):
-        return substitute(self, *args, **kwargs)
+        return InputConfig(substitute(self, *args, **kwargs))
 
     # def iter_loops(self):
     #    if not self.loop:
@@ -197,7 +201,7 @@ class Loops(list):
     def iterate(self):
         if not self:
             # TODO: if no loop, we should return the config as is
-            yield CubeConfig({})
+            yield CubeCreator({})
 
         for loop in self:
             yield from loop.iterate()
@@ -206,14 +210,16 @@ class Loops(list):
 class Loop(dict):
     def __init__(self, dic, inputs):
         assert isinstance(dic, dict), dic
-        assert len(dic) == 1
+        assert len(dic) == 1, dic
         super().__init__(dic)
 
         self.name = list(dic.keys())[0]
         self.config = dic[self.name]
 
         applies_to = self.config.pop("applies_to")
-        self.applies_to_inputs = [input for input in inputs if input.name in applies_to]
+        self.applies_to_inputs = InputConfigs(
+            input for input in inputs if input.name in applies_to
+        )
 
         self.values = {}
         for k, v in self.config.items():
@@ -232,36 +238,25 @@ class Loop(dict):
     def iterate(self):
         for items in itertools.product(*self.values.values()):
             vars = dict(zip(self.values.keys(), items))
-            yield CubeConfig(
+            yield CubeCreator(
                 inputs=self.applies_to_inputs, vars=vars, loop_config=self.config
             )
-            # config = self.substitute(vars)
-            # length = self._count(config)
-            # yield  vars
-            # yield (config, vars, length)
 
 
-#           data = cml.load_source("loader", config)
-#           print(data)
-#    yield (config, vars, length)
-
-
-class CubeConfig:
+class CubeCreator:
     def __init__(self, inputs, vars, loop_config):
         self._loop_config = loop_config
         self._vars = vars
         self._inputs = inputs
 
-        self.inputs = InputConfigs(
-            [InputConfig(i.substitute(vars=vars, ignore_missing=True)) for i in inputs]
-        )
+        self.inputs = inputs.substitute(vars=vars, ignore_missing=True)
 
     @property
     def length(self):
         return 1
 
     def __repr__(self) -> str:
-        out = f"CubeConfig ({self.length}):\n"
+        out = f"CubeCreator ({self.length}):\n"
         out += f" loop_config: {self._loop_config}"
         out += f" vars: {self._vars}\n"
         out += f" Inputs:\n"
@@ -283,7 +278,6 @@ class LoadersConfig(Config):
             self.input = [self.input]
 
         self.input = InputConfigs(InputConfig(c) for c in self.input)
-        self.input.process_inheritance()
         for i in self.input:
             print(i)
 
@@ -461,54 +455,106 @@ def hdates_from_date(date, start_year, end_year):
     return "/".join(d.strftime("%Y-%m-%d") for d in hdates)
 
 
-def expand(values):
-    from climetlab.utils.dates import to_datetime
+class Expand(list):
+    def __init__(self, config, **kwargs):
+        self._config = config
+        self.kwargs = kwargs
+        self.groups = []
+        self.parse_config()
 
+    def parse_config(self):
+        self.start = self._config.get("start")
+        self.stop = self._config.get("stop")
+        self.step = self._config.get("step", 1)
+        self.group_by = self._config.get("group_by")
+
+
+class HindcastExpand(Expand):
+    def __init__(self, config, **kwargs):
+        super().__init__(config, **kwargs)
+        self.groups = [["todo", "todo"]]
+
+
+class ValuesExpand(Expand):
+    def __init__(self, config, **kwargs):
+        super().__init__(config, **kwargs)
+        values = self._config["values"]
+        values = [[v] if not isinstance(v, list) else v for v in values]
+        for v in self._config["values"]:
+            if not isinstance(v, (tuple, list)):
+                v = [v]
+            self.groups.append(v)
+
+
+class StartStopExpand(Expand):
+    def __init__(self, config, **kwargs):
+        super().__init__(config, **kwargs)
+
+        x = self.start
+        all = []
+        while x <= self.stop:
+            all.append(x)
+            x += self.step
+
+        result = [list(g) for _, g in itertools.groupby(all, key=self.grouper_key)]
+        self.groups = [[format(x) for x in g] for g in result]
+
+    def parse_config(self):
+        if "end" in self._config:
+            raise ValueError(f"Use 'stop' not 'end' in loop. {self._config}")
+        super().parse_config()
+
+    def format(self, x):
+        return x
+
+
+class DateStartStopExpand(StartStopExpand):
+    def grouper_key(self, x):
+        return {
+            1: lambda x: 0,  # only one group
+            None: lambda x: x,  # one group per value
+            "monthly": lambda dt: (dt.year, dt.month),
+            "daily": lambda dt: (dt.year, dt.month, dt.day),
+            "MMDD": lambda dt: (dt.month, dt.day),
+        }[self.group_by](x)
+
+    def parse_config(self):
+        super().parse_config()
+        assert isinstance(self.start, datetime.date), (type(self.start), self.start)
+        assert isinstance(self.stop, datetime.date), (type(self.stop), self.stop)
+        self.step = datetime.timedelta(days=self.step)
+
+    def format(self, x):
+        return x.isoformat()
+
+
+class IntStartStopExpand(StartStopExpand):
+    def grouper_key(self, x):
+        return {
+            1: lambda x: 0,  # only one group
+            None: lambda x: x,  # one group per value
+        }[self.group_by](x)
+
+
+def _expand_class(values):
     if isinstance(values, list):
-        return values
+        return ValuesExpand
 
-    if isinstance(values, dict):
-        if "end" in values:
-            raise ValueError("Use 'stop' not 'end' in loop. {values}")
+    assert isinstance(values, dict), values
 
-        group_by = values.get("group_by")
-        start = values.get("start")
-        stop = values.get("stop")
-        type = values.get("type")
-        step = values.get("step")
+    if values.get("type") == "hindcast":
+        return HindcastExpand
 
-        # Infer
-        if group_by in ["monthly", "daily"] or isinstance(start, datetime.datetime):
-            assert (
-                type is None or type == "date"
-            ), f"type must be date, not {type} ({values}))"
-            type = "date"
+    if start := values.get("start"):
+        if isinstance(start, datetime.datetime):
+            return DateStartStopExpand
+        if values.get("group_by") in ["monthly", "daily"]:
+            return DateStartStopExpand
+        return IntStartStopExpand
 
-        step = 1 if step is None else step
-        type = "int" if type is None else type
+    raise ValueError(f"Cannot expand loop from {values}")
 
-        if start is not None and stop is not None:
-            if type == "date":
-                step = datetime.timedelta(days=step)
-                format = lambda x: x.isoformat()  # noqa: E731
-            elif type == "int":
-                format = lambda x: str(x)  # noqa: E731
-            else:
-                raise ValueError(f"Unknown type {type}")
 
-            all = []
-            while start <= stop:
-                all.append(start)
-                start += step
-
-            grouper = {
-                None: lambda x: 0,  # only one group
-                # None: lambda x: x, # one group per value
-                "monthly": lambda dt: (dt.year, dt.month),
-                "daily": lambda dt: (dt.year, dt.month, dt.day),
-                "MMDD": lambda dt: (dt.month, dt.day),
-            }[group_by]
-            result = [list(g) for _, g in itertools.groupby(all, key=grouper)]
-            return [[format(x) for x in g] for g in result]
-
-    raise ValueError(f"Cannot expand loop from {values}, {start}, {stop}")
+def expand(values, **kwargs):
+    cls = _expand_class(values)
+    return cls(values, **kwargs).groups
