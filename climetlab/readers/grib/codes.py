@@ -215,7 +215,7 @@ class CodesHandle:
             eccodes.codes_set_long(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set_double(self, name, value):
         try:
