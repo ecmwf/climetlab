@@ -22,10 +22,9 @@ from climetlab.utils.dates import to_datetime
 LOG = logging.getLogger(__name__)
 
 
-class ConstantMaker:
-    def __init__(self, source_or_dataset):
-        self.source_or_dataset = source_or_dataset
-        self.field = source_or_dataset[0]
+class ForcingMaker:
+    def __init__(self, field):
+        self.field = field
         self.shape = self.field.shape
 
     @cached_method
@@ -165,7 +164,7 @@ class ConstantMaker:
         return result.flatten()
 
 
-class ConstantField:
+class ForcingField:
     def __init__(self, date, param, proc, shape):
         self.date = date
         self.param = param
@@ -190,7 +189,7 @@ class ConstantField:
         return values
 
     def __repr__(self):
-        return "ConstantField(%s,%s)" % (
+        return "ForcingField(%s,%s)" % (
             self.param,
             self.date,
         )
@@ -215,33 +214,48 @@ def make_datetime(date, time):
     return datetime.datetime(date.year, date.month, date.day, time)
 
 
-class Constants(FieldSet):
+class Forcings(FieldSet):
     def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
         request = dict(**request)
         request.update(kwargs)
 
         self.request = self._request(**request)
 
-        if "date" in self.request:
-            self.dates = [
-                make_datetime(date, time)
-                for date, time in itertools.product(
-                    self.request["date"], self.request.get("time", [None])
-                )
-            ]
-            assert len(set(self.dates)) == len(
-                self.dates
-            ), "Duplicates dates in constants."
-        else:
-            self.dates = source_or_dataset.unique_values("valid_datetime")[
-                "valid_datetime"
-            ]
+        def find_dates(request):
+            if "date" not in request and "time" not in request:
+                assert hasattr(
+                    source_or_dataset, "unique_values"
+                ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
+
+                return source_or_dataset.unique_values("valid_datetime")[
+                    "valid_datetime"
+                ]
+
+            if "date" not in request and "time" in request:
+                raise ValueError("Cannot specify time without date")
+
+            if "date" in request and "time" not in request:
+                return request["date"]
+
+            if "date" in request and "time" in request:
+                dates = [
+                    make_datetime(date, time)
+                    for date, time in itertools.product(
+                        request["date"], request["time"]
+                    )
+                ]
+                assert len(set(dates)) == len(dates), "Duplicates dates in forcings."
+                return dates
+
+            assert False, request
+
+        self.dates = find_dates(self.request)
 
         self.params = self.request["param"]
         if not isinstance(self.params, list):
             self.params = [self.params]
         self.repeat = repeat  # For ensembles
-        self.maker = ConstantMaker(source_or_dataset)
+        self.maker = ForcingMaker(field=source_or_dataset[0])
         self.procs = {param: getattr(self.maker, param) for param in self.params}
         self._len = len(self.dates) * len(self.params) * self.repeat
 
@@ -268,7 +282,7 @@ class Constants(FieldSet):
         # assert isinstance(date, datetime.datetime), (date, type(date))
 
         param = self.params[param]
-        return ConstantField(
+        return ForcingField(
             date,
             param,
             self.procs[param],
@@ -276,4 +290,4 @@ class Constants(FieldSet):
         )
 
 
-source = Constants
+source = Forcings

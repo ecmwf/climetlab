@@ -9,13 +9,16 @@
 import datetime
 import itertools
 import logging
+import math
 import os
 import re
+import time
 from copy import deepcopy
 from functools import cached_property
 
 from climetlab.core.order import build_remapping, normalize_order_by
 from climetlab.utils import load_json_or_yaml
+from climetlab.utils.humanize import seconds
 
 LOG = logging.getLogger(__name__)
 
@@ -51,59 +54,150 @@ class Config(DictObj):
         super().__init__(config)
 
 
-def count_fields(request):
-    dic = deepcopy(request)
-    print(dic)
-    product = 1
-    for k, value in dic.items():
-        if k in ["grid"]:
-            continue
-
-        if isinstance(value, str) and "/" in value:
-            bits = value.split("/")
-            if len(bits) == 3 and bits[1].lower() == "to":
-                value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
-
-            elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-                value = list(
-                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
-                )
-
-        if isinstance(value, list):
-            product *= len(value)
-
-    return product
-
-
-class InputConfigs(list):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for i in self:
-            i.process_inheritance(self)
+class Inputs(list):
+    def __init__(self, args):
+        assert isinstance(args[0], (dict, Input)), args[0]
+        args = [c if isinstance(c, Input) else Input(c) for c in args]
+        super().__init__(args)
 
     def substitute(self, *args, **kwargs):
+        print("before\n", self)
         new = [i.substitute(*args, **kwargs) for i in self]
-        return InputConfigs(new)
+        print("between\n", new)
+        ins = Inputs(new)
+        print("after\n", ins)
+        return ins
+
+    def get_datetimes(self):
+        # get datetime from each input
+        # and make sure they are the same or None
+        datetimes = None
+        previous_name = None
+        for i in self:
+            new = i.get_datetimes()
+            if new is None:
+                continue
+            new = sorted(list(new))
+            if datetimes is None:
+                datetimes = new
+
+            if datetimes != new:
+                raise ValueError(
+                    "Mismatch in datetimes", previous_name, datetimes, i.name, new
+                )
+            previous_name = i.name
+
+        if datetimes is None:
+            raise ValueError(f"No datetimes found in {self}")
+
+        return datetimes
+
+    def do_load(self):
+        from climetlab.sources.multi import MultiSource
+
+        datasets = {}
+        for i in self:
+            print("-...-", i)
+            print("-....", i)
+            ds = i.do_load()
+            datasets[i.name] = ds
+            print(i.name, len(ds), ds)
+            for i in ds:
+                print("  ", i)
+        return MultiSource(list(datasets.values()))
+
+    def __repr__(self) -> str:
+        return "\n".join(str(i) for i in self)
 
 
-class InputConfig(dict):
-    loop = None
+class Input:
     _inheritance_done = False
+    _inheritance_others = None
+    _do_load = None
 
     def __init__(self, dic):
         assert isinstance(dic, dict), dic
-        assert len(dic) == 1
-        super().__init__(dic)
+        assert len(dic) == 1, dic
 
         self.name = list(dic.keys())[0]
         self.config = dic[self.name]
 
         self.kwargs = self.config.get("kwargs", {})
         self.inherit = self.config.get("inherit", [])
+        self.function = self.config.get("function", None)
 
-        import climetlab as cml
+    def get_datetimes(self, others={}):
+        name = self.kwargs.get("name", None)
 
-        self.func = cml.load_source
+        assert name in ["forcing", "mars"], f"{name} not implemented"
+
+        if name == "forcing":
+            return None
+
+        if name == "mars":
+            is_hindast = "hdate" in self.kwargs
+
+            date = self.kwargs.get("date", [])
+            hdate = self.kwargs.get("hdate", [])
+            time = self.kwargs.get("time", [0])
+            step = self.kwargs.get("step", [0])
+
+            from climetlab.utils.dates import to_datetime_list
+
+            date = to_datetime_list(date)
+            hdate = to_datetime_list(hdate)
+            time = make_list_int(time)
+            step = make_list_int(step)
+
+            assert isinstance(date, (list, tuple)), date
+            assert isinstance(time, (list, tuple)), time
+            assert isinstance(step, (list, tuple)), step
+
+            if is_hindast:
+                assert isinstance(hdate, (list, tuple)), hdate
+                if len(date) > 1 and len(hdate) > 1:
+                    raise NotImplementedError(
+                        (
+                            f"Cannot have multiple dates in {self} "
+                            "when using hindcast {date=}, {hdate=}"
+                        )
+                    )
+                date = hdate
+                del hdate
+
+            if len(step) > 1 and len(time) > 1:
+                raise NotImplementedError(
+                    f"Cannot have multiple steps and multiple times in {self}"
+                )
+
+            datetimes = set()
+            for d, t, s in itertools.product(date, time, step):
+                new = build_datetime(date=d, time=t, step=s)
+                if new in datetimes:
+                    raise DuplicateDateTimeError(
+                        f"Duplicate datetime '{new}' when processing << {self} >> already in {datetimes}"
+                    )
+                datetimes.add(new)
+            return sorted(list(datetimes))
+
+        raise ValueError(f"{name=} Cannot count number of elements in {self}")
+
+    def do_load(self, others={}):
+        if not self._do_load:
+            from climetlab import load_dataset, load_source
+
+            func = {
+                None: load_source,
+                "load_source": load_source,
+                "load_dataset": load_dataset,
+            }[self.function]
+
+            print("Loading", self, self.kwargs)
+            self._do_load = func(**self.kwargs)
+        return self._do_load
+
+    def get_first_field(self):
+        return self.do_load()[0]
 
     def process_inheritance(self, others):
         for o in others:
@@ -122,6 +216,7 @@ class InputConfig(dict):
             kwargs.update(self.kwargs)  # self.kwargs has priority
             self.kwargs = kwargs
 
+        self._inheritance_others = others
         self._inheritance_done = True
 
     def __repr__(self) -> str:
@@ -131,95 +226,137 @@ class InputConfig(dict):
             return str(v)
 
         details = ", ".join(f"{k}={repr(v)}" for k, v in self.kwargs.items())
-        return f"InputConfig({self.name}, {details})<{self.inherit}"
+        return f"Input({self.name}, {details})<{self.inherit}"
 
     def substitute(self, *args, **kwargs):
-        return InputConfig(substitute(self, *args, **kwargs))
-
-    # def iter_loops(self):
-    #    if not self.loop:
-    #        yield (self, {}, self._count(self))
-
-    #    for items in itertools.product(expand(*list(self.loop.values()))):
-    #        vars = dict(zip(self.loop.keys(), items))
-    #        config = self.substitute(vars)
-    #        length = self._count(config)
-
-    #        import climetlab as cml
-
-
-#   #         data = cml.load_source("loader", config)
-#   #         print(data)
-
-#    yield (config, vars, length)
-
-# def _count(self, config):
-#    sum = 0
-#    for elt in config:
-#        if "loop" in elt:
-#            continue
-#        if "source" in elt:
-#            for s in elt["source"]:
-#
-
-#   #                 print("counted", count_fields(s), " fields in ", s)
-#                sum += count_fields(s)
-#    return sum
-
-# @cached_property
-# def n_iter_loops(self):
-#    return len([self.iter_loops()])
-
-# def __repr__(self) -> str:
-#    return super().__repr__() + " Loop=" + str(self.loop)
-
-# def get_first_config(self):
-#    for item in self.iter_loops():
-#        config = item[0]
-#        vars = item[1]
-#        keys = list(vars.keys())
-#        assert len(vars) == 1, (keys, "not implemented")
-#        return config
-
-# def substitute(self, *args, **kwargs):
-#    self_without_loop = [i for i in self if "loop" not in i]
-#    return InputConfig(substitute(self_without_loop, *args, **kwargs))
-
-# def get_first_and_last_configs(self):
-#     first = None
-#     for i, vars in enumerate(self.iter_loops()):
-#         keys = list(vars.keys())
-#         assert len(vars) == 1, keys
-#         key = keys[0]
-#         if first is None:
-#             first = self.main_config.substitute({key: vars[key][0]})
-#     last = self.main_config.substitute({key: vars[key][-1]})
-#     return first, last
+        new_kwargs = substitute(self.kwargs.copy(), *args, **kwargs)
+        i = Input(
+            {
+                self.name: dict(
+                    kwargs=new_kwargs,
+                    inherit=self.inherit,
+                    function=self.function,
+                )
+            }
+        )
+        # if self._inheritance_others:
+        #    i.process_inheritance(self._inheritance_others)
+        return i
 
 
-class Loops(list):
-    def iterate(self):
-        if not self:
-            # TODO: if no loop, we should return the config as is
-            yield CubeCreator({})
+def make_list_int(value):
+    if isinstance(value, str):
+        if "/" not in value:
+            return [value]
+        bits = value.split("/")
+        if len(bits) == 3 and bits[1].lower() == "to":
+            value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
 
-        for loop in self:
+        elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+            value = list(range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4])))
+
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return value
+
+    raise ValueError(f"Cannot make list from {value}")
+
+
+def build_datetime(date, time, step):
+    if isinstance(date, str):
+        from climetlab.utils.dates import to_datetime
+
+        date = to_datetime(date)
+    if isinstance(time, int):
+        time = f"{time:04d}"
+
+    assert isinstance(date, datetime.datetime), date
+    assert date.hour == 0 and date.minute == 0 and date.second == 0, date
+
+    assert isinstance(time, str), time
+    assert len(time) == 4, time
+    assert int(time) >= 0 and int(time) < 2400, time
+
+    dt = datetime.datetime(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        hour=int(time[0:2]),
+        minute=int(time[2:4]),
+    )
+
+    if step:
+        dt += datetime.timedelta(hours=step)
+
+    return dt
+
+
+class InputHandler:
+    def __init__(self, args, input, output):
+        inputs = Inputs(input)
+        self.output = output
+        self.loops = [
+            c
+            if isinstance(c, Loop) and c.inputs == inputs
+            else Loop(c, inputs, parent=self)
+            for c in args
+        ]
+        if not self.loops:
+            raise NotImplementedError("No loop")
+
+    def iter_loops(self):
+        for loop in self.loops:
             yield from loop.iterate()
+
+    @cached_property
+    def read_first(self):
+        read_first = []
+        for loop in self.loops:
+            read_first.append(loop.read_first(output=self.output))
+
+        # check all are the same
+        for i, c in enumerate(read_first):
+            assert c == read_first[0], (i, c, read_first[0])
+
+        return read_first[0]
+
+    @cached_property
+    def shape(self):
+        coords = self.read_first[1]
+        return [len(c) for c in coords]
+
+    def get_datetimes(self):
+        # merge datetimes from all loops and check there are no duplicates
+        datetimes = set()
+        for i in self.loops:
+            assert isinstance(i, Loop), i
+            new = i.get_datetimes()
+            for d in new:
+                assert d not in datetimes, (d, datetimes)
+                datetimes.add(d)
+        return sorted(list(datetimes))
+
+    def __repr__(self):
+        return "InputHandler\n  " + "\n  ".join(str(i) for i in self.loops)
 
 
 class Loop(dict):
-    def __init__(self, dic, inputs):
+    def __init__(self, dic, inputs, parent=None):
         assert isinstance(dic, dict), dic
         assert len(dic) == 1, dic
         super().__init__(dic)
 
+        self.parent = parent
         self.name = list(dic.keys())[0]
         self.config = dic[self.name]
 
         applies_to = self.config.pop("applies_to")
-        self.applies_to_inputs = InputConfigs(
-            input for input in inputs if input.name in applies_to
+        self.applies_to_inputs = Inputs(
+            [input for input in inputs if input.name in applies_to]
         )
+        for i in self.applies_to_inputs:
+            i.process_inheritance(inputs)
 
         self.values = {}
         for k, v in self.config.items():
@@ -237,10 +374,61 @@ class Loop(dict):
 
     def iterate(self):
         for items in itertools.product(*self.values.values()):
-            vars = dict(zip(self.values.keys(), items))
+            print("vars=", dict(zip(self.values.keys(), items)))
             yield CubeCreator(
-                inputs=self.applies_to_inputs, vars=vars, loop_config=self.config
+                inputs=self.applies_to_inputs,
+                vars=dict(zip(self.values.keys(), items)),
+                loop_config=self.config,
             )
+
+    @property
+    def first(self):
+        return CubeCreator(
+            inputs=self.applies_to_inputs,
+            vars={k: lst[0] for k, lst in self.values.items() if lst},
+            loop_config=self.config,
+        )
+
+    @cached_property
+    def read_first(self):
+        cube_creator = self.first
+        data = cube_creator.do_load()
+
+        start = time.time()
+        print("Sorting dataset")
+        cube = data.cube(
+            self.parent.output.order_by,
+            remapping=self.parent.output.remapping,
+            flatten_values=self.parent.output.flatten_values,
+        )
+        cube = cube.squeeze()
+        print(f"Sorting done in {seconds(time.time()-start)}.")
+
+        first_field = data[0]
+        grid_points = first_field.grid_points()
+        resolution = first_field.grid_resolution()
+        return first_field, grid_points, resolution
+
+    def get_datetimes(self):
+        # merge datetimes from all cubecreators and check there are no duplicates
+        datetimes = set()
+
+        for i in self.iterate():
+            assert isinstance(i, CubeCreator), i
+            new = i.get_datetimes()
+
+            duplicates = datetimes.intersection(set(new))
+            if duplicates:
+                raise DuplicateDateTimeError(
+                    f"{len(duplicates)} duplicated datetimes '{sorted(list(duplicates))[0]},...' when processing << {self} >>"
+                )
+
+            datetimes = datetimes.union(set(new))
+        return sorted(list(datetimes))
+
+
+class DuplicateDateTimeError(ValueError):
+    pass
 
 
 class CubeCreator:
@@ -250,6 +438,9 @@ class CubeCreator:
         self._inputs = inputs
 
         self.inputs = inputs.substitute(vars=vars, ignore_missing=True)
+
+    def get_datetimes(self):
+        return self.inputs.get_datetimes()
 
     @property
     def length(self):
@@ -261,29 +452,21 @@ class CubeCreator:
         out += f" vars: {self._vars}\n"
         out += f" Inputs:\n"
         for _i, i in zip(self._inputs, self.inputs):
-            out += f"  {_i}\n"
-            out += f"->{i}\n"
+            out += f"- {_i}\n"
+            out += f"  {i}\n"
         return out
 
-    def load(self):
-        pass
+    def do_load(self):
+        return self.inputs.do_load()
 
 
 class LoadersConfig(Config):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
 
-        if not isinstance(self.input, list):
+        if not isinstance(self.input, (tuple, list)):
             print(f"warning: {self.input=} is not a list")
             self.input = [self.input]
-
-        self.input = InputConfigs(InputConfig(c) for c in self.input)
-        for i in self.input:
-            print(i)
-
-        self.loops = Loops(Loop(l, self.input) for l in self.loops)
-        for l in self.loops:
-            print(l)
 
         if "order" in self.output:
             raise ValueError(f"Do not use 'order'. Use order_by in {config}")
@@ -319,8 +502,8 @@ class LoadersConfig(Config):
         # TODO: consider 2D grid points
         self.statistics_axis = statistics_axis
 
-    def iter_loops(self):
-        return self.loops.iterate()
+    def input_handler(self):
+        return InputHandler(self.loops, self.input, output=self.output)
 
     @cached_property
     def n_iter_loops(self):

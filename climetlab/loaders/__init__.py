@@ -179,6 +179,7 @@ class LoopItemsFilter:
 class Loader:
     def __init__(self, *, path, config, print=print, **kwargs):
         self.main_config = LoadersConfig(config)
+        self.input_handler = self.main_config.input_handler()
         self.path = path
         self.kwargs = kwargs
         self.print = print
@@ -393,7 +394,7 @@ class ZarrLoader(Loader):
         return cls.from_config(config=config, path=path, **kwargs)
 
     def iter_loops(self):
-        for vars in self.main_config.iter_loops():
+        for vars in self.input_handler.iter_loops():
             yield vars
 
     def _compute_lengths(self, multiply):
@@ -429,11 +430,15 @@ class ZarrLoader(Loader):
 
         variables = self._variables_names
 
-        for c in self.iter_loops():
-            print(c)
-        exit()
-
-        def get_shape(blocks):
+        def get_shape():
+            print(self.input_handler)
+            for i in self.input_handler.iter_loops():
+                print(i)
+            dates = self.input_handler.get_datetimes()
+            print(f"Found {len(dates)} datetimes")
+            f = self.input_handler.read_first
+            print(f)
+            exit()
             previous_shape = None
             previous_variables = None
             previous_block = None
@@ -474,7 +479,7 @@ class ZarrLoader(Loader):
             return new_shape
 
         print("-------------------------")
-        shape = get_shape(self.main_config.input)
+        shape = get_shape()
         for i, l in enumerate(self.iter_loops()):
             print(f"loop {i}: {l}")
         print("-------------------------")
