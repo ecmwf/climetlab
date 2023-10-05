@@ -223,7 +223,7 @@ class CodesHandle:
             eccodes.codes_set_double(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set_string(self, name, value):
         try:
@@ -231,7 +231,7 @@ class CodesHandle:
             eccodes.codes_set_string(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set(self, name, value):
         try:
@@ -243,7 +243,7 @@ class CodesHandle:
             return eccodes.codes_set(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def write(self, f):
         eccodes.codes_write(self.handle, f)
