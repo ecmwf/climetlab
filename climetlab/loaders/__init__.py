@@ -428,80 +428,47 @@ class ZarrLoader(Loader):
         print(self.main_config)
         print("-------------------------")
 
-        variables = self._variables_names
-
-        def get_shape():
+        def debug():
             print(self.input_handler)
             for i in self.input_handler.iter_loops():
                 print(i)
-            dates = self.input_handler.get_datetimes()
-            print(f"Found {len(dates)} datetimes")
-            f = self.input_handler.read_first
-            print(f)
-            exit()
-            previous_shape = None
-            previous_variables = None
-            previous_block = None
-            for i, block in enumerate(blocks):
-                first = block.get_first_config()
-                first_cube, grid_points = self.config_to_data_cube(
-                    first, with_gridpoints=True
-                )
-                coords = first_cube.user_coords
-                print(f"First piece of data for block ({i+1}/{len(blocks)}): {block}")
-                print(f"  Shape: {first_cube.extended_user_shape}")
-                for k, v in coords.items():
-                    print(f"  {k} ({len(v)}) : {v}")
-                print(f"  Grid points shape: {grid_points[0].shape}")
+            print(self.input_handler.shape)
+            print(self.input_handler.resolution)
+            print(self.input_handler.first_field)
+            print(self.input_handler.coords)
 
-                new_shape = first_cube.extended_user_shape
-                new_variables = coords[list(coords.keys())[1]]
-
-                assert new_shape[1] == len(variables), (new_shape, len(variables))
-
-                if previous_variables is not None:
-                    if previous_shape[1:] != new_shape[1:]:
-                        raise ValueError(
-                            f"Shape mismatch: previous shape {previous_shape} "
-                            f"does not match new shape {new_shape} for block "
-                            f"{block} (previous block: {previous_block})"
-                        )
-                    if previous_variables != new_variables:
-                        raise ValueError(
-                            "Variables names mismatch: previous variables "
-                            f"{previous_variables} do not match new variables "
-                            f"{new_variables} for block {block} (previous block: "
-                            f"{previous_block})"
-                        )
-                previous_shape = new_shape
-                previous_variables = new_variables
-
-            return new_shape
+        # debug()
+        grid_points = self.input_handler.grid_points
+        print(f"gridpoints size: {[len(i) for i in grid_points]}")
 
         print("-------------------------")
-        shape = get_shape()
-        for i, l in enumerate(self.iter_loops()):
-            print(f"loop {i}: {l}")
+        total_shape = self.input_handler.shape
+        print(f"total_shape = {total_shape}")
+
+        print("-------------------------")
+        dates = self.input_handler.get_datetimes()
+        print(
+            f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes:"
+        )
+        lenghts = [str(len(c.get_datetimes())) for c in self.input_handler.iter_cubes()]
+        print("+".join(lenghts))
         print("-------------------------")
 
-        for iloop, item in enumerate(self.iter_loops()):
-            __config, __vars, __length = item
-            print(__config, __vars, shape)
-            print(__length)
+        variables_names = self.input_handler.variables
 
-        print(f"nloops = {self.main_config.n_iter_loops}")
-        exit()
+        assert (
+            variables_names
+            == self.main_config.output.order_by[self.main_config.output.statistics]
+        ), (
+            variables_names,
+            self.main_config.output.order_by[self.main_config.output.statistics],
+        )
 
-        # Notice that shape[0] can be >1
-        # we are assuming that all data has the same shape
-        one_element_length = shape[0]
-        lengths = self._compute_lengths(one_element_length)
-        print(one_element_length)
-        print(lengths)
+        resolution = self.input_handler.resolution
 
-        total_shape = [sum(lengths), *shape[1:]]
-
-        chunks = first_cube.chunking(self.main_config.output.chunking)
+        chunks = self.input_handler.first_cube.chunking(
+            self.main_config.output.chunking
+        )
         dtype = self.main_config.output.dtype
 
         self.print(
@@ -509,21 +476,8 @@ class ZarrLoader(Loader):
             f"{chunks=} and {dtype=}"
         )
 
-        resolution = first_cube.source[0].resolution
-
-        first_date = to_datetime(first_cube.user_coords["valid_datetime"][0])
-        last_date = to_datetime(last_cube.user_coords["valid_datetime"][-1])
-        frequency = (
-            (last_date - first_date).total_seconds() / 3600 / (total_shape[0] - 1)
-        )
-        if int(frequency) != frequency:
-            raise ValueError(
-                (
-                    "Cannot compute frequency. Data is not regularly organised ? "
-                    f"{first_date=}; {last_date=}; {total_shape[0]=}; {frequency=}"
-                )
-            )
-        frequency = int(frequency)
+        frequency = self.input_handler.frequency
+        assert isinstance(frequency, int), frequency
 
         def check(name, resolution, first_date, last_date, frequency):
             resolution_str = str(resolution).replace(".", "p").lower()
@@ -551,13 +505,8 @@ class ZarrLoader(Loader):
                 raise ValueError(msg)
 
         if not self.kwargs["no_check"]:
-            check(
-                os.path.basename(self.path),
-                resolution,
-                first_date,
-                last_date,
-                frequency,
-            )
+            basename = (os.path.basename(self.path),)
+            check(basename, resolution, dates[0], dates[-1], frequency)
 
         metadata = {}
 
@@ -567,13 +516,11 @@ class ZarrLoader(Loader):
 
         metadata["resolution"] = resolution
 
-        metadata["variables"] = self._variables_names
-
+        metadata["variables"] = variables_names
         metadata["version"] = VERSION
-
         metadata["frequency"] = frequency
-        metadata["first_date"] = first_date.isoformat()
-        metadata["last_date"] = last_date.isoformat()
+        metadata["first_date"] = dates[0].isoformat()
+        metadata["last_date"] = dates[-1].isoformat()
         pd_dates = pd.date_range(
             start=metadata["first_date"],
             end=metadata["last_date"],
@@ -581,9 +528,8 @@ class ZarrLoader(Loader):
             unit="s",
         )
         assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
-        assert pd_dates[-1] == last_date, (pd_dates, last_date)
+        assert pd_dates[-1] == dates[0], (pd_dates, dates[-1])
 
-        # metadata["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
         metadata.update(self.main_config.get("force_metadata", {}))
 
         # write data
@@ -594,7 +540,6 @@ class ZarrLoader(Loader):
         np_dates = pd_dates.to_numpy()
         self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
 
-        assert grid_points[0].shape == grid_points[1].shape
         self._add_dataset("latitudes", grid_points[0])
         self._add_dataset("longitudes", grid_points[1])
 

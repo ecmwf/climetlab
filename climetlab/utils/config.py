@@ -16,6 +16,8 @@ import time
 from copy import deepcopy
 from functools import cached_property
 
+import numpy as np
+
 from climetlab.core.order import build_remapping, normalize_order_by
 from climetlab.utils import load_json_or_yaml
 from climetlab.utils.humanize import seconds
@@ -61,12 +63,7 @@ class Inputs(list):
         super().__init__(args)
 
     def substitute(self, *args, **kwargs):
-        print("before\n", self)
-        new = [i.substitute(*args, **kwargs) for i in self]
-        print("between\n", new)
-        ins = Inputs(new)
-        print("after\n", ins)
-        return ins
+        return Inputs([i.substitute(*args, **kwargs) for i in self])
 
     def get_datetimes(self):
         # get datetime from each input
@@ -97,13 +94,9 @@ class Inputs(list):
 
         datasets = {}
         for i in self:
-            print("-...-", i)
-            print("-....", i)
+            i = i.substitute(vars=datasets)
             ds = i.do_load()
             datasets[i.name] = ds
-            print(i.name, len(ds), ds)
-            for i in ds:
-                print("  ", i)
         return MultiSource(list(datasets.values()))
 
     def __repr__(self) -> str:
@@ -192,8 +185,10 @@ class Input:
                 "load_dataset": load_dataset,
             }[self.function]
 
-            print("Loading", self, self.kwargs)
-            self._do_load = func(**self.kwargs)
+            ds = func(**self.kwargs)
+
+            print(f"  Loading {self.name} of len {len(ds)}: {ds}")
+            self._do_load = ds
         return self._do_load
 
     def get_first_field(self):
@@ -268,8 +263,12 @@ def build_datetime(date, time, step):
         from climetlab.utils.dates import to_datetime
 
         date = to_datetime(date)
+
     if isinstance(time, int):
-        time = f"{time:04d}"
+        if time < 24:
+            time = f"{time:02d}00"
+        else:
+            time = f"{time:04d}"
 
     assert isinstance(date, datetime.datetime), date
     assert date.hour == 0 and date.minute == 0 and date.second == 0, date
@@ -277,6 +276,8 @@ def build_datetime(date, time, step):
     assert isinstance(time, str), time
     assert len(time) == 4, time
     assert int(time) >= 0 and int(time) < 2400, time
+    if 0 < int(time) < 100:
+        print(f"WARNING: {time=}, using time with minutes is unusual.")
 
     dt = datetime.datetime(
         year=date.year,
@@ -305,26 +306,69 @@ class InputHandler:
         if not self.loops:
             raise NotImplementedError("No loop")
 
-    def iter_loops(self):
+    def iter_cubes(self):
         for loop in self.loops:
             yield from loop.iterate()
 
-    @cached_property
-    def read_first(self):
-        read_first = []
+    @property
+    def first_cube(self):
         for loop in self.loops:
-            read_first.append(loop.read_first(output=self.output))
+            for cube_creator in loop.iterate():
+                return cube_creator
+
+    @cached_property
+    def n_cubes(self):
+        n = 0
+        for loop in self.loops:
+            for i in loop.iterate():
+                n += 1
+        return n
+
+    @cached_property
+    def _info(self):
+        infos = []
+        for loop in self.loops:
+            infos.append(loop._info)
 
         # check all are the same
-        for i, c in enumerate(read_first):
-            assert c == read_first[0], (i, c, read_first[0])
+        ref = infos[0]
+        for i, c in enumerate(infos):
+            assert (np.array(ref[1]) == np.array(c[1])).all(), (
+                "grid_points mismatch",
+                c[1],
+                ref[1],
+                type(ref[1]),
+            )
+            assert ref[2] == c[2], ("resolution mismatch", c[2], ref[2])
+            assert ref[4] == c[4], ("variables mismatch", c[4], ref[4])
 
-        return read_first[0]
+        return infos[0]
 
-    @cached_property
+    @property
+    def first_field(self):
+        return self._info[0]
+
+    @property
+    def grid_points(self):
+        return self._info[1]
+
+    @property
+    def resolution(self):
+        return self._info[2]
+
+    @property
+    def coords(self):
+        return self._info[3]
+
+    @property
+    def variables(self):
+        return self._info[4]
+
+    @property
     def shape(self):
-        coords = self.read_first[1]
-        return [len(c) for c in coords]
+        return [len(c) for c in self.coords.values()] + [
+            len(c) for c in self.grid_points
+        ]
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -335,7 +379,35 @@ class InputHandler:
             for d in new:
                 assert d not in datetimes, (d, datetimes)
                 datetimes.add(d)
-        return sorted(list(datetimes))
+        datetimes = sorted(list(datetimes))
+
+        def check(datetimes):
+            if not datetimes:
+                raise ValueError("No datetimes found.")
+            if len(datetimes) == 1:
+                raise ValueError("Only one datetime found.")
+
+            delta = None
+            for i in range(1, len(datetimes)):
+                new = (datetimes[i] - datetimes[i - 1]).total_seconds() / 3600
+                if not delta:
+                    delta = new
+                    continue
+                if new != delta:
+                    raise ValueError(
+                        f"Datetimes are not regularly spaced: "
+                        f"delta={new} hours  (date {i-1}={datetimes[i-1]}  date {i}={datetimes[i]}) "
+                        f"Expecting {delta} hours  (date {0}={datetimes[0]}  date {1}={datetimes[1]}) "
+                    )
+
+        check(datetimes)
+
+        return datetimes
+
+    @property
+    def frequency(self):
+        datetimes = self.get_datetimes()
+        return (datetimes[1] - datetimes[0]).total_seconds() / 3600
 
     def __repr__(self):
         return "InputHandler\n  " + "\n  ".join(str(i) for i in self.loops)
@@ -374,11 +446,11 @@ class Loop(dict):
 
     def iterate(self):
         for items in itertools.product(*self.values.values()):
-            print("vars=", dict(zip(self.values.keys(), items)))
             yield CubeCreator(
                 inputs=self.applies_to_inputs,
                 vars=dict(zip(self.values.keys(), items)),
                 loop_config=self.config,
+                output=self.parent.output,
             )
 
     @property
@@ -387,27 +459,12 @@ class Loop(dict):
             inputs=self.applies_to_inputs,
             vars={k: lst[0] for k, lst in self.values.items() if lst},
             loop_config=self.config,
+            output=self.parent.output,
         )
 
     @cached_property
-    def read_first(self):
-        cube_creator = self.first
-        data = cube_creator.do_load()
-
-        start = time.time()
-        print("Sorting dataset")
-        cube = data.cube(
-            self.parent.output.order_by,
-            remapping=self.parent.output.remapping,
-            flatten_values=self.parent.output.flatten_values,
-        )
-        cube = cube.squeeze()
-        print(f"Sorting done in {seconds(time.time()-start)}.")
-
-        first_field = data[0]
-        grid_points = first_field.grid_points()
-        resolution = first_field.grid_resolution()
-        return first_field, grid_points, resolution
+    def _info(self):
+        return self.first._info
 
     def get_datetimes(self):
         # merge datetimes from all cubecreators and check there are no duplicates
@@ -432,15 +489,13 @@ class DuplicateDateTimeError(ValueError):
 
 
 class CubeCreator:
-    def __init__(self, inputs, vars, loop_config):
+    def __init__(self, inputs, vars, loop_config, output):
         self._loop_config = loop_config
         self._vars = vars
         self._inputs = inputs
+        self.output = output
 
         self.inputs = inputs.substitute(vars=vars, ignore_missing=True)
-
-    def get_datetimes(self):
-        return self.inputs.get_datetimes()
 
     @property
     def length(self):
@@ -459,13 +514,56 @@ class CubeCreator:
     def do_load(self):
         return self.inputs.do_load()
 
+    def get_datetimes(self):
+        return self.inputs.get_datetimes()
+
+    def to_cube(self):
+        cube, data = self._to_data_and_cube()
+        return cube
+
+    def _to_data_and_cube(self):
+        data = self.do_load()
+
+        start = time.time()
+        print("Sorting dataset", self.output.order_by, self.output.remapping)
+        cube = data.cube(
+            self.output.order_by,
+            remapping=self.output.remapping,
+            flatten_values=self.output.flatten_values,
+        )
+        cube = cube.squeeze()
+
+        print( cube.user_coords)
+        print(f"Sorting done in {seconds(time.time()-start)}.")
+
+        return cube, data
+
+    @property
+    def _info(self):
+        cube, data = self._to_data_and_cube()
+
+        first_field = data[0]
+        grid_points = first_field.grid_points()
+        resolution = first_field.resolution
+        coords = cube.user_coords
+        variables = list(coords[list(coords.keys())[1]])
+
+        assert grid_points[0].shape == grid_points[1].shape, (
+            grid_points[0].shape,
+            grid_points[1].shape,
+            grid_points[0],
+            grid_points[1],
+        )
+
+        return first_field, grid_points, resolution, coords, variables
+
 
 class LoadersConfig(Config):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
 
         if not isinstance(self.input, (tuple, list)):
-            print(f"warning: {self.input=} is not a list")
+            print(f"WARNING: {self.input=} is not a list")
             self.input = [self.input]
 
         if "order" in self.output:

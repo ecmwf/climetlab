@@ -68,13 +68,25 @@ class FieldCube:
 
         # Sort the source according to their
         # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+        print('HERE---',args)
+        for i in ds:
+            print(i)
+        print('before')
+
+        print(ds[0])
+        print(ds[1])
+        print(ds[2])
+        print(ds[3])
         self.source = ds.order_by(*args, remapping=remapping)
+        print('after')
+        print(self.source[0])
+        print(self.source[1])
+        print(self.source[2])
+        print(self.source[3])
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
         self.user_coords = ds.unique_values(*names, remapping=remapping)
-
-        print(f"{self.user_coords=}")
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
