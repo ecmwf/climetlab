@@ -15,7 +15,6 @@ import time
 from itertools import islice
 
 import eccodes
-
 from climetlab.core import Base
 from climetlab.core.constants import DATETIME
 from climetlab.profiling import call_counter
@@ -430,8 +429,15 @@ class GribField(Base):
         )
 
     def valid_datetime(self):
-        step = self.handle.get("endStep")
-        return self.datetime() + datetime.timedelta(hours=step)
+        date = self.handle.get("validityDate")
+        time = self.handle.get("validityTime")
+        return datetime.datetime(
+            date // 10000,
+            date % 10000 // 100,
+            date % 100,
+            time // 100,
+            time % 100,
+        )
 
     def to_datetime_list(self):
         return [self.valid_datetime()]

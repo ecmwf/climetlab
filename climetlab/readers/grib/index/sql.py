@@ -13,13 +13,10 @@ from collections import namedtuple
 from climetlab.core.constants import DATETIME
 from climetlab.core.order import normalize_order_by
 from climetlab.core.select import normalize_selection
-from climetlab.decorators import cached_method, normalize, normalize_grib_key_values
-from climetlab.indexing.database.sql import (
-    SqlDatabase,
-    SqlOrder,
-    SqlRemapping,
-    SqlSelection,
-)
+from climetlab.decorators import (cached_method, normalize,
+                                  normalize_grib_key_values)
+from climetlab.indexing.database.sql import (SqlDatabase, SqlOrder,
+                                             SqlRemapping, SqlSelection)
 from climetlab.loaders import build_remapping
 from climetlab.readers.grib.index.db import FieldsetInFilesWithDBIndex
 from climetlab.utils.serialise import register_serialisation
