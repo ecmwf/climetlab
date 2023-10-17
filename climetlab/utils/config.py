@@ -9,10 +9,10 @@
 import datetime
 import itertools
 import logging
-import math
 import os
 import re
 import time
+from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 
@@ -312,9 +312,17 @@ class InputHandler:
 
     @property
     def first_cube(self):
+        return self.first_cube_creator.to_cube()
+
+    @property
+    def first_cube_creator(self):
         for loop in self.loops:
             for cube_creator in loop.iterate():
                 return cube_creator
+
+    @property
+    def chunking(self):
+        return self.first_cube.chunking(self.output.chunking)
 
     @cached_property
     def n_cubes(self):
@@ -326,43 +334,65 @@ class InputHandler:
 
     @cached_property
     def _info(self):
-        infos = []
-        for loop in self.loops:
-            infos.append(loop._info)
+        infos = [loop._info for loop in self.loops]
 
         # check all are the same
         ref = infos[0]
-        for i, c in enumerate(infos):
-            assert (np.array(ref[1]) == np.array(c[1])).all(), (
+        for c in infos:
+            assert (np.array(ref.grid_points) == np.array(c.grid_points)).all(), (
                 "grid_points mismatch",
-                c[1],
-                ref[1],
-                type(ref[1]),
+                c.grid_points,
+                ref.grid_points,
+                type(ref.grid_points),
             )
-            assert ref[2] == c[2], ("resolution mismatch", c[2], ref[2])
-            assert ref[4] == c[4], ("variables mismatch", c[4], ref[4])
+            assert ref.resolution == c.resolution, (
+                "resolution mismatch",
+                c.resolution,
+                ref.resolution,
+            )
+            assert ref.variables == c.variables, (
+                "variables mismatch",
+                c.variables,
+                ref.variables,
+            )
 
-        return infos[0]
+        coords = defaultdict(list)
+        for c in infos:
+            for k, v in c.coords.items():
+                for _ in v:
+                    if _ in coords[k]:
+                        raise ValueError(
+                            f"Duplicate value found in coord {k}: {_} is present twice."
+                        )
+                    coords[k].append(v)
+
+        return Info(
+            ref.first_field,
+            ref.grid_points,
+            ref.resolution,
+            coords,
+            ref.variables,
+        )
 
     @property
     def first_field(self):
-        return self._info[0]
+        return self._info.first_field
 
     @property
     def grid_points(self):
-        return self._info[1]
+        return self._info.grid_points
 
     @property
     def resolution(self):
-        return self._info[2]
+        return self._info.resolution
 
     @property
     def coords(self):
-        return self._info[3]
+        return self._info.coords
 
     @property
     def variables(self):
-        return self._info[4]
+        return self._info.variables
 
     @property
     def shape(self):
@@ -407,7 +437,10 @@ class InputHandler:
     @property
     def frequency(self):
         datetimes = self.get_datetimes()
-        return (datetimes[1] - datetimes[0]).total_seconds() / 3600
+        freq = (datetimes[1] - datetimes[0]).total_seconds() / 3600
+        assert round(freq) == freq, freq
+        assert int(freq) == freq, freq
+        return int(freq)
 
     def __repr__(self):
         return "InputHandler\n  " + "\n  ".join(str(i) for i in self.loops)
@@ -464,7 +497,19 @@ class Loop(dict):
 
     @cached_property
     def _info(self):
-        return self.first._info
+        first_info = self.first._info
+        coords = deepcopy(first_info.coords)
+        assert (
+            "valid_datetime" in coords
+        ), f"valid_datetime not found in coords {coords}"
+        coords["valid_datetime"] = self.get_datetimes()
+        return Info(
+            first_field=first_info.first_field,
+            grid_points=first_info.grid_points,
+            resolution=first_info.resolution,
+            coords=coords,
+            variables=first_info.variables,
+        )
 
     def get_datetimes(self):
         # merge datetimes from all cubecreators and check there are no duplicates
@@ -477,7 +522,8 @@ class Loop(dict):
             duplicates = datetimes.intersection(set(new))
             if duplicates:
                 raise DuplicateDateTimeError(
-                    f"{len(duplicates)} duplicated datetimes '{sorted(list(duplicates))[0]},...' when processing << {self} >>"
+                    f"{len(duplicates)} duplicated datetimes "
+                    f"'{sorted(list(duplicates))[0]},...' when processing << {self} >>"
                 )
 
             datetimes = datetimes.union(set(new))
@@ -505,7 +551,7 @@ class CubeCreator:
         out = f"CubeCreator ({self.length}):\n"
         out += f" loop_config: {self._loop_config}"
         out += f" vars: {self._vars}\n"
-        out += f" Inputs:\n"
+        out += " Inputs:\n"
         for _i, i in zip(self._inputs, self.inputs):
             out += f"- {_i}\n"
             out += f"  {i}\n"
@@ -533,7 +579,7 @@ class CubeCreator:
         )
         cube = cube.squeeze()
 
-        print( cube.user_coords)
+        print(cube.user_coords)
         print(f"Sorting done in {seconds(time.time()-start)}.")
 
         return cube, data
@@ -555,7 +601,49 @@ class CubeCreator:
             grid_points[1],
         )
 
-        return first_field, grid_points, resolution, coords, variables
+        return Info(first_field, grid_points, resolution, coords, variables)
+
+
+def _format_list(x):
+    if isinstance(x, (list, tuple)):
+        if isinstance(x[0], datetime.datetime):
+            is_regular = True
+            delta = x[1] - x[0]
+            for prev, current in zip(x[:-1], x[1:]):
+                if current - prev != delta:
+                    is_regular = False
+                    break
+            if is_regular:
+                return f"{_format_list(x[0])}/to/{_format_list(x[-1])}/by/{delta.total_seconds()/3600}"
+
+        return "/".join(_format_list(_) for _ in x)
+
+    if isinstance(x, datetime.datetime):
+        return x.strftime("%Y%m%d.%H%M")
+    return str(x)
+
+
+class Info:
+    def __init__(self, first_field, grid_points, resolution, coords, variables):
+        self.first_field = first_field
+        self.grid_points = grid_points
+        self.resolution = resolution
+        self.coords = coords
+        self.variables = variables
+
+    def __repr__(self):
+        shape = (
+            f"{','.join([str(len(v)) for k, v in self.coords.items()])},"
+            + f"{','.join([str(len(v)) for v in self.grid_points])}"
+        )
+        shape = shape.rjust(20)
+        return (
+            f"Info(first_field={self.first_field}, "
+            f"resolution={self.resolution}, "
+            f"variables={'/'.join(self.variables)})"
+            f"coords={', '.join([k + ':' + _format_list(v) for k, v in self.coords.items()])}"
+            f" {shape}"
+        )
 
 
 class LoadersConfig(Config):

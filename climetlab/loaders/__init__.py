@@ -422,8 +422,6 @@ class ZarrLoader(Loader):
         import pandas as pd
         import zarr
 
-        from climetlab.utils.dates import to_datetime  # avoid circular imports
-
         print("config loaded ok:")
         print(self.main_config)
         print("-------------------------")
@@ -448,10 +446,11 @@ class ZarrLoader(Loader):
         print("-------------------------")
         dates = self.input_handler.get_datetimes()
         print(
-            f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes:"
+            f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes: ",
+            end="",
         )
-        lenghts = [str(len(c.get_datetimes())) for c in self.input_handler.iter_cubes()]
-        print("+".join(lenghts))
+        lengths = [str(len(c.get_datetimes())) for c in self.input_handler.iter_cubes()]
+        print("+".join(lengths))
         print("-------------------------")
 
         variables_names = self.input_handler.variables
@@ -466,9 +465,7 @@ class ZarrLoader(Loader):
 
         resolution = self.input_handler.resolution
 
-        chunks = self.input_handler.first_cube.chunking(
-            self.main_config.output.chunking
-        )
+        chunks = self.input_handler.chunking
         dtype = self.main_config.output.dtype
 
         self.print(
@@ -479,7 +476,7 @@ class ZarrLoader(Loader):
         frequency = self.input_handler.frequency
         assert isinstance(frequency, int), frequency
 
-        def check(name, resolution, first_date, last_date, frequency):
+        def check_naming(name, resolution, first_date, last_date, frequency):
             resolution_str = str(resolution).replace(".", "p").lower()
             if f"-{resolution_str}-" not in name:
                 msg = (
@@ -505,8 +502,8 @@ class ZarrLoader(Loader):
                 raise ValueError(msg)
 
         if not self.kwargs["no_check"]:
-            basename = (os.path.basename(self.path),)
-            check(basename, resolution, dates[0], dates[-1], frequency)
+            basename = os.path.basename(self.path)
+            check_naming(basename, resolution, dates[0], dates[-1], frequency)
 
         metadata = {}
 
@@ -521,14 +518,30 @@ class ZarrLoader(Loader):
         metadata["frequency"] = frequency
         metadata["first_date"] = dates[0].isoformat()
         metadata["last_date"] = dates[-1].isoformat()
-        pd_dates = pd.date_range(
+        pd_dates_kwargs = dict(
             start=metadata["first_date"],
             end=metadata["last_date"],
             freq=f"{metadata['frequency']}h",
             unit="s",
         )
-        assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
-        assert pd_dates[-1] == dates[0], (pd_dates, dates[-1])
+        pd_dates = pd.date_range(**pd_dates_kwargs)
+
+        def check_dates(input_handler, pd_dates, total_shape):
+            for i, loop in enumerate(input_handler.loops):
+                print(f"Loop {i}: ", loop._info)
+            if pd_dates.size != total_shape[0]:
+                raise ValueError(
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
+                    f"{frequency=}) does not match data shape {total_shape[0]}. {total_shape=}"
+                )
+            if pd_dates.size != len(dates):
+                raise ValueError(
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
+                    f"{frequency=}) does not match data shape {len(dates)} (from {dates[0]} to "
+                    f"{dates[-1]}). {pd_dates_kwargs}"
+                )
+
+        check_dates(self.input_handler, pd_dates, total_shape)
 
         metadata.update(self.main_config.get("force_metadata", {}))
 
@@ -545,7 +558,6 @@ class ZarrLoader(Loader):
 
         # write metadata
         for k, v in metadata.items():
-            print(v)
             self.z.attrs[k] = v
 
         self.z = None
