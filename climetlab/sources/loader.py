@@ -11,7 +11,6 @@ import logging
 
 from ..datasets import load_dataset
 from ..sources import load_source
-from ..sources.multi import MultiSource
 from . import Source
 
 LOG = logging.getLogger(__name__)
@@ -121,7 +120,15 @@ class Loader(Source):
         self.input = Input(config, **kwargs)
 
     def mutate(self):
-        return MultiSource(self.input.expand())
+        sources = self.input.expand()
+        source = sources[0]
+        for s in sources[1:]:
+            source += s
+        from climetlab.readers.grib.index import FieldSet
+
+        assert isinstance(source, FieldSet), type(source)
+
+        return source
 
 
 source = Loader

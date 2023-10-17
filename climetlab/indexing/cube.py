@@ -167,6 +167,7 @@ class FieldCube:
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
+            assert isinstance(i, int), i
             dataset_indexes.append(i)
 
         ds = self.source[tuple(dataset_indexes)]

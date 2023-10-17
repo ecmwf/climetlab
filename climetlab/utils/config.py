@@ -9,10 +9,10 @@
 import datetime
 import itertools
 import logging
+import math
 import os
 import re
 import time
-from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 
@@ -90,14 +90,24 @@ class Inputs(list):
         return datetimes
 
     def do_load(self):
-        from climetlab.sources.multi import MultiSource
-
         datasets = {}
         for i in self:
             i = i.substitute(vars=datasets)
             ds = i.do_load()
             datasets[i.name] = ds
-        return MultiSource(list(datasets.values()))
+
+        out = None
+        for ds in datasets.values():
+            if out is None:
+                out = ds
+            else:
+                out += ds
+
+        from climetlab.readers.grib.index import FieldSet
+
+        assert isinstance(out, FieldSet), type(out)
+
+        return out
 
     def __repr__(self) -> str:
         return "\n".join(str(i) for i in self)
@@ -356,15 +366,17 @@ class InputHandler:
                 ref.variables,
             )
 
-        coords = defaultdict(list)
-        for c in infos:
-            for k, v in c.coords.items():
-                for _ in v:
-                    if _ in coords[k]:
-                        raise ValueError(
-                            f"Duplicate value found in coord {k}: {_} is present twice."
-                        )
-                    coords[k].append(v)
+        coords = deepcopy(ref.coords)
+        assert (
+            "valid_datetime" in coords
+        ), f"valid_datetime not found in coords {coords}"
+        coords["valid_datetime"] = self.get_datetimes()
+
+        for info in infos:
+            for name, values in info.coords.items():
+                if name == "valid_datetime":
+                    continue
+                assert values == ref.coords[name], (values, ref.coords[name])
 
         return Info(
             ref.first_field,
@@ -396,9 +408,7 @@ class InputHandler:
 
     @property
     def shape(self):
-        return [len(c) for c in self.coords.values()] + [
-            len(c) for c in self.grid_points
-        ]
+        return [len(c) for c in self.coords.values()] + list(self.first_field.shape)
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -454,8 +464,9 @@ class Loop(dict):
 
         self.parent = parent
         self.name = list(dic.keys())[0]
-        self.config = dic[self.name]
+        self.config = deepcopy(dic[self.name])
 
+        assert "applies_to" in self.config, self.config
         applies_to = self.config.pop("applies_to")
         self.applies_to_inputs = Inputs(
             [input for input in inputs if input.name in applies_to]
@@ -579,7 +590,6 @@ class CubeCreator:
         )
         cube = cube.squeeze()
 
-        print(cube.user_coords)
         print(f"Sorting done in {seconds(time.time()-start)}.")
 
         return cube, data
@@ -593,13 +603,6 @@ class CubeCreator:
         resolution = first_field.resolution
         coords = cube.user_coords
         variables = list(coords[list(coords.keys())[1]])
-
-        assert grid_points[0].shape == grid_points[1].shape, (
-            grid_points[0].shape,
-            grid_points[1].shape,
-            grid_points[0],
-            grid_points[1],
-        )
 
         return Info(first_field, grid_points, resolution, coords, variables)
 
@@ -625,6 +628,23 @@ def _format_list(x):
 
 class Info:
     def __init__(self, first_field, grid_points, resolution, coords, variables):
+        assert len(set(variables)) == len(variables), (
+            "Duplicate variables",
+            variables,
+        )
+
+        assert grid_points[0].shape == grid_points[1].shape, (
+            grid_points[0].shape,
+            grid_points[1].shape,
+            grid_points[0],
+            grid_points[1],
+        )
+
+        assert len(grid_points) == 2, grid_points
+
+        expected = math.prod(first_field.shape)
+        assert len(grid_points[0]) == expected, (len(grid_points[0]), expected)
+
         self.first_field = first_field
         self.grid_points = grid_points
         self.resolution = resolution
@@ -634,7 +654,7 @@ class Info:
     def __repr__(self):
         shape = (
             f"{','.join([str(len(v)) for k, v in self.coords.items()])},"
-            + f"{','.join([str(len(v)) for v in self.grid_points])}"
+            + f"{','.join([str(_) for _ in self.first_field.shape])}"
         )
         shape = shape.rjust(20)
         return (
@@ -832,8 +852,10 @@ class Expand(list):
         self.parse_config()
 
     def parse_config(self):
-        self.start = self._config.get("start")
-        self.stop = self._config.get("stop")
+        from climetlab.utils.dates import to_datetime
+
+        self.start = to_datetime(self._config.get("start"))
+        self.stop = to_datetime(self._config.get("stop"))
         self.step = self._config.get("step", 1)
         self.group_by = self._config.get("group_by")
 

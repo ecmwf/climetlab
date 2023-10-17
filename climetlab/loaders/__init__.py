@@ -16,7 +16,6 @@ import warnings
 
 import numpy as np
 
-import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
@@ -129,7 +128,7 @@ class OffsetView:
         self.large_array[new_key] = values
 
 
-class LoopItemsFilter:
+class CubesFilter:
     def __init__(self, *, loader, parts, **kwargs):
         self.loader = loader
 
@@ -168,12 +167,10 @@ class LoopItemsFilter:
 
         self.parts = parts
 
-    def __call__(self, iloop, vars):
+    def __call__(self, i):
         if self.parts is None:
             return True
-        # iloop index starts at 0
-        # self.parts is a list of indices starting at 1
-        return iloop in self.parts
+        return i in self.parts
 
 
 class Loader:
@@ -191,24 +188,23 @@ class Loader:
         self.z = zarr.open(self.path, mode="r+")
         self.registry.add_to_history("loading_data_start", parts=kwargs.get("parts"))
 
-        filter = LoopItemsFilter(loader=self, **kwargs)
-        nloop = len(list((self.iter_loops())))
-        for iloop, vars in enumerate(self.iter_loops()):
-            if not filter(iloop, vars):
+        filter = CubesFilter(loader=self, **kwargs)
+        ncubes = self.input_handler.n_cubes
+        for icube, cubecreator in enumerate(self.input_handler.iter_cubes()):
+            if not filter(icube):
                 continue
-            if self.registry.get_flag(iloop):
-                print(f" -> Skipping {iloop} total={nloop} (already done)")
+            if self.registry.get_flag(icube):
+                print(f" -> Skipping {icube} total={ncubes} (already done)")
                 continue
-            self.print(f" -> Processing i={iloop=} total={nloop}")
+            self.print(f" -> Processing i={icube=} total={ncubes}")
 
-            config = self.main_config.substitute(vars)
-            cube = self.config_to_data_cube(config)
-
+            cube = cubecreator.to_cube()
             shape = cube.extended_user_shape
-            chunks = cube.chunking(config.output.chunking)
-            axis = config.output.append_axis
+            chunks = cube.chunking(self.input_handler.output.chunking)
+            axis = self.input_handler.output.append_axis
 
-            slice = self.registry.get_slice_for(iloop)
+            slice = self.registry.get_slice_for(icube)
+
             print(f"Building to ZARR '{self.path}':")
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
@@ -217,7 +213,7 @@ class Loader:
 
             self.load_datacube(cube, array)
 
-            self.registry.set_flag(iloop)
+            self.registry.set_flag(icube)
 
         self.registry.add_to_history("loading_data_end", parts=kwargs.get("parts"))
 
@@ -228,14 +224,14 @@ class Loader:
 
         reading_chunks = None
         total = cube.count(reading_chunks)
-        for i, cubelet in enumerate(
-            progress_bar(
-                iterable=cube.iterate_cubelets(reading_chunks),
-                total=total,
-            )
-        ):
+        bar = progress_bar(
+            iterable=cube.iterate_cubelets(reading_chunks),
+            total=total,
+        )
+        for i, cubelet in enumerate(bar):
             now = time.time()
             data = cubelet.to_numpy()
+            bar.set_description(f"{i}/{total} {str(cubelet)} ({data.shape})")
             load += time.time() - now
 
             j = cubelet.extended_icoords[1]
@@ -292,11 +288,12 @@ class ZarrBuiltRegistry:
             os.path.join(self.zarr_path, "registry.sync")
         )
 
-    def get_slice_for(self, iloop):
+    def get_slice_for(self, i):
         lengths = self.get_lengths()
-        assert iloop >= 0 and iloop < len(lengths)
-        start = sum(lengths[:iloop])
-        stop = sum(lengths[: (iloop + 1)])
+        assert i >= 0 and i < len(lengths)
+
+        start = sum(lengths[:i])
+        stop = sum(lengths[: (i + 1)])
         return slice(start, stop)
 
     def get_lengths(self):
@@ -308,14 +305,14 @@ class ZarrBuiltRegistry:
         print(list(z[self.name_flags][:]))
         return list(z[self.name_flags][:])
 
-    def get_flag(self, iloop):
+    def get_flag(self, i):
         z = self._open_read()
-        return z[self.name_flags][iloop]
+        return z[self.name_flags][i]
 
-    def set_flag(self, iloop, value=True):
+    def set_flag(self, i, value=True):
         z = self._open_write()
         z.attrs["latest_write_timestamp"] = datetime.datetime.utcnow().isoformat()
-        z[self.name_flags][iloop] = value
+        z[self.name_flags][i] = value
 
     def _open_read(self, sync=True):
         import zarr
@@ -435,14 +432,13 @@ class ZarrLoader(Loader):
             print(self.input_handler.first_field)
             print(self.input_handler.coords)
 
-        # debug()
-        grid_points = self.input_handler.grid_points
-        print(f"gridpoints size: {[len(i) for i in grid_points]}")
-
-        print("-------------------------")
         total_shape = self.input_handler.shape
         print(f"total_shape = {total_shape}")
 
+        print("-------------------------")
+        # debug()
+        grid_points = self.input_handler.grid_points
+        print(f"gridpoints size: {[len(i) for i in grid_points]}")
         print("-------------------------")
         dates = self.input_handler.get_datetimes()
         print(
@@ -563,27 +559,6 @@ class ZarrLoader(Loader):
         self.z = None
 
         self.registry.create(lengths=lengths)
-
-    def config_to_data_cube(self, cube_config, with_gridpoints=False):
-        start = time.time()
-        data = cml.load_source("loader", cube_config)
-        assert len(data), f"No data for {cube_config}"
-        self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
-
-        start = time.time()
-        self.print("Sorting dataset")
-        cube = data.cube(
-            self.main_config.output.order_by,
-            remapping=self.main_config.output.remapping,
-            flatten_values=self.main_config.output.flatten_values,
-        )
-        cube = cube.squeeze()
-        self.print(f"Sorting done in {seconds(time.time()-start)}.")
-
-        if not with_gridpoints:
-            return cube
-        else:
-            return cube, data[0].grid_points()
 
     def _add_dataset(self, *args, **kwargs):
         import zarr
