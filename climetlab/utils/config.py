@@ -591,15 +591,22 @@ class CubeCreator:
         cube = cube.squeeze()
 
         def check():
-            key = self.output.statistics
-            actual = list(cube.user_coords[key])
-            requested = self.output.order_by
-            print(actual)
-            print(requested)
-            if actual != requested:
-                raise NotImplementedError(
-                    f"Requested= {requested} " f"Actual= {actual}"
-                )
+            actual_dic = cube.user_coords
+            requested_dic = self.output.order_by
+            assert self.output.statistics in actual_dic
+
+            for key in set(list(actual_dic.keys()) + list(requested_dic.keys())):
+                actual = actual_dic[key]
+                requested = requested_dic[key]
+
+                actual = list(actual)
+
+                if requested == "ascending":
+                    assert actual == sorted(
+                        actual
+                    ), f"Requested= {requested} Actual= {actual}"
+                    continue
+                assert actual == requested, f"Requested= {requested} Actual= {actual}"
 
         check()
 
