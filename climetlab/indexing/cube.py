@@ -76,7 +76,8 @@ class FieldCube:
         # print(ds[2])
         # print(ds[3])
         self.source = ds.order_by(*args, remapping=remapping)
-        # print('after')
+        del ds
+        # print("after")
         # print(self.source[0])
         # print(self.source[1])
         # print(self.source[2])
@@ -84,7 +85,7 @@ class FieldCube:
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
-        self.user_coords = ds.unique_values(*names, remapping=remapping)
+        self.user_coords = self.source.unique_values(*names, remapping=remapping)
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 

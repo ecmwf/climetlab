@@ -590,6 +590,19 @@ class CubeCreator:
         )
         cube = cube.squeeze()
 
+        def check():
+            key = self.output.statistics
+            actual = list(cube.user_coords[key])
+            requested = self.output.order_by
+            print(actual)
+            print(requested)
+            if actual != requested:
+                raise NotImplementedError(
+                    f"Requested= {requested} " f"Actual= {actual}"
+                )
+
+        check()
+
         print(f"Sorting done in {seconds(time.time()-start)}.")
 
         return cube, data

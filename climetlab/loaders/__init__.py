@@ -455,8 +455,8 @@ class ZarrLoader(Loader):
             variables_names
             == self.main_config.output.order_by[self.main_config.output.statistics]
         ), (
-            variables_names,
-            self.main_config.output.order_by[self.main_config.output.statistics],
+            f"Requested= {self.main_config.output.order_by[self.main_config.output.statistics]} "
+            f"Actual= {variables_names}"
         )
 
         resolution = self.input_handler.resolution
