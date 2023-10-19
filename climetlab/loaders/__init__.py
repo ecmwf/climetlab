@@ -11,6 +11,7 @@
 import datetime
 import logging
 import os
+import re
 import time
 import warnings
 
@@ -20,6 +21,106 @@ from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
+
+
+def parse_dataset_name(s):
+    pattern = r"^(\w+)-(\w+)-(\w+)-(\w+)-(\w\w\w\w)-(\w+)-(\w+)-([\d\-]+)-(\d+h)-v(\d+)-?(.*)$"
+
+    match = re.match(pattern, s)
+
+    if match:
+        (
+            use_case,
+            class_name,
+            type_name,
+            stream,
+            expver,
+            source,
+            resolution,
+            period,
+            frequency,
+            version,
+            additional,
+        ) = match.groups()
+        return {
+            "use_case": use_case,
+            "class": class_name,
+            "type": type_name,
+            "stream": stream,
+            "expver": expver,
+            "source": source,
+            "resolution": resolution,
+            "period": period,
+            "frequency": frequency,
+            "version": version,
+            "additional": additional,
+        }
+    else:
+        return None
+
+
+def check_dataset_naming_convention(
+    name,
+    resolution=None,
+    first_date=None,
+    last_date=None,
+    frequency=None,
+):
+    messages = []
+
+    parsed = parse_dataset_name(name)
+    if not parsed:
+        messages.append(
+            (
+                f"Dataset name ({name}) does not follow naming convention. "
+                "See here for details: "
+                "https://confluence.ecmwf.int/display/DWF/Datasets+available+as+zarr"
+            )
+        )
+    if parsed:
+        if parsed["resolution"][0] not in "0123456789on":
+            messages.append(
+                (
+                    f"Resolution {parsed['resolution'] } should start "
+                    "with a number or 'o' or 'n' in the dataset name ({name})."
+                )
+            )
+
+    if resolution is not None:
+        resolution_str = str(resolution).replace(".", "p").lower()
+        if resolution_str != parsed.get("resolution"):
+            messages.append(
+                (
+                    f"The resolution in the data is {resolution_str}. It should appear in the dataset name ({name})."
+                )
+            )
+
+    if frequency is not None:
+        if f"{frequency}h" != parsed.get("frequency"):
+            messages.append(
+                (
+                    f"The frequency in the data is {frequency}h. It should appear in the dataset name ({name}). "
+                )
+            )
+
+    if first_date is not None:
+        if str(first_date.year) not in parsed.get("period"):
+            messages.append(
+                (
+                    f"Start year in the data is {first_date.year}."
+                    " It should appear in the dataset name (found {parsed.get['period']})."
+                )
+            )
+
+    if last_date is not None:
+        if str(last_date.year) not in parsed.get("period"):
+            messages += (
+                f"End year in the data is {last_date.year}."
+                " It should appear in the dataset name (found {parsed.get['period']})."
+            )
+
+    return messages
+
 
 LOG = logging.getLogger(__name__)
 
@@ -479,34 +580,21 @@ class ZarrLoader(Loader):
         frequency = self.input_handler.frequency
         assert isinstance(frequency, int), frequency
 
-        def check_naming(name, resolution, first_date, last_date, frequency):
-            resolution_str = str(resolution).replace(".", "p").lower()
-            if f"-{resolution_str}-" not in name:
-                msg = (
-                    f"Resolution {resolution_str} should appear in the dataset name ({name})."
-                    " Use --no-check to ignore."
-                )
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{frequency}h-" not in name:
-                msg = f"Frequency {frequency}h should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{first_date.year}-" not in name:
-                msg = f"Year {first_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{last_date.year}-" not in name:
-                msg = f"Year {last_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
-
         if not self.kwargs["no_check"]:
             basename = os.path.basename(self.path)
-            check_naming(basename, resolution, dates[0], dates[-1], frequency)
+            errors = check_dataset_naming_convention(
+                basename,
+                resolution,
+                dates[0],
+                dates[-1],
+                frequency,
+            )
+            if errors:
+                errors.append("Use --no-check to ignore.")
+                self.print("\n".join(errors))
+                raise ValueError(
+                    f"Dataset name {basename} does not follow naming convention: {errors}"
+                )
 
         metadata = {}
 
