@@ -351,11 +351,11 @@ class ZarrBuiltRegistry:
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
 
-    def add_provenance(self):
+    def add_provenance(self, name="provenance"):
         from ecml_tools.provenance import gather_provenance_info
 
         z = self._open_write()
-        z.attrs["provenance"] = gather_provenance_info()
+        z.attrs[name] = gather_provenance_info()
 
     def add_to_history(self, action, **kwargs):
         new = dict(
@@ -646,6 +646,7 @@ class ZarrLoader(Loader):
                 start=statistics_start,
                 end=statistics_end,
             )
+            self.add_provenance(self, name="statistics_provenance")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
         import zarr
