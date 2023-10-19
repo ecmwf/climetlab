@@ -734,7 +734,7 @@ class ZarrLoader(Loader):
                 start=statistics_start,
                 end=statistics_end,
             )
-            self.add_provenance(self, name="statistics_provenance")
+            self.registry.add_provenance(self, name="statistics_provenance")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
         import zarr
