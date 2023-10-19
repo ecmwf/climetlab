@@ -216,6 +216,7 @@ class Loader:
             self.registry.set_flag(icube)
 
         self.registry.add_to_history("loading_data_end", parts=kwargs.get("parts"))
+        self.registry.add_provenance()
 
     def load_datacube(self, cube, array):
         start = time.time()
@@ -349,6 +350,12 @@ class ZarrBuiltRegistry:
 
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
+
+    def add_provenance(self):
+        from ecml_tools.provenance import gather_provenance_info
+
+        z = self._open_write()
+        z.attrs["provenance"] = gather_provenance_info()
 
     def add_to_history(self, action, **kwargs):
         new = dict(
