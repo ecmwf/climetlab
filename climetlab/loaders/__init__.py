@@ -56,7 +56,7 @@ def parse_dataset_name(s):
             "additional": additional,
         }
     else:
-        return None
+        return {}
 
 
 def check_dataset_naming_convention(
