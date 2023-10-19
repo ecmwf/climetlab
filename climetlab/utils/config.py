@@ -125,9 +125,9 @@ class Input:
         self.name = list(dic.keys())[0]
         self.config = dic[self.name]
 
-        if self.name == "forcing" or self.name == "constant":
+        if self.name == "forcing" or self.name == "constants":
             if "source_or_dataset" in self.config:
-                # add $ to source_or_dataset for forcing source.
+                # add $ to source_or_dataset for constants source.
                 # climetlab will be refactored to remove this.
                 assert self.config["source_or_dataset"][0] != "$", self.config[
                     "source_or_dataset"
@@ -143,9 +143,9 @@ class Input:
     def get_datetimes(self, others={}):
         name = self.kwargs.get("name", None)
 
-        assert name in ["forcing", "mars"], f"{name} not implemented"
+        assert name in ["constants", "mars"], f"{name} not implemented"
 
-        if name == "forcing":
+        if name == "constants":
             return None
 
         if name == "mars":

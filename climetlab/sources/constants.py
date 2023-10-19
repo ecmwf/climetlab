@@ -22,7 +22,7 @@ from climetlab.utils.dates import to_datetime
 LOG = logging.getLogger(__name__)
 
 
-class ForcingMaker:
+class ConstantMaker:
     def __init__(self, field):
         self.field = field
         self.shape = self.field.shape
@@ -164,7 +164,7 @@ class ForcingMaker:
         return result.flatten()
 
 
-class ForcingField:
+class ConstantField:
     def __init__(self, date, param, proc, shape):
         self.date = date
         self.param = param
@@ -189,7 +189,7 @@ class ForcingField:
         return values
 
     def __repr__(self):
-        return "ForcingField(%s,%s)" % (
+        return "ConstantField(%s,%s)" % (
             self.param,
             self.date,
         )
@@ -214,7 +214,7 @@ def make_datetime(date, time):
     return datetime.datetime(date.year, date.month, date.day, time)
 
 
-class Forcings(FieldSet):
+class Constants(FieldSet):
     def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
         request = dict(**request)
         request.update(kwargs)
@@ -244,7 +244,7 @@ class Forcings(FieldSet):
                         request["date"], request["time"]
                     )
                 ]
-                assert len(set(dates)) == len(dates), "Duplicates dates in forcings."
+                assert len(set(dates)) == len(dates), "Duplicates dates in constants."
                 return dates
 
             assert False, request
@@ -255,7 +255,7 @@ class Forcings(FieldSet):
         if not isinstance(self.params, list):
             self.params = [self.params]
         self.repeat = repeat  # For ensembles
-        self.maker = ForcingMaker(field=source_or_dataset[0])
+        self.maker = ConstantMaker(field=source_or_dataset[0])
         self.procs = {param: getattr(self.maker, param) for param in self.params}
         self._len = len(self.dates) * len(self.params) * self.repeat
 
@@ -282,7 +282,7 @@ class Forcings(FieldSet):
         # assert isinstance(date, datetime.datetime), (date, type(date))
 
         param = self.params[param]
-        return ForcingField(
+        return ConstantField(
             date,
             param,
             self.procs[param],
@@ -290,4 +290,4 @@ class Forcings(FieldSet):
         )
 
 
-source = Forcings
+source = Constants
