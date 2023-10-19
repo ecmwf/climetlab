@@ -23,103 +23,145 @@ from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
 
 
-def parse_dataset_name(s):
-    pattern = r"^(\w+)-(\w+)-(\w+)-(\w+)-(\w\w\w\w)-(\w+)-(\w+)-([\d\-]+)-(\d+h)-v(\d+)-?(.*)$"
+class DatasetName:
+    def __init__(
+        self,
+        name,
+        resolution=None,
+        first_date=None,
+        last_date=None,
+        frequency=None,
+    ):
+        self.name = name
+        self.parsed = self._parse(name)
 
-    match = re.match(pattern, s)
+        self.messages = []
 
-    if match:
-        (
-            use_case,
-            class_name,
-            type_name,
-            stream,
-            expver,
-            source,
-            resolution,
-            period,
-            frequency,
-            version,
-            additional,
-        ) = match.groups()
-        return {
-            "use_case": use_case,
-            "class": class_name,
-            "type": type_name,
-            "stream": stream,
-            "expver": expver,
-            "source": source,
-            "resolution": resolution,
-            "period": period,
-            "frequency": frequency,
-            "version": version,
-            "additional": additional,
-        }
-    else:
-        return {}
+        self.check_parsed()
+        self.check_resolution(resolution)
+        self.check_frequency(frequency)
+        self.check_first_date(first_date)
+        self.check_last_date(last_date)
 
-
-def check_dataset_naming_convention(
-    name,
-    resolution=None,
-    first_date=None,
-    last_date=None,
-    frequency=None,
-):
-    messages = []
-
-    parsed = parse_dataset_name(name)
-    if not parsed:
-        messages.append(
-            (
-                f"Dataset name ({name}) does not follow naming convention. "
-                "See here for details: "
-                "https://confluence.ecmwf.int/display/DWF/Datasets+available+as+zarr"
+        if self.messages:
+            self.messages.append(
+                f"{self} is parsed as :"
+                + "/".join(f"{k}={v}" for k, v in self.parsed.items())
             )
-        )
-    if parsed:
-        if parsed["resolution"][0] not in "0123456789on":
-            messages.append(
+
+    @property
+    def is_valid(self):
+        return not self.messages
+
+    @property
+    def error_message(self):
+        out = " And ".join(self.messages)
+        if out:
+            out = out[0].upper() + out[1:]
+        return out
+
+    def raise_if_not_valid(self, print=print):
+        if not self.is_valid:
+            for m in self.messages:
+                print(m)
+            raise ValueError(self.error_message)
+
+    def _parse(self, name):
+        pattern = r"^(\w+)-(\w+)-(\w+)-(\w+)-(\w\w\w\w)-(\w+)-(\w+)-([\d\-]+)-(\d+h)-v(\d+)-?(.*)$"
+        match = re.match(pattern, name)
+
+        parsed = {}
+        if match:
+            keys = [
+                "use_case",
+                "class_",
+                "type_",
+                "stream",
+                "expver",
+                "source",
+                "resolution",
+                "period",
+                "frequency",
+                "version",
+                "additional",
+            ]
+            parsed = {k: v for k, v in zip(keys, match.groups())}
+
+            period = parsed["period"].split("-")
+            assert len(period) in (1, 2), (name, period)
+            parsed["first_date"] = period[0]
+            if len(period) == 1:
+                parsed["last_date"] = period[0]
+            if len(period) == 2:
+                parsed["last_date"] = period[1]
+
+        return parsed
+
+    def __str__(self):
+        return self.name
+
+    def check_parsed(self):
+        if not self.parsed:
+            self.messages.append(
                 (
-                    f"Resolution {parsed['resolution'] } should start "
-                    "with a number or 'o' or 'n' in the dataset name ({name})."
+                    f"the dataset name {self} does not follow naming convention. "
+                    "See here for details: "
+                    "https://confluence.ecmwf.int/display/DWF/Datasets+available+as+zarr"
                 )
             )
 
-    if resolution is not None:
+    def check_resolution(self, resolution):
+        if (
+            self.parsed.get("resolution")
+            and self.parsed["resolution"][0] not in "0123456789on"
+        ):
+            self.messages.append(
+                (
+                    f"the resolution {self.parsed['resolution'] } should start "
+                    f"with a number or 'o' or 'n' in the dataset name {self}."
+                )
+            )
+
+        if resolution is None:
+            return
         resolution_str = str(resolution).replace(".", "p").lower()
-        if resolution_str != parsed.get("resolution"):
-            messages.append(
+        self._check_missing("resolution", resolution_str)
+        self._check_mismatch("resolution", resolution_str)
+
+    def check_frequency(self, frequency):
+        if frequency is None:
+            return
+        frequency_str = f"{frequency}h"
+        self._check_missing("frequency", frequency_str)
+        self._check_mismatch("frequency", frequency_str)
+
+    def check_first_date(self, first_date):
+        if first_date is None:
+            return
+        first_date_str = str(first_date.year)
+        self._check_missing("first date", first_date_str)
+        self._check_mismatch("first_date", first_date_str)
+
+    def check_last_date(self, last_date):
+        if last_date is None:
+            return
+        last_date_str = str(last_date.year)
+        self._check_missing("last_date", last_date_str)
+        self._check_mismatch("last_date", last_date_str)
+
+    def _check_missing(self, key, value):
+        if value not in self.name:
+            self.messages.append(
+                (f"the {key} in the data is {value}, but is missing in {self.name}.")
+            )
+
+    def _check_mismatch(self, key, value):
+        if self.parsed.get(key) and self.parsed[key] != value:
+            self.messages.append(
                 (
-                    f"The resolution in the data is {resolution_str}. It should appear in the dataset name ({name})."
+                    f"the {key} in the data is {value}, but is {self.parsed[key]} in {self.name}."
                 )
             )
-
-    if frequency is not None:
-        if f"{frequency}h" != parsed.get("frequency"):
-            messages.append(
-                (
-                    f"The frequency in the data is {frequency}h. It should appear in the dataset name ({name}). "
-                )
-            )
-
-    if first_date is not None:
-        if str(first_date.year) not in parsed.get("period"):
-            messages.append(
-                (
-                    f"Start year in the data is {first_date.year}."
-                    " It should appear in the dataset name (found {parsed.get['period']})."
-                )
-            )
-
-    if last_date is not None:
-        if str(last_date.year) not in parsed.get("period"):
-            messages += (
-                f"End year in the data is {last_date.year}."
-                " It should appear in the dataset name (found {parsed.get['period']})."
-            )
-
-    return messages
 
 
 LOG = logging.getLogger(__name__)
@@ -581,20 +623,16 @@ class ZarrLoader(Loader):
         assert isinstance(frequency, int), frequency
 
         if not self.kwargs["no_check"]:
-            basename = os.path.basename(self.path)
-            errors = check_dataset_naming_convention(
+            basename, ext = os.path.splitext(os.path.basename(self.path))
+
+            ds_name = DatasetName(
                 basename,
                 resolution,
                 dates[0],
                 dates[-1],
                 frequency,
             )
-            if errors:
-                errors.append("Use --no-check to ignore.")
-                self.print("\n".join(errors))
-                raise ValueError(
-                    f"Dataset name {basename} does not follow naming convention: {errors}"
-                )
+            ds_name.raise_if_not_valid(print=self.print)
 
         metadata = {}
 
