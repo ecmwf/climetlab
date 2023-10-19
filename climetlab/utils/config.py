@@ -125,6 +125,17 @@ class Input:
         self.name = list(dic.keys())[0]
         self.config = dic[self.name]
 
+        if self.name == "forcing" or self.name == "constant":
+            if "source_or_dataset" in self.config:
+                # add $ to source_or_dataset for forcing source.
+                # climetlab will be refactored to remove this.
+                assert self.config["source_or_dataset"][0] != "$", self.config[
+                    "source_or_dataset"
+                ]
+                self.config["source_or_dataset"] = (
+                    "$" + self.config["source_or_dataset"]
+                )
+
         self.kwargs = self.config.get("kwargs", {})
         self.inherit = self.config.get("inherit", [])
         self.function = self.config.get("function", None)
