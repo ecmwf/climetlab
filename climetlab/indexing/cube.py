@@ -14,7 +14,7 @@ import re
 LOG = logging.getLogger(__name__)
 
 
-def coords_to_index(coords, shape):
+def coords_to_index(coords, shape) -> int:
     a = 0
     n = 1
     i = len(coords) - 1
@@ -25,7 +25,9 @@ def coords_to_index(coords, shape):
     return a
 
 
-def index_to_coords(index, shape):
+def index_to_coords(index: int, shape):
+    assert isinstance(index, int), (index, type(index))
+
     result = [None] * len(shape)
     i = len(shape) - 1
 
@@ -33,7 +35,11 @@ def index_to_coords(index, shape):
         result[i] = index % shape[i]
         index = index // shape[i]
         i -= 1
-    return tuple(result)
+
+    result = tuple(result)
+
+    assert len(result) == len(shape)
+    return result
 
 
 class FieldCube:
@@ -60,23 +66,33 @@ class FieldCube:
 
         self._field_shape = None
 
-        # Sort the source according to there
+        # Sort the source according to their
         # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+        # for i in ds:
+        #   print(i)
+        # print("before")
+        # print(ds[0])
+        # print(ds[1])
+        # print(ds[2])
+        # print(ds[3])
         self.source = ds.order_by(*args, remapping=remapping)
+        del ds
+        # print("after")
+        # print(self.source[0])
+        # print(self.source[1])
+        # print(self.source[2])
+        # print(self.source[3])
 
         # Get a mapping of user names to unique values
-        # With possible reduce dimentionality if the user use 'level+parm'
-
-        self.user_coords = ds.unique_values(*names, remapping=remapping)
-
-        print(f"{self.user_coords=}")
+        # With possible reduce dimentionality if the user use 'level+param'
+        self.user_coords = self.source.unique_values(*names, remapping=remapping)
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         if math.prod(self.user_shape) != len(self.source):
             details = []
-            for k, v in self.user_coords.items():
-                details.append(f"{k=}, {len(v)}, {v}")
+            for key, v in self.user_coords.items():
+                details.append(f"{key=} ({len(v)}) {v}")
             assert not isinstance(
                 self.source, str
             ), f"Not expecting a str here ({self.source})"
@@ -89,7 +105,7 @@ class FieldCube:
             msg = (
                 f"Shape {self.user_shape} [{math.prod(self.user_shape):,}]"
                 + f" does not match number of available fields {len(self.source):,}. "
-                + f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
+                + f"Difference: {len(self.source)-math.prod(self.user_shape):,}\n"
                 + "\n".join(details)
             )
             raise ValueError(msg)
@@ -140,7 +156,6 @@ class FieldCube:
             indexes.append(slice(None, None, None))
 
         # Map the slices to a list of indexes per dimension
-
         coords = []
         for s, c in zip(indexes, self.user_coords.values()):
             lst = list(range(len(c)))[s]
@@ -153,6 +168,7 @@ class FieldCube:
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
+            assert isinstance(i, int), i
             dataset_indexes.append(i)
 
         ds = self.source[tuple(dataset_indexes)]
@@ -229,15 +245,15 @@ class FieldCube:
 
 class Cubelet:
     def __init__(self, cube, coords, coords_names=None):
+        self._coords_names = coords_names  # only for display purposes
         self.owner = cube
         assert all(isinstance(_, int) for _ in coords), coords
         self.coords = coords
-        self.coords_names = coords_names
         self.flatten_values = cube.flatten_values
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}({self.coords},index_names={self.coords_names})"
+            f"{self.__class__.__name__}({self.coords},index_names={self._coords_names})"
         )
 
     @property
@@ -248,37 +264,3 @@ class Cubelet:
         return self.owner[self.coords].to_numpy(
             reshape=not self.flatten_values, **kwargs
         )
-
-
-class GridPointFirstCubelet:
-    def __init__(self, cube, coords, coords_names=None):
-        self.owner = cube
-        assert all(isinstance(_, int) for _ in coords), coords
-        self.coords = coords
-
-        # print("-----", cube.user_shape, self.coords)
-
-        self.coords_names = coords_names
-        self.flatten_values = cube.flatten_values
-        assert (
-            self.flatten_values
-        ), "GridPointFirstCubelet only supports flatten_values=True (for now)"
-
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.coords},index_names={self.coords_names})"
-        )
-
-    @property
-    def extended_icoords(self):
-        num_grid_points = self.owner.field_shape[0]
-        # offset = coords_to_index(self.coords, self.owner.user_shape) * num_grid_points
-        idx = (slice(0, num_grid_points),) + self.coords
-        # print("----->", idx)
-        return idx
-
-    def to_numpy(self, **kwargs):
-        data = self.owner[self.coords].to_numpy(
-            reshape=not self.flatten_values, **kwargs
-        )
-        return data

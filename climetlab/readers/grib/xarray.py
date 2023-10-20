@@ -103,8 +103,6 @@ class XarrayMixIn:
             )
         )
 
-        print("xarray_open_dataset_kwargs", xarray_open_dataset_kwargs)
-
         result = xr.open_dataset(
             IndexWrapperForCfGrib(self, ignore_keys=ignore_keys),
             **xarray_open_dataset_kwargs,

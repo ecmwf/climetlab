@@ -418,6 +418,21 @@ class GribField(Base):
         m["shape"] = self.shape
         return m
 
+    @property
+    def resolution(self):
+        grid_type = self["gridType"]
+
+        if grid_type == "reduced_gg":
+            return self["gridName"]
+
+        if grid_type == "regular_ll":
+            x = self["DxInDegrees"]
+            y = self["DyInDegrees"]
+            assert x == y, (x, y)
+            return x
+
+        raise ValueError(f"Unknown gridType={grid_type}")
+
     def datetime(self):
         date = self.handle.get("date")
         time = self.handle.get("time")

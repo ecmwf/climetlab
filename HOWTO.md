@@ -17,7 +17,7 @@ First install `s3cmd` if needed:
 
 Then set `~/.s3cfg` to:
 ```
-host_base = storage.ecmwf.europeanweather.cloud
+host_base = object-store.os-api.cci1.ecmwf.int
 host_bucket =
 access_key = xxxxxxxxxxxx
 secret_key = yyyyyyyyyyyy
@@ -33,7 +33,7 @@ First time (already done):
 % s3cmd put --acl-public --no-preserve example.file s3://climetlab/directory/example.file
 ```
 
-The file is then available at: https://storage.ecmwf.europeanweather.cloud/climetlab/samples/example.file.
+The file is then available at: https://object-store.os-api.cci1.ecmwf.int/climetlab/samples/example.file.
 
 Please note that only `https` is supported, even if `s3cmd` reports a url starting with `http`.
 

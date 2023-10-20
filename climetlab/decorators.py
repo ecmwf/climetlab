@@ -160,6 +160,7 @@ def normalize_grib_key_values(kwargs, accept_none=True, as_tuple=False):
     f = normalize_grib_keys(f)
     f = normalize("param", "variable-list(mars)")(f)
     f = normalize("date", "date-list(%Y%m%d)")(f)
+    f = normalize("hdate", "date-list(%Y%m%d)")(f)
     f = normalize("area", "bounding-box(list)")(f)
     f = normalize("levelist", "int-list")(f)
     kwargs = f(**kwargs)
