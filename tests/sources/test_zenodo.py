@@ -144,7 +144,7 @@ def load_yaml(name, *args, **kwargs):
     return dataset_from_yaml(full, *args, **kwargs)
 
 
-# @pytest.mark.skipif(True, reason="Test not yet implemented")
+@pytest.mark.skipif(True, reason="Need to update with zenodo API")
 def test_zenodo_from_yaml_1():
     s = load_yaml("zedono-dataset-1.yaml")
     s.to_pandas()
