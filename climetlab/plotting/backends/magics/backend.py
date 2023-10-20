@@ -399,19 +399,19 @@ class Backend:
 
         page = output(
             output_file=path,
-            # page_x_length=self._width_cm,
-            # page_y_length=self._height_cm * self._page_ratio,
-            # super_page_x_length=self._width_cm,
-            # super_page_y_length=self._height_cm * self._page_ratio + _title_height_cm,
-            # subpage_x_length=self._width_cm,
-            # subpage_y_length=self._height_cm * self._page_ratio,
-            # subpage_x_position=0.0,
-            # subpage_y_position=0.0,
-            # output_width=width,
-            # page_frame=frame,
-            # super_page_frame=False,
-            # subpage_frame=False,
-            # page_id_line=False,
+            page_x_length=self._width_cm,
+            page_y_length=self._height_cm * self._page_ratio,
+            super_page_x_length=self._width_cm,
+            super_page_y_length=self._height_cm * self._page_ratio + _title_height_cm,
+            subpage_x_length=self._width_cm,
+            subpage_y_length=self._height_cm * self._page_ratio,
+            subpage_x_position=0.0,
+            subpage_y_position=0.0,
+            output_width=width,
+            page_frame=frame,
+            super_page_frame=False,
+            subpage_frame=False,
+            page_id_line=False,
         )
 
         # TODO
