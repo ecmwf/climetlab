@@ -215,7 +215,7 @@ class CodesHandle:
             eccodes.codes_set_long(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set_double(self, name, value):
         try:
@@ -223,7 +223,7 @@ class CodesHandle:
             eccodes.codes_set_double(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set_string(self, name, value):
         try:
@@ -231,7 +231,7 @@ class CodesHandle:
             eccodes.codes_set_string(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def set(self, name, value):
         try:
@@ -243,7 +243,7 @@ class CodesHandle:
             return eccodes.codes_set(self.handle, name, value)
         except Exception as e:
             LOG.error("Error setting %s=%s", name, value)
-            LOG.exception(e)
+            raise ValueError("Error setting %s=%s (%s)" % (name, value, e))
 
     def write(self, f):
         eccodes.codes_write(self.handle, f)
@@ -447,20 +447,12 @@ class GribField(Base):
     def valid_datetime(self):
         date = self.handle.get("validityDate")
         time = self.handle.get("validityTime")
-        assert 0 <= time <= 2400, (date, time)
-        assert isinstance(date, int), (date, time)
-
-        date = str(date)
-        time = f"{time:04d}"
-        assert len(date) == 8, (date, time)
-        assert len(time) == 4, (date, time)
-
         return datetime.datetime(
-            int(date[0:4]),
-            int(date[4:6]),
-            int(date[6:8]),
-            int(time[0:2]),
-            int(time[2:4]),
+            date // 10000,
+            date % 10000 // 100,
+            date % 100,
+            time // 100,
+            time % 100,
         )
 
     def to_datetime_list(self):

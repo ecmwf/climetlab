@@ -68,20 +68,31 @@ class FieldCube:
 
         # Sort the source according to their
         # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
+        # for i in ds:
+        #   print(i)
+        # print("before")
+        # print(ds[0])
+        # print(ds[1])
+        # print(ds[2])
+        # print(ds[3])
         self.source = ds.order_by(*args, remapping=remapping)
+        del ds
+        # print("after")
+        # print(self.source[0])
+        # print(self.source[1])
+        # print(self.source[2])
+        # print(self.source[3])
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
-        self.user_coords = ds.unique_values(*names, remapping=remapping)
-
-        print(f"{self.user_coords=}")
+        self.user_coords = self.source.unique_values(*names, remapping=remapping)
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
         if math.prod(self.user_shape) != len(self.source):
             details = []
-            for k, v in self.user_coords.items():
-                details.append(f"{k=}, {len(v)}, {v}")
+            for key, v in self.user_coords.items():
+                details.append(f"{key=} ({len(v)}) {v}")
             assert not isinstance(
                 self.source, str
             ), f"Not expecting a str here ({self.source})"
@@ -94,7 +105,7 @@ class FieldCube:
             msg = (
                 f"Shape {self.user_shape} [{math.prod(self.user_shape):,}]"
                 + f" does not match number of available fields {len(self.source):,}. "
-                + f"Difference: {len(self.source)-math.prod(self.user_shape):,}"
+                + f"Difference: {len(self.source)-math.prod(self.user_shape):,}\n"
                 + "\n".join(details)
             )
             raise ValueError(msg)
@@ -157,6 +168,7 @@ class FieldCube:
         user_shape = self.user_shape
         for x in itertools.product(*coords):
             i = coords_to_index(x, user_shape)
+            assert isinstance(i, int), i
             dataset_indexes.append(i)
 
         ds = self.source[tuple(dataset_indexes)]

@@ -28,6 +28,12 @@ _ORDER = (
     "productDefinitionTemplateNumber",
 )
 
+NOT_IN_EDITION_1 = (
+    "productDefinitionTemplateNumber",
+    "typeOfGeneratingProcess",
+)
+
+
 ORDER = {}
 for i, k in enumerate(_ORDER):
     ORDER[k] = i
@@ -97,7 +103,7 @@ class GribOutput:
 
         metadata = md
 
-        compulsary = ("date", ("param", "paramId", "shortName"))
+        compulsary = (("date", "referenceDate"), ("param", "paramId", "shortName"))
 
         if template is None:
             template = self.template
@@ -124,6 +130,10 @@ class GribOutput:
         metadata = {
             k: v for k, v in sorted(metadata.items(), key=lambda x: order(x[0]))
         }
+
+        if str(metadata.get("edition")) == "1":
+            for k in NOT_IN_EDITION_1:
+                metadata.pop(k, None)
 
         LOG.debug("GribOutput.metadata %s", metadata)
 
