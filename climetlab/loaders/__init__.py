@@ -638,6 +638,7 @@ class ZarrLoader(Loader):
 
         metadata["create_yaml_config"] = _prepare_serialisation(self.main_config)
 
+        metadata["description"] = self.main_config.description
         metadata["resolution"] = resolution
 
         metadata["variables"] = variables_names

@@ -701,6 +701,9 @@ class LoadersConfig(Config):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
 
+        if "description" not in self:
+            raise ValueError("Must provide a description in the config.")
+
         if not isinstance(self.input, (tuple, list)):
             print(f"WARNING: {self.input=} is not a list")
             self.input = [self.input]
