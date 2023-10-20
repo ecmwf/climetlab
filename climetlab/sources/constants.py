@@ -10,7 +10,6 @@
 import datetime
 import itertools
 import logging
-from warnings import warn
 
 import numpy as np
 
