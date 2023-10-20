@@ -23,9 +23,8 @@ LOG = logging.getLogger(__name__)
 
 
 class ConstantMaker:
-    def __init__(self, source_or_dataset):
-        self.source_or_dataset = source_or_dataset
-        self.field = source_or_dataset[0]
+    def __init__(self, field):
+        self.field = field
         self.shape = self.field.shape
 
     @cached_method
@@ -222,26 +221,41 @@ class Constants(FieldSet):
 
         self.request = self._request(**request)
 
-        if "date" in self.request:
-            self.dates = [
-                make_datetime(date, time)
-                for date, time in itertools.product(
-                    self.request["date"], self.request.get("time", [None])
-                )
-            ]
-            assert len(set(self.dates)) == len(
-                self.dates
-            ), "Duplicates dates in constants."
-        else:
-            self.dates = source_or_dataset.unique_values("valid_datetime")[
-                "valid_datetime"
-            ]
+        def find_dates(request):
+            if "date" not in request and "time" not in request:
+                assert hasattr(
+                    source_or_dataset, "unique_values"
+                ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
+
+                return source_or_dataset.unique_values("valid_datetime")[
+                    "valid_datetime"
+                ]
+
+            if "date" not in request and "time" in request:
+                raise ValueError("Cannot specify time without date")
+
+            if "date" in request and "time" not in request:
+                return request["date"]
+
+            if "date" in request and "time" in request:
+                dates = [
+                    make_datetime(date, time)
+                    for date, time in itertools.product(
+                        request["date"], request["time"]
+                    )
+                ]
+                assert len(set(dates)) == len(dates), "Duplicates dates in constants."
+                return dates
+
+            assert False, request
+
+        self.dates = find_dates(self.request)
 
         self.params = self.request["param"]
         if not isinstance(self.params, list):
             self.params = [self.params]
         self.repeat = repeat  # For ensembles
-        self.maker = ConstantMaker(source_or_dataset)
+        self.maker = ConstantMaker(field=source_or_dataset[0])
         self.procs = {param: getattr(self.maker, param) for param in self.params}
         self._len = len(self.dates) * len(self.params) * self.repeat
 

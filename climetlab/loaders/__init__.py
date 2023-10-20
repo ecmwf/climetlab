@@ -11,20 +11,160 @@
 import datetime
 import logging
 import os
+import re
 import time
 import warnings
 
 import numpy as np
 
-import climetlab as cml
 from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
 
+
+class DatasetName:
+    def __init__(
+        self,
+        name,
+        resolution=None,
+        first_date=None,
+        last_date=None,
+        frequency=None,
+    ):
+        self.name = name
+        self.parsed = self._parse(name)
+
+        self.messages = []
+
+        self.check_parsed()
+        self.check_resolution(resolution)
+        self.check_frequency(frequency)
+        self.check_first_date(first_date)
+        self.check_last_date(last_date)
+
+        if self.messages:
+            self.messages.append(
+                f"{self} is parsed as :"
+                + "/".join(f"{k}={v}" for k, v in self.parsed.items())
+            )
+
+    @property
+    def is_valid(self):
+        return not self.messages
+
+    @property
+    def error_message(self):
+        out = " And ".join(self.messages)
+        if out:
+            out = out[0].upper() + out[1:]
+        return out
+
+    def raise_if_not_valid(self, print=print):
+        if not self.is_valid:
+            for m in self.messages:
+                print(m)
+            raise ValueError(self.error_message)
+
+    def _parse(self, name):
+        pattern = r"^(\w+)-(\w+)-(\w+)-(\w+)-(\w\w\w\w)-(\w+)-(\w+)-([\d\-]+)-(\d+h)-v(\d+)-?(.*)$"
+        match = re.match(pattern, name)
+
+        parsed = {}
+        if match:
+            keys = [
+                "use_case",
+                "class_",
+                "type_",
+                "stream",
+                "expver",
+                "source",
+                "resolution",
+                "period",
+                "frequency",
+                "version",
+                "additional",
+            ]
+            parsed = {k: v for k, v in zip(keys, match.groups())}
+
+            period = parsed["period"].split("-")
+            assert len(period) in (1, 2), (name, period)
+            parsed["first_date"] = period[0]
+            if len(period) == 1:
+                parsed["last_date"] = period[0]
+            if len(period) == 2:
+                parsed["last_date"] = period[1]
+
+        return parsed
+
+    def __str__(self):
+        return self.name
+
+    def check_parsed(self):
+        if not self.parsed:
+            self.messages.append(
+                (
+                    f"the dataset name {self} does not follow naming convention. "
+                    "See here for details: "
+                    "https://confluence.ecmwf.int/display/DWF/Datasets+available+as+zarr"
+                )
+            )
+
+    def check_resolution(self, resolution):
+        if (
+            self.parsed.get("resolution")
+            and self.parsed["resolution"][0] not in "0123456789on"
+        ):
+            self.messages.append(
+                (
+                    f"the resolution {self.parsed['resolution'] } should start "
+                    f"with a number or 'o' or 'n' in the dataset name {self}."
+                )
+            )
+
+        if resolution is None:
+            return
+        resolution_str = str(resolution).replace(".", "p").lower()
+        self._check_missing("resolution", resolution_str)
+        self._check_mismatch("resolution", resolution_str)
+
+    def check_frequency(self, frequency):
+        if frequency is None:
+            return
+        frequency_str = f"{frequency}h"
+        self._check_missing("frequency", frequency_str)
+        self._check_mismatch("frequency", frequency_str)
+
+    def check_first_date(self, first_date):
+        if first_date is None:
+            return
+        first_date_str = str(first_date.year)
+        self._check_missing("first date", first_date_str)
+        self._check_mismatch("first_date", first_date_str)
+
+    def check_last_date(self, last_date):
+        if last_date is None:
+            return
+        last_date_str = str(last_date.year)
+        self._check_missing("last_date", last_date_str)
+        self._check_mismatch("last_date", last_date_str)
+
+    def _check_missing(self, key, value):
+        if value not in self.name:
+            self.messages.append(
+                (f"the {key} is {value}, but is missing in {self.name}.")
+            )
+
+    def _check_mismatch(self, key, value):
+        if self.parsed.get(key) and self.parsed[key] != value:
+            self.messages.append(
+                (f"the {key} is {value}, but is {self.parsed[key]} in {self.name}.")
+            )
+
+
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.7"
+VERSION = "0.8"
 
 
 def get_versions():
@@ -129,7 +269,7 @@ class OffsetView:
         self.large_array[new_key] = values
 
 
-class LoopItemsFilter:
+class CubesFilter:
     def __init__(self, *, loader, parts, **kwargs):
         self.loader = loader
 
@@ -168,17 +308,16 @@ class LoopItemsFilter:
 
         self.parts = parts
 
-    def __call__(self, iloop, vars):
+    def __call__(self, i):
         if self.parts is None:
             return True
-        # iloop index starts at 0
-        # self.parts is a list of indices starting at 1
-        return iloop in self.parts
+        return i in self.parts
 
 
 class Loader:
     def __init__(self, *, path, config, print=print, **kwargs):
         self.main_config = LoadersConfig(config)
+        self.input_handler = self.main_config.input_handler()
         self.path = path
         self.kwargs = kwargs
         self.print = print
@@ -190,24 +329,23 @@ class Loader:
         self.z = zarr.open(self.path, mode="r+")
         self.registry.add_to_history("loading_data_start", parts=kwargs.get("parts"))
 
-        filter = LoopItemsFilter(loader=self, **kwargs)
-        nloop = len(list((self.iter_loops())))
-        for iloop, vars in enumerate(self.iter_loops()):
-            if not filter(iloop, vars):
+        filter = CubesFilter(loader=self, **kwargs)
+        ncubes = self.input_handler.n_cubes
+        for icube, cubecreator in enumerate(self.input_handler.iter_cubes()):
+            if not filter(icube):
                 continue
-            if self.registry.get_flag(iloop):
-                print(f" -> Skipping {iloop} total={nloop} (already done)")
+            if self.registry.get_flag(icube):
+                print(f" -> Skipping {icube} total={ncubes} (already done)")
                 continue
-            self.print(f" -> Processing i={iloop=} total={nloop}")
+            self.print(f" -> Processing i={icube=} total={ncubes}")
 
-            config = self.main_config.substitute(vars)
-            cube = self.config_to_data_cube(config)
-
+            cube = cubecreator.to_cube()
             shape = cube.extended_user_shape
-            chunks = cube.chunking(config.output.chunking)
-            axis = config.output.append_axis
+            chunks = cube.chunking(self.input_handler.output.chunking)
+            axis = self.input_handler.output.append_axis
 
-            slice = self.registry.get_slice_for(iloop)
+            slice = self.registry.get_slice_for(icube)
+
             print(f"Building to ZARR '{self.path}':")
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
@@ -216,9 +354,10 @@ class Loader:
 
             self.load_datacube(cube, array)
 
-            self.registry.set_flag(iloop)
+            self.registry.set_flag(icube)
 
         self.registry.add_to_history("loading_data_end", parts=kwargs.get("parts"))
+        self.registry.add_provenance()
 
     def load_datacube(self, cube, array):
         start = time.time()
@@ -227,14 +366,14 @@ class Loader:
 
         reading_chunks = None
         total = cube.count(reading_chunks)
-        for i, cubelet in enumerate(
-            progress_bar(
-                iterable=cube.iterate_cubelets(reading_chunks),
-                total=total,
-            )
-        ):
+        bar = progress_bar(
+            iterable=cube.iterate_cubelets(reading_chunks),
+            total=total,
+        )
+        for i, cubelet in enumerate(bar):
             now = time.time()
             data = cubelet.to_numpy()
+            bar.set_description(f"{i}/{total} {str(cubelet)} ({data.shape})")
             load += time.time() - now
 
             j = cubelet.extended_icoords[1]
@@ -291,11 +430,12 @@ class ZarrBuiltRegistry:
             os.path.join(self.zarr_path, "registry.sync")
         )
 
-    def get_slice_for(self, iloop):
+    def get_slice_for(self, i):
         lengths = self.get_lengths()
-        assert iloop >= 0 and iloop < len(lengths)
-        start = sum(lengths[:iloop])
-        stop = sum(lengths[: (iloop + 1)])
+        assert i >= 0 and i < len(lengths)
+
+        start = sum(lengths[:i])
+        stop = sum(lengths[: (i + 1)])
         return slice(start, stop)
 
     def get_lengths(self):
@@ -307,14 +447,14 @@ class ZarrBuiltRegistry:
         print(list(z[self.name_flags][:]))
         return list(z[self.name_flags][:])
 
-    def get_flag(self, iloop):
+    def get_flag(self, i):
         z = self._open_read()
-        return z[self.name_flags][iloop]
+        return z[self.name_flags][i]
 
-    def set_flag(self, iloop, value=True):
+    def set_flag(self, i, value=True):
         z = self._open_write()
         z.attrs["latest_write_timestamp"] = datetime.datetime.utcnow().isoformat()
-        z[self.name_flags][iloop] = value
+        z[self.name_flags][i] = value
 
     def _open_read(self, sync=True):
         import zarr
@@ -351,6 +491,12 @@ class ZarrBuiltRegistry:
 
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
+
+    def add_provenance(self, name="provenance"):
+        from ecml_tools.provenance import gather_provenance_info
+
+        z = self._open_write()
+        z.attrs[name] = gather_provenance_info()
 
     def add_to_history(self, action, **kwargs):
         new = dict(
@@ -393,12 +539,7 @@ class ZarrLoader(Loader):
         return cls.from_config(config=config, path=path, **kwargs)
 
     def iter_loops(self):
-        if "loop" not in self.main_config or self.main_config.loop is None:
-            raise NotImplementedError()
-            yield None  # ?
-            return
-
-        for vars in self.main_config._iter_loops():
+        for vars in self.input_handler.iter_loops():
             yield vars
 
     def _compute_lengths(self, multiply):
@@ -412,6 +553,7 @@ class ZarrLoader(Loader):
             lst = squeeze_dict(vars)
             assert isinstance(lst, (tuple, list)), lst
             lengths.append(len(lst))
+            print("i vars", i, vars, lengths, lst, f"{multiply=}")
 
         lengths = [x * multiply for x in lengths]
         return lengths
@@ -425,50 +567,49 @@ class ZarrLoader(Loader):
         import pandas as pd
         import zarr
 
-        from climetlab.utils.dates import to_datetime  # avoid circular imports
+        print("config loaded ok:")
+        print(self.main_config)
+        print("-------------------------")
 
-        variables = self._variables_names
+        def debug():
+            print(self.input_handler)
+            for i in self.input_handler.iter_loops():
+                print(i)
+            print(self.input_handler.shape)
+            print(self.input_handler.resolution)
+            print(self.input_handler.first_field)
+            print(self.input_handler.coords)
 
-        def get_first_and_last_element_configs():
-            first = None
-            for i, vars in enumerate(self.iter_loops()):
-                keys = list(vars.keys())
-                assert len(vars) == 1, keys
-                key = keys[0]
-                if first is None:
-                    first = self.main_config.substitute({key: vars[key][0]})
-            last = self.main_config.substitute({key: vars[key][-1]})
-            return first, last
+        total_shape = self.input_handler.shape
+        print(f"total_shape = {total_shape}")
 
-        first, last = get_first_and_last_element_configs()
-
-        first_cube, grid_points = self.config_to_data_cube(first, with_gridpoints=True)
-        last_cube, grid_points_ = self.config_to_data_cube(last, with_gridpoints=True)
-        for _ in zip(grid_points, grid_points_):
-            assert (_[0] == _[1]).all(), (grid_points_, grid_points)
-
-        assert first_cube.extended_user_shape[1] == len(variables), (
-            first_cube.extended_user_shape,
-            len(variables),
+        print("-------------------------")
+        # debug()
+        grid_points = self.input_handler.grid_points
+        print(f"gridpoints size: {[len(i) for i in grid_points]}")
+        print("-------------------------")
+        dates = self.input_handler.get_datetimes()
+        print(
+            f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes: ",
+            end="",
         )
-        assert last_cube.extended_user_shape[1] == len(variables), (
-            last_cube.extended_user_shape,
-            len(variables),
+        lengths = [str(len(c.get_datetimes())) for c in self.input_handler.iter_cubes()]
+        print("+".join(lengths))
+        print("-------------------------")
+
+        variables_names = self.input_handler.variables
+
+        assert (
+            variables_names
+            == self.main_config.output.order_by[self.main_config.output.statistics]
+        ), (
+            f"Requested= {self.main_config.output.order_by[self.main_config.output.statistics]} "
+            f"Actual= {variables_names}"
         )
 
-        shape = list(first_cube.extended_user_shape)
-        assert shape == list(last_cube.extended_user_shape), (
-            shape,
-            list(last_cube.extended_user_shape),
-        )
-        # Notice that shape[0] can be >1
-        # we are assuming that all data has the same shape
-        one_element_length = shape[0]
-        lengths = self._compute_lengths(one_element_length)
+        resolution = self.input_handler.resolution
 
-        total_shape = [sum(lengths), *shape[1:]]
-
-        chunks = first_cube.chunking(self.main_config.output.chunking)
+        chunks = self.input_handler.chunking
         dtype = self.main_config.output.dtype
 
         self.print(
@@ -476,55 +617,20 @@ class ZarrLoader(Loader):
             f"{chunks=} and {dtype=}"
         )
 
-        resolution = first_cube.source[0].resolution
-
-        first_date = to_datetime(first_cube.user_coords["valid_datetime"][0])
-        last_date = to_datetime(last_cube.user_coords["valid_datetime"][-1])
-        frequency = (
-            (last_date - first_date).total_seconds() / 3600 / (total_shape[0] - 1)
-        )
-        if int(frequency) != frequency:
-            raise ValueError(
-                (
-                    "Cannot compute frequency. Data is not regularly organised ? "
-                    f"{first_date=}; {last_date=}; {total_shape[0]=}; {frequency=}"
-                )
-            )
-        frequency = int(frequency)
-
-        def check(name, resolution, first_date, last_date, frequency):
-            resolution_str = str(resolution).replace(".", "p").lower()
-            if f"-{resolution_str}-" not in name:
-                msg = (
-                    f"Resolution {resolution_str} should appear in the dataset name ({name})."
-                    " Use --no-check to ignore."
-                )
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{frequency}h-" not in name:
-                msg = f"Frequency {frequency}h should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{first_date.year}-" not in name:
-                msg = f"Year {first_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
-
-            if f"-{last_date.year}-" not in name:
-                msg = f"Year {last_date.year} should appear in the dataset name ({name}). Use --no-check to ignore."
-                self.print(msg)
-                raise ValueError(msg)
+        frequency = self.input_handler.frequency
+        assert isinstance(frequency, int), frequency
 
         if not self.kwargs["no_check"]:
-            check(
-                os.path.basename(self.path),
+            basename, ext = os.path.splitext(os.path.basename(self.path))
+
+            ds_name = DatasetName(
+                basename,
                 resolution,
-                first_date,
-                last_date,
+                dates[0],
+                dates[-1],
                 frequency,
             )
+            ds_name.raise_if_not_valid(print=self.print)
 
         metadata = {}
 
@@ -532,25 +638,39 @@ class ZarrLoader(Loader):
 
         metadata["create_yaml_config"] = _prepare_serialisation(self.main_config)
 
+        metadata["description"] = self.main_config.description
         metadata["resolution"] = resolution
 
-        metadata["variables"] = self._variables_names
-
+        metadata["variables"] = variables_names
         metadata["version"] = VERSION
-
         metadata["frequency"] = frequency
-        metadata["first_date"] = first_date.isoformat()
-        metadata["last_date"] = last_date.isoformat()
-        pd_dates = pd.date_range(
+        metadata["first_date"] = dates[0].isoformat()
+        metadata["last_date"] = dates[-1].isoformat()
+        pd_dates_kwargs = dict(
             start=metadata["first_date"],
             end=metadata["last_date"],
             freq=f"{metadata['frequency']}h",
             unit="s",
         )
-        assert pd_dates.size == total_shape[0], (pd_dates, total_shape)
-        assert pd_dates[-1] == last_date, (pd_dates, last_date)
+        pd_dates = pd.date_range(**pd_dates_kwargs)
 
-        # metadata["_yaml_dump"] = yaml.dump(metadata, sort_keys=False)
+        def check_dates(input_handler, pd_dates, total_shape):
+            for i, loop in enumerate(input_handler.loops):
+                print(f"Loop {i}: ", loop._info)
+            if pd_dates.size != total_shape[0]:
+                raise ValueError(
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
+                    f"{frequency=}) does not match data shape {total_shape[0]}. {total_shape=}"
+                )
+            if pd_dates.size != len(dates):
+                raise ValueError(
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
+                    f"{frequency=}) does not match data shape {len(dates)} (from {dates[0]} to "
+                    f"{dates[-1]}). {pd_dates_kwargs}"
+                )
+
+        check_dates(self.input_handler, pd_dates, total_shape)
+
         metadata.update(self.main_config.get("force_metadata", {}))
 
         # write data
@@ -561,39 +681,16 @@ class ZarrLoader(Loader):
         np_dates = pd_dates.to_numpy()
         self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
 
-        assert grid_points[0].shape == grid_points[1].shape
         self._add_dataset("latitudes", grid_points[0])
         self._add_dataset("longitudes", grid_points[1])
 
         # write metadata
         for k, v in metadata.items():
-            print(v)
             self.z.attrs[k] = v
 
         self.z = None
 
         self.registry.create(lengths=lengths)
-
-    def config_to_data_cube(self, config, with_gridpoints=False):
-        start = time.time()
-        data = cml.load_source("loader", config.input)
-        assert len(data), f"No data for {config}"
-        self.print(f"Done in {seconds(time.time()-start)}, length: {len(data):,}.")
-
-        start = time.time()
-        self.print("Sorting dataset")
-        cube = data.cube(
-            config.output.order_by,
-            remapping=config.output.remapping,
-            flatten_values=config.output.flatten_values,
-        )
-        cube = cube.squeeze()
-        self.print(f"Sorting done in {seconds(time.time()-start)}.")
-
-        if not with_gridpoints:
-            return cube
-        else:
-            return cube, data[0].grid_points()
 
     def _add_dataset(self, *args, **kwargs):
         import zarr
@@ -674,6 +771,7 @@ class ZarrLoader(Loader):
                 start=statistics_start,
                 end=statistics_end,
             )
+            self.registry.add_provenance(name="statistics_provenance")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
         import zarr

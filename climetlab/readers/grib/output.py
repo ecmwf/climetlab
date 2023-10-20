@@ -28,6 +28,12 @@ _ORDER = (
     "productDefinitionTemplateNumber",
 )
 
+NOT_IN_EDITION_1 = (
+    "productDefinitionTemplateNumber",
+    "typeOfGeneratingProcess",
+)
+
+
 ORDER = {}
 for i, k in enumerate(_ORDER):
     ORDER[k] = i
@@ -97,7 +103,7 @@ class GribOutput:
 
         metadata = md
 
-        compulsary = ("date", ("param", "paramId", "shortName"))
+        compulsary = (("date", "referenceDate"), ("param", "paramId", "shortName"))
 
         if template is None:
             template = self.template
@@ -125,12 +131,22 @@ class GribOutput:
             k: v for k, v in sorted(metadata.items(), key=lambda x: order(x[0]))
         }
 
+        if str(metadata.get("edition")) == "1":
+            for k in NOT_IN_EDITION_1:
+                metadata.pop(k, None)
+
         LOG.debug("GribOutput.metadata %s", metadata)
 
         for k, v in metadata.items():
             handle.set(k, v)
 
         handle.set_values(values)
+
+        # Set values will set generatingProcessIdentifier to 255
+        if "generatingProcessIdentifier" in metadata:
+            handle.set(
+                "generatingProcessIdentifier", metadata["generatingProcessIdentifier"]
+            )
 
         file, path = self.f(handle)
         handle.write(file)
