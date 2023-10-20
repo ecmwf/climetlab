@@ -152,15 +152,13 @@ class DatasetName:
     def _check_missing(self, key, value):
         if value not in self.name:
             self.messages.append(
-                (f"the {key} in the data is {value}, but is missing in {self.name}.")
+                (f"the {key} is {value}, but is missing in {self.name}.")
             )
 
     def _check_mismatch(self, key, value):
         if self.parsed.get(key) and self.parsed[key] != value:
             self.messages.append(
-                (
-                    f"the {key} in the data is {value}, but is {self.parsed[key]} in {self.name}."
-                )
+                (f"the {key} is {value}, but is {self.parsed[key]} in {self.name}.")
             )
 
 
