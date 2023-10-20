@@ -13,10 +13,11 @@ import os
 from urllib.parse import urljoin
 
 import requests
+from multiurl import robust
+
 from climetlab.core.caching import cache_file
 from climetlab.readers.grib.index import FieldSetInFiles
 from climetlab.utils import progress_bar
-from multiurl import robust
 
 LOG = logging.getLogger(__name__)
 

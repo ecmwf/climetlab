@@ -13,6 +13,7 @@ from itertools import zip_longest
 from numbers import Number
 
 import numpy as np
+
 from climetlab.core import Base
 
 LOG = logging.getLogger(__name__)

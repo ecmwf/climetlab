@@ -14,8 +14,7 @@ from .core.constants import DATETIME
 from .core.initialise import initialise
 from .core.settings import SETTINGS as settings
 from .datasets import Dataset
-from .datasets import \
-    get_dataset as dataset  # so the user can do: cml.dataset(...)
+from .datasets import get_dataset as dataset  # so the user can do: cml.dataset(...)
 from .datasets import load_dataset
 from .distributed.dask import start_dask
 from .plotting import interactive_map, new_plot, new_table
@@ -24,8 +23,7 @@ from .plotting import plot_map
 from .readers import Reader
 from .readers.grib.output import new_grib_output
 from .sources import Source
-from .sources import \
-    get_source as source  # so the user can do: cml.source(...)
+from .sources import get_source as source  # so the user can do: cml.source(...)
 from .sources import load_source, load_source_lazily
 from .version import __version__
 from .wrappers import Wrapper

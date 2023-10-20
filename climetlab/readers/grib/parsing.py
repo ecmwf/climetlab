@@ -13,9 +13,10 @@ import sys
 import time
 from multiprocessing import Process, Queue
 
+from tqdm import tqdm
+
 from climetlab.utils import progress_bar
 from climetlab.utils.humanize import plural, seconds
-from tqdm import tqdm
 
 LOG = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def _index_grib_file(
     position=0,
 ):
     import eccodes
+
     from climetlab.readers.grib.codes import CodesHandle
 
     post_process_mars = []
