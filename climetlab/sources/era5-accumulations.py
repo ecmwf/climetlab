@@ -45,6 +45,9 @@ mapping = [
 
 class Era5Accumulations(Source):
     def __init__(self, *args, **kwargs):
+        request = {}
+        for a in args:
+            request.update(self.requests(**a))
         request = self.requests(**kwargs)
 
         user_dates = request["date"]
