@@ -534,8 +534,8 @@ class ZarrLoader(Loader):
 
         assert os.path.exists(path), path
         z = zarr.open(path, mode="r")
-        config = z.attrs["create_yaml_config"]
-        # config = yaml.safe_load(z.attrs["_yaml_dump"])["create_yaml_config"]
+        config = z.attrs["_create_yaml_config"]
+        # config = yaml.safe_load(z.attrs["_yaml_dump"])["_create_yaml_config"]
         kwargs.get("print", print)("Config loaded from zarr: ", config)
         return cls.from_config(config=config, path=path, **kwargs)
 
@@ -638,7 +638,7 @@ class ZarrLoader(Loader):
 
         metadata.update(self.main_config.get("add_metadata", {}))
 
-        metadata["create_yaml_config"] = _prepare_serialisation(self.main_config)
+        metadata["_create_yaml_config"] = _prepare_serialisation(self.main_config)
 
         metadata["description"] = self.main_config.description
         metadata["resolution"] = resolution
