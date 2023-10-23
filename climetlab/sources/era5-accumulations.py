@@ -44,6 +44,17 @@ mapping = [
 
 
 class Era5Accumulations(Source):
+    """This source use a MARS request to get the data for accumulated fields
+    following the same logic as what has been done when storing ERA5 in the
+    Climate Data Store (CDS).
+    The date+time provided to this source refers to the valid datetime of the data,
+    these date+time are used to compute the date+time+step that are actually used to perform the mars request.
+
+    Note 1 : as all these are lists, there are potentially to many fields requested to MARS.
+          This is taken care by the final ".sel" .
+    Note 2 : There are no overlap due to the way the date+time+step are computed
+    """
+
     def __init__(self, *args, **kwargs):
         request = {}
         for a in args:
@@ -60,8 +71,20 @@ class Era5Accumulations(Source):
         steps = set()
 
         for user_date, user_time in itertools.product(user_dates, user_times):
+            assert isinstance(user_date, datetime.datetime), (
+                type(user_date),
+                user_dates,
+                user_times,
+            )
+            assert isinstance(user_time, int), (type(user_time), user_dates, user_times)
+            assert 0 <= user_time <= 24, user_time
+
             date = user_date + datetime.timedelta(hours=user_time)
             delta, time, step = mapping[date.hour]
+
+            assert 0 <= time <= 23, time
+            assert 0 <= step <= 24, step
+
             when = date + datetime.timedelta(days=delta)
             dates.add(datetime.datetime(when.year, when.month, when.day))
             times.add(time)
@@ -101,7 +124,8 @@ class Era5Accumulations(Source):
     def mutate(self):
         return self.ds
 
-    @normalize("date", "date-list(%Y-%m-%d)")
+    @normalize("date", "date-list(datetime.datetime)")
+    @normalize("time", "int-list")
     @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
         result = dict(**kwargs)

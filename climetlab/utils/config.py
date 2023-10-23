@@ -143,10 +143,17 @@ class Input:
     def get_datetimes(self):
         name = self.kwargs.get("name", None)
 
-        assert name in ["constants", "mars"], f"{name} not implemented"
+        assert name in [
+            "era5-accumulations",
+            "constants",
+            "mars",
+        ], f"{name} not implemented"
 
         if name == "constants":
             return None
+
+        if name == "era5-accumulations":
+            raise NotImplementedError(f"{name} not implemented")
 
         if name == "mars":
             is_hindast = "hdate" in self.kwargs
