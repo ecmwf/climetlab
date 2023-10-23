@@ -395,6 +395,7 @@ class InputHandler:
             ref.resolution,
             coords,
             ref.variables,
+            ref.data_request,
         )
 
     @property
@@ -408,6 +409,10 @@ class InputHandler:
     @property
     def resolution(self):
         return self._info.resolution
+
+    @property
+    def data_request(self):
+        return self._info.data_request
 
     @property
     def coords(self):
@@ -531,6 +536,7 @@ class Loop(dict):
             resolution=first_info.resolution,
             coords=coords,
             variables=first_info.variables,
+            data_request=first_info.data_request,
         )
 
     def get_datetimes(self):
@@ -586,7 +592,7 @@ class CubeCreator:
         return self.inputs.get_datetimes()
 
     def to_cube(self):
-        cube, data = self._to_data_and_cube()
+        cube, _ = self._to_data_and_cube()
         return cube
 
     def _to_data_and_cube(self):
@@ -600,10 +606,9 @@ class CubeCreator:
             flatten_values=self.output.flatten_values,
         )
         cube = cube.squeeze()
+        print(f"Sorting done in {seconds(time.time()-start)}.")
 
-        def check():
-            actual_dic = cube.user_coords
-            requested_dic = self.output.order_by
+        def check(actual_dic, requested_dic):
             assert self.output.statistics in actual_dic
 
             for key in set(list(actual_dic.keys()) + list(requested_dic.keys())):
@@ -619,9 +624,7 @@ class CubeCreator:
                     continue
                 assert actual == requested, f"Requested= {requested} Actual= {actual}"
 
-        check()
-
-        print(f"Sorting done in {seconds(time.time()-start)}.")
+        check(actual_dic=cube.user_coords, requested_dic=self.output.order_by)
 
         return cube, data
 
@@ -634,8 +637,34 @@ class CubeCreator:
         resolution = first_field.resolution
         coords = cube.user_coords
         variables = list(coords[list(coords.keys())[1]])
+        data_request = self._get_data_request(data)
 
-        return Info(first_field, grid_points, resolution, coords, variables)
+        return Info(
+            first_field, grid_points, resolution, coords, variables, data_request
+        )
+
+    def _get_data_request(self, data):
+        date = None
+        params = set()
+
+        for field in data:
+            if not hasattr(field, "as_mars"):
+                continue
+            if date is None:
+                date = field.valid_datetime()
+            if field.valid_datetime() != date:
+                continue
+
+            as_mars = field.as_mars()
+            step = as_mars.get("step")
+            levtype = as_mars.get("levtype", "sfc")
+            param = as_mars["param"]
+            levelist = as_mars.get("levelist", None)
+            params.add((levtype, param, levelist, step))
+
+        params = sorted(list(params))
+
+        return dict(params=params)
 
 
 def _format_list(x):
@@ -658,7 +687,9 @@ def _format_list(x):
 
 
 class Info:
-    def __init__(self, first_field, grid_points, resolution, coords, variables):
+    def __init__(
+        self, first_field, grid_points, resolution, coords, variables, data_request
+    ):
         assert len(set(variables)) == len(variables), (
             "Duplicate variables",
             variables,
@@ -681,6 +712,7 @@ class Info:
         self.resolution = resolution
         self.coords = coords
         self.variables = variables
+        self.data_request = data_request
 
     def __repr__(self):
         shape = (

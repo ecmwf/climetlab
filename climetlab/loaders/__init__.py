@@ -13,6 +13,7 @@ import logging
 import os
 import re
 import time
+import uuid
 import warnings
 
 import numpy as np
@@ -164,7 +165,7 @@ class DatasetName:
 
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.8"
+VERSION = "0.9"
 
 
 def get_versions():
@@ -633,6 +634,7 @@ class ZarrLoader(Loader):
             ds_name.raise_if_not_valid(print=self.print)
 
         metadata = {}
+        metadata["uuid"] = str(uuid.uuid4())
 
         metadata.update(self.main_config.get("add_metadata", {}))
 
@@ -640,6 +642,31 @@ class ZarrLoader(Loader):
 
         metadata["description"] = self.main_config.description
         metadata["resolution"] = resolution
+
+        def add_params_by_levtype(levtype, params):
+            params = [
+                (param, levelist) for t, param, levelist, step in params if t == levtype
+            ]
+            params = sorted(list(set(params)))
+
+            if not params:
+                return
+
+            if levtype == "sfc":
+                metadata[f"params_level_{levtype}"] = [x[0] for x in params]
+            else:
+                metadata[f"params_level_{levtype}"] = [
+                    [x[0] for x in params],
+                    [x[1] for x in params],
+                ]
+
+        add_params_by_levtype("sfc", self.input_handler.data_request["params"])
+        add_params_by_levtype("pl", self.input_handler.data_request["params"])
+        add_params_by_levtype("ml", self.input_handler.data_request["params"])
+        metadata["data_request"] = self.input_handler.data_request
+
+        metadata["area"] = [90, 0, -90, 360]
+        metadata["remapping"] = self.main_config.output.remapping
 
         metadata["variables"] = variables_names
         metadata["version"] = VERSION
