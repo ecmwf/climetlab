@@ -165,7 +165,7 @@ class DatasetName:
 
 LOG = logging.getLogger(__name__)
 
-VERSION = "0.9"
+VERSION = "0.10"
 
 
 def get_versions():
