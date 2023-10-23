@@ -140,7 +140,7 @@ class Input:
         self.inherit = self.config.get("inherit", [])
         self.function = self.config.get("function", None)
 
-    def get_datetimes(self, others={}):
+    def get_datetimes(self):
         name = self.kwargs.get("name", None)
 
         assert name in ["constants", "mars"], f"{name} not implemented"
@@ -488,7 +488,7 @@ class Loop(dict):
             [input for input in inputs if input.name in applies_to]
         )
         for i in self.applies_to_inputs:
-            i.process_inheritance(inputs)
+            i.process_inheritance(self.applies_to_inputs)
 
         self.values = {}
         for k, v in self.config.items():
@@ -901,7 +901,9 @@ def hdates_from_date(date, start_year, end_year):
     from climetlab.utils.dates import to_datetime
 
     if isinstance(date, (list, tuple)):
-        raise NotImplementedError(f"{date}")
+        if len(date) != 1:
+            raise NotImplementedError(f"{date} should have only one element.")
+        date = date[0]
 
     date = to_datetime(date)
     assert not (date.hour or date.minute or date.second), date
@@ -920,8 +922,12 @@ class Expand(list):
     def parse_config(self):
         from climetlab.utils.dates import to_datetime
 
-        self.start = to_datetime(self._config.get("start"))
-        self.stop = to_datetime(self._config.get("stop"))
+        self.start = self._config.get("start")
+        if self.start is not None:
+            self.start = to_datetime(self.start)
+        self.stop = self._config.get("stop")
+        if self.stop is not None:
+            self.stop = to_datetime(self.stop)
         self.step = self._config.get("step", 1)
         self.group_by = self._config.get("group_by")
 
@@ -995,9 +1001,13 @@ class IntStartStopExpand(StartStopExpand):
 
 def _expand_class(values):
     if isinstance(values, list):
-        return ValuesExpand
+        values = {"values": values}
 
     assert isinstance(values, dict), values
+
+    if isinstance(values.get("values"), list):
+        assert len(values) == 1, f"No other config keys implemented. {values}"
+        return ValuesExpand
 
     if values.get("type") == "hindcast":
         return HindcastExpand
