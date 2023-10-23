@@ -643,27 +643,10 @@ class ZarrLoader(Loader):
         metadata["description"] = self.main_config.description
         metadata["resolution"] = resolution
 
-        def add_params_by_levtype(levtype, params):
-            params = [
-                (param, levelist) for t, param, levelist, step in params if t == levtype
-            ]
-            params = sorted(list(set(params)))
-
-            if not params:
-                return
-
-            if levtype == "sfc":
-                metadata[f"params_level_{levtype}"] = [x[0] for x in params]
-            else:
-                metadata[f"params_level_{levtype}"] = [
-                    [x[0] for x in params],
-                    [x[1] for x in params],
-                ]
-
-        add_params_by_levtype("sfc", self.input_handler.data_request["params"])
-        add_params_by_levtype("pl", self.input_handler.data_request["params"])
-        add_params_by_levtype("ml", self.input_handler.data_request["params"])
         metadata["data_request"] = self.input_handler.data_request
+        for k, v in self.input_handler.data_request.items():
+            assert k.startswith("param_"), k
+            metadata[f"{k}"] = v
 
         metadata["area"] = [90, 0, -90, 360]
         metadata["remapping"] = self.main_config.output.remapping

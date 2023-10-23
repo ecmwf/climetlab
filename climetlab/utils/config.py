@@ -13,6 +13,7 @@ import math
 import os
 import re
 import time
+from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 
@@ -113,6 +114,52 @@ class Inputs(list):
         return "\n".join(str(i) for i in self)
 
 
+class DatetimeGetter:
+    def __init__(self, kwargs) -> None:
+        self.kwargs = kwargs
+
+    @property
+    def values(self):
+        raise NotImplementedError(type(self))
+
+
+class MarsDatetimeGetter(DatetimeGetter):
+    def __init__(self, kwargs) -> None:
+        super().__init__(kwargs)
+
+        date = self.kwargs.get("date", [])
+        hdate = self.kwargs.get("hdate", [])
+        time = self.kwargs.get("time", [0])
+        step = self.kwargs.get("step", [0])
+
+        from climetlab.utils.dates import to_datetime_list
+
+        date = to_datetime_list(date)
+        hdate = to_datetime_list(hdate)
+        time = make_list_int(time)
+        step = make_list_int(step)
+
+    pass
+
+
+class StandardMarsDatetimeGetter(MarsDatetimeGetter):
+    pass
+
+
+class HindcastMarsDatetimeGetter(DatetimeGetter):
+    pass
+
+
+class Era5AccumulationDatetimeGetter(DatetimeGetter):
+    pass
+
+
+class ConstantDatetimeGetter(DatetimeGetter):
+    @property
+    def values(self):
+        return None
+
+
 class Input:
     _inheritance_done = False
     _inheritance_others = None
@@ -153,7 +200,7 @@ class Input:
             return None
 
         if name == "era5-accumulations":
-            raise NotImplementedError(f"{name} not implemented")
+            return None
 
         if name == "mars":
             is_hindast = "hdate" in self.kwargs
@@ -652,7 +699,8 @@ class CubeCreator:
 
     def _get_data_request(self, data):
         date = None
-        params = set()
+        params_levels = defaultdict(set)
+        params_steps = defaultdict(set)
 
         for field in data:
             if not hasattr(field, "as_mars"):
@@ -667,11 +715,25 @@ class CubeCreator:
             levtype = as_mars.get("levtype", "sfc")
             param = as_mars["param"]
             levelist = as_mars.get("levelist", None)
-            params.add((levtype, param, levelist, step))
 
-        params = sorted(list(params))
+            if levelist is None:
+                params_levels[levtype].add(param)
+            else:
+                params_levels[levtype].add((param, levelist))
 
-        return dict(params=params)
+            if step:
+                params_steps[levtype].add((param, step))
+
+        def sort(old_dic):
+            new_dic = {}
+            for k, v in old_dic.items():
+                new_dic[k] = sorted(list(v))
+            return new_dic
+
+        params_steps = sort(params_steps)
+        params_levels = sort(params_levels)
+
+        return dict(param_level=params_levels, param_step=params_steps)
 
 
 def _format_list(x):
