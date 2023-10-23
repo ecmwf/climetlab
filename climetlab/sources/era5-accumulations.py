@@ -16,35 +16,38 @@ from climetlab import Source
 from climetlab.decorators import normalize
 
 mapping = [
-    [0, -1, 18, 6],
-    [1, -1, 18, 7],
-    [2, -1, 18, 8],
-    [3, -1, 18, 9],
-    [4, -1, 18, 10],
-    [5, -1, 18, 11],
-    [6, -1, 18, 12],
-    [7, 0, 6, 1],
-    [8, 0, 6, 2],
-    [9, 0, 6, 3],
-    [10, 0, 6, 4],
-    [11, 0, 6, 5],
-    [12, 0, 6, 6],
-    [13, 0, 6, 7],
-    [14, 0, 6, 8],
-    [15, 0, 6, 9],
-    [16, 0, 6, 10],
-    [17, 0, 6, 11],
-    [18, 0, 6, 12],
-    [19, 0, 18, 1],
-    [20, 0, 18, 2],
-    [21, 0, 18, 3],
-    [22, 0, 18, 4],
-    [23, 0, 18, 5],
+    [-1, 18, 6],
+    [-1, 18, 7],
+    [-1, 18, 8],
+    [-1, 18, 9],
+    [-1, 18, 10],
+    [-1, 18, 11],
+    [-1, 18, 12],
+    [0, 6, 1],
+    [0, 6, 2],
+    [0, 6, 3],
+    [0, 6, 4],
+    [0, 6, 5],
+    [0, 6, 6],
+    [0, 6, 7],
+    [0, 6, 8],
+    [0, 6, 9],
+    [0, 6, 10],
+    [0, 6, 11],
+    [0, 6, 12],
+    [0, 18, 1],
+    [0, 18, 2],
+    [0, 18, 3],
+    [0, 18, 4],
+    [0, 18, 5],
 ]
 
 
 class Era5Accumulations(Source):
     def __init__(self, *args, **kwargs):
+        request = {}
+        for a in args:
+            request.update(self.requests(**a))
         request = self.requests(**kwargs)
 
         user_dates = request["date"]
@@ -58,7 +61,7 @@ class Era5Accumulations(Source):
 
         for user_date, user_time in itertools.product(user_dates, user_times):
             date = user_date + datetime.timedelta(hours=user_time)
-            _, delta, time, step = mapping[date.hour]
+            delta, time, step = mapping[date.hour]
             when = date + datetime.timedelta(days=delta)
             dates.add(datetime.datetime(when.year, when.month, when.day))
             times.add(time)
