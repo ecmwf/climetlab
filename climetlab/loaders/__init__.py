@@ -268,6 +268,10 @@ class OffsetView:
             new_key = tuple(
                 k + self.offset if i == self.axis else k for i, k in enumerate(key)
             )
+
+        print("TODO: fix this and move it to the right place")
+        new_key = tuple(list(new_key) + [0])
+
         self.large_array[new_key] = values
 
 
@@ -572,20 +576,10 @@ class ZarrLoader(Loader):
         print(self.main_config)
         print("-------------------------")
 
-        def debug():
-            print(self.input_handler)
-            for i in self.input_handler.iter_loops():
-                print(i)
-            print(self.input_handler.shape)
-            print(self.input_handler.resolution)
-            print(self.input_handler.first_field)
-            print(self.input_handler.coords)
-
         total_shape = self.input_handler.shape
         print(f"total_shape = {total_shape}")
 
         print("-------------------------")
-        # debug()
         grid_points = self.input_handler.grid_points
         print(f"gridpoints size: {[len(i) for i in grid_points]}")
         print("-------------------------")

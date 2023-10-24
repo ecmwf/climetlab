@@ -478,9 +478,21 @@ class InputHandler:
 
     @property
     def shape(self):
-        return [len(c) for c in self.coords.values()] + list(
-            self.first_field.shape
-        )  # FFA: TODO + ens value if needed
+        shape = [len(c) for c in self.coords.values()]
+
+        if self.output.ensemble_dimension:
+            if "number" in self.coords:
+                ensemble_shape = [len(self.coords["number"])]
+            else:
+                ensemble_shape = [1]
+        else:
+            ensemble_shape = []
+
+        field_shape = list(self.first_field.shape)
+        if self.output.flatten_grid:
+            field_shape = [math.prod(field_shape)]
+
+        return shape + ensemble_shape + field_shape
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -659,7 +671,7 @@ class CubeCreator:
         cube = data.cube(
             self.output.order_by,
             remapping=self.output.remapping,
-            flatten_values=self.output.flatten_values,
+            flatten_values=self.output.flatten_grid,
         )
         cube = cube.squeeze()
         print(f"Sorting done in {seconds(time.time()-start)}.")
@@ -689,11 +701,11 @@ class CubeCreator:
         cube, data = self._to_data_and_cube()
 
         first_field = data[0]
+        data_request = self._get_data_request(data)
         grid_points = first_field.grid_points()
         resolution = first_field.resolution
         coords = cube.user_coords
         variables = list(coords[list(coords.keys())[1]])
-        data_request = self._get_data_request(data)
 
         return Info(
             first_field, grid_points, resolution, coords, variables, data_request
@@ -800,12 +812,31 @@ class Info:
             f"Info(first_field={self.first_field}, "
             f"resolution={self.resolution}, "
             f"variables={'/'.join(self.variables)})"
-            f"coords={', '.join([k + ':' + _format_list(v) for k, v in self.coords.items()])}"
+            f" coords={', '.join([k + ':' + _format_list(v) for k, v in self.coords.items()])}"
             f" {shape}"
         )
 
 
-PURPOSES = {None: {}, "aifs": {"flatten_grid": True, "ensemble_dimension": True}}
+class Purpose:
+    def __call__(self, config):
+        pass
+
+
+class NonePurpose(Purpose):
+    def __call__(self, config):
+        config.output.flatten_grid = config.output.get("flatten_grid", False)
+        config.output.ensemble_dimension = config.output.get(
+            "ensemble_dimension", False
+        )
+
+
+class AifsPurpose(Purpose):
+    def __call__(self, config):
+        config.output.flatten_grid = True
+        config.output.ensemble_dimension = True
+
+
+PURPOSES = {None: NonePurpose(), "aifs": AifsPurpose()}
 
 
 class LoadersConfig(Config):
@@ -815,7 +846,8 @@ class LoadersConfig(Config):
         if "description" not in self:
             raise ValueError("Must provide a description in the config.")
 
-        self.update(PURPOSES[self.get("purpose")])
+        purpose = PURPOSES[self.get("purpose")]
+        purpose(self)
 
         if not isinstance(self.input, (tuple, list)):
             print(f"WARNING: {self.input=} is not a list")
@@ -833,7 +865,8 @@ class LoadersConfig(Config):
         self.output.dtype = self.output.get("dtype", "float32")
 
         self.reading_chunks = self.get("reading_chunks")
-        self.output.flatten_values = self.output.get("flatten_values", False)
+        assert "flatten_values" not in self.output
+        assert "flatten_grid" in self.output
 
         # The axis along which we append new data
         # TODO: assume grid points can be 2d as well
