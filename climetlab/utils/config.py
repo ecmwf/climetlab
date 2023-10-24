@@ -52,7 +52,7 @@ class DictObj(dict):
 class Config(DictObj):
     def __init__(self, config):
         if isinstance(config, str):
-            self.config_path = config
+            self.config_path = os.path.realpath(config)
             config = load_json_or_yaml(config)
         super().__init__(config)
 
@@ -715,6 +715,8 @@ class CubeCreator:
             levtype = as_mars.get("levtype", "sfc")
             param = as_mars["param"]
             levelist = as_mars.get("levelist", None)
+            area = field.mars_area
+            grid = field.mars_grid
 
             if levelist is None:
                 params_levels[levtype].add(param)
@@ -733,7 +735,10 @@ class CubeCreator:
         params_steps = sort(params_steps)
         params_levels = sort(params_levels)
 
-        return dict(param_level=params_levels, param_step=params_steps)
+        out = dict(
+            param_level=params_levels, param_step=params_steps, area=area, grid=grid
+        )
+        return out
 
 
 def _format_list(x):

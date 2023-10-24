@@ -355,6 +355,24 @@ class GribField(Base):
             return (n,)  # shape must be a tuple
         return (Nj, Ni)
 
+    @property
+    def mars_grid(self):
+        if len(self.shape) == 2:
+            return [
+                self.handle.get("iDirectionIncrementInDegrees"),
+                self.handle.get("jDirectionIncrementInDegrees"),
+            ]
+
+        return self.handle.get("gridName")
+
+    @property
+    def mars_area(self):
+        north = self.handle.get("latitudeOfFirstGridPointInDegrees")
+        south = self.handle.get("latitudeOfLastGridPointInDegrees")
+        west = self.handle.get("longitudeOfFirstGridPointInDegrees")
+        east = self.handle.get("longitudeOfLastGridPointInDegrees")
+        return [north, west, south, east]
+
     def plot_map(self, backend):
         backend.bounding_box(
             north=self.handle.get("latitudeOfFirstGridPointInDegrees"),

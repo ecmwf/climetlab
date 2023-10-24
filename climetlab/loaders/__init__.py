@@ -15,6 +15,7 @@ import re
 import time
 import uuid
 import warnings
+from functools import cached_property
 
 import numpy as np
 
@@ -29,8 +30,8 @@ class DatasetName:
         self,
         name,
         resolution=None,
-        first_date=None,
-        last_date=None,
+        start_date=None,
+        end_date=None,
         frequency=None,
     ):
         self.name = name
@@ -41,8 +42,8 @@ class DatasetName:
         self.check_parsed()
         self.check_resolution(resolution)
         self.check_frequency(frequency)
-        self.check_first_date(first_date)
-        self.check_last_date(last_date)
+        self.check_start_date(start_date)
+        self.check_end_date(end_date)
 
         if self.messages:
             self.messages.append(
@@ -90,11 +91,11 @@ class DatasetName:
 
             period = parsed["period"].split("-")
             assert len(period) in (1, 2), (name, period)
-            parsed["first_date"] = period[0]
+            parsed["start_date"] = period[0]
             if len(period) == 1:
-                parsed["last_date"] = period[0]
+                parsed["end_date"] = period[0]
             if len(period) == 2:
-                parsed["last_date"] = period[1]
+                parsed["end_date"] = period[1]
 
         return parsed
 
@@ -136,19 +137,19 @@ class DatasetName:
         self._check_missing("frequency", frequency_str)
         self._check_mismatch("frequency", frequency_str)
 
-    def check_first_date(self, first_date):
-        if first_date is None:
+    def check_start_date(self, start_date):
+        if start_date is None:
             return
-        first_date_str = str(first_date.year)
-        self._check_missing("first date", first_date_str)
-        self._check_mismatch("first_date", first_date_str)
+        start_date_str = str(start_date.year)
+        self._check_missing("first date", start_date_str)
+        self._check_mismatch("start_date", start_date_str)
 
-    def check_last_date(self, last_date):
-        if last_date is None:
+    def check_end_date(self, end_date):
+        if end_date is None:
             return
-        last_date_str = str(last_date.year)
-        self._check_missing("last_date", last_date_str)
-        self._check_mismatch("last_date", last_date_str)
+        end_date_str = str(end_date.year)
+        self._check_missing("end_date", end_date_str)
+        self._check_mismatch("end_date", end_date_str)
 
     def _check_missing(self, key, value):
         if value not in self.name:
@@ -358,7 +359,7 @@ class Loader:
             self.registry.set_flag(icube)
 
         self.registry.add_to_history("loading_data_end", parts=kwargs.get("parts"))
-        self.registry.add_provenance()
+        self.registry.add_provenance(name="provenance_load")
 
     def load_datacube(self, cube, array):
         start = time.time()
@@ -493,7 +494,7 @@ class ZarrBuiltRegistry:
     def reset(self, lengths):
         return self.create(lengths, overwrite=True)
 
-    def add_provenance(self, name="provenance"):
+    def add_provenance(self, name):
         from ecml_tools.provenance import gather_provenance_info
 
         z = self._open_write()
@@ -503,7 +504,6 @@ class ZarrBuiltRegistry:
         new = dict(
             action=action,
             timestamp=datetime.datetime.utcnow().isoformat(),
-            versions=get_versions(),
         )
         new.update(kwargs)
 
@@ -644,21 +644,17 @@ class ZarrLoader(Loader):
         metadata["resolution"] = resolution
 
         metadata["data_request"] = self.input_handler.data_request
-        for k, v in self.input_handler.data_request.items():
-            assert k.startswith("param_"), k
-            metadata[f"{k}"] = v
 
-        metadata["area"] = [90, 0, -90, 360]
         metadata["remapping"] = self.main_config.output.remapping
 
         metadata["variables"] = variables_names
         metadata["version"] = VERSION
         metadata["frequency"] = frequency
-        metadata["first_date"] = dates[0].isoformat()
-        metadata["last_date"] = dates[-1].isoformat()
+        metadata["start_date"] = dates[0].isoformat()
+        metadata["end_date"] = dates[-1].isoformat()
         pd_dates_kwargs = dict(
-            start=metadata["first_date"],
-            end=metadata["last_date"],
+            start=metadata["start_date"],
+            end=metadata["end_date"],
             freq=f"{metadata['frequency']}h",
             unit="s",
         )
@@ -694,13 +690,54 @@ class ZarrLoader(Loader):
         self._add_dataset("latitudes", grid_points[0])
         self._add_dataset("longitudes", grid_points[1])
 
-        # write metadata
-        for k, v in metadata.items():
-            self.z.attrs[k] = v
+        self.update_metadata(**metadata)
 
         self.z = None
 
         self.registry.create(lengths=lengths)
+
+        self.registry.add_to_history("init finished")
+
+    def update_metadata(self, **kwargs):
+        import zarr
+
+        z = zarr.open(self.path, mode="w+")
+        for k, v in kwargs.items():
+            if isinstance(v, np.datetime64):
+                v = v.astype(datetime.datetime)
+            if isinstance(v, datetime.date):
+                v = v.isoformat()
+            z.attrs[k] = v
+
+    def statistics_start_indice(self):
+        return self._statistics_subset_indices[0]
+
+    def statistics_end_indice(self):
+        return self._statistics_subset_indices[1]
+
+    def _actual_statistics_start(self):
+        return self._statistics_subset_indices[2]
+
+    def _actual_statistics_end(self):
+        return self._statistics_subset_indices[3]
+
+    @cached_property
+    def _statistics_subset_indices(self):
+        statistics_start = self.main_config.output.get("statistics_start")
+        statistics_end = self.main_config.output.get("statistics_end")
+        try:
+            from ecml_tools.data import open_dataset
+        except ImportError:
+            raise Exception("Need to pip install ecml_tools[zarr]")
+
+        if statistics_end is None:
+            warnings.warn(
+                "No statistics_end specified, using last date of the dataset."
+            )
+        ds = open_dataset(self.path)
+        subset = ds.dates_interval_to_indices(statistics_start, statistics_end)
+
+        return (subset[0], subset[-1], ds.dates[subset[0]], ds.dates[subset[-1]])
 
     def _add_dataset(self, *args, **kwargs):
         import zarr
@@ -724,6 +761,9 @@ class ZarrLoader(Loader):
             print(e)
 
     def add_statistics(self, statistics_start, statistics_end, no_write, **kwargs):
+        assert statistics_start is None
+        assert statistics_end is None
+
         do_write = not no_write
 
         incomplete = not all(self.registry.get_flags(sync=False))
@@ -732,10 +772,8 @@ class ZarrLoader(Loader):
                 f"Zarr {self.path} is not fully built, not writing statistics."
             )
 
-        if statistics_start is None:
-            statistics_start = self.main_config.output.get("statistics_start")
-        if statistics_end is None:
-            statistics_end = self.main_config.output.get("statistics_end")
+        statistics_start = self.main_config.output.get("statistics_start")
+        statistics_end = self.main_config.output.get("statistics_end")
 
         if do_write:
             self.registry.add_to_history(
@@ -776,12 +814,17 @@ class ZarrLoader(Loader):
             ]:
                 self._add_dataset(k, stats[k])
 
+            self.update_metadata(
+                statistics_start_date=self._actual_statistics_start(),
+                statistics_end_date=self._actual_statistics_end(),
+            )
+
             self.registry.add_to_history(
                 "compute_statistics_end",
                 start=statistics_start,
                 end=statistics_end,
             )
-            self.registry.add_provenance(name="statistics_provenance")
+            self.registry.add_provenance(name="provenance_statistics")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
         import zarr
@@ -793,21 +836,24 @@ class ZarrLoader(Loader):
         assert shape[1] == len(ds.variables)
         assert ds.variables == self._variables_names
 
-        subset = ds._dates_to_indices(start=statistics_start, end=statistics_end)
+        i_start = self.statistics_start_indice()
+        i_end = self.statistics_end_indice()
+
+        i_len = i_end + 1 - i_start
 
         self.print(
-            f"Statistics computed on {len(subset)}/{shape[0]} samples "
-            f"first={ds.dates[subset[0]]} "
-            f"last={ds.dates[subset[-1]]}"
+            f"Statistics computed on {i_len}/{shape[0]} samples "
+            f"first={ds.dates[i_start]} "
+            f"last={ds.dates[i_end]}"
         )
-        if not subset:
+        if i_end < i_start:
             raise ValueError(
                 f"Cannot compute statistics on an empty interval."
-                f" Requested : {statistics_start=} {statistics_end=}."
+                f" Requested : {ds.dates[i_start]} {ds.dates[i_end]}."
                 f" Available: {ds.dates[0]=} {ds.dates[-1]=}"
             )
 
-        stats_shape = (len(subset), shape[1])
+        stats_shape = (i_len, shape[1])
 
         mean = np.zeros(shape=stats_shape)
         stdev = np.zeros(shape=stats_shape)
@@ -817,7 +863,7 @@ class ZarrLoader(Loader):
         squares = np.zeros(shape=stats_shape)
         count = np.zeros(shape=stats_shape)
 
-        for i, i_data in enumerate(subset):
+        for i, i_data in enumerate(range(i_start, i_end + 1)):
             chunk = data[i_data, ...]
             self.print(
                 f"Computing statistics on {i_data+1}/{shape[0]} ({ds.dates[i_data]})"
@@ -849,7 +895,7 @@ class ZarrLoader(Loader):
         assert (count == count[:][0]).all(), count
 
         assert len(minimum.shape) == 2
-        assert minimum.shape[0] == len(subset)
+        assert minimum.shape[0] == i_len
         assert minimum.shape[1] == shape[1]
 
         _minimum = np.amin(minimum, axis=0)
