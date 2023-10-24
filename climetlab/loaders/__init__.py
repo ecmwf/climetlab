@@ -760,10 +760,7 @@ class ZarrLoader(Loader):
         except Exception as e:
             print(e)
 
-    def add_statistics(self, statistics_start, statistics_end, no_write, **kwargs):
-        assert statistics_start is None
-        assert statistics_end is None
-
+    def add_statistics(self, no_write, **kwargs):
         do_write = not no_write
 
         incomplete = not all(self.registry.get_flags(sync=False))

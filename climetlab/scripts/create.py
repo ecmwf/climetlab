@@ -26,7 +26,7 @@ class LoadersCmd:
         #         " (default from config or 'dataset')"
         #     ),
         # ),
-        path=(
+        target=(
             "--target",
             dict(
                 help="Where to store the final data. "
@@ -55,20 +55,6 @@ class LoadersCmd:
         parts=(
             "--parts",
             dict(nargs="+", help="Use with --load. Part(s) of the data to process."),
-        ),
-        statistics_start=(
-            "--start",
-            dict(
-                help="Start date to compute the statistics (such as '2015' or '2015-04-18' or 201504)."
-                " The given year (or day, or month) will be INCLUDED in the statistics."
-            ),
-        ),
-        statistics_end=(
-            "--end",
-            dict(
-                help="End date to compute the statistics (such as '2015' or '2015-04-18' or 201504)."
-                " The given year (or day, or month) will be INCLUDED in the statistics."
-            ),
         ),
         no_write=(
             "--no-write",
@@ -108,117 +94,116 @@ class LoadersCmd:
         ),
     )
     def do_create(self, args):
-        format = args.format
+        create(args)
 
-        if args.timeout:
-            import signal
 
-            signal.alarm(args.timeout)
+def create(args):
+    format = args.format
 
-        if format is None:
-            _, ext = os.path.splitext(args.path)
-            format = ext[1:]
-        assert format == "zarr", f"Unsupported format={format}"
+    if args.timeout:
+        import signal
 
-        def no_callback(*args, **kwargs):
-            print(*args, **kwargs)
-            return
+        signal.alarm(args.timeout)
 
-        if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
+    if format is None:
+        _, ext = os.path.splitext(args.target)
+        format = ext[1:]
+    assert format == "zarr", f"Unsupported format={format}"
 
-            def callback(*msg):
-                msg = [str(_) for _ in msg]
-                msg = "\n".join(msg)
-                import shlex
-                import subprocess
-                import traceback
+    def no_callback(*args, **kwargs):
+        print(*args, **kwargs)
+        return
 
-                cmd = os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK")
-                cmd = cmd.format(msg)
-                try:
-                    print(f"Running {cmd}")
-                    args = shlex.split(cmd)  # shlex honors the quotes
-                    subprocess.run(args)
-                except Exception as e:
-                    print(f"Exception when running {cmd}" + traceback.format_exc())
-                    print(e)
+    if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
 
-            callback("Starting-zarr-loader.")
-        else:
-            callback = no_callback
+        def callback(*msg):
+            msg = [str(_) for _ in msg]
+            msg = "\n".join(msg)
+            import shlex
+            import subprocess
+            import traceback
 
-        LOADERS = dict(
-            zarr=ZarrLoader,
-            h5=HDF5Loader,
-            hdf5=HDF5Loader,
-            hdf=HDF5Loader,
+            cmd = os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK")
+            cmd = cmd.format(msg)
+            try:
+                print(f"Running {cmd}")
+                args = shlex.split(cmd)  # shlex honors the quotes
+                subprocess.run(args)
+            except Exception as e:
+                print(f"Exception when running {cmd}" + traceback.format_exc())
+                print(e)
+
+        callback("Starting-zarr-loader.")
+    else:
+        callback = no_callback
+
+    LOADERS = dict(
+        zarr=ZarrLoader,
+        h5=HDF5Loader,
+        hdf5=HDF5Loader,
+        hdf=HDF5Loader,
+    )
+    if format not in LOADERS:
+        lst = list_to_human(list(LOADERS.keys()), "or")
+        raise ValueError(f"Invalid format '{format}', must be one of {lst}.")
+
+    kwargs = vars(args)
+    kwargs["path"] = kwargs["target"]
+    kwargs["print"] = callback
+    loader_class = LOADERS[format]
+
+    lst = [args.load, args.statistics, args.init]
+    if sum(1 for x in lst if x) > 1:
+        raise ValueError(
+            "Too many options provided."
+            'Must choose exactly one option in "--load", "--statistics", "--init"'
         )
-        if format not in LOADERS:
-            lst = list_to_human(list(LOADERS.keys()), "or")
-            raise ValueError(f"Invalid format '{format}', must be one of {lst}.")
+    if sum(1 for x in lst if x) < 1:
+        raise ValueError(
+            "Not enough options provided."
+            'Must choose exactly one option in "--load", "--statistics", "--init"'
+        )
+    if args.parts:
+        assert args.load, "Use --parts only with --load"
+    if args.no_write:
+        assert args.statistics, "Use --no-write only with --statistics"
 
-        kwargs = vars(args)
-        kwargs["print"] = callback
-        loader_class = LOADERS[format]
+    @contextmanager
+    def dummy_context():
+        yield
 
-        lst = [args.load, args.statistics, args.init]
-        if sum(1 for x in lst if x) > 1:
-            raise ValueError(
-                "Too many options provided."
-                'Must choose exactly one option in "--load", "--statistics", "--init"'
-            )
-        if sum(1 for x in lst if x) < 1:
-            raise ValueError(
-                "Not enough options provided."
-                'Must choose exactly one option in "--load", "--statistics", "--init"'
-            )
-        if args.parts:
-            assert args.load, "Use --parts only with --load"
-        if args.no_write:
-            assert args.statistics, "Use --no-write only with --statistics"
-        if args.statistics_start:
-            assert args.statistics, "Use --start only with --statistics"
-        if args.statistics_end:
-            assert args.statistics, "Use --end only with --statistics"
+    context = dummy_context()
+    if kwargs["cache_dir"]:
+        context = settings.temporary("cache-directory", kwargs["cache_dir"])
 
-        @contextmanager
-        def dummy_context():
-            yield
+    with context:
+        if args.init:
+            assert args.config, "--init requires --config"
+            assert args.target, "--init requires --target"
 
-        context = dummy_context()
-        if kwargs["cache_dir"]:
-            context = settings.temporary("cache-directory", kwargs["cache_dir"])
+            import zarr
 
-        with context:
-            if args.init:
-                assert args.config, "--init requires --config"
-                assert args.path, "--init requires --target"
+            try:
+                zarr.open(args.target, "r")
+                if not args.force:
+                    raise Exception(
+                        f"{args.target} already exists. Use --force to overwrite."
+                    )
+            except zarr.errors.PathNotFoundError:
+                pass
 
-                import zarr
+            loader = loader_class.from_config(**kwargs)
+            loader.initialise()
+            exit()
 
-                try:
-                    zarr.open(args.path, "r")
-                    if not args.force:
-                        raise Exception(
-                            f"{args.path} already exists. Use --force to overwrite."
-                        )
-                except zarr.errors.PathNotFoundError:
-                    pass
+        if args.load:
+            assert args.config is None, "--load requires only a --target, no --config."
+            loader = loader_class.from_zarr(**kwargs)
+            loader.load(**kwargs)
 
-                loader = loader_class.from_config(**kwargs)
-                loader.initialise()
-                exit()
-
-            if args.load:
-                assert (
-                    args.config is None
-                ), "--load requires only a --target, no --config."
-                loader = loader_class.from_zarr(**kwargs)
-                loader.load(**kwargs)
-
-            if args.statistics:
-                assert (
-                    args.config is None
-                ), "--statistics requires only --target, no --config."
-                loader = loader_class.from_zarr(**kwargs)
-                loader.add_statistics(**kwargs)
+        if args.statistics:
+            assert (
+                args.config is None
+            ), "--statistics requires only --target, no --config."
+            loader = loader_class.from_zarr(**kwargs)
+            loader.add_statistics(**kwargs)

@@ -478,7 +478,9 @@ class InputHandler:
 
     @property
     def shape(self):
-        return [len(c) for c in self.coords.values()] + list(self.first_field.shape)
+        return [len(c) for c in self.coords.values()] + list(
+            self.first_field.shape
+        )  # FFA: TODO + ens value if needed
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -803,12 +805,17 @@ class Info:
         )
 
 
+PURPOSES = {None: {}, "aifs": {"flatten_grid": True, "ensemble_dimension": True}}
+
+
 class LoadersConfig(Config):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
 
         if "description" not in self:
             raise ValueError("Must provide a description in the config.")
+
+        self.update(PURPOSES[self.get("purpose")])
 
         if not isinstance(self.input, (tuple, list)):
             print(f"WARNING: {self.input=} is not a list")
