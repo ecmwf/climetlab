@@ -269,9 +269,6 @@ class OffsetView:
                 k + self.offset if i == self.axis else k for i, k in enumerate(key)
             )
 
-        print("TODO: fix this and move it to the right place")
-        new_key = tuple(list(new_key) + [0])
-
         self.large_array[new_key] = values
 
 
@@ -352,7 +349,7 @@ class Loader:
 
             slice = self.registry.get_slice_for(icube)
 
-            print(f"Building to ZARR '{self.path}':")
+            print(f"Building ZARR '{self.path}':")
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
             offset = slice.start
@@ -372,14 +369,17 @@ class Loader:
 
         reading_chunks = None
         total = cube.count(reading_chunks)
+        self.print(f"Loading datacube {cube}")
         bar = progress_bar(
             iterable=cube.iterate_cubelets(reading_chunks),
             total=total,
+            desc=f"Loading datacube {cube}",
         )
         for i, cubelet in enumerate(bar):
             now = time.time()
             data = cubelet.to_numpy()
             bar.set_description(f"{i}/{total} {str(cubelet)} ({data.shape})")
+            self.print(f"Loading datacube {cube}: {i}/{total}")
             load += time.time() - now
 
             j = cubelet.extended_icoords[1]
@@ -639,7 +639,10 @@ class ZarrLoader(Loader):
 
         metadata["data_request"] = self.input_handler.data_request
 
+        metadata["order_by"] = self.main_config.output.order_by
         metadata["remapping"] = self.main_config.output.remapping
+        metadata["flatten_grid"] = self.main_config.output.flatten_grid
+        metadata["ensemble_dimension"] = self.main_config.output.ensemble_dimension
 
         metadata["variables"] = variables_names
         metadata["version"] = VERSION
@@ -684,9 +687,9 @@ class ZarrLoader(Loader):
         self._add_dataset("latitudes", grid_points[0])
         self._add_dataset("longitudes", grid_points[1])
 
-        self.update_metadata(**metadata)
-
         self.z = None
+
+        self.update_metadata(**metadata)
 
         self.registry.create(lengths=lengths)
 

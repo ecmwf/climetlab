@@ -480,19 +480,11 @@ class InputHandler:
     def shape(self):
         shape = [len(c) for c in self.coords.values()]
 
-        if self.output.ensemble_dimension:
-            if "number" in self.coords:
-                ensemble_shape = [len(self.coords["number"])]
-            else:
-                ensemble_shape = [1]
-        else:
-            ensemble_shape = []
-
         field_shape = list(self.first_field.shape)
         if self.output.flatten_grid:
             field_shape = [math.prod(field_shape)]
 
-        return shape + ensemble_shape + field_shape
+        return shape + field_shape
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -818,8 +810,20 @@ class Info:
 
 
 class Purpose:
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return str(self.name)
+
     def __call__(self, config):
         pass
+
+    @classmethod
+    def dict_to_str(cls, x):
+        if isinstance(x, str):
+            return x
+        return list(x.keys())[0]
 
 
 class NonePurpose(Purpose):
@@ -832,11 +836,41 @@ class NonePurpose(Purpose):
 
 class AifsPurpose(Purpose):
     def __call__(self, config):
-        config.output.flatten_grid = True
-        config.output.ensemble_dimension = True
+        def check_dict_value_and_set(dic, key, value):
+            if key in dic:
+                if dic[key] != value:
+                    raise ValueError(
+                        f"Cannot use {key}={dic[key]} with {self} purpose. Must use {value}."
+                    )
+            dic[key] = value
+
+        def ensure_element_in_list(lst, elt, index):
+            if elt in lst:
+                assert lst[index] == elt
+                return lst
+
+            _lst = [self.dict_to_str(d) for d in lst]
+            if elt in _lst:
+                assert _lst[index] == elt
+                return lst
+
+            return lst[:index] + [elt] + lst[index:]
+
+        check_dict_value_and_set(config.output, "flatten_grid", True)
+        check_dict_value_and_set(config.output, "ensemble_dimension", 2)
+
+        assert isinstance(config.output.order_by, (list, tuple)), config.output.order_by
+        config.output.order_by = ensure_element_in_list(
+            config.output.order_by, "number", config.output.ensemble_dimension
+        )
+
+        order_by = config.output.order_by
+        assert len(order_by) == 3, order_by
+        assert self.dict_to_str(order_by[0]) == "valid_datetime", order_by
+        assert self.dict_to_str(order_by[2]) == "number", order_by
 
 
-PURPOSES = {None: NonePurpose(), "aifs": AifsPurpose()}
+PURPOSES = {None: NonePurpose, "aifs": AifsPurpose}
 
 
 class LoadersConfig(Config):
@@ -846,7 +880,7 @@ class LoadersConfig(Config):
         if "description" not in self:
             raise ValueError("Must provide a description in the config.")
 
-        purpose = PURPOSES[self.get("purpose")]
+        purpose = PURPOSES[self.get("purpose")](self.get("purpose"))
         purpose(self)
 
         if not isinstance(self.input, (tuple, list)):
