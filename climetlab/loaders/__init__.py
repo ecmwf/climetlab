@@ -585,12 +585,14 @@ class ZarrLoader(Loader):
         print("-------------------------")
 
         dates = self.input_handler.get_datetimes()
-        self.print(
+        self.print(f"Found {len(dates)} datetimes.")
+        print(
             f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes: ",
             end="",
         )
         lengths = [str(len(c.get_datetimes())) for c in self.input_handler.iter_cubes()]
         print("+".join(lengths))
+        self.print(f"Found {len(dates)} datetimes {'+'.join(lengths)}.")
         print("-------------------------")
 
         variables_names = self.input_handler.variables
