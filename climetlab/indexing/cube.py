@@ -97,7 +97,7 @@ class FieldCube:
                 self.source, str
             ), f"Not expecting a str here ({self.source})"
             for i, f in enumerate(self.source):
-                details.append(f"{i}={f}")
+                details.append(f"{i}={f} {f.metadata('number')}")
                 if i > 30:
                     details.append("...")
                     break

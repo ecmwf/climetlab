@@ -13,6 +13,7 @@ import math
 import os
 import re
 import time
+from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 
@@ -51,7 +52,7 @@ class DictObj(dict):
 class Config(DictObj):
     def __init__(self, config):
         if isinstance(config, str):
-            self._config_path = config
+            self.config_path = os.path.realpath(config)
             config = load_json_or_yaml(config)
         super().__init__(config)
 
@@ -113,6 +114,52 @@ class Inputs(list):
         return "\n".join(str(i) for i in self)
 
 
+class DatetimeGetter:
+    def __init__(self, kwargs) -> None:
+        self.kwargs = kwargs
+
+    @property
+    def values(self):
+        raise NotImplementedError(type(self))
+
+
+class MarsDatetimeGetter(DatetimeGetter):
+    def __init__(self, kwargs) -> None:
+        super().__init__(kwargs)
+
+        date = self.kwargs.get("date", [])
+        hdate = self.kwargs.get("hdate", [])
+        time = self.kwargs.get("time", [0])
+        step = self.kwargs.get("step", [0])
+
+        from climetlab.utils.dates import to_datetime_list
+
+        date = to_datetime_list(date)
+        hdate = to_datetime_list(hdate)
+        time = make_list_int(time)
+        step = make_list_int(step)
+
+    pass
+
+
+class StandardMarsDatetimeGetter(MarsDatetimeGetter):
+    pass
+
+
+class HindcastMarsDatetimeGetter(DatetimeGetter):
+    pass
+
+
+class Era5AccumulationDatetimeGetter(DatetimeGetter):
+    pass
+
+
+class ConstantDatetimeGetter(DatetimeGetter):
+    @property
+    def values(self):
+        return None
+
+
 class Input:
     _inheritance_done = False
     _inheritance_others = None
@@ -140,12 +187,19 @@ class Input:
         self.inherit = self.config.get("inherit", [])
         self.function = self.config.get("function", None)
 
-    def get_datetimes(self, others={}):
+    def get_datetimes(self):
         name = self.kwargs.get("name", None)
 
-        assert name in ["constants", "mars"], f"{name} not implemented"
+        assert name in [
+            "era5-accumulations",
+            "constants",
+            "mars",
+        ], f"{name} not implemented"
 
         if name == "constants":
+            return None
+
+        if name == "era5-accumulations":
             return None
 
         if name == "mars":
@@ -395,6 +449,7 @@ class InputHandler:
             ref.resolution,
             coords,
             ref.variables,
+            ref.data_request,
         )
 
     @property
@@ -410,6 +465,10 @@ class InputHandler:
         return self._info.resolution
 
     @property
+    def data_request(self):
+        return self._info.data_request
+
+    @property
     def coords(self):
         return self._info.coords
 
@@ -419,7 +478,13 @@ class InputHandler:
 
     @property
     def shape(self):
-        return [len(c) for c in self.coords.values()] + list(self.first_field.shape)
+        shape = [len(c) for c in self.coords.values()]
+
+        field_shape = list(self.first_field.shape)
+        if self.output.flatten_grid:
+            field_shape = [math.prod(field_shape)]
+
+        return shape + field_shape
 
     def get_datetimes(self):
         # merge datetimes from all loops and check there are no duplicates
@@ -483,7 +548,7 @@ class Loop(dict):
             [input for input in inputs if input.name in applies_to]
         )
         for i in self.applies_to_inputs:
-            i.process_inheritance(inputs)
+            i.process_inheritance(self.applies_to_inputs)
 
         self.values = {}
         for k, v in self.config.items():
@@ -531,6 +596,7 @@ class Loop(dict):
             resolution=first_info.resolution,
             coords=coords,
             variables=first_info.variables,
+            data_request=first_info.data_request,
         )
 
     def get_datetimes(self):
@@ -586,7 +652,7 @@ class CubeCreator:
         return self.inputs.get_datetimes()
 
     def to_cube(self):
-        cube, data = self._to_data_and_cube()
+        cube, _ = self._to_data_and_cube()
         return cube
 
     def _to_data_and_cube(self):
@@ -597,13 +663,12 @@ class CubeCreator:
         cube = data.cube(
             self.output.order_by,
             remapping=self.output.remapping,
-            flatten_values=self.output.flatten_values,
+            flatten_values=self.output.flatten_grid,
         )
         cube = cube.squeeze()
+        print(f"Sorting done in {seconds(time.time()-start)}.")
 
-        def check():
-            actual_dic = cube.user_coords
-            requested_dic = self.output.order_by
+        def check(actual_dic, requested_dic):
             assert self.output.statistics in actual_dic
 
             for key in set(list(actual_dic.keys()) + list(requested_dic.keys())):
@@ -619,9 +684,7 @@ class CubeCreator:
                     continue
                 assert actual == requested, f"Requested= {requested} Actual= {actual}"
 
-        check()
-
-        print(f"Sorting done in {seconds(time.time()-start)}.")
+        check(actual_dic=cube.user_coords, requested_dic=self.output.order_by)
 
         return cube, data
 
@@ -630,12 +693,58 @@ class CubeCreator:
         cube, data = self._to_data_and_cube()
 
         first_field = data[0]
+        data_request = self._get_data_request(data)
         grid_points = first_field.grid_points()
         resolution = first_field.resolution
         coords = cube.user_coords
         variables = list(coords[list(coords.keys())[1]])
 
-        return Info(first_field, grid_points, resolution, coords, variables)
+        return Info(
+            first_field, grid_points, resolution, coords, variables, data_request
+        )
+
+    def _get_data_request(self, data):
+        date = None
+        params_levels = defaultdict(set)
+        params_steps = defaultdict(set)
+
+        for field in data:
+            if not hasattr(field, "as_mars"):
+                continue
+            if date is None:
+                date = field.valid_datetime()
+            if field.valid_datetime() != date:
+                continue
+
+            as_mars = field.as_mars()
+            step = as_mars.get("step")
+            levtype = as_mars.get("levtype", "sfc")
+            param = as_mars["param"]
+            levelist = as_mars.get("levelist", None)
+            area = field.mars_area
+            grid = field.mars_grid
+
+            if levelist is None:
+                params_levels[levtype].add(param)
+            else:
+                params_levels[levtype].add((param, levelist))
+
+            if step:
+                params_steps[levtype].add((param, step))
+
+        def sort(old_dic):
+            new_dic = {}
+            for k, v in old_dic.items():
+                new_dic[k] = sorted(list(v))
+            return new_dic
+
+        params_steps = sort(params_steps)
+        params_levels = sort(params_levels)
+
+        out = dict(
+            param_level=params_levels, param_step=params_steps, area=area, grid=grid
+        )
+        return out
 
 
 def _format_list(x):
@@ -658,7 +767,9 @@ def _format_list(x):
 
 
 class Info:
-    def __init__(self, first_field, grid_points, resolution, coords, variables):
+    def __init__(
+        self, first_field, grid_points, resolution, coords, variables, data_request
+    ):
         assert len(set(variables)) == len(variables), (
             "Duplicate variables",
             variables,
@@ -681,6 +792,7 @@ class Info:
         self.resolution = resolution
         self.coords = coords
         self.variables = variables
+        self.data_request = data_request
 
     def __repr__(self):
         shape = (
@@ -692,9 +804,73 @@ class Info:
             f"Info(first_field={self.first_field}, "
             f"resolution={self.resolution}, "
             f"variables={'/'.join(self.variables)})"
-            f"coords={', '.join([k + ':' + _format_list(v) for k, v in self.coords.items()])}"
+            f" coords={', '.join([k + ':' + _format_list(v) for k, v in self.coords.items()])}"
             f" {shape}"
         )
+
+
+class Purpose:
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return str(self.name)
+
+    def __call__(self, config):
+        pass
+
+    @classmethod
+    def dict_to_str(cls, x):
+        if isinstance(x, str):
+            return x
+        return list(x.keys())[0]
+
+
+class NonePurpose(Purpose):
+    def __call__(self, config):
+        config.output.flatten_grid = config.output.get("flatten_grid", False)
+        config.output.ensemble_dimension = config.output.get(
+            "ensemble_dimension", False
+        )
+
+
+class AifsPurpose(Purpose):
+    def __call__(self, config):
+        def check_dict_value_and_set(dic, key, value):
+            if key in dic:
+                if dic[key] != value:
+                    raise ValueError(
+                        f"Cannot use {key}={dic[key]} with {self} purpose. Must use {value}."
+                    )
+            dic[key] = value
+
+        def ensure_element_in_list(lst, elt, index):
+            if elt in lst:
+                assert lst[index] == elt
+                return lst
+
+            _lst = [self.dict_to_str(d) for d in lst]
+            if elt in _lst:
+                assert _lst[index] == elt
+                return lst
+
+            return lst[:index] + [elt] + lst[index:]
+
+        check_dict_value_and_set(config.output, "flatten_grid", True)
+        check_dict_value_and_set(config.output, "ensemble_dimension", 2)
+
+        assert isinstance(config.output.order_by, (list, tuple)), config.output.order_by
+        config.output.order_by = ensure_element_in_list(
+            config.output.order_by, "number", config.output.ensemble_dimension
+        )
+
+        order_by = config.output.order_by
+        assert len(order_by) == 3, order_by
+        assert self.dict_to_str(order_by[0]) == "valid_datetime", order_by
+        assert self.dict_to_str(order_by[2]) == "number", order_by
+
+
+PURPOSES = {None: NonePurpose, "aifs": AifsPurpose}
 
 
 class LoadersConfig(Config):
@@ -703,6 +879,9 @@ class LoadersConfig(Config):
 
         if "description" not in self:
             raise ValueError("Must provide a description in the config.")
+
+        purpose = PURPOSES[self.get("purpose")](self.get("purpose"))
+        purpose(self)
 
         if not isinstance(self.input, (tuple, list)):
             print(f"WARNING: {self.input=} is not a list")
@@ -720,7 +899,8 @@ class LoadersConfig(Config):
         self.output.dtype = self.output.get("dtype", "float32")
 
         self.reading_chunks = self.get("reading_chunks")
-        self.output.flatten_values = self.output.get("flatten_values", False)
+        assert "flatten_values" not in self.output
+        assert "flatten_grid" in self.output
 
         # The axis along which we append new data
         # TODO: assume grid points can be 2d as well
@@ -869,7 +1049,9 @@ def hdates_from_date(date, start_year, end_year):
     from climetlab.utils.dates import to_datetime
 
     if isinstance(date, (list, tuple)):
-        raise NotImplementedError(f"{date}")
+        if len(date) != 1:
+            raise NotImplementedError(f"{date} should have only one element.")
+        date = date[0]
 
     date = to_datetime(date)
     assert not (date.hour or date.minute or date.second), date
@@ -888,8 +1070,12 @@ class Expand(list):
     def parse_config(self):
         from climetlab.utils.dates import to_datetime
 
-        self.start = to_datetime(self._config.get("start"))
-        self.stop = to_datetime(self._config.get("stop"))
+        self.start = self._config.get("start")
+        if self.start is not None:
+            self.start = to_datetime(self.start)
+        self.stop = self._config.get("stop")
+        if self.stop is not None:
+            self.stop = to_datetime(self.stop)
         self.step = self._config.get("step", 1)
         self.group_by = self._config.get("group_by")
 
@@ -963,9 +1149,13 @@ class IntStartStopExpand(StartStopExpand):
 
 def _expand_class(values):
     if isinstance(values, list):
-        return ValuesExpand
+        values = {"values": values}
 
     assert isinstance(values, dict), values
+
+    if isinstance(values.get("values"), list):
+        assert len(values) == 1, f"No other config keys implemented. {values}"
+        return ValuesExpand
 
     if values.get("type") == "hindcast":
         return HindcastExpand

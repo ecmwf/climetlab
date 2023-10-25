@@ -267,7 +267,7 @@ class MaskIndex(Index):
         return len(self.indices)
 
     def __repr__(self):
-        return "MaskIndex(%r,%s)" % (self.index, self.indices)
+        return "MaskIndex(%r,len=%s)" % (self.index, len(self.indices))
 
 
 class MultiIndex(Index):

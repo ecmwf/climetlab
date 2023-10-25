@@ -95,7 +95,8 @@ class FieldSet(FieldSetMixin, Index):
     ):
         def dicts():
             for i in progress_bar(
-                iterable=range(len(self)), desc="Building availability"
+                iterable=range(len(self)),
+                desc="Building availability",
             ):
                 if keys is not None:
                     dic = self.get_metadata(i)

@@ -218,7 +218,11 @@ class GribIndexingDirectoryParserIterator:
                 self.q_in.put(None)
 
             count = 0
-            for _ in progress_bar(iterable=self.tasks, total=len(self.tasks)):
+            for _ in progress_bar(
+                desc="Indexing...",
+                iterable=self.tasks,
+                total=len(self.tasks),
+            ):
                 count += self.q_out.get()
 
             for p in workers:
