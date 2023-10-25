@@ -349,7 +349,7 @@ class Loader:
 
             slice = self.registry.get_slice_for(icube)
 
-            print(f"Building ZARR '{self.path}':")
+            print(f"Building ZARR '{self.path}'")
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
             offset = slice.start
@@ -572,19 +572,20 @@ class ZarrLoader(Loader):
         import pandas as pd
         import zarr
 
-        print("config loaded ok:")
+        self.print("config loaded ok:")
         print(self.main_config)
         print("-------------------------")
 
         total_shape = self.input_handler.shape
-        print(f"total_shape = {total_shape}")
-
+        self.print(f"total_shape = {total_shape}")
         print("-------------------------")
+
         grid_points = self.input_handler.grid_points
         print(f"gridpoints size: {[len(i) for i in grid_points]}")
         print("-------------------------")
+
         dates = self.input_handler.get_datetimes()
-        print(
+        self.print(
             f"Dates: Found {len(dates)} datetimes, in {self.input_handler.n_cubes} cubes: ",
             end="",
         )
