@@ -385,6 +385,10 @@ class InputHandler:
         for loop in self.loops:
             yield from loop.iterate()
 
+    @cached_property
+    def n_iter_loops(self):
+        return sum([loop.n_iter_loops for loop in self.loops])
+
     @property
     def first_cube(self):
         return self.first_cube_creator.to_cube()
@@ -563,6 +567,10 @@ class Loop(dict):
 
         lenghts = [f"{k}({repr_lengths(v)})" for k, v in self.values.items()]
         return f"Loop({self.name}, {','.join(lenghts)}) {self.config}"
+
+    @cached_property
+    def n_iter_loops(self):
+        return len(list(itertools.product(*self.values.values())))
 
     def iterate(self):
         for items in itertools.product(*self.values.values()):
@@ -925,10 +933,6 @@ class LoadersConfig(Config):
     def input_handler(self):
         return InputHandler(self.loops, self.input, output=self.output)
 
-    @cached_property
-    def n_iter_loops(self):
-        return sum([loop.n_iter_loops for loop in self.loops])
-
 
 def substitute(x, vars=None, ignore_missing=False):
     """Recursively substitute environment variables and dict values in a nested list ot dict of string.
@@ -1073,10 +1077,10 @@ class Expand(list):
         self.start = self._config.get("start")
         if self.start is not None:
             self.start = to_datetime(self.start)
-        self.stop = self._config.get("stop")
-        if self.stop is not None:
-            self.stop = to_datetime(self.stop)
-        self.step = self._config.get("step", 1)
+        self.end = self._config.get("end", self._config.get("stop"))
+        if self.end is not None:
+            self.end = to_datetime(self.end)
+        self.step = self._config.get("step", self._config.get("frequency", 1))
         self.group_by = self._config.get("group_by")
 
 
@@ -1103,7 +1107,7 @@ class StartStopExpand(Expand):
 
         x = self.start
         all = []
-        while x <= self.stop:
+        while x <= self.end:
             all.append(x)
             x += self.step
 
@@ -1111,8 +1115,8 @@ class StartStopExpand(Expand):
         self.groups = [[format(x) for x in g] for g in result]
 
     def parse_config(self):
-        if "end" in self._config:
-            raise ValueError(f"Use 'stop' not 'end' in loop. {self._config}")
+        if "stop" in self._config:
+            raise ValueError(f"Use 'end' not 'stop' in loop. {self._config}")
         super().parse_config()
 
     def format(self, x):
@@ -1132,7 +1136,7 @@ class DateStartStopExpand(StartStopExpand):
     def parse_config(self):
         super().parse_config()
         assert isinstance(self.start, datetime.date), (type(self.start), self.start)
-        assert isinstance(self.stop, datetime.date), (type(self.stop), self.stop)
+        assert isinstance(self.end, datetime.date), (type(self.end), self.end)
         self.step = datetime.timedelta(days=self.step)
 
     def format(self, x):
