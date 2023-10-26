@@ -329,6 +329,8 @@ def make_list_int(value):
         return value
     if isinstance(value, tuple):
         return value
+    if isinstance(value, int):
+        return [value]
 
     raise ValueError(f"Cannot make list from {value}")
 
@@ -767,10 +769,13 @@ def _format_list(x):
             if is_regular:
                 return f"{_format_list(x[0])}/to/{_format_list(x[-1])}/by/{delta.total_seconds()/3600}"
 
-        return "/".join(_format_list(_) for _ in x)
+        txt = "/".join(_format_list(_) for _ in x)
+        if len(txt) > 200:
+            txt = txt[:50] + "..." + txt[-50:]
+        return txt
 
     if isinstance(x, datetime.datetime):
-        return x.strftime("%Y%m%d.%H%M")
+        return x.strftime("%Y-%m-%d.%H:%M")
     return str(x)
 
 
@@ -1065,6 +1070,11 @@ def hdates_from_date(date, start_year, end_year):
 
 
 class Expand(list):
+    """
+    This class is used to expand loops.
+    It creates a list of list in self.groups.
+    """
+
     def __init__(self, config, **kwargs):
         self._config = config
         self.kwargs = kwargs
@@ -1112,7 +1122,7 @@ class StartStopExpand(Expand):
             x += self.step
 
         result = [list(g) for _, g in itertools.groupby(all, key=self.grouper_key)]
-        self.groups = [[format(x) for x in g] for g in result]
+        self.groups = [[self.format(x) for x in g] for g in result]
 
     def parse_config(self):
         if "stop" in self._config:
