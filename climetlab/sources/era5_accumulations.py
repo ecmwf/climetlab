@@ -61,6 +61,12 @@ class Era5Accumulations(Source):
             request.update(self.requests(**a))
         request = self.requests(**kwargs)
 
+        param = request["param"]
+        if not isinstance(param, (list, tuple)):
+            param = [param]
+        for p in param:
+            assert p in ["cp", "lsp", "tp"], p
+
         user_dates = request["date"]
         user_times = request["time"]
 
