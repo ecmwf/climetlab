@@ -239,13 +239,41 @@ def _prepare_serialisation(o):
     return str(o)
 
 
+class FastWriter:
+    """
+    A class that provides a caching mechanism for writing to a NumPy-like array.
+
+    The `FastWriter` instance is initialized with a NumPy-like array and its shape.
+    The array is used to store the final data, while the cache is used to temporarily
+    store the data before flushing it to the array. The cache is a NumPy array of the same
+    shape as the final array, initialized with zeros.
+
+    The `flush` method copies the contents of the cache to the final array.
+    """
+
+    def __init__(self, array, shape):
+        self.array = array
+        self.shape = shape
+        self.cache = np.zeros(shape)
+
+    def __setitem__(self, key, value):
+        self.cache[key] = value
+
+    def __getitem__(self, key):
+        return self.cache[key]
+
+    def flush(self):
+        self.array[:] = self.cache[:]
+
+
 class OffsetView:
+    """
+    A view on a portion of the large_array.
+    'axis' is the axis along which the offset applies.
+    'shape' is the shape of the view.
+    """
+
     def __init__(self, large_array, *, offset, axis, shape):
-        """
-        A view on a portion of the large_array.
-        'axis' is the axis along which the offset applies.
-        'shape' is the shape of the view.
-        """
         self.large_array = large_array
         self.offset = offset
         self.axis = axis
@@ -269,7 +297,10 @@ class OffsetView:
                 k + self.offset if i == self.axis else k for i, k in enumerate(key)
             )
 
+        start = time.time()
+        print("Writing data to disk")
         self.large_array[new_key] = values
+        print(f"Writing data done in {seconds(time.time()-start)}.")
 
 
 class CubesFilter:
@@ -340,7 +371,7 @@ class Loader:
             if self.registry.get_flag(icube):
                 print(f" -> Skipping {icube} total={ncubes} (already done)")
                 continue
-            self.print(f" -> Processing i={icube=} total={ncubes}")
+            self.print(f" -> Processing i={icube} total={ncubes}")
 
             cube = cubecreator.to_cube()
             shape = cube.extended_user_shape
@@ -354,8 +385,10 @@ class Loader:
 
             offset = slice.start
             array = OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape)
-
+            array = FastWriter(array, shape=shape)
             self.load_datacube(cube, array)
+
+            array.flush()
 
             self.registry.set_flag(icube)
 
@@ -596,6 +629,9 @@ class ZarrLoader(Loader):
         print("-------------------------")
 
         variables_names = self.input_handler.variables
+        self.print(
+            f"Found {len(variables_names)} variables : {','.join(variables_names)}."
+        )
 
         assert (
             variables_names
@@ -606,13 +642,14 @@ class ZarrLoader(Loader):
         )
 
         resolution = self.input_handler.resolution
+        print(f"{resolution=}")
 
         chunks = self.input_handler.chunking
+        print(f"{chunks=}")
         dtype = self.main_config.output.dtype
 
         self.print(
-            f"Creating ZARR '{self.path}', with {total_shape=}, "
-            f"{chunks=} and {dtype=}"
+            f"Creating ZARR '{self.path}', with {total_shape=}, {chunks=} and {dtype=}"
         )
 
         frequency = self.input_handler.frequency

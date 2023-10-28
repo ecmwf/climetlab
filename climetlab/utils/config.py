@@ -401,7 +401,7 @@ class InputHandler:
             for cube_creator in loop.iterate():
                 return cube_creator
 
-    @property
+    @cached_property
     def chunking(self):
         return self.first_cube.chunking(self.output.chunking)
 
@@ -492,7 +492,8 @@ class InputHandler:
 
         return shape + field_shape
 
-    def get_datetimes(self):
+    @cached_property
+    def _datetimes_and_frequency(self):
         # merge datetimes from all loops and check there are no duplicates
         datetimes = set()
         for i in self.loops:
@@ -524,15 +525,19 @@ class InputHandler:
 
         check(datetimes)
 
-        return datetimes
-
-    @property
-    def frequency(self):
-        datetimes = self.get_datetimes()
         freq = (datetimes[1] - datetimes[0]).total_seconds() / 3600
         assert round(freq) == freq, freq
         assert int(freq) == freq, freq
-        return int(freq)
+        frequency = int(freq)
+
+        return datetimes, frequency
+
+    @property
+    def frequency(self):
+        return self._datetimes_and_frequency[1]
+
+    def get_datetimes(self):
+        return self._datetimes_and_frequency[0]
 
     def __repr__(self):
         return "InputHandler\n  " + "\n  ".join(str(i) for i in self.loops)
