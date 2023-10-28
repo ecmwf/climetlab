@@ -517,13 +517,13 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             self._connection = Connection(self.db_path)
         return self._connection._conn
 
-    def unique_values(self, *coords, remapping=None, progress_bar=True):
+    def unique_values(self, *coords, remapping=None, patches=None, progress_bar=True):
         """
         Given a list of metadata attributes, such as date, param, levels,
         returns the list of unique values for each attributes
         """
 
-        remapping = build_remapping(remapping)
+        remapping = build_remapping(remapping, patches)
         with self.connection as con:
             view = self.view
             # orders = [f for f in self._filters if isinstance(f, SqlOrder)]

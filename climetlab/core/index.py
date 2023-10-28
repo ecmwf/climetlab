@@ -185,7 +185,7 @@ class Index(Source):
 
         return self.new_mask_index(self, indices)
 
-    def order_by(self, *args, remapping=None, **kwargs):
+    def order_by(self, *args, remapping=None, patches=None, **kwargs):
         """Default order_by method.
         It expects that calling self[i] returns an element that and Order object can rank
         (i.e. order.get_element_ranking(element) -> tuple).
@@ -196,7 +196,7 @@ class Index(Source):
         kwargs = normalize_order_by(*args, **kwargs)
         kwargs = self._normalize_kwargs_names(**kwargs)
 
-        remapping = build_remapping(remapping)
+        remapping = build_remapping(remapping, patches)
 
         if not kwargs:
             return self
