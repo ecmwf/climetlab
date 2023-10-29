@@ -78,7 +78,9 @@ def _build_remapping(mapping):
     return mapping
 
 
-class Patch:
+class Patch(dict):
+    # inherit from dict to make it serialisable
+
     def __init__(self, proc, name, patch):
         self.proc = proc
         self.name = name
@@ -91,6 +93,9 @@ class Patch:
             assert callable(patch)
             self.patch = patch
 
+        # For JSON, we simply forward to the remapping
+        super().__init__(proc.as_dict())
+
     def __call__(self, func):
         next = self.proc(func)
 
@@ -102,6 +107,9 @@ class Patch:
 
         return wrapped
         # assert False, (name, self.proc, self.name, self.patch)
+
+    def as_dict(self):
+        return dict(self)
 
 
 def build_remapping(mapping, patches):

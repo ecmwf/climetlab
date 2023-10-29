@@ -192,7 +192,7 @@ def create(args):
             except zarr.errors.PathNotFoundError:
                 pass
 
-            loader = loader_class.from_config(**kwargs)
+            loader = loader_class.from_config(partial=True, **kwargs)
             loader.initialise()
             exit()
 

@@ -298,9 +298,9 @@ class OffsetView:
             )
 
         start = time.time()
-        print("Writing data to disk")
+        LOG.info("Writing data to disk")
         self.large_array[new_key] = values
-        print(f"Writing data done in {seconds(time.time()-start)}.")
+        LOG.info(f"Writing data done in {seconds(time.time()-start)}.")
 
 
 class CubesFilter:
@@ -336,7 +336,7 @@ class CubesFilter:
                 ]
 
         parts = [int(_) for _ in parts]
-        print(f"Running parts: {parts}")
+        LOG.info(f"Running parts: {parts}")
         if not parts:
             warnings.warn(f"Nothing to do for chunk {i_chunk}.")
 
@@ -349,9 +349,9 @@ class CubesFilter:
 
 
 class Loader:
-    def __init__(self, *, path, config, print=print, **kwargs):
+    def __init__(self, *, path, config, print=print, partial=False, **kwargs):
         self.main_config = LoadersConfig(config)
-        self.input_handler = self.main_config.input_handler()
+        self.input_handler = self.main_config.input_handler(partial)
         self.path = path
         self.kwargs = kwargs
         self.print = print
@@ -369,7 +369,7 @@ class Loader:
             if not filter(icube):
                 continue
             if self.registry.get_flag(icube):
-                print(f" -> Skipping {icube} total={ncubes} (already done)")
+                LOG.info(f" -> Skipping {icube} total={ncubes} (already done)")
                 continue
             self.print(f" -> Processing i={icube} total={ncubes}")
 
@@ -380,7 +380,9 @@ class Loader:
 
             slice = self.registry.get_slice_for(icube)
 
-            print(f"Building ZARR '{self.path}'")
+            LOG.info(
+                f"Building ZARR '{self.path}' i={icube} total={ncubes} (total shape ={shape}) at {slice}, {chunks=}"
+            )
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
             offset = slice.start
@@ -429,11 +431,16 @@ class Loader:
         now = time.time()
         save += time.time() - now
 
-        print("Written")
+        LOG.info("Written")
         self.print_info()
-        print("Written.")
+        LOG.info("Written.")
 
         self.print(
+            f"Elapsed: {seconds(time.time() - start)},"
+            f" load time: {seconds(load)},"
+            f" write time: {seconds(save)}."
+        )
+        LOG.info(
             f"Elapsed: {seconds(time.time() - start)},"
             f" load time: {seconds(load)},"
             f" write time: {seconds(save)}."
@@ -483,7 +490,7 @@ class ZarrBuiltRegistry:
 
     def get_flags(self, **kwargs):
         z = self._open_read(**kwargs)
-        print(list(z[self.name_flags][:]))
+        LOG.info(list(z[self.name_flags][:]))
         return list(z[self.name_flags][:])
 
     def get_flag(self, i):

@@ -58,6 +58,8 @@ class Config(DictObj):
 
 
 class Inputs(list):
+    _do_load = None
+
     def __init__(self, args):
         assert isinstance(args[0], (dict, Input)), args[0]
         args = [c if isinstance(c, Input) else Input(c) for c in args]
@@ -90,25 +92,27 @@ class Inputs(list):
 
         return datetimes
 
-    def do_load(self):
-        datasets = {}
-        for i in self:
-            i = i.substitute(vars=datasets)
-            ds = i.do_load()
-            datasets[i.name] = ds
+    def do_load(self, partial=False):
+        if self._do_load is None or self._do_load[1] != partial:
+            datasets = {}
+            for i in self:
+                i = i.substitute(vars=datasets)
+                ds = i.do_load(partial=partial)
+                datasets[i.name] = ds
 
-        out = None
-        for ds in datasets.values():
-            if out is None:
-                out = ds
-            else:
-                out += ds
+            out = None
+            for ds in datasets.values():
+                if out is None:
+                    out = ds
+                else:
+                    out += ds
 
-        from climetlab.readers.grib.index import FieldSet
+            from climetlab.readers.grib.index import FieldSet
 
-        assert isinstance(out, FieldSet), type(out)
+            assert isinstance(out, FieldSet), type(out)
+            self._do_load = (out, partial)
 
-        return out
+        return self._do_load[0]
 
     def __repr__(self) -> str:
         return "\n".join(str(i) for i in self)
@@ -250,8 +254,8 @@ class Input:
 
         raise ValueError(f"{name=} Cannot count number of elements in {self}")
 
-    def do_load(self, others={}):
-        if not self._do_load:
+    def do_load(self, partial=False):
+        if not self._do_load or self._do_load[1] != partial:
             from climetlab import load_dataset, load_source
 
             func = {
@@ -260,11 +264,18 @@ class Input:
                 "load_dataset": load_dataset,
             }[self.function]
 
-            ds = func(**self.kwargs)
+            kwargs = dict(**self.kwargs)
 
-            print(f"  Loading {self.name} of len {len(ds)}: {ds}")
-            self._do_load = ds
-        return self._do_load
+            if partial:
+                if "date" in kwargs and isinstance(kwargs["date"], list):
+                    kwargs["date"] = [kwargs["date"][0]]
+
+            LOG.info(f"Loading {self.name} with {func} {kwargs}")
+            ds = func(**kwargs)
+
+            LOG.info(f"  Loading {self.name} of len {len(ds)}: {ds}")
+            self._do_load = (ds, partial)
+        return self._do_load[0]
 
     def get_first_field(self):
         return self.do_load()[0]
@@ -354,7 +365,7 @@ def build_datetime(date, time, step):
     assert len(time) == 4, time
     assert int(time) >= 0 and int(time) < 2400, time
     if 0 < int(time) < 100:
-        print(f"WARNING: {time=}, using time with minutes is unusual.")
+        LOG.warning(f"{time=}, using time with minutes is unusual.")
 
     dt = datetime.datetime(
         year=date.year,
@@ -371,13 +382,13 @@ def build_datetime(date, time, step):
 
 
 class InputHandler:
-    def __init__(self, args, input, output):
+    def __init__(self, args, input, output, partial=False):
         inputs = Inputs(input)
         self.output = output
         self.loops = [
             c
             if isinstance(c, Loop) and c.inputs == inputs
-            else Loop(c, inputs, parent=self)
+            else Loop(c, inputs, parent=self, partial=partial)
             for c in args
         ]
         if not self.loops:
@@ -544,7 +555,7 @@ class InputHandler:
 
 
 class Loop(dict):
-    def __init__(self, dic, inputs, parent=None):
+    def __init__(self, dic, inputs, partial=False, parent=None):
         assert isinstance(dic, dict), dic
         assert len(dic) == 1, dic
         super().__init__(dic)
@@ -552,6 +563,7 @@ class Loop(dict):
         self.parent = parent
         self.name = list(dic.keys())[0]
         self.config = deepcopy(dic[self.name])
+        self.partial = partial
 
         assert "applies_to" in self.config, self.config
         applies_to = self.config.pop("applies_to")
@@ -586,6 +598,7 @@ class Loop(dict):
                 vars=dict(zip(self.values.keys(), items)),
                 loop_config=self.config,
                 output=self.parent.output,
+                partial=self.partial,
             )
 
     @property
@@ -595,6 +608,7 @@ class Loop(dict):
             vars={k: lst[0] for k, lst in self.values.items() if lst},
             loop_config=self.config,
             output=self.parent.output,
+            partial=self.partial,
         )
 
     @cached_property
@@ -638,11 +652,12 @@ class DuplicateDateTimeError(ValueError):
 
 
 class CubeCreator:
-    def __init__(self, inputs, vars, loop_config, output):
+    def __init__(self, inputs, vars, loop_config, output, partial=False):
         self._loop_config = loop_config
         self._vars = vars
         self._inputs = inputs
         self.output = output
+        self.partial = partial
 
         self.inputs = inputs.substitute(vars=vars, ignore_missing=True)
 
@@ -661,7 +676,7 @@ class CubeCreator:
         return out
 
     def do_load(self):
-        return self.inputs.do_load()
+        return self.inputs.do_load(self.partial)
 
     def get_datetimes(self):
         return self.inputs.get_datetimes()
@@ -674,14 +689,15 @@ class CubeCreator:
         data = self.do_load()
 
         start = time.time()
-        print("Sorting dataset", self.output.order_by, self.output.remapping)
+        LOG.info("Sorting dataset %s %s", self.output.order_by, self.output.remapping)
         cube = data.cube(
             self.output.order_by,
             remapping=self.output.remapping,
+            patches={"number": {None: 0}},
             flatten_values=self.output.flatten_grid,
         )
         cube = cube.squeeze()
-        print(f"Sorting done in {seconds(time.time()-start)}.")
+        LOG.info(f"Sorting done in {seconds(time.time()-start)}.")
 
         def check(actual_dic, requested_dic):
             assert self.output.statistics in actual_dic
@@ -902,7 +918,7 @@ class LoadersConfig(Config):
         purpose(self)
 
         if not isinstance(self.input, (tuple, list)):
-            print(f"WARNING: {self.input=} is not a list")
+            LOG.warning(f"{self.input=} is not a list")
             self.input = [self.input]
 
         if "order" in self.output:
@@ -911,7 +927,9 @@ class LoadersConfig(Config):
             self.output.order_by = normalize_order_by(self.output.order_by)
 
         self.output.remapping = self.output.get("remapping", {})
-        self.output.remapping = build_remapping(self.output.remapping)
+        self.output.remapping = build_remapping(
+            self.output.remapping, patches={"number": {None: 0}}
+        )
 
         self.output.chunking = self.output.get("chunking", {})
         self.output.dtype = self.output.get("dtype", "float32")
@@ -940,8 +958,8 @@ class LoadersConfig(Config):
         # TODO: consider 2D grid points
         self.statistics_axis = statistics_axis
 
-    def input_handler(self):
-        return InputHandler(self.loops, self.input, output=self.output)
+    def input_handler(self, partial=False):
+        return InputHandler(self.loops, self.input, output=self.output, partial=partial)
 
 
 def substitute(x, vars=None, ignore_missing=False):
