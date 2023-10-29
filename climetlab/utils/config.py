@@ -1156,6 +1156,16 @@ class StartStopExpand(Expand):
         return x
 
 
+def weekly(dt):
+    calendar = dt.isocalendar()
+    return (calendar[0], calendar[1])  # year, week of year
+
+
+def fortnightly(dt):
+    calendar = dt.isocalendar()
+    return (calendar[0], calendar[1] // 2)  # year, week of year
+
+
 class DateStartStopExpand(StartStopExpand):
     def grouper_key(self, x):
         return {
@@ -1164,6 +1174,8 @@ class DateStartStopExpand(StartStopExpand):
             "monthly": lambda dt: (dt.year, dt.month),
             "daily": lambda dt: (dt.year, dt.month, dt.day),
             "MMDD": lambda dt: (dt.month, dt.day),
+            "weekly": weekly,
+            "fortnightly": fortnightly,
         }[self.group_by](x)
 
     def parse_config(self):
@@ -1200,7 +1212,7 @@ def _expand_class(values):
     if start := values.get("start"):
         if isinstance(start, datetime.datetime):
             return DateStartStopExpand
-        if values.get("group_by") in ["monthly", "daily"]:
+        if values.get("group_by") in ["monthly", "daily", "weekly", "fortnightly"]:
             return DateStartStopExpand
         return IntStartStopExpand
 

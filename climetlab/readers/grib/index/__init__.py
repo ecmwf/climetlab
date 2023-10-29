@@ -12,6 +12,8 @@ import math
 import os
 from abc import abstractmethod
 
+from lru import LRU
+
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
 from climetlab.indexing.database import (
@@ -167,12 +169,24 @@ class FieldSetInFiles(FieldSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cache = {}
+        GRIB_FIELD_CACHE_SIZE = int(
+            os.environ.get("CLIMETLAB_GRIB_FIELD_CACHE_SIZE", 1000)
+        )
+        self._cache = LRU(GRIB_FIELD_CACHE_SIZE)
+
+        CLIMETLAB_HANDLE_CACHE_SIZE = int(
+            os.environ.get("CLIMETLAB_HANDLE_CACHE_SIZE", 10)
+        )
+
+        self._handle_cache = LRU(CLIMETLAB_HANDLE_CACHE_SIZE)
 
     def _getitem(self, n):
+        # TODO: check if we need a mutex here
         if n not in self._cache:
             part = self.part(n)
-            self._cache[n] = GribField(part.path, part.offset, part.length)
+            self._cache[n] = GribField(
+                part.path, part.offset, part.length, self._handle_cache
+            )
         return self._cache[n]
 
     def __len__(self):

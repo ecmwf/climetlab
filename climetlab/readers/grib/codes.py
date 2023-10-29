@@ -13,7 +13,7 @@ import os
 import threading
 import time
 from itertools import islice
-from collections import defaultdict
+
 import eccodes
 
 from climetlab.core import Base
@@ -320,8 +320,9 @@ class CodesReader:
 
 # count = defaultdict(int)
 
+
 class GribField(Base):
-    def __init__(self, path, offset, length):
+    def __init__(self, path, offset, length, handle_cache=None):
         self.path = path
         self._offset = offset
         self._length = length
@@ -329,18 +330,21 @@ class GribField(Base):
         self._values = None
         self._cache = {}
         self._metadata = {}
+        self._handle_cache = handle_cache
 
     @property
     def handle(self):
+        if self._handle_cache is not None:
+            key = (self.path, self._offset)
+            if key not in self._handle_cache:
+                self._handle_cache[key] = CodesReader.from_cache(self.path).at_offset(
+                    self._offset
+                )
+            return self._handle_cache[key]
+
         if self._handle is None:
-            assert self._offset is not None
-
-            # assert count[(self.path, self._offset)] < 10
-
-            # count[(self.path, self._offset)] += 1
-
-            # LOG.info("Loading %s %s %s", self.path, self._offset, count[(self.path, self._offset)])
             self._handle = CodesReader.from_cache(self.path).at_offset(self._offset)
+
         return self._handle
 
     @property

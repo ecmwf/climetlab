@@ -8,6 +8,7 @@
 #
 
 import os
+import time
 from contextlib import contextmanager
 
 from climetlab import settings
@@ -15,6 +16,9 @@ from climetlab.loaders import HDF5Loader, ZarrLoader
 from climetlab.utils.humanize import list_to_human
 
 from .tools import parse_args
+
+LAST_CALLBACK = 0
+LAST_MESSAGE = ""
 
 
 class LoadersCmd:
@@ -117,8 +121,14 @@ def create(args):
     if os.environ.get("CLIMETLAB_CREATE_SHELL_CALLBACK"):
 
         def callback(*msg):
+            global LAST_CALLBACK, LAST_MESSAGE
+
             msg = [str(_) for _ in msg]
             msg = "\n".join(msg)
+
+            if time.time() - LAST_CALLBACK < 10 and LAST_MESSAGE[:10] == msg[:10]:
+                return
+
             import shlex
             import subprocess
             import traceback
@@ -128,10 +138,13 @@ def create(args):
             try:
                 print(f"Running {cmd}")
                 args = shlex.split(cmd)  # shlex honors the quotes
-                subprocess.run(args)
+                subprocess.Popen(args)
             except Exception as e:
                 print(f"Exception when running {cmd}" + traceback.format_exc())
                 print(e)
+
+            LAST_CALLBACK = time.time()
+            LAST_MESSAGE = msg
 
         callback("Starting-zarr-loader.")
     else:
