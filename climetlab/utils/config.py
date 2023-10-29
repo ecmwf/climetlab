@@ -1156,33 +1156,39 @@ class StartStopExpand(Expand):
         return x
 
 
-def weekly(dt):
-    calendar = dt.isocalendar()
-    return (calendar[0], calendar[1])  # year, week of year
+class GroupByDays:
+    def __init__(self, days):
+        self.days = days
 
-
-def fortnightly(dt):
-    calendar = dt.isocalendar()
-    return (calendar[0], calendar[1] // 2)  # year, week of year
+    def __call__(self, dt):
+        year = dt.year
+        days = (dt - datetime.datetime(year, 1, 1)).days
+        x = (year, days // self.days)
+        # print(x)
+        return x
 
 
 class DateStartStopExpand(StartStopExpand):
-    def grouper_key(self, x):
-        return {
-            1: lambda x: 0,  # only one group
-            None: lambda x: x,  # one group per value
-            "monthly": lambda dt: (dt.year, dt.month),
-            "daily": lambda dt: (dt.year, dt.month, dt.day),
-            "MMDD": lambda dt: (dt.month, dt.day),
-            "weekly": weekly,
-            "fortnightly": fortnightly,
-        }[self.group_by](x)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def parse_config(self):
         super().parse_config()
         assert isinstance(self.start, datetime.date), (type(self.start), self.start)
         assert isinstance(self.end, datetime.date), (type(self.end), self.end)
         self.step = datetime.timedelta(days=self.step)
+
+        if isinstance(self.group_by, int) and self.group_by > 1:
+            self.grouper_key = GroupByDays(self.group_by)
+        else:
+            self.grouper_key = {
+                1: lambda dt: 0,  # only one group
+                "monthly": lambda dt: (dt.year, dt.month),
+                "daily": lambda dt: (dt.year, dt.month, dt.day),
+                "MMDD": lambda dt: (dt.month, dt.day),
+            }[self.group_by]
+
+        # assert False, self.grouper_key
 
     def format(self, x):
         return x.isoformat()
@@ -1212,7 +1218,12 @@ def _expand_class(values):
     if start := values.get("start"):
         if isinstance(start, datetime.datetime):
             return DateStartStopExpand
-        if values.get("group_by") in ["monthly", "daily", "weekly", "fortnightly"]:
+        if values.get("group_by") in [
+            "monthly",
+            "daily",
+            "weekly",
+            "fortnightly",
+        ] or isinstance(values.get("group_by"), int):
             return DateStartStopExpand
         return IntStartStopExpand
 

@@ -327,7 +327,7 @@ class GribField(Base):
         self._offset = offset
         self._length = length
         self._handle = None
-        self._values = None
+        # self._values = None
         self._cache = {}
         self._metadata = {}
         self._handle_cache = handle_cache
@@ -349,9 +349,10 @@ class GribField(Base):
 
     @property
     def values(self):
-        if self._values is None:
-            self._values = self.handle.get("values")
-        return self._values
+        return self.handle.get("values")
+        # if self._values is None:
+        #     self._values = self.handle.get("values")
+        # return self._values
 
     @property
     def offset(self):
