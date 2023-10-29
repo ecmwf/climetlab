@@ -13,7 +13,7 @@ import os
 import threading
 import time
 from itertools import islice
-
+from collections import defaultdict
 import eccodes
 
 from climetlab.core import Base
@@ -318,6 +318,8 @@ class CodesReader:
             return CodesHandle(handle, self.path, offset)
 
 
+# count = defaultdict(int)
+
 class GribField(Base):
     def __init__(self, path, offset, length):
         self.path = path
@@ -326,11 +328,18 @@ class GribField(Base):
         self._handle = None
         self._values = None
         self._cache = {}
+        self._metadata = {}
 
     @property
     def handle(self):
         if self._handle is None:
             assert self._offset is not None
+
+            # assert count[(self.path, self._offset)] < 10
+
+            # count[(self.path, self._offset)] += 1
+
+            # LOG.info("Loading %s %s %s", self.path, self._offset, count[(self.path, self._offset)])
             self._handle = CodesReader.from_cache(self.path).at_offset(self._offset)
         return self._handle
 
@@ -499,27 +508,33 @@ class GribField(Base):
         return self.handle.get(name)
 
     def metadata(self, name):
-        if name == DATETIME:
-            date = self.metadata("validityDate")
-            time = self.metadata("validityTime")
-            return datetime.datetime(
-                date // 10000,
-                date % 10000 // 100,
-                date % 100,
-                time // 100,
-                time % 100,
-            ).isoformat()
+        def get(name):
+            if name == DATETIME:
+                date = self.metadata("validityDate")
+                time = self.metadata("validityTime")
+                return datetime.datetime(
+                    date // 10000,
+                    date % 10000 // 100,
+                    date % 100,
+                    time // 100,
+                    time % 100,
+                ).isoformat()
 
-        if name == "param":
-            name = "shortName"
+            if name == "param":
+                name = "shortName"
 
-        if name == "_param_id":
-            name = "paramId"
+            if name == "_param_id":
+                name = "paramId"
 
-        if name == "level" and self[name] == 0:
-            return None
+            if name == "level" and self[name] == 0:
+                return None
 
-        return self[name]
+            return self[name]
+
+        if name not in self._metadata:
+            self._metadata[name] = get(name)
+
+        return self._metadata[name]
 
     def __getitem__(self, name):
         """For cfgrib"""

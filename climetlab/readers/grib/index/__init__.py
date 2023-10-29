@@ -164,9 +164,16 @@ class FieldSetInFiles(FieldSet):
     # as the actual fieldset is accessed on a file in cache.
     # This class changes the interface (_getitem__ and __len__)
     # into the interface (part and number_of_parts).
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cache = {}
+
     def _getitem(self, n):
-        part = self.part(n)
-        return GribField(part.path, part.offset, part.length)
+        if n not in self._cache:
+            part = self.part(n)
+            self._cache[n] = GribField(part.path, part.offset, part.length)
+        return self._cache[n]
 
     def __len__(self):
         return self.number_of_parts()
