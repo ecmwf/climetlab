@@ -868,6 +868,13 @@ class ZarrLoader(Loader):
             self.registry.add_provenance(name="provenance_statistics")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
+        save = np.seterr(all="raise")
+        try:
+            self._compute_statistics(ds, statistics_start, statistics_end)
+        finally:
+            np.seterr(**save)
+
+    def _compute_statistics(self, ds, statistics_start, statistics_end):
         import zarr
 
         data = zarr.open(self.path, mode="r")["data"]
@@ -922,9 +929,8 @@ class ZarrLoader(Loader):
                 squares[i, j] = np.sum(values * values)
                 count[i, j] = values.size
                 mean[i, j] = sums[i, j] / count[i, j]
-                stdev[i, j] = np.sqrt(
-                    squares[i, j] / count[i, j] - mean[i, j] * mean[i, j]
-                )
+
+                stdev[i, j] = np.sqrt(squares[i, j] / count[i, j] - mean[i, j] * mean[i, j])
 
                 check_stats(
                     minimum=minimum[i, j],
