@@ -2,12 +2,12 @@ loop:
   dates:
     daily:
       start: '2015-04-18'
-      stop: '2015-04-19'
+      end: '2015-04-19'
 input:
   inherit: true
   source:
-    - name: file
-      path: test-data/uvz-20150418.grib
+  - name: file
+    path: test-data/uvz-20150418.grib
 
 
 output:

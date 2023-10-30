@@ -39,9 +39,12 @@ class StandaloneMarsClient:
                 f.write(req_str + "\n")
             LOG.debug(f"Sending Mars request: '{req_str}'")
 
+            env = dict(os.environ)
+            env.setdefault("MARS_AUTO_SPLIT_BY_DATES", "1")
+
             subprocess.run(
                 [self.EXE, filename],
-                env=dict(os.environ, MARS_AUTO_SPLIT_BY_DATES="1"),
+                env=env,
                 check=True,
             )
 

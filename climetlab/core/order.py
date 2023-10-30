@@ -48,6 +48,9 @@ class Remapping(dict):
 
     def substitute(self, name, joiner):
         if name in self.lists:
+            if callable(self.lists[name]):
+                return self.lists[name]()
+
             lst = []
             for i, bit in enumerate(self.lists[name]):
                 if i % 2:
@@ -65,7 +68,7 @@ class Remapping(dict):
         return dict(self)
 
 
-def build_remapping(mapping):
+def _build_remapping(mapping):
     if mapping is None:
         return Remapping({})
 
@@ -73,6 +76,48 @@ def build_remapping(mapping):
         return Remapping(mapping)
 
     return mapping
+
+
+class Patch(dict):
+    # inherit from dict to make it serialisable
+
+    def __init__(self, proc, name, patch):
+        self.proc = proc
+        self.name = name
+
+        if isinstance(patch, dict):
+            self.patch = lambda x: patch.get(x, x)
+        elif isinstance(patch, (int, bool, float, str)) or patch is None:
+            self.patch = lambda x: patch
+        else:
+            assert callable(patch)
+            self.patch = patch
+
+        # For JSON, we simply forward to the remapping
+        super().__init__(proc.as_dict())
+
+    def __call__(self, func):
+        next = self.proc(func)
+
+        def wrapped(name):
+            result = next(name)
+            if name == self.name:
+                result = self.patch(result)
+            return result
+
+        return wrapped
+        # assert False, (name, self.proc, self.name, self.patch)
+
+    def as_dict(self):
+        return dict(self)
+
+
+def build_remapping(mapping, patches):
+    result = _build_remapping(mapping)
+    if patches:
+        for k, v in patches.items():
+            result = Patch(result, k, v)
+    return result
 
 
 def normalize_order_by(*args, **kwargs):

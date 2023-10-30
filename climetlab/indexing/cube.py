@@ -48,6 +48,7 @@ class FieldCube:
         ds,
         *args,
         remapping=None,
+        patches=None,
         flatten_values=False,
     ):
         assert len(ds), f"No data in {ds}"
@@ -75,7 +76,7 @@ class FieldCube:
         # print(ds[1])
         # print(ds[2])
         # print(ds[3])
-        self.source = ds.order_by(*args, remapping=remapping)
+        self.source = ds.order_by(*args, remapping=remapping, patches=patches)
         del ds
         # print("after")
         # print(self.source[0])
@@ -85,7 +86,9 @@ class FieldCube:
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
-        self.user_coords = self.source.unique_values(*names, remapping=remapping)
+        self.user_coords = self.source.unique_values(
+            *names, remapping=remapping, patches=patches
+        )
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 

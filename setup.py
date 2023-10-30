@@ -84,6 +84,7 @@ install_requires += [
     "branca",
     "imageio",
     "numpngw",
+    "lru-dict",
 ]
 
 extras_require = {

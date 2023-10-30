@@ -12,6 +12,8 @@ import math
 import os
 from abc import abstractmethod
 
+from lru import LRU
+
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
 from climetlab.indexing.database import (
@@ -164,9 +166,28 @@ class FieldSetInFiles(FieldSet):
     # as the actual fieldset is accessed on a file in cache.
     # This class changes the interface (_getitem__ and __len__)
     # into the interface (part and number_of_parts).
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        GRIB_FIELD_CACHE_SIZE = int(
+            os.environ.get("CLIMETLAB_GRIB_FIELD_CACHE_SIZE", 1000)
+        )
+        self._cache = LRU(GRIB_FIELD_CACHE_SIZE)
+
+        CLIMETLAB_HANDLE_CACHE_SIZE = int(
+            os.environ.get("CLIMETLAB_HANDLE_CACHE_SIZE", 10)
+        )
+
+        self._handle_cache = LRU(CLIMETLAB_HANDLE_CACHE_SIZE)
+
     def _getitem(self, n):
-        part = self.part(n)
-        return GribField(part.path, part.offset, part.length)
+        # TODO: check if we need a mutex here
+        if n not in self._cache:
+            part = self.part(n)
+            self._cache[n] = GribField(
+                part.path, part.offset, part.length, self._handle_cache
+            )
+        return self._cache[n]
 
     def __len__(self):
         return self.number_of_parts()

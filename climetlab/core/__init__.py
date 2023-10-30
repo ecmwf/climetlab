@@ -137,7 +137,7 @@ class Base(metaclass=MetaBase):
     def get_metadata(self, i):
         return self[i].metadata()
 
-    def unique_values(self, *coords, remapping=None, progress_bar=True):
+    def unique_values(self, *coords, remapping=None, patches=None, progress_bar=True):
         """
         Given a list of metadata attributes, such as date, param, levels,
         returns the list of unique values for each attributes
@@ -146,7 +146,7 @@ class Base(metaclass=MetaBase):
         assert len(coords)
         assert all(isinstance(k, str) for k in coords), coords
 
-        remapping = build_remapping(remapping)
+        remapping = build_remapping(remapping, patches)
         iterable = self
 
         if progress_bar:

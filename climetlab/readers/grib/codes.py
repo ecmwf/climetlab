@@ -318,27 +318,48 @@ class CodesReader:
             return CodesHandle(handle, self.path, offset)
 
 
+# count = defaultdict(int)
+
+
 class GribField(Base):
-    def __init__(self, path, offset, length):
+    def __init__(self, path, offset, length, handle_cache=None):
         self.path = path
         self._offset = offset
         self._length = length
         self._handle = None
-        self._values = None
+        # self._values = None
         self._cache = {}
+        self._metadata = {}
+        self._handle_cache = handle_cache
 
     @property
     def handle(self):
+        if self._handle_cache is not None:
+            key = (self.path, self._offset)
+            if key not in self._handle_cache:
+                self._handle_cache[key] = CodesReader.from_cache(self.path).at_offset(
+                    self._offset
+                )
+            return self._handle_cache[key]
+
         if self._handle is None:
-            assert self._offset is not None
             self._handle = CodesReader.from_cache(self.path).at_offset(self._offset)
+
         return self._handle
 
     @property
     def values(self):
-        if self._values is None:
-            self._values = self.handle.get("values")
-        return self._values
+        values = self.handle.get("values")
+        if self.handle.get("bitmapPresent"):
+            import numpy as np
+
+            missingValue = self.handle.get("missingValue")
+            values[values == missingValue] = np.nan
+        return values
+
+        # if self._values is None:
+        #     self._values = self.handle.get("values")
+        # return self._values
 
     @property
     def offset(self):
@@ -499,27 +520,33 @@ class GribField(Base):
         return self.handle.get(name)
 
     def metadata(self, name):
-        if name == DATETIME:
-            date = self.metadata("validityDate")
-            time = self.metadata("validityTime")
-            return datetime.datetime(
-                date // 10000,
-                date % 10000 // 100,
-                date % 100,
-                time // 100,
-                time % 100,
-            ).isoformat()
+        def get(name):
+            if name == DATETIME:
+                date = self.metadata("validityDate")
+                time = self.metadata("validityTime")
+                return datetime.datetime(
+                    date // 10000,
+                    date % 10000 // 100,
+                    date % 100,
+                    time // 100,
+                    time % 100,
+                ).isoformat()
 
-        if name == "param":
-            name = "shortName"
+            if name == "param":
+                name = "shortName"
 
-        if name == "_param_id":
-            name = "paramId"
+            if name == "_param_id":
+                name = "paramId"
 
-        if name == "level" and self[name] == 0:
-            return None
+            if name == "level" and self[name] == 0:
+                return None
 
-        return self[name]
+            return self[name]
+
+        if name not in self._metadata:
+            self._metadata[name] = get(name)
+
+        return self._metadata[name]
 
     def __getitem__(self, name):
         """For cfgrib"""
