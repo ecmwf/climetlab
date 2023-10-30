@@ -904,7 +904,6 @@ class ZarrLoader(Loader):
         stats_shape = (i_len, shape[1])
 
         mean = np.zeros(shape=stats_shape)
-        stdev = np.zeros(shape=stats_shape)
         minimum = np.zeros(shape=stats_shape)
         maximum = np.zeros(shape=stats_shape)
         sums = np.zeros(shape=stats_shape)
@@ -929,8 +928,6 @@ class ZarrLoader(Loader):
                 squares[i, j] = np.sum(values * values)
                 count[i, j] = values.size
                 mean[i, j] = sums[i, j] / count[i, j]
-
-                stdev[i, j] = np.sqrt(squares[i, j] / count[i, j] - mean[i, j] * mean[i, j])
 
                 check_stats(
                     minimum=minimum[i, j],

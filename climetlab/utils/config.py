@@ -13,6 +13,7 @@ import math
 import os
 import re
 import time
+import warnings
 from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
@@ -382,14 +383,14 @@ def build_datetime(date, time, step):
 
 
 class InputHandler:
-    def __init__(self, args, input, output, partial=False):
+    def __init__(self, loops, input, output, partial=False):
         inputs = Inputs(input)
         self.output = output
         self.loops = [
             c
             if isinstance(c, Loop) and c.inputs == inputs
             else Loop(c, inputs, parent=self, partial=partial)
-            for c in args
+            for c in loops
         ]
         if not self.loops:
             raise NotImplementedError("No loop")
@@ -565,9 +566,9 @@ class Loop(dict):
         self.config = deepcopy(dic[self.name])
         self.partial = partial
 
-        if "apply_to" not in self.config:
-            # if apply_to is not specified, apply to all inputs
-            self.config.apply_to = [i.name for i in Inputs]
+        if "applies_to" not in self.config:
+            # if applies_to is not specified, apply to all inputs
+            self.config.applies_to = [i.name for i in inputs]
         assert "applies_to" in self.config, self.config
         applies_to = self.config.pop("applies_to")
         self.applies_to_inputs = Inputs(
@@ -924,6 +925,15 @@ class LoadersConfig(Config):
             LOG.warning(f"{self.input=} is not a list")
             self.input = [self.input]
 
+        if "loops" in self:
+            warnings.warn("Should use loop instead of loops in config")
+            assert "loop" not in self
+            self.loop = self.pop("loops")
+
+        if not isinstance(self.loop, list):
+            assert isinstance(self.loop, dict), self.loop
+            self.loop = [dict(loop_a=self.loop)]
+
         if "order" in self.output:
             raise ValueError(f"Do not use 'order'. Use order_by in {config}")
         if "order_by" in self.output:
@@ -962,7 +972,7 @@ class LoadersConfig(Config):
         self.statistics_axis = statistics_axis
 
     def input_handler(self, partial=False):
-        return InputHandler(self.loops, self.input, output=self.output, partial=partial)
+        return InputHandler(self.loop, self.input, output=self.output, partial=partial)
 
 
 def substitute(x, vars=None, ignore_missing=False):
