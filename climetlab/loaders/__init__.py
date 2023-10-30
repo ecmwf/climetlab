@@ -24,6 +24,10 @@ from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
 
+LOG = logging.getLogger(__name__)
+
+VERSION = "0.12"
+
 
 class DatasetName:
     def __init__(
@@ -164,11 +168,6 @@ class DatasetName:
             )
 
 
-LOG = logging.getLogger(__name__)
-
-VERSION = "0.12"
-
-
 def get_versions():
     dic = {}
 
@@ -239,7 +238,25 @@ def _prepare_serialisation(o):
     return str(o)
 
 
-class FastWriter:
+class ArrayLike:
+    def flush():
+        pass
+
+
+class DummyArrayLike(ArrayLike):
+    """"""
+
+    def __init__(self, array, shape):
+        self.array = array
+
+    def __getattribute__(self, __name: str):
+        return super().__getattribute__(__name)
+
+    def new_key(self, key, values):
+        return key
+
+
+class FastWriter(ArrayLike):
     """
     A class that provides a caching mechanism for writing to a NumPy-like array.
 
@@ -256,37 +273,96 @@ class FastWriter:
         self.shape = shape
         self.cache = np.zeros(shape)
 
+        stats_shape = (shape[0], shape[1])
+
+        self.minimum = np.zeros(shape=stats_shape)
+        self.maximum = np.zeros(shape=stats_shape)
+        self.sums = np.zeros(shape=stats_shape)
+        self.squares = np.zeros(shape=stats_shape)
+        self.count = np.zeros(shape=stats_shape)
+
     def __setitem__(self, key, value):
         self.cache[key] = value
 
     def __getitem__(self, key):
         return self.cache[key]
 
+    def new_key(self, key, values):
+        return self.array.new_key(key, values)
+
     def flush(self):
         self.array[:] = self.cache[:]
 
+    def compute_statistics(self, *args, **kwargs):
+        save = np.seterr(all="raise")
+        try:
+            return self._compute_statistics(*args, **kwargs)
+        finally:
+            np.seterr(**save)
 
-class OffsetView:
+    def _compute_statistics(self, names, statistics_registry):
+        assert self.shape[1] == len(names), (self.shape, names)
+
+        for i in range(self.shape[0]):
+            chunk = self.cache[i, ...]
+            LOG.debug(f"Computing statistics on {i+1}/{self.shape[0]}")
+            for j, name in enumerate(names):
+                values = chunk[j, :]
+                check_data_values(
+                    values,
+                    name=name,
+                    log=[j, i, "statistics"],
+                )
+                self.minimum[i, j] = np.amin(values)
+                self.maximum[i, j] = np.amax(values)
+                self.sums[i, j] = np.sum(values)
+                self.squares[i, j] = np.sum(values * values)
+                self.count[i, j] = values.size
+
+                check_stats(
+                    minimum=self.minimum[i, j],
+                    maximum=self.maximum[i, j],
+                    mean=self.sums[i, j] / self.count[i, j],
+                    msg=f" for {j} {name}",
+                )
+
+        assert (self.count == self.count[:][0]).all(), self.count
+
+        stats = {
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "sums": self.sums,
+            "squares": self.squares,
+            "count": self.count,
+        }
+        new_key = self.array.new_key(slice(None, None), (self.shape[0], self.shape[1]))
+        new_key = new_key[0]
+        statistics_registry[new_key] = stats
+
+
+class OffsetView(ArrayLike):
     """
     A view on a portion of the large_array.
     'axis' is the axis along which the offset applies.
     'shape' is the shape of the view.
     """
 
-    def __init__(self, large_array, *, offset, axis, shape):
+    def __init__(self, large_array, *, offset, axis, shape, statistics_registry):
         self.large_array = large_array
         self.offset = offset
         self.axis = axis
         self.shape = shape
+        self.statistics_registry = statistics_registry
 
-    def __setitem__(self, key, values):
+    def new_key(self, key, values_shape):
         if isinstance(key, slice):
             # Ensure that the slice covers the entire view along the axis.
+            print(self.shape)
             assert key.start is None and key.stop is None, key
 
             # Create a new key for indexing the large array.
             new_key = tuple(
-                slice(self.offset, self.offset + values.shape[i])
+                slice(self.offset, self.offset + values_shape[i])
                 if i == self.axis
                 else slice(None)
                 for i in range(len(self.shape))
@@ -296,6 +372,10 @@ class OffsetView:
             new_key = tuple(
                 k + self.offset if i == self.axis else k for i, k in enumerate(key)
             )
+        return new_key
+
+    def __setitem__(self, key, values):
+        new_key = self.new_key(key, values.shape)
 
         start = time.time()
         LOG.info("Writing data to disk")
@@ -356,6 +436,7 @@ class Loader:
         self.kwargs = kwargs
         self.print = print
         self.registry = ZarrBuiltRegistry(self.path)
+        self.statistics_registry = ZarrStatisticsRegistry(self.path)
 
     def load(self, **kwargs):
         import zarr
@@ -386,7 +467,13 @@ class Loader:
             self.print(f"Building ZARR (total shape ={shape}) at {slice}, {chunks=}")
 
             offset = slice.start
-            array = OffsetView(self.z["data"], offset=offset, axis=axis, shape=shape)
+            array = OffsetView(
+                self.z["data"],
+                offset=offset,
+                axis=axis,
+                shape=shape,
+                statistics_registry=self.statistics_registry,
+            )
             array = FastWriter(array, shape=shape)
             self.load_datacube(cube, array)
 
@@ -428,6 +515,10 @@ class Loader:
             array[cubelet.extended_icoords] = data
             save += time.time() - now
 
+        array.compute_statistics(
+            names=self._variables_names, statistics_registry=self.statistics_registry
+        )
+
         now = time.time()
         save += time.time() - now
 
@@ -460,21 +551,109 @@ def add_zarr_dataset(name, nparray, *, zarr_root, overwrite=True, dtype=np.float
     return a
 
 
-class ZarrBuiltRegistry:
-    name_lengths = "_build_lengths"
-    name_flags = "_build_flags"
-    lengths = None
-    flags = None
-    z = None
+class ZarrRegistry:
+    synchronizer_path = None  # to be defined in subclasses
 
     def __init__(self, path):
+        assert self.synchronizer_path is not None, self.synchronizer_path
+
         import zarr
 
         assert isinstance(path, str), path
         self.zarr_path = path
         self.synchronizer = zarr.ProcessSynchronizer(
-            os.path.join(self.zarr_path, "registry.sync")
+            os.path.join(self.zarr_path + ".sync", self.synchronizer_path)
         )
+
+    def _open_write(self):
+        import zarr
+
+        return zarr.open(self.zarr_path, mode="r+", synchronizer=self.synchronizer)
+
+    def _open_read(self, sync=True):
+        import zarr
+
+        if sync:
+            return zarr.open(self.zarr_path, mode="r", synchronizer=self.synchronizer)
+        else:
+            return zarr.open(self.zarr_path, mode="r")
+
+    def add_to_history(self, action, **kwargs):
+        new = dict(
+            action=action,
+            timestamp=datetime.datetime.utcnow().isoformat(),
+        )
+        new.update(kwargs)
+
+        z = self._open_write()
+        history = z.attrs.get("history", [])
+        history.append(new)
+        z.attrs["history"] = history
+
+
+class ZarrStatisticsRegistry(ZarrRegistry):
+    names = [
+        "mean",
+        "stdev",
+        "minimum",
+        "maximum",
+        "sums",
+        "squares",
+        "count",
+    ]
+    build_names = [
+        "minimum",
+        "maximum",
+        "sums",
+        "squares",
+        "count",
+    ]
+    synchronizer_path = "statistics.sync"
+
+    def create(self):
+        z = self._open_write()
+        shape = z["data"].shape
+
+        nans = np.full((shape[0], shape[1]), np.nan)
+        for name in self.build_names:
+            add_zarr_dataset(
+                name,
+                nans,
+                zarr_root=z["_build"],
+                dtype=np.float64,
+                overwrite=True,
+            )
+        z = None
+        self.add_to_history("statistics_initialised")
+
+    def __setitem__(self, key, stats):
+        z = self._open_write()
+
+        LOG.debug("Writting stats for ", key)
+        for name in self.build_names:
+            z["_build"][name][key] = stats[name]
+        LOG.debug("Written stats for ", key)
+
+    def get_all(self, key=None):
+        if key is None:
+            key = slice(None, None)
+        dic = {}
+        for name in self.build_names:
+            dic[name] = self.get(name)[key]
+        return dic
+
+    def get(self, name):
+        z = self._open_read()
+        return z["_build"][name]
+
+
+class ZarrBuiltRegistry(ZarrRegistry):
+    name_lengths = "lengths"
+    name_flags = "flags"
+    lengths = None
+    flags = None
+    z = None
+    synchronizer_path = "registry.sync"
 
     def get_slice_for(self, i):
         lengths = self.get_lengths()
@@ -486,34 +665,21 @@ class ZarrBuiltRegistry:
 
     def get_lengths(self):
         z = self._open_read()
-        return list(z[self.name_lengths][:])
+        return list(z["_build"][self.name_lengths][:])
 
     def get_flags(self, **kwargs):
         z = self._open_read(**kwargs)
-        LOG.info(list(z[self.name_flags][:]))
-        return list(z[self.name_flags][:])
+        LOG.info(list(z["_build"][self.name_flags][:]))
+        return list(z["_build"][self.name_flags][:])
 
     def get_flag(self, i):
         z = self._open_read()
-        return z[self.name_flags][i]
+        return z["_build"][self.name_flags][i]
 
     def set_flag(self, i, value=True):
         z = self._open_write()
         z.attrs["latest_write_timestamp"] = datetime.datetime.utcnow().isoformat()
-        z[self.name_flags][i] = value
-
-    def _open_read(self, sync=True):
-        import zarr
-
-        if sync:
-            return zarr.open(self.zarr_path, mode="r", synchronizer=self.synchronizer)
-        else:
-            return zarr.open(self.zarr_path, mode="r")
-
-    def _open_write(self):
-        import zarr
-
-        return zarr.open(self.zarr_path, mode="r+", synchronizer=self.synchronizer)
+        z["_build"][self.name_flags][i] = value
 
     def create(self, lengths, overwrite=False):
         z = self._open_write()
@@ -521,14 +687,14 @@ class ZarrBuiltRegistry:
         add_zarr_dataset(
             self.name_lengths,
             lengths,
-            zarr_root=z,
+            zarr_root=z["_build"],
             dtype="i4",
             overwrite=overwrite,
         )
         add_zarr_dataset(
             self.name_flags,
             len(lengths) * [False],
-            zarr_root=z,
+            zarr_root=z["_build"],
             dtype=bool,
             overwrite=overwrite,
         )
@@ -544,18 +710,6 @@ class ZarrBuiltRegistry:
         z = self._open_write()
         z.attrs[name] = gather_provenance_info()
 
-    def add_to_history(self, action, **kwargs):
-        new = dict(
-            action=action,
-            timestamp=datetime.datetime.utcnow().isoformat(),
-        )
-        new.update(kwargs)
-
-        z = self._open_write()
-        history = z.attrs.get("history", [])
-        history.append(new)
-        z.attrs["history"] = history
-
 
 class ZarrLoader(Loader):
     writer = None
@@ -563,7 +717,6 @@ class ZarrLoader(Loader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.z = None
-        self.statistics = []
 
     @classmethod
     def from_config(cls, *, config, path, **kwargs):
@@ -725,6 +878,7 @@ class ZarrLoader(Loader):
 
         # write data
         self.z = zarr.open(self.path, mode="w")
+        self.z.create_group("_build")
 
         self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
 
@@ -739,6 +893,7 @@ class ZarrLoader(Loader):
         self.update_metadata(**metadata)
 
         self.registry.create(lengths=lengths)
+        self.statistics_registry.create()
 
         self.registry.add_to_history("init finished")
 
@@ -875,22 +1030,13 @@ class ZarrLoader(Loader):
             np.seterr(**save)
 
     def _compute_statistics(self, ds, statistics_start, statistics_end):
-        import zarr
-
-        data = zarr.open(self.path, mode="r")["data"]
-
-        shape = data.shape
-        assert shape[0] == len(ds.dates)
-        assert shape[1] == len(ds.variables)
-        assert ds.variables == self._variables_names
-
         i_start = self.statistics_start_indice()
         i_end = self.statistics_end_indice()
 
         i_len = i_end + 1 - i_start
 
         self.print(
-            f"Statistics computed on {i_len}/{shape[0]} samples "
+            f"Statistics computed on {i_len}/{len(ds.dates)} samples "
             f"first={ds.dates[i_start]} "
             f"last={ds.dates[i_end]}"
         )
@@ -901,52 +1047,13 @@ class ZarrLoader(Loader):
                 f" Available: {ds.dates[0]=} {ds.dates[-1]=}"
             )
 
-        stats_shape = (i_len, shape[1])
+        reg = self.statistics_registry
 
-        mean = np.zeros(shape=stats_shape)
-        minimum = np.zeros(shape=stats_shape)
-        maximum = np.zeros(shape=stats_shape)
-        sums = np.zeros(shape=stats_shape)
-        squares = np.zeros(shape=stats_shape)
-        count = np.zeros(shape=stats_shape)
-
-        for i, i_data in enumerate(range(i_start, i_end + 1)):
-            chunk = data[i_data, ...]
-            self.print(
-                f"Computing statistics on {i_data+1}/{shape[0]} ({ds.dates[i_data]})"
-            )
-            for j in range(shape[1]):
-                values = chunk[j, :]
-                check_data_values(
-                    values,
-                    name=ds.variables[j],
-                    log=[j, i, i_data, "statistics"],
-                )
-                minimum[i, j] = np.amin(values)
-                maximum[i, j] = np.amax(values)
-                sums[i, j] = np.sum(values)
-                squares[i, j] = np.sum(values * values)
-                count[i, j] = values.size
-                mean[i, j] = sums[i, j] / count[i, j]
-
-                check_stats(
-                    minimum=minimum[i, j],
-                    maximum=maximum[i, j],
-                    mean=mean[i, j],
-                    msg=f" for {j} {ds.variables[j]}",
-                )
-
-        assert (count == count[:][0]).all(), count
-
-        assert len(minimum.shape) == 2
-        assert minimum.shape[0] == i_len
-        assert minimum.shape[1] == shape[1]
-
-        _minimum = np.amin(minimum, axis=0)
-        _maximum = np.amax(maximum, axis=0)
-        _count = np.sum(count, axis=0)
-        _sums = np.sum(sums, axis=0)
-        _squares = np.sum(squares, axis=0)
+        _minimum = np.amin(reg.get("minimum"), axis=0)
+        _maximum = np.amax(reg.get("maximum"), axis=0)
+        _count = np.sum(reg.get("count"), axis=0)
+        _sums = np.sum(reg.get("sums"), axis=0)
+        _squares = np.sum(reg.get("squares"), axis=0)
         _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
 
