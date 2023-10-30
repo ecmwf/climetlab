@@ -12,6 +12,7 @@ import datetime
 import logging
 import os
 import re
+import shutil
 import time
 import uuid
 import warnings
@@ -538,7 +539,15 @@ class Loader:
         )
 
 
-def add_zarr_dataset(name, nparray, *, zarr_root, overwrite=True, dtype=np.float32):
+def add_zarr_dataset(
+    name,
+    nparray,
+    *,
+    zarr_root,
+    overwrite=True,
+    dtype=np.float32,
+    **kwargs,
+):
     if isinstance(nparray, (tuple, list)):
         nparray = np.array(nparray, dtype=dtype)
     a = zarr_root.create_dataset(
@@ -546,24 +555,33 @@ def add_zarr_dataset(name, nparray, *, zarr_root, overwrite=True, dtype=np.float
         shape=nparray.shape,
         dtype=dtype,
         overwrite=overwrite,
+        **kwargs,
     )
     a[...] = nparray[...]
     return a
 
 
 class ZarrRegistry:
-    synchronizer_path = None  # to be defined in subclasses
+    synchronizer_name = None  # to be defined in subclasses
 
     def __init__(self, path):
-        assert self.synchronizer_path is not None, self.synchronizer_path
+        assert self.synchronizer_name is not None, self.synchronizer_name
 
         import zarr
 
         assert isinstance(path, str), path
         self.zarr_path = path
-        self.synchronizer = zarr.ProcessSynchronizer(
-            os.path.join(self.zarr_path + ".sync", self.synchronizer_path)
-        )
+        self.synchronizer = zarr.ProcessSynchronizer(self._synchronizer_path)
+
+    def delete_synchronizer(self):
+        to_delete = self._synchronizer_path
+        self.synchronizer = None
+        self.zarr_path = None  # to avoid reusing this object without the synchronizer
+        shutil.rmtree(to_delete)
+
+    @property
+    def _synchronizer_path(self):
+        return self.zarr_path + "-" + self.synchronizer_name + ".sync"
 
     def _open_write(self):
         import zarr
@@ -608,7 +626,7 @@ class ZarrStatisticsRegistry(ZarrRegistry):
         "squares",
         "count",
     ]
-    synchronizer_path = "statistics.sync"
+    synchronizer_name = "statistics"
 
     def create(self):
         z = self._open_write()
@@ -620,8 +638,8 @@ class ZarrStatisticsRegistry(ZarrRegistry):
                 name,
                 nans,
                 zarr_root=z["_build"],
-                dtype=np.float64,
                 overwrite=True,
+                chunks=None,
             )
         z = None
         self.add_to_history("statistics_initialised")
@@ -653,7 +671,7 @@ class ZarrBuiltRegistry(ZarrRegistry):
     lengths = None
     flags = None
     z = None
-    synchronizer_path = "registry.sync"
+    synchronizer_name = "build"
 
     def get_slice_for(self, i):
         lengths = self.get_lengths()
@@ -1020,7 +1038,11 @@ class ZarrLoader(Loader):
                 start=statistics_start,
                 end=statistics_end,
             )
+
             self.registry.add_provenance(name="provenance_statistics")
+
+            # self.statistics_registry.delete_synchronizer()
+            # self.registry.delete_synchronizer()
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
         save = np.seterr(all="raise")
