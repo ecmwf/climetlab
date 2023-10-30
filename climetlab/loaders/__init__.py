@@ -187,12 +187,10 @@ def check_data_values(arr, *, name: str, log=[]):
     min, max = arr.min(), arr.max()
     assert not (np.isnan(arr).any()), (name, min, max, *log)
 
-    assert not (np.any(arr == 9999.0)), (name, min, max, *log)
-
-    # if min == 9999.0:
-    #     warnings.warn(f"Min value 9999 for {name}")
-    # if max == 9999.0:
-    #     warnings.warn(f"Max value 9999 for {name}")
+    if min == 9999.0:
+        warnings.warn(f"Min value 9999 for {name}")
+    if max == 9999.0:
+        warnings.warn(f"Max value 9999 for {name}")
 
     if name == ["lsm", "insolation"]:  # 0. to 1.
         assert max <= 1, (name, min, max, *log)

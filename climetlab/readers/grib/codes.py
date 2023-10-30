@@ -349,7 +349,14 @@ class GribField(Base):
 
     @property
     def values(self):
-        return self.handle.get("values")
+        values = self.handle.get("values")
+        if self.handle.get("bitmapPresent"):
+            import numpy as np
+
+            missingValue = self.handle.get("missingValue")
+            values[values == missingValue] = np.nan
+        return values
+
         # if self._values is None:
         #     self._values = self.handle.get("values")
         # return self._values
