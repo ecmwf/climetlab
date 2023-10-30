@@ -565,6 +565,9 @@ class Loop(dict):
         self.config = deepcopy(dic[self.name])
         self.partial = partial
 
+        if "apply_to" not in self.config:
+            # if apply_to is not specified, apply to all inputs
+            self.config.apply_to = [i.name for i in Inputs]
         assert "applies_to" in self.config, self.config
         applies_to = self.config.pop("applies_to")
         self.applies_to_inputs = Inputs(
