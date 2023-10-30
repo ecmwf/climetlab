@@ -172,7 +172,7 @@ class FieldSetInFiles(FieldSet):
         GRIB_FIELD_CACHE_SIZE = int(
             os.environ.get("CLIMETLAB_GRIB_FIELD_CACHE_SIZE", 1000)
         )
-        self._cache = LRU(GRIB_FIELD_CACHE_SIZE)
+        self._lru_cache = LRU(GRIB_FIELD_CACHE_SIZE)
 
         CLIMETLAB_HANDLE_CACHE_SIZE = int(
             os.environ.get("CLIMETLAB_HANDLE_CACHE_SIZE", 10)
@@ -182,12 +182,12 @@ class FieldSetInFiles(FieldSet):
 
     def _getitem(self, n):
         # TODO: check if we need a mutex here
-        if n not in self._cache:
+        if n not in self._lru_cache:
             part = self.part(n)
-            self._cache[n] = GribField(
+            self._lru_cache[n] = GribField(
                 part.path, part.offset, part.length, self._handle_cache
             )
-        return self._cache[n]
+        return self._lru_cache[n]
 
     def __len__(self):
         return self.number_of_parts()
