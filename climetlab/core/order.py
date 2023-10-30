@@ -112,7 +112,7 @@ class Patch(dict):
         return dict(self)
 
 
-def build_remapping(mapping, patches):
+def build_remapping(mapping, patches=None):
     result = _build_remapping(mapping)
     if patches:
         for k, v in patches.items():
