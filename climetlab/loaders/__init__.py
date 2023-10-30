@@ -870,7 +870,7 @@ class ZarrLoader(Loader):
     def compute_statistics(self, ds, statistics_start, statistics_end):
         save = np.seterr(all="raise")
         try:
-            self._compute_statistics(ds, statistics_start, statistics_end)
+            return self._compute_statistics(ds, statistics_start, statistics_end)
         finally:
             np.seterr(**save)
 
