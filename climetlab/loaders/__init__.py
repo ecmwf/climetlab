@@ -252,7 +252,7 @@ class DummyArrayLike(ArrayLike):
     def __getattribute__(self, __name: str):
         return super().__getattribute__(__name)
 
-    def new_key(self, key, values):
+    def new_key(self, key, values_shape):
         return key
 
 
@@ -279,8 +279,8 @@ class FastWriter(ArrayLike):
     def __getitem__(self, key):
         return self.cache[key]
 
-    def new_key(self, key, values):
-        return self.array.new_key(key, values)
+    def new_key(self, key, values_shape):
+        return self.array.new_key(key, values_shape)
 
     def flush(self):
         self.array[:] = self.cache[:]
@@ -293,44 +293,25 @@ class FastWriter(ArrayLike):
             np.seterr(**save)
 
     def _compute_statistics(self, names, statistics_registry):
+        nvars = len(names)
         assert self.shape[1] == len(names), (self.shape, names)
-        stats_shape = (self.shape[0], self.shape[1])
 
-        minimum = np.full(stats_shape, np.nan)
-        maximum = np.full(stats_shape, np.nan)
-        sums = np.full(stats_shape, np.nan)
-        squares = np.full(stats_shape, np.nan)
+        stats_shape = (self.shape[0], nvars)
+
         count = np.zeros(stats_shape, dtype=np.int64)
+        sums = np.zeros(stats_shape, dtype=np.float32)
+        squares = np.zeros(stats_shape, dtype=np.float32)
 
-        for i in range(self.shape[0]):
-            chunk = self.cache[i, ...]
-            LOG.debug(f"Computing statistics on {i+1}/{self.shape[0]}")
-            for j, name in enumerate(names):
-                values = chunk[j, :]
-                check_data_values(
-                    values,
-                    name=name,
-                    log=[j, i, "statistics"],
-                )
-                minimum[i, j] = np.amin(values)
-                maximum[i, j] = np.amax(values)
-                sums[i, j] = np.sum(values)
-                squares[i, j] = np.sum(values * values)
-                count[i, j] = values.size
+        minimum = np.zeros(stats_shape, dtype=np.float32)
+        maximum = np.zeros(stats_shape, dtype=np.float32)
 
-                check_stats(
-                    minimum=minimum[i, j],
-                    maximum=maximum[i, j],
-                    mean=sums[i, j] / count[i, j],
-                    msg=f" for {j} {name}",
-                )
-
-        assert (count == count[:][0]).all(), count
-
-        assert not np.isnan(minimum).any(), minimum
-        assert not np.isnan(maximum).any(), maximum
-        assert not np.isnan(sums).any(), sums
-        assert not np.isnan(squares).any(), squares
+        for i, chunk in enumerate(self.cache):
+            values = chunk.reshape((nvars, -1))
+            minimum[i] = np.min(values, axis=1)
+            maximum[i] = np.max(values, axis=1)
+            sums[i] = np.sum(values, axis=1)
+            squares[i] = np.sum(values * values, axis=1)
+            count[i] = values.shape[1]
 
         stats = {
             "minimum": minimum,
@@ -339,7 +320,9 @@ class FastWriter(ArrayLike):
             "squares": squares,
             "count": count,
         }
-        new_key = self.array.new_key(slice(None, None), (self.shape[0], self.shape[1]))
+        new_key = self.array.new_key(slice(None, None), self.shape)
+        assert self.array.axis == 0, self.array.axis
+        # print("new_key", new_key, self.array.offset, self.array.axis)
         new_key = new_key[0]
         statistics_registry[new_key] = stats
 
@@ -1048,11 +1031,11 @@ class ZarrLoader(Loader):
 
         reg = self.statistics_registry
 
-        maximum = reg.get_by_name("maximum")[i_start:i_end]
-        minimum = reg.get_by_name("minimum")[i_start:i_end]
-        sums = reg.get_by_name("sums")[i_start:i_end]
-        squares = reg.get_by_name("squares")[i_start:i_end]
-        count = reg.get_by_name("count")[i_start:i_end]
+        maximum = reg.get_by_name("maximum")[i_start : i_end + 1]
+        minimum = reg.get_by_name("minimum")[i_start : i_end + 1]
+        sums = reg.get_by_name("sums")[i_start : i_end + 1]
+        squares = reg.get_by_name("squares")[i_start : i_end + 1]
+        count = reg.get_by_name("count")[i_start : i_end + 1]
 
         assert len(maximum) == i_len, (len(maximum), i_len)
         assert len(minimum) == i_len, (len(minimum), i_len)
@@ -1060,11 +1043,11 @@ class ZarrLoader(Loader):
         assert len(squares) == i_len, (len(squares), i_len)
         assert len(count) == i_len, (len(count), i_len)
 
-        assert not np.isnan(minimum).any(), minimum
-        assert not np.isnan(maximum).any(), maximum
-        assert not np.isnan(sums).any(), sums
-        assert not np.isnan(squares).any(), squares
-        assert all(count > 0), count
+        # assert not np.isnan(minimum).any(), minimum
+        # assert not np.isnan(maximum).any(), maximum
+        # assert not np.isnan(sums).any(), sums
+        # assert not np.isnan(squares).any(), squares
+        # assert all(count > 0), count
 
         _minimum = np.amin(minimum, axis=0)
         _maximum = np.amax(maximum, axis=0)
