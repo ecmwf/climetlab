@@ -273,14 +273,6 @@ class FastWriter(ArrayLike):
         self.shape = shape
         self.cache = np.zeros(shape)
 
-        stats_shape = (shape[0], shape[1])
-
-        self.minimum = np.zeros(shape=stats_shape)
-        self.maximum = np.zeros(shape=stats_shape)
-        self.sums = np.zeros(shape=stats_shape)
-        self.squares = np.zeros(shape=stats_shape)
-        self.count = np.zeros(shape=stats_shape)
-
     def __setitem__(self, key, value):
         self.cache[key] = value
 
@@ -302,6 +294,13 @@ class FastWriter(ArrayLike):
 
     def _compute_statistics(self, names, statistics_registry):
         assert self.shape[1] == len(names), (self.shape, names)
+        stats_shape = (self.shape[0], self.shape[1])
+
+        minimum = np.full(stats_shape, np.nan)
+        maximum = np.full(stats_shape, np.nan)
+        sums = np.full(stats_shape, np.nan)
+        squares = np.full(stats_shape, np.nan)
+        count = np.zeros(stats_shape, dtype=np.int64)
 
         for i in range(self.shape[0]):
             chunk = self.cache[i, ...]
@@ -313,27 +312,32 @@ class FastWriter(ArrayLike):
                     name=name,
                     log=[j, i, "statistics"],
                 )
-                self.minimum[i, j] = np.amin(values)
-                self.maximum[i, j] = np.amax(values)
-                self.sums[i, j] = np.sum(values)
-                self.squares[i, j] = np.sum(values * values)
-                self.count[i, j] = values.size
+                minimum[i, j] = np.amin(values)
+                maximum[i, j] = np.amax(values)
+                sums[i, j] = np.sum(values)
+                squares[i, j] = np.sum(values * values)
+                count[i, j] = values.size
 
                 check_stats(
-                    minimum=self.minimum[i, j],
-                    maximum=self.maximum[i, j],
-                    mean=self.sums[i, j] / self.count[i, j],
+                    minimum=minimum[i, j],
+                    maximum=maximum[i, j],
+                    mean=sums[i, j] / count[i, j],
                     msg=f" for {j} {name}",
                 )
 
-        assert (self.count == self.count[:][0]).all(), self.count
+        assert (count == count[:][0]).all(), count
+
+        assert not np.isnan(minimum).any(), minimum
+        assert not np.isnan(maximum).any(), maximum
+        assert not np.isnan(sums).any(), sums
+        assert not np.isnan(squares).any(), squares
 
         stats = {
-            "minimum": self.minimum,
-            "maximum": self.maximum,
-            "sums": self.sums,
-            "squares": self.squares,
-            "count": self.count,
+            "minimum": minimum,
+            "maximum": maximum,
+            "sums": sums,
+            "squares": squares,
+            "count": count,
         }
         new_key = self.array.new_key(slice(None, None), (self.shape[0], self.shape[1]))
         new_key = new_key[0]
@@ -634,9 +638,13 @@ class ZarrStatisticsRegistry(ZarrRegistry):
         shape = z["data"].shape
         shape = (shape[0], shape[1])
 
-        data = np.full(shape, np.nan)
+        nans = np.full(shape, np.nan, dtype=np.float32)
+        zeros = np.zeros(shape, dtype=np.int64)
         for name in self.build_names:
-            self.new_dataset(name, data)  # , chunks=None)
+            if name == "count":
+                self.new_dataset(name, zeros, dtype=np.int64)
+            else:
+                self.new_dataset(name, nans, dtype=np.float32)
         self.add_to_history("statistics_initialised")
 
     def __setitem__(self, key, stats):
@@ -1040,13 +1048,44 @@ class ZarrLoader(Loader):
 
         reg = self.statistics_registry
 
-        _minimum = np.amin(reg.get_by_name("minimum"), axis=0)
-        _maximum = np.amax(reg.get_by_name("maximum"), axis=0)
-        _count = np.sum(reg.get_by_name("count"), axis=0)
-        _sums = np.sum(reg.get_by_name("sums"), axis=0)
-        _squares = np.sum(reg.get_by_name("squares"), axis=0)
+        maximum = reg.get_by_name("maximum")[i_start:i_end]
+        minimum = reg.get_by_name("minimum")[i_start:i_end]
+        sums = reg.get_by_name("sums")[i_start:i_end]
+        squares = reg.get_by_name("squares")[i_start:i_end]
+        count = reg.get_by_name("count")[i_start:i_end]
+
+        assert len(maximum) == i_len, (len(maximum), i_len)
+        assert len(minimum) == i_len, (len(minimum), i_len)
+        assert len(sums) == i_len, (len(sums), i_len)
+        assert len(squares) == i_len, (len(squares), i_len)
+        assert len(count) == i_len, (len(count), i_len)
+
+        assert not np.isnan(minimum).any(), minimum
+        assert not np.isnan(maximum).any(), maximum
+        assert not np.isnan(sums).any(), sums
+        assert not np.isnan(squares).any(), squares
+        assert all(count > 0), count
+
+        _minimum = np.amin(minimum, axis=0)
+        _maximum = np.amax(maximum, axis=0)
+        _count = np.sum(count, axis=0)
+        _sums = np.sum(sums, axis=0)
+        _squares = np.sum(squares, axis=0)
         _mean = _sums / _count
-        _stdev = np.sqrt(_squares / _count - _mean * _mean)
+
+        assert all(_count[0] == c for c in _count), _count
+
+        x = _squares / _count - _mean * _mean
+        if not (x >= 0).all():
+            print(x)
+            print(ds.variables)
+            print(_count)
+            for var, y in zip(ds.variables, x):
+                if y < 0:
+                    print(var, y)
+            raise ValueError("Negative variance")
+
+        _stdev = np.sqrt(x)
 
         stats = {
             "mean": _mean,
