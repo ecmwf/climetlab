@@ -12,7 +12,6 @@ import datetime
 import logging
 import os
 import re
-import shutil
 import time
 import uuid
 import warnings
@@ -573,12 +572,6 @@ class ZarrRegistry:
         self.zarr_path = path
         self.synchronizer = zarr.ProcessSynchronizer(self._synchronizer_path)
 
-    def delete_synchronizer(self):
-        to_delete = self._synchronizer_path
-        self.synchronizer = None
-        self.zarr_path = None  # to avoid reusing this object without the synchronizer
-        shutil.rmtree(to_delete)
-
     @property
     def _synchronizer_path(self):
         return self.zarr_path + "-" + self.synchronizer_name + ".sync"
@@ -653,15 +646,7 @@ class ZarrStatisticsRegistry(ZarrRegistry):
             z["_build"][name][key] = stats[name]
         LOG.debug(f"Written stats for {key}")
 
-    def get_all(self, key=None):
-        if key is None:
-            key = slice(None, None)
-        dic = {}
-        for name in self.build_names:
-            dic[name] = self.get(name)[key]
-        return dic
-
-    def get(self, name):
+    def get_by_name(self, name):
         z = self._open_read()
         return z["_build"][name]
 
@@ -1027,9 +1012,6 @@ class ZarrLoader(Loader):
 
             self.registry.add_provenance(name="provenance_statistics")
 
-            # self.statistics_registry.delete_synchronizer()
-            # self.registry.delete_synchronizer()
-
     def compute_statistics(self, ds, statistics_start, statistics_end):
         save = np.seterr(all="raise")
         try:
@@ -1057,11 +1039,11 @@ class ZarrLoader(Loader):
 
         reg = self.statistics_registry
 
-        _minimum = np.amin(reg.get("minimum"), axis=0)
-        _maximum = np.amax(reg.get("maximum"), axis=0)
-        _count = np.sum(reg.get("count"), axis=0)
-        _sums = np.sum(reg.get("sums"), axis=0)
-        _squares = np.sum(reg.get("squares"), axis=0)
+        _minimum = np.amin(reg.get_by_name("minimum"), axis=0)
+        _maximum = np.amax(reg.get_by_name("maximum"), axis=0)
+        _count = np.sum(reg.get_by_name("count"), axis=0)
+        _sums = np.sum(reg.get_by_name("sums"), axis=0)
+        _squares = np.sum(reg.get_by_name("squares"), axis=0)
         _mean = _sums / _count
         _stdev = np.sqrt(_squares / _count - _mean * _mean)
 
