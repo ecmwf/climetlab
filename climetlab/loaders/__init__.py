@@ -628,12 +628,13 @@ class ZarrStatisticsRegistry(ZarrRegistry):
 
     def __init__(self, path):
         super().__init__(path)
-        z = self._open_read()
-        shape = z["data"].shape
-        self.shape = (shape[0], shape[1])
 
     def create(self):
-        data = np.full(self.shape, np.nan)
+        z = self._open_read()
+        shape = z["data"].shape
+        shape = (shape[0], shape[1])
+
+        data = np.full(shape, np.nan)
         for name in self.build_names:
             self.new_dataset(name, data)  # , chunks=None)
         self.add_to_history("statistics_initialised")
