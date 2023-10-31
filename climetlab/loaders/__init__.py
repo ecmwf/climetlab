@@ -596,6 +596,11 @@ class ZarrRegistry:
         else:
             return zarr.open(self.zarr_path, mode="r")
 
+    def new_dataset(self, *args, **kwargs):
+        z = self._open_write()
+        zarr_root = z["_build"]
+        add_zarr_dataset(*args, zarr_root=zarr_root, overwrite=True, **kwargs)
+
     def add_to_history(self, action, **kwargs):
         new = dict(
             action=action,
@@ -628,29 +633,25 @@ class ZarrStatisticsRegistry(ZarrRegistry):
     ]
     synchronizer_name = "statistics"
 
-    def create(self):
-        z = self._open_write()
+    def __init__(self, path):
+        super().__init__(path)
+        z = self._open_read()
         shape = z["data"].shape
+        self.shape = (shape[0], shape[1])
 
-        nans = np.full((shape[0], shape[1]), np.nan)
+    def create(self):
+        data = np.full(self.shape, np.nan)
         for name in self.build_names:
-            add_zarr_dataset(
-                name,
-                nans,
-                zarr_root=z["_build"],
-                overwrite=True,
-                chunks=None,
-            )
-        z = None
+            self.new_dataset(name, data)  # , chunks=None)
         self.add_to_history("statistics_initialised")
 
     def __setitem__(self, key, stats):
         z = self._open_write()
 
-        LOG.debug("Writting stats for ", key)
+        LOG.debug(f"Writting stats for {key}")
         for name in self.build_names:
             z["_build"][name][key] = stats[name]
-        LOG.debug("Written stats for ", key)
+        LOG.debug(f"Written stats for {key}")
 
     def get_all(self, key=None):
         if key is None:
@@ -700,23 +701,8 @@ class ZarrBuiltRegistry(ZarrRegistry):
         z["_build"][self.name_flags][i] = value
 
     def create(self, lengths, overwrite=False):
-        z = self._open_write()
-
-        add_zarr_dataset(
-            self.name_lengths,
-            lengths,
-            zarr_root=z["_build"],
-            dtype="i4",
-            overwrite=overwrite,
-        )
-        add_zarr_dataset(
-            self.name_flags,
-            len(lengths) * [False],
-            zarr_root=z["_build"],
-            dtype=bool,
-            overwrite=overwrite,
-        )
-        z = None
+        self.new_dataset(self.name_lengths, lengths, dtype="i4")
+        self.new_dataset(self.name_flags, len(lengths) * [False], dtype=bool)
         self.add_to_history("initialised")
 
     def reset(self, lengths):
