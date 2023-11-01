@@ -291,30 +291,6 @@ class FastWriter(ArrayLike):
             squares[i] = np.sum(values * values, axis=1)
             count[i] = values.shape[1]
 
-        if False:
-            _minimum = np.amin(minimum, axis=0)
-            _maximum = np.amax(maximum, axis=0)
-            _count = np.sum(count, axis=0)
-            _sums = np.sum(sums, axis=0)
-            _squares = np.sum(squares, axis=0)
-            _mean = _sums / _count
-
-            x = _squares / _count - _mean * _mean
-            if not (x >= 0).all():
-                for i, (var, y) in enumerate(zip(names, x)):
-                    if y < 0:
-                        print(
-                            var,
-                            y,
-                            _maximum[i],
-                            _minimum[i],
-                            _mean[i],
-                            _count[i],
-                            _sums[i],
-                            _squares[i],
-                        )
-                raise ValueError("Negative variance")
-
         stats = {
             "minimum": minimum,
             "maximum": maximum,
@@ -1081,6 +1057,8 @@ class ZarrLoader(Loader):
         assert all(_count[0] == c for c in _count), _count
 
         x = _squares / _count - _mean * _mean
+        # remove negative variance due to numerical errors
+        # x[- 1e-15 < (x / (np.sqrt(_squares / _count) + np.abs(_mean))) < 0] = 0
         if not (x >= 0).all():
             print(x)
             print(ds.variables)
@@ -1097,12 +1075,6 @@ class ZarrLoader(Loader):
                         _sums[i],
                         _squares[i],
                     )
-                    with open(f"sums_{var}.npy", "wb") as f:
-                        np.save(f, sums[i])
-                    with open(f"squares_{var}.npy", "wb") as f:
-                        np.save(f, squares[i])
-                    with open(f"count_{var}.npy", "wb") as f:
-                        np.save(f, count[i])
 
                     print(var, np.min(sums[i]), np.max(sums[i]), np.argmin(sums[i]))
                     print(
