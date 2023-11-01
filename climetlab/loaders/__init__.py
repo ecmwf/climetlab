@@ -168,20 +168,6 @@ class DatasetName:
             )
 
 
-def get_versions():
-    dic = {}
-
-    import climetlab
-
-    dic["climetlab"] = climetlab.__version__
-
-    import earthkit.meteo
-
-    dic["earthkit.meteo"] = earthkit.meteo.__version__
-
-    return dic
-
-
 def check_data_values(arr, *, name: str, log=[]):
     min, max = arr.min(), arr.max()
     assert not (np.isnan(arr).any()), (name, min, max, *log)
@@ -252,7 +238,7 @@ class DummyArrayLike(ArrayLike):
     def __getattribute__(self, __name: str):
         return super().__getattribute__(__name)
 
-    def new_key(self, key, values):
+    def new_key(self, key, values_shape):
         return key
 
 
@@ -273,71 +259,59 @@ class FastWriter(ArrayLike):
         self.shape = shape
         self.cache = np.zeros(shape)
 
-        stats_shape = (shape[0], shape[1])
-
-        self.minimum = np.zeros(shape=stats_shape)
-        self.maximum = np.zeros(shape=stats_shape)
-        self.sums = np.zeros(shape=stats_shape)
-        self.squares = np.zeros(shape=stats_shape)
-        self.count = np.zeros(shape=stats_shape)
-
     def __setitem__(self, key, value):
         self.cache[key] = value
 
     def __getitem__(self, key):
         return self.cache[key]
 
-    def new_key(self, key, values):
-        return self.array.new_key(key, values)
+    def new_key(self, key, values_shape):
+        return self.array.new_key(key, values_shape)
 
     def flush(self):
         self.array[:] = self.cache[:]
 
-    def compute_statistics(self, *args, **kwargs):
-        save = np.seterr(all="raise")
-        try:
-            return self._compute_statistics(*args, **kwargs)
-        finally:
-            np.seterr(**save)
+    def compute_statistics(self, statistics_registry, names):
+        nvars = self.shape[1]
 
-    def _compute_statistics(self, names, statistics_registry):
-        assert self.shape[1] == len(names), (self.shape, names)
+        stats_shape = (self.shape[0], nvars)
 
-        for i in range(self.shape[0]):
-            chunk = self.cache[i, ...]
-            LOG.debug(f"Computing statistics on {i+1}/{self.shape[0]}")
-            for j, name in enumerate(names):
-                values = chunk[j, :]
-                check_data_values(
-                    values,
-                    name=name,
-                    log=[j, i, "statistics"],
-                )
-                self.minimum[i, j] = np.amin(values)
-                self.maximum[i, j] = np.amax(values)
-                self.sums[i, j] = np.sum(values)
-                self.squares[i, j] = np.sum(values * values)
-                self.count[i, j] = values.size
+        count = np.zeros(stats_shape, dtype=np.int64)
+        sums = np.zeros(stats_shape, dtype=np.float64)
+        squares = np.zeros(stats_shape, dtype=np.float64)
 
-                check_stats(
-                    minimum=self.minimum[i, j],
-                    maximum=self.maximum[i, j],
-                    mean=self.sums[i, j] / self.count[i, j],
-                    msg=f" for {j} {name}",
-                )
+        minimum = np.zeros(stats_shape, dtype=np.float64)
+        maximum = np.zeros(stats_shape, dtype=np.float64)
 
-        assert (self.count == self.count[:][0]).all(), self.count
+        for i, chunk in enumerate(self.cache):
+            values = chunk.reshape((nvars, -1))
+            minimum[i] = np.min(values, axis=1)
+            maximum[i] = np.max(values, axis=1)
+            sums[i] = np.sum(values, axis=1)
+            squares[i] = np.sum(values * values, axis=1)
+            count[i] = values.shape[1]
 
         stats = {
-            "minimum": self.minimum,
-            "maximum": self.maximum,
-            "sums": self.sums,
-            "squares": self.squares,
-            "count": self.count,
+            "minimum": minimum,
+            "maximum": maximum,
+            "sums": sums,
+            "squares": squares,
+            "count": count,
         }
-        new_key = self.array.new_key(slice(None, None), (self.shape[0], self.shape[1]))
+        new_key = self.array.new_key(slice(None, None), self.shape)
+        assert self.array.axis == 0, self.array.axis
+        # print("new_key", new_key, self.array.offset, self.array.axis)
         new_key = new_key[0]
         statistics_registry[new_key] = stats
+        return stats
+
+    def save_statistics(self, icube, statistics_registry, names):
+        now = time.time()
+        self.compute_statistics(statistics_registry, names)
+        LOG.info(f"Computed statistics in {seconds(time.time()-now)}.")
+        # for k, v in stats.items():
+        #     with open(f"stats_{icube}_{k}.npy", "wb") as f:
+        #         np.save(f, v)
 
 
 class OffsetView(ArrayLike):
@@ -347,12 +321,11 @@ class OffsetView(ArrayLike):
     'shape' is the shape of the view.
     """
 
-    def __init__(self, large_array, *, offset, axis, shape, statistics_registry):
+    def __init__(self, large_array, *, offset, axis, shape):
         self.large_array = large_array
         self.offset = offset
         self.axis = axis
         self.shape = shape
-        self.statistics_registry = statistics_registry
 
     def new_key(self, key, values_shape):
         if isinstance(key, slice):
@@ -430,6 +403,10 @@ class CubesFilter:
 
 class Loader:
     def __init__(self, *, path, config, print=print, partial=False, **kwargs):
+        np.seterr(
+            all="raise"
+        )  # Catch all floating point errors, including overflow, sqrt(<0), etc
+
         self.main_config = LoadersConfig(config)
         self.input_handler = self.main_config.input_handler(partial)
         self.path = path
@@ -472,10 +449,13 @@ class Loader:
                 offset=offset,
                 axis=axis,
                 shape=shape,
-                statistics_registry=self.statistics_registry,
             )
             array = FastWriter(array, shape=shape)
             self.load_datacube(cube, array)
+
+            array.save_statistics(
+                icube, self.statistics_registry, self._variables_names
+            )
 
             array.flush()
 
@@ -515,10 +495,6 @@ class Loader:
             array[cubelet.extended_icoords] = data
             save += time.time() - now
 
-        array.compute_statistics(
-            names=self._variables_names, statistics_registry=self.statistics_registry
-        )
-
         now = time.time()
         save += time.time() - now
 
@@ -539,24 +515,35 @@ class Loader:
 
 
 def add_zarr_dataset(
-    name,
-    nparray,
     *,
+    name,
+    dtype=None,
+    fill_value=np.nan,
     zarr_root,
+    shape=None,
+    array=None,
     overwrite=True,
-    dtype=np.float32,
     **kwargs,
 ):
-    if isinstance(nparray, (tuple, list)):
-        nparray = np.array(nparray, dtype=dtype)
+    if dtype is None:
+        assert array is not None, (name, shape, array, dtype, zarr_root, fill_value)
+        dtype = array.dtype
+
+    if shape is None:
+        assert array is not None, (name, shape, array, dtype, zarr_root, fill_value)
+        shape = array.shape
+    else:
+        assert array is None, (name, shape, array, dtype, zarr_root, fill_value)
+        array = np.full(shape, fill_value, dtype=dtype)
+
     a = zarr_root.create_dataset(
         name,
-        shape=nparray.shape,
+        shape=shape,
         dtype=dtype,
         overwrite=overwrite,
         **kwargs,
     )
-    a[...] = nparray[...]
+    a[...] = array
     return a
 
 
@@ -634,18 +621,23 @@ class ZarrStatisticsRegistry(ZarrRegistry):
         shape = z["data"].shape
         shape = (shape[0], shape[1])
 
-        data = np.full(shape, np.nan)
         for name in self.build_names:
-            self.new_dataset(name, data)  # , chunks=None)
+            if name == "count":
+                self.new_dataset(name=name, shape=shape, fill_value=0, dtype=np.int64)
+            else:
+                self.new_dataset(
+                    name=name, shape=shape, fill_value=np.nan, dtype=np.float64
+                )
         self.add_to_history("statistics_initialised")
 
     def __setitem__(self, key, stats):
         z = self._open_write()
 
-        LOG.debug(f"Writting stats for {key}")
+        LOG.info(f"Writting stats for {key}")
         for name in self.build_names:
+            LOG.info(f"Writting stats for {key} {name} {stats[name].shape}")
             z["_build"][name][key] = stats[name]
-        LOG.debug(f"Written stats for {key}")
+        LOG.info(f"Written stats for {key}")
 
     def get_by_name(self, name):
         z = self._open_read()
@@ -687,8 +679,10 @@ class ZarrBuiltRegistry(ZarrRegistry):
         z["_build"][self.name_flags][i] = value
 
     def create(self, lengths, overwrite=False):
-        self.new_dataset(self.name_lengths, lengths, dtype="i4")
-        self.new_dataset(self.name_flags, len(lengths) * [False], dtype=bool)
+        self.new_dataset(name=self.name_lengths, array=np.array(lengths, dtype="i4"))
+        self.new_dataset(
+            name=self.name_flags, array=np.array([False] * len(lengths), dtype=bool)
+        )
         self.add_to_history("initialised")
 
     def reset(self, lengths):
@@ -873,10 +867,10 @@ class ZarrLoader(Loader):
         self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
 
         np_dates = pd_dates.to_numpy()
-        self._add_dataset("dates", np_dates, dtype=np_dates.dtype)
+        self._add_dataset(name="dates", array=np_dates)
 
-        self._add_dataset("latitudes", grid_points[0])
-        self._add_dataset("longitudes", grid_points[1])
+        self._add_dataset(name="latitudes", array=grid_points[0])
+        self._add_dataset(name="longitudes", array=grid_points[1])
 
         self.z = None
 
@@ -930,6 +924,8 @@ class ZarrLoader(Loader):
 
     def _add_dataset(self, *args, **kwargs):
         import zarr
+
+        # print('add_dataset', args, kwargs)
 
         z = self.z
         if z is None:
@@ -998,7 +994,7 @@ class ZarrLoader(Loader):
                 "squares",
                 "count",
             ]:
-                self._add_dataset(k, stats[k])
+                self._add_dataset(name=k, array=stats[k])
 
             self.update_metadata(
                 statistics_start_date=self._actual_statistics_start(),
@@ -1014,13 +1010,6 @@ class ZarrLoader(Loader):
             self.registry.add_provenance(name="provenance_statistics")
 
     def compute_statistics(self, ds, statistics_start, statistics_end):
-        save = np.seterr(all="raise")
-        try:
-            return self._compute_statistics(ds, statistics_start, statistics_end)
-        finally:
-            np.seterr(**save)
-
-    def _compute_statistics(self, ds, statistics_start, statistics_end):
         i_start = self.statistics_start_indice()
         i_end = self.statistics_end_indice()
 
@@ -1040,13 +1029,65 @@ class ZarrLoader(Loader):
 
         reg = self.statistics_registry
 
-        _minimum = np.amin(reg.get_by_name("minimum"), axis=0)
-        _maximum = np.amax(reg.get_by_name("maximum"), axis=0)
-        _count = np.sum(reg.get_by_name("count"), axis=0)
-        _sums = np.sum(reg.get_by_name("sums"), axis=0)
-        _squares = np.sum(reg.get_by_name("squares"), axis=0)
+        maximum = reg.get_by_name("maximum")[i_start : i_end + 1]
+        minimum = reg.get_by_name("minimum")[i_start : i_end + 1]
+        sums = reg.get_by_name("sums")[i_start : i_end + 1]
+        squares = reg.get_by_name("squares")[i_start : i_end + 1]
+        count = reg.get_by_name("count")[i_start : i_end + 1]
+
+        assert len(maximum) == i_len, (len(maximum), i_len)
+        assert len(minimum) == i_len, (len(minimum), i_len)
+        assert len(sums) == i_len, (len(sums), i_len)
+        assert len(squares) == i_len, (len(squares), i_len)
+        assert len(count) == i_len, (len(count), i_len)
+
+        assert not np.isnan(minimum).any(), minimum
+        assert not np.isnan(maximum).any(), maximum
+        assert not np.isnan(sums).any(), sums
+        assert not np.isnan(squares).any(), squares
+        # assert all(count > 0), count
+
+        _minimum = np.amin(minimum, axis=0)
+        _maximum = np.amax(maximum, axis=0)
+        _count = np.sum(count, axis=0)
+        _sums = np.sum(sums, axis=0)
+        _squares = np.sum(squares, axis=0)
         _mean = _sums / _count
-        _stdev = np.sqrt(_squares / _count - _mean * _mean)
+
+        assert all(_count[0] == c for c in _count), _count
+
+        x = _squares / _count - _mean * _mean
+        # remove negative variance due to numerical errors
+        # x[- 1e-15 < (x / (np.sqrt(_squares / _count) + np.abs(_mean))) < 0] = 0
+        if not (x >= 0).all():
+            print(x)
+            print(ds.variables)
+            print(_count)
+            for i, (var, y) in enumerate(zip(ds.variables, x)):
+                if y < 0:
+                    print(
+                        var,
+                        y,
+                        _maximum[i],
+                        _minimum[i],
+                        _mean[i],
+                        _count[i],
+                        _sums[i],
+                        _squares[i],
+                    )
+
+                    print(var, np.min(sums[i]), np.max(sums[i]), np.argmin(sums[i]))
+                    print(
+                        var,
+                        np.min(squares[i]),
+                        np.max(squares[i]),
+                        np.argmin(squares[i]),
+                    )
+                    print(var, np.min(count[i]), np.max(count[i]), np.argmin(count[i]))
+
+            raise ValueError("Negative variance")
+
+        _stdev = np.sqrt(x)
 
         stats = {
             "mean": _mean,
