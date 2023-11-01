@@ -327,6 +327,13 @@ class FastWriter(ArrayLike):
         statistics_registry[new_key] = stats
 
 
+    def save_statistics(self, icube, statistics_registry):
+        assert False
+        array.compute_statistics(
+            names=self._variables_names, statistics_registry=self.statistics_registry
+        )
+
+
 class OffsetView(ArrayLike):
     """
     A view on a portion of the large_array.
@@ -464,6 +471,8 @@ class Loader:
             array = FastWriter(array, shape=shape)
             self.load_datacube(cube, array)
 
+            array.save_statistics(icube, self.statistics_registry)
+
             array.flush()
 
             self.registry.set_flag(icube)
@@ -501,10 +510,6 @@ class Loader:
             now = time.time()
             array[cubelet.extended_icoords] = data
             save += time.time() - now
-
-        array.compute_statistics(
-            names=self._variables_names, statistics_registry=self.statistics_registry
-        )
 
         now = time.time()
         save += time.time() - now
