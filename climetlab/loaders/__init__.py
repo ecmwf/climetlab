@@ -633,10 +633,11 @@ class ZarrStatisticsRegistry(ZarrRegistry):
     def __setitem__(self, key, stats):
         z = self._open_write()
 
-        LOG.debug(f"Writting stats for {key}")
+        LOG.info(f"Writting stats for {key}")
         for name in self.build_names:
+            LOG.info(f"Writting stats for {key} {name} {stats[name].shape}")
             z["_build"][name][key] = stats[name]
-        LOG.debug(f"Written stats for {key}")
+        LOG.info(f"Written stats for {key}")
 
     def get_by_name(self, name):
         z = self._open_read()
@@ -1043,10 +1044,10 @@ class ZarrLoader(Loader):
         assert len(squares) == i_len, (len(squares), i_len)
         assert len(count) == i_len, (len(count), i_len)
 
-        # assert not np.isnan(minimum).any(), minimum
-        # assert not np.isnan(maximum).any(), maximum
-        # assert not np.isnan(sums).any(), sums
-        # assert not np.isnan(squares).any(), squares
+        assert not np.isnan(minimum).any(), minimum
+        assert not np.isnan(maximum).any(), maximum
+        assert not np.isnan(sums).any(), sums
+        assert not np.isnan(squares).any(), squares
         # assert all(count > 0), count
 
         _minimum = np.amin(minimum, axis=0)
