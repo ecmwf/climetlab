@@ -224,8 +224,8 @@ class Constants(FieldSet):
         self.request = self._request(**request)
 
         def find_numbers(source_or_dataset):
-            if "number" in request:
-                return request["number"]
+            if "number" in self.request:
+                return self.request["number"]
 
             assert hasattr(
                 source_or_dataset, "unique_values"
@@ -234,23 +234,23 @@ class Constants(FieldSet):
             return source_or_dataset.unique_values("number")["number"]
 
         def find_dates(source_or_dataset):
-            if "date" not in request and "time" in request:
+            if "date" not in self.request and "time" in self.request:
                 raise ValueError("Cannot specify time without date")
 
-            if "date" in request and "time" not in request:
-                return request["date"]
+            if "date" in self.request and "time" not in self.request:
+                return self.request["date"]
 
-            if "date" in request and "time" in request:
+            if "date" in self.request and "time" in self.request:
                 dates = [
                     make_datetime(date, time)
                     for date, time in itertools.product(
-                        request["date"], request["time"]
+                        self.request["date"], self.request["time"]
                     )
                 ]
                 assert len(set(dates)) == len(dates), "Duplicates dates in constants."
                 return dates
 
-            assert "date" not in request and "time" not in request
+            assert "date" not in self.request and "time" not in self.request
             assert hasattr(
                 source_or_dataset, "unique_values"
             ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
