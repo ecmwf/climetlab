@@ -165,9 +165,10 @@ class ConstantMaker:
 
 
 class ConstantField:
-    def __init__(self, date, param, proc, shape):
+    def __init__(self, date, param, proc, shape, number=None):
         self.date = date
         self.param = param
+        self.number = number
         self.proc = proc
         self.shape = shape
         self._metadata = dict(
@@ -175,7 +176,7 @@ class ConstantField:
             param=param,
             level=None,
             levelist=None,
-            number=None,
+            number=number,
         )
 
     def to_numpy(self, reshape=True, dtype=None):
@@ -189,9 +190,10 @@ class ConstantField:
         return values
 
     def __repr__(self):
-        return "ConstantField(%s,%s)" % (
+        return "ConstantField(%s,%s,%s)" % (
             self.param,
             self.date,
+            self.number,
         )
 
     def metadata(self, name):
@@ -215,22 +217,23 @@ def make_datetime(date, time):
 
 
 class Constants(FieldSet):
-    def __init__(self, source_or_dataset, request={}, repeat=1, **kwargs):
+    def __init__(self, source_or_dataset, request={}, **kwargs):
         request = dict(**request)
         request.update(kwargs)
 
         self.request = self._request(**request)
 
-        def find_dates(request):
-            if "date" not in request and "time" not in request:
-                assert hasattr(
-                    source_or_dataset, "unique_values"
-                ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
+        def find_numbers(source_or_dataset):
+            if "number" in request:
+                return request["number"]
 
-                return source_or_dataset.unique_values("valid_datetime")[
-                    "valid_datetime"
-                ]
+            assert hasattr(
+                source_or_dataset, "unique_values"
+            ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
 
+            return source_or_dataset.unique_values("number")["number"]
+
+        def find_dates(source_or_dataset):
             if "date" not in request and "time" in request:
                 raise ValueError("Cannot specify time without date")
 
@@ -247,17 +250,27 @@ class Constants(FieldSet):
                 assert len(set(dates)) == len(dates), "Duplicates dates in constants."
                 return dates
 
-            assert False, request
+            assert "date" not in request and "time" not in request
+            assert hasattr(
+                source_or_dataset, "unique_values"
+            ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
 
-        self.dates = find_dates(self.request)
+            return source_or_dataset.unique_values("valid_datetime")["valid_datetime"]
+
+        self.dates = find_dates(source_or_dataset)
 
         self.params = self.request["param"]
-        if not isinstance(self.params, list):
+        if not isinstance(self.params, (tuple, list)):
             self.params = [self.params]
-        self.repeat = repeat  # For ensembles
+
+        # self.numbers = self.request.get("number", [None])
+        self.numbers = find_numbers(source_or_dataset)
+        if not isinstance(self.numbers, (tuple, list)):
+            self.numbers = [self.numbers]
+
         self.maker = ConstantMaker(field=source_or_dataset[0])
         self.procs = {param: getattr(self.maker, param) for param in self.params}
-        self._len = len(self.dates) * len(self.params) * self.repeat
+        self._len = len(self.dates) * len(self.params) * len(self.numbers)
 
     @normalize("date", "date-list")
     @normalize("time", "int-list")
@@ -272,21 +285,23 @@ class Constants(FieldSet):
         if i >= self._len:
             raise IndexError(i)
 
-        date, param, repeat = index_to_coords(
-            i, (len(self.dates), len(self.params), self.repeat)
+        date, param, number = index_to_coords(
+            i, (len(self.dates), len(self.params), len(self.numbers))
         )
 
-        assert repeat == 0, "Not implemented"
+        # assert repeat == 0, "Not implemented"
 
         date = self.dates[date]
         # assert isinstance(date, datetime.datetime), (date, type(date))
-
         param = self.params[param]
+        number = self.numbers[number]
+
         return ConstantField(
             date,
             param,
             self.procs[param],
             self.maker.shape,
+            number=number,
         )
 
 
