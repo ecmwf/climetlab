@@ -480,8 +480,9 @@ class Loader:
         for i, cubelet in enumerate(bar):
             now = time.time()
             data = cubelet.to_numpy()
-            bar.set_description(f"{i}/{total} {str(cubelet)} ({data.shape})")
-            self.print(f"Loading datacube {cube}: {i}/{total}")
+            bar.set_description(
+                f"Loading {i}/{total} {str(cubelet)} ({data.shape}) {cube=}"
+            )
             load += time.time() - now
 
             j = cubelet.extended_icoords[1]
