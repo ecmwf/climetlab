@@ -1191,17 +1191,15 @@ class DateStartStopExpand(StartStopExpand):
         assert isinstance(self.end, datetime.date), (type(self.end), self.end)
         self.step = datetime.timedelta(days=self.step)
 
-        if isinstance(self.group_by, int) and self.group_by > 1:
+        if isinstance(self.group_by, int) and self.group_by > 0:
             self.grouper_key = GroupByDays(self.group_by)
         else:
             self.grouper_key = {
-                1: lambda dt: 0,  # only one group
+                0: lambda dt: 0,  # only one group
                 "monthly": lambda dt: (dt.year, dt.month),
                 "daily": lambda dt: (dt.year, dt.month, dt.day),
                 "MMDD": lambda dt: (dt.month, dt.day),
             }[self.group_by]
-
-        # assert False, self.grouper_key
 
     def format(self, x):
         return x.isoformat()

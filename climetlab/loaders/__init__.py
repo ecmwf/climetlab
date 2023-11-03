@@ -257,7 +257,8 @@ class FastWriter(ArrayLike):
     def __init__(self, array, shape):
         self.array = array
         self.shape = shape
-        self.cache = np.zeros(shape)
+        self.dtype = array.dtype
+        self.cache = np.zeros(shape, dtype=self.dtype)
 
     def __setitem__(self, key, value):
         self.cache[key] = value
@@ -323,6 +324,7 @@ class OffsetView(ArrayLike):
 
     def __init__(self, large_array, *, offset, axis, shape):
         self.large_array = large_array
+        self.dtype = large_array.dtype
         self.offset = offset
         self.axis = axis
         self.shape = shape
