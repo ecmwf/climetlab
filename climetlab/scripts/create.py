@@ -49,6 +49,10 @@ class LoadersCmd:
             "--statistics",
             dict(action="store_true", help="Compute statistics."),
         ),
+        total_size=(
+            "--total-size",
+            dict(action="store_true", help="Compute total size."),
+        ),
         config=(
             "--config",
             dict(
@@ -165,16 +169,16 @@ def create(args):
     kwargs["print"] = callback
     loader_class = LOADERS[format]
 
-    lst = [args.load, args.statistics, args.init]
+    lst = [args.load, args.statistics, args.init, args.total_size]
     if sum(1 for x in lst if x) > 1:
         raise ValueError(
             "Too many options provided."
-            'Must choose exactly one option in "--load", "--statistics", "--init"'
+            'Must choose exactly one option in "--load", "--statistics", "--init", "--total-size"'
         )
     if sum(1 for x in lst if x) < 1:
         raise ValueError(
             "Not enough options provided."
-            'Must choose exactly one option in "--load", "--statistics", "--init"'
+            'Must choose exactly one option in "--load", "--statistics", "--init", "--total-size"'
         )
     if args.parts:
         assert args.load, "Use --parts only with --load"
@@ -220,3 +224,10 @@ def create(args):
             ), "--statistics requires only --target, no --config."
             loader = loader_class.from_zarr(**kwargs)
             loader.add_statistics(**kwargs)
+
+        if args.total_size:
+            assert (
+                args.config is None
+            ), "--total-size requires only --target, no --config."
+            loader = loader_class.from_zarr(**kwargs)
+            loader.add_total_size(**kwargs)

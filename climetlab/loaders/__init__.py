@@ -18,11 +18,28 @@ import warnings
 from functools import cached_property
 
 import numpy as np
+import tqdm
 
 from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
 from climetlab.utils.humanize import bytes, seconds
+
+
+def compute_directory_size(path):
+    if not os.path.isdir(path):
+        return None
+    size = 0
+    n = 0
+    for dirpath, _, filenames in tqdm.tqdm(
+        os.walk(path), desc="Computing size", leave=False
+    ):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            size += os.path.getsize(file_path)
+            n += 1
+    return size, n
+
 
 LOG = logging.getLogger(__name__)
 
@@ -947,6 +964,10 @@ class ZarrLoader(Loader):
             print(self.z["data"].info)
         except Exception as e:
             print(e)
+
+    def add_total_size(self, **kwargs):
+        size, n = compute_directory_size(self.path)
+        self.update_metadata(total_size=size, total_number_of_files=n)
 
     def add_statistics(self, no_write, **kwargs):
         do_write = not no_write
