@@ -23,7 +23,7 @@ import tqdm
 from climetlab.core.order import build_remapping  # noqa:F401
 from climetlab.utils import progress_bar
 from climetlab.utils.config import LoadersConfig
-from climetlab.utils.humanize import seconds
+from climetlab.utils.humanize import bytes, seconds
 
 
 def compute_directory_size(path):
@@ -766,6 +766,7 @@ class ZarrLoader(Loader):
 
     def initialise(self):
         """Create empty zarr from self.main_config and self.path"""
+        import pandas as pd
         import zarr
 
         self.print("config loaded ok:")
@@ -852,40 +853,30 @@ class ZarrLoader(Loader):
         metadata["frequency"] = frequency
         metadata["start_date"] = dates[0].isoformat()
         metadata["end_date"] = dates[-1].isoformat()
-
-        def rebuild_dates(start, end, frequency):
-            assert isinstance(frequency, int), frequency
-            start = np.datetime64(start)
-            end = np.datetime64(end)
-            delta = np.timedelta64(frequency, "h")
-            res = []
-            while start <= end:
-                res.append(start)
-                start += delta
-            return np.array(res).astype("datetime64[s]")
-
-        dates_ = rebuild_dates(
-            metadata["start_date"],
-            metadata["end_date"],
-            metadata["frequency"],
+        pd_dates_kwargs = dict(
+            start=metadata["start_date"],
+            end=metadata["end_date"],
+            freq=f"{metadata['frequency']}h",
+            unit="s",
         )
+        pd_dates = pd.date_range(**pd_dates_kwargs)
 
-        def check_dates(input_handler, dates_, total_shape):
+        def check_dates(input_handler, pd_dates, total_shape):
             for i, loop in enumerate(input_handler.loops):
                 print(f"Loop {i}: ", loop._info)
-            if len(dates_) != total_shape[0]:
+            if pd_dates.size != total_shape[0]:
                 raise ValueError(
-                    f"Final date size {len(dates_)} (from {dates_[0]} to {dates_[-1]}, "
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
                     f"{frequency=}) does not match data shape {total_shape[0]}. {total_shape=}"
                 )
-            if len(dates_) != len(dates):
+            if pd_dates.size != len(dates):
                 raise ValueError(
-                    f"Final date size {len(dates_)} (from {dates_[0]} to {dates_[-1]}, "
+                    f"Final date size {pd_dates.size} (from {pd_dates[0]} to {pd_dates[-1]}, "
                     f"{frequency=}) does not match data shape {len(dates)} (from {dates[0]} to "
-                    f"{dates[-1]})."
+                    f"{dates[-1]}). {pd_dates_kwargs}"
                 )
 
-        check_dates(self.input_handler, dates_, total_shape)
+        check_dates(self.input_handler, pd_dates, total_shape)
 
         metadata.update(self.main_config.get("force_metadata", {}))
 
@@ -895,7 +886,8 @@ class ZarrLoader(Loader):
 
         self.z.create_dataset("data", shape=total_shape, chunks=chunks, dtype=dtype)
 
-        self._add_dataset(name="dates", array=dates_)
+        np_dates = pd_dates.to_numpy()
+        self._add_dataset(name="dates", array=np_dates)
 
         self._add_dataset(name="latitudes", array=grid_points[0])
         self._add_dataset(name="longitudes", array=grid_points[1])
@@ -1138,3 +1130,65 @@ class ZarrLoader(Loader):
             check_stats(**{k: v[i] for k, v in stats.items()}, msg=f"{i} {name}")
 
         return stats
+
+
+class HDF5Loader:
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def append_array(self, *args, **kwargs):
+        raise NotImplementedError("Appending do HDF5 not yet implemented")
+
+    def create_array(
+        self,
+        dataset,
+        shape,
+        chunks,
+        dtype,
+        metadata,
+        grid_points,
+        nloops,
+    ):
+        import h5py
+
+        if not isinstance(chunks, tuple):
+            chunks = None
+
+        print(
+            f"Creating HDD5 file '{self.path}', with {dataset=}, {shape=}, {chunks=} and {dtype=}"
+        )
+
+        self.h5 = h5py.File(self.path, mode="w")
+        array = self.h5.create_dataset(
+            dataset,
+            chunks=chunks,
+            maxshape=shape,
+            dtype=dtype,
+            data=np.empty(
+                shape
+            )  # Can we avoid that? Looks like its needed for chuncking
+            # data = h5py.Empty(dtype),
+        )
+        return array
+
+    def close(self):
+        self.h5.close()
+        del self.h5
+
+    def print_info(self):
+        import h5py
+
+        def h5_tree(h5, depth=0):
+            for k, v in h5.items():
+                if isinstance(v, h5py._hl.group.Group):
+                    h5_tree(v, depth + 1)
+                else:
+                    print(" " * (depth * 3), k, v)
+                    for p, q in v.attrs.items():
+                        print(" " * (depth * 3 + 3), p, q)
+
+        size = os.path.getsize(self.path)
+        print(f"HDF5 file {self.path}: {size:,} ({bytes(size)})")
+        with h5py.File(self.path, mode="r") as f:
+            print("Content:")
+            h5_tree(f, 1)
