@@ -11,7 +11,7 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab
-from climetlab.loaders import build_remapping
+from climetlab.core.order import build_remapping
 
 LOG = logging.getLogger(__name__)
 
