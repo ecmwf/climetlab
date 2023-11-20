@@ -196,15 +196,13 @@ class Input:
         name = self.kwargs.get("name", None)
 
         assert name in [
+            "oper-accumulations",
             "era5-accumulations",
             "constants",
             "mars",
         ], f"{name} not implemented"
 
-        if name == "constants":
-            return None
-
-        if name == "era5-accumulations":
+        if name in ("constants",  "era5-accumulations", "oper-accumulations"):
             return None
 
         if name == "mars":
