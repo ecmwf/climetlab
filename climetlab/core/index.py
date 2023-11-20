@@ -15,9 +15,8 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab as cml
-from climetlab.core.order import normalize_order_by
+from climetlab.core.order import build_remapping, normalize_order_by
 from climetlab.core.select import normalize_selection
-from climetlab.loaders import build_remapping
 from climetlab.sources import Source
 
 LOG = logging.getLogger(__name__)

@@ -19,8 +19,8 @@ from threading import local
 import numpy as np
 
 import climetlab as cml
+from climetlab.core.order import build_remapping
 from climetlab.indexing.database.json import json_serialiser
-from climetlab.loaders import build_remapping
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
