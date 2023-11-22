@@ -112,10 +112,14 @@ class Era5Accumulations(Source):
 
         era_request = dict(**request)
 
+        type_ = request.get("type", "an")
+        if type_ == "an":
+            type_ = "fc"
+
         era_request.update(
             {
                 "class": "ea",
-                "type": "fc",
+                "type": type_,
                 "levtype": "sfc",
                 "date": [d.strftime("%Y-%m-%d") for d in dates],
                 "time": sorted(times),

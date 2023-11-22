@@ -9,7 +9,6 @@
 
 import datetime
 import itertools
-from collections import defaultdict
 
 import climetlab as cml
 from climetlab import Source
@@ -64,7 +63,7 @@ class OperAccumulations(Source):
             requests[stream]["times"].add(time)
             print(requests)
 
-        dataset = dict(oper=cml.load_source('empty'), scda=cml.load_source('empty'))
+        dataset = dict(oper=cml.load_source("empty"), scda=cml.load_source("empty"))
 
         for stream in ["oper", "scda"]:
             dates = sorted(requests[stream]["dates"])

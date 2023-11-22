@@ -202,7 +202,7 @@ class Input:
             "mars",
         ], f"{name} not implemented"
 
-        if name in ("constants",  "era5-accumulations", "oper-accumulations"):
+        if name in ("constants", "era5-accumulations", "oper-accumulations"):
             return None
 
         if name == "mars":
