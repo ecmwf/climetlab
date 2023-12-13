@@ -215,6 +215,18 @@ class GribOutput:
             except ValueError:
                 metadata["shortName"] = param
 
+        # levtype is a readOnly key in ecCodes >= 2.33.0
+        levtype_remap = {
+            "pl": "isobaricInhPa",
+            "ml": "hybrid",
+            "pt": "theta",
+            "pv": "potentialVorticity",
+            "sfc": "surface",
+        }
+        if "levtype" in metadata:
+            v = metadata.pop("levtype")
+            metadata["typeOfLevel"] = levtype_remap[v]
+
     def handle_from_metadata(self, values, metadata, compulsary):
         from .codes import CodesHandle  # Lazy loading of eccodes
 
