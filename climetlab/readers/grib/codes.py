@@ -469,7 +469,7 @@ class GribField(Base):
             y = self["DyInDegrees"]
             assert x == y, (x, y)
             return x
-        if grid_type == 'lambert':
+        if grid_type == "lambert":
             x = self["DxInMetres"]
             y = self["DyInMetres"]
             assert x == y, (x, y)
