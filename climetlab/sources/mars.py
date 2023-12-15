@@ -67,5 +67,9 @@ class MarsRetriever(ECMWFApi):
 
             raise
 
+    @classmethod
+    def get_datetimes(cls, request):
+        return None
+
 
 source = MarsRetriever

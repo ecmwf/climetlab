@@ -469,8 +469,17 @@ class GribField(Base):
             y = self["DyInDegrees"]
             assert x == y, (x, y)
             return x
+        if grid_type == "lambert":
+            x = self["DxInMetres"]
+            y = self["DyInMetres"]
+            assert x == y, (x, y)
+            return x
 
         raise ValueError(f"Unknown gridType={grid_type}")
+
+    @property
+    def grid_type(self):
+        return self.get("gridType")
 
     def datetime(self):
         date = self.handle.get("date")
