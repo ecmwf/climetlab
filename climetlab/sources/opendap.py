@@ -8,18 +8,16 @@
 #
 
 
-import xarray as xr
-
 from climetlab.readers.netcdf import NetCDFReader
 from climetlab.sources import Source
 
 
 class OpenDAP(Source):
-    def __init__(self, url):
+    def __init__(self, url, flavour=None):
         super().__init__()
 
         self._url = url
-        self._reader = NetCDFReader(self, url, opendap=True)
+        self._reader = NetCDFReader(self, url, opendap=True, flavour=flavour)
 
     def __iter__(self):
         return iter(self._reader)

@@ -10,16 +10,17 @@
 # The code is copied from skinnywms, and we should combile later
 
 import datetime
-from contextlib import closing
+from functools import cached_property
 from itertools import product
 
 import numpy as np
 
 from climetlab.core import Base
+from climetlab.readers.netcdf.flavours import get_flavour
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
 
-from . import Reader
+from .. import Reader
 
 
 def as_datetime(self, time):
@@ -138,19 +139,18 @@ class DataSet:
 
 
 class NetCDFField(Base):
-    def __init__(self, path, ds, variable, slices, non_dim_coords, flavour):
+    def __init__(self, owner, ds, variable, slices, non_dim_coords):
         data_array = ds[variable]
-
-        self.flavour = flavour
 
         self.north, self.west, self.south, self.east = ds.bbox(variable)
 
-        self.path = path
+        self.owner = owner
         self.variable = variable
         self.slices = slices
         self.non_dim_coords = non_dim_coords
 
         self.name = self.variable
+        self._cache = {}
 
         self.title = getattr(
             data_array,
@@ -170,7 +170,7 @@ class NetCDFField(Base):
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
 
     def to_numpy(self, *args, **kwargs):
-        raise Exception(self.path, self.variable, self.slices)
+        raise Exception(self.owner.path, self.variable, self.slices)
 
     def plot_map(self, backend):
         dimensions = dict((s.name, s.index) for s in self.slices)
@@ -179,7 +179,7 @@ class NetCDFField(Base):
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
-        backend.plot_netcdf(self.path, self.variable, dimensions)
+        backend.plot_netcdf(self.owner.path, self.variable, dimensions)
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
@@ -189,50 +189,46 @@ class NetCDFField(Base):
             north=self.north, south=self.south, east=self.east, west=self.west
         )
 
+    def metadata(self, name):
+        if name not in self._cache:
+            self._cache[name] = self.owner.flavour.metadata(self, name)
+        return self._cache[name]
+
 
 class NetCDFReader(Reader):
     def __init__(self, source, path, opendap=False, flavour=None):
         super().__init__(source, path)
-        self.fields = None
         self.opendap = opendap
         self._flavour = flavour
 
-    @property
+    @cached_property
     def flavour(self):
-        if self._flavour is None:
-            self._flavour = "default"
-        return self._flavour
-
-    def _scan(self):
-        if self.fields is None:
-            self.fields = self.get_fields()
+        return get_flavour(self, self._flavour)
 
     def __repr__(self):
         return "NetCDFReader(%s)" % (self.path,)
 
     def __iter__(self):
-        self._scan()
         return iter(self.fields)
 
     def __len__(self):
-        self._scan()
         return len(self.fields)
 
     def __getitem__(self, n):
-        self._scan()
         return self.fields[n]
 
-    def get_fields(self):
+    @cached_property
+    def dataset(self):
         import xarray as xr
 
         if self.opendap:
-            with closing(xr.open_dataset(self.path)) as ds:
-                return self._get_fields(DataSet(ds))
+            return xr.open_dataset(self.path)
+        else:
+            return xr.open_dataset(self.path, combine="by_coords")
 
-        with closing(
-            xr.open_mfdataset(self.path, combine="by_coords")
-        ) as ds:  # or nested
-            return self._get_fields(DataSet(ds))
+    @cached_property
+    def fields(self):
+        return self._get_fields(DataSet(self.dataset))
 
     def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
@@ -321,11 +317,7 @@ class NetCDFReader(Reader):
                 for value, coordinate in zip(values, coordinates):
                     slices.append(coordinate.make_slice(value))
 
-                fields.append(
-                    NetCDFField(
-                        self.path, ds, name, slices, non_dim_coords, self.flavour
-                    )
-                )
+                fields.append(NetCDFField(self, ds, name, slices, non_dim_coords))
 
         if not fields:
             raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
@@ -333,6 +325,10 @@ class NetCDFReader(Reader):
         return fields
 
     def to_xarray(self, **kwargs):
+        import xarray as xr
+
+        if self.opendap:
+            return xr.open_dataset(self.path, **kwargs)
         return type(self).to_xarray_multi_from_paths([self.path], **kwargs)
 
     @classmethod
