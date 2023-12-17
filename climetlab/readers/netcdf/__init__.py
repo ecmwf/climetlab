@@ -138,8 +138,10 @@ class DataSet:
 
 
 class NetCDFField(Base):
-    def __init__(self, path, ds, variable, slices, non_dim_coords):
+    def __init__(self, path, ds, variable, slices, non_dim_coords, flavour):
         data_array = ds[variable]
+
+        self.flavour = flavour
 
         self.north, self.west, self.south, self.east = ds.bbox(variable)
 
@@ -189,9 +191,17 @@ class NetCDFField(Base):
 
 
 class NetCDFReader(Reader):
-    def __init__(self, source, path):
+    def __init__(self, source, path, opendap=False, flavour=None):
         super().__init__(source, path)
         self.fields = None
+        self.opendap = opendap
+        self._flavour = flavour
+
+    @property
+    def flavour(self):
+        if self._flavour is None:
+            self._flavour = "default"
+        return self._flavour
 
     def _scan(self):
         if self.fields is None:
@@ -214,6 +224,10 @@ class NetCDFReader(Reader):
 
     def get_fields(self):
         import xarray as xr
+
+        if self.opendap:
+            with closing(xr.open_dataset(self.path)) as ds:
+                return self._get_fields(DataSet(ds))
 
         with closing(
             xr.open_mfdataset(self.path, combine="by_coords")
@@ -307,7 +321,11 @@ class NetCDFReader(Reader):
                 for value, coordinate in zip(values, coordinates):
                     slices.append(coordinate.make_slice(value))
 
-                fields.append(NetCDFField(self.path, ds, name, slices, non_dim_coords))
+                fields.append(
+                    NetCDFField(
+                        self.path, ds, name, slices, non_dim_coords, self.flavour
+                    )
+                )
 
         if not fields:
             raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
