@@ -14,7 +14,7 @@ import warnings
 
 import climetlab as cml
 from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.readers.grib.index import FieldSet
+from climetlab.readers.grib.index import GribFieldSet
 from climetlab.testing import climetlab_file
 
 CML_BASEURL_S3 = "https://object-store.os-api.cci1.ecmwf.int/climetlab"
@@ -78,7 +78,7 @@ def list_of_dicts():
     ]
 
 
-class GribIndexFromDicts(FieldSet):
+class GribIndexFromDicts(GribFieldSet):
     def __init__(self, list_of_dicts, *args, **kwargs):
         self.list_of_dicts = list_of_dicts
         super().__init__(*args, **kwargs)

@@ -16,7 +16,7 @@ import numpy as np
 
 from climetlab.decorators import cached_method, normalize
 from climetlab.indexing.cube import index_to_coords
-from climetlab.readers.grib.index import FieldSet
+from climetlab.readers.grib.index import GribFieldSet
 from climetlab.utils.dates import to_datetime
 
 LOG = logging.getLogger(__name__)
@@ -216,7 +216,7 @@ def make_datetime(date, time):
     return datetime.datetime(date.year, date.month, date.day, time)
 
 
-class Constants(FieldSet):
+class Constants(GribFieldSet):
     def __init__(self, source_or_dataset, request={}, **kwargs):
         request = dict(**request)
         request.update(kwargs)

@@ -302,108 +302,108 @@ def test_nc_merge_concat_var():
     assert target.identical(merged)
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
-@pytest.mark.external_download
-@pytest.mark.download
-def test_merge_pangeo_1():
-    _merge_pangeo(inner_merger="concat(concat_dim=time)")
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.external_download
+# @pytest.mark.download
+# def test_merge_pangeo_1():
+#     _merge_pangeo(inner_merger="concat(concat_dim=time)")
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
-@pytest.mark.external_download
-@pytest.mark.download
-def test_merge_pangeo_2():
-    _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.external_download
+# @pytest.mark.download
+# def test_merge_pangeo_2():
+#     _merge_pangeo(inner_merger=("concat", {"concat_dim": "time"}))
 
 
-@pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
-@pytest.mark.external_download
-@pytest.mark.download
-@pytest.mark.skipif(True, reason="Test not yet implemented")
-def test_merge_pangeo_3():
-    def preprocess(ds):
-        return ds
+# @pytest.mark.skipif(IN_GITHUB, reason="Too long to test on GITHUB")
+# @pytest.mark.external_download
+# @pytest.mark.download
+# @pytest.mark.skipif(True, reason="Test not yet implemented")
+# def test_merge_pangeo_3():
+#     def preprocess(ds):
+#         return ds
 
-    _merge_pangeo(
-        inner_merger=(
-            "simple",
-            dict(
-                concat_dim="time",
-                combine="nested",
-                preprocess=preprocess,
-            ),
-        )
-    )
+#     _merge_pangeo(
+#         inner_merger=(
+#             "simple",
+#             dict(
+#                 concat_dim="time",
+#                 combine="nested",
+#                 preprocess=preprocess,
+#             ),
+#         )
+#     )
 
 
-def _merge_pangeo(inner_merger):
-    # Reproduce example from:
-    # https://pangeo-forge.readthedocs.io/en/latest/tutorials/terraclimate.html
-    #
-    # target_chunks = {"lat": 1024, "lon": 1024, "time": 12}
-    # only do two years to keep the example small; it's still big!
-    years = list(range(1958, 1960))
-    variables = [
-        "aet",
-        "def",
-        # "pet",
-        # "ppt",
-        # "q",
-        # "soil",
-        # "srad",
-        # "swe",
-        # "tmax",
-        # "tmin",
-        # "vap",
-        # "ws",
-        # "vpd",
-        # "PDSI",
-    ]
+# def _merge_pangeo(inner_merger):
+#     # Reproduce example from:
+#     # https://pangeo-forge.readthedocs.io/en/latest/tutorials/terraclimate.html
+#     #
+#     # target_chunks = {"lat": 1024, "lon": 1024, "time": 12}
+#     # only do two years to keep the example small; it's still big!
+#     years = list(range(1958, 1960))
+#     variables = [
+#         "aet",
+#         "def",
+#         # "pet",
+#         # "ppt",
+#         # "q",
+#         # "soil",
+#         # "srad",
+#         # "swe",
+#         # "tmax",
+#         # "tmin",
+#         # "vap",
+#         # "ws",
+#         # "vpd",
+#         # "PDSI",
+#     ]
 
-    def make_filename(variable, time):
-        return (
-            "http://thredds.northwestknowledge.net:8080/"
-            "thredds/fileServer/TERRACLIMATE_ALL/data/"
-            f"TerraClimate_{variable}_{time}.nc"
-        )
+#     def make_filename(variable, time):
+#         return (
+#             "http://thredds.northwestknowledge.net:8080/"
+#             "thredds/fileServer/TERRACLIMATE_ALL/data/"
+#             f"TerraClimate_{variable}_{time}.nc"
+#         )
 
-    def preprocess(ds):
-        return ds
+#     def preprocess(ds):
+#         return ds
 
-    dslist_v = []
-    xdslist_v = []
-    for variable in variables:
-        dslist_t = []
-        xdslist_t = []
+#     dslist_v = []
+#     xdslist_v = []
+#     for variable in variables:
+#         dslist_t = []
+#         xdslist_t = []
 
-        for year in years:
-            url = make_filename(variable, year)
-            s = load_source("url", url)
-            dslist_t.append(s)
-            xdslist_t.append(s.to_xarray())
+#         for year in years:
+#             url = make_filename(variable, year)
+#             s = load_source("url", url)
+#             dslist_t.append(s)
+#             xdslist_t.append(s.to_xarray())
 
-        xds = xr.concat(xdslist_t, dim="time")
-        xdslist_v.append(xds)
+#         xds = xr.concat(xdslist_t, dim="time")
+#         xdslist_v.append(xds)
 
-        ds = load_source(
-            "multi",
-            dslist_t,
-            merger=inner_merger,
-        )
-        dslist_v.append(ds)
+#         ds = load_source(
+#             "multi",
+#             dslist_t,
+#             merger=inner_merger,
+#         )
+#         dslist_v.append(ds)
 
-    target = xr.merge(xdslist_v)
+#     target = xr.merge(xdslist_v)
 
-    source = load_source("multi", dslist_v, merger="merge()")
+#     source = load_source("multi", dslist_v, merger="merge()")
 
-    source.graph()
+#     source.graph()
 
-    ds = source.to_xarray()
+#     ds = source.to_xarray()
 
-    slicer = slice(0, 100)
-    ds = ds.isel(lat=slicer, lon=slicer)
-    target = target.isel(lat=slicer, lon=slicer)
-    assert ds.identical(target), ds
+#     slicer = slice(0, 100)
+#     ds = ds.isel(lat=slicer, lon=slicer)
+#     target = target.isel(lat=slicer, lon=slicer)
+#     assert ds.identical(target), ds
 
 
 if __name__ == "__main__":

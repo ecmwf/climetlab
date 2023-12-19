@@ -24,8 +24,13 @@ class Flavour:
         return field.time.isoformat()
 
     def get_param(self, field):
-        assert False, "get_param not implemented"
+        return field.variable
 
+    def get_levelist(self, field):
+        return None
+
+    def get_number(self, field):
+        return None
 
 def get_flavour(reader, flavour):
     return Flavour("default", reader)
