@@ -15,8 +15,7 @@ from itertools import product
 
 import numpy as np
 
-from climetlab.core import Base
-from climetlab.indexing.fieldset import Field
+from climetlab.indexing.fieldlist import Field
 from climetlab.readers.netcdf.flavours import get_flavour
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime

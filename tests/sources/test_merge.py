@@ -15,7 +15,8 @@ import pytest
 import xarray as xr
 
 from climetlab import load_source
-from climetlab.testing import IN_GITHUB
+
+# from climetlab.testing import IN_GITHUB
 
 # These functionalities are variations around
 # http://xarray.pydata.org/en/stable/user-guide/combining.html#combining-multi

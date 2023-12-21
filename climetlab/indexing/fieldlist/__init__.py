@@ -10,27 +10,27 @@
 from climetlab.core import Base
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 
+
 class Field(Base):
     pass
 
-class FieldSet(Index):
 
-
+class FieldList(Index):
     @classmethod
     def new_mask_index(self, *args, **kwargs):
-        return MaskFieldSet(*args, **kwargs)
+        return MaskFieldList(*args, **kwargs)
 
     @classmethod
     def merge(cls, sources):
-        assert all(isinstance(_, FieldSet) for _ in sources)
-        return MultiFieldSet(sources)
+        assert all(isinstance(_, FieldList) for _ in sources)
+        return MultiFieldList(sources)
 
 
-class MaskFieldSet(FieldSet, MaskIndex):
+class MaskFieldList(FieldList, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
 
-class MultiFieldSet(FieldSet, MultiIndex):
+class MultiFieldList(FieldList, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
