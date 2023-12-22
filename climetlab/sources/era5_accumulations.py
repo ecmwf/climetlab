@@ -7,15 +7,76 @@
 # nor does it submit to any jurisdiction.
 #
 
+from collections import defaultdict
 import datetime
 import itertools
-from collections import defaultdict
 
 import climetlab as cml
 from climetlab import Source
 from climetlab.core.temporary import temp_file
 from climetlab.decorators import normalize
 from climetlab.readers.grib.output import new_grib_output
+from climetlab.utils.availability import Availability
+
+
+class Accumulation:
+    def __init__(self, out, param, date, time, step):
+        self.out = out
+        self.param = param
+        self.date = date
+        self.time = time * 100
+        self.steps = tuple(step)
+        self.values = None
+        self.seen = set()
+        self.startStep = None
+        self.endStep = None
+        self.done = False
+
+    @property
+    def key(self):
+        return (self.param, self.date, self.time, self.steps)
+
+    def add(self, field):
+        step = field.metadata("step")
+        if step not in self.steps:
+            return
+
+        assert not self.done, (self.key, step)
+
+        startStep = field.metadata("startStep")
+        endStep = field.metadata("endStep")
+
+        assert endStep == step, (startStep, endStep, step)
+        assert step not in self.seen, (self.key, step)
+
+        assert endStep - startStep == 1, (startStep, endStep)
+
+        if self.startStep is None:
+            self.startStep = startStep
+        else:
+            self.startStep = min(self.startStep, startStep)
+
+        if self.endStep is None:
+            self.endStep = endStep
+        else:
+            self.endStep = max(self.endStep, endStep)
+
+        if self.values is None:
+            self.values = field.values
+        else:
+            self.values += field.values
+
+        self.seen.add(step)
+
+        if len(self.seen) == len(self.steps):
+            self.out.write(
+                self.values,
+                template=field,
+                startStep=self.startStep,
+                endStep=self.endStep,
+            )
+            self.values = None
+            self.done = True
 
 
 class Era5Accumulations(Source):
@@ -48,9 +109,19 @@ class Era5Accumulations(Source):
 
         requested = set()
 
-        dates = set()
-        times = set()
-        steps = set()
+        era_request = dict(**request)
+
+        type_ = request.get("type", "an")
+        if type_ == "an":
+            type_ = "fc"
+
+        era_request.update({"class": "ea", "type": type_, "levtype": "sfc"})
+
+        tmp = temp_file()
+        path = tmp.path
+        out = new_grib_output(path)
+
+        requests = []
 
         for user_date, user_time in itertools.product(user_dates, user_times):
             assert isinstance(user_date, datetime.datetime), (
@@ -74,102 +145,50 @@ class Era5Accumulations(Source):
                 when -= datetime.timedelta(hours=1)
                 add_step += 1
 
-            dates.add(datetime.datetime(when.year, when.month, when.day))
-            times.add(when.hour)
-            for step in range(1, user_step + 1):
-                steps.add(step + add_step)
+            steps = tuple(step + add_step for step in range(1, user_step + 1))
 
-        valids = defaultdict(list)
-        for date, time, step in itertools.product(dates, times, steps):
-            valids[
-                date + datetime.timedelta(hours=time) + datetime.timedelta(hours=step)
-            ].append((date, time, step))
+            for p in param:
+                requests.append(
+                    {
+                        "param": p,
+                        "date": int(when.strftime("%Y%m%d")),
+                        "time": when.hour,
+                        "step": sorted(steps),
+                    }
+                )
 
-        got = set(valids.keys())
-        assert all(len(x) == 1 for x in valids.values())
-        missing = requested - got
-        assert len(missing) == 0, missing
+        compressed = Availability(requests)
+        ds = cml.load_source("empty")
+        for r in compressed.iterate():
+            era_request.update(r)
+            ds = ds + cml.load_source("mars", **era_request)
 
-        # extra = got - requested
+        accumulations = defaultdict(list)
+        for a in  [Accumulation(out, **r) for r in requests]:
+            for s in a.steps:
+                accumulations[(a.param, a.date, a.time, s)].append(a)
 
-        era_request = dict(**request)
-
-        type_ = request.get("type", "an")
-        if type_ == "an":
-            type_ = "fc"
-
-        era_request.update(
-            {
-                "class": "ea",
-                "type": type_,
-                "levtype": "sfc",
-                "date": [d.strftime("%Y-%m-%d") for d in dates],
-                "time": sorted(times),
-                "step": sorted(steps),
-            }
-        )
-
-        ds = cml.load_source("mars", **era_request)
-
-        ds = ds.order_by("param", "date", "time", "step")
-        last_key = None
-        fields = []
-
-        tmp = temp_file()
-        path = tmp.path
-        out = new_grib_output(path)
-
-        def flush():
-            nonlocal last_key, fields
-            if last_key is None:
-                return
-            lastStep = None
-            values = None
-            startSteps = []
-            endSteps = []
-            for field in fields:
-                startStep = field.metadata("startStep")
-                endStep = field.metadata("endStep")
-                startSteps.append(startStep)
-                endSteps.append(endStep)
-                if lastStep is not None:
-                    assert startStep == lastStep
-                assert endStep - startStep == 1, (startStep, endStep)
-                lastStep = endStep
-                if values is None:
-                    values = field.values
-                else:
-                    values += field.values
-
-            out.write(
-                values,
-                template=fields[0],
-                startStep=min(startSteps),
-                endStep=max(endSteps),
-            )
-
-            fields = []
 
         for field in ds:
             key = (
                 field.metadata("param"),
                 field.metadata("date"),
                 field.metadata("time"),
+                field.metadata("step"),
             )
-            step = field.metadata("step")
-            if key != last_key:
-                flush()
-                last_key = key
+            for a in accumulations[key]:
+                a.add(field)
 
-            fields.append(field)
+        for acc in accumulations.values():
+            for a in acc:
+                assert a.done, (a.key, a.seen, a.steps)
 
-        flush()
         out.close()
 
         ds = cml.load_source("file", path)
 
-        index = [d.valid_datetime() in requested for d in ds]
-        self.ds = ds[index]
+        self.ds = cml.load_source("file", path)
+        assert len(self.ds)/len(param) == len(requested), (len(self.ds), len(param), len(requested))
         self.ds._tmp = tmp
 
     def mutate(self):
