@@ -13,34 +13,9 @@ from collections import defaultdict
 
 import climetlab as cml
 from climetlab import Source
+from climetlab.core.temporary import temp_file
 from climetlab.decorators import normalize
-
-mapping = [
-    [-1, 18, 6],
-    [-1, 18, 7],
-    [-1, 18, 8],
-    [-1, 18, 9],
-    [-1, 18, 10],
-    [-1, 18, 11],
-    [-1, 18, 12],
-    [0, 6, 1],
-    [0, 6, 2],
-    [0, 6, 3],
-    [0, 6, 4],
-    [0, 6, 5],
-    [0, 6, 6],
-    [0, 6, 7],
-    [0, 6, 8],
-    [0, 6, 9],
-    [0, 6, 10],
-    [0, 6, 11],
-    [0, 6, 12],
-    [0, 18, 1],
-    [0, 18, 2],
-    [0, 18, 3],
-    [0, 18, 4],
-    [0, 18, 5],
-]
+from climetlab.readers.grib.output import new_grib_output
 
 
 class Era5Accumulations(Source):
@@ -67,6 +42,7 @@ class Era5Accumulations(Source):
         for p in param:
             assert p in ["cp", "lsp", "tp"], p
 
+        user_step = 6  # For now, we only support 6h accumulation
         user_dates = request["date"]
         user_times = request["time"]
 
@@ -85,17 +61,23 @@ class Era5Accumulations(Source):
             assert isinstance(user_time, int), (type(user_time), user_dates, user_times)
             assert 0 <= user_time <= 24, user_time
 
-            date = user_date + datetime.timedelta(hours=user_time)
-            delta, time, step = mapping[date.hour]
+            requested.add(user_date + datetime.timedelta(hours=user_time))
 
-            assert 0 <= time <= 23, time
-            assert 0 <= step <= 24, step
+            when = (
+                user_date
+                + datetime.timedelta(hours=user_time)
+                - datetime.timedelta(hours=user_step)
+            )
+            add_step = 0
 
-            when = date + datetime.timedelta(days=delta)
+            while when.hour not in (6, 18):
+                when -= datetime.timedelta(hours=1)
+                add_step += 1
+
             dates.add(datetime.datetime(when.year, when.month, when.day))
-            times.add(time)
-            steps.add(step)
-            requested.add(date)
+            times.add(when.hour)
+            for step in range(1, user_step + 1):
+                steps.add(step + add_step)
 
         valids = defaultdict(list)
         for date, time, step in itertools.product(dates, times, steps):
@@ -106,7 +88,7 @@ class Era5Accumulations(Source):
         got = set(valids.keys())
         assert all(len(x) == 1 for x in valids.values())
         missing = requested - got
-        assert len(missing) == 0
+        assert len(missing) == 0, missing
 
         # extra = got - requested
 
@@ -128,8 +110,67 @@ class Era5Accumulations(Source):
         )
 
         ds = cml.load_source("mars", **era_request)
+
+        ds = ds.order_by("param", "date", "time", "step")
+        last_key = None
+        fields = []
+
+        tmp = temp_file()
+        path = tmp.path
+        out = new_grib_output(path)
+
+        def flush():
+            nonlocal last_key, fields
+            if last_key is None:
+                return
+            lastStep = None
+            values = None
+            startSteps = []
+            endSteps = []
+            for field in fields:
+                startStep = field.metadata("startStep")
+                endStep = field.metadata("endStep")
+                startSteps.append(startStep)
+                endSteps.append(endStep)
+                if lastStep is not None:
+                    assert startStep == lastStep
+                assert endStep - startStep == 1, (startStep, endStep)
+                lastStep = endStep
+                if values is None:
+                    values = field.values
+                else:
+                    values += field.values
+
+            out.write(
+                values,
+                template=fields[0],
+                startStep=min(startSteps),
+                endStep=max(endSteps),
+            )
+
+            fields = []
+
+        for field in ds:
+            key = (
+                field.metadata("param"),
+                field.metadata("date"),
+                field.metadata("time"),
+            )
+            step = field.metadata("step")
+            if key != last_key:
+                flush()
+                last_key = key
+
+            fields.append(field)
+
+        flush()
+        out.close()
+
+        ds = cml.load_source("file", path)
+
         index = [d.valid_datetime() in requested for d in ds]
         self.ds = ds[index]
+        self.ds._tmp = tmp
 
     def mutate(self):
         return self.ds
