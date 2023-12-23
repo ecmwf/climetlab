@@ -7,9 +7,9 @@
 # nor does it submit to any jurisdiction.
 #
 
-from collections import defaultdict
 import datetime
 import itertools
+from collections import defaultdict
 
 import climetlab as cml
 from climetlab import Source
@@ -36,7 +36,7 @@ class Accumulation:
     def key(self):
         return (self.param, self.date, self.time, self.steps)
 
-    def add(self, field):
+    def add(self, field, values):
         step = field.metadata("step")
         if step not in self.steps:
             return
@@ -62,9 +62,11 @@ class Accumulation:
             self.endStep = max(self.endStep, endStep)
 
         if self.values is None:
-            self.values = field.values
-        else:
-            self.values += field.values
+            import numpy as np
+
+            self.values = np.zeros_like(values)
+
+        self.values += values
 
         self.seen.add(step)
 
@@ -164,10 +166,9 @@ class Era5Accumulations(Source):
             ds = ds + cml.load_source("mars", **era_request)
 
         accumulations = defaultdict(list)
-        for a in  [Accumulation(out, **r) for r in requests]:
+        for a in [Accumulation(out, **r) for r in requests]:
             for s in a.steps:
                 accumulations[(a.param, a.date, a.time, s)].append(a)
-
 
         for field in ds:
             key = (
@@ -176,8 +177,9 @@ class Era5Accumulations(Source):
                 field.metadata("time"),
                 field.metadata("step"),
             )
+            values = field.values  # optimisation
             for a in accumulations[key]:
-                a.add(field)
+                a.add(field, values)
 
         for acc in accumulations.values():
             for a in acc:
@@ -188,7 +190,11 @@ class Era5Accumulations(Source):
         ds = cml.load_source("file", path)
 
         self.ds = cml.load_source("file", path)
-        assert len(self.ds)/len(param) == len(requested), (len(self.ds), len(param), len(requested))
+        assert len(self.ds) / len(param) == len(requested), (
+            len(self.ds),
+            len(param),
+            len(requested),
+        )
         self.ds._tmp = tmp
 
     def mutate(self):

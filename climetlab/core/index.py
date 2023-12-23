@@ -145,6 +145,9 @@ class Order(OrderBase):
                     order[int(key)] = i
                 except ValueError:
                     pass
+                except TypeError:
+                    print('Cannot convert "%s" to int (%s)' % (key, type(key)))
+                    raise
                 try:
                     order[float(key)] = i
                 except ValueError:
