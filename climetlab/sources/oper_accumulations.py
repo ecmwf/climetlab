@@ -38,7 +38,7 @@ class OperAccumulations(Source):
             "scda": {"dates": set(), "times": set()},
         }
 
-        step = 6
+        user_step = 6
         requested = set()
 
         for user_date, user_time in itertools.product(user_dates, user_times):
@@ -54,7 +54,7 @@ class OperAccumulations(Source):
 
             requested.add(when)
 
-            when -= datetime.timedelta(hours=step)
+            when -= datetime.timedelta(hours=user_step)
             date = datetime.datetime(when.year, when.month, when.day)
             time = when.hour
 
@@ -84,7 +84,7 @@ class OperAccumulations(Source):
                     "stream": stream,
                     "date": [d.strftime("%Y-%m-%d") for d in dates],
                     "time": sorted(times),
-                    "step": step,
+                    "step": user_step,
                 }
             )
 
