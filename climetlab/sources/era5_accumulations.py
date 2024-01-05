@@ -20,21 +20,23 @@ from climetlab.utils.availability import Availability
 
 
 class Accumulation:
-    def __init__(self, out, param, date, time, step):
+    def __init__(self, out, param, date, time, step, number, stepping):
         self.out = out
         self.param = param
         self.date = date
         self.time = time * 100
+        self.number = number
         self.steps = tuple(step)
         self.values = None
         self.seen = set()
         self.startStep = None
         self.endStep = None
         self.done = False
+        self.stepping = stepping
 
     @property
     def key(self):
-        return (self.param, self.date, self.time, self.steps)
+        return (self.param, self.date, self.time, self.steps, self.number)
 
     def add(self, field, values):
         step = field.metadata("step")
@@ -49,7 +51,7 @@ class Accumulation:
         assert endStep == step, (startStep, endStep, step)
         assert step not in self.seen, (self.key, step)
 
-        assert endStep - startStep == 1, (startStep, endStep)
+        assert endStep - startStep == self.stepping, (startStep, endStep)
 
         if self.startStep is None:
             self.startStep = startStep
@@ -102,10 +104,15 @@ class Era5Accumulations(Source):
         param = request["param"]
         if not isinstance(param, (list, tuple)):
             param = [param]
+
         for p in param:
             assert p in ["cp", "lsp", "tp"], p
 
+        number = request.get("number", [0])
+        assert isinstance(number, (list, tuple))
+
         user_step = 6  # For now, we only support 6h accumulation
+
         user_dates = request["date"]
         user_times = request["time"]
 
@@ -116,6 +123,12 @@ class Era5Accumulations(Source):
         type_ = request.get("type", "an")
         if type_ == "an":
             type_ = "fc"
+
+        stepping = 1
+        if request.get("stream") == "enda":
+            stepping = 3
+            for n in user_times:
+                assert n % 6 == 0, n
 
         era_request.update({"class": "ea", "type": type_, "levtype": "sfc"})
 
@@ -144,20 +157,25 @@ class Era5Accumulations(Source):
             add_step = 0
 
             while when.hour not in (6, 18):
-                when -= datetime.timedelta(hours=1)
-                add_step += 1
+                when -= datetime.timedelta(hours=stepping)
+                add_step += stepping
 
-            steps = tuple(step + add_step for step in range(1, user_step + 1))
+            steps = tuple(
+                step + add_step
+                for step in range(stepping, user_step + stepping, stepping)
+            )
 
             for p in param:
-                requests.append(
-                    {
-                        "param": p,
-                        "date": int(when.strftime("%Y%m%d")),
-                        "time": when.hour,
-                        "step": sorted(steps),
-                    }
-                )
+                for n in number:
+                    requests.append(
+                        {
+                            "param": p,
+                            "date": int(when.strftime("%Y%m%d")),
+                            "time": when.hour,
+                            "step": sorted(steps),
+                            "number": n,
+                        }
+                    )
 
         compressed = Availability(requests)
         ds = cml.load_source("empty")
@@ -166,9 +184,9 @@ class Era5Accumulations(Source):
             ds = ds + cml.load_source("mars", **era_request)
 
         accumulations = defaultdict(list)
-        for a in [Accumulation(out, **r) for r in requests]:
+        for a in [Accumulation(out, stepping=stepping, **r) for r in requests]:
             for s in a.steps:
-                accumulations[(a.param, a.date, a.time, s)].append(a)
+                accumulations[(a.param, a.date, a.time, s, a.number)].append(a)
 
         for field in ds:
             key = (
@@ -176,6 +194,7 @@ class Era5Accumulations(Source):
                 field.metadata("date"),
                 field.metadata("time"),
                 field.metadata("step"),
+                field.metadata("number"),
             )
             values = field.values  # optimisation
             for a in accumulations[key]:
@@ -190,7 +209,7 @@ class Era5Accumulations(Source):
         ds = cml.load_source("file", path)
 
         self.ds = cml.load_source("file", path)
-        assert len(self.ds) / len(param) == len(requested), (
+        assert len(self.ds) / len(param) / len(number) == len(requested), (
             len(self.ds),
             len(param),
             len(requested),
