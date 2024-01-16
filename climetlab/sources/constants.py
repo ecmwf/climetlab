@@ -28,6 +28,10 @@ class ConstantMaker:
         self.shape = self.field.shape
 
     @cached_method
+    def get_resolution(self):
+        return self.field.resolution
+
+    @cached_method
     def grid_points(self):
         return self.field.grid_points()
 
@@ -165,7 +169,16 @@ class ConstantMaker:
 
 
 class ConstantField:
-    def __init__(self, date, param, proc, shape, number=None):
+    def __init__(
+        self,
+        date,
+        param,
+        proc,
+        shape,
+        grid_points,
+        get_resolution,
+        number=None,
+    ):
         self.date = date
         self.param = param
         self.number = number
@@ -178,6 +191,12 @@ class ConstantField:
             levelist=None,
             number=number,
         )
+        self.grid_points = grid_points
+        self.get_resolution = get_resolution
+
+    @property
+    def resolution(self):
+        return self.get_resolution()
 
     def to_numpy(self, reshape=True, dtype=None):
         values = self.proc(self.date)
@@ -304,6 +323,8 @@ class Constants(FieldSet):
             self.procs[param],
             self.maker.shape,
             number=number,
+            grid_points=self.maker.grid_points,
+            get_resolution=self.maker.get_resolution,
         )
 
 
