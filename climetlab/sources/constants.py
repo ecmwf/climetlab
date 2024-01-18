@@ -188,6 +188,7 @@ class ConstantField:
             level=None,
             levelist=None,
             number=number,
+            levtype=None,
         )
 
     @property
