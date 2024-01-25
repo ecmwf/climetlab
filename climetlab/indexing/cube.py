@@ -67,22 +67,8 @@ class FieldCube:
 
         self._field_shape = None
 
-        # Sort the source according to their
-        # internal_args = reduce(operator.add, [Separator.split(a) for a in args], [])
-        # for i in ds:
-        #   print(i)
-        # print("before")
-        # print(ds[0])
-        # print(ds[1])
-        # print(ds[2])
-        # print(ds[3])
         self.source = ds.order_by(*args, remapping=remapping, patches=patches)
         del ds
-        # print("after")
-        # print(self.source[0])
-        # print(self.source[1])
-        # print(self.source[2])
-        # print(self.source[3])
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
@@ -252,16 +238,13 @@ class Cubelet:
         self.owner = cube
         assert all(isinstance(_, int) for _ in coords), coords
         self.coords = coords
+        self.extended_icoords = self.coords
         self.flatten_values = cube.flatten_values
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}({self.coords},index_names={self._coords_names})"
         )
-
-    @property
-    def extended_icoords(self):
-        return self.coords
 
     def to_numpy(self, **kwargs):
         return self.owner[self.coords].to_numpy(
