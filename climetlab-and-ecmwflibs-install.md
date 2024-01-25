@@ -38,7 +38,7 @@ print(eccodes.__file__)
 
 ``` python
 import climetlab as cml
-url = "https://github.com/ecmwf/climetlab/blob/develop/docs/examples/test.grib"
+url = "https://github.com/ecmwf/climetlab/raw/develop/docs/examples/test.grib"
 ds=cml.load_source("url", url)
 print(ds[0])
 ```
