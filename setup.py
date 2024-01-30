@@ -72,7 +72,6 @@ install_requires += [
     "tqdm",
     "eccodes>=1.3.0",
     "magics>=1.5.6",
-    "ecmwflibs",
     "pdbufr",
     "pyodc",
     "toolz",
@@ -86,6 +85,8 @@ install_requires += [
     "numpngw",
     "lru-dict",
 ]
+if not os.environ.get("CLIMETLAB_DO_NOT_INSTALL_ECMWFLIBS"):
+    install_requires.append("ecmwflibs")
 
 extras_require = {
     "interactive": [
