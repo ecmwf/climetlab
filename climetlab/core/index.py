@@ -166,7 +166,7 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    def _normalize_kwargs_names(**kwargs):
+    def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
     def sel(self, *args, remapping=None, **kwargs):
@@ -196,6 +196,7 @@ class Index(Source):
         Returns a new index object.
         """
         kwargs = normalize_order_by(*args, **kwargs)
+        LOG.info("order_by %s", kwargs)
         kwargs = self._normalize_kwargs_names(**kwargs)
 
         remapping = build_remapping(remapping, patches)
