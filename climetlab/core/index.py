@@ -196,7 +196,6 @@ class Index(Source):
         Returns a new index object.
         """
         kwargs = normalize_order_by(*args, **kwargs)
-        LOG.info("order_by %s", kwargs)
         kwargs = self._normalize_kwargs_names(**kwargs)
 
         remapping = build_remapping(remapping, patches)
