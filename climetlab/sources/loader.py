@@ -124,7 +124,7 @@ class Loader(Source):
         source = sources[0]
         for s in sources[1:]:
             source += s
-        from climetlab.indexing.fieldset import FieldSet
+        from climetlab.readers.grib.index import FieldSet
 
         assert isinstance(source, FieldSet), type(source)
 

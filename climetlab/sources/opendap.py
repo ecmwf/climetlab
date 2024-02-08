@@ -8,32 +8,19 @@
 #
 
 
-from climetlab.core.index import FieldSet
-from climetlab.readers.netcdf import NetCDFReader
-from climetlab.sources import Source
+import xarray as xr
+
+from .base import Source
 
 
-class OpenDAP(FieldSet):
-    def __init__(self, url, flavour=None, **kwargs):
+class OpenDAP(Source):
+    def __init__(self, url):
         super().__init__()
 
-        self._url = url
-        self._reader = NetCDFReader(self, url, opendap=True, flavour=flavour)
-        self._kwargs = kwargs
+        self.url = url
 
-    def __iter__(self):
-        return iter(self._reader)
-
-    def __len__(self):
-        return len(self._reader)
-
-    def __getitem__(self, n):
-        return self._reader[n]
-
-    def mutate(self):
-        if self._kwargs:
-            return self.sel(**self._kwargs)
-        return super().mutate()
+    def to_xarray(self):
+        return xr.open_dataset(self.url)
 
 
 source = OpenDAP

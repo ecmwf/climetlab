@@ -108,9 +108,9 @@ class Inputs(list):
                 else:
                     out += ds
 
-            from climetlab.readers.grib.index import GribFieldSet
+            from climetlab.readers.grib.index import FieldSet
 
-            assert isinstance(out, GribFieldSet), type(out)
+            assert isinstance(out, FieldSet), type(out)
             self._do_load = (out, partial)
 
         return self._do_load[0]
@@ -385,9 +385,11 @@ class InputHandler:
         inputs = Inputs(input)
         self.output = output
         self.loops = [
-            c
-            if isinstance(c, Loop) and c.inputs == inputs
-            else Loop(c, inputs, parent=self, partial=partial)
+            (
+                c
+                if isinstance(c, Loop) and c.inputs == inputs
+                else Loop(c, inputs, parent=self, partial=partial)
+            )
             for c in loops
         ]
         if not self.loops:

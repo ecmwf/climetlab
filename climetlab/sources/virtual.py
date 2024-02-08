@@ -13,7 +13,7 @@ import logging
 import threading
 
 import climetlab as cml
-from climetlab.readers.grib.index import GribFieldSet
+from climetlab.readers.grib.index import FieldSet
 from climetlab.utils.serialise import register_serialisation
 
 LOG = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ class DictOveray(dict):
             return self[key]
 
 
-class Virtual(GribFieldSet):
+class Virtual(FieldSet):
     SIZE = int(365.25 * 24 * (2022 - 1959))
     # SIZE = 100
 

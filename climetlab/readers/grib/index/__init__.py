@@ -14,6 +14,7 @@ from abc import abstractmethod
 
 from lru import LRU
 
+from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
@@ -25,12 +26,11 @@ from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
-from climetlab.indexing.fieldset import FieldSet
 
 LOG = logging.getLogger(__name__)
 
 
-class GribFieldSet(FieldSetMixin, FieldSet):
+class FieldSet(FieldSetMixin, Index):
     _availability = None
 
     def __init__(self, *args, **kwargs):
@@ -39,11 +39,20 @@ class GribFieldSet(FieldSetMixin, FieldSet):
         ):
             self._availability = Availability(self.availability_path)
 
-        FieldSet.__init__(self, *args, **kwargs)
+        Index.__init__(self, *args, **kwargs)
+
+    @classmethod
+    def new_mask_index(self, *args, **kwargs):
+        return MaskFieldSet(*args, **kwargs)
 
     @property
     def availability_path(self):
         return None
+
+    @classmethod
+    def merge(cls, sources):
+        assert all(isinstance(_, FieldSet) for _ in sources)
+        return MultiFieldSet(sources)
 
     def available(self, request, as_list_of_dicts=False):
         from climetlab.utils.availability import Availability
@@ -141,7 +150,18 @@ class GribFieldSet(FieldSetMixin, FieldSet):
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
-class FieldSetInFiles(GribFieldSet):
+
+class MaskFieldSet(FieldSet, MaskIndex):
+    def __init__(self, *args, **kwargs):
+        MaskIndex.__init__(self, *args, **kwargs)
+
+
+class MultiFieldSet(FieldSet, MultiIndex):
+    def __init__(self, *args, **kwargs):
+        MultiIndex.__init__(self, *args, **kwargs)
+
+
+class FieldSetInFiles(FieldSet):
     # Remote Fieldsets (with urls) are also here,
     # as the actual fieldset is accessed on a file in cache.
     # This class changes the interface (_getitem__ and __len__)

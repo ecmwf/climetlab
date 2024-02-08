@@ -10,7 +10,7 @@
 import warnings
 
 from climetlab.indexing import PerUrlIndex
-from climetlab.indexing.fieldset import MultiFieldSet
+from climetlab.readers.grib.index import MultiFieldSet
 from climetlab.readers.grib.index.sql import FieldsetInFilesWithSqlIndex
 from climetlab.sources.indexed import IndexedSource
 from climetlab.utils.patterns import Pattern
