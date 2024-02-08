@@ -18,6 +18,7 @@ import eccodes
 
 from climetlab.core import Base
 from climetlab.core.constants import DATETIME
+from climetlab.indexing.fieldset import Field
 from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
 
@@ -321,7 +322,7 @@ class CodesReader:
 # count = defaultdict(int)
 
 
-class GribField(Base):
+class GribField(Field):
     def __init__(self, path, offset, length, handle_cache=None):
         self.path = path
         self._offset = offset

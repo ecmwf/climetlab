@@ -166,7 +166,7 @@ class Index(Source):
     def __len__(self):
         self._not_implemented()
 
-    def _normalize_kwargs_names(**kwargs):
+    def _normalize_kwargs_names(self, **kwargs):
         return kwargs
 
     def sel(self, *args, remapping=None, **kwargs):

@@ -10,16 +10,18 @@
 # The code is copied from skinnywms, and we should combile later
 
 import datetime
-from contextlib import closing
+from functools import cached_property
 from itertools import product
 
 import numpy as np
 
 from climetlab.core import Base
+from climetlab.indexing.fieldset import Field
+from climetlab.readers.netcdf.flavours import get_flavour
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
 
-from . import Reader
+from .. import Reader
 
 
 def as_datetime(self, time):
@@ -136,19 +138,36 @@ class DataSet:
 
         return self._bbox[(lat, lon)]
 
+    def grid_points(self, variable):
+        data_array = self[variable]
+        dims = data_array.dims
 
-class NetCDFField(Base):
-    def __init__(self, path, ds, variable, slices, non_dim_coords):
+        lat = dims[-2]
+        lon = dims[-1]
+
+        latitude = data_array[lat]
+        longitude = data_array[lon]
+
+        lat, lon = np.meshgrid(latitude.data, longitude.data)
+
+        return lat.flatten(), lon.flatten()
+
+
+class NetCDFField(Field):
+    def __init__(self, owner, ds, variable, slices, non_dim_coords):
         data_array = ds[variable]
 
         self.north, self.west, self.south, self.east = ds.bbox(variable)
 
-        self.path = path
+        self.owner = owner
         self.variable = variable
         self.slices = slices
         self.non_dim_coords = non_dim_coords
+        self.shape = (data_array.shape[-2], data_array.shape[-1])
+        # print("====", self.shape)
 
         self.name = self.variable
+        self._cache = {}
 
         self.title = getattr(
             data_array,
@@ -167,8 +186,11 @@ class NetCDFField(Base):
             if s.is_info:
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
 
+    def grid_points(self):
+        return DataSet(self.owner.dataset).grid_points(self.variable)
+
     def to_numpy(self, *args, **kwargs):
-        raise Exception(self.path, self.variable, self.slices)
+        raise Exception(self.owner.path, self.variable, self.slices)
 
     def plot_map(self, backend):
         dimensions = dict((s.name, s.index) for s in self.slices)
@@ -177,7 +199,7 @@ class NetCDFField(Base):
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
-        backend.plot_netcdf(self.path, self.variable, dimensions)
+        backend.plot_netcdf(self.owner.path, self.variable, dimensions)
 
     def __repr__(self):
         return "NetCDFField[%r,%r]" % (self.variable, self.slices)
@@ -187,38 +209,49 @@ class NetCDFField(Base):
             north=self.north, south=self.south, east=self.east, west=self.west
         )
 
+    def metadata(self, name):
+        if name not in self._cache:
+            self._cache[name] = self.owner.flavour.metadata(self, name)
+        return self._cache[name]
+
+    def resolution(self):
+        return "unknown"
+
 
 class NetCDFReader(Reader):
-    def __init__(self, source, path):
+    def __init__(self, source, path, opendap=False, flavour=None):
         super().__init__(source, path)
-        self.fields = None
+        self.opendap = opendap
+        self._flavour = flavour
 
-    def _scan(self):
-        if self.fields is None:
-            self.fields = self.get_fields()
+    @cached_property
+    def flavour(self):
+        return get_flavour(self, self._flavour)
 
     def __repr__(self):
         return "NetCDFReader(%s)" % (self.path,)
 
     def __iter__(self):
-        self._scan()
         return iter(self.fields)
 
     def __len__(self):
-        self._scan()
         return len(self.fields)
 
     def __getitem__(self, n):
-        self._scan()
         return self.fields[n]
 
-    def get_fields(self):
+    @cached_property
+    def dataset(self):
         import xarray as xr
 
-        with closing(
-            xr.open_mfdataset(self.path, combine="by_coords")
-        ) as ds:  # or nested
-            return self._get_fields(DataSet(ds))
+        if self.opendap:
+            return xr.open_dataset(self.path)
+        else:
+            return xr.open_mfdataset(self.path, combine="by_coords")
+
+    @cached_property
+    def fields(self):
+        return self._get_fields(DataSet(self.dataset))
 
     def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
@@ -307,7 +340,7 @@ class NetCDFReader(Reader):
                 for value, coordinate in zip(values, coordinates):
                     slices.append(coordinate.make_slice(value))
 
-                fields.append(NetCDFField(self.path, ds, name, slices, non_dim_coords))
+                fields.append(NetCDFField(self, ds, name, slices, non_dim_coords))
 
         if not fields:
             raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
@@ -315,6 +348,10 @@ class NetCDFReader(Reader):
         return fields
 
     def to_xarray(self, **kwargs):
+        import xarray as xr
+
+        if self.opendap:
+            return xr.open_dataset(self.path, **kwargs)
         return type(self).to_xarray_multi_from_paths([self.path], **kwargs)
 
     @classmethod
@@ -335,7 +372,7 @@ class NetCDFReader(Reader):
         return mv_read(self.path)
 
     def plot_map(self, *args, **kwargs):
-        return self.get_fields()[0].plot_map(*args, **kwargs)
+        return self.fields[0].plot_map(*args, **kwargs)
 
     # Used by normalisers
     def to_datetime(self):
@@ -346,12 +383,12 @@ class NetCDFReader(Reader):
     def to_datetime_list(self):
         # TODO: check if that can be done faster
         result = set()
-        for s in self.get_fields():
+        for s in self.fields:
             result.add(to_datetime(s.time))
         return sorted(result)
 
     def to_bounding_box(self):
-        return BoundingBox.multi_merge([s.to_bounding_box() for s in self.get_fields()])
+        return BoundingBox.multi_merge([s.to_bounding_box() for s in self.fields])
 
 
 def reader(source, path, magic=None, deeper_check=False):
