@@ -32,5 +32,6 @@ class Flavour:
     def get_number(self, field):
         return None
 
+
 def get_flavour(reader, flavour):
     return Flavour("default", reader)

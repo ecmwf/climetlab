@@ -10,7 +10,6 @@
 
 from climetlab.core.index import FieldSet
 from climetlab.readers.netcdf import NetCDFReader
-from climetlab.sources import Source
 
 
 class OpenDAP(FieldSet):

@@ -10,12 +10,12 @@
 from climetlab.core import Base
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 
+
 class Field(Base):
     pass
 
+
 class FieldSet(Index):
-
-
     @classmethod
     def new_mask_index(self, *args, **kwargs):
         return MaskFieldSet(*args, **kwargs)

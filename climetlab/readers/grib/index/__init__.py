@@ -21,11 +21,11 @@ from climetlab.indexing.database import (
     MORE_KEY_NAMES_WITH_UNDERSCORE,
     STATISTICS_KEY_NAMES,
 )
+from climetlab.indexing.fieldset import FieldSet
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
 from climetlab.utils.availability import Availability
-from climetlab.indexing.fieldset import FieldSet
 
 LOG = logging.getLogger(__name__)
 
@@ -140,6 +140,7 @@ class GribFieldSet(FieldSetMixin, FieldSet):
     @normalize_grib_keys
     def _normalize_kwargs_names(self, **kwargs):
         return kwargs
+
 
 class FieldSetInFiles(GribFieldSet):
     # Remote Fieldsets (with urls) are also here,
