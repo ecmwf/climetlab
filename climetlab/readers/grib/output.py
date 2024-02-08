@@ -117,7 +117,7 @@ class GribOutput:
         self.update_metadata(handle, metadata, compulsary)
         # print("<-", metadata)
 
-        if check_nans:
+        if check_nans and values is not None:
             import numpy as np
 
             if np.isnan(values).any():
@@ -140,7 +140,8 @@ class GribOutput:
         for k, v in metadata.items():
             handle.set(k, v)
 
-        handle.set_values(values)
+        if values is not None:
+            handle.set_values(values)
 
         # Set values will set generatingProcessIdentifier to 255
         if "generatingProcessIdentifier" in metadata:
@@ -167,7 +168,7 @@ class GribOutput:
         # TODO: revisit that logic
         combined = Combined(handle, metadata)
 
-        if "step" in metadata:
+        if "step" in metadata or "endStep" in metadata:
             if combined["type"] == "an":
                 metadata["type"] = "fc"
 
