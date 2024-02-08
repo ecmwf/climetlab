@@ -95,7 +95,7 @@ class Era5Accumulations(Source):
     Note 2 : There are no overlap due to the way the date+time+step are computed
     """
 
-    def __init__(self, *args, accumulation_period=6, **kwargs):
+    def __init__(self, *args, **kwargs):
         request = {}
         for a in args:
             request.update(self.requests(**a))
@@ -111,7 +111,7 @@ class Era5Accumulations(Source):
         number = request.get("number", [0])
         assert isinstance(number, (list, tuple))
 
-        user_step = accumulation_period  # For now, we only support 6h accumulation
+        user_step = 6  # For now, we only support 6h accumulation
 
         user_dates = request["date"]
         user_times = request["time"]
