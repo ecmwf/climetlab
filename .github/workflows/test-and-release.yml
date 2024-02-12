@@ -121,11 +121,12 @@ jobs:
         CDSAPIRC: ${{ secrets.CDSAPIRC }}
       run: |
         import os
-        for n in ('ECMWFAPIRC', 'CDSAPIRC'):
-            m = os.path.expanduser("~/." + n.lower())
-            if os.environ[n]:
-                with open(m, "w") as f:
-                    print(os.environ[n], file=f)
+        # for n in ('ECMWFAPIRC', 'CDSAPIRC'):
+        n = 'ECMWFAPIRC'
+        m = os.path.expanduser("~/." + n.lower())
+        if os.environ[n]:
+            with open(m, "w") as f:
+                print(os.environ[n], file=f)
     - name: Install climetlab
       run: pip install -e .  # run: pip install .[interactive,tensorflow,zarr]
     - run: climetlab versions
@@ -157,11 +158,12 @@ jobs:
         CDSAPIRC: ${{ secrets.CDSAPIRC }}
       run: |
         import os
-        for n in ('ECMWFAPIRC', 'CDSAPIRC'):
-            m = os.path.expanduser("~/." + n.lower())
-            if os.environ[n]:
-                with open(m, "w") as f:
-                    print(os.environ[n], file=f)
+        # for n in ('ECMWFAPIRC', 'CDSAPIRC'):
+        n = 'ECMWFAPIRC'
+        m = os.path.expanduser("~/." + n.lower())
+        if os.environ[n]:
+            with open(m, "w") as f:
+                print(os.environ[n], file=f)
     - name: Install climetlab
       run: pip install -e .  # run: pip install .[interactive,tensorflow,zarr]
     - run: climetlab versions
@@ -205,11 +207,12 @@ jobs:
         CDSAPIRC: ${{ secrets.CDSAPIRC }}
       run: |
         import os
-        for n in ('ECMWFAPIRC', 'CDSAPIRC'):
-            m = os.path.expanduser("~/." + n.lower())
-            if os.environ[n]:
-                with open(m, "w") as f:
-                    print(os.environ[n], file=f)
+        # for n in ('ECMWFAPIRC', 'CDSAPIRC'):
+        n = 'ECMWFAPIRC'
+        m = os.path.expanduser("~/." + n.lower())
+        if os.environ[n]:
+            with open(m, "w") as f:
+                print(os.environ[n], file=f)
     - name: Install climetlab
       run: pip install -e .
     - run: climetlab versions
