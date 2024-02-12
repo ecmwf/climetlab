@@ -48,6 +48,7 @@ def test_url_ftp_source_anonymous():
 @pytest.mark.ftp
 @pytest.mark.download
 @pytest.mark.external_download
+@pytest.mark.skipif(IN_GITHUB)
 def test_url_ftp_source_with_user_pass():
     import ftplib
 
