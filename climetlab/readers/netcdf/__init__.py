@@ -50,6 +50,10 @@ class TimeSlice(Slice):
     pass
 
 
+class LevelSlice(Slice):
+    pass
+
+
 class Coordinate:
     def __init__(self, variable, info):
         self.variable = variable
@@ -89,7 +93,7 @@ class TimeCoordinate(Coordinate):
 class LevelCoordinate(Coordinate):
     # This class is just in case we want to specialise
     # 'level', othewise, it is the same as OtherCoordinate
-    slice_class = Slice
+    slice_class = LevelSlice
     is_dimension = False
     convert = as_level
 
@@ -175,8 +179,8 @@ class NetCDFField(Field):
         )
 
         self.time = non_dim_coords.get("valid_time", non_dim_coords.get("time"))
-
-        # print('====', non_dim_coords)
+        self.level = None
+        # print('====', list(non_dim_coords.keys()))
 
         for s in self.slices:
             if isinstance(s, TimeSlice):
@@ -184,6 +188,10 @@ class NetCDFField(Field):
 
             if s.is_info:
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
+
+            if isinstance(s, LevelSlice):
+                self.level = s.value
+                # print("LEVEL", s.value, s.index, s.is_info, s.is_dimension)
 
         if "forecast_reference_time" in ds.data_vars:
             forecast_reference_time = ds["forecast_reference_time"].data
@@ -245,6 +253,15 @@ class NetCDFField(Field):
     @property
     def mars_grid(self):
         return self.owner.flavour.get_grid(self)
+
+    @property
+    def levelist(self):
+        return self.level
+
+    @property
+    def levtype(self):
+        # TODO: Support other level types
+        return "sfc" if self.level is None else "pl"
 
 
 class NetCDFFieldSet(FieldSet):

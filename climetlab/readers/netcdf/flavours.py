@@ -27,7 +27,10 @@ class Flavour:
         return field.variable
 
     def get_levelist(self, field):
-        return None
+        return field.levelist
+
+    def get_levtype(self, field):
+        return field.levtype
 
     def get_number(self, field):
         return None
@@ -49,6 +52,7 @@ class Flavour:
             param=self.get_param(field),
             levelist=self.get_levelist(field),
             number=self.get_number(field),
+            levtype=self.get_levtype(field),
         )
 
 
