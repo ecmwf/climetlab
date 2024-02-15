@@ -15,7 +15,7 @@ from itertools import product
 
 import numpy as np
 
-from climetlab.indexing.fieldset import Field
+from climetlab.indexing.fieldset import Field, FieldSet
 from climetlab.readers.netcdf.flavours import get_flavour
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
@@ -185,6 +185,15 @@ class NetCDFField(Field):
             if s.is_info:
                 self.title += " (" + s.name + "=" + str(s.value) + ")"
 
+        if "forecast_reference_time" in ds.data_vars:
+            forecast_reference_time = ds["forecast_reference_time"].data
+            assert forecast_reference_time.ndim == 0, forecast_reference_time
+            forecast_reference_time = forecast_reference_time.astype("datetime64[s]")
+            forecast_reference_time = forecast_reference_time.astype(object)
+            step = (self.time - forecast_reference_time).total_seconds()
+            assert step % 3600 == 0, step
+            self.step = step // 3600
+
     def grid_points(self):
         return DataSet(self.owner.dataset).grid_points(self.variable)
 
@@ -213,13 +222,28 @@ class NetCDFField(Field):
             self._cache[name] = self.owner.flavour.metadata(self, name)
         return self._cache[name]
 
+    @property
     def resolution(self):
-        return "unknown"
+        return self.owner.flavour.get_resolution(self)
+
+    def as_mars(self):
+        return self.owner.flavour.as_mars(self)
+
+    def valid_datetime(self):
+        return self.owner.flavour.get_valid_datetime(self)
+
+    @property
+    def mars_area(self):
+        return self.owner.flavour.get_area(self)
+
+    @property
+    def mars_grid(self):
+        return self.owner.flavour.get_grid(self)
 
 
-class NetCDFReader(Reader):
-    def __init__(self, source, path, opendap=False, flavour=None):
-        super().__init__(source, path)
+class NetCDFFieldSet(FieldSet):
+    def __init__(self, path, opendap=False, flavour=None):
+        self.path = path
         self.opendap = opendap
         self._flavour = flavour
 
@@ -388,6 +412,12 @@ class NetCDFReader(Reader):
 
     def to_bounding_box(self):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self.fields])
+
+
+class NetCDFReader(Reader, NetCDFFieldSet):
+    def __init__(self, source, path, opendap=False, flavour=None):
+        Reader.__init__(self, source, path)
+        NetCDFFieldSet.__init__(self, path, opendap=opendap, flavour=flavour)
 
 
 def reader(source, path, magic=None, deeper_check=False):

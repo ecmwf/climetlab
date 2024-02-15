@@ -16,6 +16,7 @@ from lru import LRU
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
+from climetlab.fields import FieldSetIndex
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
@@ -30,7 +31,7 @@ from climetlab.utils.availability import Availability
 LOG = logging.getLogger(__name__)
 
 
-class FieldSet(FieldSetMixin, Index):
+class GribFieldSet(FieldSetMixin, FieldSetIndex):
     _availability = None
 
     def __init__(self, *args, **kwargs):
@@ -51,7 +52,7 @@ class FieldSet(FieldSetMixin, Index):
 
     @classmethod
     def merge(cls, sources):
-        assert all(isinstance(_, FieldSet) for _ in sources)
+        assert all(isinstance(_, GribFieldSet) for _ in sources)
         return MultiFieldSet(sources)
 
     def available(self, request, as_list_of_dicts=False):
@@ -151,17 +152,17 @@ class FieldSet(FieldSetMixin, Index):
         return kwargs
 
 
-class MaskFieldSet(FieldSet, MaskIndex):
+class MaskFieldSet(GribFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
 
-class MultiFieldSet(FieldSet, MultiIndex):
+class MultiFieldSet(GribFieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
 
-class FieldSetInFiles(FieldSet):
+class FieldSetInFiles(GribFieldSet):
     # Remote Fieldsets (with urls) are also here,
     # as the actual fieldset is accessed on a file in cache.
     # This class changes the interface (_getitem__ and __len__)

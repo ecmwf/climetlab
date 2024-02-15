@@ -7,20 +7,16 @@
 # nor does it submit to any jurisdiction.
 #
 
-
-import xarray as xr
-
-from .base import Source
+from climetlab.readers.netcdf import NetCDFFieldSet
+from climetlab.sources import Source
 
 
 class OpenDAP(Source):
     def __init__(self, url):
-        super().__init__()
-
         self.url = url
 
-    def to_xarray(self):
-        return xr.open_dataset(self.url)
+    def mutate(self):
+        return NetCDFFieldSet(self.url, opendap=True)
 
 
 source = OpenDAP

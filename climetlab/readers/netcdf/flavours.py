@@ -32,6 +32,25 @@ class Flavour:
     def get_number(self, field):
         return None
 
+    def get_area(self, field):
+        return None
+
+    def get_grid(self, field):
+        return None
+
+    def get_resolution(self, field):
+        return None
+
+    def get_step(self, field):
+        return field.step
+
+    def as_mars(self, field):
+        return dict(
+            param=self.get_param(field),
+            levelist=self.get_levelist(field),
+            number=self.get_number(field),
+        )
+
 
 def get_flavour(reader, flavour):
     return Flavour("default", reader)
