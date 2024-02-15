@@ -16,13 +16,13 @@ from lru import LRU
 
 from climetlab.core.index import Index, MaskIndex, MultiIndex
 from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
-from climetlab.fields import FieldSetIndex
 from climetlab.indexing.database import (
     FILEPARTS_KEY_NAMES,
     MORE_KEY_NAMES,
     MORE_KEY_NAMES_WITH_UNDERSCORE,
     STATISTICS_KEY_NAMES,
 )
+from climetlab.indexing.fieldset import FieldSet
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
@@ -31,7 +31,7 @@ from climetlab.utils.availability import Availability
 LOG = logging.getLogger(__name__)
 
 
-class GribFieldSet(FieldSetMixin, FieldSetIndex):
+class GribFieldSet(FieldSetMixin, FieldSet):
     _availability = None
 
     def __init__(self, *args, **kwargs):
