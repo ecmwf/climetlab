@@ -148,6 +148,17 @@ class DataSet:
         lat = dims[-2]
         lon = dims[-1]
 
+        if "latitude" in self._ds and "longitude" in self._ds:
+            latitude = self._ds["latitude"]
+            longitude = self._ds["longitude"]
+
+            if latitude.dims == (lat, lon) and longitude.dims == (lat, lon):
+                latitude = latitude.data
+                longitude = longitude.data
+                return latitude.flatten(), longitude.flatten()
+
+            return NotImplemented("Code me")
+
         latitude = data_array[lat]
         longitude = data_array[lon]
 

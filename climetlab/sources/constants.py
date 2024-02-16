@@ -33,7 +33,21 @@ class ConstantMaker:
 
     @cached_method
     def grid_points(self):
-        return self.field.grid_points()
+        lats, lons = self.field.grid_points()
+
+        north = np.amax(lats)
+        south = np.amin(lats)
+        west = np.amin(lons)
+        east = np.amax(lons)
+
+        assert -90 <= south <= north <= 90, (south, north, self.field)
+        assert (-180 <= west <= east <= 180) or (0 <= west <= east <= 360), (
+            west,
+            east,
+            self.field,
+        )
+
+        return lats, lons
 
     @cached_method
     def ecef_xyz(self):
@@ -176,6 +190,7 @@ class ConstantField:
         param,
         proc,
         number=None,
+        grid_points=None,
     ):
         self.maker = maker
         self.date = date
@@ -190,6 +205,7 @@ class ConstantField:
             number=number,
             levtype=None,
         )
+        self._grid_points = grid_points
 
     @property
     def resolution(self):
