@@ -11,7 +11,6 @@ from functools import cached_property
 from itertools import product
 
 from climetlab.indexing.fieldset import FieldSet
-from climetlab.readers.netcdf.flavours import get_flavour
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
 
@@ -21,14 +20,9 @@ from .field import NetCDFField
 
 
 class NetCDFFieldSet(FieldSet):
-    def __init__(self, path, opendap=False, flavour=None):
+    def __init__(self, path):
         self.path = path
-        self.opendap = opendap
-        self._flavour = flavour
-
-    @cached_property
-    def flavour(self):
-        return get_flavour(self, self._flavour)
+        self.opendap = path.startswith("http")
 
     def __repr__(self):
         return "NetCDFReader(%s)" % (self.path,)

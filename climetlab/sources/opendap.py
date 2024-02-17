@@ -16,7 +16,7 @@ class OpenDAP(Source):
         self.url = url
 
     def mutate(self):
-        return NetCDFFieldSet(self.url, opendap=True)
+        return NetCDFFieldSet(self.url)
 
 
 source = OpenDAP
