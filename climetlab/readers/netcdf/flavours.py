@@ -47,12 +47,16 @@ class Flavour:
     def get_step(self, field):
         return field.step
 
+    def get_projection(self, field):
+        return field.projection
+
     def as_mars(self, field):
         return dict(
             param=self.get_param(field),
             levelist=self.get_levelist(field),
             number=self.get_number(field),
             levtype=self.get_levtype(field),
+            step=self.get_step(field),
         )
 
 
