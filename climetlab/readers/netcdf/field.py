@@ -103,6 +103,9 @@ class NetCDFField(Field):
     def grid_points(self):
         return DataSet(self.owner.dataset).grid_points(self.variable)
 
+    def grid_points_xy(self):
+        return DataSet(self.owner.dataset).grid_points_xy(self.variable)
+
     def to_numpy(self, reshape=True, dtype=None):
         dimensions = dict((s.name, s.index) for s in self.slices)
         values = self.owner.dataset[self.variable].isel(dimensions).values

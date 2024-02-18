@@ -18,5 +18,8 @@ class EmptySource(FieldSet):
     def __len__(self):
         return 0
 
+    def __repr__(self):
+        return "EmptySource"
+
 
 source = EmptySource

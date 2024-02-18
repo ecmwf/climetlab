@@ -76,3 +76,20 @@ class DataSet:
 
         self._cache[key] = lat.flatten(), lon.flatten()
         return self._cache[key]
+
+    def grid_points_xy(self, variable):
+        data_array = self[variable]
+        dims = data_array.dims
+
+        lat = dims[-2]
+        lon = dims[-1]
+
+        latitude = data_array[lat].data
+        longitude = data_array[lon].data
+
+        print(latitude, longitude)
+
+        lat, lon = np.meshgrid(latitude, longitude)
+
+        return lat.flatten(), lon.flatten()
+        # return self._cache[key]
