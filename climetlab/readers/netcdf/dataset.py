@@ -12,7 +12,6 @@ import numpy as np
 
 
 class DataSet:
-
     """
     Class that wraps a xarray dataset to provide caching
     """
