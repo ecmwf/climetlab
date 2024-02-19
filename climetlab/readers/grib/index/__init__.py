@@ -22,6 +22,7 @@ from climetlab.indexing.database import (
     MORE_KEY_NAMES_WITH_UNDERSCORE,
     STATISTICS_KEY_NAMES,
 )
+from climetlab.indexing.fieldset import FieldSet
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
 from climetlab.utils import progress_bar
@@ -30,7 +31,7 @@ from climetlab.utils.availability import Availability
 LOG = logging.getLogger(__name__)
 
 
-class FieldSet(FieldSetMixin, Index):
+class GribFieldSet(FieldSetMixin, FieldSet):
     _availability = None
 
     def __init__(self, *args, **kwargs):
@@ -51,7 +52,7 @@ class FieldSet(FieldSetMixin, Index):
 
     @classmethod
     def merge(cls, sources):
-        assert all(isinstance(_, FieldSet) for _ in sources)
+        assert all(isinstance(_, GribFieldSet) for _ in sources)
         return MultiFieldSet(sources)
 
     def available(self, request, as_list_of_dicts=False):
@@ -151,17 +152,17 @@ class FieldSet(FieldSetMixin, Index):
         return kwargs
 
 
-class MaskFieldSet(FieldSet, MaskIndex):
+class MaskFieldSet(GribFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
 
-class MultiFieldSet(FieldSet, MultiIndex):
+class MultiFieldSet(GribFieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
 
-class FieldSetInFiles(FieldSet):
+class FieldSetInFiles(GribFieldSet):
     # Remote Fieldsets (with urls) are also here,
     # as the actual fieldset is accessed on a file in cache.
     # This class changes the interface (_getitem__ and __len__)

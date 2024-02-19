@@ -7,16 +7,19 @@
 # nor does it submit to any jurisdiction.
 #
 
-from . import Source
+from climetlab.indexing.fieldset import FieldSet
 
 
-class EmptySource(Source):
+class EmptySource(FieldSet):
     def ignore(self):
         # Used by multi-source
         return True
 
     def __len__(self):
         return 0
+
+    def __repr__(self):
+        return "EmptySource"
 
 
 source = EmptySource

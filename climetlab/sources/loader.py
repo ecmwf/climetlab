@@ -124,9 +124,9 @@ class Loader(Source):
         source = sources[0]
         for s in sources[1:]:
             source += s
-        from climetlab.readers.grib.index import FieldSet
+        from climetlab.readers.grib.index import GribFieldSet
 
-        assert isinstance(source, FieldSet), type(source)
+        assert isinstance(source, GribFieldSet), type(source)
 
         return source
 

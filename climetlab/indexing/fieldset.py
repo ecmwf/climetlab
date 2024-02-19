@@ -34,3 +34,20 @@ class MaskFieldSet(FieldSet, MaskIndex):
 class MultiFieldSet(FieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
+
+
+class FieldArray(FieldSet):
+    def __init__(self, fields=None):
+        self.fields = fields if fields is not None else []
+
+    def append(self, field):
+        self.fields.append(field)
+
+    def _getitem(self, n):
+        return self.fields[n]
+
+    def __len__(self):
+        return len(self.fields)
+
+    def __repr__(self) -> str:
+        return f'FieldArray({len(self.fields)})'
