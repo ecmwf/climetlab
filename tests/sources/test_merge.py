@@ -406,7 +406,7 @@ def test_nc_merge_concat_var():
 
 
 if __name__ == "__main__":
-    # test_merge_pangeo_1()
-    from climetlab.testing import main
+    test_nc_merge_var()
+    # from climetlab.testing import main
 
-    main(__file__)
+    # main(__file__)
