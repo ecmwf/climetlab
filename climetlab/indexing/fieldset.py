@@ -50,4 +50,4 @@ class FieldArray(FieldSet):
         return len(self.fields)
 
     def __repr__(self) -> str:
-        return f'FieldArray({len(self.fields)})'
+        return f"FieldArray({len(self.fields)})"
