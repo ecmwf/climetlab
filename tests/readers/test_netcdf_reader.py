@@ -15,7 +15,7 @@ import pytest
 
 import climetlab as cml
 from climetlab import load_source, plot_map
-from climetlab.readers.netcdf import NetCDFField
+from climetlab.readers.netcdf.field import NetCDFField
 from climetlab.testing import NO_CDS, climetlab_file
 
 
