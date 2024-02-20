@@ -97,7 +97,6 @@ def test_dummy_netcdf_4():
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
-@pytest.mark.skipif(True, reason="Merging of netcdf files does not work yet")
 def test_multi():
     s1 = load_source(
         "cds",

@@ -88,7 +88,14 @@ class Str:
         return self.format % value
 
 
-TYPES = {"": Any, "int": Int, "float": Float, "date": Datetime, "strftime": Datetime, "enum": Enum}
+TYPES = {
+    "": Any,
+    "int": Int,
+    "float": Float,
+    "date": Datetime,
+    "strftime": Datetime,
+    "enum": Enum,
+}
 
 
 class Constant:
