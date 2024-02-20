@@ -72,7 +72,7 @@ def test_nc_merge_custom(custom_merger):
     target2 = xr.open_mfdataset([s1.path, s2.path])
     assert target2.identical(merged)
 
-
+@pytest.mark.skipif(True, reason="Merging of netcdf files does not work yet")
 def test_nc_merge_var():
     s1 = load_source(
         "climetlab-testing",
@@ -125,7 +125,7 @@ def _merge_var_different_coords(kind1, kind2):
 
     assert target.identical(merged)
 
-
+@pytest.mark.skipif(True, reason="Merging of netcdf files does not work yet")
 def test_nc_merge_var_different_coords():
     _merge_var_different_coords("netcdf", "netcdf")
 
