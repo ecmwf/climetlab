@@ -265,6 +265,9 @@ class MaskIndex(Index):
         n = self.indices[n]
         return self.index[n]
 
+    def __iter__(self):
+        return (self.index[i] for i in self.indices)
+
     def __len__(self):
         return len(self.indices)
 

@@ -204,20 +204,40 @@ class NetCDFFieldSet(FieldSet):
 class NetCDFMaskFieldSet(NetCDFFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
+        self.path = "<mask>"
+
+    def __iter__(self):
+        return MaskIndex.__iter__(self)
+
+    def __len__(self):
+        return MaskIndex.__len__(self)
+
+    def __getitem__(self, n):
+        return MaskIndex.__getitem__(self, n)
 
 
 class NetCDFMultiFieldSet(NetCDFFieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
         self.paths = [s.path for s in args[0]]
+        self.path = "<multi>"
 
     def to_xarray(self, **kwargs):
         import xarray as xr
+
         if not kwargs:
             kwargs = dict(combine="by_coords")
         return xr.open_mfdataset(self.paths, **kwargs)
 
-
     @cached_property
     def dataset(self):
         return self.to_xarray(combine="by_coords")
+
+    def __iter__(self):
+        return MaskIndex.__iter__(self)
+
+    def __len__(self):
+        return MaskIndex.__len__(self)
+
+    def __getitem__(self, n):
+        return MaskIndex.__getitem__(self, n)
