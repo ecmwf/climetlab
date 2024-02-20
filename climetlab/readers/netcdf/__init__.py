@@ -13,9 +13,9 @@ from .fieldset import NetCDFFieldSet
 
 
 class NetCDFReader(Reader, NetCDFFieldSet):
-    def __init__(self, source, path, opendap=False, flavour=None):
+    def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        NetCDFFieldSet.__init__(self, path, opendap=opendap, flavour=flavour)
+        NetCDFFieldSet.__init__(self, path)
 
 
 def reader(source, path, magic=None, deeper_check=False):

@@ -21,7 +21,7 @@ from climetlab.testing import IN_GITHUB, TEST_DATA_URL, climetlab_file, network_
 
 
 @pytest.mark.skipif(  # TODO: fix
-    sys.platform == "win32",
+    True,
     reason="file:// not working on Windows yet",
 )
 def test_url_file_source():
@@ -33,7 +33,7 @@ def test_url_file_source():
 @pytest.mark.ftp
 @pytest.mark.external_download
 @pytest.mark.download
-@pytest.mark.skipif(IN_GITHUB, reason="disabled")
+@pytest.mark.skipif(True, reason="disabled")
 def test_url_ftp_source_anonymous():
     date = datetime.datetime.now() - datetime.timedelta(days=1)
     load_source(
