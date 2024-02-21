@@ -66,8 +66,6 @@ class DataSet:
                 longitude = longitude.data
                 return latitude.flatten(), longitude.flatten()
 
-            return NotImplemented("Code me")
-
         latitude = data_array[lat]
         longitude = data_array[lon]
 

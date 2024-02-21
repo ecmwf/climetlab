@@ -10,7 +10,7 @@
 import logging
 
 from climetlab.readers import Reader
-from climetlab.readers.grib.index import MultiFieldSet
+from climetlab.readers.grib.index import GribMultiFieldSet
 from climetlab.readers.grib.index.file import FieldSetInOneFile
 
 LOG = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class GRIBReader(FieldSetInOneFile, Reader):
         assert all(isinstance(s, GRIBReader) for s in readers), readers
         assert len(readers) > 1
 
-        return MultiFieldSet(readers)
+        return GribMultiFieldSet(readers)
 
     def mutate_source(self):
         # A GRIBReader is a source itself

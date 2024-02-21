@@ -10,6 +10,7 @@
 from functools import cached_property
 from itertools import product
 
+from climetlab.core.index import MaskIndex, MultiIndex
 from climetlab.indexing.fieldset import FieldSet
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
@@ -23,6 +24,10 @@ class NetCDFFieldSet(FieldSet):
     def __init__(self, path):
         self.path = path
         self.opendap = path.startswith("http")
+
+    @classmethod
+    def new_mask_index(self, *args, **kwargs):
+        return NetCDFMaskFieldSet(*args, **kwargs)
 
     def __repr__(self):
         return "NetCDFReader(%s)" % (self.path,)
@@ -39,6 +44,9 @@ class NetCDFFieldSet(FieldSet):
     @cached_property
     def dataset(self):
         import xarray as xr
+
+        if ".zarr" in self.path:
+            return xr.open_zarr(self.path)
 
         if self.opendap:
             return xr.open_dataset(self.path)
@@ -146,7 +154,7 @@ class NetCDFFieldSet(FieldSet):
     def to_xarray(self, **kwargs):
         import xarray as xr
 
-        if self.opendap:
+        if self.path.startswith("http"):
             return xr.open_dataset(self.path, **kwargs)
         return type(self).to_xarray_multi_from_paths([self.path], **kwargs)
 
@@ -185,3 +193,51 @@ class NetCDFFieldSet(FieldSet):
 
     def to_bounding_box(self):
         return BoundingBox.multi_merge([s.to_bounding_box() for s in self.fields])
+
+    @classmethod
+    def merge(cls, sources):
+        assert len(sources) > 1
+        assert all(isinstance(_, NetCDFFieldSet) for _ in sources)
+        return NetCDFMultiFieldSet(sources)
+
+
+class NetCDFMaskFieldSet(NetCDFFieldSet, MaskIndex):
+    def __init__(self, *args, **kwargs):
+        MaskIndex.__init__(self, *args, **kwargs)
+        self.path = "<mask>"
+
+    def __iter__(self):
+        return MaskIndex.__iter__(self)
+
+    def __len__(self):
+        return MaskIndex.__len__(self)
+
+    def __getitem__(self, n):
+        return MaskIndex.__getitem__(self, n)
+
+
+class NetCDFMultiFieldSet(NetCDFFieldSet, MultiIndex):
+    def __init__(self, *args, **kwargs):
+        MultiIndex.__init__(self, *args, **kwargs)
+        self.paths = [s.path for s in args[0]]
+        self.path = "<multi>"
+
+    def to_xarray(self, **kwargs):
+        import xarray as xr
+
+        if not kwargs:
+            kwargs = dict(combine="by_coords")
+        return xr.open_mfdataset(self.paths, **kwargs)
+
+    @cached_property
+    def dataset(self):
+        return self.to_xarray(combine="by_coords")
+
+    def __iter__(self):
+        return MaskIndex.__iter__(self)
+
+    def __len__(self):
+        return MaskIndex.__len__(self)
+
+    def __getitem__(self, n):
+        return MaskIndex.__getitem__(self, n)

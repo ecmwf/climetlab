@@ -44,7 +44,7 @@ class GribFieldSet(FieldSetMixin, FieldSet):
 
     @classmethod
     def new_mask_index(self, *args, **kwargs):
-        return MaskFieldSet(*args, **kwargs)
+        return GribMaskFieldSet(*args, **kwargs)
 
     @property
     def availability_path(self):
@@ -53,7 +53,7 @@ class GribFieldSet(FieldSetMixin, FieldSet):
     @classmethod
     def merge(cls, sources):
         assert all(isinstance(_, GribFieldSet) for _ in sources)
-        return MultiFieldSet(sources)
+        return GribMultiFieldSet(sources)
 
     def available(self, request, as_list_of_dicts=False):
         from climetlab.utils.availability import Availability
@@ -152,12 +152,12 @@ class GribFieldSet(FieldSetMixin, FieldSet):
         return kwargs
 
 
-class MaskFieldSet(GribFieldSet, MaskIndex):
+class GribMaskFieldSet(GribFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
 
-class MultiFieldSet(GribFieldSet, MultiIndex):
+class GribMultiFieldSet(GribFieldSet, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
