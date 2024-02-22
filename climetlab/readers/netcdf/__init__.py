@@ -9,13 +9,13 @@
 
 
 from .. import Reader
-from .fieldset import NetCDFFieldSet
+from .fieldset import NetCDFFieldSetFromFile
 
 
-class NetCDFReader(Reader, NetCDFFieldSet):
+class NetCDFReader(Reader, NetCDFFieldSetFromFile):
     def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        NetCDFFieldSet.__init__(self, path)
+        NetCDFFieldSetFromFile.__init__(self, path)
 
 
 def reader(source, path, magic=None, deeper_check=False):
