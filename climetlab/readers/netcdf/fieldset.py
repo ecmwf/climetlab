@@ -181,6 +181,12 @@ class NetCDFFieldSetFromFileOrURL(NetCDFFieldSet):
     def __init__(self, path_or_url):
         self.path_or_url = path_or_url
 
+    @cached_property
+    def xr_dataset(self):
+        import xarray as xr
+
+        return xr.open_dataset(self.path_or_url)
+
 
 class NetCDFFieldSetFromFile(NetCDFFieldSetFromFileOrURL):
     def __init__(self, path):
@@ -202,18 +208,11 @@ class NetCDFFieldSetFromURL(NetCDFFieldSetFromFileOrURL):
     def __repr__(self):
         return "NetCDFFieldSetFromURL(%s)" % (self.path_or_url,)
 
-    @cached_property
-    def xr_dataset(self):
-        import xarray as xr
-
-        return xr.open_dataset(self.path_or_url)
-
 
 class NetCDFMaskFieldSet(NetCDFFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
         self.path = "<mask>"
-
 
     @cached_property
     def fields(self):
@@ -239,13 +238,6 @@ class NetCDFMultiFieldSet(NetCDFFieldSet, MultiIndex):
         for s in self.indexes:
             result.extend(s.fields)
         return result
-
-    # @cached_property
-    # def dataset(self):
-    #     return self.to_xarray(combine="by_coords")
-
-    # def __iter__(self):
-    #     return MultiIndex.__iter__(self)
 
     def __len__(self):
         return MultiIndex.__len__(self)

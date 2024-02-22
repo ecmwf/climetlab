@@ -95,7 +95,9 @@ class NetCDFField(Field):
             return x
 
         return tidy(
-            self.owner.xr_dataset[self.owner.xr_dataset[self.variable].grid_mapping].attrs
+            self.owner.xr_dataset[
+                self.owner.xr_dataset[self.variable].grid_mapping
+            ].attrs
         )
 
     # Compatibility to GRIb fields below
