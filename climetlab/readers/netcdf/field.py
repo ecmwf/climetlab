@@ -95,20 +95,22 @@ class NetCDFField(Field):
             return x
 
         return tidy(
-            self.owner.dataset[self.owner.dataset[self.variable].grid_mapping].attrs
+            self.owner.xr_dataset[
+                self.owner.xr_dataset[self.variable].grid_mapping
+            ].attrs
         )
 
     # Compatibility to GRIb fields below
 
     def grid_points(self):
-        return DataSet(self.owner.dataset).grid_points(self.variable)
+        return DataSet(self.owner.xr_dataset).grid_points(self.variable)
 
     def grid_points_xy(self):
-        return DataSet(self.owner.dataset).grid_points_xy(self.variable)
+        return DataSet(self.owner.xr_dataset).grid_points_xy(self.variable)
 
     def to_numpy(self, reshape=True, dtype=None):
         dimensions = dict((s.name, s.index) for s in self.slices)
-        values = self.owner.dataset[self.variable].isel(dimensions).values
+        values = self.owner.xr_dataset[self.variable].isel(dimensions).values
         if not reshape:
             values = values.flatten()
         if dtype is not None:

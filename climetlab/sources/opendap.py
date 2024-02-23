@@ -7,7 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
-from climetlab.readers.netcdf import NetCDFFieldSet
+from climetlab.readers.netcdf.fieldset import NetCDFFieldSetFromURL
 from climetlab.sources import Source
 
 
@@ -16,7 +16,7 @@ class OpenDAP(Source):
         self.url = url
 
     def mutate(self):
-        return NetCDFFieldSet(self.url)
+        return NetCDFFieldSetFromURL(self.url)
 
 
 source = OpenDAP

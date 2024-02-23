@@ -17,6 +17,7 @@ class DataSet:
     """
 
     def __init__(self, ds):
+        assert ds is not None
         self._ds = ds
         self._cache = {}
 

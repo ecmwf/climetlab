@@ -21,16 +21,9 @@ from .field import NetCDFField
 
 
 class NetCDFFieldSet(FieldSet):
-    def __init__(self, path):
-        self.path = path
-        self.opendap = path.startswith("http")
-
     @classmethod
     def new_mask_index(self, *args, **kwargs):
         return NetCDFMaskFieldSet(*args, **kwargs)
-
-    def __repr__(self):
-        return "NetCDFReader(%s)" % (self.path,)
 
     def __iter__(self):
         return iter(self.fields)
@@ -42,20 +35,8 @@ class NetCDFFieldSet(FieldSet):
         return self.fields[n]
 
     @cached_property
-    def dataset(self):
-        import xarray as xr
-
-        if ".zarr" in self.path:
-            return xr.open_zarr(self.path)
-
-        if self.opendap:
-            return xr.open_dataset(self.path)
-        else:
-            return xr.open_mfdataset(self.path, combine="by_coords")
-
-    @cached_property
     def fields(self):
-        return self._get_fields(DataSet(self.dataset))
+        return self._get_fields(DataSet(self.xr_dataset))
 
     def _get_fields(self, ds):  # noqa C901
         # Select only geographical variables
@@ -170,11 +151,6 @@ class NetCDFFieldSet(FieldSet):
             **options,
         )
 
-    def to_metview(self):
-        from climetlab.metview import mv_read
-
-        return mv_read(self.path)
-
     def plot_map(self, *args, **kwargs):
         return self.fields[0].plot_map(*args, **kwargs)
 
@@ -201,19 +177,46 @@ class NetCDFFieldSet(FieldSet):
         return NetCDFMultiFieldSet(sources)
 
 
+class NetCDFFieldSetFromFileOrURL(NetCDFFieldSet):
+    def __init__(self, path_or_url):
+        self.path_or_url = path_or_url
+
+    @cached_property
+    def xr_dataset(self):
+        import xarray as xr
+
+        return xr.open_dataset(self.path_or_url)
+
+
+class NetCDFFieldSetFromFile(NetCDFFieldSetFromFileOrURL):
+    def __init__(self, path):
+        super().__init__(path)
+
+    def __repr__(self):
+        return "NetCDFFieldSetFromFile(%s)" % (self.path_or_url,)
+
+    def to_metview(self):
+        from climetlab.metview import mv_read
+
+        return mv_read(self.path_or_url)
+
+
+class NetCDFFieldSetFromURL(NetCDFFieldSetFromFileOrURL):
+    def __init__(self, url):
+        super().__init__(url)
+
+    def __repr__(self):
+        return "NetCDFFieldSetFromURL(%s)" % (self.path_or_url,)
+
+
 class NetCDFMaskFieldSet(NetCDFFieldSet, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
         self.path = "<mask>"
 
-    def __iter__(self):
-        return MaskIndex.__iter__(self)
-
-    def __len__(self):
-        return MaskIndex.__len__(self)
-
-    def __getitem__(self, n):
-        return MaskIndex.__getitem__(self, n)
+    @cached_property
+    def fields(self):
+        return list(self.index[i] for i in self.indices)
 
 
 class NetCDFMultiFieldSet(NetCDFFieldSet, MultiIndex):
@@ -230,14 +233,14 @@ class NetCDFMultiFieldSet(NetCDFFieldSet, MultiIndex):
         return xr.open_mfdataset(self.paths, **kwargs)
 
     @cached_property
-    def dataset(self):
-        return self.to_xarray(combine="by_coords")
-
-    def __iter__(self):
-        return MaskIndex.__iter__(self)
+    def fields(self):
+        result = []
+        for s in self.indexes:
+            result.extend(s.fields)
+        return result
 
     def __len__(self):
-        return MaskIndex.__len__(self)
+        return MultiIndex.__len__(self)
 
     def __getitem__(self, n):
-        return MaskIndex.__getitem__(self, n)
+        return MultiIndex.__getitem__(self, n)
