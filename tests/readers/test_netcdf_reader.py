@@ -27,7 +27,7 @@ def test_netcdf():
 def test_dummy_netcdf_reader_1():
     s = load_source("file", climetlab_file("docs/examples/test.nc"))
     r = s._reader
-    assert str(r).startswith("NetCDFReader"), r
+    assert str(r).startswith("NetCDFFieldSetFromFile"), r
     assert len(r) == 2
     assert isinstance(r[1], NetCDFField), r
 
