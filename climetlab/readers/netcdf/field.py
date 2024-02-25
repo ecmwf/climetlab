@@ -84,7 +84,7 @@ class NetCDFField(Field):
         )
 
     @cached_property
-    def projection(self):
+    def grid_mapping(self):
         def tidy(x):
             if isinstance(x, np.ndarray):
                 return x.tolist()
@@ -95,16 +95,15 @@ class NetCDFField(Field):
             return x
 
         return tidy(
-            self.owner.xr_dataset[self.owner.xr_dataset[self.variable].grid_mapping].attrs
+            self.owner.xr_dataset[
+                self.owner.xr_dataset[self.variable].grid_mapping
+            ].attrs
         )
 
     # Compatibility to GRIb fields below
 
     def grid_points(self):
         return DataSet(self.owner.xr_dataset).grid_points(self.variable)
-
-    def grid_points_xy(self):
-        return DataSet(self.owner.xr_dataset).grid_points_xy(self.variable)
 
     def to_numpy(self, reshape=True, dtype=None):
         dimensions = dict((s.name, s.index) for s in self.slices)

@@ -214,7 +214,6 @@ class NetCDFMaskFieldSet(NetCDFFieldSet, MaskIndex):
         MaskIndex.__init__(self, *args, **kwargs)
         self.path = "<mask>"
 
-
     @cached_property
     def fields(self):
         return list(self.index[i] for i in self.indices)
