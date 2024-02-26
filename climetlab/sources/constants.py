@@ -182,7 +182,7 @@ class ConstantMaker:
         return result.flatten()
 
     def __getattr__(self, name):
-        if not "+" in name and not "-" in name:
+        if "+" not in name and "-" not in name:
             # If we are here, we are looking for a method that does not exist,
             # it has to be a method with a time delta.
             raise AttributeError(name)
