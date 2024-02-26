@@ -10,6 +10,7 @@
 #
 
 import datetime
+
 import numpy as np
 
 from climetlab import load_source
