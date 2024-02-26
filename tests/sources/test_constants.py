@@ -36,7 +36,7 @@ def test_constant_1():
         "cos_julian_day",
         "cos_local_time",
         "sin_julian_day",
-        "sin_local_time",
+        "cos_solar_zenith_angle",
     ]
 
     ds = load_source(
@@ -71,7 +71,7 @@ def test_constant_2():
         "cos_julian_day",
         "cos_local_time",
         "sin_julian_day",
-        "sin_local_time",
+        "cos_solar_zenith_angle",
     ]
 
     ntimes = 4
