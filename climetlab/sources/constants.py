@@ -181,6 +181,37 @@ class ConstantMaker:
         )
         return result.flatten()
 
+    def __getattr__(self, name):
+        if not "+" in name and not "-" in name:
+            # If we are here, we are looking for a method that does not exist,
+            # it has to be a method with a time delta.
+            raise AttributeError(name)
+        if "+" in name:
+            fname, delta = name.split("+")
+            sign = 1
+        if "-" in name:
+            fname, delta = name.split("-")
+            sign = -1
+        method = getattr(self, fname)
+
+        if delta.endswith("h"):
+            factor = 60
+        elif delta.endswith("d"):
+            factor = 24 * 60
+        else:
+            raise ValueError(f"Invalid time delta {delta} in {name}")
+
+        delta = delta[:-1]
+        delta = int(delta)
+        delta = datetime.timedelta(minutes=delta) * factor * sign
+
+        def wrapper(date):
+            date = date + delta
+            value = method(date)
+            return value
+
+        return wrapper
+
 
 class ConstantField:
     def __init__(
