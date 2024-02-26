@@ -93,19 +93,23 @@ def test_constant_3():
 
     date = sample[0].datetime()
     date_plus_6h = date + datetime.timedelta(hours=6)
-    a = load_source("constants", sample, date=date_plus_6h, param="insolation")
-    b = load_source("constants", sample, date=date, param="insolation+6h")
+    a = load_source(
+        "constants", sample, date=date_plus_6h, param="cos_solar_zenith_angle"
+    )
+    b = load_source("constants", sample, date=date, param="cos_solar_zenith_angle+6h")
     assert np.all(a.to_numpy() == b.to_numpy())
-    assert a.unique_values("param")["param"] == ("insolation",)
-    assert b.unique_values("param")["param"] == ("insolation+6h",)
+    assert a[0].metadata("param") == "cos_solar_zenith_angle"
+    assert b[0].metadata("param") == "cos_solar_zenith_angle+6h"
 
     date = sample[0].datetime()
     date_minus_30d = date + datetime.timedelta(days=-30)
-    a = load_source("constants", sample, date=date_minus_30d, param="insolation")
-    b = load_source("constants", sample, date=date, param="insolation-30d")
+    a = load_source(
+        "constants", sample, date=date_minus_30d, param="cos_solar_zenith_angle"
+    )
+    b = load_source("constants", sample, date=date, param="cos_solar_zenith_angle-30d")
     assert np.all(a.to_numpy() == b.to_numpy())
-    assert a.unique_values("param")["param"] == ("insolation",)
-    assert b.unique_values("param")["param"] == ("insolation-30d",)
+    assert a[0].metadata("param") == "cos_solar_zenith_angle"
+    assert b[0].metadata("param") == "cos_solar_zenith_angle-30d"
 
 
 if __name__ == "__main__":
