@@ -67,6 +67,7 @@ install_requires += [
     "cfgrib>=0.9.10.1",
     "cdsapi",
     "ecmwf-api-client>=1.6.1",
+    "earthkit-meteo",
     "multiurl>=0.1.0",
     "ecmwf-opendata>=0.1.2",
     "tqdm",
