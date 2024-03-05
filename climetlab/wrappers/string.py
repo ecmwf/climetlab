@@ -42,6 +42,9 @@ class StrWrapper(Wrapper):
     def to_bounding_box(self):
         from climetlab.utils.domains import domain_to_area
 
+        if "/" in self.data:
+            return tuple(float(x) for x in self.data.split("/"))
+
         return domain_to_area(self.data)
 
     def to_datetime(self):

@@ -85,6 +85,7 @@ class ECMWFApi(FileSource):
         "area", "maybe-bbox(list)"
     )  # Bounding box checks fails with rotated grids
     def requests(self, **kwargs):
+
         def value_to_list(v):
             if isinstance(v, (list, tuple)):
                 return v

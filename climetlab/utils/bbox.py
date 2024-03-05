@@ -181,7 +181,11 @@ def to_bounding_box(obj, check=True):
 
     if isinstance(obj, (list, tuple)):
         return BoundingBox(
-            north=obj[0], west=obj[1], south=obj[2], east=obj[3], check=check
+            north=obj[0],
+            west=obj[1],
+            south=obj[2],
+            east=obj[3],
+            check=check,
         )
 
     obj = get_wrapper(obj)

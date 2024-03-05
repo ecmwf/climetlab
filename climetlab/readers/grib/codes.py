@@ -12,6 +12,8 @@ import logging
 import os
 import threading
 import time
+import warnings
+from functools import cached_property
 from itertools import islice
 
 import eccodes
@@ -22,6 +24,41 @@ from climetlab.profiling import call_counter
 from climetlab.utils.bbox import BoundingBox
 
 LOG = logging.getLogger(__name__)
+
+
+def unrotate(lat, lon, south_pole_lat, south_pole_lon):
+    import numpy as np
+
+    def from_xyz(x, y, z):
+        return (
+            np.rad2deg(np.arcsin(np.minimum(1.0, np.maximum(-1.0, z)))),
+            np.rad2deg(np.arctan2(y, x)),
+        )
+
+    def to_xyz(lat, lon):
+        lam = np.deg2rad(lon)
+        phi = np.deg2rad(lat)
+
+        sp = np.sin(phi)
+        cp = np.sqrt(1.0 - sp * sp)
+        sl = np.sin(lam)
+        cl = np.sqrt(1.0 - sl * sl)
+
+        return (cp * cl, cp * sl, sp)
+
+    theta = -np.deg2rad(south_pole_lat + 90.0)
+    phi = -np.deg2rad(south_pole_lon)
+
+    ct = np.cos(theta)
+    st = np.sin(theta)
+    cp = np.cos(phi)
+    sp = np.sin(phi)
+
+    matrix = np.array(
+        [[cp * ct, sp, cp * st], [-ct * sp, cp, -sp * st], [-st, 0.0, ct]]
+    )
+
+    return from_xyz(*np.dot(matrix, to_xyz(lat, lon)))
 
 
 def missing_is_none(x):
@@ -480,7 +517,7 @@ class GribField(Base):
 
     @property
     def grid_type(self):
-        return self.get("gridType")
+        return self.handle.get("gridType")
 
     @property
     def rotation(self):
@@ -625,8 +662,22 @@ class GribField(Base):
         latlon = self.handle.get("latitudeLongitudeValues")
         yield from zip(islice(latlon, 0, None, 3), islice(latlon, 1, None, 3))
 
+    @cached_property
+    def rotated(self):
+        return self.handle.get("latitudeOfSouthernPoleInDegrees") is not None
+
+    @cached_property
+    def rotated_iterator(self):
+        return self.handle.get("iteratorDisableUnrotate") is not None
+
     def grid_points(self):
         import numpy as np
+
+        if self.rotated and not self.rotated_iterator:
+            warnings.warn(
+                f"ecCodes does not support rotated iterator for {self.grid_type}"
+            )
+            return self.grid_points_unrotated()
 
         data = self.data
         lat = np.array([d["lat"] for d in data])
@@ -634,8 +685,35 @@ class GribField(Base):
 
         return lat, lon
 
+    def grid_points_unrotated(self):
+        import numpy as np
+
+        data = self.data
+        lat_y = np.array([d["lat"] for d in data])
+        lon_x = np.array([d["lon"] for d in data])
+
+        south_pole_lat, south_pole_lon, _ = self.rotation
+        # print(self.rotation)
+
+        lat, lon = unrotate(lat_y, lon_x, south_pole_lat, south_pole_lon)
+        # print(max(lat), min(lat), max(lon), min(lon))
+        # exit(1)
+        return lat, lon
+
     def grid_points_raw(self):
         import numpy as np
+
+        if not self.rotated:
+            return self.grid_points()
+
+        if not self.rotated_iterator:
+            warnings.warn(
+                f"ecCodes does not support rotated iterator for {self.grid_type}"
+            )
+            data = self.handle.get_data()
+            lat = np.array([d["lat"] for d in data])
+            lon = np.array([d["lon"] for d in data])
+            return lat, lon
 
         try:
             self.handle.set("iteratorDisableUnrotate", 1)
