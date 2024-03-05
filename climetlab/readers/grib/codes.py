@@ -235,7 +235,8 @@ class CodesHandle:
 
     def set(self, name, value):
         try:
-            assert self.path is None, "Only cloned handles can have values changed"
+            if name not in ("iteratorDisableUnrotate",):
+                assert self.path is None, "Only cloned handles can have values changed"
 
             if isinstance(value, list):
                 return eccodes.codes_set_array(self.handle, name, value)
@@ -481,6 +482,14 @@ class GribField(Base):
     def grid_type(self):
         return self.get("gridType")
 
+    @property
+    def rotation(self):
+        return (
+            self.handle.get("latitudeOfSouthernPoleInDegrees"),
+            self.handle.get("longitudeOfSouthernPoleInDegrees"),
+            self.handle.get("angleOfRotationInDegrees"),
+        )
+
     def datetime(self):
         date = self.handle.get("date")
         time = self.handle.get("time")
@@ -624,3 +633,15 @@ class GribField(Base):
         lon = np.array([d["lon"] for d in data])
 
         return lat, lon
+
+    def grid_points_raw(self):
+        import numpy as np
+
+        try:
+            self.handle.set("iteratorDisableUnrotate", 1)
+            data = self.handle.get_data()
+            lat = np.array([d["lat"] for d in data])
+            lon = np.array([d["lon"] for d in data])
+            return lat, lon
+        finally:
+            self.handle.set("iteratorDisableUnrotate", 0)
