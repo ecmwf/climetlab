@@ -461,7 +461,7 @@ class GribField(Base):
     def resolution(self):
         grid_type = self["gridType"]
 
-        if grid_type == "reduced_gg":
+        if grid_type in ("reduced_gg", "reduced_rotated_gg"):
             return self["gridName"]
 
         if grid_type == "regular_ll":

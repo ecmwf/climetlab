@@ -304,6 +304,14 @@ class BoundingBoxType(Type, NonListMixin):
         return formatter(value)
 
 
+class MaybeBBox(BoundingBoxType):
+
+    def cast(self, value):
+        from climetlab.utils.bbox import to_bounding_box
+
+        return to_bounding_box(value, check=False)
+
+
 GIVEN_TYPES = {
     int: "int",
     float: "float",
@@ -321,6 +329,7 @@ NON_LIST_TYPES = {
     "variable": VariableType,
     "bounding-box": BoundingBoxType,
     "bbox": BoundingBoxType,
+    "maybe-bbox": MaybeBBox,
 }
 LIST_TYPES = {
     "int-list": IntListType,

@@ -81,7 +81,9 @@ class ECMWFApi(FileSource):
 
     @normalize("param", "variable-list(mars)")
     @normalize("date", "date-list(%Y-%m-%d)")
-    @normalize("area", "bounding-box(list)")
+    @normalize(
+        "area", "maybe-bbox(list)"
+    )  # Bounding box checks fails with rotated grids
     def requests(self, **kwargs):
         def value_to_list(v):
             if isinstance(v, (list, tuple)):
