@@ -86,6 +86,7 @@ OPTIONS = {
     "date-list": ("format",),
     "bounding-box": ("format",),
     "bbox": ("format",),
+    "maybe-bbox": ("format",),
     "variable": ("convention",),
     "variable-list": ("convention",),
 }
