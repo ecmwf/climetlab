@@ -96,18 +96,18 @@ class Order(OrderBase):
         def ascending(a, b):
             if a == b:
                 return 0
-            if a > b:
+            if b is None or a > b:
                 return 1
-            if a < b:
+            if a is None or a < b:
                 return -1
             raise ValueError(f"{a},{b}")
 
         def descending(a, b):
             if a == b:
                 return 0
-            if a > b:
+            if b is None or a > b:
                 return -1
-            if a < b:
+            if a is None or a < b:
                 return 1
             raise ValueError(f"{a},{b}")
 
