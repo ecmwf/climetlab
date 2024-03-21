@@ -18,7 +18,7 @@ from climetlab.utils.patterns import Pattern
 
 def get_index_url(url, substitute_extension, index_extension):
     if substitute_extension:
-        url = ".".join(".".split(url)[:-1])
+        url = ".".join(url.split(".")[:-1])
 
     if callable(index_extension):
         return index_extension(url)
