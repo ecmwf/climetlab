@@ -507,11 +507,12 @@ class GribField(Base):
             y = self["DyInDegrees"]
             assert x == y, (x, y)
             return x
+
         if grid_type == "lambert":
             x = self["DxInMetres"]
             y = self["DyInMetres"]
             assert x == y, (x, y)
-            return x
+            return str(x / 1000).replace(".", "p") + "km"
 
         raise ValueError(f"Unknown gridType={grid_type}")
 
@@ -664,7 +665,7 @@ class GribField(Base):
 
     @cached_property
     def rotated(self):
-        return self.handle.get("latitudeOfSouthernPoleInDegrees") is not None
+        return "rotated" in self.grid_type
 
     @cached_property
     def rotated_iterator(self):
@@ -682,6 +683,8 @@ class GribField(Base):
         data = self.data
         lat = np.array([d["lat"] for d in data])
         lon = np.array([d["lon"] for d in data])
+
+        lon[lon >= 360] -= 360
 
         return lat, lon
 
@@ -723,3 +726,8 @@ class GribField(Base):
             return lat, lon
         finally:
             self.handle.set("iteratorDisableUnrotate", 0)
+
+    @property
+    def proj_string(self):
+        # +proj=lcc +lon_0=5.000000 +lat_0=53.500000 +lat_1=53.500000 +lat_2=53.500000 +R=6367470.000000
+        return self.handle.get("projString")
