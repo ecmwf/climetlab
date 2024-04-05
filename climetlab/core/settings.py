@@ -139,6 +139,8 @@ for k, v in SETTINGS_AND_HELP.items():
 @contextmanager
 def new_settings(s):
     SETTINGS._stack.append(s)
+    SETTINGS._notify()
+
     try:
         yield None
     finally:

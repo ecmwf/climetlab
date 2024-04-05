@@ -231,11 +231,9 @@ class ConstantField:
         self._metadata = dict(
             valid_datetime=date if isinstance(date, str) else date.isoformat(),
             param=param,
-            level=None,
-            levelist=None,
             number=number,
-            levtype=None,
         )
+
         self._grid_points = grid_points
 
     @property
@@ -267,7 +265,7 @@ class ConstantField:
         )
 
     def metadata(self, name):
-        return self._metadata[name]
+        return self._metadata.get(name)
 
 
 def make_datetime(date, time):
