@@ -64,7 +64,7 @@ dependencies = [
     "imageio",
     "numpngw",
     "lru-dict",
-    "ecmwflibs",
+    "ecmwflibs>=0.6.3",
 ]
 
 [project.optional-dependencies]
