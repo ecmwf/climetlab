@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 def test_cli_no_args(command, capsys):
     app = CliMetLabApp()
     app.onecmd(command)
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
     assert not out.startswith("Unknown command"), out
 
 

@@ -49,7 +49,7 @@ def parse_args(epilog="", **kwargs):
                 lst = [k]
             if lst[0] is None:
                 lst[0] = k
-            if not lst[0] in [k, f"--{k}"]:
+            if lst[0] not in [k, f"--{k}"]:
                 lst = [f"--{k}"] + lst
 
             p.add_argument(*lst, **dic)

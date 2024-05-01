@@ -29,13 +29,12 @@ repos:
     - --profile black
 
 
-# - repo: https://github.com/astral-sh/ruff-pre-commit
-#   rev: v0.3.0
-#   hooks:
-#   - id: ruff
-#     exclude: '(dev/.*|.*_)\.py$'
-#     args:
-#     - --line-length=120
-#     - --fix
-#     - --exit-non-zero-on-fix
-#     - --preview
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.3.0
+  hooks:
+  - id: ruff
+    args:
+    - --line-length=120
+    - --fix
+    - --exit-non-zero-on-fix
+    - --preview

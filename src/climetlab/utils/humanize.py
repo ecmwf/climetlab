@@ -271,7 +271,7 @@ def string_distance(s, t):
 
 
 def did_you_mean(word, vocabulary):
-    distance, best = min((string_distance(word, w), w) for w in vocabulary)
+    _, best = min((string_distance(word, w), w) for w in vocabulary)
     # if distance < min(len(word), len(best)):
     return best
 

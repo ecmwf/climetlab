@@ -65,7 +65,7 @@ def benchmark_dataloading(*args):
 
     class GribExp(Exp):
         def get_ds(self):
-            dic, isel_dic = self._get_selection()
+            dic, _ = self._get_selection()
             self.ds = cml.load_source("local", self.directory, dic)
             print(len(self.ds))
 
@@ -92,7 +92,7 @@ def benchmark_dataloading(*args):
         def get_values(self):
             print(self.ds)
 
-            dic, isel_dic = self._get_selection()
+            _, isel_dic = self._get_selection()
             ds = self.ds.isel(**isel_dic)
 
             for v in ds.variables:

@@ -1,9 +1,4 @@
-import itertools
-import math
-import time
-
 import numpy as np
-from tqdm import tqdm
 
 import climetlab as cml
 
@@ -21,8 +16,6 @@ ds = cmlds.sel(levtype="pl")
 
 print(ds)
 
-from climetlab.indexing.cube import Cubelet
-from climetlab.indexing.cube import FieldCube
 
 print()
 cube = ds.cube("date", "time", "param", "levelist")

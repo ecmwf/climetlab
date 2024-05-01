@@ -65,10 +65,6 @@ def url_to_s3_store(url, user=None, password=None):
 def find_store(store):
     o = urlparse(store)
 
-    if "@" in o.netloc:
-        auth, server = o.netloc.split("@")
-        user, password = auth.split(":")
-
     if o.scheme in ["http", "https", "s3"]:
         return url_to_s3_store(store)
     if os.path.exists(store):

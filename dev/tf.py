@@ -1,15 +1,10 @@
-import keras.layers as layers
-import numpy as np
 import tensorflow as tf
-import tensorflow.keras as keras
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Lambda
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.models import Sequential
 
