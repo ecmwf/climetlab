@@ -40,7 +40,7 @@ def network_off():
 
 
 def climetlab_file(*args):
-    top = os.path.dirname(os.path.dirname(__file__))
+    top = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     return os.path.join(top, *args)
 
 
