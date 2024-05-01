@@ -1,10 +1,89 @@
-[tool.black]
-extend-exclude = '''
-(
-experiments/*
-)
-'''
+#!/usr/bin/env python
+# (C) Copyright 2024 ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
 
-[tool.isort]
-extend_skip = ["grib.py", "experimentsy"]
-profile = "black"
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+
+[build-system]
+requires = ["setuptools>=60", "setuptools-scm>=8.0"]
+
+[project]
+description = "Handling of climate/meteorological dataa."
+name = "climetlab"
+
+dynamic = ["version"]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+
+authors = [
+    { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
+]
+
+keywords = ["tools", "datasets", "ai"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "requests",
+
+    "dask",
+    "netcdf4",
+    "cfgrib>=0.9.10.1",
+    "cdsapi",
+    "ecmwf-api-client>=1.6.1",
+    "earthkit-meteo",
+    "multiurl>=0.1.0",
+    "ecmwf-opendata>=0.1.2",
+    "tqdm",
+    "eccodes>=1.3.0",
+    "magics>=1.5.6",
+    "pdbufr",
+    "pyodc",
+    "toolz",
+    "filelock",
+    "pyyaml",
+    "markdown",
+    "termcolor",
+    "entrypoints",
+    "branca",
+    "imageio",
+    "numpngw",
+    "lru-dict",
+]
+
+[project.optional-dependencies]
+"tensorflow" = ["tensorflow"]
+"zarr" = ["zarr", "s3fs"]
+"interactive" = ["skinnywms", "folium>=0.12.1"]
+
+[project.urls]
+Homepage = "https://github.com/ecmwf/climetlab/"
+Documentation = "https://climetlab.readthedocs.io/"
+Repository = "https://github.com/ecmwf/climetlab/"
+Issues = "https://github.com/ecmwf/climetlab/issues"
+# Changelog = "https://github.com/ecmwf/climetlab/CHANGELOG.md"
+
+[project.scripts]
+climetlab = "climetlab.scripts:main"
+
+[tool.setuptools_scm]
+version_file = "src/climetlab/_version.py"
+
+[tool.setuptools.package-data]
+# "anemoi.datasets.data" = ["*.css"]
