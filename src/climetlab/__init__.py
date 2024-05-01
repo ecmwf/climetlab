@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+from ._version import __version__
 from .aaa import loaded_modules
 from .arguments.transformers import ALL
 from .core.caching import CACHE as cache
@@ -28,7 +29,6 @@ from .sources import Source
 from .sources import get_source as source  # so the user can do: cml.source(...)
 from .sources import load_source
 from .sources import load_source_lazily
-from .version import __version__
 from .wrappers import Wrapper
 
 __all__ = [
