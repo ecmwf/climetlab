@@ -41,7 +41,6 @@ classifiers = [
 
 dependencies = [
     "requests",
-
     "dask",
     "netcdf4",
     "cfgrib>=0.9.10.1",
