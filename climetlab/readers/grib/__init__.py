@@ -16,3 +16,11 @@ def reader(source, path, magic=None, deeper_check=False):
         from .reader import GRIBReader
 
         return GRIBReader(source, path)
+
+    if deeper_check:
+        with open(path, "rb") as f:
+            magic = f.read(1024)
+            if b"GRIB" in magic:
+                from .reader import GRIBReader
+
+                return GRIBReader(source, path)
