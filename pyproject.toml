@@ -85,4 +85,16 @@ climetlab = "climetlab.scripts:main"
 version_file = "src/climetlab/_version.py"
 
 [tool.setuptools.package-data]
-# "anemoi.datasets.data" = ["*.css"]
+
+"climetlab.config" = ["*.yaml"]
+"climetlab.data.dask" = ["*.yaml"]
+"climetlab.data.domains" = ["*.yaml"]
+"climetlab.data.layers" = ["*.yaml"]
+"climetlab.data.projections" = ["*.yaml"]
+"climetlab.data.styles" = ["*.yaml"]
+"climetlab.datasets" = ["*.yaml"]
+"climetlab.datasets.meteonet_samples" = ["*.yaml"]
+"climetlab.datasets.meteonet_samples.styles" = ["*.yaml"]
+"climetlab.plotting.backends.magics" = ["*.yaml"]
+"climetlab.data.css" = ["*.css"]
+"climetlab.sources"= ["*.grib"]

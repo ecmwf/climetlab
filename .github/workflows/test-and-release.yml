@@ -158,7 +158,7 @@ jobs:
     strategy:
       matrix:
         platform: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     name: Short tests Python ${{ matrix.python-version }} ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
