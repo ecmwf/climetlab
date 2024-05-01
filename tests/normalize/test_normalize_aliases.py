@@ -11,7 +11,8 @@
 
 import pytest
 
-from climetlab.decorators import alias_argument, normalize
+from climetlab.decorators import alias_argument
+from climetlab.decorators import normalize
 
 
 def func_x(x):
@@ -127,9 +128,7 @@ def test_aliases_grib_paramid_mutiple_false(typ):
         aliases_grib_paramid(tuple([]))
 
 
-@pytest.mark.parametrize(
-    "typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)]
-)
+@pytest.mark.parametrize("typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)])
 def test_aliases_grib_paramid_mutiple_true(typ, _131, _132):
     aliases_grib_paramid = normalize(
         "x",
@@ -155,9 +154,7 @@ def test_aliases_grib_paramid_mutiple_true(typ, _131, _132):
     assert aliases_grib_paramid(tuple([])) == []
 
 
-@pytest.mark.parametrize(
-    "typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)]
-)
+@pytest.mark.parametrize("typ,_131,_132", [(str, "131", "132"), (int, 131, 132), (float, 131.0, 132.0)])
 def test_aliases_mutiple_none(typ, _131, _132):
     aliases_func = normalize(
         "x",

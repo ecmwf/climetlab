@@ -86,9 +86,7 @@ class FieldCube:
 
         # Get a mapping of user names to unique values
         # With possible reduce dimentionality if the user use 'level+param'
-        self.user_coords = self.source.unique_values(
-            *names, remapping=remapping, patches=patches
-        )
+        self.user_coords = self.source.unique_values(*names, remapping=remapping, patches=patches)
 
         self.user_shape = tuple(len(v) for k, v in self.user_coords.items())
 
@@ -96,9 +94,7 @@ class FieldCube:
             details = []
             for key, v in self.user_coords.items():
                 details.append(f"{key=} ({len(v)}) {v}")
-            assert not isinstance(
-                self.source, str
-            ), f"Not expecting a str here ({self.source})"
+            assert not isinstance(self.source, str), f"Not expecting a str here ({self.source})"
             for i, f in enumerate(self.source):
                 details.append(f"{i}={f} {f.metadata('number')}")
                 if i > 30:
@@ -214,8 +210,7 @@ class FieldCube:
         indexes = list(range(0, len(lst)) for lst in names)
 
         return (
-            Cubelet(self, i, coords_names=n)
-            for n, i in zip(itertools.product(*names), itertools.product(*indexes))
+            Cubelet(self, i, coords_names=n) for n, i in zip(itertools.product(*names), itertools.product(*indexes))
         )
 
     def chunking(self, chunks):
@@ -255,15 +250,11 @@ class Cubelet:
         self.flatten_values = cube.flatten_values
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.coords},index_names={self._coords_names})"
-        )
+        return f"{self.__class__.__name__}({self.coords},index_names={self._coords_names})"
 
     @property
     def extended_icoords(self):
         return self.coords
 
     def to_numpy(self, **kwargs):
-        return self.owner[self.coords].to_numpy(
-            reshape=not self.flatten_values, **kwargs
-        )
+        return self.owner[self.coords].to_numpy(reshape=not self.flatten_values, **kwargs)

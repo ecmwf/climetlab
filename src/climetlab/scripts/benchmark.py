@@ -16,7 +16,8 @@ from tqdm import tqdm
 import climetlab as cml
 
 from .benchmarks.indexed_url import benchmark as benchmark_indexed_url
-from .tools import experimental, parse_args
+from .tools import experimental
+from .tools import parse_args
 
 home = os.path.expanduser("~")
 

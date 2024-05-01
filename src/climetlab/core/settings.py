@@ -18,7 +18,9 @@ from typing import Callable
 import yaml
 
 from climetlab.utils.html import css
-from climetlab.utils.humanize import as_bytes, as_percent, as_seconds
+from climetlab.utils.humanize import as_bytes
+from climetlab.utils.humanize import as_percent
+from climetlab.utils.humanize import as_seconds
 from climetlab.version import __version__ as VERSION
 
 LOG = logging.getLogger(__name__)

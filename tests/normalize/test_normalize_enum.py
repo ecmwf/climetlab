@@ -12,7 +12,8 @@
 import pytest
 
 from climetlab import ALL
-from climetlab.arguments.climetlab_types import EnumListType, EnumType
+from climetlab.arguments.climetlab_types import EnumListType
+from climetlab.arguments.climetlab_types import EnumType
 from climetlab.decorators import normalize
 
 
@@ -99,19 +100,13 @@ def test_enum_float_1():
 
 @pytest.mark.skip("Not implemented. Need to discuss what it would mean.")
 def test_enum_float_2():
-    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f")(
-        name_no_default
-    )
+    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f")(name_no_default)
     assert g(1) == ["1.000000"]
 
-    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=True)(
-        name_no_default
-    )
+    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=True)(name_no_default)
     assert g(1) == ["1.000000"]
 
-    g = normalize(
-        "name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=False
-    )(name_no_default)
+    g = normalize("name", type=EnumListType([1, 0.5, 3]), format="%03f", multiple=False)(name_no_default)
     with pytest.raises(ValueError, match="Cannot .*"):
         assert g(1) == ["1.000000"]
 
@@ -121,14 +116,10 @@ def test_enum_float_3():
     g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f")(name_no_default)
     assert g(1) == "1.000000"
 
-    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=False)(
-        name_no_default
-    )
+    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=False)(name_no_default)
     assert g(1) == "1.000000"
 
-    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=True)(
-        name_no_default
-    )
+    g = normalize("name", type=EnumType([1, 0.5, 3]), format="%03f", multiple=True)(name_no_default)
     with pytest.raises(ValueError, match="Cannot .*"):
         assert g(1) == ["1.000000"]
 

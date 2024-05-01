@@ -38,15 +38,11 @@ class Zenodo(Url):
 
         if file_key is None:
             if len(urls) != 1:
-                raise ValueError(
-                    f"No `file_key` given, please specify on of {sorted(urls.keys())}"
-                )
+                raise ValueError(f"No `file_key` given, please specify on of {sorted(urls.keys())}")
             file_key = list(urls.keys())[0]
 
         if file_key not in urls:
-            raise ValueError(
-                f"Invalid zenodo key '{file_key}', values are {sorted(urls.keys())}"
-            )
+            raise ValueError(f"Invalid zenodo key '{file_key}', values are {sorted(urls.keys())}")
 
         LOG.debug("ZENODO record_keys %s", sorted(urls.keys()))
 

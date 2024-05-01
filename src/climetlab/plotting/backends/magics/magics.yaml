@@ -2310,4 +2310,3 @@ mtable:
 - default: true
   name: table_binning
   type: Bool
-

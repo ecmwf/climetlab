@@ -7,7 +7,8 @@
 
 import torch
 
-from .utils import as_numpy_func, default_merger
+from .utils import as_numpy_func
+from .utils import default_merger
 
 
 class TorchDataset(torch.utils.data.Dataset):

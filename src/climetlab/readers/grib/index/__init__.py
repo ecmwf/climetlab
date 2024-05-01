@@ -14,14 +14,15 @@ from abc import abstractmethod
 
 from lru import LRU
 
-from climetlab.core.index import Index, MaskIndex, MultiIndex
-from climetlab.decorators import normalize_grib_key_values, normalize_grib_keys
-from climetlab.indexing.database import (
-    FILEPARTS_KEY_NAMES,
-    MORE_KEY_NAMES,
-    MORE_KEY_NAMES_WITH_UNDERSCORE,
-    STATISTICS_KEY_NAMES,
-)
+from climetlab.core.index import Index
+from climetlab.core.index import MaskIndex
+from climetlab.core.index import MultiIndex
+from climetlab.decorators import normalize_grib_key_values
+from climetlab.decorators import normalize_grib_keys
+from climetlab.indexing.database import FILEPARTS_KEY_NAMES
+from climetlab.indexing.database import MORE_KEY_NAMES
+from climetlab.indexing.database import MORE_KEY_NAMES_WITH_UNDERSCORE
+from climetlab.indexing.database import STATISTICS_KEY_NAMES
 from climetlab.indexing.fieldset import FieldSet
 from climetlab.readers.grib.codes import GribField
 from climetlab.readers.grib.fieldset import FieldSetMixin
@@ -35,9 +36,7 @@ class GribFieldSet(FieldSetMixin, FieldSet):
     _availability = None
 
     def __init__(self, *args, **kwargs):
-        if self.availability_path is not None and os.path.exists(
-            self.availability_path
-        ):
+        if self.availability_path is not None and os.path.exists(self.availability_path):
             self._availability = Availability(self.availability_path)
 
         Index.__init__(self, *args, **kwargs)
@@ -93,9 +92,7 @@ class GribFieldSet(FieldSetMixin, FieldSet):
 
         return dict(available=available, missing=missing)
 
-    def _custom_availability(
-        self, keys=None, ignore_keys=None, filter_keys=lambda k: True
-    ):
+    def _custom_availability(self, keys=None, ignore_keys=None, filter_keys=lambda k: True):
         def dicts():
             for i in progress_bar(
                 iterable=range(len(self)),
@@ -131,19 +128,12 @@ class GribFieldSet(FieldSetMixin, FieldSet):
         LOG.debug("Building availability")
 
         self._availability = self._custom_availability(
-            ignore_keys=FILEPARTS_KEY_NAMES
-            + STATISTICS_KEY_NAMES
-            + MORE_KEY_NAMES_WITH_UNDERSCORE
-            + MORE_KEY_NAMES
+            ignore_keys=FILEPARTS_KEY_NAMES + STATISTICS_KEY_NAMES + MORE_KEY_NAMES_WITH_UNDERSCORE + MORE_KEY_NAMES
         )
         return self.availability
 
     def is_full_hypercube(self):
-        non_empty_coords = {
-            k: v
-            for k, v in self.availability._tree.unique_values().items()
-            if len(v) > 1
-        }
+        non_empty_coords = {k: v for k, v in self.availability._tree.unique_values().items() if len(v) > 1}
         expected_size = math.prod([len(v) for k, v in non_empty_coords.items()])
         return len(self) == expected_size
 
@@ -170,14 +160,10 @@ class FieldSetInFiles(GribFieldSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        GRIB_FIELD_CACHE_SIZE = int(
-            os.environ.get("CLIMETLAB_GRIB_FIELD_CACHE_SIZE", 1000)
-        )
+        GRIB_FIELD_CACHE_SIZE = int(os.environ.get("CLIMETLAB_GRIB_FIELD_CACHE_SIZE", 1000))
         self._lru_cache = LRU(GRIB_FIELD_CACHE_SIZE)
 
-        CLIMETLAB_HANDLE_CACHE_SIZE = int(
-            os.environ.get("CLIMETLAB_HANDLE_CACHE_SIZE", 10)
-        )
+        CLIMETLAB_HANDLE_CACHE_SIZE = int(os.environ.get("CLIMETLAB_HANDLE_CACHE_SIZE", 10))
 
         self._handle_cache = LRU(CLIMETLAB_HANDLE_CACHE_SIZE)
 
@@ -185,9 +171,7 @@ class FieldSetInFiles(GribFieldSet):
         # TODO: check if we need a mutex here
         if n not in self._lru_cache:
             part = self.part(n)
-            self._lru_cache[n] = GribField(
-                part.path, part.offset, part.length, self._handle_cache
-            )
+            self._lru_cache[n] = GribField(part.path, part.offset, part.length, self._handle_cache)
         return self._lru_cache[n]
 
     def __len__(self):

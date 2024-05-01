@@ -15,9 +15,11 @@ import time
 
 import pytest
 
-from climetlab import load_source, settings
+from climetlab import load_source
+from climetlab import settings
 from climetlab.core.temporary import temp_directory
-from climetlab.testing import OfflineError, network_off
+from climetlab.testing import OfflineError
+from climetlab.testing import network_off
 
 LOG = logging.getLogger(__name__)
 

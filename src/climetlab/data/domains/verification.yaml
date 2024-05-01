@@ -5,7 +5,7 @@
 # Using these local files instead of the shared ones requires proper setting
 # in the [vtb] section of ${VTB_HOME}/vtb/_config/locals.yaml
 #
-doc: 
+doc:
   visualize: https://sites.ecmwf.int/mo5/verification/domains/
 
 areas:

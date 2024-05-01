@@ -82,8 +82,7 @@ class Entry:
         ]
 
         html.append(
-            "<tr><td>Definition:</td><td><pre>%s</pre></td></tr>"
-            % (yaml.dump(self.data, default_flow_style=False),)
+            "<tr><td>Definition:</td><td><pre>%s</pre></td></tr>" % (yaml.dump(self.data, default_flow_style=False),)
         )
         html.append("</table>")
         return "".join(html)
@@ -170,10 +169,7 @@ def get_data_entry(kind, name, default=None, merge=False):
     if name not in files[kind]:
         if default is not None:
             return default
-        raise KeyError(
-            "No object '%s' in collection named '%s' (%s)"
-            % (name, kind, sorted(files[kind].keys()))
-        )
+        raise KeyError("No object '%s' in collection named '%s' (%s)" % (name, kind, sorted(files[kind].keys())))
 
     choices = files[kind][name].choices()
     assert len(choices) != 0
@@ -205,12 +201,7 @@ def get_data_entry(kind, name, default=None, merge=False):
         )
 
     choices = {k: v for k, v in choices.items() if is_active(k, v)}
-    selected = [
-        v
-        for _, v in sorted(
-            choices.items(), key=lambda x: PRIORITIES.get(x[0], PRIORITIES["plugins"])
-        )
-    ]
+    selected = [v for _, v in sorted(choices.items(), key=lambda x: PRIORITIES.get(x[0], PRIORITIES["plugins"]))]
 
     if not merge:
         return selected[0]

@@ -182,8 +182,7 @@ class KwargsAliasTransformer(Action):
         for target, aliases in self.aliases.items():
             for alias in aliases:
                 assert alias not in reversed, (
-                    "Error: Multiple target value for alias "
-                    f" argument '{alias}': '{target}' and '{reversed[alias]}'"
+                    "Error: Multiple target value for alias " f" argument '{alias}': '{target}' and '{reversed[alias]}'"
                 )
                 reversed[alias] = target
         return reversed

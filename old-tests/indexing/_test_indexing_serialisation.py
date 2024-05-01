@@ -14,11 +14,14 @@ import sys
 
 import pytest
 
-from climetlab.utils.serialise import SERIALISATION, deserialise_state, serialise_state
+from climetlab.utils.serialise import SERIALISATION
+from climetlab.utils.serialise import deserialise_state
+from climetlab.utils.serialise import serialise_state
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
+from indexing_fixtures import check_sel_and_order  # noqa: E402
+from indexing_fixtures import get_fixtures
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))

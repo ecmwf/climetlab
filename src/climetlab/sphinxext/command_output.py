@@ -28,9 +28,7 @@ class CommandOutput(Directive):
 
         try:
             # Get current file
-            current_rst_file = self.state_machine.input_lines.source(
-                self.lineno - self.state_machine.input_offset - 1
-            )
+            current_rst_file = self.state_machine.input_lines.source(self.lineno - self.state_machine.input_offset - 1)
 
             os.chdir(os.path.dirname(current_rst_file))
 

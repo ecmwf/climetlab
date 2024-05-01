@@ -11,7 +11,8 @@ import logging
 
 import numpy as np
 
-from .tensorflow import default_merger, to_funcs
+from .tensorflow import default_merger
+from .tensorflow import to_funcs
 
 LOG = logging.getLogger(__name__)
 
@@ -36,9 +37,7 @@ def to_pytorch(
 
     import torch
 
-    func, func_targets = to_funcs(
-        features, targets, options, targets_options, merger, targets_merger
-    )
+    func, func_targets = to_funcs(features, targets, options, targets_options, merger, targets_merger)
 
     class ClimetlabTorchDataset(torch.utils.data.Dataset):
         def __len__(self):

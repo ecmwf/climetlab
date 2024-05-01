@@ -71,9 +71,7 @@ def _update_areas(old, new, prefix=""):
         name = prefix + name
         assert name not in old, f"{name} already defined."
         if len(values) > 1:
-            LOG.debug(
-                f"Area {name} has multiple values {values}. Not supported by CliMetLab."
-            )
+            LOG.debug(f"Area {name} has multiple values {values}. Not supported by CliMetLab.")
             continue
         old[name] = values[0]
 

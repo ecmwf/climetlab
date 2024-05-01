@@ -50,9 +50,7 @@ REQUEST_1 = {
 @pytest.mark.download
 @pytest.mark.parametrize("baseurl", CML_BASEURLS)
 def test_indexed_urls_deprecated(baseurl):
-    PER_URL_INDEX = PerUrlIndex(
-        baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb"
-    )
+    PER_URL_INDEX = PerUrlIndex(baseurl + "/test-data/input/indexed-urls/large_grib_{n}.grb")
     source = load_source("indexed-urls", PER_URL_INDEX, REQUEST_1)
     check(source, 0, 49.86508481081071)
     ds = source.to_xarray()

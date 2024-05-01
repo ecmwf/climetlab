@@ -20,7 +20,8 @@ from functools import cached_property
 
 import numpy as np
 
-from climetlab.core.order import build_remapping, normalize_order_by
+from climetlab.core.order import build_remapping
+from climetlab.core.order import normalize_order_by
 from climetlab.utils import load_json_or_yaml
 from climetlab.utils.humanize import seconds
 
@@ -35,9 +36,7 @@ class DictObj(dict):
                 self[key] = DictObj(value)
                 continue
             if isinstance(value, list):
-                self[key] = [
-                    DictObj(item) if isinstance(item, dict) else item for item in value
-                ]
+                self[key] = [DictObj(item) if isinstance(item, dict) else item for item in value]
                 continue
 
     def __getattr__(self, attr):
@@ -83,9 +82,7 @@ class Inputs(list):
                 datetimes = new
 
             if datetimes != new:
-                raise ValueError(
-                    "Mismatch in datetimes", previous_name, datetimes, i.name, new
-                )
+                raise ValueError("Mismatch in datetimes", previous_name, datetimes, i.name, new)
             previous_name = i.name
 
         if datetimes is None:
@@ -181,12 +178,8 @@ class Input:
             if "source_or_dataset" in self.config:
                 # add $ to source_or_dataset for constants source.
                 # climetlab will be refactored to remove this.
-                assert self.config["source_or_dataset"][0] != "$", self.config[
-                    "source_or_dataset"
-                ]
-                self.config["source_or_dataset"] = (
-                    "$" + self.config["source_or_dataset"]
-                )
+                assert self.config["source_or_dataset"][0] != "$", self.config["source_or_dataset"]
+                self.config["source_or_dataset"] = "$" + self.config["source_or_dataset"]
 
         self.kwargs = self.config.get("kwargs", {})
         self.inherit = self.config.get("inherit", [])
@@ -228,18 +221,13 @@ class Input:
                 assert isinstance(hdate, (list, tuple)), hdate
                 if len(date) > 1 and len(hdate) > 1:
                     raise NotImplementedError(
-                        (
-                            f"Cannot have multiple dates in {self} "
-                            "when using hindcast {date=}, {hdate=}"
-                        )
+                        (f"Cannot have multiple dates in {self} " "when using hindcast {date=}, {hdate=}")
                     )
                 date = hdate
                 del hdate
 
             if len(step) > 1 and len(time) > 1:
-                raise NotImplementedError(
-                    f"Cannot have multiple steps and multiple times in {self}"
-                )
+                raise NotImplementedError(f"Cannot have multiple steps and multiple times in {self}")
 
             datetimes = set()
             for d, t, s in itertools.product(date, time, step):
@@ -255,7 +243,8 @@ class Input:
 
     def do_load(self, partial=False):
         if not self._do_load or self._do_load[1] != partial:
-            from climetlab import load_dataset, load_source
+            from climetlab import load_dataset
+            from climetlab import load_source
 
             func = {
                 None: load_source,
@@ -385,11 +374,7 @@ class InputHandler:
         inputs = Inputs(input)
         self.output = output
         self.loops = [
-            (
-                c
-                if isinstance(c, Loop) and c.inputs == inputs
-                else Loop(c, inputs, parent=self, partial=partial)
-            )
+            (c if isinstance(c, Loop) and c.inputs == inputs else Loop(c, inputs, parent=self, partial=partial))
             for c in loops
         ]
         if not self.loops:
@@ -450,9 +435,7 @@ class InputHandler:
             )
 
         coords = deepcopy(ref.coords)
-        assert (
-            "valid_datetime" in coords
-        ), f"valid_datetime not found in coords {coords}"
+        assert "valid_datetime" in coords, f"valid_datetime not found in coords {coords}"
         coords["valid_datetime"] = self.get_datetimes()
 
         for info in infos:
@@ -571,9 +554,7 @@ class Loop(dict):
             self.config.applies_to = [i.name for i in inputs]
         assert "applies_to" in self.config, self.config
         applies_to = self.config.pop("applies_to")
-        self.applies_to_inputs = Inputs(
-            [input for input in inputs if input.name in applies_to]
-        )
+        self.applies_to_inputs = Inputs([input for input in inputs if input.name in applies_to])
         for i in self.applies_to_inputs:
             i.process_inheritance(self.applies_to_inputs)
 
@@ -619,9 +600,7 @@ class Loop(dict):
     def _info(self):
         first_info = self.first._info
         coords = deepcopy(first_info.coords)
-        assert (
-            "valid_datetime" in coords
-        ), f"valid_datetime not found in coords {coords}"
+        assert "valid_datetime" in coords, f"valid_datetime not found in coords {coords}"
         coords["valid_datetime"] = self.get_datetimes()
         return Info(
             first_field=first_info.first_field,
@@ -713,9 +692,7 @@ class CubeCreator:
                 actual = list(actual)
 
                 if requested == "ascending":
-                    assert actual == sorted(
-                        actual
-                    ), f"Requested= {requested} Actual= {actual}"
+                    assert actual == sorted(actual), f"Requested= {requested} Actual= {actual}"
                     continue
                 assert actual == requested, f"Requested= {requested} Actual= {actual}"
 
@@ -734,9 +711,7 @@ class CubeCreator:
         coords = cube.user_coords
         variables = list(coords[list(coords.keys())[1]])
 
-        return Info(
-            first_field, grid_points, resolution, coords, variables, data_request
-        )
+        return Info(first_field, grid_points, resolution, coords, variables, data_request)
 
     def _get_data_request(self, data):
         date = None
@@ -776,9 +751,7 @@ class CubeCreator:
         params_steps = sort(params_steps)
         params_levels = sort(params_levels)
 
-        out = dict(
-            param_level=params_levels, param_step=params_steps, area=area, grid=grid
-        )
+        out = dict(param_level=params_levels, param_step=params_steps, area=area, grid=grid)
         return out
 
 
@@ -805,9 +778,7 @@ def _format_list(x):
 
 
 class Info:
-    def __init__(
-        self, first_field, grid_points, resolution, coords, variables, data_request
-    ):
+    def __init__(self, first_field, grid_points, resolution, coords, variables, data_request):
         assert len(set(variables)) == len(variables), (
             "Duplicate variables",
             variables,
@@ -867,9 +838,7 @@ class Purpose:
 class NonePurpose(Purpose):
     def __call__(self, config):
         config.output.flatten_grid = config.output.get("flatten_grid", False)
-        config.output.ensemble_dimension = config.output.get(
-            "ensemble_dimension", False
-        )
+        config.output.ensemble_dimension = config.output.get("ensemble_dimension", False)
 
 
 class AifsPurpose(Purpose):
@@ -877,9 +846,7 @@ class AifsPurpose(Purpose):
         def check_dict_value_and_set(dic, key, value):
             if key in dic:
                 if dic[key] != value:
-                    raise ValueError(
-                        f"Cannot use {key}={dic[key]} with {self} purpose. Must use {value}."
-                    )
+                    raise ValueError(f"Cannot use {key}={dic[key]} with {self} purpose. Must use {value}.")
             dic[key] = value
 
         def ensure_element_in_list(lst, elt, index):
@@ -940,9 +907,7 @@ class LoadersConfig(Config):
             self.output.order_by = normalize_order_by(self.output.order_by)
 
         self.output.remapping = self.output.get("remapping", {})
-        self.output.remapping = build_remapping(
-            self.output.remapping, patches={"number": {None: 0}}
-        )
+        self.output.remapping = build_remapping(self.output.remapping, patches={"number": {None: 0}})
 
         self.output.chunking = self.output.get("chunking", {})
         self.output.dtype = self.output.get("dtype", "float32")
@@ -962,9 +927,7 @@ class LoadersConfig(Config):
             if k == statistics_axis_name:
                 statistics_axis = i
 
-        assert (
-            statistics_axis >= 0
-        ), f"{self.output.statistics} not in {list(self.output.order_by.keys())}"
+        assert statistics_axis >= 0, f"{self.output.statistics} not in {list(self.output.order_by.keys())}"
 
         self.statistics_names = self.output.order_by[statistics_axis_name]
 
@@ -1008,9 +971,7 @@ def substitute(x, vars=None, ignore_missing=False):
         return [substitute(y, vars, ignore_missing=ignore_missing) for y in x]
 
     if isinstance(x, dict):
-        return {
-            k: substitute(v, vars, ignore_missing=ignore_missing) for k, v in x.items()
-        }
+        return {k: substitute(v, vars, ignore_missing=ignore_missing) for k, v in x.items()}
 
     if isinstance(x, str):
         if "$" not in x:
@@ -1034,10 +995,7 @@ def substitute(x, vars=None, ignore_missing=False):
 
                         function_name = match.group(1)
                         params = [p.strip() for p in match.group(2).split(",")]
-                        params = [
-                            substitute(p, vars, ignore_missing=ignore_missing)
-                            for p in params
-                        ]
+                        params = [substitute(p, vars, ignore_missing=ignore_missing) for p in params]
 
                         bit = FUNCTIONS[function_name](*params)
 
@@ -1210,7 +1168,9 @@ class IntStartStopExpand(StartStopExpand):
         return {
             1: lambda x: 0,  # only one group
             None: lambda x: x,  # one group per value
-        }[self.group_by](x)
+        }[
+            self.group_by
+        ](x)
 
 
 def _expand_class(values):

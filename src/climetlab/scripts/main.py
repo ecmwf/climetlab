@@ -105,9 +105,7 @@ class CliMetLabApp(
         cmd = colored(line.split()[0], "yellow")
         help = colored("help", "yellow")
 
-        print(
-            f"Unknown command {cmd}. Type {help} for the list of known command names."
-        )
+        print(f"Unknown command {cmd}. Type {help} for the list of known command names.")
 
     def onecmd(self, line):
         try:
@@ -143,9 +141,7 @@ def main():
         nargs=argparse.REMAINDER,
     )
 
-    p.add_argument(
-        "-h", "--help", action="store_true", help="show this help message and exit"
-    )
+    p.add_argument("-h", "--help", action="store_true", help="show this help message and exit")
     p.add_argument("-v", "--version", action="store_true", help="show version and exit")
     args = p.parse_args()
     if args.version:

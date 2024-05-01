@@ -10,7 +10,8 @@
 #
 
 
-from climetlab.utils.domains import domain_to_area, domain_to_area_long_name
+from climetlab.utils.domains import domain_to_area
+from climetlab.utils.domains import domain_to_area_long_name
 
 
 def test_domains():

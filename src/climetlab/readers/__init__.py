@@ -123,9 +123,7 @@ def reader(source, path):
         if isinstance(reader, str):
             return _readers()[reader.replace("-", "_")](source, path, None, False)
 
-        raise TypeError(
-            "Provided reader must be a callable or a string, not %s" % type(reader)
-        )
+        raise TypeError("Provided reader must be a callable or a string, not %s" % type(reader))
 
     if os.path.isdir(path):
         from .directory import DirectoryReader

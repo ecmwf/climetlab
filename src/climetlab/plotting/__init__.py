@@ -12,8 +12,10 @@ import os
 from collections import defaultdict
 from functools import partial
 
-from climetlab.core.data import data_entries, get_data_entry
-from climetlab.core.ipython import Image, display
+from climetlab.core.data import data_entries
+from climetlab.core.data import get_data_entry
+from climetlab.core.ipython import Image
+from climetlab.core.ipython import display
 from climetlab.core.settings import SETTINGS
 from climetlab.core.temporary import temp_file
 from climetlab.wrappers import get_wrapper
@@ -114,9 +116,7 @@ def files_to_apng(files, path, fps):
     try:
         from numpngw import write_apng
     except ImportError:
-        raise RuntimeError(
-            "Package numpngw is required to save animated PNGs (pip install numpngw)"
-        )
+        raise RuntimeError("Package numpngw is required to save animated PNGs (pip install numpngw)")
 
     frames = [imageio.imread(f) for f in files]
 
@@ -140,9 +140,7 @@ def files_to_opencv(files, path, fps, cccc):
     try:
         import cv2
     except ImportError:
-        raise RuntimeError(
-            "Package OpenCV is required to save movies (pip install opencv-python)"
-        )
+        raise RuntimeError("Package OpenCV is required to save movies (pip install opencv-python)")
 
     frame = cv2.imread(files[0])
     height, width, _ = frame.shape
@@ -172,10 +170,7 @@ CODECS = {
 
 
 def unsupported(files, path, fps):
-    raise NotImplementedError(
-        f"Unsupported format for '{path}'."
-        f" Supported formats are {list(CODECS.keys())}"
-    )
+    raise NotImplementedError(f"Unsupported format for '{path}'." f" Supported formats are {list(CODECS.keys())}")
 
 
 def files_to_movie(files, path, fps):
@@ -268,9 +263,7 @@ class LayoutPlot:
         try:
             import imageio
         except ImportError:
-            raise RuntimeError(
-                "Package imageio is required to create animations (pip install imageio)"
-            )
+            raise RuntimeError("Package imageio is required to create animations (pip install imageio)")
         import numpy as np
 
         WHITE = {1: 255}

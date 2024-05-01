@@ -14,17 +14,16 @@ import os
 
 import pytest
 
-from climetlab.utils import load_json_or_yaml, string_to_args
-from climetlab.utils.humanize import (
-    as_bytes,
-    as_seconds,
-    as_timedelta,
-    bytes,
-    number,
-    plural,
-    seconds,
-    when,
-)
+from climetlab.utils import load_json_or_yaml
+from climetlab.utils import string_to_args
+from climetlab.utils.humanize import as_bytes
+from climetlab.utils.humanize import as_seconds
+from climetlab.utils.humanize import as_timedelta
+from climetlab.utils.humanize import bytes
+from climetlab.utils.humanize import number
+from climetlab.utils.humanize import plural
+from climetlab.utils.humanize import seconds
+from climetlab.utils.humanize import when
 
 
 def test_load_yaml():
@@ -139,14 +138,8 @@ def test_humanize():
     assert when(now - datetime.timedelta(days=3660), now) == "10 years ago"
     assert when(now, now - datetime.timedelta(days=3660)) == "in 10 years"
 
-    assert (
-        when(now - datetime.timedelta(days=3660), now, short=False)
-        == "on Tuesday 30 September 2011"
-    )
-    assert (
-        when(now, now - datetime.timedelta(days=3660), short=False)
-        == "on Monday 6 October 2021"
-    )
+    assert when(now - datetime.timedelta(days=3660), now, short=False) == "on Tuesday 30 September 2011"
+    assert when(now, now - datetime.timedelta(days=3660), short=False) == "on Monday 6 October 2021"
 
 
 def test_as_timedelta():

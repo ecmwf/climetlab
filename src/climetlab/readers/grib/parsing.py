@@ -11,12 +11,14 @@ import logging
 import os
 import sys
 import time
-from multiprocessing import Process, Queue
+from multiprocessing import Process
+from multiprocessing import Queue
 
 from tqdm import tqdm
 
 from climetlab.utils import progress_bar
-from climetlab.utils.humanize import plural, seconds
+from climetlab.utils.humanize import plural
+from climetlab.utils.humanize import seconds
 
 LOG = logging.getLogger(__name__)
 

@@ -108,17 +108,13 @@ def _apply_dict(*, value, collection, action, default, target, options):  # noqa
     action, special = _find_action(value, action)
     if special:
         if special != len(value):
-            raise ValueError(
-                "Cannot set some attributes and override others %r" % list(value.keys())
-            )
+            raise ValueError("Cannot set some attributes and override others %r" % list(value.keys()))
 
         result = target.update(action, value)
         if result is not None:
             return result
 
-        raise ValueError(
-            "Cannot override attributes %r (no matching style)" % list(value.keys())
-        )
+        raise ValueError("Cannot override attributes %r (no matching style)" % list(value.keys()))
 
     return action(**value)
 
@@ -146,8 +142,7 @@ def _apply_string(*, value, collection, action, default, target, options):
     actions = list(magics.keys())
     if len(actions) != 1:
         raise ValueError(
-            "%s %s: one, and only one magics action can be defined in a yaml file: %r"
-            % (collection, value, actions)
+            "%s %s: one, and only one magics action can be defined in a yaml file: %r" % (collection, value, actions)
         )
 
     name = actions[0]

@@ -16,7 +16,9 @@ from getpass import getpass
 
 import markdown
 
-from climetlab.core.ipython import HTML, display, ipython_active
+from climetlab.core.ipython import HTML
+from climetlab.core.ipython import display
+from climetlab.core.ipython import ipython_active
 
 LOG = logging.getLogger(__name__)
 

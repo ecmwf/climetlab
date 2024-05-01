@@ -149,21 +149,14 @@ class Era5Accumulations(Source):
 
             requested.add(user_date + datetime.timedelta(hours=user_time))
 
-            when = (
-                user_date
-                + datetime.timedelta(hours=user_time)
-                - datetime.timedelta(hours=user_step)
-            )
+            when = user_date + datetime.timedelta(hours=user_time) - datetime.timedelta(hours=user_step)
             add_step = 0
 
             while when.hour not in (6, 18):
                 when -= datetime.timedelta(hours=stepping)
                 add_step += stepping
 
-            steps = tuple(
-                step + add_step
-                for step in range(stepping, user_step + stepping, stepping)
-            )
+            steps = tuple(step + add_step for step in range(stepping, user_step + stepping, stepping))
 
             for p in param:
                 for n in number:

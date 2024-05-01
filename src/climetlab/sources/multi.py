@@ -11,7 +11,8 @@ import itertools
 import logging
 
 from climetlab.core.thread import SoftThreadPool
-from climetlab.mergers import make_merger, merge_by_class
+from climetlab.mergers import make_merger
+from climetlab.mergers import merge_by_class
 from climetlab.sources.empty import EmptySource
 from climetlab.utils import tqdm
 from climetlab.utils.bbox import BoundingBox

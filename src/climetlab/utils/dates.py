@@ -75,14 +75,8 @@ def to_datetime_list(datetimes):  # noqa C901
         return to_datetime_list([datetimes])
 
     if isinstance(datetimes, (list, tuple)):
-        if (
-            len(datetimes) == 3
-            and isinstance(datetimes[1], str)
-            and datetimes[1].lower() == "to"
-        ):
-            return mars_like_date_list(
-                to_datetime(datetimes[0]), to_datetime(datetimes[2]), 1
-            )
+        if len(datetimes) == 3 and isinstance(datetimes[1], str) and datetimes[1].lower() == "to":
+            return mars_like_date_list(to_datetime(datetimes[0]), to_datetime(datetimes[2]), 1)
 
         if (
             len(datetimes) == 5
@@ -91,9 +85,7 @@ def to_datetime_list(datetimes):  # noqa C901
             and datetimes[1].lower() == "to"
             and datetimes[3].lower() == "by"
         ):
-            return mars_like_date_list(
-                to_datetime(datetimes[0]), to_datetime(datetimes[2]), int(datetimes[4])
-            )
+            return mars_like_date_list(to_datetime(datetimes[0]), to_datetime(datetimes[2]), int(datetimes[4]))
 
         return [to_datetime(x) for x in datetimes]
 

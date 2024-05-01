@@ -64,18 +64,14 @@ def merge(
         user_kwargs=kwargs,
     )
 
-    if reader_class is not None and hasattr(
-        reader_class, "to_xarray_multi_from_sources"
-    ):
+    if reader_class is not None and hasattr(reader_class, "to_xarray_multi_from_sources"):
         return reader_class.to_xarray_multi_from_sources(
             sources,
             **options,
         )
 
     if paths is not None:
-        if reader_class is not None and hasattr(
-            reader_class, "to_xarray_multi_from_paths"
-        ):
+        if reader_class is not None and hasattr(reader_class, "to_xarray_multi_from_paths"):
             return reader_class.to_xarray_multi_from_paths(
                 paths,
                 **options,

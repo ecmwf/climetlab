@@ -21,9 +21,7 @@ class MirrorConnection:
 
     def get_file(self, create, args):
         if self.resource():
-            LOG.debug(
-                f"Found a copy of {self.source} in mirror {self.mirror}: {self.resource()}."
-            )
+            LOG.debug(f"Found a copy of {self.source} in mirror {self.mirror}: {self.resource()}.")
             return self.resource()
         if not self.mirror._prefetch:
             LOG.debug(f"No copy of {self.source} into {self.mirror}: prefetch=False.")
@@ -36,9 +34,7 @@ class MirrorConnection:
         return None
 
     def create_copy(self, create, args):
-        LOG.info(
-            f"Not implemented. Not creating anything for {self.source} in mirror {self.mirror}."
-        )
+        LOG.info(f"Not implemented. Not creating anything for {self.source} in mirror {self.mirror}.")
         return None
 
 

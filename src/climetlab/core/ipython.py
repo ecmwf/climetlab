@@ -51,9 +51,7 @@ def guess_which_ipython():
     if ipython_active.__class__.__name__ == "ZMQInteractiveShell":
         return ("jupyter-lab", None)
 
-    if isinstance(
-        ipython_active.python_dir, str
-    ) and ipython_active.python_dir.endswith(".ipython"):
+    if isinstance(ipython_active.python_dir, str) and ipython_active.python_dir.endswith(".ipython"):
         return ("jupyter-lab", None)
     return ("unknown", None)
 
@@ -117,7 +115,9 @@ def _identity(x, **kwargs):
 if ipython_active:
     from IPython.display import HTML
     from IPython.display import SVG as SVG_ipython
-    from IPython.display import Image, Markdown, display
+    from IPython.display import Image
+    from IPython.display import Markdown
+    from IPython.display import display
 
     def SVG(*args, **kwargs):
         import IPython

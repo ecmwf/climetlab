@@ -23,7 +23,5 @@ class PeriodicConv2D(Conv2D):
     def call(self, inputs):
         w, h = self.kernel_size
         inputs = tf.concat([inputs, inputs[:, :, :w, :]], axis=2)
-        inputs = tf.pad(
-            inputs, [[0, 0], [h // 2, h // 2], [0, 0], [0, 0]], constant_values=0
-        )
+        inputs = tf.pad(inputs, [[0, 0], [h // 2, h // 2], [0, 0], [0, 0]], constant_values=0)
         return super().call(inputs)

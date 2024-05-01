@@ -13,10 +13,8 @@ import os
 import sys
 
 from climetlab.indexing.database.json import JsonStdoutDatabase
-from climetlab.readers.grib.parsing import (
-    GribIndexingDirectoryParserIterator,
-    _index_url,
-)
+from climetlab.readers.grib.parsing import GribIndexingDirectoryParserIterator
+from climetlab.readers.grib.parsing import _index_url
 
 from .tools import parse_args
 
@@ -85,9 +83,7 @@ class GribCmd:
         ),
         output=(
             "--output",
-            dict(
-                help="Custom location of the database file, will write absolute filenames in the database."
-            ),
+            dict(help="Custom location of the database file, will write absolute filenames in the database."),
         ),
     )
     def do_index_directory(self, args):

@@ -11,7 +11,8 @@
 import time
 
 from climetlab import load_source
-from climetlab.core.statistics import collect_statistics, retrieve_statistics
+from climetlab.core.statistics import collect_statistics
+from climetlab.core.statistics import retrieve_statistics
 
 CML_BASEURL_S3 = "https://object-store.os-api.cci1.ecmwf.int/climetlab"
 CML_BASEURL_CDS = "https://datastore.copernicus-climate.eu/climetlab"

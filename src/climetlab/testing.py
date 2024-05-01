@@ -17,7 +17,8 @@ from unittest.mock import patch
 from climetlab import load_source
 from climetlab.readers.text import TextReader
 from climetlab.sources.empty import EmptySource
-from climetlab.utils import download_and_cache, module_installed
+from climetlab.utils import download_and_cache
+from climetlab.utils import module_installed
 
 LOG = logging.getLogger(__name__)
 
@@ -133,9 +134,7 @@ def build_testdata(dir="testdata"):
         if os.path.exists(outpath):
             continue
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
-        shutil.copyfile(
-            download_and_cache(TEST_DATA_URL_INPUT_GRIB + "/" + path), outpath
-        )
+        shutil.copyfile(download_and_cache(TEST_DATA_URL_INPUT_GRIB + "/" + path), outpath)
 
     return dir
 

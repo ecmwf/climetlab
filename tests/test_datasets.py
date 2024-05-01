@@ -12,7 +12,8 @@
 import pytest
 
 import climetlab as cml
-from climetlab import dataset, load_dataset
+from climetlab import dataset
+from climetlab import load_dataset
 from climetlab.testing import NO_CDS
 
 
@@ -35,9 +36,7 @@ def test_era5_temperature():
 @pytest.mark.download
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 def test_datetime():
-    data = cml.load_dataset(
-        "era5-temperature", domain="france", period=(1980,), time=12
-    )
+    data = cml.load_dataset("era5-temperature", domain="france", period=(1980,), time=12)
     data["1980-12-09 12:00"]
     with pytest.raises(ValueError):
         data.sel(date="1980-12-09 12:00")

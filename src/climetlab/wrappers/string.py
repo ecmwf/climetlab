@@ -10,7 +10,8 @@ import calendar
 import datetime
 import re
 
-from dateutil.parser import isoparse, parse
+from dateutil.parser import isoparse
+from dateutil.parser import parse
 
 from climetlab.wrappers import Wrapper
 
@@ -58,9 +59,7 @@ class StrWrapper(Wrapper):
             y = first_day.year
             m = first_day.month
             n_days = calendar.monthrange(y, m)[1]
-            return mars_like_date_list(
-                parse_date(f"{y}-{m:02}-01"), parse_date(f"{y}-{m:02}-{n_days}"), 1
-            )
+            return mars_like_date_list(parse_date(f"{y}-{m:02}-01"), parse_date(f"{y}-{m:02}-{n_days}"), 1)
 
         # MARS style lists
         bits = self.data.split("/")
@@ -68,9 +67,7 @@ class StrWrapper(Wrapper):
             return mars_like_date_list(parse_date(bits[0]), parse_date(bits[2]), 1)
 
         if len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-            return mars_like_date_list(
-                parse_date(bits[0]), parse_date(bits[2]), int(bits[4])
-            )
+            return mars_like_date_list(parse_date(bits[0]), parse_date(bits[2]), int(bits[4]))
 
         return [parse_date(d) for d in bits]
 

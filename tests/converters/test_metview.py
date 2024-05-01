@@ -14,7 +14,8 @@ import logging
 import pytest
 
 import climetlab as cml
-from climetlab.testing import MISSING, climetlab_file
+from climetlab.testing import MISSING
+from climetlab.testing import climetlab_file
 
 LOG = logging.getLogger(__name__)
 

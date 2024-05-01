@@ -14,9 +14,7 @@ from climetlab.decorators import normalize
 
 class normalize_args:
     def __init__(self, **dic):
-        warnings.warn(
-            "Deprecated decorator @normalize_arg. Use @normalise on each argument instead."
-        )
+        warnings.warn("Deprecated decorator @normalize_arg. Use @normalise on each argument instead.")
         self.decorators = []
         for name, values in dic.items():
             if isinstance(values, list):

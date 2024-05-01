@@ -15,7 +15,8 @@ import time
 from collections import defaultdict
 from contextlib import contextmanager
 
-from climetlab.utils.humanize import number, seconds
+from climetlab.utils.humanize import number
+from climetlab.utils.humanize import seconds
 
 PROFILING = int(os.environ.get("CLIMETLAB_PROFILING", 0))
 START = time.time()
@@ -63,9 +64,7 @@ class Counter:
     def __repr__(self):
         extra = ""
         if len(self.threads) > 1:
-            extra = "\n threads:\n   %s" % (
-                "\n   ".join(repr(t) for t in self.threads.values()),
-            )
+            extra = "\n threads:\n   %s" % ("\n   ".join(repr(t) for t in self.threads.values()),)
         return "COUNTER [%s], %s%s" % (
             self.name,
             self._c,

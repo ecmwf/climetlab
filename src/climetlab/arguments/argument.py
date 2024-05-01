@@ -9,11 +9,9 @@
 import logging
 
 from climetlab.arguments.climetlab_types import infer_type
-from climetlab.arguments.transformers import (
-    AliasTransformer,
-    FormatTransformer,
-    TypeTransformer,
-)
+from climetlab.arguments.transformers import AliasTransformer
+from climetlab.arguments.transformers import FormatTransformer
+from climetlab.arguments.transformers import TypeTransformer
 
 LOG = logging.getLogger(__name__)
 

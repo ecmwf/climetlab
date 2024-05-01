@@ -114,7 +114,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Tokens 
+    - name: Tokens
       shell: python
       env:
         ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
@@ -151,7 +151,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Tokens 
+    - name: Tokens
       shell: python
       env:
         ECMWFAPIRC: ${{ secrets.ECMWFAPIRC }}
@@ -172,7 +172,7 @@ jobs:
         pip install pytest
         pip freeze
     - name: Tests notebooks
-      run: pytest tests/documentation/test_notebooks.py    
+      run: pytest tests/documentation/test_notebooks.py
 
   short-tests:
     # if: (github.event_name == 'release' && github.event.action == 'created') || github.ref == 'refs/heads/main'
@@ -199,7 +199,7 @@ jobs:
         name: test-data
     - run: tar xvf test-data.tar
     - run: cat test-data/dataA.txt
-    - name: Tokens 
+    - name: Tokens
       # (this should be removed when tests are refactored)
       shell: python
       env:

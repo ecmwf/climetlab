@@ -81,9 +81,7 @@ class XArrayDatasetWrapper(Wrapper):
         self.west = np.amin(self.longitude.data)
 
     def plot_map(self, backend):
-        backend.bounding_box(
-            north=self.north, south=self.south, west=self.west, east=self.east
-        )
+        backend.bounding_box(north=self.north, south=self.south, west=self.west, east=self.east)
 
         dimension_settings = dict()
 

@@ -15,7 +15,8 @@ from abc import abstractmethod
 from collections import defaultdict
 
 import climetlab as cml
-from climetlab.core.order import build_remapping, normalize_order_by
+from climetlab.core.order import build_remapping
+from climetlab.core.order import normalize_order_by
 from climetlab.core.select import normalize_selection
 from climetlab.sources import Source
 
@@ -134,9 +135,7 @@ class Order(OrderBase):
                 actions[k] = v
                 continue
 
-            assert isinstance(
-                v, (list, tuple)
-            ), f"Invalid argument for {k}: {v} ({type(v)})"
+            assert isinstance(v, (list, tuple)), f"Invalid argument for {k}: {v} ({type(v)})"
 
             order = {}
             for i, key in enumerate(v):
@@ -181,9 +180,7 @@ class Index(Source):
 
         selection = Selection(kwargs, remapping=remapping)
 
-        indices = (
-            i for i, element in enumerate(self) if selection.match_element(element)
-        )
+        indices = (i for i, element in enumerate(self) if selection.match_element(element))
 
         return self.new_mask_index(self, indices)
 

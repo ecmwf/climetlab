@@ -13,20 +13,27 @@ import os
 import yaml
 
 import climetlab
-from climetlab.core.ipython import SVG, Image
+from climetlab.core.ipython import SVG
+from climetlab.core.ipython import Image
 from climetlab.core.metadata import annotation
 from climetlab.core.temporary import temp_file
 from climetlab.utils.bbox import BoundingBox
 
-from .actions import mcoast, mgrib, minput, mmap, mnetcdf, mtable, mtext, output, plot
+from .actions import mcoast
+from .actions import mgrib
+from .actions import minput
+from .actions import mmap
+from .actions import mnetcdf
+from .actions import mtable
+from .actions import mtext
+from .actions import output
+from .actions import plot
 from .apply import apply
 
 LOG = logging.getLogger(__name__)
 
 
-os.environ["MAGICS_UNITS_CONVERSIONS"] = os.path.join(
-    os.path.dirname(climetlab.__file__), "config", "units.yaml"
-)
+os.environ["MAGICS_UNITS_CONVERSIONS"] = os.path.join(os.path.dirname(climetlab.__file__), "config", "units.yaml")
 
 
 class Layer:
@@ -162,14 +169,10 @@ class Backend:
         west_east_increment = metadata.get("west_east_increment")
 
         if south_north_increment is None:
-            south_north_increment = (north - metadata.get("south", -90)) / (
-                data.shape[-2] - 1
-            )
+            south_north_increment = (north - metadata.get("south", -90)) / (data.shape[-2] - 1)
 
         if west_east_increment is None:
-            west_east_increment = (metadata.get("east", 360) - west) / (
-                data.shape[-1] - 1
-            )
+            west_east_increment = (metadata.get("east", 360) - west) / (data.shape[-1] - 1)
 
         # TODO: remove me when Magics supports full json
         def tidy(x):
@@ -274,13 +277,9 @@ class Backend:
         if options.provided("bounding_box"):
             bbox = options["bounding_box"]
             if isinstance(bbox, (list, tuple)):
-                self.bounding_box(
-                    north=bbox[0], west=bbox[1], south=bbox[2], east=bbox[3]
-                )
+                self.bounding_box(north=bbox[0], west=bbox[1], south=bbox[2], east=bbox[3])
             else:
-                self.bounding_box(
-                    north=bbox.north, west=bbox.west, south=bbox.south, east=bbox.east
-                )
+                self.bounding_box(north=bbox.north, west=bbox.west, south=bbox.south, east=bbox.east)
 
     def option(self, name, default=None):
         return self._options(name, default)
@@ -441,11 +440,7 @@ class Backend:
                         file=f,
                     )
             else:
-                print(
-                    yaml.dump(
-                        dict(plot=[a.to_yaml() for a in args]), default_flow_style=False
-                    )
-                )
+                print(yaml.dump(dict(plot=[a.to_yaml() for a in args]), default_flow_style=False))
 
         self._options.check_unused()
 

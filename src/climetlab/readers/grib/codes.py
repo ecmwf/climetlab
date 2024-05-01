@@ -54,9 +54,7 @@ def unrotate(lat, lon, south_pole_lat, south_pole_lon):
     cp = np.cos(phi)
     sp = np.sin(phi)
 
-    matrix = np.array(
-        [[cp * ct, sp, cp * st], [-ct * sp, cp, -sp * st], [-st, 0.0, ct]]
-    )
+    matrix = np.array([[cp * ct, sp, cp * st], [-ct * sp, cp, -sp * st], [-st, 0.0, ct]])
 
     return from_xyz(*np.dot(matrix, to_xyz(lat, lon)))
 
@@ -131,9 +129,7 @@ eccodes_codes_new_from_file = call_counter(eccodes.codes_new_from_file)
 # For some reason, cffi can ge stuck in the GC if that function
 # needs to be called defined for the first time in a GC thread.
 try:
-    _h = eccodes.codes_new_from_samples(
-        "regular_ll_pl_grib1", eccodes.CODES_PRODUCT_GRIB
-    )
+    _h = eccodes.codes_new_from_samples("regular_ll_pl_grib1", eccodes.CODES_PRODUCT_GRIB)
     eccodes.codes_release(_h)
 except:  # noqa E722
     pass
@@ -147,9 +143,7 @@ class CodesHandle:
 
     @classmethod
     def from_sample(cls, name):
-        return cls(
-            eccodes.codes_new_from_samples(name, eccodes.CODES_PRODUCT_GRIB), None, None
-        )
+        return cls(eccodes.codes_new_from_samples(name, eccodes.CODES_PRODUCT_GRIB), None, None)
 
     def __del__(self):
         try:
@@ -375,9 +369,7 @@ class GribField(Base):
         if self._handle_cache is not None:
             key = (self.path, self._offset)
             if key not in self._handle_cache:
-                self._handle_cache[key] = CodesReader.from_cache(self.path).at_offset(
-                    self._offset
-                )
+                self._handle_cache[key] = CodesReader.from_cache(self.path).at_offset(self._offset)
             return self._handle_cache[key]
 
         if self._handle is None:
@@ -675,9 +667,7 @@ class GribField(Base):
         import numpy as np
 
         if self.rotated and not self.rotated_iterator:
-            warnings.warn(
-                f"ecCodes does not support rotated iterator for {self.grid_type}"
-            )
+            warnings.warn(f"ecCodes does not support rotated iterator for {self.grid_type}")
             return self.grid_points_unrotated()
 
         data = self.data
@@ -710,9 +700,7 @@ class GribField(Base):
             return self.grid_points()
 
         if not self.rotated_iterator:
-            warnings.warn(
-                f"ecCodes does not support rotated iterator for {self.grid_type}"
-            )
+            warnings.warn(f"ecCodes does not support rotated iterator for {self.grid_type}")
             data = self.handle.get_data()
             lat = np.array([d["lat"] for d in data])
             lon = np.array([d["lon"] for d in data])

@@ -1,21 +1,41 @@
-exclude: 'experiments'
 repos:
--   repo: https://github.com/ambv/black
-    rev: 24.1.1
-    hooks:
-      - id: black
--   repo: https://github.com/pycqa/isort
-    rev: 5.13.0
-    hooks:
-      - id: isort
-        name: isort (python)
-      - id: isort
-        name: isort (cython)
-        types: [cython]
-      - id: isort
-        name: isort (pyi)
-        types: [pyi]
--   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-    -   id: flake8
+
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-yaml # Check YAML files for syntax errors only
+    args: [--unsafe, --allow-multiple-documents]
+  - id: debug-statements # Check for debugger imports and py37+ breakpoint()
+  - id: end-of-file-fixer # Ensure files end in a newline
+  - id: trailing-whitespace # Trailing whitespace checker
+  - id: no-commit-to-branch # Prevent committing to main / master
+  - id: check-added-large-files # Check for large files added to git
+  - id: check-merge-conflict # Check for files that contain merge conflict
+
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 24.1.1
+  hooks:
+    - id: black
+      args: [--line-length=120]
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+  - id: isort
+    args:
+    - -l 120
+    - --force-single-line-imports
+    - --profile black
+
+
+# - repo: https://github.com/astral-sh/ruff-pre-commit
+#   rev: v0.3.0
+#   hooks:
+#   - id: ruff
+#     exclude: '(dev/.*|.*_)\.py$'
+#     args:
+#     - --line-length=120
+#     - --fix
+#     - --exit-non-zero-on-fix
+#     - --preview

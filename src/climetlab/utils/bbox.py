@@ -35,19 +35,13 @@ class BoundingBox:
             self.east = _normalize(float(east), self.west)
 
         if self.north < self.south and check:
-            raise ValueError(
-                f"Invalid bounding box, north={self.north} < south={self.south}"
-            )
+            raise ValueError(f"Invalid bounding box, north={self.north} < south={self.south}")
 
         if self.west > self.east and check:
-            raise ValueError(
-                f"Invalid bounding box, west={self.west} > east={self.east}"
-            )
+            raise ValueError(f"Invalid bounding box, west={self.west} > east={self.east}")
 
         if self.east > self.west + 360 and check:
-            raise ValueError(
-                f"Invalid bounding box, east={self.east} > west={self.west}+360"
-            )
+            raise ValueError(f"Invalid bounding box, east={self.east} > west={self.west}+360")
 
     def __repr__(self):
         return "BoundingBox(north=%g,west=%g,south=%g,east=%g)" % (
@@ -147,9 +141,7 @@ class BoundingBox:
     def add_margins(self, margins):
         if isinstance(margins, str) and margins[-1] == "%":
             margins = int(margins[:-1]) / 100.0
-            margins = max(
-                (self.north - self.south) * margins, (self.east - self.west) * margins
-            )
+            margins = max((self.north - self.south) * margins, (self.east - self.west) * margins)
 
         # TODO:check east/west
         margins_lat = margins

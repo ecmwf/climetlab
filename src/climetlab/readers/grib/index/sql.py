@@ -11,15 +11,16 @@ import logging
 from collections import namedtuple
 
 from climetlab.core.constants import DATETIME
-from climetlab.core.order import build_remapping, normalize_order_by
+from climetlab.core.order import build_remapping
+from climetlab.core.order import normalize_order_by
 from climetlab.core.select import normalize_selection
-from climetlab.decorators import cached_method, normalize, normalize_grib_key_values
-from climetlab.indexing.database.sql import (
-    SqlDatabase,
-    SqlOrder,
-    SqlRemapping,
-    SqlSelection,
-)
+from climetlab.decorators import cached_method
+from climetlab.decorators import normalize
+from climetlab.decorators import normalize_grib_key_values
+from climetlab.indexing.database.sql import SqlDatabase
+from climetlab.indexing.database.sql import SqlOrder
+from climetlab.indexing.database.sql import SqlRemapping
+from climetlab.indexing.database.sql import SqlSelection
 from climetlab.readers.grib.index.db import FieldsetInFilesWithDBIndex
 from climetlab.utils.serialise import register_serialisation
 
@@ -96,9 +97,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
         return out
 
     def part(self, n):
-        if self._cache is None or not (
-            self._cache.first <= n < self._cache.first + self._cache.length
-        ):
+        if self._cache is None or not (self._cache.first <= n < self._cache.first + self._cache.length):
             first = (n // self.DB_CACHE_SIZE) * self.DB_CACHE_SIZE
             result = self.db.lookup_parts(limit=self.DB_CACHE_SIZE, offset=first)
             self._cache = SqlResultCache(first, len(result), result)
@@ -106,9 +105,7 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 
     def get_metadata(self, n):
         if self._dict_cache is None or not (
-            self._dict_cache.first
-            <= n
-            < self._dict_cache.first + self._dict_cache.length
+            self._dict_cache.first <= n < self._dict_cache.first + self._dict_cache.length
         ):
             first = (n // self.DB_DICT_CACHE_SIZE) * self.DB_DICT_CACHE_SIZE
             result = self.db.lookup_dicts(
@@ -130,7 +127,5 @@ class FieldsetInFilesWithSqlIndex(FieldsetInFilesWithDBIndex):
 register_serialisation(
     FieldsetInFilesWithSqlIndex,
     lambda x: [x.db.db_path, x.db._filters],
-    lambda x: FieldsetInFilesWithSqlIndex(db=SqlDatabase(x[0])).apply_filters(
-        filters=x[1]
-    ),
+    lambda x: FieldsetInFilesWithSqlIndex(db=SqlDatabase(x[0])).apply_filters(filters=x[1]),
 )

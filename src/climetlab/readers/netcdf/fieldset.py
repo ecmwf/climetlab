@@ -10,12 +10,15 @@
 from functools import cached_property
 from itertools import product
 
-from climetlab.core.index import MaskIndex, MultiIndex
+from climetlab.core.index import MaskIndex
+from climetlab.core.index import MultiIndex
 from climetlab.indexing.fieldset import FieldSet
 from climetlab.utils.bbox import BoundingBox
 from climetlab.utils.dates import to_datetime
 
-from .coords import LevelCoordinate, OtherCoordinate, TimeCoordinate
+from .coords import LevelCoordinate
+from .coords import OtherCoordinate
+from .coords import TimeCoordinate
 from .dataset import DataSet
 from .field import NetCDFField
 

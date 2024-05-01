@@ -27,9 +27,7 @@ class ModuleOutput(Directive):
         save = sys.stdout
         try:
             # Get current file
-            current_rst_file = self.state_machine.input_lines.source(
-                self.lineno - self.state_machine.input_offset - 1
-            )
+            current_rst_file = self.state_machine.input_lines.source(self.lineno - self.state_machine.input_offset - 1)
 
             args = [x for x in self.content if x != ""][0].split(" ")
             name = args.pop(0)

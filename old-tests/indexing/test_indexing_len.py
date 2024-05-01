@@ -10,7 +10,9 @@
 #
 
 import climetlab as cml
-from climetlab.testing import TEST_DATA_URL_INPUT_GRIB, build_testdata, cd
+from climetlab.testing import TEST_DATA_URL_INPUT_GRIB
+from climetlab.testing import build_testdata
+from climetlab.testing import cd
 
 
 def check_len(source):

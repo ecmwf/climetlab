@@ -87,7 +87,7 @@ Or using the ``climetlab`` interactive prompt:
 
 
 .. _settings_table:
- 
+
 Default values
 --------------
 

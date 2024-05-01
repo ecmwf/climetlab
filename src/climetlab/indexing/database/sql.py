@@ -24,16 +24,14 @@ from climetlab.indexing.database.json import json_serialiser
 from climetlab.utils import tqdm
 from climetlab.utils.parts import Part
 
-from . import (
-    FILEPARTS_KEY_NAMES,
-    MORE_KEY_NAMES,
-    MORE_KEY_NAMES_WITH_UNDERSCORE,
-    STATISTICS_KEY_NAMES,
-    Database,
-    FloatDBKey,
-    IntDBKey,
-    StrDBKey,
-)
+from . import FILEPARTS_KEY_NAMES
+from . import MORE_KEY_NAMES
+from . import MORE_KEY_NAMES_WITH_UNDERSCORE
+from . import STATISTICS_KEY_NAMES
+from . import Database
+from . import FloatDBKey
+from . import IntDBKey
+from . import StrDBKey
 
 LOG = logging.getLogger(__name__)
 
@@ -43,10 +41,7 @@ def dump_sql(statement):
     statement = statement.replace(";", " ;")
     statement = statement.replace("(", " (")
     lst = statement.split()
-    lst = [
-        "userorder_entries_...\n" if x.startswith("userorder_entries") else x
-        for x in lst
-    ]
+    lst = ["userorder_entries_...\n" if x.startswith("userorder_entries") else x for x in lst]
     print(" ".join(lst))
 
 
@@ -130,9 +125,7 @@ class EntriesLoader:
             pass
 
         try:
-            execute(
-                self.connection, "ALTER TABLE entries DROP COLUMN i_param_levelist;"
-            )
+            execute(self.connection, "ALTER TABLE entries DROP COLUMN i_param_levelist;")
         except sqlite3.OperationalError:
             pass
 
@@ -180,9 +173,7 @@ class EntriesLoader:
 
     def _add_column(self, k, v):
         dbkey = self._build_dbkey(k, v)
-        statement = (
-            f"ALTER TABLE {self.table_name} ADD COLUMN {dbkey.name} {dbkey.sql_type};"
-        )
+        statement = f"ALTER TABLE {self.table_name} ADD COLUMN {dbkey.name} {dbkey.sql_type};"
         LOG.debug("%s", statement)
         try:
             execute(self.connection, statement)
@@ -270,11 +261,7 @@ class SqlFilter:
         m.update(str(kwargs).encode("utf-8"))
         m.update(str(self.remapping.as_dict()).encode("utf-8"))
         m.update(str(self.__class__.__name__).encode("utf-8"))
-        m.update(
-            json.dumps(self.kwargs, sort_keys=True, default=json_serialiser).encode(
-                "utf-8"
-            )
-        )
+        m.update(json.dumps(self.kwargs, sort_keys=True, default=json_serialiser).encode("utf-8"))
         return m.hexdigest()
 
     def __str__(self):
@@ -287,9 +274,7 @@ class SqlFilter:
     def create_new_view(self, db, view):
         new_view = "entries_" + self.h(parent_view=view)
         assert new_view != view
-        view_statement = self.create_view_statement(
-            db, old_view=view, new_view=new_view
-        )
+        view_statement = self.create_view_statement(db, old_view=view, new_view=new_view)
         if not view_statement:
             # nothing to do
             return view
@@ -360,10 +345,7 @@ class SqlRemapping(SqlFilter):
             return None
 
         assert new_view != old_view
-        return (
-            f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT *, {select} "
-            f"FROM {old_view};"
-        )
+        return f"CREATE TEMP VIEW IF NOT EXISTS {new_view} AS SELECT *, {select} " f"FROM {old_view};"
 
 
 class SqlOrder(SqlFilter):
@@ -534,9 +516,7 @@ class SqlDatabase(Database, VersionedDatabaseMixin):
             results = {}
             for c in coords:
                 column = entryname_to_dbname(c)
-                values = [
-                    v[0] for v in execute(con, f"SELECT DISTINCT {column} FROM {view};")
-                ]
+                values = [v[0] for v in execute(con, f"SELECT DISTINCT {column} FROM {view};")]
                 LOG.debug("Reordered values for {column}", column, values)
                 results[column] = values
 

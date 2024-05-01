@@ -18,9 +18,11 @@ import pickle
 import yaml
 
 from climetlab.utils import load_json_or_yaml
-from climetlab.utils.factorise import Tree, factorise
+from climetlab.utils.factorise import Tree
+from climetlab.utils.factorise import factorise
 
-from .humanize import dict_to_human, list_to_human
+from .humanize import dict_to_human
+from .humanize import list_to_human
 
 
 def _tidy_dict(query):
@@ -178,9 +180,7 @@ class Availability:
         if not reasons:
 
             def iterate_request(r):
-                yield from (
-                    dict(zip(r.keys(), x)) for x in itertools.product(*r.values())
-                )
+                yield from (dict(zip(r.keys(), x)) for x in itertools.product(*r.values()))
 
             def build(x):
                 # if isinstance(x, (list, tuple)):

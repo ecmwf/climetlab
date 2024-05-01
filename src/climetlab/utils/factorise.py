@@ -479,9 +479,7 @@ class Tree:
                 previous = parse_date(str(v[i - 1]))
                 if current - previous != step:
                     print(int(v[i]))
-                    print(
-                        f"expecting {previous + step} after {previous}, found {current}"
-                    )
+                    print(f"expecting {previous + step} after {previous}, found {current}")
                     raise ReturnNoneNone()
             return str(v[0]), str(v[-1])
 
@@ -596,9 +594,7 @@ class Table(object):
         return self.cols[self.colidx[c]].set_value(self.rowidx[r], v)
 
     def __repr__(self):
-        return repr(
-            [[self.cols[col].value(row) for row in self.rowidx] for col in self.colidx]
-        )
+        return repr([[self.cols[col].value(row) for row in self.rowidx] for col in self.colidx])
 
     def column(self, s, col):
         self.cols.append(Column(s, col))

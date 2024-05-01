@@ -18,9 +18,7 @@ from climetlab.testing import NO_MARS
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-@pytest.mark.skip(
-    reason="No access to MARS for now (DHS move)"
-)  # TODO: remove this line
+@pytest.mark.skip(reason="No access to MARS for now (DHS move)")  # TODO: remove this line
 def test_mars_grib_1():
     s = load_source(
         "mars",
@@ -36,9 +34,7 @@ def test_mars_grib_1():
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-@pytest.mark.skip(
-    reason="No access to MARS for now (DHS move)"
-)  # TODO: remove this line
+@pytest.mark.skip(reason="No access to MARS for now (DHS move)")  # TODO: remove this line
 def test_mars_grib_2():
     s = load_source(
         "mars",

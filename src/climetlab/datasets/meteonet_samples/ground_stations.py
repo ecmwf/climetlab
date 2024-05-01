@@ -20,14 +20,10 @@ class MeteonetGroundStations(Meteonet):
     """
 
     def __init__(self, domain="NW", date="20160101"):
-        url = "{url}/ground_stations/{domain}_{date}.csv".format(
-            url=self.URL, domain=domain, date=date
-        )
+        url = "{url}/ground_stations/{domain}_{date}.csv".format(url=self.URL, domain=domain, date=date)
 
         self.path = download_and_cache(url)
-        self._pandas = pd.read_csv(
-            self.path, parse_dates=[4], infer_datetime_format=True
-        )
+        self._pandas = pd.read_csv(self.path, parse_dates=[4], infer_datetime_format=True)
 
     def to_pandas(self):
         return self._pandas

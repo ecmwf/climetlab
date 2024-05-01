@@ -19,15 +19,14 @@ from climetlab.core.temporary import temp_file
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
+from indexing_fixtures import check_sel_and_order  # noqa: E402
+from indexing_fixtures import get_fixtures
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink tmp file on Windows")
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))
-@pytest.mark.parametrize(
-    "source_name", ["indexed-directory", "file", "indexed-url", "indexed-urls"]
-)
+@pytest.mark.parametrize("source_name", ["indexed-directory", "file", "indexed-url", "indexed-urls"])
 def test_indexing_save(params, levels, source_name):
     request = dict(
         level=levels,
@@ -35,9 +34,7 @@ def test_indexing_save(params, levels, source_name):
         date=20220929,
         time="1200",
     )
-    if (
-        source_name == "indexed-url" or source_name == "indexed-urls"
-    ):  # TODO: make all test data consistent
+    if source_name == "indexed-url" or source_name == "indexed-urls":  # TODO: make all test data consistent
         request["date"] = "19970101"
         request["time"] = [1100, 1200]
 
@@ -50,9 +47,7 @@ def test_indexing_save(params, levels, source_name):
     ds = ds.order_by(level=levels, variable=params)
     assert len(ds) == n, len(ds)
 
-    if not (
-        source_name == "indexed-url" or source_name == "indexed-urls"
-    ):  # TODO: make all test data consistent
+    if not (source_name == "indexed-url" or source_name == "indexed-urls"):  # TODO: make all test data consistent
         check_sel_and_order(ds, params, levels)
 
     with temp_file() as filename:
@@ -60,9 +55,7 @@ def test_indexing_save(params, levels, source_name):
         ds = cml.load_source("file", filename)
 
         assert len(ds) == n
-        if not (
-            source_name == "indexed-url" or source_name == "indexed-urls"
-        ):  # TODO: make all test data consistent
+        if not (source_name == "indexed-url" or source_name == "indexed-urls"):  # TODO: make all test data consistent
             check_sel_and_order(ds, params, levels)
 
 

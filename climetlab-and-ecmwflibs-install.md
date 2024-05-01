@@ -1,9 +1,9 @@
 # How to run climetlab without ecmwflibs (using conda)
 
-This workaround should address some of the issues related to ecmwflibs version not found or not installing correctly occuring during the installation of the climetlab package. 
+This workaround should address some of the issues related to ecmwflibs version not found or not installing correctly occuring during the installation of the climetlab package.
 This is how to install eccodes manually and use an environment variable to avoid installing ecmwflibs.
 
-``` 
+```
 # install eccodes manually
 conda install -c conda-forge eccodes
 pip install eccodes
@@ -15,7 +15,7 @@ CLIMETLAB_DO_NOT_INSTALL_ECMWFLIBS=1 pip install climetlab
 # Limitations
 
 Obviously installing climetlab without one of its dependencies has some impact on its features.
-And installing eccodes is not enough to provide them all : more packages are bundled in ecmwflibs (other than eccodes). 
+And installing eccodes is not enough to provide them all : more packages are bundled in ecmwflibs (other than eccodes).
 Depending on the required functinalities, there may be other missing packages to install manually.
 
 |    Feature    | default (ecmwflibs) | With workaround above |
@@ -29,7 +29,7 @@ All CliMetLab features related to **reading (or writing) GRIB** data be supporte
 # Debugging
 
 ## Check eccodes installation
-``` 
+```
 import eccodes
 print(eccodes.__file__)
 ```

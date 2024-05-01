@@ -8,7 +8,8 @@
 #
 import datetime
 
-from climetlab.wrappers import Wrapper, get_wrapper
+from climetlab.wrappers import Wrapper
+from climetlab.wrappers import get_wrapper
 
 
 class NumpyArrayWrapper(Wrapper):
@@ -36,10 +37,7 @@ class NumpyArrayWrapper(Wrapper):
         )
 
     def to_datetime_list(self):
-        return [
-            datetime.datetime.fromtimestamp(x * 1e-9, tz=datetime.timezone.utc)
-            for x in self.data.tolist()
-        ]
+        return [datetime.datetime.fromtimestamp(x * 1e-9, tz=datetime.timezone.utc) for x in self.data.tolist()]
 
 
 def wrapper(data, *args, **kwargs):

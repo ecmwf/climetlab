@@ -13,7 +13,8 @@ import os
 import warnings
 
 import climetlab as cml
-from climetlab.core.temporary import temp_directory, temp_file
+from climetlab.core.temporary import temp_directory
+from climetlab.core.temporary import temp_file
 from climetlab.readers.grib.index import GribFieldSet
 from climetlab.testing import climetlab_file
 

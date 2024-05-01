@@ -168,9 +168,7 @@ def ecef(lat, lon, i):
 def unstructed_to_structed(grib, chunk_size=-1):
     now = time.time()
     print("----")
-    xyz = np.array(
-        [ecef(lat, lon, i) for i, (lat, lon) in enumerate(grib.iterate_grid_points())]
-    )
+    xyz = np.array([ecef(lat, lon, i) for i, (lat, lon) in enumerate(grib.iterate_grid_points())])
     print("----", time.time() - now)
     print(len(xyz))
 

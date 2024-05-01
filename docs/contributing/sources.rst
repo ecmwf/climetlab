@@ -33,7 +33,7 @@ integration as follow:
     )
 
 The package name and the class name should match the class defined in the code
-of the plugin: 
+of the plugin:
 
 - **source-name**: is the string that will be used in ``cml.load_source("source-name", ...)``
   in oder to trigger the source plugin code.

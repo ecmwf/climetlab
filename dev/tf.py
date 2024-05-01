@@ -2,16 +2,15 @@ import keras.layers as layers
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
-from tensorflow.keras.layers import (
-    Conv2D,
-    Dense,
-    Dropout,
-    Flatten,
-    Input,
-    Lambda,
-    Reshape,
-)
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Lambda
+from tensorflow.keras.layers import Reshape
 from tensorflow.keras.models import Sequential
 
 import climetlab as cml
@@ -46,9 +45,7 @@ class PeriodicConv2D(Conv2D):
     def call(self, inputs):
         w, h = self.kernel_size
         inputs = tf.concat([inputs, inputs[:, :, :w, :]], axis=2)
-        inputs = tf.pad(
-            inputs, [[0, 0], [h // 2, h // 2], [0, 0], [0, 0]], constant_values=0
-        )
+        inputs = tf.pad(inputs, [[0, 0], [h // 2, h // 2], [0, 0], [0, 0]], constant_values=0)
         return super().call(inputs)
 
 

@@ -76,9 +76,7 @@ def as_numpy_func(ds, options=None):
 
 
 def normalize_a_b(option, dataset):
-    if isinstance(option, (tuple, list)) and all(
-        [isinstance(x, Number) for x in option]
-    ):
+    if isinstance(option, (tuple, list)) and all([isinstance(x, Number) for x in option]):
         a, b = option
         return a, b
 
@@ -86,9 +84,7 @@ def normalize_a_b(option, dataset):
         stats = dataset.statistics()
         average, stdev = stats["average"], stats["stdev"]
         if stdev < (average * 1e-6):
-            warnings.warn(
-                f"Normalizing: the field seems to have only one value {stats}"
-            )
+            warnings.warn(f"Normalizing: the field seems to have only one value {stats}")
         return 1 / stdev, -average / stdev
 
     if option == "min-max":
@@ -96,9 +92,7 @@ def normalize_a_b(option, dataset):
         mini, maxi = stats["minimum"], stats["maximum"]
         x = maxi - mini
         if x < 1e-9:
-            warnings.warn(
-                f"Normalizing: the field seems to have only one value {stats}."
-            )
+            warnings.warn(f"Normalizing: the field seems to have only one value {stats}.")
         return 1 / x, -mini / x
 
     raise ValueError(option)
@@ -116,13 +110,8 @@ def to_funcs(features, targets, options, targets_options, merger, targets_merger
 
     assert isinstance(features, (list, tuple)), features
     assert len(features) == len(options), (len(features), len(options))
-    funcs = [
-        as_numpy_func(_, opt) for _, opt in zip_longest(features, options, fillvalue={})
-    ]
-    funcs_targets = [
-        as_numpy_func(_, opt)
-        for _, opt in zip_longest(targets, targets_options, fillvalue={})
-    ]
+    funcs = [as_numpy_func(_, opt) for _, opt in zip_longest(features, options, fillvalue={})]
+    funcs_targets = [as_numpy_func(_, opt) for _, opt in zip_longest(targets, targets_options, fillvalue={})]
 
     func = merger(*funcs)
     func_targets = targets_merger(*funcs_targets)

@@ -16,7 +16,8 @@ import ecmwfapi
 from climetlab.core.settings import SETTINGS
 from climetlab.core.temporary import temp_file
 
-from .ecmwf_api import ECMWFApi, MARSAPIKeyPrompt
+from .ecmwf_api import ECMWFApi
+from .ecmwf_api import MARSAPIKeyPrompt
 
 LOG = logging.getLogger(__name__)
 

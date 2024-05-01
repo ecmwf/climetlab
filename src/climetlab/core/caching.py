@@ -71,9 +71,7 @@ class DiskUsage:
             self.total = st.f_blocks * st.f_frsize
             self.avail = st.f_bavail * st.f_frsize
 
-        self.percent = int(
-            float(self.total - self.avail) / float(self.total) * 100 + 0.5
-        )
+        self.percent = int(float(self.total - self.avail) / float(self.total) * 100 + 0.5)
 
     def __repr__(self):
         return (
@@ -227,13 +225,9 @@ class Cache(threading.Thread):
         """Returns the latest date to be used when purging the cache.
         So we do not purge files being downloaded."""
         with self.connection as db:
-            latest = db.execute(
-                "SELECT MIN(creation_date) FROM cache WHERE size IS NULL"
-            ).fetchone()[0]
+            latest = db.execute("SELECT MIN(creation_date) FROM cache WHERE size IS NULL").fetchone()[0]
             if latest is None:
-                latest = db.execute(
-                    "SELECT MAX(creation_date) FROM cache WHERE size IS NOT NULL"
-                ).fetchone()[0]
+                latest = db.execute("SELECT MAX(creation_date) FROM cache WHERE size IS NOT NULL").fetchone()[0]
             if latest is None:
                 latest = datetime.datetime.now()
             if isinstance(latest, str):
@@ -326,9 +320,7 @@ class Cache(threading.Thread):
                     continue
 
                 full = os.path.join(top, name)
-                count = db.execute(
-                    "SELECT count(*) FROM cache WHERE path=?", (full,)
-                ).fetchone()[0]
+                count = db.execute("SELECT count(*) FROM cache WHERE path=?", (full,)).fetchone()[0]
 
                 if count > 0:
                     continue
@@ -353,9 +345,7 @@ class Cache(threading.Thread):
                 if parent is None:
                     LOG.warning(f"CliMetLab cache: orphan found: {full}")
                 else:
-                    LOG.debug(
-                        f"CliMetLab cache: orphan found: {full} with parent {parent}"
-                    )
+                    LOG.debug(f"CliMetLab cache: orphan found: {full} with parent {parent}")
 
                 self._register_cache_file(
                     full,
@@ -416,9 +406,7 @@ class Cache(threading.Thread):
 
         LOG.warning(
             "Deleting entry %s",
-            json.dumps(
-                self._entry_to_dict(entry), indent=4, default=default_serialiser
-            ),
+            json.dumps(self._entry_to_dict(entry), indent=4, default=default_serialiser),
         )
         total = 0
 
@@ -464,9 +452,7 @@ class Cache(threading.Thread):
             latest = datetime.datetime.now() if purge else self._latest_date()
             age = datetime.datetime.now() - latest
             age = age.days * 24 * 3600 + age.seconds
-            LOG.warning(
-                f"Decaching files oldest than {latest.isoformat()} (age: {humanize.seconds(age)})"
-            )
+            LOG.warning(f"Decaching files oldest than {latest.isoformat()} (age: {humanize.seconds(age)})")
 
             for stmt in (
                 "SELECT * FROM cache WHERE size IS NOT NULL AND owner='orphans' AND creation_date < ?",
@@ -534,9 +520,7 @@ class Cache(threading.Thread):
                     (path, owner, args, now, now, 1, parent),
                 )
 
-            return dict(
-                db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone()
-            )
+            return dict(db.execute("SELECT * FROM cache WHERE path=?", (path,)).fetchone())
 
     def _cache_size(self):
         with self.connection as db:
@@ -663,9 +647,7 @@ def cache_file(
     m = hashlib.sha256()
     m.update(owner.encode("utf-8"))
 
-    m.update(
-        json.dumps(args, sort_keys=True, default=default_serialiser).encode("utf-8")
-    )
+    m.update(json.dumps(args, sort_keys=True, default=default_serialiser).encode("utf-8"))
     m.update(json.dumps(hash_extra, sort_keys=True).encode("utf-8"))
     m.update(json.dumps(extension, sort_keys=True).encode("utf-8"))
 
@@ -701,9 +683,7 @@ def cache_file(
         lock = path + ".lock"
 
         with FileLock(lock):
-            if not os.path.exists(
-                path
-            ):  # Check again, another thread/process may have created the file
+            if not os.path.exists(path):  # Check again, another thread/process may have created the file
                 owner_data = create(path + ".tmp", args)
 
                 os.rename(path + ".tmp", path)

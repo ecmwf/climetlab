@@ -9,7 +9,8 @@
 import logging
 
 from .argument import Argument
-from .transformers import AvailabilityChecker, KwargsAliasTransformer
+from .transformers import AvailabilityChecker
+from .transformers import KwargsAliasTransformer
 
 LOG = logging.getLogger(__name__)
 
@@ -79,9 +80,7 @@ class InputManager:
             a.add_format_transformers(self._pipeline)
 
     def apply_to_kwargs_before_default(self, kwargs):
-        LOG.debug(
-            f"Apply pipeline to kwargs before resolving default values: {safe_to_str(kwargs)}"
-        )
+        LOG.debug(f"Apply pipeline to kwargs before resolving default values: {safe_to_str(kwargs)}")
         for t in self.pipeline:
             if hasattr(t, "name"):
                 LOG.debug(f" - {t.name}: apply {t}.")

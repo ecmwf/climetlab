@@ -3,20 +3,20 @@
 Climetlab Plugin mechanism
 ==========================
 
-This document discuss how plugins are integrated into CliMetLab. There are two ways to add 
+This document discuss how plugins are integrated into CliMetLab. There are two ways to add
 a plugin into CliMetLab:
 
 - A Python package using the standard `Python plugin <https://packaging.python.org/guides/creating-and-discovering-plugins>`_
   mechanism based on ``entry_points``. This is the generic CliMetLab plugin mechanism.
 
 - A YAML file can be also be used to create plugins, when the plugin is simple enough
-  and used only generic predefined code. 
+  and used only generic predefined code.
   (currently only for :doc:`dataset plugins </contributing/datasets>`).
 
 Plugin as python packages using ``entry_points``
 ------------------------------------------------
 
-During the installation of the pip package, the plugin registers itself thanks to 
+During the installation of the pip package, the plugin registers itself thanks to
 the entry points in its setup.py file, making CliMetLab aware of the new capabilities.
 Then, the user can take advantage of the shared code though the enhanced
 :py:func:`climetlab.load_dataset()`, :py:func:`climetlab.load_source()`

@@ -16,7 +16,8 @@ import pytest
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
-from indexing_fixtures import check_sel_and_order, get_fixtures  # noqa: E402
+from indexing_fixtures import check_sel_and_order  # noqa: E402
+from indexing_fixtures import get_fixtures
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
@@ -108,9 +109,7 @@ def test_indexing_order_by_with_method(params, levels, source_name):
 
 
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
-@pytest.mark.parametrize(
-    "levels", ([500, 850], [850, 500], ["500", "850"], ["850", "500"])
-)
+@pytest.mark.parametrize("levels", ([500, 850], [850, 500], ["500", "850"], ["850", "500"]))
 # @pytest.mark.parametrize("source_name", ["indexed-directory", "list-of-dicts", "file"])
 @pytest.mark.parametrize("source_name", ["indexed-directory"])
 def test_indexing_order_ascending_descending(params, levels, source_name):

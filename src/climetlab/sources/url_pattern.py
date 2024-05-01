@@ -14,9 +14,7 @@ from climetlab.utils.patterns import Pattern
 class UrlPattern(MultiUrl):
     def __init__(self, pattern, *args, filter=None, merger=None, force=False, **kwargs):
         urls = Pattern(pattern).substitute(*args, **kwargs)
-        super().__init__(
-            urls, *args, filter=filter, merger=merger, force=force, **kwargs
-        )
+        super().__init__(urls, *args, filter=filter, merger=merger, force=force, **kwargs)
 
 
 source = UrlPattern

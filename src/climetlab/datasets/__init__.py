@@ -179,9 +179,7 @@ class YamlDefinedDataset(Dataset):
 
 def _dataset_from_dict(name, dataset, path=None):
     attributes = dataset.get("metadata", {})
-    attributes.update(
-        dict(_path=path, _src=dataset["source"], _args=dataset.get("args", {}))
-    )
+    attributes.update(dict(_path=path, _src=dataset["source"], _args=dataset.get("args", {})))
     return type(camel(name), (YamlDefinedDataset,), attributes)
 
 

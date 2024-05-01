@@ -12,7 +12,8 @@
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import MISSING, TEST_DATA_URL
+from climetlab.testing import MISSING
+from climetlab.testing import TEST_DATA_URL
 
 
 @pytest.mark.skipif(MISSING("tensorflow"), reason="No tensorflow")

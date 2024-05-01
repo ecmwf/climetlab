@@ -34,9 +34,7 @@ class NonListMixin:
     def cast(self, value):
         if isinstance(value, (tuple, list)):
             if len(value) != 1:
-                raise TypeError(
-                    f"Expected non-list but was {type(value).__name__}: {value}"
-                )
+                raise TypeError(f"Expected non-list but was {type(value).__name__}: {value}")
             value = value[0]
         return self._cast(value)
 
@@ -96,9 +94,7 @@ class _EnumType(Type):
             if same(value, v):
                 return v
 
-        raise ValueError(
-            f"Invalid value '{value}', possible values are {self.values} ({self.__class__.__name__})"
-        )
+        raise ValueError(f"Invalid value '{value}', possible values are {self.values} ({self.__class__.__name__})")
 
     def update(self, availability):
         # TODO: if value is none : use availability w
@@ -175,9 +171,7 @@ class IntListType(_IntType, ListMixin):
                 value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
 
             elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-                value = list(
-                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
-                )
+                value = list(range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4])))
         return super().cast(value)
 
 
@@ -377,9 +371,7 @@ def _infer_type(**kwargs):
     # normalize("name", ["a", "b", "c"]) and similar
     if isinstance(values, (list, tuple)):  # and type is None:
         if type not in (None, "enum", "enum-list"):
-            LOG.warning(
-                f"Type ignored with enums, values={values}, type={type} and multiple={multiple}"
-            )
+            LOG.warning(f"Type ignored with enums, values={values}, type={type} and multiple={multiple}")
         if multiple is None and type == "enum-list":
             multiple = True
 
@@ -421,6 +413,4 @@ def _infer_type(**kwargs):
         if multiple is None:
             return AnySingleOrListType()
 
-    raise ValueError(
-        f"Cannot infer type from values={values}, type={type} and multiple={multiple}"
-    )
+    raise ValueError(f"Cannot infer type from values={values}, type={type} and multiple={multiple}")

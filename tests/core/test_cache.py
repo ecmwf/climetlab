@@ -16,14 +16,13 @@ import os
 
 import pytest
 
-from climetlab import load_source, settings
-from climetlab.core.caching import (
-    cache_entries,
-    cache_file,
-    cache_size,
-    dump_cache_database,
-    purge_cache,
-)
+from climetlab import load_source
+from climetlab import settings
+from climetlab.core.caching import cache_entries
+from climetlab.core.caching import cache_file
+from climetlab.core.caching import cache_size
+from climetlab.core.caching import dump_cache_database
+from climetlab.core.caching import purge_cache
 from climetlab.core.temporary import temp_directory
 from climetlab.testing import TEST_DATA_URL
 
@@ -146,9 +145,7 @@ def test_multiprocessing():
 
     def func(val):
         # import climetlab as cml
-        source = cml.load_source(
-            "url", "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib"
-        )
+        source = cml.load_source("url", "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib")
         source.to_xarray()
         return val + 1
 

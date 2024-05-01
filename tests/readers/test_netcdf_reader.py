@@ -14,9 +14,11 @@ import datetime
 import pytest
 
 import climetlab as cml
-from climetlab import load_source, plot_map
+from climetlab import load_source
+from climetlab import plot_map
 from climetlab.readers.netcdf.field import NetCDFField
-from climetlab.testing import NO_CDS, climetlab_file
+from climetlab.testing import NO_CDS
+from climetlab.testing import climetlab_file
 
 
 def test_netcdf():
@@ -129,9 +131,7 @@ def test_datetime():
 
     assert s.to_datetime() == datetime.datetime(2020, 5, 13, 12), s.to_datetime()
 
-    assert s.to_datetime_list() == [
-        datetime.datetime(2020, 5, 13, 12)
-    ], s.to_datetime_list()
+    assert s.to_datetime_list() == [datetime.datetime(2020, 5, 13, 12)], s.to_datetime_list()
 
     s = load_source(
         "climetlab-testing",

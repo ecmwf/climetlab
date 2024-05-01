@@ -14,7 +14,9 @@ import logging
 import pytest
 
 import climetlab as cml
-from climetlab.testing import MISSING, NO_CDS, climetlab_file
+from climetlab.testing import MISSING
+from climetlab.testing import NO_CDS
+from climetlab.testing import climetlab_file
 
 LOG = logging.getLogger(__name__)
 
@@ -62,7 +64,9 @@ def test_tfdataset_grib_4():
 @pytest.mark.skipif(NO_CDS, reason="No access to CDS")
 @pytest.mark.skipif(MISSING("tensorflow"), reason="Tensorflow not installed")
 def test_tfdataset_2():
-    from tensorflow.keras.layers import Dense, Flatten, Input
+    from tensorflow.keras.layers import Dense
+    from tensorflow.keras.layers import Flatten
+    from tensorflow.keras.layers import Input
     from tensorflow.keras.models import Sequential
 
     ds = cml.load_dataset("high-low")

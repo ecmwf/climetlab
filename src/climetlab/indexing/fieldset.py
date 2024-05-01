@@ -8,7 +8,9 @@
 #
 
 from climetlab.core import Base
-from climetlab.core.index import Index, MaskIndex, MultiIndex
+from climetlab.core.index import Index
+from climetlab.core.index import MaskIndex
+from climetlab.core.index import MultiIndex
 
 
 class Field(Base):

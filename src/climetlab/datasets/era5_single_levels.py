@@ -46,9 +46,7 @@ class Era5SingleLevels(Dataset):
         sources = []
         for year in range(period[0], period[1] + 1):
             request["year"] = year
-            sources.append(
-                load_source("cds", "reanalysis-era5-single-levels", **request)
-            )
+            sources.append(load_source("cds", "reanalysis-era5-single-levels", **request))
 
         self.source = load_source("multi", sources)
 

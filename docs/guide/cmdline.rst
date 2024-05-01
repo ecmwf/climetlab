@@ -32,4 +32,3 @@ prompt. To exit the interactive prompt use Control+D.
 
 
 .. module-output:: generate_cmdline_help
-

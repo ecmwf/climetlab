@@ -62,14 +62,10 @@ def plot_style(name, path):
         sample = gallery["sample"]
         if "source" in sample:
             source = sample["source"]
-            data = get_source(
-                source["name"], source.get("to_pandas"), **source.get("args", {})
-            )
+            data = get_source(source["name"], source.get("to_pandas"), **source.get("args", {}))
         else:
             dataset = sample["dataset"]
-            data = get_dataset(
-                dataset["name"], dataset.get("to_pandas"), **dataset.get("args", {})
-            )
+            data = get_dataset(dataset["name"], dataset.get("to_pandas"), **dataset.get("args", {}))
     else:
         if "msymb" in yaml["magics"]:
             data = get_dataset(

@@ -12,7 +12,8 @@ import json
 
 from termcolor import colored
 
-from .tools import parse_args, print_table
+from .tools import parse_args
+from .tools import print_table
 
 
 class SettingsCmd:

@@ -29,11 +29,7 @@ class Enum:
 
     def substitute(self, value, name):
         if self.enum and value not in self.enum:
-            raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected one of {}".format(
-                    value, name, self.enum
-                )
-            )
+            raise ValueError("Invalid value '{}' for parameter '{}', expected one of {}".format(value, name, self.enum))
         return value
 
 
@@ -43,11 +39,7 @@ class Int:
 
     def substitute(self, value, name):
         if not isinstance(value, int):
-            raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected an integer".format(
-                    value, name
-                )
-            )
+            raise ValueError("Invalid value '{}' for parameter '{}', expected an integer".format(value, name))
         return self.format % value
 
 
@@ -57,11 +49,7 @@ class Float:
 
     def substitute(self, value, name):
         if not isinstance(value, (int, float)):
-            raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected a float".format(
-                    value, name
-                )
-            )
+            raise ValueError("Invalid value '{}' for parameter '{}', expected a float".format(value, name))
 
         return self.format % value
 
@@ -80,11 +68,7 @@ class Str:
 
     def substitute(self, value, name):
         if not isinstance(value, str):
-            raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected a string".format(
-                    value, name
-                )
-            )
+            raise ValueError("Invalid value '{}' for parameter '{}', expected a string".format(value, name))
         return self.format % value
 
 
@@ -194,9 +178,7 @@ class Pattern:
 
         seen = set()
         result = []
-        for n in (
-            dict(zip(params.keys(), x)) for x in itertools.product(*params.values())
-        ):
+        for n in (dict(zip(params.keys(), x)) for x in itertools.product(*params.values())):
             m = self.substitute(n)
             if m not in seen:
                 seen.add(m)

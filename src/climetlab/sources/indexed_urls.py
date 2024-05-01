@@ -43,9 +43,7 @@ class IndexedUrls(IndexedSource):
         **kwargs,
     ):
         if isinstance(pattern, PerUrlIndex):
-            warnings.warn(
-                "Passing a PerUrlIndex object is obsolete, please update your code."
-            )
+            warnings.warn("Passing a PerUrlIndex object is obsolete, please update your code.")
             pattern = pattern.pattern
             print("PATTERN", pattern)
 

@@ -20,9 +20,7 @@ LOG = logging.getLogger(__name__)
 
 class NoMagics:
     def plot(self, *args, **kwargs):
-        raise NotImplementedError(
-            "Magics was not loaded successfully, plotting is not supported."
-        )
+        raise NotImplementedError("Magics was not loaded successfully, plotting is not supported.")
 
 
 try:
@@ -62,9 +60,7 @@ class Action:
         return self.__class__.__name__
 
     def execute(self):
-        return getattr(macro, self.action)(
-            **convert(self.action, self.kwargs)
-        ).execute()
+        return getattr(macro, self.action)(**convert(self.action, self.kwargs)).execute()
 
     def update(self, action, values):
         if not isinstance(self, action):

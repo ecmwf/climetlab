@@ -70,7 +70,7 @@ account has not been verified.
 
 .. code-block:: html
 
-  WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) 
+  WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None))
   after connection broken by 'NewConnectionError(': Failed to establish a new connection:
   [Errno -3] Temporary failure in name resolution')':....
 

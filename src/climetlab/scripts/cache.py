@@ -16,10 +16,12 @@ import shutil
 from termcolor import colored
 
 from climetlab.core.settings import SETTINGS
-from climetlab.utils import humanize, tqdm
+from climetlab.utils import humanize
+from climetlab.utils import tqdm
 from climetlab.utils.dates import to_datetime
 
-from .tools import parse_args, print_table
+from .tools import parse_args
+from .tools import print_table
 
 LOG = logging.getLogger(__name__)
 
@@ -155,9 +157,7 @@ class CacheCmd:
     @parse_args(
         json=dict(action="store_true", help="produce a JSON output"),
         all=dict(action="store_true"),
-        path=dict(
-            action="store_true", help="print the path of cache directory and exit"
-        ),
+        path=dict(action="store_true", help="print the path of cache directory and exit"),
         sort=dict(
             type=str,
             metavar="KEY",
@@ -176,7 +176,8 @@ class CacheCmd:
         command.
         Examples: climetlab cache --all
         """
-        from climetlab.core.caching import cache_directory, dump_cache_database
+        from climetlab.core.caching import cache_directory
+        from climetlab.core.caching import dump_cache_database
 
         if args.path:
             print(cache_directory())

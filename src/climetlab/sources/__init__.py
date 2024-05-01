@@ -145,9 +145,7 @@ class SourceMaker:
             )
 
         if name.startswith("http://") or name.startswith("https://"):
-            raise ValueError(
-                f'"{name}" is not a valid source name. Did you mean load_source("url", "{name}") ?'
-            )
+            raise ValueError(f'"{name}" is not a valid source name. Did you mean load_source("url", "{name}") ?')
 
         klass = find_plugin(os.path.dirname(__file__), name, loader)
 

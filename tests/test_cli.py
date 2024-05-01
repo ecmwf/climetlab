@@ -15,7 +15,8 @@ import yaml
 
 from climetlab import settings
 from climetlab.core.temporary import temp_env
-from climetlab.scripts.main import CliMetLabApp, command_list
+from climetlab.scripts.main import CliMetLabApp
+from climetlab.scripts.main import command_list
 
 LOG = logging.getLogger(__name__)
 

@@ -16,7 +16,8 @@ import numpy as np
 from climetlab.indexing.fieldset import Field
 from climetlab.utils.bbox import BoundingBox
 
-from .coords import LevelSlice, TimeSlice
+from .coords import LevelSlice
+from .coords import TimeSlice
 from .dataset import DataSet
 
 
@@ -66,9 +67,7 @@ class NetCDFField(Field):
     def plot_map(self, backend):
         dimensions = dict((s.name, s.index) for s in self.slices)
 
-        backend.bounding_box(
-            north=self.north, south=self.south, west=self.west, east=self.east
-        )
+        backend.bounding_box(north=self.north, south=self.south, west=self.west, east=self.east)
 
         backend.plot_netcdf(self.owner.path, self.variable, dimensions)
 
@@ -94,11 +93,7 @@ class NetCDFField(Field):
                 return {k: tidy(v) for k, v in x.items()}
             return x
 
-        return tidy(
-            self.owner.xr_dataset[
-                self.owner.xr_dataset[self.variable].grid_mapping
-            ].attrs
-        )
+        return tidy(self.owner.xr_dataset[self.owner.xr_dataset[self.variable].grid_mapping].attrs)
 
     # Compatibility to GRIb fields below
 

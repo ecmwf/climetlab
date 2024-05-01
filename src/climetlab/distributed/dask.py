@@ -108,9 +108,7 @@ class DaskDeploy:
 
     def _repr_html_(self):
         dashboard = self.cluster.dashboard_link
-        dashboard = re.sub(
-            "http://[0-9\\.]*:", "https://localhost:48167/proxy/", dashboard
-        )
+        dashboard = re.sub("http://[0-9\\.]*:", "https://localhost:48167/proxy/", dashboard)
         return f"Cluster={self.cluster}, Client={self.client}, Dashboard:<a href='{dashboard}'>{dashboard}</a>"
 
     @property
@@ -121,9 +119,7 @@ class DaskDeploy:
 
 def start_dask(name_or_yaml_filename, **kwargs):
     if len(CURRENT_DEPLOYS) > 0:
-        LOG.warn(
-            f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running)."
-        )
+        LOG.warn(f"Creating multiple dask clusters ({len(CURRENT_DEPLOYS)}) already running).")
 
     _, ext = os.path.splitext(name_or_yaml_filename)
     if ext in (".yaml", ".yml"):

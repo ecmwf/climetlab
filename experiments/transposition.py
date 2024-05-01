@@ -287,15 +287,11 @@ class TimeseriesWriter(Timeseries):
 
         print(f"shape_i = {self.shape_i} values on each field (dim i)")
         print(f"shape_j = {self.shape_j} fields (dim j)")
-        print(
-            f"Total shape = {self.shape[0]} x {self.shape[1]} = {self.shape[0]*self.shape[1]}"
-        )
+        print(f"Total shape = {self.shape[0]} x {self.shape[1]} = {self.shape[0]*self.shape[1]}")
 
         n_expected_fields = math.prod([len(v) for k, v in self.coords_j.items()])
         if n_expected_fields != len(self.source):
-            raise ValueError(
-                f"Expecting {n_expected_fields} fields but got {len(self.source)}."
-            )
+            raise ValueError(f"Expecting {n_expected_fields} fields but got {len(self.source)}.")
 
     def infer_shape_i(self):
         return math.prod(self.read_one_field(0).to_numpy().shape)
@@ -329,14 +325,10 @@ class TimeseriesWriter(Timeseries):
             threading.Thread(target=worker(self.field_queue), daemon=True).start()
 
         for i in range(0, self.nthreads_write):
-            threading.Thread(
-                target=worker_on_file(self.block_queue, self.filename), daemon=True
-            ).start()
+            threading.Thread(target=worker_on_file(self.block_queue, self.filename), daemon=True).start()
 
         for i in range(0, self.nthreads_ready):
-            threading.Thread(
-                target=worker(self.ready_batch_of_fields_queue), daemon=True
-            ).start()
+            threading.Thread(target=worker(self.ready_batch_of_fields_queue), daemon=True).start()
 
         all_bofs = AllBatchesOfFields(
             self.ready_batch_of_fields_queue,
@@ -406,9 +398,7 @@ class TimeseriesReader(Timeseries):
         print(
             f"Reading file {self.filename}, expecting {self.shape} = {math.prod(self.shape) * np.dtype(self.dtype).itemsize} bytes"
         )
-        self.array = np.memmap(
-            self.filename, dtype=np.dtype(self.dtype), mode="r", shape=self.shape
-        )
+        self.array = np.memmap(self.filename, dtype=np.dtype(self.dtype), mode="r", shape=self.shape)
 
     def to_xarray(self):
         import xarray as xr
@@ -460,9 +450,7 @@ def test1():
 
 def test2():
     source = FakeSource(18, shape=(24))
-    t = WritterClass(
-        source, filename="transpose.2.bin", n_gridpoints=200, n_features=10
-    )
+    t = WritterClass(source, filename="transpose.2.bin", n_gridpoints=200, n_features=10)
     t.run()
     r = TimeseriesReader(filename="transpose.2.bin")
     xds = r.to_xarray()
@@ -479,9 +467,7 @@ def test3():
 
 def test4():
     source = FakeSource(6, 5, shape=(24, 36))
-    t = WritterClass(
-        source, filename="transpose.4.bin", n_gridpoints=200, n_features=50
-    )
+    t = WritterClass(source, filename="transpose.4.bin", n_gridpoints=200, n_features=50)
     t.run()
     r = TimeseriesReader(filename="transpose.4.bin")
     xds = r.to_xarray()

@@ -32,9 +32,7 @@ def parse_args(epilog="", **kwargs):
             add_help=False,
         )
         # custom help to avoid exiting from climetlab cli.
-        p.add_argument(
-            "-h", "--help", action="store_true", help="show this help message and exit"
-        )
+        p.add_argument("-h", "--help", action="store_true", help="show this help message and exit")
 
         for k, v in kwargs.items():
             k = k.replace("_", "-")

@@ -1,7 +1,10 @@
 # flake8: noqa
 import tensorflow as tf
 from keras import backend as K
-from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Reshape
 from tensorflow.keras.models import Sequential
 
 import climetlab as cml
@@ -30,9 +33,7 @@ def dataset(ds):
     options = tf.data.Options()
     options.threading.private_threadpool_size = 10
     options.deterministic = False
-    options.experimental_distribute.auto_shard_policy = (
-        tf.data.experimental.AutoShardPolicy.DATA
-    )
+    options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
 
     return (
         ds.to_tfdataset()

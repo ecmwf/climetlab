@@ -16,14 +16,18 @@ from importlib import import_module
 
 from termcolor import colored
 
-from .tools import experimental, parse_args, print_table
+from .tools import experimental
+from .tools import parse_args
+from .tools import print_table
 
 
 def version(module):
     try:
-        from importlib.metadata import PackageNotFoundError, version
+        from importlib.metadata import PackageNotFoundError
+        from importlib.metadata import version
     except Exception:
-        from importlib_metadata import PackageNotFoundError, version
+        from importlib_metadata import PackageNotFoundError
+        from importlib_metadata import version
 
     try:
         return version(module)
@@ -92,9 +96,7 @@ class CheckCmd:
 
         for name in ["eccodes", "magics"]:
             try:
-                print(
-                    f"  {name} from ecmwflibs: ok {versions[name]} ({ecmwflibs.find(name)})"
-                )
+                print(f"  {name} from ecmwflibs: ok {versions[name]} ({ecmwflibs.find(name)})")
             except Exception as e:  # noqa: F841
                 print(f"  {name} from ecmwflib: Warning: ecmwflibs cannot find {name}")
 
@@ -119,17 +121,13 @@ class CheckCmd:
                 continue
             # if name == "eccodes":
             #     more = f" (using .lib={lib.lib})"
-            print(
-                f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}"
-            )
+            print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)}){more}")
 
         print("Checking optional dependencies...")
         for name in ["folium", "pdbufr", "pyodc"]:
             try:
                 lib = import_module(name)
-                print(
-                    f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})"
-                )
+                print(f"  {name}: ok {lib.__version__} ({os.path.dirname(lib.__file__)})")
             except Exception as e:
                 print(e)
                 print(f"  Warning: cannot import {name}. Limited capabilities.")
@@ -237,9 +235,7 @@ class CheckCmd:
         if args.json:
             print(json.dumps(result, indent=4, sort_keys=True))
         else:
-            COLORS = dict(
-                missing="red", damaged="red", builtin="blue", namespace="magenta"
-            )
+            COLORS = dict(missing="red", damaged="red", builtin="blue", namespace="magenta")
             items = []
             colours = []
             for k, v in sorted(result.items()):

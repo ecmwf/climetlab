@@ -121,9 +121,7 @@ def test_overlapping_bbox_1():
         sets.append([one, one, one, two, one, two, one, three])
         for i, s in enumerate(sets):
             merged = BoundingBox.multi_merge(s)
-            expected = BoundingBox(
-                east=offset + 60, west=offset + 10, north=90, south=-90
-            )
+            expected = BoundingBox(east=offset + 60, west=offset + 10, north=90, south=-90)
             assert merged.east == expected.east, (
                 i,
                 merged.east,
@@ -148,9 +146,7 @@ def test_overlapping_bbox_1():
         sets.append([one, one, one, two, four, one, two, one, three])
         for i, s in enumerate(sets):
             merged = BoundingBox.multi_merge(s)
-            expected = BoundingBox(
-                east=offset + 60, west=offset - 200, north=90, south=-90
-            )
+            expected = BoundingBox(east=offset + 60, west=offset - 200, north=90, south=-90)
             assert merged.east % 360 == expected.east % 360, (
                 i,
                 offset,

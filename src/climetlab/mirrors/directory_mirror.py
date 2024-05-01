@@ -15,7 +15,8 @@ from climetlab.sources.ecmwf_open_data import EODRetriever
 from climetlab.sources.file import FileSource
 from climetlab.sources.url import Url
 
-from . import BaseMirror, MirrorConnection
+from . import BaseMirror
+from . import MirrorConnection
 
 LOG = logging.getLogger(__name__)
 
