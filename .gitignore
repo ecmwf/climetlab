@@ -171,3 +171,4 @@ tempCodeRunnerFile.py
 *.dot
 *.zarr/
 testdata/
+_version.py

@@ -11,7 +11,8 @@
 
 import pytest
 
-from climetlab.decorators import availability, normalize
+from climetlab.decorators import availability
+from climetlab.decorators import normalize
 
 
 def name_no_default(name):

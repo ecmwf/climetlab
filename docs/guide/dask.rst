@@ -67,7 +67,7 @@ Access the dask logs
 .. todo::
    Not implemented yet.
 
-Stop the dask cluster 
+Stop the dask cluster
 *********************
 
 The dask cluster and client will usually stop automatically when the python process ends.
@@ -101,7 +101,7 @@ Create the yaml file $HOME/.climetlab/dask/hpc-name-config-1.yaml. Then use it w
 .. note::
 
    For HPC system admin:
-   Adding yaml files in /opt/climetlab/dask/*.yaml will give global access to all users. 
+   Adding yaml files in /opt/climetlab/dask/*.yaml will give global access to all users.
 
 
 Reuse the dask client

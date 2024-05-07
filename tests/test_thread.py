@@ -11,7 +11,8 @@
 
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from climetlab.core.thread import SoftThreadPool
 

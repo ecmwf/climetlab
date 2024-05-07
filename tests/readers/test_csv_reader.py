@@ -14,7 +14,8 @@ import mimetypes
 import pytest
 
 import climetlab as cml
-from climetlab.testing import MISSING, TEST_DATA_URL
+from climetlab.testing import MISSING
+from climetlab.testing import TEST_DATA_URL
 
 
 def test_csv_1():

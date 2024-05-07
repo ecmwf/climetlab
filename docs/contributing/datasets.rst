@@ -21,11 +21,11 @@ And more examples can be found in the non-exhaustive
 :doc:`list of CliMetLab plugins <../guide/pluginlist>`.
 
 .. note::
-  
+
   **Naming convention**
 
   - A plugin package name (pip) should preferably start with ``climetlab-``
-    and use dashes "-". 
+    and use dashes "-".
   - The Python package to import should start with
     :py:class:`climetlab\_` and must use underscores "_".
   - A CliMetLab dataset defined by a plugin should start with
@@ -56,7 +56,7 @@ Here is a `verbose output of running the plugin creation script <https://raw.git
 
 .. note::
 
-  **"Unknown command plugin_create_dataset"** This error 
+  **"Unknown command plugin_create_dataset"** This error
   happens if you have not installed the package `climetlab-plugin-tools`.
 
     .. code-block:: bash
@@ -84,7 +84,7 @@ and here are more details about :ref:`how on CliMetLab uses it<plugins-reference
    description="Example climetlab external dataset plugin",
 
    entry_points={"climetlab.datasets":
-    ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
+    ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]
    },
 
   )
@@ -92,7 +92,7 @@ and here are more details about :ref:`how on CliMetLab uses it<plugins-reference
 Once `entry_point` has registered the class, the end-user can use this external plugin to access it
 
 .. code-block:: python
-  
+
   import climetlab as cml
   cml.load_dataset("dataset-plugin-rain-observations")
 
@@ -113,7 +113,7 @@ The folder ``notebooks`` in each plugin can be used to store usage example
 or demo on how to use the data, such as this `notebook <https://github.com/ecmwf-lab/climetlab-plugin-tools/blob/main/tests/dataset/generic/climetlab-dataset-plugin.ref/notebooks/demo_rain_observations.ipynb>`_,
 Notebook are automatically tested if the repository is on github.
 
-Links on the README file are pointing to binder, colab, etc. to run the automatically created notebook. 
+Links on the README file are pointing to binder, colab, etc. to run the automatically created notebook.
 
 Manually creating the Python package
 ------------------------------------
@@ -132,8 +132,8 @@ The dataset name can be changed by changing the ``setup.py`` file.
 
 .. code-block:: python
 
-   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
-   + ["dataset-plugin-new-name         =climetlab_dataset_plugin.rain_observations:RainObservations"]  
+   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]
+   + ["dataset-plugin-new-name         =climetlab_dataset_plugin.rain_observations:RainObservations"]
 
 A good practice is to change keep the class name in sync with the dataset name.
 
@@ -145,8 +145,8 @@ New datasets can be added to the plugin, as long as the corresponding class is c
 
 .. code-block:: python
 
-   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]  
-   + ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations",  
+   - ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations"]
+   + ["dataset-plugin-rain-observations=climetlab_dataset_plugin.rain_observations:RainObservations",
    +  "dataset-plugin-rain-forecast    =climetlab_dataset_plugin.rain_observations:RainForecast"]
 
 

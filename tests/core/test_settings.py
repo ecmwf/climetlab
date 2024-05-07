@@ -16,7 +16,8 @@ import yaml
 
 import climetlab.plotting
 from climetlab import settings
-from climetlab.core.data import clear_cache, get_data_entry
+from climetlab.core.data import clear_cache
+from climetlab.core.data import get_data_entry
 from climetlab.core.plugins import directories
 from climetlab.core.temporary import temp_directory
 
@@ -148,9 +149,7 @@ def test_temporary():
 
     with settings.temporary("plotting-options", {"width": 100}):
         assert settings.get("styles-directories") == ["/c", "/d"]
-        assert settings.get("plotting-options") == {"width": 100}, settings.get(
-            "plotting-options"
-        )
+        assert settings.get("plotting-options") == {"width": 100}, settings.get("plotting-options")
         settings.set("plotting-options", {"width": 200})
         assert settings.get("plotting-options") == {"width": 200}
         settings.reset()
@@ -215,9 +214,7 @@ def test_numbers():
             assert settings.get("maximum-cache-size") == 1024 * 1024 * 1024 * 1024
 
             settings.set("maximum-cache-size", "1P")
-            assert (
-                settings.get("maximum-cache-size") == 1024 * 1024 * 1024 * 1024 * 1024
-            )
+            assert settings.get("maximum-cache-size") == 1024 * 1024 * 1024 * 1024 * 1024
 
             settings.set("maximum-cache-size", None)
             assert settings.get("maximum-cache-size") is None

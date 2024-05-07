@@ -93,9 +93,7 @@ def test_constant_3():
 
     date = sample[0].datetime()
     date_plus_6h = date + datetime.timedelta(hours=6)
-    a = load_source(
-        "constants", sample, date=date_plus_6h, param="cos_solar_zenith_angle"
-    )
+    a = load_source("constants", sample, date=date_plus_6h, param="cos_solar_zenith_angle")
     b = load_source("constants", sample, date=date, param="cos_solar_zenith_angle+6h")
     assert np.all(a.to_numpy() == b.to_numpy())
     assert a[0].metadata("param") == "cos_solar_zenith_angle"
@@ -103,9 +101,7 @@ def test_constant_3():
 
     date = sample[0].datetime()
     date_minus_30d = date + datetime.timedelta(days=-30)
-    a = load_source(
-        "constants", sample, date=date_minus_30d, param="cos_solar_zenith_angle"
-    )
+    a = load_source("constants", sample, date=date_minus_30d, param="cos_solar_zenith_angle")
     b = load_source("constants", sample, date=date, param="cos_solar_zenith_angle-30d")
     assert np.all(a.to_numpy() == b.to_numpy())
     assert a[0].metadata("param") == "cos_solar_zenith_angle"

@@ -14,7 +14,8 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from climetlab.core.metadata import annotate, annotation
+from climetlab.core.metadata import annotate
+from climetlab.core.metadata import annotation
 
 
 class Owner:

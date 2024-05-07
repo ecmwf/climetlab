@@ -15,9 +15,13 @@ import sys
 
 import pytest
 
-from climetlab import load_source, settings
+from climetlab import load_source
+from climetlab import settings
 from climetlab.core.temporary import temp_directory
-from climetlab.testing import IN_GITHUB, TEST_DATA_URL, climetlab_file, network_off
+from climetlab.testing import IN_GITHUB
+from climetlab.testing import TEST_DATA_URL
+from climetlab.testing import climetlab_file
+from climetlab.testing import network_off
 
 
 @pytest.mark.skipif(  # TODO: fix

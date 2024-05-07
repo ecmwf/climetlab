@@ -27,21 +27,21 @@ CliMetLab cache configuration is managed through the CliMetLab :doc:`settings`.
     users working is a different use case and should be supported
     through using mirrors.
     `Feedback and feature requests are welcome. <https://github.com/ecmwf/climetlab/issues>`_
-    
+
 .. _cache_location:
 
 Cache location
 --------------
 
   The cache location is defined by the ``cache‑directory`` setting. Its default
-  value depends on your system: 
+  value depends on your system:
     - ``/tmp/climetlab-$USER`` for Linux,
     - ``C:\\Users\\$USER\\AppData\\Local\\Temp\\climetlab-$USER`` for Windows
     - ``/tmp/.../climetlab-$USER`` for MacOS
 
-  
+
   The cache location can be read and modified either with shell command or within python.
-  
+
   .. note::
 
     It is recommended to restart your Jupyter kernels after changing
@@ -78,7 +78,7 @@ Cache location
     >>> cml.settings.get("cache-directory") # Cache directory has been modified
     /big-disk/climetlab-cache
 
-  More generally, the CliMetLab settings can be read, modified, reset 
+  More generally, the CliMetLab settings can be read, modified, reset
   to their default values using the ``climetlab`` command or from python,
   see the :doc:`Settings documentation <settings>`.
 

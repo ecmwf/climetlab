@@ -48,9 +48,7 @@ def test_user_1():
             LOG.exception("unlink(%s)", home_file)
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="Cannot (yet) use expandvars on Windows"
-)
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot (yet) use expandvars on Windows")
 def test_user_2():
     s = load_source("file", climetlab_file("docs/examples/test.grib"))
     home_file = os.path.expanduser("~/.climetlab/test.grib")

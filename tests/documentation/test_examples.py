@@ -13,7 +13,8 @@ import os
 
 import pytest
 
-from climetlab.testing import IN_GITHUB, climetlab_file
+from climetlab.testing import IN_GITHUB
+from climetlab.testing import climetlab_file
 
 # import pytest
 

@@ -17,7 +17,7 @@ It also provides **metadata** and **additional functionalities**.
   or other.
 
 - Relevant **metadata** are attached directly to the dataset to provides
-  additional information such as :ref:`an URL, a citation, licence, etc. <dataset metadata>` 
+  additional information such as :ref:`an URL, a citation, licence, etc. <dataset metadata>`
 
 - **Additional functionalities**:
   When working on data, we are often writing code to transform, preprocess,
@@ -33,7 +33,7 @@ It also provides **metadata** and **additional functionalities**.
 
 .. note::
 
-    :ref:`Dataset <datasets>` objects differ from data :ref:`Source <data-sources>` objects, 
+    :ref:`Dataset <datasets>` objects differ from data :ref:`Source <data-sources>` objects,
     as Datasets refer to a given set of data (such as "the 2m temperature on Europe in 2015",
     while Sources are more generic such as "url").
 
@@ -68,7 +68,7 @@ Other arguments are defined by the plugin maintainer and are
 documented in the plugin documentation (see :doc:`/guide/pluginlist`).
 
 The Dataset object provides methods to access and use its data such as
-``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other 
+``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other
 :ref:`methods that can be used to access data <base-class-methods>` from a Dataset).
 
 .. code-block:: python

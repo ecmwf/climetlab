@@ -13,7 +13,8 @@
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import MISSING, TEST_DATA_URL
+from climetlab.testing import MISSING
+from climetlab.testing import TEST_DATA_URL
 
 NOT_S3_URL = f"{TEST_DATA_URL}/input"
 S3_URL = "https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
@@ -48,20 +49,12 @@ def test_zarr_source_2():
     assert len(ds.forecast_time) == 2
 
     dates = to_datetime_list(ds.forecast_time)
-    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
+    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 2).strftime("%Y-%m-%d")
+    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 9).strftime("%Y-%m-%d")
 
     dates = to_datetime_list(ds.forecast_time.values)
-    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
+    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 2).strftime("%Y-%m-%d")
+    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2020, 1, 9).strftime("%Y-%m-%d")
 
 
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")
@@ -81,32 +74,16 @@ def test_zarr_source_3():
     assert len(ds.forecast_time) == 8
 
     dates = to_datetime_list(ds.forecast_time)
-    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[2].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[3].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
+    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 2).strftime("%Y-%m-%d")
+    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 9).strftime("%Y-%m-%d")
+    assert dates[2].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 2).strftime("%Y-%m-%d")
+    assert dates[3].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 9).strftime("%Y-%m-%d")
 
     dates = to_datetime_list(ds.forecast_time.values)
-    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[2].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 2).strftime(
-        "%Y-%m-%d"
-    )
-    assert dates[3].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 9).strftime(
-        "%Y-%m-%d"
-    )
+    assert dates[0].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 2).strftime("%Y-%m-%d")
+    assert dates[1].strftime("%Y-%m-%d") == datetime.datetime(2000, 1, 9).strftime("%Y-%m-%d")
+    assert dates[2].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 2).strftime("%Y-%m-%d")
+    assert dates[3].strftime("%Y-%m-%d") == datetime.datetime(2001, 1, 9).strftime("%Y-%m-%d")
 
 
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="Zarr or S3FS not installed")

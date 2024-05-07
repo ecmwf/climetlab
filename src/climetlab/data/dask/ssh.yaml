@@ -1,0 +1,8 @@
+---
+dask:
+  cluster_cls: ssh
+  cluster_kwargs:
+    hosts:
+      - localhost
+      - localhost
+  scale: null

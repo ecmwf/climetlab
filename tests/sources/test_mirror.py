@@ -16,12 +16,16 @@ import sys
 import numpy as np
 import pytest
 
-from climetlab import load_source, settings
+from climetlab import load_source
+from climetlab import settings
 from climetlab.core.caching import purge_cache
 from climetlab.core.temporary import temp_directory
-from climetlab.mirrors import _reset_mirrors, get_active_mirrors
+from climetlab.mirrors import _reset_mirrors
+from climetlab.mirrors import get_active_mirrors
 from climetlab.mirrors.directory_mirror import DirectoryMirror
-from climetlab.testing import NO_EOD, OfflineError, network_off
+from climetlab.testing import NO_EOD
+from climetlab.testing import OfflineError
+from climetlab.testing import network_off
 
 
 def load(**kwargs):
@@ -139,9 +143,7 @@ def test_mirror_url_source_env_var_1(mirror_dirs):
     assert len(get_active_mirrors()) == 1, get_active_mirrors()
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="Cannot unlink tmp directory on Windows"
-)
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot unlink tmp directory on Windows")
 @pytest.mark.download
 def test_mirror_url_source_env_var_2(mirror_dirs):
     mirror_dir, _ = mirror_dirs

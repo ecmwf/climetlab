@@ -15,8 +15,10 @@ import numpy as np
 import pytest
 
 from climetlab import load_source
-from climetlab.testing import MISSING, climetlab_file
-from climetlab.utils.dates import to_datetime, to_datetime_list
+from climetlab.testing import MISSING
+from climetlab.testing import climetlab_file
+from climetlab.utils.dates import to_datetime
+from climetlab.utils.dates import to_datetime_list
 
 
 def test_to_datetime_1():
@@ -43,9 +45,7 @@ def test_to_datetime_2():
 
     assert to_datetime("1851-06-25 06:00:00") == datetime.datetime(1851, 6, 25, 6)
     assert to_datetime("1851-06-25T06:00:00") == datetime.datetime(1851, 6, 25, 6)
-    assert to_datetime("1851-06-25T06:00:00Z") == datetime.datetime(
-        1851, 6, 25, 6, tzinfo=datetime.timezone.utc
-    )
+    assert to_datetime("1851-06-25T06:00:00Z") == datetime.datetime(1851, 6, 25, 6, tzinfo=datetime.timezone.utc)
 
     assert to_datetime(-2) == to_datetime(0) - datetime.timedelta(days=2)
 
@@ -89,12 +89,8 @@ def test_to_datetimes_list():
 
     assert len(to_datetime_list((-10, "to", -1))) == 10
 
-    assert to_datetime_list(datetime.datetime(2000, 1, 7)) == [
-        datetime.datetime(2000, 1, 7)
-    ]
-    assert to_datetime_list([datetime.datetime(2000, 1, 7)]) == [
-        datetime.datetime(2000, 1, 7)
-    ]
+    assert to_datetime_list(datetime.datetime(2000, 1, 7)) == [datetime.datetime(2000, 1, 7)]
+    assert to_datetime_list([datetime.datetime(2000, 1, 7)]) == [datetime.datetime(2000, 1, 7)]
     assert to_datetime_list(
         [
             datetime.datetime(2000, 1, 4),
@@ -115,9 +111,7 @@ def test_to_datetimes_list_grib():
 def test_pandas_dates():
     import pandas as pd
 
-    assert to_datetime_list(
-        pd.date_range(start="2020-01-02", end="2020-01-16", freq="w-thu")
-    ) == [
+    assert to_datetime_list(pd.date_range(start="2020-01-02", end="2020-01-16", freq="w-thu")) == [
         datetime.datetime(2020, 1, 2),
         datetime.datetime(2020, 1, 9),
         datetime.datetime(2020, 1, 16),
@@ -142,9 +136,7 @@ def test_pandas_dates_2():
 
 @pytest.mark.skipif(MISSING("zarr", "s3fs"), reason="zarr or s3fs not installed")
 def test_zarr_dates():
-    S3_URL = (
-        "https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
-    )
+    S3_URL = "https://object-store.os-api.cci1.ecmwf.int/climetlab/test-data/0.5/fixtures"
     source = load_source(
         "zarr-s3",
         [

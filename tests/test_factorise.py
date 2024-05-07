@@ -92,9 +92,7 @@ def test_factorise_3():
         intervals=["date"],
     )
 
-    assert _(c.to_list()) == _(
-        [{"date": ["1990-01-01/1990-01-02", "1990-01-04/1990-01-15"]}]
-    )
+    assert _(c.to_list()) == _([{"date": ["1990-01-01/1990-01-02", "1990-01-04/1990-01-15"]}])
 
     assert c.count() == 14
 
@@ -138,9 +136,7 @@ def test_factorise_4():
     assert c.select(date="1990-01-01").count() == 2
     assert c.select(date="1990-01-01").select(param="Z").count() == 1
 
-    assert _(c.select(date="1990-01-01").to_list()) == _(
-        [{"date": ["1990-01-01"], "param": ["T", "Z"]}]
-    )
+    assert _(c.select(date="1990-01-01").to_list()) == _([{"date": ["1990-01-01"], "param": ["T", "Z"]}])
 
     assert _(c.select(date="1990-01-02/1990-01-05").to_list()) == _(
         [
