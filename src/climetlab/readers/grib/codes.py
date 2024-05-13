@@ -189,7 +189,11 @@ class CodesHandle:
 
             if size and size > 1:
                 return eccodes.codes_get_array(self.handle, name)
-            return eccodes.codes_get(self.handle, name)
+            result = eccodes.codes_get(self.handle, name)
+
+            if result == "~" and name == "shortName":
+                return str(self.get("param"))
+            return result
         except eccodes.KeyValueNotFoundError:
             return None
 
