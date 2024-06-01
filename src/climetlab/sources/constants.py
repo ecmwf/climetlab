@@ -1,4 +1,4 @@
-src/climetlab/sources/constants.py# (C) Copyright 2020 ECMWF.
+# (C) Copyright 2020 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -14,7 +14,8 @@ from warnings import warn
 
 import numpy as np
 
-from climetlab.decorators import cached_method, normalize
+from climetlab.decorators import cached_method
+from climetlab.decorators import normalize
 from climetlab.indexing.cube import index_to_coords
 from climetlab.readers.grib.index import GribFieldSet
 from climetlab.utils.dates import to_datetime
@@ -152,9 +153,7 @@ class ConstantMaker:
         return np.sin(radians)
 
     def insolation(self, date):
-        warn(
-            "The function `insolation` is deprecated, please use `cos_solar_zenith_angle` instead"
-        )
+        warn("The function `insolation` is deprecated, please use `cos_solar_zenith_angle` instead")
         return self.cos_solar_zenith_angle(date)
 
     def toa_incident_solar_radiation(self, date):
@@ -299,9 +298,7 @@ class Constants(GribFieldSet):
                 source_or_dataset, "unique_values"
             ), f"{source_or_dataset} (type '{type(source_or_dataset).__name__}') is not a proper source or dataset"
 
-            return source_or_dataset.unique_values(
-                "number", patches={"number": {None: 0}}
-            )["number"]
+            return source_or_dataset.unique_values("number", patches={"number": {None: 0}})["number"]
 
         def find_dates(source_or_dataset):
             if "date" not in self.request and "time" in self.request:
@@ -313,9 +310,7 @@ class Constants(GribFieldSet):
             if "date" in self.request and "time" in self.request:
                 dates = [
                     make_datetime(date, time)
-                    for date, time in itertools.product(
-                        self.request["date"], self.request["time"]
-                    )
+                    for date, time in itertools.product(self.request["date"], self.request["time"])
                 ]
                 assert len(set(dates)) == len(dates), "Duplicates dates in constants."
                 return dates
@@ -355,9 +350,7 @@ class Constants(GribFieldSet):
         if i >= self._len:
             raise IndexError(i)
 
-        date, param, number = index_to_coords(
-            i, (len(self.dates), len(self.params), len(self.numbers))
-        )
+        date, param, number = index_to_coords(i, (len(self.dates), len(self.params), len(self.numbers)))
 
         # assert repeat == 0, "Not implemented"
 
