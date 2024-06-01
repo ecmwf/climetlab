@@ -30,8 +30,8 @@ There are two ways to write GRIB files:
 - To save data from MARS, CDS or other, when GRIB is already the native format of the data,
 use the ``source.save(filename)`` method. This method is implemented only on a sources relying on GRIB.
 
-- CliMetLab also supports writing custom GRIB files, with **modified values or custom attributes** 
-through the function ```cml.new_grib_output()``. See usage example in the example notebook 
+- CliMetLab also supports writing custom GRIB files, with **modified values or custom attributes**
+through the function ```cml.new_grib_output()``. See usage example in the example notebook
 (:ref:`examples`).
 
 
@@ -62,13 +62,13 @@ How to build a index for **one** given URL containing a GRIB file ?
 Then upload the file `large_grib_1.index` and make sure it is available at:
 "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
 
-This allows accessing the data with 
+This allows accessing the data with
 
 .. code-block:: python
 
     cml.load_source("indexed-url",
                     "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.grb"
-    ) 
+    )
 
 
 How to build indexes for a set of URLs containing GRIB files ?
@@ -85,7 +85,7 @@ Then upload the files `large_grib_1.index` and `large_grib_2.index` and make sur
 "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_1.index"
 "https://get.ecmwf.int/repository/test-data/climetlab/test-data/input/indexed-urls/large_grib_2.index"
 
-This allows accessing the data with 
+This allows accessing the data with
 
 .. code-block:: python
 

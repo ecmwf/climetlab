@@ -15,7 +15,8 @@ import yaml
 
 from climetlab import settings
 from climetlab.core.temporary import temp_env
-from climetlab.scripts.main import CliMetLabApp, command_list
+from climetlab.scripts.main import CliMetLabApp
+from climetlab.scripts.main import command_list
 
 LOG = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ LOG = logging.getLogger(__name__)
 def test_cli_no_args(command, capsys):
     app = CliMetLabApp()
     app.onecmd(command)
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
     assert not out.startswith("Unknown command"), out
 
 

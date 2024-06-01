@@ -15,7 +15,9 @@ import sys
 
 import pytest
 
-from climetlab.testing import IN_GITHUB, MISSING, climetlab_file
+from climetlab.testing import IN_GITHUB
+from climetlab.testing import MISSING
+from climetlab.testing import climetlab_file
 
 # See https://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
 
@@ -78,9 +80,7 @@ def notebooks_list():
     reason="python package nbformat not installed",
 )
 @pytest.mark.skipif(not IN_GITHUB, reason="Not on GITHUB")
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="Cannot execute notebooks on Windows"
-)
+@pytest.mark.skipif(sys.platform == "win32", reason="Cannot execute notebooks on Windows")
 @pytest.mark.parametrize("path", notebooks_list())
 def test_notebook(path):
     import nbformat

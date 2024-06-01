@@ -17,8 +17,10 @@ import sys
 import pytest
 
 from climetlab import load_source
-from climetlab.core.temporary import temp_directory, temp_file
-from climetlab.testing import MISSING, TEST_DATA_URL
+from climetlab.core.temporary import temp_directory
+from climetlab.core.temporary import temp_file
+from climetlab.testing import MISSING
+from climetlab.testing import TEST_DATA_URL
 
 LOG = logging.getLogger(__name__)
 

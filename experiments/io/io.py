@@ -79,9 +79,7 @@ class BenchmarkIO:
     def write_log(self):
         logdir = self.LOGDIR
         os.makedirs(logdir, exist_ok=True)
-        with open(
-            f"{logdir}/{self.prefix}io.{self.seek}.{self.chunksize}.csv", "a"
-        ) as f:
+        with open(f"{logdir}/{self.prefix}io.{self.seek}.{self.chunksize}.csv", "a") as f:
             print(f"{self.seek}, {self.chunksize}, {self.tic.total}", file=f)
 
 

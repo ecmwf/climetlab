@@ -26,9 +26,7 @@ def path_to_url(path):
 @pytest.mark.download
 @pytest.mark.small_download
 def test_download_1():
-    url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib?_=%s" % (
-        time.time(),
-    )
+    url = "https://github.com/ecmwf/climetlab/raw/main/docs/examples/test.grib?_=%s" % (time.time(),)
     download_and_cache(url)
 
 

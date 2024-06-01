@@ -1,4 +1,0 @@
----
-dask:
-  cluster_cls: local
-  scale: null

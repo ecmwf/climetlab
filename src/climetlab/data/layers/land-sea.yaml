@@ -1,0 +1,14 @@
+---
+magics:
+  mcoast:
+    map_grid: off
+    map_grid_colour: tan
+    map_label: off
+    map_boundaries: off
+    map_coastline_land_shade: on
+    map_coastline_land_shade_colour: cream
+    map_coastline_sea_shade: on
+    map_coastline_sea_shade_colour: sky
+    map_coastline_colour: tan
+    map_grid_frame: off
+    map_grid_frame_thickness: 5

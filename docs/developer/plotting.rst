@@ -895,42 +895,42 @@ mmap
      - | Default
 
    * - | **subpage_x_axis_type**
-       | 
+       |
      - | "regular", "date", "geoline", "logarithmic"
      - | "regular"
 
    * - | **subpage_y_axis_type**
-       | 
+       |
      - | "regular", "date", "geoline", "logarithmic"
      - | "regular"
 
    * - | **x_min**
-       | 
+       |
      - | float
      - | 0.0
 
    * - | **subpage_x_automatic**
-       | 
+       |
      - | bool
      - | False
 
    * - | **subpage_y_automatic**
-       | 
+       |
      - | bool
      - | False
 
    * - | **x_max**
-       | 
+       |
      - | float
      - | 100.0
 
    * - | **y_min**
-       | 
+       |
      - | float
      - | 0.0
 
    * - | **y_max**
-       | 
+       |
      - | float
      - | 100.0
 
@@ -1646,5 +1646,3 @@ mtable
        | Binning information
      - | bool
      - | True
-
-

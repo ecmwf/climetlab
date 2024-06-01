@@ -26,7 +26,7 @@ A Source also provides metadata and additional functionalities:
     >>> source = cml.load_source(name, *args, **kwargs)
 
 The Source object provides methods to access and use its data such as
-``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other 
+``to_xarray()`` or ``to_pandas()`` or ``to_numpy()`` (there are other
 :ref:`methods that can be used to access data <base-class-methods>` from a data Source).
 
 .. code-block:: python
@@ -38,7 +38,7 @@ The Source object provides methods to access and use its data such as
 
 .. note::
 
-    :ref:`Source <data-sources>` objects differ from data :ref:`Dataset <datasets>` objects, 
+    :ref:`Source <data-sources>` objects differ from data :ref:`Dataset <datasets>` objects,
     as Datasets refer to a given set of data (such as "the 2m temperature on Europe in 2015",
     while Sources are more generic such as "url").
 
@@ -72,7 +72,7 @@ The simplest data source is the ``"file"`` source that accesses a local file.
         >>> import climetlab as cml
         >>> data = cml.load_source("file", "path/to/file")
         >>> data.to_xarray() # for gridded data fields
-        >>> data.to_pandas() # for non-gridded data 
+        >>> data.to_pandas() # for non-gridded data
 
 *CliMetLab* will inspect the content of the file to check for any of the
 supported data formats listed below:
@@ -178,9 +178,9 @@ If the format is not supported, additional code can be included in CliMetLab to 
 url
 ---
 
-The ``"url"`` data source is very similar to the ``"file"`` source. 
+The ``"url"`` data source is very similar to the ``"file"`` source.
 
-This sources downloads the data from the specified address and stores it in the :ref:`cache <caching>`, 
+This sources downloads the data from the specified address and stores it in the :ref:`cache <caching>`,
 then it operates similarly to the :ref:`"file" source <data-sources-file>` above.
 The supported data formats are the same as for the :ref:`"file" source <data-sources-file>`.
 
@@ -315,7 +315,7 @@ are also publicly available.
 To access data from the MARS, you will need to register and retrieve an access token.
 For a more extensive documentation about MARS, please refer to the
 `MARS documentation <https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation>`_ (or its
-`access from the internet <https://confluence.ecmwf.int/display/UDOC/Web-MARS>`_ through its 
+`access from the internet <https://confluence.ecmwf.int/display/UDOC/Web-MARS>`_ through its
 `web API <https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api>`_).
 
 
@@ -379,7 +379,7 @@ Example
     >>> def only_csv(path):
             return path.endswith(".csv")
     >>> source = cml.load_source("zenodo", record_id=5020468, filter=only_csv)
-    >>> source.to_pandas() 
+    >>> source.to_pandas()
 
 .. note::
 

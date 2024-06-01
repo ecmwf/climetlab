@@ -14,7 +14,8 @@ import pytest
 
 import climetlab as cml
 from climetlab.datasets import dataset_from_yaml
-from climetlab.testing import IN_GITHUB, MISSING
+from climetlab.testing import IN_GITHUB
+from climetlab.testing import MISSING
 
 LOG = logging.getLogger(__name__)
 

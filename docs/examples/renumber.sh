@@ -2,7 +2,7 @@
 
 for n in $(seq $1 89)
 do
-   m=$((n+1)) 
+   m=$((n+1))
    f1=$(printf '%02d-' $n)
    f2=$(printf '%02d-' $m)
    p=$(ls $f1*.ipynb 2>/dev/null)

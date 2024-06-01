@@ -92,9 +92,7 @@ def test_cli_index_url(baseurl, capsys):
 @pytest.mark.download
 def test_cli_index_urls(baseurl, capsys):
     app = CliMetLabApp()
-    app.onecmd(
-        f"index_urls --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb"
-    )
+    app.onecmd(f"index_urls --baseurl {baseurl}/test-data/input/indexed-urls large_grib_1.grb large_grib_2.grb")
     out, err = capsys.readouterr()
     lines = out.split("\n")
     if "error" in err.lower():

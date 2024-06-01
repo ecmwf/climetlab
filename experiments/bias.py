@@ -73,18 +73,17 @@ assert shape_out == (1, 91, 180), shape_out
 
 
 def build_model(shape_in, shape_out):
-    from tensorflow.keras.layers import Dense, Flatten, Input, Reshape
+    from tensorflow.keras.layers import Dense
+    from tensorflow.keras.layers import Flatten
+    from tensorflow.keras.layers import Input
+    from tensorflow.keras.layers import Reshape
     from tensorflow.keras.models import Sequential
 
     model = Sequential(name="ML_model")
     model.add(Input(shape=(shape_in[-3], shape_in[-2], shape_in[-1])))
     model.add(Flatten())
     model.add(Dense(shape_out[-3] * shape_out[-2] * shape_out[-1]))
-    model.add(
-        Reshape(
-            target_shape=(shape_out[-3], shape_out[-2], shape_out[-1]), name="output"
-        )
-    )
+    model.add(Reshape(target_shape=(shape_out[-3], shape_out[-2], shape_out[-1]), name="output"))
 
     model.summary()
 

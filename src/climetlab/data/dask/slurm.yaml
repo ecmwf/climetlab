@@ -1,0 +1,15 @@
+---
+dask:
+  cluster_cls: slurm
+  cluster_kwargs:
+    cores: 4
+    memory: 8G
+    walltime: "00:30:00"
+    # job_extra will be renamed job_extra_directives in next version of dask_jobqueue
+    job_extra:
+        - "--qos=np"
+        - "--cpus-per-task=256"
+        - "--ntasks=1"
+    scheduler_options:
+      dashboard_address: 12367
+  scale: 8
