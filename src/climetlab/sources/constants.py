@@ -10,7 +10,6 @@
 import datetime
 import itertools
 import logging
-from warnings import warn
 
 import numpy as np
 
@@ -153,7 +152,7 @@ class ConstantMaker:
         return np.sin(radians)
 
     def insolation(self, date):
-        warn("The function `insolation` is deprecated, please use `cos_solar_zenith_angle` instead")
+        # warn("The function `insolation` is deprecated, please use `cos_solar_zenith_angle` instead")
         return self.cos_solar_zenith_angle(date)
 
     def toa_incident_solar_radiation(self, date):

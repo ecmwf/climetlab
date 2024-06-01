@@ -134,6 +134,10 @@ class GribOutput:
             for k in NOT_IN_EDITION_1:
                 metadata.pop(k, None)
 
+        if int(metadata.get("deleteLocalDefinition", 0)):
+            for k in ("class", "type", "stream", "expver", "setLocalDefinition"):
+                metadata.pop(k, None)
+
         LOG.debug("GribOutput.metadata %s", metadata)
 
         for k, v in metadata.items():
