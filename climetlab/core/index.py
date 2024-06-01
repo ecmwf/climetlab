@@ -94,22 +94,25 @@ class Order(OrderBase):
         actions = {}
 
         def ascending(a, b):
-            if a == b:
+            if a is b or a == b:
                 return 0
-            if b is None or a > b:
+
+            if b is None:
                 return 1
-            if a is None or a < b:
+
+            if a is None:
                 return -1
+
+            if a > b:
+                return 1
+
+            if a < b:
+                return -1
+
             raise ValueError(f"{a},{b}")
 
         def descending(a, b):
-            if a == b:
-                return 0
-            if b is None or a > b:
-                return -1
-            if a is None or a < b:
-                return 1
-            raise ValueError(f"{a},{b}")
+            return -ascending(a, b)
 
         class Compare:
             def __init__(self, order):

@@ -51,3 +51,36 @@ class FieldArray(FieldSet):
 
     def __repr__(self) -> str:
         return f"FieldArray({len(self.fields)})"
+
+
+class UpdateMetadata(Field):
+    def __init__(self, field, **kwargs):
+        self.field = field
+        self.kwargs = kwargs
+
+    def metadata(self, key):
+
+        if key in self.kwargs:
+            return self.kwargs[key]
+
+        return self.field.metadata(key)
+
+    def as_mars(self):
+        result = self.field.as_mars()
+        result.update(self.kwargs)
+        return result
+
+    def __getattr__(self, name):
+        return getattr(self.field, name)
+
+
+class UpdateData(Field):
+    def __init__(self, field, data):
+        self.field = field
+        self.data = data
+
+    def to_numpy(self, *args, **kwargs):
+        return self.data
+
+    def __getattr__(self, name):
+        return getattr(self.field, name)
