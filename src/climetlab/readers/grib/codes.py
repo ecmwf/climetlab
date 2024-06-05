@@ -499,8 +499,8 @@ class GribField(Base):
             return self["gridName"]
 
         if grid_type in ("regular_ll", "rotated_ll"):
-            x = self["DxInDegrees"]
-            y = self["DyInDegrees"]
+            x = round(self["DxInDegrees"] * 1_000_000) / 1_000_000
+            y = round(self["DyInDegrees"] * 1_000_000) / 1_000_000
             assert x == y, (x, y)
             return x
 
