@@ -10,6 +10,7 @@
 import datetime
 import logging
 import re
+from io import IOBase
 
 from climetlab.decorators import normalize
 from climetlab.decorators import normalize_grib_keys
@@ -61,9 +62,16 @@ class Combined:
 
 
 class GribOutput:
-    def __init__(self, filename, split_output=False, template=None, **kwargs):
+    def __init__(self, file, split_output=False, template=None, **kwargs):
         self._files = {}
-        self.filename = filename
+        self.fileobj = None
+        self.filename = None
+
+        if isinstance(file, IOBase):
+            self.fileobj = file
+            split_output = False
+        else:
+            self.filename = file
 
         if split_output:
             self.split_output = re.findall(r"\{(.*?)\}", self.filename)
@@ -80,6 +88,9 @@ class GribOutput:
         return kwargs
 
     def f(self, handle):
+        if self.fileobj:
+            return self.fileobj, None
+
         if self.split_output:
             path = self.filename.format(**{k: handle.get(k) for k in self.split_output})
         else:
