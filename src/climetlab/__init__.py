@@ -24,6 +24,7 @@ from .plotting import new_table
 from .plotting import options as plotting_options
 from .plotting import plot_map
 from .readers import Reader
+from .readers.grib.output import new_grib_coder
 from .readers.grib.output import new_grib_output
 from .sources import Source
 from .sources import get_source as source  # so the user can do: cml.source(...)
@@ -44,6 +45,7 @@ __all__ = [
     "load_source",
     "loaded_modules",
     "new_grib_output",
+    "new_grib_coder",
     "new_plot",
     "new_table",
     "plot_map",
