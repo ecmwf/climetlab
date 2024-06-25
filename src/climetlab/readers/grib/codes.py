@@ -295,6 +295,9 @@ class CodesHandle:
             f.seek(offset)
             return f.read(length)
 
+    def get_message(self):
+        return eccodes.codes_get_message(self.handle)
+
 
 class ReaderLRUCache(dict):
     def __init__(self, size):

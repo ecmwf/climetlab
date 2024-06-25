@@ -79,6 +79,7 @@ class GribCoder:
         check_nans=False,
         metadata={},
         template=None,
+        return_bytes=False,
         **kwargs,
     ):
         # Make a copy as we may modify it
@@ -133,6 +134,9 @@ class GribCoder:
         # Set values will set generatingProcessIdentifier to 255
         if "generatingProcessIdentifier" in metadata:
             handle.set("generatingProcessIdentifier", metadata["generatingProcessIdentifier"])
+
+        if return_bytes:
+            return handle.get_message()
 
         return handle
 
