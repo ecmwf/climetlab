@@ -42,10 +42,6 @@ class NetCDFFieldSet(FieldSet):
         return self._get_fields(DataSet(self.xr_dataset))
 
     def _get_fields(self, ds):  # noqa C901
-        # Select only geographical variables
-        has_lat = False
-        has_lon = False
-
         fields = []
 
         skip = set()
@@ -57,6 +53,10 @@ class NetCDFFieldSet(FieldSet):
             skip.update(getattr(v, "grid_mapping", "").split(" "))
 
         for name in ds.data_vars:
+            # Select only geographical variables
+            has_lat = False
+            has_lon = False
+
             if name in skip:
                 continue
 
