@@ -42,7 +42,7 @@ def unrotate(lat, lon, south_pole_lat, south_pole_lon):
         sp = np.sin(phi)
         cp = np.sqrt(1.0 - sp * sp)
         sl = np.sin(lam)
-        cl = np.sqrt(1.0 - sl * sl)
+        cl = np.cos(lam)
 
         return (cp * cl, cp * sl, sp)
 
