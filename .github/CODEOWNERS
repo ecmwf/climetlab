@@ -1,1 +1,7 @@
 /climetlab/version @floriankrb @b8raoult
+
+# BEGIN org baseline: maintainers own .github/ and CODEOWNERS (ci-infrastructure scripts/apply-codeowners.sh)
+/.github/ @floriankrb @gmertes @mchantry @pmaciel
+/CODEOWNERS @floriankrb @gmertes @mchantry @pmaciel
+/docs/CODEOWNERS @floriankrb @gmertes @mchantry @pmaciel
+# END org baseline
