@@ -49,7 +49,6 @@ dependencies = [
     "eccodes>=1.3.0",
     "ecmwf-api-client>=1.6.1",
     "ecmwf-opendata>=0.1.2",
-    "ecmwflibs>=0.6.3",
     "entrypoints",
     "filelock",
     "imageio",
@@ -72,6 +71,7 @@ dependencies = [
 "tensorflow" = ["tensorflow"]
 "zarr" = ["zarr", "s3fs"]
 "interactive" = ["skinnywms", "folium>=0.12.1"]
+"ecmwflibs" = ["ecmwflibs>=0.6.3"]
 
 [project.urls]
 Homepage = "https://github.com/ecmwf/climetlab/"
